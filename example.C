@@ -2,6 +2,7 @@
 #include <Python.h>
 #define EXAMPLE_MODULE
 #include "examplemodule.h"
+#include "testExampleFunction.h"
 
 static char * 
 PyExample_DoSomething(int command)
@@ -19,6 +20,8 @@ example_displaymessage(PyObject *self, PyObject *args)
 {
     int command;
     char * message;
+
+    testOutsideFunction();
 
     if(!PyArg_ParseTuple(args, "i", &command))
         return NULL;
