@@ -2,6 +2,7 @@
 
 using namespace std; 
 
-void testOutsideFunction(){
+void testOutsideFunction()
+{
     std::cout << "testing..." << std::endl;
 }
