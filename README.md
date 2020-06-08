@@ -5,13 +5,13 @@ Uses the following python packages: `tkinter` (https://tkdocs.com/tutorial/insta
 
 Recipe for running pixel gui:
 ```
-python setupDatabase.py
+cd pixelGui && python setupDatabase.py
 python acfGui.py
 ```
 
 Recipe for running example:
 ```
-python setup.py build
+cd example && python setup.py build
 python setup.py install
 python guiExample.py
 ```
