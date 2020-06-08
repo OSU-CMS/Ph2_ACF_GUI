@@ -5,6 +5,7 @@ Uses the following python packages: `tkinter` (https://tkdocs.com/tutorial/insta
 
 Recipe for running pixel gui:
 ```
+python setupDatabase.py
 python acfGui.py
 ```
 
@@ -14,4 +15,3 @@ python setup.py build
 python setup.py install
 python guiExample.py
 ```
-
