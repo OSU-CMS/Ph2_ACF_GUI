@@ -1,5 +1,5 @@
 '''
-  acfGui.py
+  config.py
   \brief                 Global config file for gui
   \author                Brandon Manley
   \version               0.1

@@ -1,5 +1,5 @@
 '''
-  acfGui.py
+  gui.py
   \brief                 Functions for interface for pixel grading gui
   \author                Brandon Manley
   \version               0.1
