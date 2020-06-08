@@ -3,7 +3,7 @@
   \brief                 Interface for pixel grading gui
   \author                Brandon Manley
   \version               0.1
-  \date                  06/05/20
+  \date                  06/08/20
   Support:               email to manley.329@osu.edu
 '''
 
@@ -12,6 +12,7 @@ from tkinter import ttk
 import example
 import gui
 import config
+import database
 
 config.root.title('Ph2_ACF Grading System')
 config.root.geometry('{}x{}'.format(600, 300))
@@ -56,7 +57,12 @@ config.username_en.grid(row=1, column=1, sticky="we")
 testname_lbl = tk.Label(master = config.startFrame, text = "Test name", font=("Cambria", 13))
 testname_lbl.grid(row=2, column=0, sticky="we")
 
-config.w.grid(row=2, column=1, sticky="we")
+currentModes = []
+for mode in list(database.retrieveAllModes()):
+	currentModes.append(mode[1])
+print(currentModes)
+w = tk.OptionMenu(config.startFrame, config.testname, *currentModes)
+w.grid(row=2, column=1, sticky="we")
 
 desc_lbl = tk.Label(master = config.startFrame, text = "Description", font=("Cambria", 13))
 desc_lbl.grid(row=3, column=0, sticky="ew")
@@ -79,7 +85,7 @@ other_lbl.grid(row=3, column=0, sticky="n")
 
 create_btn = ttk.Button(
 	master = config.otherFrame, 
-	text = "Create Test", 
+	text = "Create Test",
 	command = gui.openCreateWindow
 )
 create_btn.place(x=50, y=75)
