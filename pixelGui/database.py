@@ -25,11 +25,11 @@ def createTestsTable():
     conn = createDatabaseConnection(config.database)
     sql = '''   CREATE TABLE IF NOT EXISTS tests (
                     id integer PRIMARY KEY,
-                    username text,
-                    testname text,
-                    date text, 
-                    grade integer,
-                    comment text
+                    module_id integer,
+                    user_name text,
+                    test_name text,
+                    date text,
+                    grade integer
                 ); '''
     try:
         c = conn.cursor()
@@ -39,7 +39,7 @@ def createTestsTable():
 
 
 def createTestEntry(runInfo):
-    sql = '''   INSERT INTO tests(username,testname,date,grade,comment)
+    sql = '''   INSERT INTO tests(module_id,user_name,test_name,date,grade)
                 VALUES(?,?,?,?,?)  '''
     conn = createDatabaseConnection(config.database)
     cur = conn.cursor()
@@ -50,11 +50,11 @@ def createTestEntry(runInfo):
 
 def updateTestEntry(newInfo):
     sql = '''   UPDATE tests
-                SET username = ?,
-                    testname = ?,
+                SET module_id = ?,
+                    user_name = ?,
+                    test_name = ?,
                     date = ?,
-                    grade = ?,
-                    description = ?
+                    grade = ?
                 WHERE id = ?    '''
     conn = createDatabaseConnection(config.database)
     cur = conn.cursor()
@@ -82,7 +82,7 @@ def createModesTable():
     conn = createDatabaseConnection(config.database)
     sql = '''   CREATE TABLE IF NOT EXISTS modes (
                     id integer PRIMARY KEY,
-                    name text
+                    mode_name text
                 ); '''
     try:
         c = conn.cursor()
@@ -92,9 +92,8 @@ def createModesTable():
 
 
 def createModeEntry(modeInfo):
-    sql = '''   INSERT INTO modes(name)
+    sql = '''   INSERT INTO modes(mode_name)
                 VALUES(?)  '''
-    print(modeInfo)
     conn = createDatabaseConnection(config.database)
     cur = conn.cursor()
     cur.execute(sql, modeInfo)
@@ -109,7 +108,7 @@ def retrieveAllModes():
     return cur.fetchall()
 
 
-def clearAllModes():
+def deleteAllModes():
     sql = 'DELETE FROM modes'
     conn = createDatabaseConnection(config.database)
     cur = conn.cursor() 

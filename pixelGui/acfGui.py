@@ -14,87 +14,149 @@ import gui
 import config
 import database
 
+
 config.root.title('Ph2_ACF Grading System')
 config.root.geometry('{}x{}'.format(600, 300))
 config.root.rowconfigure(0, weight=1, minsize=50)
-config.root.rowconfigure(1, weight=1, minsize=150)
-config.root.columnconfigure(0, weight=1, minsize=100)
-config.root.columnconfigure(1, weight=1, minsize=100)
+config.root.rowconfigure(1, weight=1, minsize=250)
+config.root.columnconfigure(0, weight=1, minsize=300)
+config.root.columnconfigure(1, weight=1, minsize=300)
 
-config.startFrame.grid(row=1, column=0, sticky="ws")
-config.otherFrame.grid(row=1, column=1, sticky="es")
-
-config.startFrame.grid_propagate(False)
-config.otherFrame.grid_propagate(False)
-
-config.startFrame.rowconfigure(0, weight=1, minsize=50)
-config.startFrame.rowconfigure(1, weight=1, minsize=50)
-config.startFrame.rowconfigure(2, weight=1, minsize=50)
-config.startFrame.rowconfigure(3, weight=1, minsize=50)
-config.startFrame.columnconfigure(0, weight=1, minsize=130)
-config.startFrame.columnconfigure(1, weight=1, minsize=130)
-
-config.otherFrame.rowconfigure(0, weight=1, minsize=100)
-config.otherFrame.rowconfigure(1, weight=1, minsize=100)
-config.otherFrame.rowconfigure(2, weight=1, minsize=100)
-config.otherFrame.columnconfigure(0, weight=1, minsize=300)
-
-wel_lbl = tk.Label(master = config.root, text = "Phase 2 Pixel Grading System", font=("Helvetica", 25))
-wel_lbl.grid(row=0, column=0, columnspan=2, sticky="new")
+title_label = tk.Label(master = config.root, text = "Phase 2 Pixel Grading System", relief=tk.GROOVE, font=('Helvetica', 25, 'bold'))
+title_label.grid(row=0, column=0, columnspan=2, sticky="new")
 
 ##########################################################################
-##### start frame ########################################################
+##### login frame ########################################################
 ##########################################################################
 
-startTest_lbl = tk.Label(master = config.startFrame, text = "Start a new test", font=("Cambria", 15))
-startTest_lbl.grid(row=0, column=0, columnspan=2, sticky="n")
+#FIXME: want verified users/admin mode to add users?
+def loginUser():
+	if username_entry.get() == '':
+		gui.displayErrorWindow("Error: Please enter a valid username")
+		return 
+	config.current_user = username_entry.get()
 
-username_lbl = tk.Label(master = config.startFrame, text = "User name", font=("Cambria", 13))
-username_lbl.grid(row=1, column=0, sticky="ew")
+	login_label['text'] = 'Welcome {0}'.format(config.current_user)
+	login_label['font'] = ('Cambria', 25, 'bold')
+	username_label.grid_remove()
+	username_entry.grid_remove()
+	login_button.grid_remove()
+	logout_button.grid(row=2, column=0, columnspan=2)
 
-config.username_en.grid(row=1, column=1, sticky="we")
+def logoutUser():
+	config.current_user = ''
 
-testname_lbl = tk.Label(master = config.startFrame, text = "Test name", font=("Cambria", 13))
-testname_lbl.grid(row=2, column=0, sticky="we")
+	login_label['text'] = 'Please login'
+	login_label['font'] = ('Cambria', 20, 'bold')
+	username_label.grid(row=2, column=0, sticky='w')
+	username_entry.grid(row=2, column=1, sticky='e')
+	login_button.grid(row=3, column=0, columnspan=2)
+	logout_button.grid_remove()
 
-currentModes = []
-for mode in list(database.retrieveAllModes()):
-	currentModes.append(mode[1])
-print(currentModes)
-w = tk.OptionMenu(config.startFrame, config.testname, *currentModes)
-w.grid(row=2, column=1, sticky="we")
 
-desc_lbl = tk.Label(master = config.startFrame, text = "Description", font=("Cambria", 13))
-desc_lbl.grid(row=3, column=0, sticky="ew")
+loginFrame = tk.Frame(config.root, width=300, height=250)
+loginFrame.grid(row=1, column=0, sticky="ws")
+loginFrame.rowconfigure(0, weight=1, minsize=35)
+loginFrame.rowconfigure(1, weight=1, minsize=20)
+loginFrame.rowconfigure(2, weight=1, minsize=40)
+loginFrame.rowconfigure(3, weight=1, minsize=50)
+loginFrame.rowconfigure(4, weight=1, minsize=65)
+loginFrame.columnconfigure(0, weight=1, minsize=140)
+loginFrame.columnconfigure(1, weight=1, minsize=110)
+loginFrame.columnconfigure(2, weight=1, minsize=50)
+loginFrame.grid_propagate(False)
 
-config.desc_tx.grid(row=3, column=1, sticky="we")
+login_label = tk.Label(master = loginFrame, text = "Please login", font=("Cambria", 20, 'bold'))
+login_label.grid(row=1, column=0, columnspan=2, sticky="n")
 
-start_btn = ttk.Button(
-	master = config.startFrame, 
-	text = "Start Test", 
-	command = gui.openRunWindow
+username_label = tk.Label(master = loginFrame, text = "             Username", font=("Cambria", 15))
+username_label.grid(row=2, column=0, sticky='w')
+
+username_entry = tk.Entry(master = loginFrame, text='')
+username_entry.grid(row=2, column=1, sticky='e')
+
+login_button = ttk.Button(
+	master = loginFrame, 
+	text = "Log in", 
+	command = loginUser
 )
-start_btn.grid(row=4, column=1, sticky="s")
+login_button.grid(row=3, column=0, columnspan=2)
+
+logout_button = ttk.Button(
+	master = loginFrame, 
+	text = "Log out", 
+	command = logoutUser
+)
 
 ##########################################################################
-##### create/view frame ##################################################
+##### options frame ######################################################
 ##########################################################################
 
-other_lbl = tk.Label(master = config.otherFrame, text = "", font=("Cambria", 15))
-other_lbl.grid(row=3, column=0, sticky="n")
+def checkReviewModuleID():
+	try:
+		config.review_module_id = int(module_num_entry.get())
+	except:
+		gui.displayErrorWindow("Error: Please enter valid module ID")
+		return
+	gui.openReviewModuleWindow()
+	
+optionsFrame = tk.Frame(config.root, width=300, height=250)
+optionsFrame.grid(row=1, column=1, sticky="es")
+optionsFrame.rowconfigure(0, weight=1, minsize=5)
+optionsFrame.rowconfigure(1, weight=1, minsize=40)
+optionsFrame.rowconfigure(2, weight=1, minsize=40)
+optionsFrame.rowconfigure(3, weight=1, minsize=40)
+optionsFrame.rowconfigure(4, weight=1, minsize=40)
+optionsFrame.rowconfigure(5, weight=1, minsize=40)
+optionsFrame.rowconfigure(6, weight=1, minsize=40)
+optionsFrame.rowconfigure(7, weight=1, minsize=5)
+optionsFrame.columnconfigure(0, weight=1, minsize=100)
+optionsFrame.columnconfigure(1, weight=1, minsize=100)
+optionsFrame.columnconfigure(2, weight=1, minsize=100)
+optionsFrame.grid_propagate(False)
 
-create_btn = ttk.Button(
-	master = config.otherFrame, 
-	text = "Create Test",
+start_button = ttk.Button(
+	master = optionsFrame, 
+	text = "Start new test", 
+	command = gui.openStartWindow
+)
+start_button.grid(row=1, column=0, columnspan=3, sticky='we')
+
+create_button = ttk.Button(
+	master = optionsFrame,
+	text = "Create new test", 
 	command = gui.openCreateWindow
 )
-create_btn.place(x=50, y=75)
+create_button.grid(row=2, column=0, columnspan=3, sticky='ew')
 
-view_btn = ttk.Button(
-	master = config.otherFrame,
-	text = "View Previous Results",
+results_button = ttk.Button(
+	master = optionsFrame,
+	text = "Review results", 
 	command = gui.openResultsWindow
 )
-view_btn.place(x=50, y=115)
+results_button.grid(row=3, column=0, columnspan=3, sticky='ew')
+
+review_module_label = tk.Label(master = optionsFrame, text = "Review a specific module", font=("Cambria", 17))
+review_module_label.grid(row=4, column=0, columnspan=3, sticky='we')
+
+module_num_label = tk.Label(master = optionsFrame, text = "   Module ID", font=("Cambria", 15))
+module_num_label.grid(row=5, column=0, sticky='w')
+
+module_num_entry = tk.Entry(master = optionsFrame, text='')
+module_num_entry.grid(row=5, column=1)
+
+review_button = ttk.Button(
+	master = optionsFrame,
+	text = "Review", 
+	command = checkReviewModuleID
+)
+review_button.grid(row=5, column=2)
+
+check_connection_button = ttk.Button(
+	master = optionsFrame,
+	text = 'Check module connection',
+	command = gui.openConnectionWindow
+)
+check_connection_button.grid(row=6, column=0, columnspan=3, sticky='wes')
 
 config.root.mainloop()

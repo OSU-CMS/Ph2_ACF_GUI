@@ -10,26 +10,13 @@
 import tkinter as tk
 from datetime import datetime
 
-testnames = [ 
-'full','latency scan', 'pixelalive', 'noise scan', 'scurve scan',
-'gain scan', 'threshold equalization', 'gain optimization',
-'threshold minimization', 'threshold adjustment', 'injection delay scan',
-'clock delay scan', 'physics'
-]
-
-root = tk.Tk()
-username = ''
-currentTestGrade = -1
-comment = ''
-
-startFrame = tk.Frame(root, width=295, height=295, padx=5, pady=5)
-otherFrame = tk.Frame(root, width=300, height=300)
-
-username_en = tk.Entry(master = startFrame, text="")
-
-testname = tk.StringVar(startFrame)
-testname.set("pixelalive") # default value
-
-desc_tx = tk.Text(master=startFrame, borderwidth=1, relief=tk.RAISED)
-
 database = "testGui.db"
+root = tk.Tk()
+current_user = ''
+review_module_id = -1
+result_module_id = -1
+result_row_id = -1
+new_test_name = tk.StringVar(root)
+new_test_name.set('pixelalive')
+new_test_moduleID = -1
+new_test_grade = -1
