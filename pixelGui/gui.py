@@ -136,7 +136,7 @@ def openRunWindow():
 					break
 			config.root.after(40, update, q)
 
-		runProcess = Popen(['source', 'runTest.sh'], stdout=PIPE)
+		runProcess = Popen(['python3', 'runTest_wrap.py'], stdout=PIPE)
 		q = Queue(maxsize=1024)
 		t = Thread(target=reader_thread, args=[q])
 		t.daemon = True
