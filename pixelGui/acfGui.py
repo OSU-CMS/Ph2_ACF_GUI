@@ -9,11 +9,9 @@
 
 import tkinter as tk
 from tkinter import ttk
-import example
 import gui
 import config
 import database
-
 
 config.root.title('Ph2_ACF Grading System')
 config.root.geometry('{}x{}'.format(600, 300))
