@@ -10,6 +10,7 @@
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
+import os
 
 database = "testGui.db"
 root = tk.Tk()
@@ -26,3 +27,5 @@ buttonStyle = ttk.Style()
 buttonStyle.configure('Important.TButton', font=('Cambria', 20))
 
 test_process = ['python','testProcess.py']
+
+phase2_repo_dir = '/home/bmanley/Ph2_ACF/'

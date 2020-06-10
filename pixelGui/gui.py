@@ -135,14 +135,13 @@ def openRunWindow():
 					console_text.insert(1.0, line)
 					break
 			config.root.after(40, update, q)
-				
+
 		runProcess = Popen(['python', 'testProcess.py'], stdout=PIPE)
 		q = Queue(maxsize=1024)
 		t = Thread(target=reader_thread, args=[q])
 		t.daemon = True
 		t.start()
 		update(q)
-		
 
 	start_btn = ttk.Button(
 		master = descFrame,
@@ -385,14 +384,6 @@ def openReviewModuleWindow():
 		style='Important.TButton'
 	)
 	continue_button.grid(row=0, column=1, sticky='n')
-
-
-
-
-
-
-
-
 
 ##########################################################################
 ##########################################################################

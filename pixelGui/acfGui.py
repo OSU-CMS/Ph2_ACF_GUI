@@ -22,6 +22,9 @@ config.root.rowconfigure(1, weight=1, minsize=250)
 config.root.columnconfigure(0, weight=1, minsize=300)
 config.root.columnconfigure(1, weight=1, minsize=300)
 
+windowicon = tk.Image("photo", file="ohiostate.gif")
+config.root.tk.call('wm','iconphoto', config.root._w, windowicon)
+
 title_label = tk.Label(master = config.root, text = "Phase 2 Pixel Grading System", relief=tk.GROOVE, font=('Helvetica', 25, 'bold'))
 title_label.grid(row=0, column=0, columnspan=2, sticky="new")
 
@@ -29,7 +32,6 @@ title_label.grid(row=0, column=0, columnspan=2, sticky="new")
 ##### login frame ########################################################
 ##########################################################################
 
-#FIXME: want verified users/admin mode to add users?
 def loginUser():
 	if username_entry.get() == '':
 		gui.displayErrorWindow("Error: Please enter a valid username")
