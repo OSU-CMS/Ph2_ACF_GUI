@@ -8,6 +8,7 @@
 '''
 
 import tkinter as tk
+from tkinter import ttk
 from datetime import datetime
 
 database = "testGui.db"
@@ -20,3 +21,8 @@ new_test_name = tk.StringVar(root)
 new_test_name.set('pixelalive')
 new_test_moduleID = -1
 new_test_grade = -1
+
+buttonStyle = ttk.Style()
+buttonStyle.configure('Important.TButton', font=('Cambria', 20))
+
+test_process = ['python','testProcess.py']

@@ -114,3 +114,11 @@ def deleteAllModes():
     cur = conn.cursor() 
     cur.execute(sql)
     conn.commit()
+
+
+def retrieveModuleTests(module_id):
+	sql = 'SELECT * FROM tests WHERE module_id=?'
+	conn = createDatabaseConnection(config.database)
+	cur = conn.cursor() 
+	cur.execute(sql, (module_id,))
+	return cur.fetchall()

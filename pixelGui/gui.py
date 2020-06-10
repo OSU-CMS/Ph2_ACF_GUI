@@ -7,12 +7,28 @@
   Support:               email to manley.329@osu.edu
 '''
 
-import tkinter as tk 
-from tkinter import ttk
 import config
 import database
+import sys
+import tkinter as tk
+import os
+from queue import Queue, Empty
+from threading import Thread
+from tkinter import ttk
 from datetime import datetime
+from subprocess import Popen, PIPE
+from itertools import islice
+from textwrap import dedent
 
+def iter_except(function, exception):
+	try:
+		while True:
+			yield function()
+	except exception:
+		return
+
+##########################################################################
+##########################################################################
 
 def saveTest():
 	#FIXME: check test is finished running
@@ -25,6 +41,8 @@ def saveTest():
 		displayErrorWindow("Error: could not save")
 		return
 
+##########################################################################
+##########################################################################
 
 def openRunWindow():
 	runWindow = tk.Toplevel(config.root)
@@ -38,17 +56,19 @@ def openRunWindow():
 
 	descFrame = tk.Frame(runWindow, width = 1000, height = 100)
 	resultFrame = tk.Frame(runWindow, width = 1000, height = 200, relief=tk.SUNKEN, bd=2)
-	consoleFrame = tk.Frame(runWindow, width= 100, height = 200, relief=tk.SUNKEN, bd=2)
+	consoleFrame = tk.Frame(runWindow, width= 1000, height = 200, relief=tk.SUNKEN, bd=2)
 
 	descFrame.grid(row=0, column=0, sticky="nw")
 	resultFrame.grid(row=1, column=0, sticky="we")
 	consoleFrame.grid(row=2, column=0, sticky="we")
 
-	descFrame.rowconfigure(0, weight=1, minsize=50)
+	descFrame.rowconfigure(0, weight=1, minsize=100)
 	descFrame.columnconfigure(0, weight=1, minsize=1000)
 
-	resultFrame.rowconfigure(0, weight=1, minsize=100)
-	consoleFrame.rowconfigure(0, weight=1, minsize=100)
+	resultFrame.rowconfigure(0, weight=1, minsize=200)
+	resultFrame.columnconfigure(0, weight=1, minsize=1000)
+	consoleFrame.rowconfigure(0, weight=1, minsize=200)
+	consoleFrame.columnconfigure(0, weight=1, minsize=1000)
 
 	descFrame.grid_propagate(False) 
 	resultFrame.grid_propagate(False) 
@@ -92,30 +112,67 @@ def openRunWindow():
 		)
 		cancel_btn.pack()
 
+	def runTest():
+
+		def reader_thread(q):
+			try:
+				with runProcess.stdout as pipe:
+					for line in iter(pipe.readline, b''):
+						q.put(line)
+			finally:
+				q.put(None)
+
+		def quit():
+			runProcess.kill()
+			runWindow.destroy()
+
+		def update(q):
+			for line in iter_except(q.get_nowait, Empty):
+				if line is None:
+					# quit()
+					return 
+				else:
+					console_text.insert(1.0, line)
+					break
+			config.root.after(40, update, q)
+				
+		runProcess = Popen(['python', 'testProcess.py'], stdout=PIPE)
+		q = Queue(maxsize=1024)
+		t = Thread(target=reader_thread, args=[q])
+		t.daemon = True
+		t.start()
+		update(q)
+		
+
+	start_btn = ttk.Button(
+		master = descFrame,
+		text = "Start Test",
+		command = runTest
+	)
+	start_btn.place(x=0, y=58)
 
 	abort_btn = ttk.Button(
 		master = descFrame,
 		text = "Abort Test",
 		command = abortTest
 	)
-	abort_btn.place(x=0, y=58)
+	abort_btn.place(x=120, y=58)
 
 	save_btn = ttk.Button(
 		master = descFrame,
 		text = "Save Test",
 		command = saveTest
 	)
-	save_btn.place(x=120, y=58)
+	save_btn.place(x=240, y=58)
 
-	#FIXME: RUN TEST
-
-	# FIXME: temporary labels until backend communication configured
-	console_tmp_lbl = tk.Label(master = consoleFrame, text = "Console output will appear here", font=("Cambria", 20))
-	console_tmp_lbl.place(x=0, y=60)
+	console_text = tk.Text(master=consoleFrame, wrap='word', undo=False)
+	console_text.pack(expand=True, fill='both')
 
 	results_tmp_lbl = tk.Label(master = resultFrame, text = "Results will appear here", font=("Cambria", 20))
 	results_tmp_lbl.place(x=0, y=60)
 
+##########################################################################
+##########################################################################
 
 def openCreateWindow():
     if config.current_user == '':
@@ -130,6 +187,8 @@ def openCreateWindow():
     create_tmp_lbl = tk.Label(master = createWindow, text = "Create test options will appear in this window", font=("Cambria", 20))
     create_tmp_lbl.pack()
 
+##########################################################################
+##########################################################################
 
 def openResultsWindow():
     if config.current_user == '':
@@ -164,6 +223,8 @@ def openResultsWindow():
     resultsBox.config(yscrollcommand=scrollbar.set)
     scrollbar.config(command=resultsBox.yview)
 
+##########################################################################
+##########################################################################
 
 def displayErrorWindow(errorText):
     errorWindow = tk.Toplevel(config.root)
@@ -173,6 +234,8 @@ def displayErrorWindow(errorText):
     error_label = tk.Label(master = errorWindow, text = errorText, font=("Cambria", 20))
     error_label.pack()
 
+##########################################################################
+##########################################################################
 
 def openStartWindow():
 	if config.current_user == '':
@@ -226,18 +289,113 @@ def openStartWindow():
 	)
 	start_button.grid(row=4, column=1, columnspan=2)
 
+##########################################################################
+##########################################################################
+
+def openContinueWindow():
+	if config.current_user == '':
+		displayErrorWindow("Error: Please login")
+		return
+
+	startWindow = tk.Toplevel(config.root)
+	startWindow.title('Continue testing')
+	startWindow.geometry("500x200")
+
+	for row in range(1,5):
+		startWindow.rowconfigure(row, weight=1, minsize=40)
+	startWindow.rowconfigure(0, weight=1, minsize=20)
+	startWindow.rowconfigure(5, weight=1, minsize=20)
+	startWindow.columnconfigure(1, weight=1, minsize=200)
+	startWindow.columnconfigure(2, weight=1, minsize=200)
+	startWindow.columnconfigure(0, weight=1, minsize=50)
+	startWindow.columnconfigure(3, weight=1, minsize=50)
+
+	start_label = tk.Label(master = startWindow, text = "Start a new test", font=("Cambria", 20, 'bold'))
+	start_label.grid(row=1, column=1, columnspan=2, sticky="wen")
+
+	moduleID_label = tk.Label(master = startWindow, text = "Module ID", font=("Cambria", 15))
+	moduleID_label.grid(row=2, column=1, sticky='w')
+
+	moduleID_entry = tk.Entry(master = startWindow)
+	moduleID_entry.grid(row=2, column=2, sticky='e')
+	moduleID_entry.insert(0, str(config.review_module_id))
+
+	test_mode_label = tk.Label(master = startWindow, text = "Test mode", font=("Cambria", 15))
+	test_mode_label.grid(row=3, column=1, sticky='w')
+
+	currentModes = []
+	for mode in list(database.retrieveAllModes()):
+		currentModes.append(mode[1])
+	mode_menu = tk.OptionMenu(startWindow, config.new_test_name, *currentModes)
+	mode_menu.grid(row=3, column=2, sticky='e')
+
+	def tryOpenRunWindow():
+		try:
+			config.new_test_moduleID = int(moduleID_entry.get())
+		except:
+			displayErrorWindow("Error: Please enter valid module ID")
+			return
+		openRunWindow()
+		startWindow.destroy()
+
+	start_button = ttk.Button(
+		master = startWindow,
+		text = "Start test", 
+		command = tryOpenRunWindow
+	)
+	start_button.grid(row=4, column=1, columnspan=2)
+
+##########################################################################
+##########################################################################
 
 def openReviewModuleWindow():
-    if config.current_user == '':
-        displayErrorWindow("Error: Please login")
-        return
-    elif config.review_module_id == -1:
-        displayErrorWindow("Error: Please enter module ID")
-        return
+	if config.current_user == '':
+		displayErrorWindow("Error: Please login")
+		return
+	elif config.review_module_id == -1:
+		displayErrorWindow("Error: Please enter module ID")
+		return
 
-    #FIXME: create window
-    print("OPENING review")
+	moduleResults = database.retrieveModuleTests(config.review_module_id)
+	if len(moduleResults) == 0:
+		pass 
+		# FIXME: add dialog box stating no results and option to start new test
 
+	moduleReviewWindow = tk.Toplevel(config.root)
+	moduleReviewWindow.title('Review Module ID: {0}'.format(config.review_module_id))
+	moduleReviewWindow.geometry("900x700")
+	moduleReviewWindow.rowconfigure(0, weight=1, minsize=100)
+	moduleReviewWindow.rowconfigure(1, weight=1, minsize=400)
+	moduleReviewWindow.rowconfigure(2, weight=1, minsize=200)
+	moduleReviewWindow.columnconfigure(0, weight=1, minsize=900)
+
+	headerFrame = tk.Frame(moduleReviewWindow, width=900, height=100)
+	headerFrame.grid(row=0, column=0, sticky='nwe')
+	headerFrame.rowconfigure(0, weight=1, minsize=100)
+	headerFrame.columnconfigure(0, weight=1, minsize=450)
+	headerFrame.columnconfigure(1, weight=1, minsize=450)
+
+	module_label = tk.Label(master = headerFrame, text = "Module ID: {0}".format(config.review_module_id), font=("Cambria", 25, 'bold'))
+	module_label.grid(row=0,column=0, sticky='wn')
+
+	continue_button = ttk.Button(
+		master = headerFrame, 
+		text = "Continue Testing", 
+		command = openContinueWindow,
+		style='Important.TButton'
+	)
+	continue_button.grid(row=0, column=1, sticky='n')
+
+
+
+
+
+
+
+
+
+##########################################################################
+##########################################################################
 
 def openConnectionWindow():
     #FIXME: create window
