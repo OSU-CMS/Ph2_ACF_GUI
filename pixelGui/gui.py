@@ -119,6 +119,9 @@ def openRunWindow():
 				with runProcess.stdout as pipe:
 					for line in iter(pipe.readline, b''):
 						q.put(line)
+				with runProcess.stderr as pipe:
+					for line in iter(pipe.readline, b''):
+						q.put(line)
 			finally:
 				q.put(None)
 
@@ -136,7 +139,7 @@ def openRunWindow():
 					break
 			config.root.after(40, update, q)
 
-		runProcess = Popen(['python3', 'runTest_wrap.py'], stdout=PIPE)
+		runProcess = Popen(['python3', 'runTest_wrap.py'], stdout=PIPE, stderr=PIPE)
 		q = Queue(maxsize=1024)
 		t = Thread(target=reader_thread, args=[q])
 		t.daemon = True
