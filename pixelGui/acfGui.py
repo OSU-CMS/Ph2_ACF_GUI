@@ -42,6 +42,9 @@ def loginUser():
 	username_entry.grid_remove()
 	login_button.grid_remove()
 	logout_button.grid(row=2, column=0, columnspan=2)
+	optionsFrame.grid(row=1, column=1, sticky="es")
+	loginFrame.grid(row=1, column=0,  sticky="ws")
+	loginFrame['width'] = 300
 
 def logoutUser():
 	config.current_user = ''
@@ -52,10 +55,12 @@ def logoutUser():
 	username_entry.grid(row=2, column=1, sticky='e')
 	login_button.grid(row=3, column=0, columnspan=2)
 	logout_button.grid_remove()
+	optionsFrame.grid_remove()
+	loginFrame.grid(row=1, column=0, columnspan=2, sticky="ws")
+	loginFrame['width'] = 600
 
-
-loginFrame = tk.Frame(config.root, width=300, height=250)
-loginFrame.grid(row=1, column=0, sticky="ws")
+loginFrame = tk.Frame(config.root, width=600, height=250)
+loginFrame.grid(row=1, column=0, columnspan=2, sticky="ws")
 loginFrame.rowconfigure(0, weight=1, minsize=35)
 loginFrame.rowconfigure(1, weight=1, minsize=20)
 loginFrame.rowconfigure(2, weight=1, minsize=40)
@@ -101,7 +106,7 @@ def checkReviewModuleID():
 	gui.openReviewModuleWindow()
 	
 optionsFrame = tk.Frame(config.root, width=300, height=250)
-optionsFrame.grid(row=1, column=1, sticky="es")
+# optionsFrame.grid(row=1, column=1, sticky="es")
 optionsFrame.rowconfigure(0, weight=1, minsize=5)
 optionsFrame.rowconfigure(1, weight=1, minsize=40)
 optionsFrame.rowconfigure(2, weight=1, minsize=40)
