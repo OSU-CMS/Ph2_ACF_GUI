@@ -30,6 +30,7 @@ title_label.grid(row=0, column=0, columnspan=2, sticky="new")
 ##### login frame ########################################################
 ##########################################################################
 
+#FIXME: beautify login frame
 def loginUser():
 	if username_entry.get() == '':
 		gui.displayErrorWindow("Error: Please enter a valid username")
@@ -37,7 +38,7 @@ def loginUser():
 	config.current_user = username_entry.get()
 
 	login_label['text'] = 'Welcome {0}'.format(config.current_user)
-	login_label['font'] = ('Cambria', 25, 'bold')
+	login_label['font'] = ('Helvetica', 25, 'bold')
 	username_label.grid_remove()
 	username_entry.grid_remove()
 	login_button.grid_remove()
@@ -50,7 +51,7 @@ def logoutUser():
 	config.current_user = ''
 
 	login_label['text'] = 'Please login'
-	login_label['font'] = ('Cambria', 20, 'bold')
+	login_label['font'] = ('Helvetica', 20, 'bold')
 	username_label.grid(row=2, column=0, sticky='w')
 	username_entry.grid(row=2, column=1, sticky='e')
 	login_button.grid(row=3, column=0, columnspan=2)
@@ -71,10 +72,10 @@ loginFrame.columnconfigure(1, weight=1, minsize=110)
 loginFrame.columnconfigure(2, weight=1, minsize=50)
 loginFrame.grid_propagate(False)
 
-login_label = tk.Label(master = loginFrame, text = "Please login", font=("Cambria", 20, 'bold'))
+login_label = tk.Label(master = loginFrame, text = "Please login", font=("Helvetica", 20, 'bold'))
 login_label.grid(row=1, column=0, columnspan=2, sticky="n")
 
-username_label = tk.Label(master = loginFrame, text = "             Username", font=("Cambria", 15))
+username_label = tk.Label(master = loginFrame, text = "             Username", font=("Helvetica", 15))
 username_label.grid(row=2, column=0, sticky='w')
 
 username_entry = tk.Entry(master = loginFrame, text='')
@@ -141,10 +142,10 @@ results_button = ttk.Button(
 )
 results_button.grid(row=3, column=0, columnspan=3, sticky='ew')
 
-review_module_label = tk.Label(master = optionsFrame, text = "Review a specific module", font=("Cambria", 17))
+review_module_label = tk.Label(master = optionsFrame, text = "Review a specific module", font=("Helvetica", 17))
 review_module_label.grid(row=4, column=0, columnspan=3, sticky='we')
 
-module_num_label = tk.Label(master = optionsFrame, text = "   Module ID", font=("Cambria", 15))
+module_num_label = tk.Label(master = optionsFrame, text = "   Module ID", font=("Helvetica", 15))
 module_num_label.grid(row=5, column=0, sticky='w')
 
 module_num_entry = tk.Entry(master = optionsFrame, text='')

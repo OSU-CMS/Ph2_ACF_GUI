@@ -11,12 +11,13 @@ import config
 import sqlite3
 from sqlite3 import Error
 
+
 def createDatabaseConnection(db_file):
     conn = None
     try:    
         conn = sqlite3.connect(db_file)
-    except Error as e:
-        print(e)
+    except:
+        pass
     return conn
 
 
@@ -34,8 +35,8 @@ def createTestsTable():
     try:
         c = conn.cursor()
         c.execute(sql)
-    except Error as e:
-        print(e)
+    except:
+        pass
 
 
 def createTestEntry(runInfo):
@@ -87,8 +88,8 @@ def createModesTable():
     try:
         c = conn.cursor()
         c.execute(sql)
-    except Error as e:
-        print(e)
+    except:
+        pass
 
 
 def createModeEntry(modeInfo):
@@ -122,3 +123,11 @@ def retrieveModuleTests(module_id):
 	cur = conn.cursor() 
 	cur.execute(sql, (module_id,))
 	return cur.fetchall()
+
+
+def deleteAllTests():
+    sql = 'DELETE FROM tests'
+    conn = createDatabaseConnection(config.database)
+    cur = conn.cursor() 
+    cur.execute(sql)
+    conn.commit()
