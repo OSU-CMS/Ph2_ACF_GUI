@@ -158,11 +158,4 @@ review_button = ttk.Button(
 )
 review_button.grid(row=5, column=2)
 
-check_connection_button = ttk.Button(
-	master = optionsFrame,
-	text = 'Check module connection',
-	command = gui.openConnectionWindow
-)
-check_connection_button.grid(row=6, column=0, columnspan=3, sticky='wes')
-
 config.root.mainloop()

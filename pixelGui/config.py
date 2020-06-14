@@ -36,8 +36,8 @@ review_filter_eq.set('=')
 module_results = []
 
 # currently viewing result info
-result_module_id = -1
 result_row_id = -1
+plot_images = []
 
 # currently testing module info
 current_test_name = tk.StringVar(root)

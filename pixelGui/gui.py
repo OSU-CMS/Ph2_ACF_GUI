@@ -15,6 +15,7 @@ import tkinter as tk
 import os
 import re
 import operator
+import math
 from queue import Queue, Empty
 from threading import Thread
 from tkinter import ttk
@@ -23,6 +24,8 @@ from subprocess import Popen, PIPE
 from itertools import islice
 from textwrap import dedent
 from PIL import ImageTk, Image
+
+from functools import partial
 
 class AnsiColorText(tk.Text):
 	foreground_colors = {
@@ -250,7 +253,6 @@ def openRunWindow():
 	module_label = tk.Label(master=info_frame, text="Module ID: {0}".format(config.current_module_id), font=("Helvetica", 25))
 	module_label.pack(anchor='nw', side=tk.TOP)
 
-	# FIXME: add test num to database and retrieve test no. here
 	test_num_label = tk.Label(master=info_frame, text="Test #: {0}".format(config.current_test_num), font=("Helvetica", 15))
 	test_num_label.pack(anchor='nw', side=tk.TOP)
 
@@ -549,7 +551,7 @@ def openReviewModuleWindow():
 	table_cols = [window_width-15, 15]
 
 	tableb_rows = [29, 23, 23]
-	tableb_cols = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100]
+	tableb_cols = [125, 125, 125, 125, 125, 125, 125, 125]
 
 	assert sum(window_rows) == window_height, 'Check height'
 	assert sum(window_cols) == window_width, 'Check width'
@@ -619,7 +621,7 @@ def openReviewModuleWindow():
 	table_tframe.grid(row=0, column=0, sticky='nwes')
 	for row in range(3):
 		table_tframe.grid_rowconfigure(row, weight=1, minsize=tableb_rows[row])
-	for col in range(10):
+	for col in range(len(tableb_cols)):
 		table_tframe.grid_columnconfigure(row, weight=1, minsize=tableb_cols[col])
 
 
@@ -632,10 +634,33 @@ def openReviewModuleWindow():
 	table_frame.grid_propagate(False)
 	table_tframe.grid_propagate(False)
 	table_bframe.grid_propagate(False)
-	
+
+	def tryChangeModule():
+		try:
+			config.review_module_id = int(change_entry.get())
+		except:
+			displayErrorWindow("Error: Please enter valid module ID")
+			return
+
+		try:
+			module_review_window.destroy()
+			openReviewModuleWindow()
+		except:
+			displayErrorWindow("Error: Could not change modules")
+
 	# setup header
 	module_label = tk.Label(master = header_frame, text = "Module ID: {0}".format(config.review_module_id), font=("Helvetica", 25, 'bold'))
 	module_label.pack(anchor='ne', side=tk.LEFT)
+
+	change_entry = tk.Entry(master=header_frame)
+	change_entry.pack(anchor='ne', side=tk.RIGHT)
+
+	change_button = ttk.Button(
+		master = header_frame,
+		text = "Change module:",
+		command = tryChangeModule
+	)
+	change_button.pack(side=tk.RIGHT, anchor='ne')
 
 	def tryOpenContinue():
 		try:
@@ -651,7 +676,6 @@ def openReviewModuleWindow():
 		command = tryOpenContinue,
 	)
 	continue_button.pack(side=tk.RIGHT, anchor='n')
-
 
 	# setup best result
 	best_title = tk.Label(master=best_frame, text="Best result", font=("Helvetica", 25),bg='white')
@@ -669,7 +693,7 @@ def openReviewModuleWindow():
 	best_ulabel = tk.Label(master=best_bframe, text="{0}".format(best_result[2]), font=("Helvetica", 15), bg='white')
 	best_ulabel.pack(anchor='nw', side=tk.TOP)
 
-	#FIXME: automate this
+	#FIXME: automate plot retrieval
 	best_canvas = tk.Canvas(best_tframe, bg='white')
 	best_canvas.pack(expand=True, fill='both', anchor='nw', side=tk.TOP)
 	best_img = Image.open("test_best1.png")
@@ -681,7 +705,7 @@ def openReviewModuleWindow():
 	latest_title = tk.Label(master=latest_frame, text="Latest result", font=("Helvetica", 25), bg='white')
 	latest_title.grid(row=0, column=0, sticky='n')
 	
-	# FIXME: automate this
+	# FIXME: automate plot retrieval
 	latest_canvas = tk.Canvas(latest_tframe, bg='white')
 	latest_canvas.pack(expand=True, fill='both', anchor='nw', side=tk.TOP)
 	latest_img = Image.open("test_latest1.png")
@@ -773,7 +797,6 @@ def openReviewModuleWindow():
 		config.module_results = filtered_results
 		
 		makeTable()
-		table_num['text'] = "(Showing {0} results)".format(len(config.module_results))
 
 
 	def resetResults():
@@ -791,37 +814,31 @@ def openReviewModuleWindow():
 	sort_menu.grid(row=1, column=1, sticky='nsew')
 
 	dir_menu = tk.OptionMenu(table_tframe, config.review_sort_dir, *["increasing", "decreasing"])
-	dir_menu.grid(row=1, column=2, sticky='nsew')
-
-	space_label = tk.Label(master=table_tframe, text="		", height=20)
-	space_label.grid(row=1, column=3, sticky='nsew')
+	dir_menu.grid(row=1, column=2, sticky='nsw')
 
 	filter_button = ttk.Button(
 		master = table_tframe,
 		text = "Filter", 
 		command = filterResults,
 	)
-	filter_button.grid(row=1, column=4, sticky='nsew')
+	filter_button.grid(row=1, column=3, sticky='nsew', padx=(0, 0))
 
 	filter_menu = tk.OptionMenu(table_tframe, config.review_filter_attr, *['date', 'user', 'grade', 'testname'])
-	filter_menu.grid(row=1, column=5, sticky='nsew')
+	filter_menu.grid(row=1, column=4, sticky='nsw')
 
 	eq_menu = tk.OptionMenu(table_tframe, config.review_filter_eq, *["=", ">=", "<=", ">", "<", "contains"])
-	eq_menu.grid(row=1, column=6, sticky='nsew')
+	eq_menu.grid(row=1, column=5, sticky='nsw')
 
 	filter_entry = tk.Entry(master=table_tframe)
 	filter_entry.insert(0, '{0}'.format(config.current_user))
-	filter_entry.grid(row=1, column=7, sticky='nsew')
-
-	space_label2 = tk.Label(master=table_tframe, text="	", height=20)
-	space_label2.grid(row=1, column=8, sticky='nsew')
+	filter_entry.grid(row=1, column=6, sticky='nsw')
 
 	reset_button = ttk.Button(
 		master = table_tframe,
 		text = "Reset", 
 		command = resetResults,
 	)
-	reset_button.grid(row=1, column=9, sticky='nsew')
+	reset_button.grid(row=1, column=7, sticky='nse')
 
 	yscrollbar = tk.Scrollbar(table_bframe)
 	yscrollbar.grid(row=0, column=1, sticky='ns')
@@ -830,14 +847,117 @@ def openReviewModuleWindow():
 	table_canvas.grid(row=0, column=0, sticky='nsew')
 	yscrollbar.config(command=table_canvas.yview)
 
+	def openResult(result_rowid):
+		table_frame.grid_remove()
+		bl_frame.grid_remove()
+		header_frame.grid_remove()
+
+		def backToModule():
+			rheader_frame.grid_remove()
+			rplot_frame.grid_remove()
+			header_frame.grid()
+			table_frame.grid()
+			bl_frame.grid()
+
+
+		rheader_frame = tk.Frame(module_review_window, width=window_cols[0], height=window_rows[0])
+		rheader_frame.grid(row=0, column=0, sticky='nwes')
+		rheader_frame.grid_propagate(False)
+
+		rplot_frame = tk.Frame(module_review_window, width=window_cols[0], height=window_height-window_rows[0])
+		rplot_frame.grid(row=1, column=0, rowspan=2, sticky='nwes')
+		rplot_frame.grid_propagate(False)
+
+		rplot_frame.grid_rowconfigure(0, weight=1, minsize=window_height-window_rows[0])
+		rplot_frame.grid_columnconfigure(0, weight=1, minsize=window_cols[0]-15)
+		rplot_frame.grid_columnconfigure(1, weight=1, minsize=15)
+
+		# setup header
+		back_image = Image.open('back-arrow.png')
+		back_image = back_image.resize((27, 20), Image.ANTIALIAS)
+		back_photo = ImageTk.PhotoImage(back_image)
+
+		back_button = ttk.Button(
+			master = rheader_frame,
+			text = 'Back',
+			image = back_photo,	
+			command = backToModule
+		)
+		back_button.image = back_photo
+		back_button.pack(side=tk.RIGHT, anchor='ne')
+
+		result_tuple = database.retrieveModuleTest(result_rowid)[0]
+		
+		name_label = tk.Label(master=rheader_frame, text=result_tuple[3], font=("Helvetica", 25))
+		name_label.pack(side=tk.LEFT, anchor='sw')
+
+		grade_label = tk.Label(master=rheader_frame, text='{}%'.format(result_tuple[5]), font=("Helvetica", 30, 'bold'), padx=5)
+		grade_label.pack(side=tk.LEFT, anchor='sw')
+
+		date_label = tk.Label(master=rheader_frame, text=result_tuple[4], font=("Helvetica", 18), padx=4)
+		date_label.pack(side=tk.LEFT, anchor='sw')
+
+		user_label = tk.Label(master=rheader_frame, text=result_tuple[2], font=("Helvetica", 18))
+		user_label.pack(side=tk.LEFT, anchor='sw')
+
+		# setup plots
+		#FIXME: automate plot retrieval from database
+		#FIXME: organize test_plots
+		test_plots = [
+			['test_plots/test1.png', 'test_plots/test2.png'],
+			['test_plots/test3.png', 'test_plots/test4.png'],
+			['test_plots/test5.png', 'test_plots/test6.png'],
+			['test_plots/test7.png']
+		]
+
+		ncols = 2
+		nrows = math.ceil(len(test_plots)/2)
+
+		plot_yscrollbar = tk.Scrollbar(rplot_frame)
+		plot_yscrollbar.grid(row=0, column=1, sticky='nsew')
+
+		plot_canvas = tk.Canvas(rplot_frame, scrollregion=(0,0,1000,sub_rows[1]*(nrows+3)), yscrollcommand=plot_yscrollbar.set, bg='white')
+		plot_canvas.grid(row=0, column=0, sticky='nsew')
+		plot_yscrollbar.config(command=plot_canvas.yview)
+
+		config.plot_images = []
+
+		for row in range(len(test_plots)):
+			config.plot_images.append([])
+
+			for col in range(len(test_plots[row])):
+				plot_img = Image.open(test_plots[row][col])
+				plot_img = plot_img.resize((sub_cols[0], sub_rows[1]), Image.ANTIALIAS)
+				config.plot_images[row].append(ImageTk.PhotoImage(plot_img))
+
+		for row in range(len(test_plots)):
+			for col in range(len(test_plots[row])):
+				plot_canvas.create_image(col*(window_width/ncols), row*((window_height-window_rows[0])/nrows),
+						image=config.plot_images[row][col], anchor="nw")
+		
+
 	def makeTable():
 		table_canvas.delete('all')
+
+		table_num['text'] = "(Showing {0} results)".format(len(config.module_results))
 
 		if config.module_results[0][0] != "":
 			config.module_results = [["", "", "User", "Test", "Date", "Grade"]] + config.module_results
 
 		n_cols = 4
+		row_ids = [r[0] for r in config.module_results]
+
 		for j, result in enumerate(config.module_results):
+
+			if j != 0:
+				result_button = tk.Button(
+					master = table_canvas,
+					text = "{0}".format(j),
+					command = partial(openResult, row_ids[j])
+				)
+				
+				table_canvas.create_window(0*table_cols[0]/n_cols, j*25, window=result_button, anchor='nw')
+
 
 			for i, item in enumerate(result):
 				if i in [0,1]: continue
@@ -848,19 +968,12 @@ def openReviewModuleWindow():
 
 				anchor = 'nw'
 				if i == 5: anchor = 'ne'
-				table_canvas.create_window((i-2)*table_cols[0]/n_cols, j*25, window=row_label, anchor=anchor)
+				table_canvas.create_window(((i-2)*table_cols[0]/n_cols)+65, j*25, window=row_label, anchor=anchor)
+
+		table_canvas.config(scrollregion=(0,0,1000, (len(config.module_results)+2)*25))
+
 
 	makeTable()
-
-	table_canvas.update()
-	table_canvas.config(scrollregion=table_canvas.bbox(tk.ALL))
-
-##########################################################################
-##########################################################################
-
-def openConnectionWindow():
-	#FIXME: should use pretest for this?
-    print("OPENING connection")
 
 ##########################################################################
 ##########################################################################
@@ -868,7 +981,7 @@ def openConnectionWindow():
 #FIXME: automate this in runTest
 def retrieveResultPlot(result_dir, result_file, plot_file, output_file):
 	os.system("root -l -b -q 'extractPlots.cpp(\"{0}\", \"{1}\", \"{2}\")'".format(result_dir+result_file, plot_file, output_file))
-	result_image = tk.Image('photo', file=output_file)
+	result_image = tk.Image('photo', file=output_file) #FIXME: update to using pillow
 	return result_image
 
 ##########################################################################

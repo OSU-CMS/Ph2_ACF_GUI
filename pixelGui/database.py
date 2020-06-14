@@ -125,6 +125,14 @@ def retrieveModuleTests(module_id):
 	return cur.fetchall()
 
 
+def retrieveModuleTest(row_id):
+	sql = 'SELECT * FROM tests WHERE id=?'
+	conn = createDatabaseConnection(config.database)
+	cur = conn.cursor() 
+	cur.execute(sql, (row_id,))
+	return cur.fetchall()
+
+
 def deleteAllTests():
     sql = 'DELETE FROM tests'
     conn = createDatabaseConnection(config.database)
