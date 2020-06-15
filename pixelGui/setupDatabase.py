@@ -112,7 +112,7 @@ if __name__ == "__main__":
 
 	# setup mode entries table
 	testnames = [ 
-	'full','latency scan', 'pixelalive', 'noise scan', 'scurve scan',
+	'pretest', 'full', 'latency scan', 'pixelalive', 'noise scan', 'scurve scan',
 	'gain scan', 'threshold equalization', 'gain optimization',
 	'threshold minimization', 'threshold adjustment', 'injection delay scan',
 	'clock delay scan', 'physics'

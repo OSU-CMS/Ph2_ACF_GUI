@@ -24,7 +24,6 @@ from subprocess import Popen, PIPE
 from itertools import islice
 from textwrap import dedent
 from PIL import ImageTk, Image
-
 from functools import partial
 
 class AnsiColorText(tk.Text):
@@ -221,7 +220,7 @@ def openRunWindow():
 
 		re_img = Image.open("testing1.png")
 		config.current_test_plot = ImageTk.PhotoImage(re_img)
-		plot_label.grid_remove()
+		plot_label.pack_forget()
 		plot_canvas.create_image(0, 0, image=config.current_test_plot, anchor="nw")
 
 	# setup root window
@@ -253,9 +252,6 @@ def openRunWindow():
 	module_label = tk.Label(master=info_frame, text="Module ID: {0}".format(config.current_module_id), font=("Helvetica", 25))
 	module_label.pack(anchor='nw', side=tk.TOP)
 
-	test_num_label = tk.Label(master=info_frame, text="Test #: {0}".format(config.current_test_num), font=("Helvetica", 15))
-	test_num_label.pack(anchor='nw', side=tk.TOP)
-
 	start_button = ttk.Button(
 		master = info_frame,
 		text = "Start",
@@ -276,6 +272,9 @@ def openRunWindow():
 		command = saveTest
 	)
 	save_button.place(x=240, y=100)
+
+	module_label = tk.Label(master=info_frame, text="Console output", font=("Helvetica", 20))
+	module_label.pack(anchor='sw', side=tk.BOTTOM)
 
 	scrollbar = tk.Scrollbar(console_frame)
 	scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
@@ -312,14 +311,16 @@ def openRunWindow():
 	grade_grade = tk.Label(master=grade_frame, text="{0}%".format(config.current_test_grade), font=("Helvetica", 45, "bold"))
 	grade_grade.pack(anchor='sw', side=tk.BOTTOM)
 
+	if config.current_test_grade < 0: grade_grade['text'] = '-%'
+
 	grade_label = tk.Label(master=grade_frame, text="Grade", font=("Helvetica", 25))
 	grade_label.pack(anchor='sw', side=tk.BOTTOM)
 
-	plot_label = tk.Label(master=plot_frame, text='Plot will appear here', font=("Helvetica", 20))
-	plot_label.grid(row=0, column=0)
-
 	plot_canvas = tk.Canvas(plot_frame)
 	plot_canvas.pack(expand=True, fill='both', anchor='ne', side=tk.TOP)
+
+	plot_label = tk.Label(master=plot_canvas, text='Plot will appear here', font=("Helvetica", 20))
+	plot_label.pack(side=tk.TOP, anchor='nw')
 	
 	def goToReviewModule():
 		config.review_module_id = config.current_module_id
@@ -339,64 +340,237 @@ def openRunWindow():
 def openCreateWindow():
 	#FIXME: check if this window is needed
 
-    if config.current_user == '':
-        displayErrorWindow("Error: Please login")
-        return
+	if config.current_user == '':
+		displayErrorWindow("Error: Please login")
+		return
 
-    create_window = tk.Toplevel(config.root)
-    create_window.title("Create Test")
-    create_window.geometry("1000x500")
+	create_window = tk.Toplevel(config.root)
+	create_window['bg'] = 'white'
+	create_window.title("Create Test")
+	create_window.geometry("1000x500")
 
-    # FIXME: temporary labels until create test capacity determined
-    create_tmp_lbl = tk.Label(master = create_window, text = "Create test options will appear in this window", font=("Helvetica", 20))
-    create_tmp_lbl.pack()
+	# FIXME: temporary labels until create test capacity determined
+	create_tmp_lbl = tk.Label(master = create_window, text = "Create test options will appear in this window", font=("Helvetica", 20))
+	create_tmp_lbl.pack()
 
 ##########################################################################
 ##########################################################################
 
-def openResultsWindow():
-	#FIXME: do we want this window?
+def openResultsWindow():	
+	if config.current_user == '':
+		displayErrorWindow("Error: Please login")
+		return
+
+	re_width = 900
+	re_height = 500
 	
-    if config.current_user == '':
-        displayErrorWindow("Error: Please login")
-        return
+	results_window = tk.Toplevel(config.root)
+	results_window.title("Review Results")
+	results_window.geometry("{}x{}".format(re_width, re_height))
+	results_window.grid_columnconfigure(0, weight=1, minsize=re_width)
+	results_window.grid_rowconfigure(0, weight=1, minsize=100)
+	results_window.grid_rowconfigure(1, weight=1, minsize=re_height-100)
 
-    results_window = tk.Toplevel(config.root)
-    results_window.title("Review Results")
-    results_window.geometry("500x500")
+	config.all_results = database.retrieveAllTestTasks()
+	config.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=True)
 
-    results = database.retrieveAllTestTasks()
+	nRows = len(config.all_results)
+	nColumns = 5
 
-    nRows = len(results)
-    nColumns = 5
+	if nRows == 0:
+		results_lbl = tk.Label(master = results_window, text = "No results to show", font=("Helvetica", 20))
+		results_lbl.pack()
+		return()
 
-    if nRows == 0:
-        results_lbl = tk.Label(master = results_window, text = "No results to show", font=("Helvetica", 20))
-        results_lbl.pack()
-        return()
-  
-    scrollbar = tk.Scrollbar(results_window)
-    scrollbar.pack(side=tk.RIGHT, fill=tk.BOTH)
-    
-    resultsBox = tk.Listbox(results_window)
-    resultsBox.pack(fill=tk.BOTH, expand=True)
+	top_frame = tk.Frame(results_window, width=re_width, height=100)
+	top_frame.grid(row=0, column=0, sticky='nsew')
 
-    # create result table
-    for result in results:
-        resultsBox.insert(tk.END, result)
+	bot_frame = tk.Frame(results_window, width=re_width, height=re_height-100)
+	bot_frame.grid(row=1, column=0, sticky='nsew')
 
-    resultsBox.config(yscrollcommand=scrollbar.set)
-    scrollbar.config(command=resultsBox.yview)
+	top_cols = [40, 40, 40, 40, 40, 40, 40, 40]
+	for i, col in enumerate(top_cols):
+		top_frame.grid_columnconfigure(i, weight=1, minsize=col)
+	top_frame.grid_rowconfigure(0, weight=1, minsize=50)
+	top_frame.grid_rowconfigure(1, weight=1, minsize=50)
+
+	bot_frame.grid_rowconfigure(0, weight=1, minsize=re_height-100)
+	bot_frame.grid_columnconfigure(0, weight=1, minsize=re_width-15)
+	bot_frame.grid_columnconfigure(1, weight=1, minsize=15)
+
+
+	def sortResults():
+		sort_option = config.result_sort_attr.get()
+		options_dict = {"module ID": 1, "user": 2, "testname": 3, "grade": 5}
+
+		if config.all_results[0][0] == "":
+			config.all_results.pop(0)
+
+		if sort_option != "date":
+			rtable_canvas.delete('all')
+			config.all_results.sort(key=lambda x: x[options_dict[sort_option]], reverse=config.result_sort_dir.get()=="increasing")
+			rmakeTable()
+
+		else:
+			config.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=config.result_sort_dir.get()=="increasing")
+			rmakeTable()
+
+
+	def filterResults():
+		filter_option = config.result_filter_attr.get()
+		filter_eq = config.result_filter_eq.get()
+		filter_val = rfilter_entry.get()
+
+		config.all_results = database.retrieveAllTestTasks()
+		filtered_results = []
+
+		if config.all_results[0][0] == "":
+			config.all_results.pop(0)
+
+		options_dict = {"module ID": 1, "user": 2, "testname": 3, "date": 4, "grade": 5}
+		if filter_eq == 'contains':
+			if filter_option == 'grade' or filter_option == 'module ID':
+				displayErrorWindow('Error: Option not supported for chosen variable')
+				return 
+
+			filtered_results = [r for r in config.all_results if filter_val in r[options_dict[filter_option]]]
+		else:
+			op_dict = {
+					'=': operator.eq, '>=': operator.ge, '>': operator.gt,
+					'<=': operator.le, '<': operator.lt
+					}	
+
+			if filter_option in ["user", "testname", "date"]:
+				if filter_eq != '=':
+					displayErrorWindow('Error: Option not supported for chosen variable')
+					return
+				else: 
+					filtered_results = [r for r in config.all_results if op_dict[filter_eq](r[options_dict[filter_option]], filter_val)]
+			else:
+				try:
+					filter_val = int(filter_val)
+				except:
+					displayErrorWindow('Error: Cannot filter a string with an numeric operation')
+					return
+
+				filtered_results = [r for r in config.all_results if op_dict[filter_eq](int(r[options_dict[filter_option]]), filter_val)]
+		
+		rtable_canvas.delete('all')
+
+		if len(filtered_results) == 0:
+			error_label = tk.Label(master=rtable_canvas, text="No results found", font=("Helvetica", 15))
+			rtable_canvas.create_window(10, 10, window=error_label, anchor="nw")
+			rtable_num['text'] = "(Showing 0 results)"
+			return
+		
+		config.all_results = filtered_results
+		
+		rmakeTable()
+
+
+	def resetResults():
+		config.all_results = database.retrieveAllTestTasks()
+		rmakeTable()
+
+
+	# setup header
+	rtable_label = tk.Label(master=top_frame, text = "All results", font=("Helvetica", 25, 'bold'))
+	rtable_label.grid(row=0, column=0, columnspan=2, sticky='nsew')
+
+	rtable_num = tk.Label(master=top_frame, text = "(Showing {0} results)".format(len(config.all_results)), font=("Helvetica", 20))
+	rtable_num.grid(row=0, column=2, columnspan=2, sticky='nsew')
+
+	rsort_button = ttk.Button(
+		master = top_frame,
+		text = "Sort by", 
+		command = sortResults,
+	)
+	rsort_button.grid(row=1, column=0, sticky='nsew')
+
+	rsort_menu = tk.OptionMenu(top_frame, config.result_sort_attr, *['module ID', 'date', 'user', 'grade', 'testname'])
+	rsort_menu.grid(row=1, column=1, sticky='nsew')
+
+	rdir_menu = tk.OptionMenu(top_frame, config.result_sort_dir, *["increasing", "decreasing"])
+	rdir_menu.grid(row=1, column=2, sticky='nsw')
+
+	rfilter_button = ttk.Button(
+		master = top_frame,
+		text = "Filter", 
+		command = filterResults,
+	)
+	rfilter_button.grid(row=1, column=3, sticky='nsew', padx=(20, 0))
+
+	rfilter_menu = tk.OptionMenu(top_frame, config.result_filter_attr, *['module ID', 'date', 'user', 'grade', 'testname'])
+	rfilter_menu.grid(row=1, column=4, sticky='nsw')
+
+	req_menu = tk.OptionMenu(top_frame, config.result_filter_eq, *["=", ">=", "<=", ">", "<", "contains"])
+	req_menu.grid(row=1, column=5, sticky='nsw')
+
+	rfilter_entry = tk.Entry(master=top_frame)
+	rfilter_entry.insert(0, '{0}'.format(config.current_user))
+	rfilter_entry.grid(row=1, column=6, sticky='w')
+
+	rreset_button = ttk.Button(
+		master = top_frame,
+		text = "Reset", 
+		command = resetResults,
+	)
+	rreset_button.grid(row=1, column=7, sticky='nse')
+
+	ryscrollbar = tk.Scrollbar(bot_frame)
+	ryscrollbar.grid(row=0, column=1, sticky='ns')
+
+	rtable_canvas = tk.Canvas(bot_frame, yscrollcommand=ryscrollbar.set)
+	rtable_canvas.grid(row=0, column=0, sticky='nsew')
+	ryscrollbar.config(command=rtable_canvas.yview)
+
+
+	def rmakeTable():
+		rtable_canvas.delete('all')
+		rtable_num['text'] = "(Showing {0} results)".format(len(config.all_results))
+
+		if config.all_results[0][0] != "":
+			config.all_results = [["", "Module ID", "User", "Test", "Date", "Grade"]] + config.all_results
+
+		n_cols = 5
+		row_ids = [r[0] for r in config.all_results]
+
+		for j, result in enumerate(config.all_results):
+
+			if j != 0:
+				result_button = tk.Button(
+					master = rtable_canvas,
+					text = "{0}".format(j)
+					# command = partial(openResult, row_ids[j])
+				)
+				
+				rtable_canvas.create_window(0*(re_width-15)/n_cols, j*25, window=result_button, anchor='nw')
+
+
+			for i, item in enumerate(result):
+				if i in [0]: continue
+
+				bold = ''
+				if j == 0: bold = 'bold'
+				row_label = tk.Label(master=rtable_canvas, text=str(item), font=("Helvetica", 15, bold))
+
+				anchor = 'nw'
+				if i == 5: anchor = 'ne'
+				rtable_canvas.create_window(((i-1)*(re_width-15)/n_cols)+65, j*25, window=row_label, anchor=anchor)
+
+		rtable_canvas.config(scrollregion=(0,0,1000, (len(config.all_results)+2)*25))
+	
+	rmakeTable()
 
 ##########################################################################
 ##########################################################################
 
-def displayErrorWindow(errorText):
-    errorWindow = tk.Toplevel(config.root)
-    errorWindow.title("ERROR")
-    errorWindow.geometry("600x50")
-    error_label = tk.Label(master = errorWindow, text = errorText, font=("Helvetica", 15))
-    error_label.pack(expand=True, fill=tk.BOTH)
+def displayErrorWindow(error_text):
+	error_window = tk.Toplevel(config.root)
+	error_window.title("ERROR")
+	error_window.geometry("600x50")
+	error_label = tk.Label(master = error_window, text = error_text, font=("Helvetica", 15, 'bold'))
+	error_label.pack(expand=True, fill=tk.BOTH)
 
 ##########################################################################
 ##########################################################################
@@ -532,12 +706,10 @@ def openReviewModuleWindow():
 	best_result = config.module_results[0]
 	latest_result = config.module_results[0]
 
-	for result in config.module_results:
-		if result[5] > best_result[5]: 
-			best_result = result
+	best_result = sorted(config.module_results, key=lambda r: r[5])[-1]
+	latest_result = sorted(config.module_results, key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"))[-1]
 
-		if selectEarly(latest_result[4], result[4]):
-			latest_result = result
+	config.module_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=True)
 	
 	window_width = 1000
 	window_height = 850
@@ -623,7 +795,6 @@ def openReviewModuleWindow():
 		table_tframe.grid_rowconfigure(row, weight=1, minsize=tableb_rows[row])
 	for col in range(len(tableb_cols)):
 		table_tframe.grid_columnconfigure(row, weight=1, minsize=tableb_cols[col])
-
 
 	table_bframe = tk.Frame(table_frame, width=window_width, height=table_rows[1])
 	table_bframe.grid(row=1, column=0, sticky='nwes')
@@ -745,7 +916,10 @@ def openReviewModuleWindow():
 			config.module_results.sort(key=lambda x: x[options_dict[sort_option]], reverse=config.review_sort_dir.get()=="increasing")
 			makeTable()
 
-		#FIXME: implement date sort
+		else:
+			config.module_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=config.review_sort_dir.get()=="increasing")
+			makeTable()
+
 
 	def filterResults():
 		filter_option = config.review_filter_attr.get()
@@ -938,7 +1112,6 @@ def openReviewModuleWindow():
 
 	def makeTable():
 		table_canvas.delete('all')
-
 		table_num['text'] = "(Showing {0} results)".format(len(config.module_results))
 
 		if config.module_results[0][0] != "":
@@ -983,40 +1156,3 @@ def retrieveResultPlot(result_dir, result_file, plot_file, output_file):
 	os.system("root -l -b -q 'extractPlots.cpp(\"{0}\", \"{1}\", \"{2}\")'".format(result_dir+result_file, plot_file, output_file))
 	result_image = tk.Image('photo', file=output_file) #FIXME: update to using pillow
 	return result_image
-
-##########################################################################
-##########################################################################
-
-def selectEarly(date1, date2):
-	date1_date = date1.split()[0]
-	date2_date = date2.split()[0]
-
-	date1_time = date1.split()[1]
-	date2_time = date2.split()[1]
-
-	date1_date_nums = re.findall('\d+', date1_date)
-	date2_date_nums = re.findall('\d+', date2_date)
-
-	date1_time_nums = re.findall('\d+', date1_time)
-	date2_time_nums = re.findall('\d+', date2_time)
-
-	date1_time_nums = [int(d) for d in date1_time_nums]
-	date2_time_nums = [int(d) for d in date2_time_nums]
-
-	for i in range(2,-1,-1):
-		if date1_date_nums[i] > date2_date_nums[i]:
-			return True
-		elif date1_date_nums[i] < date2_date_nums[i]:
-			return False
-		elif date1_date_nums[i] == date2_date_nums[i]:
-			continue
-
-	for i in range(3):
-		if date1_time_nums[i] > date2_time_nums[i]:
-			return True
-		elif date1_time_nums[i] < date2_time_nums[i]:
-			return False
-		elif date1_time_nums[i] == date2_time_nums[i]:
-			continue
-
-	return False

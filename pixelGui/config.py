@@ -19,6 +19,18 @@ database = "testGui.db"
 root = tk.Tk()
 current_user = ''
 
+# full results
+all_results = []
+result_sort_attr = tk.StringVar(root)
+result_sort_attr.set('date')
+result_sort_dir = tk.StringVar(root)
+result_sort_dir.set('increasing')
+
+result_filter_attr = tk.StringVar(root)
+result_filter_attr.set('user')
+result_filter_eq = tk.StringVar(root)
+result_filter_eq.set('=')
+
 # currently reviewing module info
 review_best_plot = ''
 review_latest_plot = ''
@@ -50,4 +62,7 @@ current_test_plot_location = ''
 
 # testing
 buttonStyle = ttk.Style()
-buttonStyle.configure('Test.TButton', font=('Helvetica', 15), fg='blue')
+buttonStyle.configure('Test.TButton', font=('Helvetica', 15), background='white', foreground='white', highlightbackground='white')
+
+labelStyle = ttk.Style()
+labelStyle.configure('Important.TLabel', font=('Helvetica', 25, 'Bold'), fg='black', bg='white')
