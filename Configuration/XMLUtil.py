@@ -3,6 +3,7 @@ from xml.dom import minidom
 from GlobalSettings import *
 from FESettings import *
 from HWSettings import *
+from RegisterSettings import *
 
 def prettify(elem):
     """Return a pretty-printed XML string for the Element.
@@ -38,6 +39,7 @@ class HWDescription():
 
 class BeBoardModule():
   FEModuleList = []
+  RegisterSettings = {}
   def __init__(self):
     self.Id = str(0)
     self.boardType = "RD53"
@@ -55,6 +57,8 @@ class BeBoardModule():
     self.id = beboardid
     self.uri = uri
     self.address_table = address_table
+  def SetRegisterValue(self, RegisterSettings):
+    self.RegisterSettings = RegisterSettings
 
 class FEModule():
   FEList = []
@@ -102,6 +106,32 @@ def SetNodeValue(Node, Dict):
      Node_setting.text =  str(Dict[key]) 
    return Node
 
+def FindSubNode(Node,NodeString):
+  for child in Node:
+    if child.tag == 'name' and child.attrib == NodeString:
+      return child
+  child = ET.SubElement(Node,"Register")
+  child = SetNodeAttribute(child,{'name':NodeString})
+  return child
+
+def GetRegNode(Node, NodeString):
+  if '.' in NodeString:
+    SubNode, FollowingNode = NodeString.split('.',1)
+  else:
+    SubNode = NodeString
+    FollowingNode = None
+  Node_Sub = FindSubNode(Node,SubNode)
+  if FollowingNode != None:
+    Node_Sub = GetRegNode(Node_Sub,FollowingNode)
+  return Node_Sub
+    
+
+def SetNodeRegister(Node, Dict):
+  for key in Dict:
+    Node_Reg = GetRegNode(Node,key)
+    Node_Reg.text = str(Dict[key])
+  return Node
+
 def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
   Node_HWInterface = ET.Element('HWInterface')
   BeBoardList = HWDescription.BeBoardList
@@ -118,6 +148,8 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
     #Node_connection.Set('address_table',BeBoard.address_table)
     Node_connection = SetNodeAttribute(Node_connection,{'id':BeBoard.id,'uri':BeBoard.uri,'address_table':BeBoard.address_table})
     FEModuleList = BeBoard.FEModuleList
+
+    # Config front-end Modules
     for FEModule in FEModuleList:
       Node_FEModule = ET.SubElement(Node_BeBoard, 'Module')
       Node_FEModule = SetNodeAttribute(Node_FEModule,{'FeId':FEModule.FeId,'FMCId':FEModule.FMCId,'ModuleId':FEModule.ModuleId,'Status':FEModule.Status})
@@ -132,6 +164,9 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
         Node_FESetting = SetNodeAttribute(Node_FESetting,FE.settingList)
       Node_FEGlobal = ET.SubElement(Node_FEModule,"Global")
       Node_FEGlobal = SetNodeAttribute(Node_FEGlobal,FEModule.globalSetting)
+
+    #Config back-end registers
+    Node_BeBoard = SetNodeRegister(Node_BeBoard,BeBoard.RegisterSettings)
 
   Node_Settings = ET.SubElement(Node_HWInterface, 'Settings')
   Node_Settings = SetNodeValue(Node_Settings, HWDescription.Settings)
@@ -159,6 +194,7 @@ if __name__ == "__main__":
   # Config BeBoardModule
   BeBoardModule0 = BeBoardModule()
   BeBoardModule0.AddFEModule(FEModule0_0)
+  BeBoardModule0.SetRegisterValue(RegisterSettings)
 
   # Config HWDescription
   HWDescription = HWDescription()
