@@ -14,7 +14,7 @@ import os
 from PIL import ImageTk, Image
 
 phase2_repo_dir = '/home/bmanley/Ph2_ACF/'
-database = "testGui.db"
+database = "test.db"
 
 root = tk.Tk()
 current_user = ''

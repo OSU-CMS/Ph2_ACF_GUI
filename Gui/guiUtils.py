@@ -31,10 +31,10 @@ class LoginFrame(tk.Frame):
 	def __init__(self):
 		tk.Frame.__init__(self)
 
-		self.cms_img = Image.open('cmsicon.png')
+		self.cms_img = Image.open('icons/cmsicon.png')
 		self.cms_img = self.cms_img.resize((70, 70), Image.ANTIALIAS)
 		self.cms_photo = ImageTk.PhotoImage(self.cms_img)
-		self.osu_img = Image.open('osuicon.png')
+		self.osu_img = Image.open('icons/osuicon.png')
 		self.osu_img = self.osu_img.resize((160, 70), Image.ANTIALIAS)
 		self.osu_photo = ImageTk.PhotoImage(self.osu_img)
 
@@ -151,7 +151,7 @@ class OptionsFrame(tk.Frame):
 		self.create_button = ttk.Button(
 			master = self,
 			text = "Create new test", 
-			command = openCreateWindow
+			command = CreateWindow
 		)
 		self.create_button.grid(row=2, column=0, columnspan=3, sticky='ew')
 
@@ -456,6 +456,7 @@ class RunWindow(tk.Toplevel):
 		)
 		review_button.pack()
 
+
 	def go_to_review_module(self):
 		config.review_module_id = config.current_module_id
 		ReviewModuleWindow()
@@ -468,7 +469,7 @@ class RunWindow(tk.Toplevel):
 			
 
 	def run_test(self):
-		self.run_process = Popen(['python', 'runTest_wrap.py'], stdout=PIPE, stderr=PIPE)
+		self.run_process = Popen(['python', 'CMSminiDAQ_wrap.py'], stdout=PIPE, stderr=PIPE)
 		q = Queue(maxsize=1024)
 		t = Thread(target=self.reader_thread, args=[q])
 		t.daemon = True
@@ -478,7 +479,7 @@ class RunWindow(tk.Toplevel):
 		#FIXME: automate plot retrieval 
 		# retrieveResultPlot('', 'Run000000_PixelAlive.root', 'Detector/Board_0/Module_0/Chip_0/D_B(0)_M(0)_PixelAlive_Chip(0)', 'testing1.png')
 
-		re_img = Image.open("testing1.png")
+		re_img = Image.open("test_plots/pixelalive_ex.png")
 		config.current_test_plot = ImageTk.PhotoImage(re_img)
 		self.plot_label.pack_forget()
 		self.plot_canvas.create_image(0, 0, image=config.current_test_plot, anchor="nw")
@@ -1052,7 +1053,7 @@ class ReviewModuleWindow(tk.Toplevel):
 		#FIXME: automate plot retrieval
 		best_canvas = tk.Canvas(best_tframe, bg='white')
 		best_canvas.pack(expand=True, fill='both', anchor='nw', side=tk.TOP)
-		best_img = Image.open("test_best1.png")
+		best_img = Image.open("test_plots/test_best1.png")
 		best_img = best_img.resize((self.sub_cols[0], self.sub_rows[1]), Image.ANTIALIAS)
 		config.review_best_plot = ImageTk.PhotoImage(best_img)
 		best_canvas.create_image(0, 0, image=config.review_best_plot, anchor="nw")
@@ -1064,7 +1065,7 @@ class ReviewModuleWindow(tk.Toplevel):
 		# FIXME: automate plot retrieval
 		latest_canvas = tk.Canvas(latest_tframe, bg='white')
 		latest_canvas.pack(expand=True, fill='both', anchor='nw', side=tk.TOP)
-		latest_img = Image.open("test_latest1.png")
+		latest_img = Image.open("test_plots/test_latest1.png")
 		latest_img = latest_img.resize((self.sub_cols[0], self.sub_rows[1]), Image.ANTIALIAS)
 		config.review_latest_plot = ImageTk.PhotoImage(latest_img)
 		latest_canvas.create_image(0, 0, image=config.review_latest_plot, anchor="nw")
@@ -1218,7 +1219,7 @@ class ReviewModuleWindow(tk.Toplevel):
 		self.rplot_frame.grid_columnconfigure(1, weight=1, minsize=15)
 
 		# setup header
-		back_image = Image.open('back-arrow.png')
+		back_image = Image.open('icons/back-arrow.png')
 		back_image = back_image.resize((27, 20), Image.ANTIALIAS)
 		back_photo = ImageTk.PhotoImage(back_image)
 
@@ -1364,3 +1365,18 @@ def retrieve_result_plot(result_dir, result_file, plot_file, output_file):
 	os.system("root -l -b -q 'extractPlots.cpp(\"{0}\", \"{1}\", \"{2}\")'".format(result_dir+result_file, plot_file, output_file))
 	result_image = tk.Image('photo', file=output_file) #FIXME: update to using pillow
 	return result_image
+
+##########################################################################
+##########################################################################
+
+class LogParser():
+	def __init__(self):
+		self.error_message = ''
+		self.results_location = ''
+
+	def getGrade(self, file):
+		pass
+
+
+
+

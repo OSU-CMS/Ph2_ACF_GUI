@@ -8,7 +8,7 @@
 '''
 
 import tkinter as tk
-import gui
+import guiUtils as gui
 import config
 import database
 from PIL import ImageTk, Image
