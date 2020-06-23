@@ -8,3 +8,6 @@ Recipe for running pixel gui:
 cd Gui && python setupDatabase.py
 python acfGui.py
 ```
+
+Add your working area to python PATH:
+export PYTHONPATH=$PYTHONPATH:/PATH/TO/YOUR/WORKAREA
