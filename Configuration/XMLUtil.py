@@ -1,9 +1,9 @@
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
-from GlobalSettings import *
-from FESettings import *
-from HWSettings import *
-from RegisterSettings import *
+from Configuration.Settings.GlobalSettings import *
+from Configuration.Settings.FESettings import *
+from Configuration.Settings.HWSettings import *
+from Configuration.Settings.RegisterSettings import *
 
 def prettify(elem):
     """Return a pretty-printed XML string for the Element.
