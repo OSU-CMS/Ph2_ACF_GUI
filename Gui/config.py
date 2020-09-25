@@ -1,10 +1,10 @@
 '''
   config.py
-  \brief                 Global config file for gui
-  \author                Brandon Manley
-  \version               0.1
-  \date                  06/08/20
-  Support:               email to manley.329@osu.edu
+  brief                 Global config file for gui
+  author                Brandon Manley
+  version               0.1
+  date                  06/08/20
+  Support:              email to manley.329@osu.edu
 '''
 
 import tkinter as tk

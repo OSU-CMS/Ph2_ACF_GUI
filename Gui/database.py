@@ -1,9 +1,9 @@
 '''
   database.py
-  \brief                 Functions for database interfacing
-  \author                Brandon Manley
-  \version               0.1
-  \date                  06/08/20
+  brief                 Functions for database interfacing
+  author                Brandon Manley
+  version               0.1
+  date                  06/08/20
   Support:               email to manley.329@osu.edu
 '''
 
