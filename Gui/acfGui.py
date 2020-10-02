@@ -9,7 +9,7 @@
 
 import tkinter as tk
 #import GUIutils.guiUtils as gui
-import GUIutils.LoginFrame as login
+import Gui.GUIutils.LoginFrame as login
 import config
 import database
 from PIL import ImageTk, Image

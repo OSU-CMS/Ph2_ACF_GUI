@@ -8,24 +8,28 @@
 '''
 
 
-import config
-import database
 import tkinter as tk
 
 from tkinter import ttk
 
 from Gui.GUIutils.RunWindow import *
+from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.ErrorWindow import *
 
 class ContinueWindow(tk.Toplevel):
-	def __init__(self):
-		tk.Toplevel.__init__(self)
+	def __init__(self, parent, dbconnection):
+		tk.Toplevel.__init__(self, parent.root)
+		self.parent = parent
 
-		if config.current_user == '':
-			ErrorWindow("Error: Please login")
+		if self.parent.current_user == '':
+			ErrorWindow(self.parent, "Error: Please login")
 			return
+		if not dbconnection:
+			ErrorWindow(self.parent, "Error: No DB connection ")
+			return
+		self.dbconnection = dbconnection
 
-		self.master = config.root
+		self.master = self.parent.root
 		self.title('Continue testing')
 		self.geometry("500x200")
 
@@ -47,16 +51,19 @@ class ContinueWindow(tk.Toplevel):
 
 		self.moduleID_entry = tk.Entry(master = self)
 		self.moduleID_entry.grid(row=2, column=2, sticky='e')
-		self.moduleID_entry.insert(0, str(config.current_module_id))
+		self.moduleID_entry.insert(0, str(self.parent.current_module_id))
 
 		self.test_mode_label = tk.Label(master = self, text = "Test mode", font=("Helvetica", 15))
 		self.test_mode_label.grid(row=3, column=1, sticky='w')
 
-		currentModes = []
-		for mode in list(database.retrieveAllModes()):
-			currentModes.append(mode[1])
+		#currentModes = []
+		#for mode in list(database.retrieveAllModes()):
+		#	currentModes.append(mode[1])
+		current_calibrations = []
+		for calibration in list(retrieveAllCalibrations(self.dbconnection)):
+			current_calibrations.append(calibration[0])
 
-		self.mode_menu = tk.OptionMenu(self, config.current_test_name, *currentModes)
+		self.mode_menu = tk.OptionMenu(self, self.parent.current_test_name, current_calibrations)
 		self.mode_menu.grid(row=3, column=2, sticky='e')
 
 		self.start_button = ttk.Button(
@@ -68,9 +75,9 @@ class ContinueWindow(tk.Toplevel):
 
 	def open_self(self):
 		try:
-			config.current_module_id = int(self.moduleID_entry.get())
+			self.parent.current_module_id = int(self.moduleID_entry.get())
 		except:
-			ErrorWindow("Error: Please enter valid module ID")
+			ErrorWindow(self.parent, "Error: Please enter valid module ID")
 			return
-		RunWindow()
+		RunWindow(self.parent)
 		self.destroy()

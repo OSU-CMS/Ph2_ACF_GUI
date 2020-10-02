@@ -10,19 +10,20 @@
 import config
 import tkinter as tk
 
-
+from Gui.GUIutils.Application import *
 from Gui.GUIutils.ErrorWindow import *
 
 #FIXME: check if this window is needed
 class CreateWindow(tk.Toplevel):
-	def __init__(self):
+	def __init__(self, parent, dbconnection):
 		tk.Toplevel.__init__(self)
+		self.parent = parent
 
-		if config.current_user == '':
-			ErrorWindow("Error: Please login")
+		if self.parent.current_user == '':
+			ErrorWindow(self.parent, "Error: Please login")
 			return
 
-		self.master = config.root
+		self.master = self.parent.root
 		self['bg'] = 'white'
 		self.title("Create Test")
 		self.geometry("1000x500")

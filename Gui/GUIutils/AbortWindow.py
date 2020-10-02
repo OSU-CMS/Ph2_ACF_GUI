@@ -7,17 +7,19 @@
   Support:              email to wei.856@osu.edu
 '''
 
-import config
 import tkinter as tk
 
 from tkinter import ttk
 from functools import partial
 
-class AbortWindow(tk.Toplevel):
-	def __init__(self, window):
-		tk.Toplevel.__init__(self)
+from Gui.GUIutils.Application import *
 
-		self.master = config.root
+class AbortWindow(tk.Toplevel):
+	def __init__(self, window, parent):
+		tk.Toplevel.__init__(self, parent.root)
+
+		self.parent = parent
+		self.master = self.parent.root
 		self.title("Abort test")
 		self.geometry("500x100")
 

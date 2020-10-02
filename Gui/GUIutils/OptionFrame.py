@@ -7,11 +7,12 @@
   Support:              email to wei.856@osu.edu
 '''
 
-import config
+#import config
 import tkinter as tk
 
 from tkinter import ttk
 
+from Gui.GUIutils.Application import *
 from Gui.GUIutils.CreateWindow import *
 from Gui.GUIutils.StartWindow  import *
 from Gui.GUIutils.ResultsWindow import *
@@ -22,9 +23,10 @@ from Gui.GUIutils.ErrorWindow import *
 ##########################################################################
 
 class OptionsFrame(tk.Frame):
-	def __init__(self):
-		tk.Frame.__init__(self)
-		self.master = config.root
+	def __init__(self, parent):
+		tk.Frame.__init__(self,parent.root)
+		self.parent = parent
+		self.master = self.parent.root
 		self.config(width=600, height=400)
 
 		self.rowconfigure(0, weight=1, minsize=40)
@@ -77,21 +79,24 @@ class OptionsFrame(tk.Frame):
 			command = self.check_review_moduleID
 		)
 		self.review_button.grid(row=5, column=3)
+	
+	def SetDBConnection(self,dbconnection):
+		self.dbconnection = dbconnection
 
 	def showStartWindow(self):
-		StartWindow()
+		StartWindow(self.parent, self.dbconnection)
 
 	def showCreateWindow(self):
-		CreateWindow()
+		CreateWindow(self.parent, self.dbconnection)
 
 	def showResultsWindow(self):
-		ResultsWindow()
+		ResultsWindow(self.parent, self.dbconnection)
 
 		
 	def check_review_moduleID(self):
 		try:
-			config.review_module_id = int(self.module_num_entry.get())
+			self.parent.review_module_id = int(self.module_num_entry.get())
 		except:
-			ErrorWindow("Error: Please enter valid module ID")
+			ErrorWindow(self.parent, "Error: Please enter valid module ID")
 			return
-		ReviewModuleWindow()
+		ReviewModuleWindow(self.parent)

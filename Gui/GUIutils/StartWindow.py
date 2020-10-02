@@ -27,17 +27,25 @@ from PIL import ImageTk, Image
 from functools import partial
 from tkinter import scrolledtext 
 
+from Gui.GUIutils.Application import *
 from Gui.GUIutils.RunWindow import *
+from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.ErrorWindow import *
 
 class StartWindow(tk.Toplevel):
-	def __init__(self):
-		if config.current_user == '':
-			ErrorWindow("Error: Please login")
+	def __init__(self, parent, dbconnection):
+		self.parent = parent
+		if self.parent.current_user == '':
+			ErrorWindow(self.parent, "Error: Please login")
 			return
-		tk.Toplevel.__init__(self)
+		if not dbconnection:
+			ErrorWindow(self.parent, "Error: No DB connection ")
+			return
+		self.dbconnection = dbconnection
+		
+		tk.Toplevel.__init__(self, parent.root)
 
-		self.master = config.root
+		self.master = self.parent.root
 		self.title('New test')
 		self.geometry("500x200")
 
@@ -63,11 +71,14 @@ class StartWindow(tk.Toplevel):
 		self.test_mode_label = tk.Label(master=self, text="Test mode", font=("Helvetica", 15))
 		self.test_mode_label.grid(row=3, column=1, sticky='w')
 
-		current_modes = []
-		for mode in list(database.retrieveAllModes()):
-			current_modes.append(mode[1])
+		#current_modes = []
+		#for mode in list(database.retrieveAllModes()):
+		#	current_modes.append(mode[1])
+		current_calibrations = []
+		for calibration in list(retrieveAllCalibrations(self.dbconnection)):
+			current_calibrations.append(calibration[0])
 
-		self.mode_menu = tk.OptionMenu(self, config.current_test_name, *current_modes)
+		self.mode_menu = tk.OptionMenu(self, self.parent.current_test_name, *current_calibrations)
 		self.mode_menu.grid(row=3, column=2, sticky='e')
 
 		self.start_button = ttk.Button(
@@ -79,9 +90,12 @@ class StartWindow(tk.Toplevel):
 
 	def open_self(self):
 		try:
-			config.current_module_id = int(self.moduleID_entry.get())
+			self.parent.current_module_id = int(self.moduleID_entry.get())
 		except:
-			ErrorWindow("Error: Please enter valid module ID")
+			ErrorWindow(self.parent, "Error: Please enter valid module ID")
 			return
-		RunWindow()
+		RunWindow(self.parent)
 		self.destroy()
+	
+	def SetDBConnection(self,dbconnection):
+		self.dbconnection = dbconnection

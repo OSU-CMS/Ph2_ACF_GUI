@@ -27,30 +27,33 @@ from PIL import ImageTk, Image
 from functools import partial
 from tkinter import scrolledtext 
 
+from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.ErrorWindow import *
 
 class ResultsWindow(tk.Toplevel):
-	def __init__(self):
-		tk.Toplevel.__init__(self)
+	def __init__(self, parent, dbconnection):
+		tk.Toplevel.__init__(self,parent.root)
+		self.parent = parent
 
-		if config.current_user == '':
-			ErrorWindow("Error: Please login")
+		if self.parent.current_user == '':
+			ErrorWindow(self.parent, "Error: Please login")
 			return
 
 		self.re_width = 900
 		re_height = 500
 	
-		self.master = config.root
+		self.master = self.parent.root
 		self.title("Review Results")
 		self.geometry("{}x{}".format(self.re_width, re_height))
 		self.grid_columnconfigure(0, weight=1, minsize=self.re_width)
 		self.grid_rowconfigure(0, weight=1, minsize=100)
 		self.grid_rowconfigure(1, weight=1, minsize=re_height-100)
 
-		config.all_results = database.retrieveAllTestTasks()
-		config.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=True)
+		#self.parent.all_results = database.retrieveAllTestTasks()
+		self.parent.all_results = retrieveAllTestResults()
+		self.parent.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=True)
 
-		nRows = len(config.all_results)
+		nRows = len(self.parent.all_results)
 		nColumns = 5
 
 		if nRows == 0:
@@ -78,7 +81,7 @@ class ResultsWindow(tk.Toplevel):
 		self.rtable_label = tk.Label(master=self.top_frame, text = "All results", font=("Helvetica", 25, 'bold'))
 		self.rtable_label.grid(row=0, column=0, columnspan=2, sticky='nsew')
 
-		self.rtable_num = tk.Label(master=self.top_frame, text = "(Showing {0} results)".format(len(config.all_results)), font=("Helvetica", 20))
+		self.rtable_num = tk.Label(master=self.top_frame, text = "(Showing {0} results)".format(len(self.parent.all_results)), font=("Helvetica", 20))
 		self.rtable_num.grid(row=0, column=2, columnspan=2, sticky='nsew')
 
 		self.rsort_button = ttk.Button(
@@ -88,10 +91,10 @@ class ResultsWindow(tk.Toplevel):
 		)
 		self.rsort_button.grid(row=1, column=0, sticky='nsew')
 
-		self.rsort_menu = tk.OptionMenu(self.top_frame, config.result_sort_attr, *['module ID', 'date', 'user', 'grade', 'testname'])
+		self.rsort_menu = tk.OptionMenu(self.top_frame, self.parent.result_sort_attr, *['module ID', 'date', 'user', 'grade', 'testname'])
 		self.rsort_menu.grid(row=1, column=1, sticky='nsew')
 
-		self.rdir_menu = tk.OptionMenu(self.top_frame, config.result_sort_dir, *["increasing", "decreasing"])
+		self.rdir_menu = tk.OptionMenu(self.top_frame, self.parent.result_sort_dir, *["increasing", "decreasing"])
 		self.rdir_menu.grid(row=1, column=2, sticky='nsw')
 
 		self.rfilter_button = ttk.Button(
@@ -101,14 +104,14 @@ class ResultsWindow(tk.Toplevel):
 		)
 		self.rfilter_button.grid(row=1, column=3, sticky='nsew', padx=(20, 0))
 
-		self.rfilter_menu = tk.OptionMenu(self.top_frame, config.result_filter_attr, *['module ID', 'date', 'user', 'grade', 'testname'])
+		self.rfilter_menu = tk.OptionMenu(self.top_frame, self.parent.result_filter_attr, *['module ID', 'date', 'user', 'grade', 'testname'])
 		self.rfilter_menu.grid(row=1, column=4, sticky='nsw')
 
-		self.req_menu = tk.OptionMenu(self.top_frame, config.result_filter_eq, *["=", ">=", "<=", ">", "<", "contains"])
+		self.req_menu = tk.OptionMenu(self.top_frame, self.parent.result_filter_eq, *["=", ">=", "<=", ">", "<", "contains"])
 		self.req_menu.grid(row=1, column=5, sticky='nsw')
 
 		self.rfilter_entry = tk.Entry(master=self.top_frame)
-		self.rfilter_entry.insert(0, '{0}'.format(config.current_user))
+		self.rfilter_entry.insert(0, '{0}'.format(self.parent.current_user))
 		self.rfilter_entry.grid(row=1, column=6, sticky='w')
 
 		self.rreset_button = ttk.Button(
@@ -129,39 +132,40 @@ class ResultsWindow(tk.Toplevel):
 
 
 	def sort_results(self):
-		sort_option = config.result_sort_attr.get()
+		sort_option = self.parent.result_sort_attr.get()
 		options_dict = {"module ID": 1, "user": 2, "testname": 3, "grade": 5}
 
-		if config.all_results[0][0] == "":
-			config.all_results.pop(0)
+		if self.parent.all_results[0][0] == "":
+			self.parent.all_results.pop(0)
 
 		if sort_option != "date":
 			self.rtable_canvas.delete('all')
-			config.all_results.sort(key=lambda x: x[options_dict[sort_option]], reverse=config.result_sort_dir.get()=="increasing")
+			self.parent.all_results.sort(key=lambda x: x[options_dict[sort_option]], reverse=self.parent.result_sort_dir.get()=="increasing")
 			self.rmake_table()
 		else:
-			config.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=config.result_sort_dir.get()=="increasing")
+			self.parent.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=self.parent.result_sort_dir.get()=="increasing")
 			self.rmake_table()
 
 
 	def filter_results(self):
-		filter_option = config.result_filter_attr.get()
-		filter_eq = config.result_filter_eq.get()
+		filter_option = self.parent.result_filter_attr.get()
+		filter_eq = self.parent.result_filter_eq.get()
 		filter_val = self.rfilter_entry.get()
 
-		config.all_results = database.retrieveAllTestTasks()
+		#self.parent.all_results = database.retrieveAllTestTasks()
+		#self.parent.all_results = retrieveAllTestResults()
 		filtered_results = []
 
-		if config.all_results[0][0] == "":
-			config.all_results.pop(0)
+		if self.parent.all_results[0][0] == "":
+			self.parent.all_results.pop(0)
 
 		options_dict = {"module ID": 1, "user": 2, "testname": 3, "date": 4, "grade": 5}
 		if filter_eq == 'contains':
 			if filter_option == 'grade' or filter_option == 'module ID':
-				ErrorWindow('Error: Option not supported for chosen variable')
+				ErrorWindow(self.parent, 'Error: Option not supported for chosen variable')
 				return 
 
-			filtered_results = [r for r in config.all_results if filter_val in r[options_dict[filter_option]]]
+			filtered_results = [r for r in self.parent.all_results if filter_val in r[options_dict[filter_option]]]
 		else:
 			op_dict = {
 					'=': operator.eq, '>=': operator.ge, '>': operator.gt,
@@ -170,18 +174,18 @@ class ResultsWindow(tk.Toplevel):
 
 			if filter_option in ["user", "testname", "date"]:
 				if filter_eq != '=':
-					ErrorWindow('Error: Option not supported for chosen variable')
+					ErrorWindow(self.parent, 'Error: Option not supported for chosen variable')
 					return
 				else: 
-					filtered_results = [r for r in config.all_results if op_dict[filter_eq](r[options_dict[filter_option]], filter_val)]
+					filtered_results = [r for r in self.parent.all_results if op_dict[filter_eq](r[options_dict[filter_option]], filter_val)]
 			else:
 				try:
 					filter_val = int(filter_val)
 				except:
-					ErrorWindow('Error: Cannot filter a string with an numeric operation')
+					ErrorWindow(self.parent, 'Error: Cannot filter a string with an numeric operation')
 					return
 
-				filtered_results = [r for r in config.all_results if op_dict[filter_eq](int(r[options_dict[filter_option]]), filter_val)]
+				filtered_results = [r for r in self.parent.all_results if op_dict[filter_eq](int(r[options_dict[filter_option]]), filter_val)]
 		
 		self.rtable_canvas.delete('all')
 
@@ -191,26 +195,27 @@ class ResultsWindow(tk.Toplevel):
 			self.rtable_num['text'] = "(Showing 0 results)"
 			return
 		
-		config.all_results = filtered_results
+		self.parent.all_results = filtered_results
 		self.rmake_table()
 
 
 	def reset_results(self):
-		config.all_results = database.retrieveAllTestTasks()
+		#self.parent.all_results = database.retrieveAllTestTasks()
+		#self.parent.all_results = retrieveAllTestResults()
 		self.rmake_table()
 
 
 	def rmake_table(self):
 		self.rtable_canvas.delete('all')
-		self.rtable_num['text'] = "(Showing {0} results)".format(len(config.all_results))
+		self.rtable_num['text'] = "(Showing {0} results)".format(len(self.parent.all_results))
 
-		if config.all_results[0][0] != "":
-			config.all_results = [["", "Module ID", "User", "Test", "Date", "Grade"]] + config.all_results
+		if self.parent.all_results[0][0] != "":
+			self.parent.all_results = [["", "Module ID", "User", "Test", "Date", "Grade"]] + self.parent.all_results
 
 		n_cols = 5
-		row_ids = [r[0] for r in config.all_results]
+		row_ids = [r[0] for r in self.parent.all_results]
 
-		for j, result in enumerate(config.all_results):
+		for j, result in enumerate(self.parent.all_results):
 
 			if j != 0:
 				result_button = tk.Button(
@@ -233,4 +238,4 @@ class ResultsWindow(tk.Toplevel):
 				if i == 5: anchor = 'ne'
 				self.rtable_canvas.create_window(((i-1)*(self.re_width-15)/n_cols)+65, j*25, window=row_label, anchor=anchor)
 
-		self.rtable_canvas.config(scrollregion=(0,0,1000, (len(config.all_results)+2)*25))
+		self.rtable_canvas.config(scrollregion=(0,0,1000, (len(self.parent.all_results)+2)*25))

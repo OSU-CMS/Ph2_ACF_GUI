@@ -53,7 +53,7 @@ plot_images = []
 
 # currently testing module info
 current_test_name = tk.StringVar(root)
-current_test_name.set('pixelalive')
+current_test_name.set('PixelAlive')
 current_module_id = -1
 current_test_num = -1
 current_test_grade = -1

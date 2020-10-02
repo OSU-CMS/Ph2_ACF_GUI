@@ -11,9 +11,9 @@ import config
 import tkinter as tk
 
 class ErrorWindow(tk.Toplevel):
-	def __init__(self, text):
-		tk.Toplevel.__init__(self)
-		self.master = config.root
+	def __init__(self, parent, text):
+		tk.Toplevel.__init__(self, parent.root)
+		self.master = parent.root
 		self.title("ERROR")
 		self.geometry("600x50")
 		error_label = tk.Label(master=self, text=text, font=("Helvetica", 15, "bold"))
