@@ -27,6 +27,7 @@ from functools import partial
 from tkinter import scrolledtext 
 
 from Gui.GUIutils.ContinueWindow import *
+from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.ErrorWindow import *
 
 
@@ -34,9 +35,10 @@ from Gui.GUIutils.ErrorWindow import *
 ##########################################################################
 
 class ReviewModuleWindow(tk.Toplevel):
-	def __init__(self, parent):
+	def __init__(self, parent, dbconnection):
 		tk.Toplevel.__init__(self, parent.root)
 		self.parent = parent
+		self.dbconnection = dbconnection
 
 		if self.parent.current_user == '':
 			ErrorWindow(self.parent, "Error: Please login")
@@ -45,11 +47,12 @@ class ReviewModuleWindow(tk.Toplevel):
 			ErrorWindow(self.parent, "Error: Please enter module ID")
 			return
 
-		self.parent.module_results = database.retrieveModuleTests(self.parent.review_module_id)
+		#FIXME
+		self.parent.module_results = retrieveAllTestResults(self.parent.review_module_id)
 		if len(self.parent.module_results) == 0:
 			ErrorWindow(self.parent, "Error: No results found for this module, start a new test")
 			self.parent.current_module_id = self.parent.review_module_id 
-			ContinueWindow(self.parent)
+			ContinueWindow(self.parent, self.dbconnection)
 			self.destroy()
 			return
 
@@ -228,7 +231,7 @@ class ReviewModuleWindow(tk.Toplevel):
 		latest_ulabel.pack(anchor='nw', side=tk.TOP)
 
 		# setup table 
-		self.parent.module_results = database.retrieveModuleTests(self.parent.review_module_id)
+		self.parent.module_results = retrieveModuleTests(self.parent.review_module_id)
 		table_label = tk.Label(master=table_tframe, text = "All results for module {0}".format(self.parent.review_module_id), font=("Helvetica", 20))
 		table_label.pack(side=tk.TOP, anchor='nw')
 
@@ -287,7 +290,8 @@ class ReviewModuleWindow(tk.Toplevel):
 		filter_eq = self.parent.review_filter_eq.get()
 		filter_val = self.filter_entry.get()
 
-		self.parent.module_results = database.retrieveModuleTests(self.parent.review_module_id)
+		#self.parent.module_results = database.retrieveModuleTests(self.parent.review_module_id)
+		self.parent.module_results = retrieveModuleTests(self.dbconnection, self.parent.review_module_id)
 		filtered_results = []
 
 		if self.parent.module_results[0][0] == "":
@@ -334,7 +338,8 @@ class ReviewModuleWindow(tk.Toplevel):
 
 
 	def reset_results(self):
-		self.parent.module_results = database.retrieveModuleTests(self.parent.review_module_id)
+		#self.parent.module_results = database.retrieveModuleTests(self.parent.review_module_id)
+		self.parent.module_results = retrieveModuleTests(self.dbconnection, self.parent.review_module_id)
 		self.make_table()
 
 
@@ -377,7 +382,8 @@ class ReviewModuleWindow(tk.Toplevel):
 		back_button.image = back_photo
 		back_button.pack(side=tk.RIGHT, anchor='ne')
 
-		result_tuple = database.retrieveModuleTest(result_rowid)[0]
+		#result_tuple = database.retrieveModuleTest(result_rowid)[0]
+		result_tuple = retrieveModuleTest(self.dbconnection, result_rowid)[0]
 		
 		name_label = tk.Label(master=self.rheader_frame, text=result_tuple[3], font=("Helvetica", 25))
 		name_label.pack(side=tk.LEFT, anchor='sw')

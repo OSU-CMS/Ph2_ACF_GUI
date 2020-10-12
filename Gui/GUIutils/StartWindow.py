@@ -94,7 +94,7 @@ class StartWindow(tk.Toplevel):
 		except:
 			ErrorWindow(self.parent, "Error: Please enter valid module ID")
 			return
-		RunWindow(self.parent)
+		RunWindow(self.parent, self.dbconnection)
 		self.destroy()
 	
 	def SetDBConnection(self,dbconnection):

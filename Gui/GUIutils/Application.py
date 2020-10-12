@@ -14,7 +14,7 @@ import os
 from PIL import ImageTk, Image
 
 phase2_repo_dir = '/home/bmanley/Ph2_ACF/'
-database = "test.db"
+#database = "test.db"
 
 class Application():
 	def __init__(self):
@@ -71,7 +71,7 @@ class Application():
 		self.labelStyle.configure('Important.TLabel', font=('Helvetica', 25, 'Bold'), fg='black', bg='white')
 	
 	def SetGeometry(self):
-		self.root.geometry('{}x{}'.format(600, 300))
+		self.root.geometry('{}x{}'.format(1000, 800))
 		self.root.rowconfigure(0, weight=1, minsize=50)
 		self.root.rowconfigure(1, weight=1, minsize=250)
 		self.root.columnconfigure(0, weight=1, minsize=300)

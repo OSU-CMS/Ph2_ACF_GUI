@@ -25,25 +25,33 @@ from PIL import ImageTk, Image
 from functools import partial
 from tkinter import scrolledtext 
 
+from Gui.GUIutils.settings import *
 from Gui.GUIutils.ANSIColorText import *
 from Gui.GUIutils.AbortWindow import *
 from Gui.GUIutils.ReviewModuleWindow import *
 from Gui.GUIutils.ErrorWindow import *
 from Gui.GUIutils.guiUtils import *
+from Gui.GUIutils.CustomizedConfigWindow import *
 
 
 class RunWindow(tk.Toplevel):
-	def __init__(self, parent):
+	def __init__(self, parent, dbconnection):
 		tk.Toplevel.__init__(self, parent.root)
 
 		# setup root window
 		self.parent = parent
 		self.master = self.parent.root
+		self.dbconnection = dbconnection
 		self.title("Grading Run")
 		self.geometry("1200x800")
 		self.rowconfigure(0, weight=1, minsize=800)
 		self.columnconfigure(0, weight=1, minsize=400)
 		self.columnconfigure(1, weight=1, minsize=600)
+		self.calibration = self.parent.current_test_name.get()
+		self.output_dir = ''
+		self.config_file = ConfigFiles.get(self.calibration, "None")
+		self.config_file = os.environ.get('GUI_dir')+self.config_file
+		self.rd53_file  = ''
 
 		# setup left side
 		left_width = 500
@@ -54,8 +62,18 @@ class RunWindow(tk.Toplevel):
 		left_frame.rowconfigure(1, weight=1, minsize=600)
 		left_frame.grid_propagate(False)
 
-		info_frame = tk.Frame(left_frame, width=left_width, height=200)
+		info_frame_height = 200
+		info_frame = tk.Frame(left_frame, width=left_width, height=info_frame_height)
 		info_frame.grid(row=0, column=0, sticky='nsew')
+		info_frame.columnconfigure(0, weight=1, minsize=100)
+		info_frame.columnconfigure(1, weight=1, minsize=100)
+		info_frame.columnconfigure(2, weight=1, minsize=100)
+		info_frame.rowconfigure(0, weight=1, minsize=20)
+		info_frame.rowconfigure(1, weight=1, minsize=20)
+		info_frame.rowconfigure(2, weight=1, minsize=20)
+		info_frame.rowconfigure(3, weight=1, minsize=20)
+		info_frame.rowconfigure(4, weight=1, minsize=20)
+		info_frame.grid_propagate(False)
 		
 		console_frame = tk.Frame(left_frame, width=left_width, height=600, relief=tk.GROOVE, bd=2, bg='black')
 		console_frame.grid(row=1, column=0, sticky='nsew')
@@ -66,26 +84,42 @@ class RunWindow(tk.Toplevel):
 		module_label = tk.Label(master=info_frame, text="Module ID: {0}".format(self.parent.current_module_id), font=("Helvetica", 25))
 		module_label.pack(anchor='nw', side=tk.TOP)
 
+		config_button = ttk.Button(
+			master = info_frame,
+			text = "Configure",
+			command = self.config_test
+		)
+		config_button.grid(row=2, column=0, columnspan=1, sticky='we')
+
+		customizedconfig_button = ttk.Button(
+			master = info_frame,
+			text  = "Customize...",
+			command = self.customizedconfig_test
+		)
+		customizedconfig_button.grid(row=2, column=1, columnspan=2, sticky='we')
+
 		start_button = ttk.Button(
 			master = info_frame,
 			text = "Start",
 			command = self.run_test
 		)
-		start_button.place(x=0, y=100)
+		start_button.grid(row=3, column=0, columnspan=1, sticky='we')
 
 		abort_button = ttk.Button(
 			master = info_frame,
 			text = "Abort",
 			command = self.abort_test
 		)
-		abort_button.place(x=120, y=100)
+		abort_button.grid(row=3, column=1, columnspan=1, sticky='we')
 
 		save_button = ttk.Button(
 			master = info_frame,
 			text = "Save",
 			command = self.save_test
 		)
-		save_button.place(x=240, y=100)
+		save_button.grid(row=3, column=2, columnspan=1, sticky='we')
+
+
 
 		module_label = tk.Label(master=info_frame, text="Console output", font=("Helvetica", 20))
 		module_label.pack(anchor='sw', side=tk.BOTTOM)
@@ -156,7 +190,7 @@ class RunWindow(tk.Toplevel):
 
 	def go_to_review_module(self):
 		self.parent.review_module_id = self.parent.current_module_id
-		ReviewModuleWindow(self.parent)
+		ReviewModuleWindow(self.parent, self.dbconnection)
 		return
 
 
@@ -164,6 +198,14 @@ class RunWindow(tk.Toplevel):
 		AbortWindow(self,self.parent)
 		return
 			
+	def config_test(self):
+		#TCPConfigure(self.calibration, self.config_entry.get())
+		self.output_dir = ConfigureTest(self.calibration, self.parent.current_module_id, self.output_dir)
+		return
+
+	def customizedconfig_test(self):
+		CustomizedConfigWindow(self,self.parent,self.dbconnection)
+		return
 
 	def run_test(self):
 		self.run_process = Popen(['python', 'CMSminiDAQ_wrap.py'], stdout=PIPE, stderr=PIPE)
@@ -173,6 +215,7 @@ class RunWindow(tk.Toplevel):
 		t.start()
 		self.update(q)
 
+		
 		#FIXME: automate plot retrieval 
 		# retrieveResultPlot('', 'Run000000_PixelAlive.root', 'Detector/Board_0/Module_0/Chip_0/D_B(0)_M(0)_PixelAlive_Chip(0)', 'testing1.png')
 
@@ -213,7 +256,8 @@ class RunWindow(tk.Toplevel):
 		try:
 			current_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 			testing_info = (self.parent.new_test_moduleID, self.parent.current_user, self.parent.new_test_name.get(), current_date, self.parent.new_test_grade)
-			database.createTestEntry(testing_info)
+			# fixme 
+			#database.createTestEntry(testing_info)
 		except:
 			ErrorWindow(self.parent, "Error: Could not save")
 			return

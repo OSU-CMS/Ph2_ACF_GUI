@@ -7,8 +7,6 @@
   Support:              email to wei.856@osu.edu
 '''
 
-import config
-import database
 import sys
 import tkinter as tk
 import os
@@ -92,11 +90,11 @@ class LoginFrame(tk.Frame):
 		self.database_entry.insert(0,'phase2pixel_test')
 		self.database_entry.grid(row=5, column=1, sticky='w')
 
-		#self.osu_label = tk.Label(master=self, image=self.osu_photo)
-		#self.osu_label.grid(row=8, column=0, sticky='ewns')
+		self.osu_label = tk.Label(master=self, image=self.osu_photo)
+		self.osu_label.grid(row=8, column=0, sticky='ewns')
 
-		#self.cms_label = tk.Label(master=self, image=self.cms_photo)
-		#self.cms_label.grid(row=8, column=1, sticky='ewns')
+		self.cms_label = tk.Label(master=self, image=self.cms_photo)
+		self.cms_label.grid(row=8, column=1, sticky='ewns')
 
 		self.login_button = ttk.Button(
 			master = self, 
@@ -112,7 +110,7 @@ class LoginFrame(tk.Frame):
 		)
 
 
-		self.options_frame = OptionsFrame(parent)
+		self.options_frame = OptionsFrame(self.parent)
 
 
 	def login_user(self):
@@ -124,7 +122,7 @@ class LoginFrame(tk.Frame):
 		TryHostAddress = self.host_entry.get()
 		TryDatabase = self.database_entry.get()
 
-		connection = StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase)
+		connection = StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase, self.parent)
 		if not connection:
 			return
 		self.dbconnection = connection

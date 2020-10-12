@@ -12,7 +12,7 @@ from Gui.GUIutils.ErrorWindow import *
 
 # mySQL databse server as test, may need to extend to other DB format
 
-def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
+def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase, master):
 	# For test, no connection to DB is made and output will not be registered
 	if TryHostAddress == "0.0.0.0":
 		return "DummyDB"
@@ -26,7 +26,7 @@ def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 	try:
 		connection = mysql.connector.connect(user=str(TryUsername), password=str(TryPassword),host=str(TryHostAddress),database=str(TryDatabase))
 	except (ValueError,RuntimeError, TypeError, NameError,mysql.connector.Error):
-		ErrorWindow(self.parent, "Error:Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address")
+		ErrorWindow(master, "Error:Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address")
 		return
 	return connection
 
@@ -47,3 +47,18 @@ def retrieveAllTestResults(dbconnection):
 	cur = dbconnection.cursor()
 	cur.execute('SELECT * FROM results_test')
 	return cur.fetchall()
+
+def retrieveModuleTests(dbconnection, module_id):
+	sql_query = ''' SELECT * FROM results_test WHERE  Module_id = (?) '''
+	cur = dbconnection.cursor()
+	cur.execute(sql_query, str(module_id))
+	return cur.fetchall()
+
+def insertTestResult(dbconnection):
+	sql_query = ''' 
+				'''
+	cur = dbconnection.cursor()
+	cur.execute(sql_query)
+	dbconnection.commit()
+	return cur.lastrowid
+

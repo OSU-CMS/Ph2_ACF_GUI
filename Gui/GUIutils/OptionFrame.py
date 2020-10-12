@@ -99,4 +99,4 @@ class OptionsFrame(tk.Frame):
 		except:
 			ErrorWindow(self.parent, "Error: Please enter valid module ID")
 			return
-		ReviewModuleWindow(self.parent)
+		ReviewModuleWindow(self.parent, self.dbconnection)

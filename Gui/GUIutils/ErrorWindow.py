@@ -7,7 +7,6 @@
   Support:              email to wei.856@osu.edu
 '''
 
-import config
 import tkinter as tk
 
 class ErrorWindow(tk.Toplevel):

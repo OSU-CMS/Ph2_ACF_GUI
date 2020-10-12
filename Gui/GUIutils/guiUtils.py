@@ -43,6 +43,30 @@ def iter_except(function, exception):
 ##########################################################################
 ##########################################################################
 
+def ConfigureTest(Calibration, Module_ID, Output_Dir):
+	if not Output_Dir:
+		test_dir = os.environ.get('DATA_dir') + "/Test_" +str(Calibration)
+		if not os.path.isdir(test_dir):
+			try:
+				os.makedirs(test_dir)
+			except OSError:
+				print("Can not create directory: {0}".format(test_dir))
+		time_stamp = datetime.utcnow().isoformat() + "_UTC"
+		Output_Dir = test_dir + "/Test_Module" + str(Module_ID) + "_" + str(Calibration) + "_" + str(time_stamp)
+		try:
+			os.makedirs(Output_Dir)
+		except OSError:
+			return "OutputDir not created"
+	
+	#FIXME:
+	#Register the module to DB
+	#Get the appropiate XML config file and RD53 file from either DB or local, copy to output file
+	#Store the XML config and RD53 config to created folder and DB
+	return Output_Dir
+
+##########################################################################
+##########################################################################
+
 #FIXME: automate this in runTest
 def retrieve_result_plot(result_dir, result_file, plot_file, output_file):
 	os.system("root -l -b -q 'extractPlots.cpp(\"{0}\", \"{1}\", \"{2}\")'".format(result_dir+result_file, plot_file, output_file))
@@ -59,6 +83,8 @@ class LogParser():
 
 	def getGrade(self, file):
 		pass
+
+
 
 
 

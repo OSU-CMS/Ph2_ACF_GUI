@@ -34,25 +34,31 @@ class ResultsWindow(tk.Toplevel):
 	def __init__(self, parent, dbconnection):
 		tk.Toplevel.__init__(self,parent.root)
 		self.parent = parent
+		self.dbconnection = dbconnection
 
 		if self.parent.current_user == '':
 			ErrorWindow(self.parent, "Error: Please login")
 			return
 
 		self.re_width = 900
-		re_height = 500
+		self.re_height = 500
 	
 		self.master = self.parent.root
 		self.title("Review Results")
-		self.geometry("{}x{}".format(self.re_width, re_height))
+		self.geometry("{}x{}".format(self.re_width, self.re_height))
 		self.grid_columnconfigure(0, weight=1, minsize=self.re_width)
 		self.grid_rowconfigure(0, weight=1, minsize=100)
-		self.grid_rowconfigure(1, weight=1, minsize=re_height-100)
+		self.grid_rowconfigure(1, weight=1, minsize=self.re_height-100)
 
+		#FIXME
 		#self.parent.all_results = database.retrieveAllTestTasks()
-		self.parent.all_results = retrieveAllTestResults()
-		self.parent.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=True)
+		self.parent.all_results = retrieveAllTestResults(self.dbconnection)
 
+		#self.parent.all_results = retrieveAllTestResults(self.dbconnection)
+		self.parent.all_results.sort(key=lambda r: r[3], reverse=True)
+		self.setupFrame()
+
+	def setupFrame(self):
 		nRows = len(self.parent.all_results)
 		nColumns = 5
 
@@ -60,10 +66,10 @@ class ResultsWindow(tk.Toplevel):
 			self.results_lbl = tk.Label(self, text = "No results to show", font=("Helvetica", 20))
 			self.results_lbl.pack()
 
-		self.top_frame = tk.Frame(self, width=self.re_width, height=100)
+		self.top_frame = tk.Frame(self, width=self.re_width, height=15)
 		self.top_frame.grid(row=0, column=0, sticky='nsew')
 
-		self.bot_frame = tk.Frame(self, width=self.re_width, height=re_height-100)
+		self.bot_frame = tk.Frame(self, width=self.re_width, height=self.re_height-15)
 		self.bot_frame.grid(row=1, column=0, sticky='nsew')
 
 		top_cols = [40, 40, 40, 40, 40, 40, 40, 40]
@@ -71,9 +77,9 @@ class ResultsWindow(tk.Toplevel):
 			self.top_frame.grid_columnconfigure(i, weight=1, minsize=col)
 
 		self.top_frame.grid_rowconfigure(0, weight=1, minsize=50)
-		self.top_frame.grid_rowconfigure(1, weight=1, minsize=50)
+		self.top_frame.grid_rowconfigure(1, weight=1, minsize=10)
 
-		self.bot_frame.grid_rowconfigure(0, weight=1, minsize=re_height-100)
+		self.bot_frame.grid_rowconfigure(0, weight=1, minsize=self.re_height-100)
 		self.bot_frame.grid_columnconfigure(0, weight=1, minsize=self.re_width-15)
 		self.bot_frame.grid_columnconfigure(1, weight=1, minsize=15)
 
@@ -105,24 +111,24 @@ class ResultsWindow(tk.Toplevel):
 		self.rfilter_button.grid(row=1, column=3, sticky='nsew', padx=(20, 0))
 
 		self.rfilter_menu = tk.OptionMenu(self.top_frame, self.parent.result_filter_attr, *['module ID', 'date', 'user', 'grade', 'testname'])
-		self.rfilter_menu.grid(row=1, column=4, sticky='nsw')
+		self.rfilter_menu.grid(row=1, column=4, sticky='nsew')
 
 		self.req_menu = tk.OptionMenu(self.top_frame, self.parent.result_filter_eq, *["=", ">=", "<=", ">", "<", "contains"])
-		self.req_menu.grid(row=1, column=5, sticky='nsw')
+		self.req_menu.grid(row=1, column=5, sticky='nsew')
 
 		self.rfilter_entry = tk.Entry(master=self.top_frame)
 		self.rfilter_entry.insert(0, '{0}'.format(self.parent.current_user))
-		self.rfilter_entry.grid(row=1, column=6, sticky='w')
+		self.rfilter_entry.grid(row=1, column=6, sticky='nsew')
 
 		self.rreset_button = ttk.Button(
 			master = self.top_frame,
 			text = "Reset", 
 			command = self.reset_results,
 		)
-		self.rreset_button.grid(row=1, column=7, sticky='nse')
+		self.rreset_button.grid(row=1, column=7, sticky='nsew')
 
 		self.ryscrollbar = tk.Scrollbar(self.bot_frame)
-		self.ryscrollbar.grid(row=0, column=1, sticky='ns')
+		self.ryscrollbar.grid(row=0, column=1, sticky='nsew')
 
 		self.rtable_canvas = tk.Canvas(self.bot_frame, yscrollcommand=self.ryscrollbar.set)
 		self.rtable_canvas.grid(row=0, column=0, sticky='nsew')
@@ -133,7 +139,7 @@ class ResultsWindow(tk.Toplevel):
 
 	def sort_results(self):
 		sort_option = self.parent.result_sort_attr.get()
-		options_dict = {"module ID": 1, "user": 2, "testname": 3, "grade": 5}
+		options_dict = {"module ID": 0, "user": 1, "testname": 2, "grade": 4}
 
 		if self.parent.all_results[0][0] == "":
 			self.parent.all_results.pop(0)
@@ -143,7 +149,8 @@ class ResultsWindow(tk.Toplevel):
 			self.parent.all_results.sort(key=lambda x: x[options_dict[sort_option]], reverse=self.parent.result_sort_dir.get()=="increasing")
 			self.rmake_table()
 		else:
-			self.parent.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=self.parent.result_sort_dir.get()=="increasing")
+			#self.parent.all_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=self.parent.result_sort_dir.get()=="increasing")
+			self.parent.all_results.sort(key=lambda r: r[3], reverse=self.parent.result_sort_dir.get()=="increasing")
 			self.rmake_table()
 
 
@@ -152,14 +159,16 @@ class ResultsWindow(tk.Toplevel):
 		filter_eq = self.parent.result_filter_eq.get()
 		filter_val = self.rfilter_entry.get()
 
+		# FIXME
 		#self.parent.all_results = database.retrieveAllTestTasks()
-		#self.parent.all_results = retrieveAllTestResults()
+		self.parent.all_results = retrieveAllTestResults(self.dbconnection)
+
 		filtered_results = []
 
 		if self.parent.all_results[0][0] == "":
 			self.parent.all_results.pop(0)
 
-		options_dict = {"module ID": 1, "user": 2, "testname": 3, "date": 4, "grade": 5}
+		options_dict = {"module ID": 0, "user": 1, "testname": 2, "date": 3, "grade": 4}
 		if filter_eq == 'contains':
 			if filter_option == 'grade' or filter_option == 'module ID':
 				ErrorWindow(self.parent, 'Error: Option not supported for chosen variable')
@@ -201,7 +210,7 @@ class ResultsWindow(tk.Toplevel):
 
 	def reset_results(self):
 		#self.parent.all_results = database.retrieveAllTestTasks()
-		#self.parent.all_results = retrieveAllTestResults()
+		self.parent.all_results = retrieveAllTestResults(self.dbconnection)
 		self.rmake_table()
 
 
@@ -209,8 +218,11 @@ class ResultsWindow(tk.Toplevel):
 		self.rtable_canvas.delete('all')
 		self.rtable_num['text'] = "(Showing {0} results)".format(len(self.parent.all_results))
 
-		if self.parent.all_results[0][0] != "":
-			self.parent.all_results = [["", "Module ID", "User", "Test", "Date", "Grade"]] + self.parent.all_results
+		if not self.parent.all_results:
+			ErrorWindow(self.parent, "No test results available")
+			return
+		if self.parent.all_results[0][0] != "Module ID":
+			self.parent.all_results = [[ "Module ID", "User", "Test", "Date", "Grade"]] + self.parent.all_results
 
 		n_cols = 5
 		row_ids = [r[0] for r in self.parent.all_results]
@@ -228,7 +240,7 @@ class ResultsWindow(tk.Toplevel):
 
 
 			for i, item in enumerate(result):
-				if i in [0]: continue
+				#if i in [0]: continue
 
 				bold = ''
 				if j == 0: bold = 'bold'
@@ -236,6 +248,6 @@ class ResultsWindow(tk.Toplevel):
 
 				anchor = 'nw'
 				if i == 5: anchor = 'ne'
-				self.rtable_canvas.create_window(((i-1)*(self.re_width-15)/n_cols)+65, j*25, window=row_label, anchor=anchor)
+				self.rtable_canvas.create_window((i*(self.re_width-15)/n_cols)+65, j*25, window=row_label, anchor=anchor)
 
 		self.rtable_canvas.config(scrollregion=(0,0,1000, (len(self.parent.all_results)+2)*25))
