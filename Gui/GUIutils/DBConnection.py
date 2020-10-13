@@ -10,6 +10,8 @@
 import mysql.connector
 from Gui.GUIutils.ErrorWindow import *
 
+DB_TestResult_Schema = ['Module_ID, Account, CalibrationName, ExecutionTime, Grading, DQMFile']
+
 # mySQL databse server as test, may need to extend to other DB format
 
 def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase, master):
@@ -43,20 +45,38 @@ def retrieveAllCalibrations(dbconnection):
     cur.execute('SELECT * FROM calibrationlist')
     return cur.fetchall()
 
+def retriveTestTableHeader(dbconnection):
+	cur = dbconnection.cursor()
+	cur.execute('DESCRIBE results_test')
+	return cur.fetchall()
+
 def retrieveAllTestResults(dbconnection):
 	cur = dbconnection.cursor()
 	cur.execute('SELECT * FROM results_test')
 	return cur.fetchall()
 
 def retrieveModuleTests(dbconnection, module_id):
-	sql_query = ''' SELECT * FROM results_test WHERE  Module_id = (?) '''
+	sql_query = ''' SELECT * FROM results_test WHERE  Module_id = {0} '''.format(str(module_id))
 	cur = dbconnection.cursor()
-	cur.execute(sql_query, str(module_id))
+	cur.execute(sql_query)
 	return cur.fetchall()
 
-def insertTestResult(dbconnection):
-	sql_query = ''' 
-				'''
+def retrieveModuleLastTest(dbconnection, module_id):
+	sql_query = ''' SELECT * FROM results_test T 
+					INNER JOIN (
+						SELECT Module_ID, max(ExecutionTime) as MaxDate
+						from results_test T WHERE Module_ID = {0}
+						group by Module_ID
+					) LATEST ON T.Module_ID = LATEST.Module_ID AND T.ExecutionTime = LATEST.MaxDate
+				'''.format(str(module_id))
+	cur = dbconnection.cursor()
+	cur.execute(sql_query)
+	return cur.fetchall()
+
+def insertTestResult(dbconnection, record):
+	sql_query = ''' INSERT INTO results_test ({},{},{},{},{},{})
+					VALUES ({},{},{},{},{},{})
+				'''.format(*DB_TestResult_Schema,*record)
 	cur = dbconnection.cursor()
 	cur.execute(sql_query)
 	dbconnection.commit()

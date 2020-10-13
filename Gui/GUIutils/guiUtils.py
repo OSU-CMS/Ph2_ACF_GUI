@@ -8,8 +8,8 @@
 '''
 
 # import ROOT as r
-import config
-import database
+#import config
+#import database
 import sys
 import tkinter as tk
 import os
@@ -28,6 +28,8 @@ from PIL import ImageTk, Image
 from functools import partial
 from tkinter import scrolledtext 
 
+from  Gui.GUIutils.DBConnection import *
+
 ##########################################################################
 ##########################################################################
 
@@ -43,7 +45,7 @@ def iter_except(function, exception):
 ##########################################################################
 ##########################################################################
 
-def ConfigureTest(Calibration, Module_ID, Output_Dir):
+def ConfigureTest(Calibration, Module_ID, Output_Dir, DBConnection):
 	if not Output_Dir:
 		test_dir = os.environ.get('DATA_dir') + "/Test_" +str(Calibration)
 		if not os.path.isdir(test_dir):
@@ -59,12 +61,73 @@ def ConfigureTest(Calibration, Module_ID, Output_Dir):
 			return "OutputDir not created"
 	
 	#FIXME:
-	#Register the module to DB
 	#Get the appropiate XML config file and RD53 file from either DB or local, copy to output file
 	#Store the XML config and RD53 config to created folder and DB
-	return Output_Dir
+	header = retriveTestTableHeader(DBConnection)
+	col_names = list(map(lambda x: header[x][0], range(0,len(header))))
+	index = col_names.index('DQMFile')
+	latest_record  = retrieveModuleLastTest(DBConnection, Module_ID)
+	if latest_record and index:
+		Input_Dir = "/".join(str(latest_record[0][index]).split('/')[0:-1])
+	else:
+		Input_Dir = ""
+	return Output_Dir, Input_Dir
 
 ##########################################################################
+##  Functions for setting up XML and RD53 configuration
+##########################################################################
+
+def SetupXMLConfig(Input_Dir, Output_Dir):
+	try:
+		os.system("cp {0}/CMSIT.xml {1}/CMSIT.xml".format(Input_Dir,Output_Dir))
+	except OSError:
+		print("Can not copy the XML files to {0}".format(Output_Dir))
+	try:
+		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+	except OSError:
+		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+
+##########################################################################
+##########################################################################
+
+def SetupXMLConfigfromFile(InputFile, Output_Dir):
+	try:
+		os.system("cp {0} {1}/CMSIT.xml".format(InputFile,Output_Dir))
+	except OSError:
+		print("Can not copy the XML files {0} to {1}".format(InputFile,Output_Dir))
+	try:
+		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+	except OSError:
+		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+
+##########################################################################
+##########################################################################
+
+def SetupRD53Config(Input_Dir, Output_Dir):
+	try:
+		os.system("cp {0}/CMSIT_RD53_OUT.txt {1}/CMSIT_RD53_IN.txt".format(Input_Dir,Output_Dir))
+	except OSError:
+		print("Can not copy the RD53 configuration files to {0}".format(Output_Dir))
+	try:
+		os.system("cp {0}/CMSIT_RD53_IN.txt  {1}/test/CMSIT_RD53.txt".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+	except OSError:
+		print("Can not copy {0}/CMSIT_RD53_IN.txt to {1}/test/CMSIT_RD53.txt".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+
+##########################################################################
+##########################################################################
+
+def SetupRD53ConfigfromFile(InputFile, Output_Dir):
+	try:
+		os.system("cp {0} {1}/CMSIT_RD53_IN.txt".format(InputFile,Output_Dir))
+	except OSError:
+		print("Can not copy the XML files {0} to {1}".format(InputFile,Output_Dir))
+	try:
+		os.system("cp {0}/CMSIT_RD53_IN.txt  {1}/test/CMSIT_RD53.txt".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+	except OSError:
+		print("Can not copy {0}/CMSIT_RD53_IN.txt to {1}/test/CMSIT_RD53.txt".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+
+##########################################################################
+##  Functions for setting up XML and RD53 configuration (END)
 ##########################################################################
 
 #FIXME: automate this in runTest

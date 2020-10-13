@@ -14,6 +14,7 @@ import re
 import operator
 import math
 import hashlib
+import subprocess
 from queue import Queue, Empty
 from threading import Thread
 from tkinter import ttk
@@ -48,9 +49,9 @@ class RunWindow(tk.Toplevel):
 		self.columnconfigure(0, weight=1, minsize=400)
 		self.columnconfigure(1, weight=1, minsize=600)
 		self.calibration = self.parent.current_test_name.get()
+		self.input_dir = ''
 		self.output_dir = ''
-		self.config_file = ConfigFiles.get(self.calibration, "None")
-		self.config_file = os.environ.get('GUI_dir')+self.config_file
+		self.config_file = '' #os.environ.get('GUI_dir')+ConfigFiles.get(self.calibration, "None")
 		self.rd53_file  = ''
 
 		# setup left side
@@ -200,7 +201,32 @@ class RunWindow(tk.Toplevel):
 			
 	def config_test(self):
 		#TCPConfigure(self.calibration, self.config_entry.get())
-		self.output_dir = ConfigureTest(self.calibration, self.parent.current_module_id, self.output_dir)
+		self.input_dir = ""
+		self.output_dir, self.input_dir = ConfigureTest(self.calibration, self.parent.current_module_id, self.output_dir, self.dbconnection)
+		if self.input_dir == "":
+			if self.config_file == "":
+				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(self.calibration, "None")
+				SetupXMLConfigfromFile(config_file,self.output_dir)
+				ErrorWindow(self.parent,"Noitce: Using default XML configuration")
+			else:
+				SetupXMLConfigfromFile(self.config_file,self.output_dir)
+		else:
+			if self.config_file != "":
+				SetupXMLConfigfromFile(self.config_file,self.output_dir)
+			else:
+				SetupXMLConfig(self.input_dir,self.output_dir)
+
+		if self.input_dir == "":
+			if self.rd53_file == "":
+				rd53_file = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_RD53.txt"
+				SetupRD53ConfigfromFile(rd53_file,self.output_dir)
+			else:
+				SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
+		else:
+			if self.rd53_file == "":
+				SetupRD53Config(self.input_dir,self.output_dir)
+			else:
+				SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
 		return
 
 	def customizedconfig_test(self):
@@ -208,7 +234,7 @@ class RunWindow(tk.Toplevel):
 		return
 
 	def run_test(self):
-		self.run_process = Popen(['python', 'CMSminiDAQ_wrap.py'], stdout=PIPE, stderr=PIPE)
+		self.run_process = Popen('python CMSITminiDAQ.py -f {0} -c {1}'.format("CMSIT.xml",self.calibration), shell=True, stdout=PIPE, stderr=PIPE)
 		q = Queue(maxsize=1024)
 		t = Thread(target=self.reader_thread, args=[q])
 		t.daemon = True
@@ -249,13 +275,20 @@ class RunWindow(tk.Toplevel):
 		self.parent.root.after(40, self.update, q)
 
 	def save_test(self):
-		if self.parent.current_test_grade < 0:
-			ErrorWindow(self.parent,"Error: Finish test before saving")
+		#if self.parent.current_test_grade < 0:
+		if self.run_process.poll() is None:
+			ErrorWindow(self.parent,"Error: Test not finished or broken")
 			return 
-
 		try:
-			current_date = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-			testing_info = (self.parent.new_test_moduleID, self.parent.current_user, self.parent.new_test_name.get(), current_date, self.parent.new_test_grade)
+			os.system("cp {0}/test/Results/Run*.root {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+			getfile = subprocess.run('ls -alt {0}/test/Results/Run*.root'.format(self.output_dir), shell=True, stdout=subprocess.PIPE)
+			filelist = getfile.stdout.decode('utf-8')
+			outputfile = filelist.rstrip('\n').split('\n')[-1].split(' ')[-1]
+			DQMFile = self.output_dir + "/" + outputfile
+			time_stamp = datetime.fromisoformat(self.output_dir.split('_')[-2])
+
+			testing_info = [self.parent.current_module_id, self.parent.current_user, self.calibration, time_stamp.strftime('%Y-%m-%d %H:%M:%S.%f'), self.parent.new_test_grade, DQMFile]
+			insertTestResult(self.dbconnection, testing_info)
 			# fixme 
 			#database.createTestEntry(testing_info)
 		except:
