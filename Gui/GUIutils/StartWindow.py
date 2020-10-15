@@ -90,7 +90,7 @@ class StartWindow(tk.Toplevel):
 
 	def open_self(self):
 		try:
-			self.parent.current_module_id = int(self.moduleID_entry.get())
+			self.parent.current_module_id = str(self.moduleID_entry.get())
 		except:
 			ErrorWindow(self.parent, "Error: Please enter valid module ID")
 			return

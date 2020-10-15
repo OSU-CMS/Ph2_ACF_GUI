@@ -26,6 +26,7 @@ from PIL import ImageTk, Image
 from functools import partial
 from tkinter import scrolledtext 
 
+from Gui.GUIutils.guiUtils import *
 from Gui.GUIutils.ContinueWindow import *
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.ErrorWindow import *
@@ -37,6 +38,7 @@ from Gui.GUIutils.ErrorWindow import *
 class ReviewModuleWindow(tk.Toplevel):
 	def __init__(self, parent, dbconnection):
 		tk.Toplevel.__init__(self, parent.root)
+
 		self.parent = parent
 		self.dbconnection = dbconnection
 
@@ -47,8 +49,7 @@ class ReviewModuleWindow(tk.Toplevel):
 			ErrorWindow(self.parent, "Error: Please enter module ID")
 			return
 
-		#FIXME
-		self.parent.module_results = retrieveAllTestResults(self.parent.review_module_id)
+		self.parent.module_results = retrieveModuleTests(self.dbconnection, self.parent.review_module_id)
 		if len(self.parent.module_results) == 0:
 			ErrorWindow(self.parent, "Error: No results found for this module, start a new test")
 			self.parent.current_module_id = self.parent.review_module_id 
@@ -56,15 +57,19 @@ class ReviewModuleWindow(tk.Toplevel):
 			self.destroy()
 			return
 
-		best_result = self.parent.module_results[0]
-		latest_result = self.parent.module_results[0]
+		header = retriveTestTableHeader(self.dbconnection)
+		col_names = list(map(lambda x: header[x][0], range(0,len(header))))
+		#grade_index = col_names.index('Grading')
+		time_index = col_names.index('ExecutionTime')
 
-		best_result = sorted(self.parent.module_results, key=lambda r: r[5])[-1]
-		latest_result = sorted(self.parent.module_results, key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"))[-1]
+		#best_result = self.parent.module_results[0]
+		#latest_result = self.parent.module_results[0]
+		#best_result = sorted(self.parent.module_results, key=lambda r: r[grade_index])[-1]
+		#latest_result = sorted(self.parent.module_results, key=lambda r: r[time_index])[-1]
 
-		self.parent.module_results.sort(key=lambda r: datetime.strptime(r[4], "%d/%m/%Y %H:%M:%S"), reverse=True)
+		self.parent.module_results.sort(key=lambda r: r[time_index], reverse=True)
 		
-		self.window_width = 1000
+		self.window_width = 1200
 		self.window_height = 850
 		self.window_rows = [50, 500, 300]
 		self.window_cols = [self.window_width]
@@ -76,7 +81,7 @@ class ReviewModuleWindow(tk.Toplevel):
 		self.table_cols = [self.window_width-15, 15]
 
 		self.tableb_rows = [29, 23, 23]
-		self.tableb_cols = [125, 125, 125, 125, 125, 125, 125, 125]
+		self.tableb_cols = [150, 150, 150, 150, 150, 150, 150, 150]
 
 		# dev
 		assert sum(self.window_rows) == self.window_height, 'Check height'
@@ -95,19 +100,40 @@ class ReviewModuleWindow(tk.Toplevel):
 		self.rowconfigure(2, weight=1, minsize=self.window_rows[2])
 		self.columnconfigure(0, weight=1, minsize=self.window_cols[0])
 
-		# setup base frames
+		# setup header frames
 		self.header_frame = tk.Frame(self, width=self.window_cols[0], height=self.window_rows[0])
 		self.header_frame.grid(row=0, column=0, sticky='nwes')
 		self.header_frame.grid_propagate(False)
 
-		self.bl_frame = tk.Frame(self, width=self.window_cols[0], height=self.window_rows[1], bg='white')
-		self.bl_frame.grid(row=1, column=0, sticky='nwes')
-		self.bl_frame.columnconfigure(0, weight=1, minsize=self.window_cols[0]/2)
-		self.bl_frame.columnconfigure(1, weight=1, minsize=self.window_cols[0]/2)
-		self.bl_frame.rowconfigure(0, weight=1, minsize=self.window_rows[1])
-		self.bl_frame.grid_propagate(False)
+		# setup header
+		module_label = tk.Label(master = self.header_frame, text = "Module ID: {0}".format(self.parent.review_module_id), font=("Helvetica", 25, 'bold'))
+		module_label.pack(anchor='ne', side=tk.LEFT)
 
-		best_frame = tk.Frame(self.bl_frame, width=sum(self.sub_cols), height=sum(self.sub_rows), relief=tk.SUNKEN, bd=2, bg='white')
+		self.change_entry = tk.Entry(master=self.header_frame)
+		self.change_entry.pack(anchor='ne', side=tk.RIGHT)
+
+		change_button = ttk.Button(
+			master = self.header_frame,
+			text = "Change module:",
+			command = self.try_change_module
+		)
+		change_button.pack(side=tk.RIGHT, anchor='ne')
+
+		continue_button = ttk.Button(
+			master = self.header_frame,
+			text = "Continue Testing", 
+			command = self.try_open_continue,
+		)
+		continue_button.pack(side=tk.RIGHT, anchor='n')
+
+		# Histogram Frame for test history
+		self.hist_frame = tk.Frame(self, width=self.window_cols[0], height=self.window_rows[1], bg='white')
+		self.hist_frame.grid(row=1, column=0, sticky='nwes')
+		self.hist_frame.columnconfigure(0, weight=1, minsize=self.window_cols[0])
+		self.hist_frame.rowconfigure(0, weight=1, minsize=self.window_rows[1])
+		self.hist_frame.grid_propagate(False)
+
+		best_frame = tk.Frame(self.hist_frame, width=sum(self.sub_cols), height=sum(self.sub_rows), relief=tk.SUNKEN, bd=2, bg='white')
 		best_frame.grid(row=0, column=0, sticky='nwes')
 		best_frame.columnconfigure(0, weight=1, minsize=self.sub_cols[0])
 		best_frame.rowconfigure(0, weight=1, minsize=self.sub_rows[0])
@@ -122,21 +148,31 @@ class ReviewModuleWindow(tk.Toplevel):
 		best_tframe.grid_propagate(False)
 		best_bframe.grid_propagate(False)
 
-		latest_frame = tk.Frame(self.bl_frame, width=sum(self.sub_cols), height=sum(self.sub_rows), relief=tk.SUNKEN, bd=2, bg='white')
-		latest_frame.grid(row=0, column=1, sticky='nwes')
-		latest_frame.columnconfigure(0, weight=1, minsize=self.sub_cols[0])
-		latest_frame.rowconfigure(0, weight=1, minsize=self.sub_rows[0])
-		latest_frame.rowconfigure(1, weight=1, minsize=self.sub_rows[1])
-		latest_frame.rowconfigure(2, weight=1, minsize=self.sub_rows[2])
-		latest_tframe = tk.Frame(latest_frame, width=self.sub_cols[0], height=self.sub_rows[1], bg='white')
-		latest_tframe.grid(row=1, column=0, sticky='nwes')
-		latest_bframe = tk.Frame(latest_frame, width=self.sub_cols[0], height=self.sub_rows[2], bg='white')
-		latest_bframe.grid(row=2, column=0, sticky='nwes')
-		
-		latest_frame.grid_propagate(False)
-		latest_tframe.grid_propagate(False)
-		latest_bframe.grid_propagate(False)
+		# setup Histogram
+		#best_title = tk.Label(master=best_frame, text="Best result", font=("Helvetica", 25),bg='white')
+		#best_title.grid(row=0, column=0, sticky='n')
+		#
+		#best_glabel = tk.Label(master=best_bframe, text="{0}%".format(best_result[5]), font=("Helvetica", 45, 'bold'), bg='white')
+		#best_glabel.pack(anchor='ne', side=tk.RIGHT, expand=False)
 
+		#best_tlabel = tk.Label(master=best_bframe, text="{0}".format(best_result[3]), font=("Helvetica", 20), bg='white')
+		#best_tlabel.pack(anchor='nw', side=tk.TOP)
+
+		#best_dlabel = tk.Label(master=best_bframe, text="{0}".format(best_result[4]), font=("Helvetica", 20), bg='white')
+		#best_dlabel.pack(anchor='nw', side=tk.TOP)
+
+		#best_ulabel = tk.Label(master=best_bframe, text="{0}".format(best_result[2]), font=("Helvetica", 15), bg='white')
+		#best_ulabel.pack(anchor='nw', side=tk.TOP)
+
+		#FIXME: automate plot retrieval
+		best_canvas = tk.Canvas(best_tframe, bg='white')
+		best_canvas.pack(expand=True, fill='both', anchor='nw', side=tk.TOP)
+		best_img = Image.open("test_plots/test_best1.png")
+		best_img = best_img.resize((self.sub_cols[0], self.sub_rows[1]), Image.ANTIALIAS)
+		self.parent.review_best_plot = ImageTk.PhotoImage(best_img)
+		best_canvas.create_image(0, 0, image=self.parent.review_best_plot, anchor="nw")
+
+		# Table Frame for test history
 		self.table_frame = tk.Frame(self, width=self.window_width, height=self.window_rows[2], relief=tk.SUNKEN, bd=2)
 		self.table_frame.grid(row=2, column=0, sticky='nwes')
 		self.table_frame.grid_propagate(False)
@@ -161,77 +197,8 @@ class ReviewModuleWindow(tk.Toplevel):
 		table_tframe.grid_propagate(False)
 		table_bframe.grid_propagate(False)
 
-		# setup header
-		module_label = tk.Label(master = self.header_frame, text = "Module ID: {0}".format(self.parent.review_module_id), font=("Helvetica", 25, 'bold'))
-		module_label.pack(anchor='ne', side=tk.LEFT)
-
-		self.change_entry = tk.Entry(master=self.header_frame)
-		self.change_entry.pack(anchor='ne', side=tk.RIGHT)
-
-		change_button = ttk.Button(
-			master = self.header_frame,
-			text = "Change module:",
-			command = self.try_change_module
-		)
-		change_button.pack(side=tk.RIGHT, anchor='ne')
-
-		continue_button = ttk.Button(
-			master = self.header_frame,
-			text = "Continue Testing", 
-			command = self.try_open_continue,
-		)
-		continue_button.pack(side=tk.RIGHT, anchor='n')
-
-		# setup best result
-		best_title = tk.Label(master=best_frame, text="Best result", font=("Helvetica", 25),bg='white')
-		best_title.grid(row=0, column=0, sticky='n')
-		
-		best_glabel = tk.Label(master=best_bframe, text="{0}%".format(best_result[5]), font=("Helvetica", 45, 'bold'), bg='white')
-		best_glabel.pack(anchor='ne', side=tk.RIGHT, expand=False)
-
-		best_tlabel = tk.Label(master=best_bframe, text="{0}".format(best_result[3]), font=("Helvetica", 20), bg='white')
-		best_tlabel.pack(anchor='nw', side=tk.TOP)
-
-		best_dlabel = tk.Label(master=best_bframe, text="{0}".format(best_result[4]), font=("Helvetica", 20), bg='white')
-		best_dlabel.pack(anchor='nw', side=tk.TOP)
-
-		best_ulabel = tk.Label(master=best_bframe, text="{0}".format(best_result[2]), font=("Helvetica", 15), bg='white')
-		best_ulabel.pack(anchor='nw', side=tk.TOP)
-
-		#FIXME: automate plot retrieval
-		best_canvas = tk.Canvas(best_tframe, bg='white')
-		best_canvas.pack(expand=True, fill='both', anchor='nw', side=tk.TOP)
-		best_img = Image.open("test_plots/test_best1.png")
-		best_img = best_img.resize((self.sub_cols[0], self.sub_rows[1]), Image.ANTIALIAS)
-		self.parent.review_best_plot = ImageTk.PhotoImage(best_img)
-		best_canvas.create_image(0, 0, image=self.parent.review_best_plot, anchor="nw")
-
-		# setup latest result
-		latest_title = tk.Label(master=latest_frame, text="Latest result", font=("Helvetica", 25), bg='white')
-		latest_title.grid(row=0, column=0, sticky='n')
-		
-		# FIXME: automate plot retrieval
-		latest_canvas = tk.Canvas(latest_tframe, bg='white')
-		latest_canvas.pack(expand=True, fill='both', anchor='nw', side=tk.TOP)
-		latest_img = Image.open("test_plots/test_latest1.png")
-		latest_img = latest_img.resize((self.sub_cols[0], self.sub_rows[1]), Image.ANTIALIAS)
-		self.parent.review_latest_plot = ImageTk.PhotoImage(latest_img)
-		latest_canvas.create_image(0, 0, image=self.parent.review_latest_plot, anchor="nw")
-
-		latest_glabel = tk.Label(master=latest_bframe, text="{0}%".format(latest_result[5]), font=("Helvetica", 40, 'bold'), bg='white')
-		latest_glabel.pack(anchor='ne', side=tk.RIGHT, expand=False)
-
-		latest_tlabel = tk.Label(master=latest_bframe, text="{0}".format(latest_result[3]), font=("Helvetica", 20), bg='white')
-		latest_tlabel.pack(anchor='nw', side=tk.TOP)
-
-		latest_dlabel = tk.Label(master=latest_bframe, text="{0}".format(latest_result[4]), font=("Helvetica", 20), bg='white')
-		latest_dlabel.pack(anchor='nw', side=tk.TOP)
-
-		latest_ulabel = tk.Label(master=latest_bframe, text="{0}".format(latest_result[2]), font=("Helvetica", 15), bg='white')
-		latest_ulabel.pack(anchor='nw', side=tk.TOP)
-
 		# setup table 
-		self.parent.module_results = retrieveModuleTests(self.parent.review_module_id)
+		self.parent.module_results = retrieveModuleTests(self.dbconnection, self.parent.review_module_id)
 		table_label = tk.Label(master=table_tframe, text = "All results for module {0}".format(self.parent.review_module_id), font=("Helvetica", 20))
 		table_label.pack(side=tk.TOP, anchor='nw')
 
@@ -276,7 +243,7 @@ class ReviewModuleWindow(tk.Toplevel):
 		reset_button.grid(row=1, column=7, sticky='nse')
 
 		yscrollbar = tk.Scrollbar(table_bframe)
-		yscrollbar.grid(row=0, column=1, sticky='ns')
+		yscrollbar.grid(row=0, column=1, sticky='nes')
 
 		self.table_canvas = tk.Canvas(table_bframe, yscrollcommand=yscrollbar.set)
 		self.table_canvas.grid(row=0, column=0, sticky='nsew')
@@ -348,12 +315,12 @@ class ReviewModuleWindow(tk.Toplevel):
 		self.rplot_frame.grid_remove()
 		self.header_frame.grid()
 		self.table_frame.grid()
-		self.bl_frame.grid()
+		self.hist_frame.grid()
 
 
 	def open_result(self, result_rowid):
 		self.table_frame.grid_remove()
-		self.bl_frame.grid_remove()
+		self.hist_frame.grid_remove()
 		self.header_frame.grid_remove()
 
 		self.rheader_frame = tk.Frame(self, width=self.window_cols[0], height=self.window_rows[0])
@@ -432,15 +399,20 @@ class ReviewModuleWindow(tk.Toplevel):
 				plot_canvas.create_image(col*(self.window_width/ncols), row*((self.window_height-self.window_rows[0])/nrows),
 						image=self.parent.plot_images[row][col], anchor="nw")
 		
+	def show_result(self, DQMFile):
+		GetTBrowser(DQMFile)
 
 	def make_table(self):
 		self.table_canvas.delete('all')
 		self.table_num['text'] = "(Showing {0} results)".format(len(self.parent.module_results))
 
-		if self.parent.module_results[0][0] != "":
-			self.parent.module_results = [["", "", "User", "Test", "Date", "Grade"]] + self.parent.module_results
+		if not self.parent.module_results:
+			ErrorWindow(self.parent, "No test results available")
+			return
+		if self.parent.module_results[0][0] != "Module ID":
+			self.parent.module_results = [[ "Module ID", "User", "Test", "Date", "Grade", "DQMFile"]] + self.parent.module_results
 
-		n_cols = 4
+		n_cols = 6
 		row_ids = [r[0] for r in self.parent.module_results]
 
 		for j, result in enumerate(self.parent.module_results):
@@ -448,15 +420,15 @@ class ReviewModuleWindow(tk.Toplevel):
 			if j != 0:
 				result_button = tk.Button(
 					master = self.table_canvas,
-					text = "{0}".format(j),
-					command = partial(self.open_result, row_ids[j])
+					text = "{0}".format(j)
+					#command = partial(self.open_result, row_ids[j])
 				)
 				
 				self.table_canvas.create_window(0*self.table_cols[0]/n_cols, j*25, window=result_button, anchor='nw')
 
 
 			for i, item in enumerate(result):
-				if i in [0,1]: continue
+				#if i in [5]: continue
 
 				bold = ''
 				if j == 0: bold = 'bold'
@@ -464,9 +436,21 @@ class ReviewModuleWindow(tk.Toplevel):
 
 				anchor = 'nw'
 				if i == 5: anchor = 'ne'
-				self.table_canvas.create_window(((i-2)*self.table_cols[0]/n_cols)+65, j*25, window=row_label, anchor=anchor)
+
+				if i in [0,1,2,3,4] or j == 0:
+					self.table_canvas.create_window((i*self.table_cols[0]/n_cols)+65, j*25, window=row_label, anchor=anchor)
+
+				if i == 5 and j != 0: 
+					detail_button = tk.Button(
+						master = self.table_canvas,
+						text = "Show Details...",
+						command = self.show_result(item)
+					)
+					self.table_canvas.create_window((i*self.table_cols[0]/n_cols)+65, j*25, window=detail_button, anchor=anchor)
+
 
 		self.table_canvas.config(scrollregion=(0,0,1000, (len(self.parent.module_results)+2)*25))
+
 
 
 	def sort_results(self):

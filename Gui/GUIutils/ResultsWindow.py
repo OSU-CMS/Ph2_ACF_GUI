@@ -233,14 +233,14 @@ class ResultsWindow(tk.Toplevel):
 				result_button = tk.Button(
 					master = self.rtable_canvas,
 					text = "{0}".format(j)
-					# command = partial(openResult, row_ids[j])
+					#command = partial(openResult, row_ids[j])
 				)
 				
 				self.rtable_canvas.create_window(0*(self.re_width-15)/n_cols, j*25, window=result_button, anchor='nw')
 
 
 			for i, item in enumerate(result):
-				#if i in [0]: continue
+				if i in [5]: continue
 
 				bold = ''
 				if j == 0: bold = 'bold'
