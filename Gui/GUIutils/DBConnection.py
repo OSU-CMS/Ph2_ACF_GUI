@@ -9,6 +9,7 @@
 
 import mysql.connector
 from Gui.GUIutils.ErrorWindow import *
+from PyQt5.QtWidgets import (QMessageBox)
 
 DB_TestResult_Schema = ['Module_ID, Account, CalibrationName, ExecutionTime, Grading, DQMFile']
 
@@ -29,6 +30,25 @@ def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase, maste
 		connection = mysql.connector.connect(user=str(TryUsername), password=str(TryPassword),host=str(TryHostAddress),database=str(TryDatabase))
 	except (ValueError,RuntimeError, TypeError, NameError,mysql.connector.Error):
 		ErrorWindow(master, "Error:Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address")
+		return
+	return connection
+
+def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
+	# For test, no connection to DB is made and output will not be registered
+	if TryHostAddress == "0.0.0.0":
+		return "DummyDB"
+
+	# Try connecting to DB on localhost with unspecific host address
+	if not TryHostAddress:
+		TryHostAddress = '127.0.0.1'
+
+	if not TryDatabase:
+		TryDatabase = 'phase2pixel_test'
+	try:
+		connection = mysql.connector.connect(user=str(TryUsername), password=str(TryPassword),host=str(TryHostAddress),database=str(TryDatabase))
+	except (ValueError,RuntimeError, TypeError, NameError,mysql.connector.Error):
+		msg = QMessageBox()
+		msg.information(None,"Error:","Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address", QMessageBox.Ok)
 		return
 	return connection
 

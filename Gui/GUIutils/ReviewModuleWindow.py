@@ -40,6 +40,7 @@ class ReviewModuleWindow(tk.Toplevel):
 		tk.Toplevel.__init__(self, parent.root)
 
 		self.parent = parent
+		self.master = self.parent.root
 		self.dbconnection = dbconnection
 
 		if self.parent.current_user == '':
@@ -69,27 +70,27 @@ class ReviewModuleWindow(tk.Toplevel):
 
 		self.parent.module_results.sort(key=lambda r: r[time_index], reverse=True)
 		
-		self.window_width = 1200
-		self.window_height = 850
-		self.window_rows = [50, 500, 300]
+		self.window_width = scaleInvWidth(self.master, 0.6)
+		self.window_height = scaleInvHeight(self.master, 0.5)
+		self.window_rows = list(map(lambda x : round(x * self.window_height), [0.1, 0.5, 0.4]))
 		self.window_cols = [self.window_width]
 
-		self.sub_rows = [50, 350, 100]
+		self.sub_rows = list(map(lambda x : round(x*self.window_rows[1]), [0.1, 0.7, 0.2]))
 		self.sub_cols = [int(self.window_width/2)]
 
-		self.table_rows = [75, 225]
+		self.table_rows = list(map(lambda x : round(x*self.window_rows[2]), [0.25, 0.75]))
 		self.table_cols = [self.window_width-15, 15]
 
-		self.tableb_rows = [29, 23, 23]
-		self.tableb_cols = [150, 150, 150, 150, 150, 150, 150, 150]
+		self.tableb_rows = list(map(lambda x : round(x*self.table_rows[0]), [0.4, 0.3, 0.3]))
+		self.tableb_cols = list(map(lambda x : round(x*self.window_width), [0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125]))
 
 		# dev
-		assert sum(self.window_rows) == self.window_height, 'Check height'
-		assert sum(self.window_cols) == self.window_width, 'Check width'
-		assert self.window_rows[1] == sum(self.sub_rows), 'Check bl subview'
-		assert self.window_rows[2] == sum(self.table_rows), 'Check table subview'
-		assert sum(self.tableb_rows) == self.table_rows[0], 'Check tableb rows'
-		assert sum(self.tableb_cols) == self.window_width, 'Check tableb cols'
+		assert sum(self.window_rows) - self.window_height < 3, 'Check height'
+		assert sum(self.window_cols) - self.window_width < 3, 'Check width'
+		assert self.window_rows[1] - sum(self.sub_rows) < 3, 'Check bl subview'
+		assert self.window_rows[2] - sum(self.table_rows) < 3, 'Check table subview'
+		assert sum(self.tableb_rows) - self.table_rows[0] < 3, 'Check tableb rows'
+		assert sum(self.tableb_cols) - self.window_width < 3, 'Check tableb cols'
 
 		self.master = self.parent.root
 		self.config(bg='white')
@@ -442,9 +443,9 @@ class ReviewModuleWindow(tk.Toplevel):
 
 				if i == 5 and j != 0: 
 					detail_button = tk.Button(
-						master = self.table_canvas,
+						master = self,
 						text = "Show Details...",
-						command = self.show_result(item)
+						command = partial(self.show_result,item)
 					)
 					self.table_canvas.create_window((i*self.table_cols[0]/n_cols)+65, j*25, window=detail_button, anchor=anchor)
 

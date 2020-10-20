@@ -33,6 +33,17 @@ from  Gui.GUIutils.DBConnection import *
 ##########################################################################
 ##########################################################################
 
+def scaleInvWidth(master, percent):
+	scwidth = master.winfo_screenwidth()
+	return int(scwidth * percent)
+
+def scaleInvHeight(master, percent):
+	scheight = master.winfo_screenheight()
+	return int(scheight * percent)
+
+##########################################################################
+##########################################################################
+
 def iter_except(function, exception):
 	try:
 		while True:
@@ -153,7 +164,9 @@ class LogParser():
 ##########################################################################
 
 def GetTBrowser(DQMFile):
-	pass
+	process = Popen("{0}/Gui/GUIUtils/runBrowser.sh {1} {2}".format(os.environ.get("GUI_dir"),os.environ.get("GUI_dir")+ "/Gui/GUIUtils" , str(DQMFile)), shell=True,stdout=PIPE, stderr=PIPE)
+
+
 
 ##########################################################################
 ##  Functions for ROOT TBrowser (END)

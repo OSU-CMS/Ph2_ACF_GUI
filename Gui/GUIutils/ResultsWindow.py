@@ -28,22 +28,24 @@ from functools import partial
 from tkinter import scrolledtext 
 
 from Gui.GUIutils.DBConnection import *
+from Gui.GUIutils.guiUtils import *
 from Gui.GUIutils.ErrorWindow import *
 
 class ResultsWindow(tk.Toplevel):
 	def __init__(self, parent, dbconnection):
 		tk.Toplevel.__init__(self,parent.root)
 		self.parent = parent
+		self.master = self.parent.root
 		self.dbconnection = dbconnection
 
 		if self.parent.current_user == '':
 			ErrorWindow(self.parent, "Error: Please login")
 			return
 
-		self.re_width = 900
-		self.re_height = 500
+		self.re_width = scaleInvWidth(self.master, 0.6)
+		self.re_height = scaleInvHeight(self.master, 0.6)
 	
-		self.master = self.parent.root
+
 		self.title("Review Results")
 		self.geometry("{}x{}".format(self.re_width, self.re_height))
 		self.grid_columnconfigure(0, weight=1, minsize=self.re_width)

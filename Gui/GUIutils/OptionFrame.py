@@ -27,7 +27,7 @@ class OptionsFrame(tk.Frame):
 		tk.Frame.__init__(self,parent.root)
 		self.parent = parent
 		self.master = self.parent.root
-		self.config(width=600, height=400)
+		self.config(width=scaleInvWidth(self.master, 0.3), height=scaleInvHeight(self.master, 0.5))
 
 		self.rowconfigure(0, weight=1, minsize=40)
 		self.rowconfigure(1, weight=1, minsize=40)

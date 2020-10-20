@@ -44,21 +44,21 @@ class LoginFrame(tk.Frame):
 		self.osu_img = self.osu_img.resize((160, 70), Image.ANTIALIAS)
 		self.osu_photo = ImageTk.PhotoImage(self.osu_img)
 
-		self.config(width=600, height=300)
+		self.config(width=scaleInvWidth(self.master, 0.7), height=scaleInvHeight(self.master, 0.7))
 
 		self.grid(row=1, column=0, columnspan=2, sticky="nsew")
-		self.rowconfigure(0, weight=1, minsize=35)
-		self.rowconfigure(1, weight=1, minsize=25)
-		self.rowconfigure(2, weight=1, minsize=25)
-		self.rowconfigure(3, weight=1, minsize=25)
-		self.rowconfigure(4, weight=1, minsize=25)
-		self.rowconfigure(5, weight=1, minsize=25)
-		self.rowconfigure(6, weight=1, minsize=25)
-		self.rowconfigure(7, weight=1, minsize=25)
-		self.rowconfigure(8, weight=1, minsize=65)
-		self.rowconfigure(9, weight=1, minsize=55)
-		self.columnconfigure(0, weight=1, minsize=300)
-		self.columnconfigure(1, weight=1, minsize=300)
+		self.rowconfigure(0, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(1, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(2, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(3, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(4, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(5, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(6, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(7, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(8, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.rowconfigure(9, weight=1, minsize=scaleInvHeight(self.master, 0.05))
+		self.columnconfigure(0, weight=1, minsize=scaleInvWidth(self.master, 0.2))
+		self.columnconfigure(1, weight=1, minsize=scaleInvWidth(self.master, 0.2))
 		self.grid_propagate(False)
 
 		self.login_label = tk.Label(master = self, text = "Please login", font=("Helvetica", 20, 'bold'))
@@ -109,6 +109,12 @@ class LoginFrame(tk.Frame):
 			command = self.logout_user
 		)
 
+		self.exit_button = ttk.Button(
+			master = self, 
+			text = "Exit", 
+			command = self.exit
+		)
+
 
 		self.options_frame = OptionsFrame(self.parent)
 
@@ -143,6 +149,7 @@ class LoginFrame(tk.Frame):
 		self.database_entry.grid_remove()
 		self.login_button.grid_remove()
 		self.logout_button.grid(row=2, column=0, columnspan=2)
+		self.exit_button.grid(row=3, column=0, columnspan=2)
 		self.options_frame.SetDBConnection(self.dbconnection)
 		self.options_frame.grid(row=1, column=1, sticky="es") #FIXME
 		self.grid(row=1, column=0,  sticky="ws")
@@ -158,10 +165,10 @@ class LoginFrame(tk.Frame):
 		self.login_label['font'] = ('Helvetica', 20, 'bold')
 		self.username_label.grid()
 		self.username_entry.grid()
-		self.username_entry.delete(0,END)
+		self.username_entry.delete(0, tk.END)
 		self.password_label.grid()
 		self.password_entry.grid()
-		self.password_entry.delete(0,END)
+		self.password_entry.delete(0, tk.END)
 		self.host_label.grid()
 		self.host_entry.grid()
 		self.database_label.grid()
@@ -174,6 +181,9 @@ class LoginFrame(tk.Frame):
 		self['width'] = 600
 		self.columnconfigure(0, weight=1, minsize=300)
 		self.columnconfigure(1, weight=1, minsize=300)
+
+	def exit(self):
+		self.master.destroy()
 
 
 

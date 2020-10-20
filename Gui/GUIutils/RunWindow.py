@@ -45,9 +45,9 @@ class RunWindow(tk.Toplevel):
 		self.dbconnection = dbconnection
 		self.title("Grading Run")
 		self.geometry("1200x800")
-		self.rowconfigure(0, weight=1, minsize=800)
-		self.columnconfigure(0, weight=1, minsize=400)
-		self.columnconfigure(1, weight=1, minsize=600)
+		self.rowconfigure(0, weight=1, minsize=scaleInvHeight(self.master, 0.7))
+		self.columnconfigure(0, weight=1, minsize=scaleInvHeight(self.master, 0.3))
+		self.columnconfigure(1, weight=1, minsize=scaleInvHeight(self.master, 0.3))
 		self.calibration = self.parent.current_test_name.get()
 		self.input_dir = ''
 		self.output_dir = ''
@@ -55,28 +55,28 @@ class RunWindow(tk.Toplevel):
 		self.rd53_file  = ''
 
 		# setup left side
-		left_width = 500
-		left_frame = tk.Frame(self, width=left_width, height=800)
+		left_width = scaleInvWidth(self.master, 0.3)
+		left_frame = tk.Frame(self, width=left_width, height=scaleInvHeight(self.master, 0.8))
 		left_frame.grid(row=0, column=0, sticky='nsew')
 		left_frame.columnconfigure(0, weight=1, minsize=left_width)
-		left_frame.rowconfigure(0, weight=1, minsize=200)
-		left_frame.rowconfigure(1, weight=1, minsize=600)
+		left_frame.rowconfigure(0, weight=1, minsize=scaleInvHeight(self.master, 0.1))
+		left_frame.rowconfigure(1, weight=1, minsize=scaleInvHeight(self.master, 0.3))
 		left_frame.grid_propagate(False)
 
-		info_frame_height = 200
+		info_frame_height = scaleInvHeight(self.master, 0.2)
 		info_frame = tk.Frame(left_frame, width=left_width, height=info_frame_height)
 		info_frame.grid(row=0, column=0, sticky='nsew')
-		info_frame.columnconfigure(0, weight=1, minsize=100)
-		info_frame.columnconfigure(1, weight=1, minsize=100)
-		info_frame.columnconfigure(2, weight=1, minsize=100)
-		info_frame.rowconfigure(0, weight=1, minsize=20)
-		info_frame.rowconfigure(1, weight=1, minsize=20)
-		info_frame.rowconfigure(2, weight=1, minsize=20)
-		info_frame.rowconfigure(3, weight=1, minsize=20)
-		info_frame.rowconfigure(4, weight=1, minsize=20)
+		info_frame.columnconfigure(0, weight=1, minsize=int(left_width/5))
+		info_frame.columnconfigure(1, weight=1, minsize=int(left_width/5))
+		info_frame.columnconfigure(2, weight=1, minsize=int(left_width/5))
+		info_frame.rowconfigure(0, weight=1, minsize=int(info_frame_height/8))
+		info_frame.rowconfigure(1, weight=1, minsize=int(info_frame_height/8))
+		info_frame.rowconfigure(2, weight=1, minsize=int(info_frame_height/8))
+		info_frame.rowconfigure(3, weight=1, minsize=int(info_frame_height/8))
+		info_frame.rowconfigure(4, weight=1, minsize=int(info_frame_height/8))
 		info_frame.grid_propagate(False)
 		
-		console_frame = tk.Frame(left_frame, width=left_width, height=600, relief=tk.GROOVE, bd=2, bg='black')
+		console_frame = tk.Frame(left_frame, width=left_width, height=scaleInvHeight(self.master, 0.6), relief=tk.GROOVE, bd=2, bg='black')
 		console_frame.grid(row=1, column=0, sticky='nsew')
 
 		test_label = tk.Label(master=info_frame, text=self.parent.current_test_name.get(), font=("Helvetica", 25, "bold"))

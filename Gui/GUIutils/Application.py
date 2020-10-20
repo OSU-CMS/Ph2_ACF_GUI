@@ -13,12 +13,18 @@ from datetime import datetime
 import os
 from PIL import ImageTk, Image
 
+from Gui.GUIutils.guiUtils  import *
+
 phase2_repo_dir = '/home/bmanley/Ph2_ACF/'
 #database = "test.db"
 
 class Application():
 	def __init__(self):
 		self.root = tk.Tk()
+		self.scwidth = self.root.winfo_screenwidth()
+		self.scheight = self.root.winfo_screenheight()
+
+		#self.root.tk.call('tk', 'scaling', 0.1)
 
 		self.current_user = ''
 
@@ -71,7 +77,7 @@ class Application():
 		self.labelStyle.configure('Important.TLabel', font=('Helvetica', 25, 'Bold'), fg='black', bg='white')
 	
 	def SetGeometry(self):
-		self.root.geometry('{}x{}'.format(1000, 800))
+		self.root.geometry('{}x{}'.format(scaleInvWidth(self.root, 0.7), scaleInvHeight(self.root, 0.7)))
 		self.root.rowconfigure(0, weight=1, minsize=50)
 		self.root.rowconfigure(1, weight=1, minsize=250)
 		self.root.columnconfigure(0, weight=1, minsize=300)
