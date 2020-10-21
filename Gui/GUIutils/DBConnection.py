@@ -52,6 +52,18 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 		return
 	return connection
 
+def checkDBConnection(dbconnection):
+	if dbconnection == "Offline":
+		statusString = "<---- offline Mode ---->"
+		colorString = "color:red"
+	elif dbconnection.is_connected():
+		statusString = "<---- DB Connection established ---->"
+		colorString = "color: green"
+	else:
+		statusString = "<---- DB Connection broken ---->"
+		colorString = "color: red"
+	return statusString, colorString
+
 def createCalibrationEntry(dbconnection, modeInfo):
     sql_query = '''   INSERT INTO calibrationlist( ID, CalibrationName )
                 VALUES(?)  '''
