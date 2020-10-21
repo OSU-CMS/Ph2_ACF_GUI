@@ -9,12 +9,14 @@ import sys
 import os
 
 from Gui.GUIutils.DBConnection import *
+from Gui.QtGUIutils.QtStartWindow import *
 
 class QtApplication(QWidget):
 	def __init__(self):
 		super(QtApplication,self).__init__()
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
+		self.ProcessingTest = False
 
 		self.setLoginUI()
 		self.createLogin()
@@ -131,46 +133,49 @@ class QtApplication(QWidget):
 		StatusLabel.setText(statusString)
 		StatusLabel.setStyleSheet(colorString)
 
-		SummaryButton = QPushButton("&Status summary")
-		SummaryButton.setDefault(True)
-		SummaryButton.setMinimumWidth(kMinimumWidth)
-		SummaryButton.setMaximumWidth(kMaximumWidth)
-		SummaryButton.setMinimumHeight(kMinimumHeight)
-		SummaryButton.setMaximumHeight(kMaximumHeight)
+		self.SummaryButton = QPushButton("&Status summary")
+		self.SummaryButton.setDefault(True)
+		self.SummaryButton.setMinimumWidth(kMinimumWidth)
+		self.SummaryButton.setMaximumWidth(kMaximumWidth)
+		self.SummaryButton.setMinimumHeight(kMinimumHeight)
+		self.SummaryButton.setMaximumHeight(kMaximumHeight)
 		SummaryLabel = QLabel("Statistics of test status")
 
-		NewTestButton = QPushButton("&New")
-		NewTestButton.setMinimumWidth(kMinimumWidth)
-		NewTestButton.setMaximumWidth(kMaximumWidth)
-		NewTestButton.setMinimumHeight(kMinimumHeight)
-		NewTestButton.setMaximumHeight(kMaximumHeight)
+		self.NewTestButton = QPushButton("&New")
+		self.NewTestButton.setMinimumWidth(kMinimumWidth)
+		self.NewTestButton.setMaximumWidth(kMaximumWidth)
+		self.NewTestButton.setMinimumHeight(kMinimumHeight)
+		self.NewTestButton.setMaximumHeight(kMaximumHeight)
+		self.NewTestButton.clicked.connect(self.openNewTest)
+		if self.ProcessingTest == True:
+			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
 
-		ReviewButton = QPushButton("&Review")
-		ReviewButton.setMinimumWidth(kMinimumWidth)
-		ReviewButton.setMaximumWidth(kMaximumWidth)
-		ReviewButton.setMinimumHeight(kMinimumHeight)
-		ReviewButton.setMaximumHeight(kMaximumHeight)
+		self.ReviewButton = QPushButton("&Review")
+		self.ReviewButton.setMinimumWidth(kMinimumWidth)
+		self.ReviewButton.setMaximumWidth(kMaximumWidth)
+		self.ReviewButton.setMinimumHeight(kMinimumHeight)
+		self.ReviewButton.setMaximumHeight(kMaximumHeight)
 		ReviewLabel = QLabel("Review all results")
 
-		ReviewModuleButton = QPushButton("&Show Module")
-		ReviewModuleButton.setMinimumWidth(kMinimumWidth)
-		ReviewModuleButton.setMaximumWidth(kMaximumWidth)
-		ReviewModuleButton.setMinimumHeight(kMinimumHeight)
-		ReviewModuleButton.setMaximumHeight(kMaximumHeight)
+		self.ReviewModuleButton = QPushButton("&Show Module")
+		self.ReviewModuleButton.setMinimumWidth(kMinimumWidth)
+		self.ReviewModuleButton.setMaximumWidth(kMaximumWidth)
+		self.ReviewModuleButton.setMinimumHeight(kMinimumHeight)
+		self.ReviewModuleButton.setMaximumHeight(kMaximumHeight)
 		ReviewModuleEdit = QLineEdit('')
 		ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
 		ReviewModuleEdit.setPlaceholderText('Enter Module ID')
 
 		layout = QGridLayout()
 		layout.addWidget(StatusLabel,  0, 0, 1, 3)
-		layout.addWidget(SummaryButton,1, 0, 1, 1)
+		layout.addWidget(self.SummaryButton,1, 0, 1, 1)
 		layout.addWidget(SummaryLabel, 1, 1, 1, 2)
-		layout.addWidget(NewTestButton,2, 0, 1, 1)
+		layout.addWidget(self.NewTestButton,2, 0, 1, 1)
 		layout.addWidget(NewTestLabel, 2, 1, 1, 2)
-		layout.addWidget(ReviewButton, 3, 0, 1, 1)
+		layout.addWidget(self.ReviewButton, 3, 0, 1, 1)
 		layout.addWidget(ReviewLabel,  3, 1, 1, 2)
-		layout.addWidget(ReviewModuleButton,4, 0, 1, 1)
+		layout.addWidget(self.ReviewModuleButton,4, 0, 1, 1)
 		layout.addWidget(ReviewModuleEdit,  4, 1, 1, 2)
 
 		self.MainOption.setLayout(layout)
@@ -183,10 +188,16 @@ class QtApplication(QWidget):
 		self.RefreshButton.clicked.connect(self.createMain)
 
 		self.LogoutButton = QPushButton("&Logout")
+		# Fixme: more conditions to be added
+		if self.ProcessingTest:
+			self.LogoutButton.setDisabled(True)
 		self.LogoutButton.clicked.connect(self.destroyMain)
 		self.LogoutButton.clicked.connect(self.createLogin)
 
 		self.ExitButton = QPushButton("&Exit")
+		# Fixme: more conditions to be added
+		if self.ProcessingTest:
+			self.ExitButton.setDisabled(True)
 		self.ExitButton.clicked.connect(QApplication.quit)
 		self.AppLayout.addStretch(1)
 		self.AppLayout.addWidget(self.RefreshButton)
@@ -203,7 +214,37 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.MainOption)
 		self.mainLayout.removeWidget(self.AppOption)
 
+	def openNewTest(self):
+		self.StartNewTest = QtStartWindow(self)
+		self.NewTestButton.setDisabled(True)
+		self.LogoutButton.setDisabled(True)
+		self.ExitButton.setDisabled(True)
+		pass
 
+	def openSummaryWindow(self):
+		pass
+
+	def openReviewWindow(self):
+		pass
+
+	def openModuleReviewWindow(self):
+		pass
+
+	def closeEvent(self, event):
+		#Fixme: strict criterias for process checking  should be added here:
+		#if self.ProcessingTest == True:
+		#	QMessageBox.critical(self, 'Critical Message', 'There is running process, can not close!')
+		#	event.ignore()
+
+		reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to exit?',
+			QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+
+		if reply == QMessageBox.Yes:
+			event.accept()
+			self.release()
+			print('Window closed')
+		else:
+			event.ignore()
 		
 
 
