@@ -10,6 +10,7 @@
 import mysql.connector
 from Gui.GUIutils.ErrorWindow import *
 from PyQt5.QtWidgets import (QMessageBox)
+from Gui.GUIutils.settings import *
 
 DB_TestResult_Schema = ['Module_ID, Account, CalibrationName, ExecutionTime, Grading, DQMFile']
 
@@ -48,9 +49,17 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 		connection = mysql.connector.connect(user=str(TryUsername), password=str(TryPassword),host=str(TryHostAddress),database=str(TryDatabase))
 	except (ValueError,RuntimeError, TypeError, NameError,mysql.connector.Error):
 		msg = QMessageBox()
-		msg.information(None,"Error:","Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address", QMessageBox.Ok)
+		msg.information(None,"Error","Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address", QMessageBox.Ok)
 		return
 	return connection
+
+def isActive(dbconnection):
+	if dbconnection == "Offline":
+		return False
+	elif dbconnection.is_connected():
+		return True
+	else:
+		return False
 
 def checkDBConnection(dbconnection):
 	if dbconnection == "Offline":
@@ -65,17 +74,30 @@ def checkDBConnection(dbconnection):
 	return statusString, colorString
 
 def createCalibrationEntry(dbconnection, modeInfo):
-    sql_query = '''   INSERT INTO calibrationlist( ID, CalibrationName )
-                VALUES(?)  '''
-    cur = dbconnection.cursor()
-    cur.execute(sql_query, modeInfo)
-    dbconnection.commit()
-    return cur.lastrowid
+	sql_query = '''   INSERT INTO calibrationlist( ID, CalibrationName )
+				VALUES(?)  '''
+	cur = dbconnection.cursor()
+	cur.execute(sql_query, modeInfo)
+	dbconnection.commit()
+	return cur.lastrowid
+
+def getAllCalibrations(dbconnection):
+	if dbconnection == "Offline":
+		remoteList = []
+	elif dbconnection.is_connected():
+		remoteList = retrieveAllCalibrations(dbconnection)
+	else:
+		QMessageBox().information(None, "Warning", "Database connection broken", QMessageBox.Ok)
+		remoteList = []
+	localList = list(calibration.keys())
+	return sorted(set(localList) | set(remoteList), key = localList.index)
 
 def retrieveAllCalibrations(dbconnection):
-    cur = dbconnection.cursor() 
-    cur.execute('SELECT * FROM calibrationlist')
-    return cur.fetchall()
+	if dbconnection.is_connected() == False:
+		return 
+	cur = dbconnection.cursor() 
+	cur.execute('SELECT * FROM calibrationlist')
+	return cur.fetchall()
 
 def retriveTestTableHeader(dbconnection):
 	cur = dbconnection.cursor()

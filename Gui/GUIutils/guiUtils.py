@@ -28,6 +28,7 @@ from PIL import ImageTk, Image
 from functools import partial
 from tkinter import scrolledtext 
 
+from  Gui.GUIutils.settings import *
 from  Gui.GUIutils.DBConnection import *
 
 ##########################################################################
@@ -173,4 +174,15 @@ def GetTBrowser(DQMFile):
 ##########################################################################
 
 
+def isCompositeTest(calibrationName):
+	if calibrationName in CompositeCalibration:
+		return True
+	else:
+		return False
+
+def isSingleTest(calibrationName):
+	if calibrationName in SingleCalibration:
+		return True
+	else:
+		return False
 

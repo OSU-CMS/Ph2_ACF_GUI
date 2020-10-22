@@ -240,9 +240,8 @@ class QtApplication(QWidget):
 			QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
+			print('Application terminated')
 			event.accept()
-			self.release()
-			print('Window closed')
 		else:
 			event.ignore()
 		

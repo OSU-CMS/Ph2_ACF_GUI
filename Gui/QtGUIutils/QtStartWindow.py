@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 import sys
 import os
 
-from Gui.QtGUIutils.QtApplication import *
+from Gui.QtGUIutils.QtRunWindow import *
 from Gui.GUIutils.DBConnection import *
 
 class QtStartWindow(QWidget):
@@ -27,15 +27,15 @@ class QtStartWindow(QWidget):
 	def setLoginUI(self):
 		self.setGeometry(400, 400, 400, 400)  
 		self.setWindowTitle('Start a new test')  
-		QApplication.setStyle(QStyleFactory.create('Fusion'))
-		QApplication.setPalette(QApplication.style().standardPalette())
+		#QApplication.setStyle(QStyleFactory.create('macintosh'))
+		#QApplication.setPalette(QApplication.style().standardPalette())
 		#QApplication.setPalette(QApplication.palette())
 		self.show()
 	
 	def createMain(self):
 		self.MainOption = QGroupBox()
 
-		kMinimumWidth = 120
+		kMinimumWidth = 80
 		kMaximumWidth = 150
 		kMinimumHeight = 30
 		kMaximumHeight = 80
@@ -45,13 +45,25 @@ class QtStartWindow(QWidget):
 		ModuleIDLabel.setMaximumWidth(kMaximumWidth)
 		ModuleIDLabel.setMinimumHeight(kMinimumHeight)
 		ModuleIDLabel.setMaximumHeight(kMaximumHeight)
-		ModuleIDEdit = QLineEdit('')
-		ModuleIDEdit.setEchoMode(QLineEdit.Normal)
-		ModuleIDEdit.setPlaceholderText('Enter Module ID')
+		self.ModuleIDEdit = QLineEdit('')
+		self.ModuleIDEdit.setEchoMode(QLineEdit.Normal)
+		self.ModuleIDEdit.setPlaceholderText('Enter Module ID')
+
+		TestLabel = QLabel("Calibration:")
+		TestLabel.setMinimumWidth(kMinimumWidth)
+		TestLabel.setMaximumWidth(kMaximumWidth)
+		TestLabel.setMinimumHeight(kMinimumHeight)
+		TestLabel.setMaximumHeight(kMaximumHeight)
+
+		self.TestCombo = QComboBox()
+		self.TestCombo.addItems(getAllCalibrations(self.master.connection))
+		TestLabel.setBuddy(self.TestCombo)
 
 		layout = QGridLayout()
-		layout.addWidget(ModuleIDLabel,0, 0, 1, 1)
-		layout.addWidget(ModuleIDEdit, 0, 1, 1, 2)
+		layout.addWidget(ModuleIDLabel,0, 0, 1, 1, Qt.AlignRight)
+		layout.addWidget(self.ModuleIDEdit, 0, 1, 1, 2, Qt.AlignLeft)
+		layout.addWidget(TestLabel,1, 0, 1, 1, Qt.AlignRight)
+		layout.addWidget(self.TestCombo,1, 1, 1, 2, Qt.AlignLeft)
 
 		self.MainOption.setLayout(layout)
 
@@ -67,8 +79,8 @@ class QtStartWindow(QWidget):
 		self.ResetButton.clicked.connect(self.createMain)
 
 		self.NextButton = QPushButton("&Next")
+		self.NextButton.setDefault(True)
 		self.NextButton.clicked.connect(self.openRunWindow)
-		self.NextButton.clicked.connect(self.closeWindow)
 
 		self.StartLayout.addStretch(1)
 		self.StartLayout.addWidget(self.CancelButton)
@@ -98,8 +110,13 @@ class QtStartWindow(QWidget):
 		self.master.ExitButton.setDisabled(False)
 
 	def openRunWindow(self):
+		if self.ModuleIDEdit.text() == "":
+			QMessageBox.information(None,"Error","No valid modlue ID!", QMessageBox.Ok)
+			return
+		self.info = [self.ModuleIDEdit.text(), str(self.TestCombo.currentText())]
 		self.runFlag = True
-		pass
+		self.master.RunNewTest = QtRunWindow(self.master,self.info)
+		self.close()
 
 	def closeEvent(self, event):
 		if self.runFlag == True:
