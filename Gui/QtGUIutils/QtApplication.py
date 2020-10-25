@@ -10,6 +10,7 @@ import os
 
 from Gui.GUIutils.DBConnection import *
 from Gui.QtGUIutils.QtStartWindow import *
+from Gui.QtGUIutils.QtModuleReviewWindow import *
 
 class QtApplication(QWidget):
 	def __init__(self):
@@ -24,7 +25,7 @@ class QtApplication(QWidget):
 	def setLoginUI(self):
 		self.setGeometry(300, 300, 400, 400)  
 		self.setWindowTitle('Phase2 Pixel Module Test GUI')  
-		QApplication.setStyle(QStyleFactory.create('Fusion'))
+		QApplication.setStyle(QStyleFactory.create('macintosh'))
 		QApplication.setPalette(QApplication.style().standardPalette())
 		#QApplication.setPalette(QApplication.palette())
 		self.show()
@@ -163,9 +164,10 @@ class QtApplication(QWidget):
 		self.ReviewModuleButton.setMaximumWidth(kMaximumWidth)
 		self.ReviewModuleButton.setMinimumHeight(kMinimumHeight)
 		self.ReviewModuleButton.setMaximumHeight(kMaximumHeight)
-		ReviewModuleEdit = QLineEdit('')
-		ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
-		ReviewModuleEdit.setPlaceholderText('Enter Module ID')
+		self.ReviewModuleButton.clicked.connect(self.openModuleReviewWindow)
+		self.ReviewModuleEdit = QLineEdit('')
+		self.ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
+		self.ReviewModuleEdit.setPlaceholderText('Enter Module ID')
 
 		layout = QGridLayout()
 		layout.addWidget(StatusLabel,  0, 0, 1, 3)
@@ -176,7 +178,7 @@ class QtApplication(QWidget):
 		layout.addWidget(self.ReviewButton, 3, 0, 1, 1)
 		layout.addWidget(ReviewLabel,  3, 1, 1, 2)
 		layout.addWidget(self.ReviewModuleButton,4, 0, 1, 1)
-		layout.addWidget(ReviewModuleEdit,  4, 1, 1, 2)
+		layout.addWidget(self.ReviewModuleEdit,  4, 1, 1, 2)
 
 		self.MainOption.setLayout(layout)
 
@@ -198,7 +200,8 @@ class QtApplication(QWidget):
 		# Fixme: more conditions to be added
 		if self.ProcessingTest:
 			self.ExitButton.setDisabled(True)
-		self.ExitButton.clicked.connect(QApplication.quit)
+		#self.ExitButton.clicked.connect(QApplication.quit)
+		self.ExitButton.clicked.connect(self.close)
 		self.AppLayout.addStretch(1)
 		self.AppLayout.addWidget(self.RefreshButton)
 		self.AppLayout.addWidget(self.LogoutButton)
@@ -228,7 +231,11 @@ class QtApplication(QWidget):
 		pass
 
 	def openModuleReviewWindow(self):
-		pass
+		Module_ID = self.ReviewModuleEdit.text()
+		if Module_ID != "":
+			self.ModuleReviewWindow =  QtModuleReviewWindow(self, Module_ID)
+		else:
+			QMessageBox.information(None, "Error", "Please enter a valid module ID", QMessageBox.Ok)
 
 	def closeEvent(self, event):
 		#Fixme: strict criterias for process checking  should be added here:

@@ -8,9 +8,15 @@
 '''
 
 import mysql.connector
+import subprocess
+import os
+
+from subprocess import Popen, PIPE
 from Gui.GUIutils.ErrorWindow import *
 from PyQt5.QtWidgets import (QMessageBox)
 from Gui.GUIutils.settings import *
+from Gui.GUIutils.guiUtils import *
+
 
 DB_TestResult_Schema = ['Module_ID, Account, CalibrationName, ExecutionTime, Grading, DQMFile']
 
@@ -53,14 +59,6 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 		return
 	return connection
 
-def isActive(dbconnection):
-	if dbconnection == "Offline":
-		return False
-	elif dbconnection.is_connected():
-		return True
-	else:
-		return False
-
 def checkDBConnection(dbconnection):
 	if dbconnection == "Offline":
 		statusString = "<---- offline Mode ---->"
@@ -86,11 +84,16 @@ def getAllCalibrations(dbconnection):
 		remoteList = []
 	elif dbconnection.is_connected():
 		remoteList = retrieveAllCalibrations(dbconnection)
+		remoteList = [list(i) for i in remoteList]
 	else:
 		QMessageBox().information(None, "Warning", "Database connection broken", QMessageBox.Ok)
 		remoteList = []
 	localList = list(calibration.keys())
-	return sorted(set(localList) | set(remoteList), key = localList.index)
+	remoteList = [remoteList[i][0] for i in range(len(remoteList))]
+	for test in remoteList:
+		if not test in localList:
+			localList.append(test)
+	return sorted(set(localList), key = localList.index)
 
 def retrieveAllCalibrations(dbconnection):
 	if dbconnection.is_connected() == False:
@@ -135,4 +138,54 @@ def insertTestResult(dbconnection, record):
 	cur.execute(sql_query)
 	dbconnection.commit()
 	return cur.lastrowid
+
+def getLocalTests(module_id):
+	getDirectories = subprocess.run('find {0} -mindepth 2 -maxdepth 2 -type d'.format(os.environ.get("DATA_dir")), shell=True, stdout=subprocess.PIPE)
+	dirList = getDirectories.stdout.decode('utf-8').rstrip('\n').split('\n')
+	localTests = []
+	for dirName in dirList:
+		if "_Module{0}_".format(str(module_id or '')) in dirName:
+			test = formatter(dirName)
+			localTests.append(test)
+	return localTests
+
+def getLocalRemoteTests(dbconnection, module_id = None):
+	if isActive(dbconnection):
+		if module_id:
+			remoteTests = retrieveModuleTests(dbconnection, module_id)
+			remoteTests = [list(i) for i in remoteTests]
+		else:
+			remoteTests = retrieveAllTestResults(dbconnection)
+			remoteTests = [list(i) for i in remoteTests]
+	else:
+		remoteTests = []
+
+	localTests = getLocalTests(module_id)
+
+	if remoteTests != []:
+		RemoteSet = set([ele[3] for ele in remoteTests])
+	else:
+		RemoteSet = set([])
+	if localTests != []:
+		LocalSet = set([ele[3] for ele in localTests])
+	else:
+		LocalSet = set([])
+	OnlyRemoteSet = RemoteSet.difference(LocalSet)
+	InterSet = RemoteSet.intersection(LocalSet)
+	OnlyLocalSet = LocalSet.difference(RemoteSet)
+
+	allTests = [header]
+
+	for localTest in localTests:
+		if localTest[3] in OnlyLocalSet:
+			allTests.append(['Local']+localTest)
+	
+	for remoteTest in remoteTests:
+		if remoteTest[3] in OnlyRemoteSet:
+			allTests.append(['Remote']+remoteTest)
+		
+		if remoteTest[3] in InterSet:
+			allTests.append(['Synced']+remoteTest)
+
+	return allTests
 

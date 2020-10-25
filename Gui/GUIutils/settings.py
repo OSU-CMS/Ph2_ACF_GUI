@@ -39,3 +39,12 @@ SingleCalibration = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 					 'ThresholdAdjustment','InjectionDelay','ClockDelay','Physics']
 
 CompositeCalibration = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+CompositeList = {
+	'AllScan': ['Latency','PixelAlive', 'GainScan'],
+	'StandardStep1': ['Latency','PixelAlive'],
+	'StandardStep2': ['Latency','PixelAlive', 'SCurveScan'],
+	'StandardStep3': ['Latency','PixelAlive'],
+	'StandardStep4': ['Latency','PixelAlive']
+}
+
+header = ['Source', 'Module_ID', 'User', 'Calibration', 'Time', 'Grade', 'DQMFile']

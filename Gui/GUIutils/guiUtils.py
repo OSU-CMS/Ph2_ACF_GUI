@@ -57,7 +57,7 @@ def iter_except(function, exception):
 ##########################################################################
 ##########################################################################
 
-def ConfigureTest(Calibration, Module_ID, Output_Dir, DBConnection):
+def ConfigureTest(Calibration, Module_ID, Output_Dir, Input_Dir, DBConnection):
 	if not Output_Dir:
 		test_dir = os.environ.get('DATA_dir') + "/Test_" +str(Calibration)
 		if not os.path.isdir(test_dir):
@@ -70,20 +70,33 @@ def ConfigureTest(Calibration, Module_ID, Output_Dir, DBConnection):
 		try:
 			os.makedirs(Output_Dir)
 		except OSError:
-			return "OutputDir not created"
+			print("OutputDir not created")
+			return "",""
 	
 	#FIXME:
 	#Get the appropiate XML config file and RD53 file from either DB or local, copy to output file
 	#Store the XML config and RD53 config to created folder and DB
-	header = retriveTestTableHeader(DBConnection)
-	col_names = list(map(lambda x: header[x][0], range(0,len(header))))
-	index = col_names.index('DQMFile')
-	latest_record  = retrieveModuleLastTest(DBConnection, Module_ID)
-	if latest_record and index:
-		Input_Dir = "/".join(str(latest_record[0][index]).split('/')[0:-1])
+	if isActive(DBConnection):
+		header = retriveTestTableHeader(DBConnection)
+		col_names = list(map(lambda x: header[x][0], range(0,len(header))))
+		index = col_names.index('DQMFile')
+		latest_record  = retrieveModuleLastTest(DBConnection, Module_ID)
+		if latest_record and index:
+			Input_Dir = "/".join(str(latest_record[0][index]).split('/')[:-1])
+		else:
+			Input_Dir = ""
+		return Output_Dir, Input_Dir
+
 	else:
-		Input_Dir = ""
-	return Output_Dir, Input_Dir
+		return Output_Dir, Input_Dir
+
+def isActive(dbconnection):
+	if dbconnection == "Offline":
+		return False
+	elif dbconnection.is_connected():
+		return True
+	else:
+		return False
 
 ##########################################################################
 ##  Functions for setting up XML and RD53 configuration
@@ -185,4 +198,16 @@ def isSingleTest(calibrationName):
 		return True
 	else:
 		return False
+
+def formatter(DirName):
+	dirName = DirName.split('/')[-1]
+	Module_ID = dirName.split('_')[1].lstrip("Module")
+	User = 'local'
+	Calibration = dirName.split('_')[2]
+	Grade = -1
+	TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
+	DQMFile = DirName
+
+	return [Module_ID, User, Calibration, TimeStamp, Grade, DQMFile]
+	
 
