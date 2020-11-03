@@ -1,3 +1,23 @@
+DBServerIP = {
+	'Central-remote'		 :  '0.0.0.0',
+	'local'					 :  '127.0.0.1',
+	'OSU-remote'			 :  '128.146.38.1',
+}
+
+
+# Note: First element of list will be shown as default value
+DBNames = {
+	'All'					 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
+	'Central-remote'		 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
+	'local'					 :  ['phase2pixel_test'],
+	'OSU-remote'			 :  ['phase2pixel_test'],
+}
+
+FirmwareList =  {
+	'fc7.board.1' 			 :  '192.168.1.80',
+	'fc7.board.2'			 :  '192.168.1.81',
+}
+
 ConfigFiles = {
 	'Latency'                :  '/Configuration/CMSIT.xml',
 	'PixelAlive'             :  '/Configuration/CMSIT.xml',
@@ -14,7 +34,7 @@ ConfigFiles = {
 	'AllScan'                :  '/Configuration/CMSIT.xml',
 }
 
-calibration = {
+Test = {
 	'AllScan'                :  'pixelalive',
 	'StandardStep1'          :  'pixelalive',
 	'StandardStep2'          :  'pixelalive',
@@ -34,11 +54,11 @@ calibration = {
 	'Physics'                :  'physics',
 }
 
-SingleCalibration = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
+SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 					 'ThresholdEqualization','GainOptimization','ThresholdMinimization',
 					 'ThresholdAdjustment','InjectionDelay','ClockDelay','Physics']
 
-CompositeCalibration = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+CompositeTest = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
 	'AllScan': ['Latency','PixelAlive', 'GainScan'],
 	'StandardStep1': ['Latency','PixelAlive'],
@@ -47,4 +67,4 @@ CompositeList = {
 	'StandardStep4': ['Latency','PixelAlive']
 }
 
-header = ['Source', 'Module_ID', 'User', 'Calibration', 'Time', 'Grade', 'DQMFile']
+header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile']

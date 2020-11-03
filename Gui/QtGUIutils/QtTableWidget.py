@@ -27,25 +27,25 @@ class QtTableWidget(QSortFilterProxyModel):
 		super(QtTableWidget,self).__init__()
 
 
-		dataHeader = dataList[0]
-		dataBody = dataList[1:]
-		dataBody.sort(key=lambda x: x[4], reverse=True)
+		self.dataHeader = dataList[0]
+		self.dataBody = dataList[1:]
+		self.dataBody.sort(key=lambda x: x[4], reverse=True)
 
 		self.model = QStandardItemModel()
-		self.model.setHorizontalHeaderLabels(dataHeader)
+		self.model.setHorizontalHeaderLabels(["Details"]+self.dataHeader)
 
-		for row in range(len(dataBody)):
+		for row in range(len(self.dataBody)):
 			RowContents = []
-			for column in range(len(dataHeader)):
+			ButtonItem = QStandardItem()
+			RowContents.append(ButtonItem)
+			for column in range(len(self.dataHeader)):
 				if column == 0:
 					brush = QBrush()
-					brush.setColor(Color[dataBody[row][0]])
-				item = QStandardItem("{0}".format(dataBody[row][column])) 
+					brush.setColor(Color[self.dataBody[row][0]])
+				item = QStandardItem("{0}".format(self.dataBody[row][column])) 
 				item.setForeground(brush)
 				RowContents.append(item)
-			self.model.invisibleRootItem().appendRow(RowContents)
-
-		
+			self.model.invisibleRootItem().appendRow(RowContents)		
 		self.setSourceModel(self.model)
 
 	@QtCore.pyqtSlot()

@@ -42,8 +42,8 @@ def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase, maste
 
 def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 	# For test, no connection to DB is made and output will not be registered
-	if TryHostAddress == "0.0.0.0":
-		return "DummyDB"
+	#if TryHostAddress == "0.0.0.0":
+	#	return "DummyDB"
 
 	# Try connecting to DB on localhost with unspecific host address
 	if not TryHostAddress:
@@ -79,23 +79,23 @@ def createCalibrationEntry(dbconnection, modeInfo):
 	dbconnection.commit()
 	return cur.lastrowid
 
-def getAllCalibrations(dbconnection):
+def getAllTests(dbconnection):
 	if dbconnection == "Offline":
 		remoteList = []
 	elif dbconnection.is_connected():
-		remoteList = retrieveAllCalibrations(dbconnection)
+		remoteList = retrieveAllTests(dbconnection)
 		remoteList = [list(i) for i in remoteList]
 	else:
 		QMessageBox().information(None, "Warning", "Database connection broken", QMessageBox.Ok)
 		remoteList = []
-	localList = list(calibration.keys())
+	localList = list(Test.keys())
 	remoteList = [remoteList[i][0] for i in range(len(remoteList))]
 	for test in remoteList:
 		if not test in localList:
 			localList.append(test)
 	return sorted(set(localList), key = localList.index)
 
-def retrieveAllCalibrations(dbconnection):
+def retrieveAllTests(dbconnection):
 	if dbconnection.is_connected() == False:
 		return 
 	cur = dbconnection.cursor() 

@@ -57,16 +57,16 @@ def iter_except(function, exception):
 ##########################################################################
 ##########################################################################
 
-def ConfigureTest(Calibration, Module_ID, Output_Dir, Input_Dir, DBConnection):
+def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir, DBConnection):
 	if not Output_Dir:
-		test_dir = os.environ.get('DATA_dir') + "/Test_" +str(Calibration)
+		test_dir = os.environ.get('DATA_dir') + "/Test_" +str(Test)
 		if not os.path.isdir(test_dir):
 			try:
 				os.makedirs(test_dir)
 			except OSError:
 				print("Can not create directory: {0}".format(test_dir))
 		time_stamp = datetime.utcnow().isoformat() + "_UTC"
-		Output_Dir = test_dir + "/Test_Module" + str(Module_ID) + "_" + str(Calibration) + "_" + str(time_stamp)
+		Output_Dir = test_dir + "/Test_Module" + str(Module_ID) + "_" + str(Test) + "_" + str(time_stamp)
 		try:
 			os.makedirs(Output_Dir)
 		except OSError:
@@ -187,14 +187,14 @@ def GetTBrowser(DQMFile):
 ##########################################################################
 
 
-def isCompositeTest(calibrationName):
-	if calibrationName in CompositeCalibration:
+def isCompositeTest(TestName):
+	if TestName in CompositeTest:
 		return True
 	else:
 		return False
 
-def isSingleTest(calibrationName):
-	if calibrationName in SingleCalibration:
+def isSingleTest(TestName):
+	if TestName in SingleTest:
 		return True
 	else:
 		return False
@@ -203,11 +203,11 @@ def formatter(DirName):
 	dirName = DirName.split('/')[-1]
 	Module_ID = dirName.split('_')[1].lstrip("Module")
 	User = 'local'
-	Calibration = dirName.split('_')[2]
+	Test = dirName.split('_')[2]
 	Grade = -1
 	TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
 	DQMFile = DirName
 
-	return [Module_ID, User, Calibration, TimeStamp, Grade, DQMFile]
+	return [Module_ID, User, Test, TimeStamp, Grade, DQMFile]
 	
 

@@ -21,12 +21,12 @@
 class TBrowserWindow {
 
 private:
-   TGMainFrame    *fMain;       // main frame
-   TGFileBrowser   *fBrowser;     
+   TGMainFrame    *fMain;       // main frame    
 
 public:
-   TBrowserWindow();
+   TBrowserWindow(TString DQMFile);
    virtual ~TBrowserWindow();
+   void openTBrowser();
 };
 
 
@@ -38,80 +38,49 @@ TBrowserWindow::~TBrowserWindow()
    delete fMain;
 }
 
-//______________________________________________________________________________
-TBrowserWindow::TBrowserWindow()
+void TBrowserWindow::openTBrowser()
 {
-   // Main  window.
-
+   new TBrowser();
+}
+//______________________________________________________________________________
+TBrowserWindow::TBrowserWindow(TString DQMFile)
+{
+   std::cout<< DQMFile << std::endl;
+   gSystem->ChangeDirectory(DQMFile);
    fMain = new TGMainFrame(gClient->GetRoot(), 10, 10, kVerticalFrame);
    fMain->SetCleanup(kDeepCleanup); // delete all subframes on exit
+   fMain->SetEditable();
 
-   fBrowser = new TGFileBrowser(fMain);
-   fMain->SetEditable(kFALSE);
-   fBrowser->AddFSDirectory("/", "/");
-   fBrowser->GotoDir(gSystem->pwd());
+   TGCompositeFrame *fCframe = new TGCompositeFrame(fMain, 150, 40, kVerticalFrame|kFixedWidth);
+
+   TGTextButton  *fStart = new TGTextButton(fCframe, "&View");
+   fStart->Connect("Clicked()", "TBrowserWindow", this, "openTBrowser()");
+   fCframe->AddFrame(fStart, new TGLayoutHints(kLHintsTop | kLHintsExpandX,
+                                               0, 0, 0, 0));
+   fStart->SetToolTipText("Click to view the DQM files");
+
+   fMain->AddFrame(fCframe, new TGLayoutHints(kLHintsCenterX, 0, 0, 0, 0));
+
+   TGTextButton  *fExit = new TGTextButton(fMain, "&Exit");
+   fExit->Connect("Clicked()", "TApplication", gApplication, "Terminate()");
+   fMain->AddFrame(fExit, new TGLayoutHints(kLHintsBottom | kLHintsExpandX,0,0,0,0));
+   
+   fMain->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
+   fMain->DontCallClose();
+
    fMain->MapSubwindows();
-   fMain->Layout();
+
+   fMain->Resize(150, 100);
+
+   TString title = "DQM browser";
+   fMain->SetWindowName(title.Data());
    fMain->MapRaised();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void OpenBrowser(TString DQMFile)
 {
-    std::cout<< DQMFile << std::endl;
-    TGMainFrame  *fMain = new TGMainFrame(gClient->GetRoot(), 10, 10, kHorizontalFrame);
-    fMain->SetCleanup(kDeepCleanup); // delete all subframes on exit
-    fMain->SetEditable();
-
-    TGVerticalFrame *fFileBrowser = new TGVerticalFrame(fMain, 10, 10, kFixedWidth);
-    TGVerticalFrame *fContentViewer = new TGVerticalFrame(fMain, 10, 10);
- 
-    fMain->AddFrame(fFileBrowser, new TGLayoutHints(kLHintsLeft | kLHintsExpandY));
-
-    TGFileBrowser *FileBrowser = new TGFileBrowser(fFileBrowser);
-    fFileBrowser->AddFrame(FileBrowser, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-    FileBrowser->AddFSDirectory("/", "/");
-    FileBrowser->GotoDir(gSystem->pwd());
-    FileBrowser->Show();
-
-    //TGListView* lv = new TGListView(fFileBrowser);
-    //fFileBrowser->AddFrame(lv, new TGLayoutHints(kLHintsExpandX | kLHintsExpandY));
-
-    //TGFileContainer *fc = new TGFileContainer(lv);
-    //fc->Connect("DoubleClicked(TGFrame*,Int_t)", "TestFileList", fc,
-    //                 "OnDoubleClick(TGLVEntry*,Int_t)");
-    //fc->AddFile("../dummy.root");
-    //fc->DisplayDirectory();
-    
-
-
-    TGCanvas *Canvas = new TGCanvas(fContentViewer, 10, 10);
-    TGListTree *Contents = new TGListTree(Canvas, kHorizontalFrame);
-    Contents->Associate(fContentViewer);
-    fContentViewer->AddFrame(Canvas, new TGLayoutHints(kLHintsExpandX |
-                                            kLHintsExpandY));
-
-
-    fFileBrowser->Resize(300, fFileBrowser->GetDefaultHeight());
-    fContentViewer->Resize(800, fFileBrowser->GetDefaultHeight());
-
-    TGVSplitter *splitter = new TGVSplitter(fMain,2,2);
-    splitter->SetFrame(fFileBrowser, kTRUE);
-    fMain->AddFrame(splitter, new TGLayoutHints(kLHintsLeft | kLHintsExpandY));
- 
-    fMain->AddFrame(fContentViewer, new TGLayoutHints(kLHintsRight | kLHintsExpandX |
-                                        kLHintsExpandY));
-   
-    fMain->Connect("CloseWindow()", "TApplication", gApplication, "Terminate()");
-    fMain->DontCallClose();
-
-    fMain->MapSubwindows();
-
-    fMain->Resize(1500, 1000);
-
-    TString title = "DQM browser";
-    fMain->SetWindowName(title.Data());
-    fMain->MapRaised();
+    new TBrowserWindow(DQMFile);
 }
 
 

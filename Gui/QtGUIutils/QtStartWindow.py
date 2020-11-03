@@ -49,14 +49,14 @@ class QtStartWindow(QWidget):
 		self.ModuleIDEdit.setEchoMode(QLineEdit.Normal)
 		self.ModuleIDEdit.setPlaceholderText('Enter Module ID')
 
-		TestLabel = QLabel("Calibration:")
+		TestLabel = QLabel("Test:")
 		TestLabel.setMinimumWidth(kMinimumWidth)
 		TestLabel.setMaximumWidth(kMaximumWidth)
 		TestLabel.setMinimumHeight(kMinimumHeight)
 		TestLabel.setMaximumHeight(kMaximumHeight)
 
 		self.TestCombo = QComboBox()
-		self.TestCombo.addItems(getAllCalibrations(self.master.connection))
+		self.TestCombo.addItems(getAllTests(self.master.connection))
 		TestLabel.setBuddy(self.TestCombo)
 
 		layout = QGridLayout()

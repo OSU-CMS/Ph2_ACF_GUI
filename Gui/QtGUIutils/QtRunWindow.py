@@ -61,7 +61,7 @@ class QtRunWindow(QWidget):
 
 		self.HeadLayout = QHBoxLayout()
 
-		HeadLabel = QLabel('<font size="4"> Module: {0}  Calibration: {1} </font>'.format(self.info[0], self.info[1]))
+		HeadLabel = QLabel('<font size="4"> Module: {0}  Test: {1} </font>'.format(self.info[0], self.info[1]))
 		HeadLabel.setMaximumHeight(30)
 
 		statusString, colorString = checkDBConnection(self.connection)
@@ -269,20 +269,19 @@ class QtRunWindow(QWidget):
 		pass
 
 	def configTest(self):
-		#TCPConfigure(self.calibration, self.config_entry.get())
 		self.input_dir = ""
 		if self.currentTest == "" and isCompositeTest(self.info[1]):
-			calibrationName = CompositeList[self.info[1]][0]
+			testName = CompositeList[self.info[1]][0]
 		elif self.currentTest ==  None:
-			calibrationName = self.info[1]
+			testName = self.info[1]
 		else:
-			calibrationName = self.currentTest
+			testName = self.currentTest
 
-		self.output_dir, self.input_dir = ConfigureTest(calibrationName, self.info[0], self.output_dir, self.input_dir, self.connection)
+		self.output_dir, self.input_dir = ConfigureTest(testName, self.info[0], self.output_dir, self.input_dir, self.connection)
 
 		if self.input_dir == "":
 			if self.config_file == "":
-				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(calibrationName, "None")
+				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
 				SetupXMLConfigfromFile(config_file,self.output_dir)
 				#QMessageBox.information(None,"Noitce", "Using default XML configuration",QMessageBox.Ok)
 			else:
@@ -323,23 +322,22 @@ class QtRunWindow(QWidget):
 		self.rd53_file  = ""
 
 	def runTest(self):
-		calibrationName = self.info[1]
-		if isCompositeTest(calibrationName):
-			self.runCompositeTest(calibrationName)
-		elif isSingleTest(calibrationName):
-			self.runSingleTest(calibrationName)
+		testName = self.info[1]
+		if isCompositeTest(testName):
+			self.runCompositeTest(testName)
+		elif isSingleTest(testName):
+			self.runSingleTest(testName)
 		else:
-			QMessageBox.information(None, "Warning", "Not a valid calibration", QMessageBox.Ok)
+			QMessageBox.information(None, "Warning", "Not a valid test", QMessageBox.Ok)
 			return
 
-	def runCompositeTest(self,calibrationName):
+	def runCompositeTest(self,testName):
 		for i in CompositeList[self.info[1]]:
 			self.runSingleTest(str(i))
 
-	def runSingleTest(self,calibrationName):
-		self.currentTest = calibrationName
+	def runSingleTest(self,testName):
+		self.currentTest = testName
 		self.configTest()
-		#self.run_process = Popen('python CMSITminiDAQ.py -f {0} -c {1}'.format("CMSIT.xml",self.calibration), shell=True, stdout=PIPE, stderr=PIPE)
 		#self.run_process.setProgram()
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
 		#self.run_process.start("ping",["www.google.com"])
@@ -419,6 +417,7 @@ class QtRunWindow(QWidget):
 				self.release()
 				event.accept()
 			else:
+				self.backSignal = False
 				event.ignore()
 
 
