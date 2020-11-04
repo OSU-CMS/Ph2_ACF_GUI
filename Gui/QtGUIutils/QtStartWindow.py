@@ -49,6 +49,7 @@ class QtStartWindow(QWidget):
 		self.ModuleIDEdit = QLineEdit('')
 		self.ModuleIDEdit.setEchoMode(QLineEdit.Normal)
 		self.ModuleIDEdit.setPlaceholderText('Enter Module ID')
+		self.ModuleIDEdit.textChanged.connect(self.setTestList)
 
 		TestLabel = QLabel("Test:")
 		TestLabel.setMinimumWidth(kMinimumWidth)
@@ -57,7 +58,8 @@ class QtStartWindow(QWidget):
 		TestLabel.setMaximumHeight(kMaximumHeight)
 
 		self.TestCombo = QComboBox()
-		self.TestCombo.addItems(getAllTests(self.master.connection))
+		self.TestList = getAllTests(self.master.connection)
+		self.TestCombo.addItems(self.TestList)
 		TestLabel.setBuddy(self.TestCombo)
 
 		layout = QGridLayout()
@@ -77,13 +79,13 @@ class QtStartWindow(QWidget):
 		self.PowerModeCombo = QComboBox()
 		self.PowerModeCombo.addItems(FEPowerUpVD.keys())
 
-		ANLVoltLabel = QLabel("Analog V:")
+		ANLVoltLabel = QLabel("Analog Volts(V):")
 		self.ANLVoltEdit = QLineEdit()
 		self.ANLVoltEdit.setEchoMode(QLineEdit.Normal)
-		DIGVoltLabel = QLabel("Digital V:")
+		DIGVoltLabel = QLabel("Digital Volts(V):")
 		self.DIGVoltEdit = QLineEdit()
 		self.DIGVoltEdit.setEchoMode(QLineEdit.Normal)
-		AmpLabel = QLabel("Measured I:")
+		AmpLabel = QLabel("Measured I(A):")
 		self.AmpEdit = QLineEdit()
 		self.AmpEdit.setEchoMode(QLineEdit.Normal)
 
@@ -151,6 +153,18 @@ class QtStartWindow(QWidget):
 		self.master.LogoutButton.setDisabled(False)
 		self.master.ExitButton.setDisabled(False)
 
+	def setTestList(self):
+		self.TestCombo.setDisabled(True)
+		currentModule = self.ModuleIDEdit.text()
+		localTests = getLocalTests(currentModule)
+		if localTests == []:
+			self.TestCombo.clear()
+			self.TestCombo.addItems(firstTimeList) 
+		else:
+			self.TestCombo.clear()
+			self.TestCombo.addItems(self.TestList)
+		self.TestCombo.setDisabled(False)
+
 	def checkFwPar(self):
 		self.CheckLabel.setStyleSheet("color:red")
 		PowerMode = str(self.PowerModeCombo.currentText())
@@ -160,12 +174,12 @@ class QtStartWindow(QWidget):
 
 		comment = ''
 		try:		
-			if float(str(self.ANLVoltEdit.text())) < FEPowerUpVA[str(self.PowerModeCombo.currentText())][0] or float(str(self.ANLVoltEdit.text())) > FEPowerUpVA[str(self.PowerModeCombo.currentText())][1]:
-				comment +=  "Analog Voltage range: {}".format(FEPowerUpVA[str(self.PowerModeCombo.currentText())])
-			if float(str(self.DIGVoltEdit.text())) < FEPowerUpVD[str(self.PowerModeCombo.currentText())][0] or float(str(self.DIGVoltEdit.text())) > FEPowerUpVD[str(self.PowerModeCombo.currentText())][1]:
-				comment +=  "Digital Voltage range: {}".format(FEPowerUpVA[str(self.PowerModeCombo.currentText())])
-			if float(str(self.AmpEdit.text()))  < FEPowerUpAmp[str(self.PowerModeCombo.currentText())][0] or float(str(self.AmpEdit.text())) > FEPowerUpAmp[str(self.PowerModeCombo.currentText())][1]:
-				comment +=  "Amp range: {}".format(FEPowerUpAmp[str(self.PowerModeCombo.currentText())])		
+			if float(str(self.ANLVoltEdit.text())) < FEPowerUpVA[PowerMode][0] or float(str(self.ANLVoltEdit.text())) > FEPowerUpVA[PowerMode][1]:
+				comment +=  "Analog Voltage range: {}".format(FEPowerUpVA[PowerMode])
+			if float(str(self.DIGVoltEdit.text())) < FEPowerUpVD[PowerMode][0] or float(str(self.DIGVoltEdit.text())) > FEPowerUpVD[PowerMode][1]:
+				comment +=  "Digital Voltage range: {}".format(FEPowerUpVA[PowerMode])
+			if float(str(self.AmpEdit.text()))  < FEPowerUpAmp[PowerMode][0] or float(str(self.AmpEdit.text())) > FEPowerUpAmp[PowerMode][1]:
+				comment +=  "Amp range: {}".format(FEPowerUpAmp[PowerMode])		
 		except ValueError:
 			comment = "Not valid input"
 

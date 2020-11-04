@@ -66,5 +66,5 @@ CompositeList = {
 	'StandardStep3': ['Latency','PixelAlive'],
 	'StandardStep4': ['Latency','PixelAlive']
 }
-
+firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile']
