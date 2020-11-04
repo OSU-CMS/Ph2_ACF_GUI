@@ -184,8 +184,8 @@ class QtApplication(QWidget):
 		else:
 			self.TryUsername = self.UsernameEdit.text()
 			self.TryPassword = self.PasswordEdit.text()
-			self.TryHostAddress = DBServerIP[self.HostName.currentText()]
-			self.TryDatabase = self.DatabaseCombo.currentText()
+			self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+			self.TryDatabase = str(self.DatabaseCombo.currentText())
 
 
 		if self.TryUsername == '':
@@ -286,6 +286,7 @@ class QtApplication(QWidget):
 		self.NewTestButton.setMinimumHeight(kMinimumHeight)
 		self.NewTestButton.setMaximumHeight(kMaximumHeight)
 		self.NewTestButton.clicked.connect(self.openNewTest)
+		self.NewTestButton.setDisabled(True)
 		if self.ProcessingTest == True:
 			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
@@ -401,6 +402,8 @@ class QtApplication(QWidget):
 			self.releaseFw(index)
 
 	def occupyFw(self, index):
+		if self.StatusList[int(index)+1][1].text() == "Connected":
+			self.NewTestButton.setDisabled(False)
 		for i ,button in enumerate(self.UseButton):
 			if i == int(index):
 				button.setChecked(True)
