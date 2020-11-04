@@ -445,7 +445,6 @@ class QtApplication(QWidget):
 			event.accept()
 		else:
 			event.ignore()
-		
 
 
 		

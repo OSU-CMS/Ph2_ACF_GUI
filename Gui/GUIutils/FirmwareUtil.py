@@ -13,12 +13,20 @@ def firmwarePingCheck(fAddress):
 	returnCode = subprocess.run(["ping","-c","1","-W","1",fAddress]).returncode
 	return returnCode
 
+#Fixme
+def fpgaConfigCheck(firmwareName):
+	returnCode = 0
+	return returnCode
 
 def fwStatusParser(firmwareName, fAddress):
 	pingReturnCode = firmwarePingCheck(fAddress)
 	if pingReturnCode == 2:
-		return "Ping failed","color: red"
+		return "Ping failed","color:red"
 
+	fpgaReturnCode = fpgaConfigCheck(firmwareName)
+	if fpgaReturnCode == 1:
+		return "FPGA configuration failed", "color:red"
+	
 	return "Connected","color: green"
 
 

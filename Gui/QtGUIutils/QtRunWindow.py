@@ -36,6 +36,7 @@ class QtRunWindow(QWidget):
 		self.grade = -1
 		self.currentTest = ""
 		self.backSignal = False
+		self.haltSignal = False
 		#Fixme: QTimer to be added to update the page automatically
 
 		self.mainLayout = QGridLayout()
@@ -154,22 +155,22 @@ class QtRunWindow(QWidget):
 		OutputBox.setLayout(OutputLayout)
 
 		#Group Box for history
-		HistoryBox = QGroupBox("&History")
-		HistoryBoxSP = HistoryBox.sizePolicy()
+		self.HistoryBox = QGroupBox("&History")
+		HistoryBoxSP = self.HistoryBox.sizePolicy()
 		HistoryBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
-		HistoryBox.setSizePolicy(HistoryBoxSP)
+		self.HistoryBox.setSizePolicy(HistoryBoxSP)
 
-		HistoryLayout = QGridLayout()
-		dataList = getLocalRemoteTests(self.connection, self.info[0])
+		self.HistoryLayout = QGridLayout()
+		self.dataList = getLocalRemoteTests(self.connection, self.info[0])
 
-		self.proxy = QtTableWidget(dataList)
+		self.proxy = QtTableWidget(self.dataList)
 
 		self.lineEdit       = QLineEdit()
 		self.lineEdit.textChanged.connect(self.proxy.on_lineEdit_textChanged)
 		self.view           = QTableView()
 		self.view.setSortingEnabled(True)
 		self.comboBox       = QComboBox()
-		self.comboBox.addItems(["{0}".format(x) for x in dataList[0]])
+		self.comboBox.addItems(["{0}".format(x) for x in self.dataList[0]])
 		self.comboBox.currentIndexChanged.connect(self.proxy.on_comboBox_currentIndexChanged)
 		self.label          = QLabel()
 		self.label.setText("Regex Filter")
@@ -177,19 +178,19 @@ class QtRunWindow(QWidget):
 		self.view.setModel(self.proxy)
 		self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-		HistoryLayout = QGridLayout()
-		HistoryLayout.addWidget(self.lineEdit, 0, 1, 1, 1)
-		HistoryLayout.addWidget(self.view, 1, 0, 1, 3)
-		HistoryLayout.addWidget(self.comboBox, 0, 2, 1, 1)
-		HistoryLayout.addWidget(self.label, 0, 0, 1, 1)
+		self.HistoryLayout = QGridLayout()
+		self.HistoryLayout.addWidget(self.lineEdit, 0, 1, 1, 1)
+		self.HistoryLayout.addWidget(self.view, 1, 0, 1, 3)
+		self.HistoryLayout.addWidget(self.comboBox, 0, 2, 1, 1)
+		self.HistoryLayout.addWidget(self.label, 0, 0, 1, 1)
 
-		HistoryBox.setLayout(HistoryLayout)
+		self.HistoryBox.setLayout(self.HistoryLayout)
 
 		
 		LeftColSplitter.addWidget(ControllerBox)
 		LeftColSplitter.addWidget(TerminalBox)
 		RightColSplitter.addWidget(OutputBox)
-		RightColSplitter.addWidget(HistoryBox)
+		RightColSplitter.addWidget(self.HistoryBox)
 
 
 		LeftColSplitterSP = LeftColSplitter.sizePolicy()
@@ -262,6 +263,15 @@ class QtRunWindow(QWidget):
 		self.master.LogoutButton.setDisabled(False)
 		self.master.ExitButton.setDisabled(False)
 
+	def refreshHistory(self):
+		self.dataList = getLocalRemoteTests(self.connection, self.info[0])
+		self.proxy = QtTableWidget(self.dataList)
+		self.view.setModel(self.proxy)
+		self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
+		self.view.update()
+
+
+
 	def sendBackSignal(self):
 		self.backSignal = True
 
@@ -303,6 +313,9 @@ class QtRunWindow(QWidget):
 				SetupRD53Config(self.input_dir,self.output_dir)
 			else:
 				SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
+
+		self.rd53_file = ""
+		self.config_file = ""
 		return
 
 	def customizeTest(self):
@@ -334,6 +347,8 @@ class QtRunWindow(QWidget):
 	def runCompositeTest(self,testName):
 		for i in CompositeList[self.info[1]]:
 			self.runSingleTest(str(i))
+			if self.haltSignal:
+				return
 
 	def runSingleTest(self,testName):
 		self.currentTest = testName
@@ -344,10 +359,24 @@ class QtRunWindow(QWidget):
 		self.run_process.start("ls",["-lart"])
 		self.RunButton.setDisabled(True)
 		self.run_process.waitForFinished()
-		self.saveTest()
 		self.displayResult()
 		self.input_dir = self.output_dir
 		self.output_dir = ""
+		Question = QMessageBox()
+		Question.setIcon(QMessageBox.Question)
+		Question.setWindowTitle('SingleTest Finished')
+		Question.setText('Save current result and proceed?')
+		Question.setStandardButtons(QMessageBox.No| QMessageBox.Save | QMessageBox.Yes)
+		Question.setDefaultButton(QMessageBox.Yes)
+		customizedButton = Question.button(QMessageBox.Save)
+		customizedButton.setText('Save Only')
+		reply  = Question.exec_()
+
+		if reply == QMessageBox.Yes or reply == QMessageBox.Save:
+			self.saveTest()
+		if reply == QMessageBox.No or reply == QMessageBox.Save:
+			self.haltSignal = True
+		self.refreshHistory()
 
 
 	def abortTest(self):
@@ -381,6 +410,7 @@ class QtRunWindow(QWidget):
 			except:
 				QMessageBox.information(self,"Error","Unable to save to DB", QMessageBox.Ok)
 				return
+
 
 	#######################################################################
 	##  For result display

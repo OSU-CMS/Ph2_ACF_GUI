@@ -134,6 +134,7 @@ class QtSummaryWindow(QWidget):
 		self.mainLayout.removeWidget(self.AppOption)
 
 	def closeWindow(self):
+		self.release()
 		self.close()
 
 	def occupied(self):
