@@ -10,6 +10,7 @@ import os
 
 from Gui.QtGUIutils.QtRunWindow import *
 from Gui.GUIutils.DBConnection import *
+from Gui.GUIutils.FirmwareUtil import *
 
 class QtStartWindow(QWidget):
 	def __init__(self,master):
@@ -67,6 +68,43 @@ class QtStartWindow(QWidget):
 
 		self.MainOption.setLayout(layout)
 
+		self.firmwareCheckBox = QGroupBox()
+
+		firmwarePar  = QGridLayout()
+
+		PowerModeLabel = QLabel()
+		PowerModeLabel.setText("FE Power Mode:")
+		self.PowerModeCombo = QComboBox()
+		self.PowerModeCombo.addItems(FEPowerUpVD.keys())
+
+		ANLVoltLabel = QLabel("Analog V:")
+		self.ANLVoltEdit = QLineEdit()
+		self.ANLVoltEdit.setEchoMode(QLineEdit.Normal)
+		DIGVoltLabel = QLabel("Digital V:")
+		self.DIGVoltEdit = QLineEdit()
+		self.DIGVoltEdit.setEchoMode(QLineEdit.Normal)
+		AmpLabel = QLabel("Measured I:")
+		self.AmpEdit = QLineEdit()
+		self.AmpEdit.setEchoMode(QLineEdit.Normal)
+
+		self.CheckLabel = QLabel()
+		self.CheckButton = QPushButton("&Check")
+		self.CheckButton.clicked.connect(self.checkFwPar)
+		
+
+		firmwarePar.addWidget(PowerModeLabel,0,0,1,1)
+		firmwarePar.addWidget(self.PowerModeCombo,0,1,1,1)
+		firmwarePar.addWidget(ANLVoltLabel,1,0,1,1)
+		firmwarePar.addWidget(self.ANLVoltEdit,1,1,1,1)
+		firmwarePar.addWidget(DIGVoltLabel,2,0,1,1)
+		firmwarePar.addWidget(self.DIGVoltEdit,2,1,1,1)
+		firmwarePar.addWidget(AmpLabel,3,0,1,1)
+		firmwarePar.addWidget(self.AmpEdit,3,1,1,1)
+		firmwarePar.addWidget(self.CheckLabel,4,0,1,3)
+		firmwarePar.addWidget(self.CheckButton,5,0,1,1)	
+
+		self.firmwareCheckBox.setLayout(firmwarePar)
+
 		self.AppOption = QGroupBox()
 		self.StartLayout = QHBoxLayout()
 
@@ -80,6 +118,7 @@ class QtStartWindow(QWidget):
 
 		self.NextButton = QPushButton("&Next")
 		self.NextButton.setDefault(True)
+		self.NextButton.setDisabled(True)
 		self.NextButton.clicked.connect(self.openRunWindow)
 
 		self.StartLayout.addStretch(1)
@@ -89,12 +128,15 @@ class QtStartWindow(QWidget):
 		self.AppOption.setLayout(self.StartLayout)
 
 		self.mainLayout.addWidget(self.MainOption)
+		self.mainLayout.addWidget(self.firmwareCheckBox)
 		self.mainLayout.addWidget(self.AppOption)
 
 	def destroyMain(self):
 		self.MainOption.deleteLater()
+		self.firmwareCheckBox.deleteLater()
 		self.AppOption.deleteLater()
 		self.mainLayout.removeWidget(self.MainOption)
+		self.mainLayout.removeWidget(self.firmwareCheckBox)
 		self.mainLayout.removeWidget(self.AppOption)
 
 	def closeWindow(self):
@@ -108,6 +150,35 @@ class QtStartWindow(QWidget):
 		self.master.NewTestButton.setDisabled(False)
 		self.master.LogoutButton.setDisabled(False)
 		self.master.ExitButton.setDisabled(False)
+
+	def checkFwPar(self):
+		self.CheckLabel.setStyleSheet("color:red")
+		PowerMode = str(self.PowerModeCombo.currentText())
+		if not str(self.ANLVoltEdit.text()) or not str(self.DIGVoltEdit.text()) or not str(self.AmpEdit.text()):
+			self.CheckLabel.setText("V/I measure is missing")
+			return
+
+		comment = ''
+		try:		
+			if float(str(self.ANLVoltEdit.text())) < FEPowerUpVA[str(self.PowerModeCombo.currentText())][0] or float(str(self.ANLVoltEdit.text())) > FEPowerUpVA[str(self.PowerModeCombo.currentText())][1]:
+				comment +=  "Analog Voltage range: {}".format(FEPowerUpVA[str(self.PowerModeCombo.currentText())])
+			if float(str(self.DIGVoltEdit.text())) < FEPowerUpVD[str(self.PowerModeCombo.currentText())][0] or float(str(self.DIGVoltEdit.text())) > FEPowerUpVD[str(self.PowerModeCombo.currentText())][1]:
+				comment +=  "Digital Voltage range: {}".format(FEPowerUpVA[str(self.PowerModeCombo.currentText())])
+			if float(str(self.AmpEdit.text()))  < FEPowerUpAmp[str(self.PowerModeCombo.currentText())][0] or float(str(self.AmpEdit.text())) > FEPowerUpAmp[str(self.PowerModeCombo.currentText())][1]:
+				comment +=  "Amp range: {}".format(FEPowerUpAmp[str(self.PowerModeCombo.currentText())])		
+		except ValueError:
+			comment = "Not valid input"
+
+		if comment == '':
+			comment = "Ok"
+			self.CheckLabel.setText(comment)
+			self.CheckLabel.setStyleSheet("color:green")
+			self.NextButton.setDisabled(False)
+			return
+
+		self.CheckLabel.setText(comment)
+		self.NextButton.setDisabled(True)
+
 
 	def openRunWindow(self):
 		if self.ModuleIDEdit.text() == "":
