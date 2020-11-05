@@ -276,7 +276,6 @@ class QtApplication(QWidget):
 
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
-			print(index)
 			self.occupyFw("{0}".format(index))
 
 
@@ -346,6 +345,7 @@ class QtApplication(QWidget):
 		self.RefreshButton.clicked.connect(self.disableBoxs)
 		self.RefreshButton.clicked.connect(self.destroyMain)
 		self.RefreshButton.clicked.connect(self.createMain)
+		self.RefreshButton.clicked.connect(self.checkFirmware)
 
 		self.LogoutButton = QPushButton("&Logout")
 		# Fixme: more conditions to be added
@@ -410,6 +410,9 @@ class QtApplication(QWidget):
 			self.StatusList[index+1][1].setText(FwStatusComment)
 			self.StatusList[index+1][1].setStyleSheet(FwStatusColor)
 			self.UseButton[index].setDisabled(False)
+		if self.FwUnderUsed != '':
+			index = self.getIndex(self.FwUnderUsed,self.StatusList)
+			self.occupyFw("{0}".format(index))
 
 
 	def getFwComment(self,firmwareName,fwAddress,fileName):
