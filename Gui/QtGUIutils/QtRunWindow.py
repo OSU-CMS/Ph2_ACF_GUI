@@ -10,6 +10,8 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 import sys
 import os
 import subprocess
+import threading
+import time
 from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import *
@@ -37,8 +39,12 @@ class QtRunWindow(QWidget):
 		self.currentTest = ""
 		self.backSignal = False
 		self.haltSignal = False
+		self.finishSingal = False
+		self.proceedSignal = False
 		self.DisplayW = 450
 		self.DisplayH = 450
+		self.runNext = threading.Event()
+		self.testIndexTracker = -1
 		#Fixme: QTimer to be added to update the page automatically
 
 		self.mainLayout = QGridLayout()
@@ -85,6 +91,7 @@ class QtRunWindow(QWidget):
 		self.mainLayout.removeWidget(self.HeadBox)
 	
 	def createMain(self):
+		self.testIndexTracker = 0
 		self.MainBodyBox = QGroupBox()
 
 		mainbodylayout = QHBoxLayout()
@@ -105,7 +112,7 @@ class QtRunWindow(QWidget):
 		ControllerSP.setVerticalStretch(self.VerticalSegCol0[0])
 		ControllerBox.setSizePolicy(ControllerSP)
 
-		ControlLayout = QGridLayout()
+		self.ControlLayout = QGridLayout()
 
 		self.CustomizedButton = QPushButton("&Customize...")
 		self.CustomizedButton.clicked.connect(self.customizeTest)
@@ -114,18 +121,20 @@ class QtRunWindow(QWidget):
 		self.RunButton = QPushButton("&Run")
 		self.RunButton.setDefault(True)
 		self.RunButton.clicked.connect(self.runTest)
+		#self.ContinueButton = QPushButton("&Continue")
+		#self.ContinueButton.clicked.connect(self.sendProceedSignal)
 		self.AbortButton = QPushButton("&Abort")
 		self.AbortButton.clicked.connect(self.abortTest)
 		self.SaveButton = QPushButton("&Save")
 		self.SaveButton.clicked.connect(self.saveTest)
 
-		ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
-		ControlLayout.addWidget(self.ResetButton,0,2,1,1)
-		ControlLayout.addWidget(self.RunButton,1,0,1,1)
-		ControlLayout.addWidget(self.AbortButton,1,1,1,1)
-		ControlLayout.addWidget(self.SaveButton,1,2,1,1)
+		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
+		self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
+		self.ControlLayout.addWidget(self.RunButton,1,0,1,1)
+		self.ControlLayout.addWidget(self.AbortButton,1,1,1,1)
+		self.ControlLayout.addWidget(self.SaveButton,1,2,1,1)
 
-		ControllerBox.setLayout(ControlLayout)
+		ControllerBox.setLayout(self.ControlLayout)
 
 		#Group Box for ternimal display
 		TerminalBox = QGroupBox("&Terminal")
@@ -290,6 +299,10 @@ class QtRunWindow(QWidget):
 	def sendBackSignal(self):
 		self.backSignal = True
 
+	def sendProceedSignal(self):
+		self.proceedSignal = True
+		self.runNext.set()
+
 	def connectDB(self):
 		pass
 
@@ -350,8 +363,14 @@ class QtRunWindow(QWidget):
 		self.rd53_file  = ""
 
 	def runTest(self):
+		#self.ControlLayout.removeWidget(self.RunButton)
+		#self.RunButton.deleteLater()
+		#self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
 		testName = self.info[1]
 		if isCompositeTest(testName):
+			#Fixme: threading make GUI freeze
+			#self.runAllTests = threading.Thread(target=self.runCompositeTest(testName))
+			#self.runAllTests.start()
 			self.runCompositeTest(testName)
 		elif isSingleTest(testName):
 			self.runSingleTest(testName)
@@ -360,38 +379,43 @@ class QtRunWindow(QWidget):
 			return
 
 	def runCompositeTest(self,testName):
-		for i in CompositeList[self.info[1]]:
-			self.runSingleTest(str(i))
-			if self.haltSignal:
-				return
+		if self.haltSignal:
+			return
+		if self.testIndexTracker == len(CompositeList[self.info[1]]):
+			return
+		testName = CompositeList[self.info[1]][self.testIndexTracker]
+		self.runSingleTest(testName)
 
-	def runSingleTest(self,testName):
+
+	def runSingleTest(self,testName):	
 		self.currentTest = testName
 		self.configTest()
+		self.RunButton.setDisabled(True)
+		#self.ContinueButton.setDisabled(True)
 		#self.run_process.setProgram()
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-		#self.run_process.start("ping",["www.google.com"])
-		self.run_process.start("ls",["-lart"])
-		self.RunButton.setDisabled(True)
-		self.run_process.waitForFinished()
+		self.run_process.start("ping",["-c","5","www.google.com"])
+		#self.run_process.waitForFinished()
 		self.displayResult()
 		self.input_dir = self.output_dir
 		self.output_dir = ""
-		Question = QMessageBox()
-		Question.setIcon(QMessageBox.Question)
-		Question.setWindowTitle('SingleTest Finished')
-		Question.setText('Save current result and proceed?')
-		Question.setStandardButtons(QMessageBox.No| QMessageBox.Save | QMessageBox.Yes)
-		Question.setDefaultButton(QMessageBox.Yes)
-		customizedButton = Question.button(QMessageBox.Save)
-		customizedButton.setText('Save Only')
-		reply  = Question.exec_()
 
-		if reply == QMessageBox.Yes or reply == QMessageBox.Save:
-			self.saveTest()
-		if reply == QMessageBox.No or reply == QMessageBox.Save:
-			self.haltSignal = True
+		#Question = QMessageBox()
+		#Question.setIcon(QMessageBox.Question)
+		#Question.setWindowTitle('SingleTest Finished')
+		#Question.setText('Save current result and proceed?')
+		#Question.setStandardButtons(QMessageBox.No| QMessageBox.Save | QMessageBox.Yes)
+		#Question.setDefaultButton(QMessageBox.Yes)
+		#customizedButton = Question.button(QMessageBox.Save)
+		#customizedButton.setText('Save Only')
+		#reply  = Question.exec_()
+
+		#if reply == QMessageBox.Yes or reply == QMessageBox.Save:
+		#	self.saveTest()
+		#if reply == QMessageBox.No or reply == QMessageBox.Save:
+		#	self.haltSignal = True
 		self.refreshHistory()
+		self.finishSingal = False
 
 
 	def abortTest(self):
@@ -399,6 +423,8 @@ class QtRunWindow(QWidget):
 
 		if reply == QMessageBox.Yes:
 			self.run_process.kill()
+			self.haltSignal = True
+			self.sendProceedSignal()
 		else:
 			return
 
@@ -453,6 +479,13 @@ class QtRunWindow(QWidget):
 	@QtCore.pyqtSlot()
 	def on_finish(self):
 		self.RunButton.setDisabled(False)
+		self.RunButton.setText("&Continue")
+		self.finishSingal = True
+		self.testIndexTracker += 1
+		if isCompositeTest(self.info[1]):
+			if self.testIndexTracker == len(CompositeList[self.info[1]]):
+				self.RunButton.setText("&Finish")
+		#self.ContinueButton.setDisabled(False)
 
 	#######################################################################
 	##  For real-time terminal display
