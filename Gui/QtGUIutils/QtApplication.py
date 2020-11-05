@@ -12,6 +12,7 @@ import os
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
+from Gui.QtGUIutils.QtFwCheckWindow  import *
 from Gui.QtGUIutils.QtSummaryWindow import *
 from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtModuleReviewWindow import *
@@ -24,8 +25,10 @@ class QtApplication(QWidget):
 		self.ProcessingTest = False
 		self.expertMode = False
 		self.FwUnderUsed = ''
+		self.LogList = {}
 
 		self.setLoginUI()
+		self.initLog()
 		self.createLogin()
 
 	def setLoginUI(self):
@@ -36,6 +39,15 @@ class QtApplication(QWidget):
 		#QApplication.setPalette(QApplication.palette())
 		self.show()
 
+	def initLog(self):
+		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
+			LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),firmwareName)
+			try:
+				logFile  = open(LogFileName, "w")
+				self.LogList[index] = LogFileName
+				logFile.close()
+			except:
+				QMessageBox(None,"Error","Can not create log files: {}".format(LogFileName))
 
 	###############################################################
 	##  Login page and related functions
@@ -229,9 +241,9 @@ class QtApplication(QWidget):
 			FwNameLabel = QLabel()
 			FwNameLabel.setText(firmwareName)
 			FwStatusValue = QLabel()
-			FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress)
-			FwStatusValue.setText(FwStatusComment)
-			FwStatusValue.setStyleSheet(FwStatusColor)
+			#FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress)
+			#FwStatusValue.setText(FwStatusComment)
+			#FwStatusValue.setStyleSheet(FwStatusColor)
 			self.StatusList.append([FwNameLabel,FwStatusValue])
 
 		self.UseButton = []
@@ -240,10 +252,14 @@ class QtApplication(QWidget):
 
 		for index, items in enumerate(self.StatusList):
 			if index == 0:
+				self.CheckButton = QPushButton("&Fw Check")
+				self.CheckButton.clicked.connect(self.checkFirmware)
+				StatusLayout.addWidget(self.CheckButton, index, 0, 1, 1)
 				StatusLayout.addWidget(items[0], index, 1,  1, 1)
 				StatusLayout.addWidget(items[1], index, 2,  1, 2)
 			else:
 				UseButton = QPushButton("&Use")
+				UseButton.setDisabled(True)
 				UseButton.toggle()
 				UseButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.switchFw(x))
 				UseButton.setCheckable(True)
@@ -251,9 +267,12 @@ class QtApplication(QWidget):
 				StatusLayout.addWidget(UseButton, index, 0, 1, 1)
 				StatusLayout.addWidget(items[0], index, 1,  1, 1)
 				StatusLayout.addWidget(items[1], index, 2,  1, 2)
-				DetailButton = QPushButton("&Details")
-				DetailButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.showCommentFw(x))
-				StatusLayout.addWidget(DetailButton, index, 4, 1, 1)
+				SolutionButton = QPushButton("&Solutions")
+				SolutionButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.showCommentFw(x))
+				StatusLayout.addWidget(SolutionButton, index, 4, 1, 1)
+				LogButton = QPushButton("&Log")
+				LogButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.showLogFw(x))
+				StatusLayout.addWidget(LogButton, index, 5, 1, 1)
 
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
@@ -384,8 +403,17 @@ class QtApplication(QWidget):
 		else:
 			QMessageBox.information(None, "Error", "Please enter a valid module ID", QMessageBox.Ok)
 
-	def getFwComment(self,firmwareName,fwAddress):
-		comment,color = fwStatusParser(firmwareName,fwAddress)
+	def checkFirmware(self):
+		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
+			fileName = self.LogList[index]
+			FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress,fileName)
+			self.StatusList[index+1][1].setText(FwStatusComment)
+			self.StatusList[index+1][1].setStyleSheet(FwStatusColor)
+			self.UseButton[index].setDisabled(False)
+
+
+	def getFwComment(self,firmwareName,fwAddress,fileName):
+		comment,color = fwStatusParser(firmwareName,fwAddress,fileName)
 		return comment,color
 
 	def getIndex(self, element, List2D):
@@ -426,6 +454,10 @@ class QtApplication(QWidget):
 		comment = self.StatusList[int(index)+1][1].text()
 		solution = FwStatusCheck[comment]
 		QMessageBox.information(None, "Info", "{}".format(solution), QMessageBox.Ok)
+
+	def showLogFw(self, index):
+		fileName = self.LogList[int(index)]
+		self.FwLogWindow = QtFwCheckWindow(self,fileName)
 			
 	###############################################################
 	##  Main page and related functions  (END)

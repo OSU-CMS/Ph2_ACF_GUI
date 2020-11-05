@@ -8,22 +8,25 @@
 '''
 import subprocess
 from  subprocess import Popen,PIPE
+from  datetime import datetime
 
-def firmwarePingCheck(fAddress):
-	returnCode = subprocess.run(["ping","-c","1","-W","1",fAddress]).returncode
+def firmwarePingCheck(fAddress,fileName):
+	outputFile = open(fileName,'a+')
+	subprocess.run(["echo","\n[{0}]\n".format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))], stdout=outputFile, stderr=outputFile)
+	returnCode = subprocess.run(["ping","-c","1","-W","1",fAddress], stdout=outputFile, stderr=outputFile).returncode
 	return returnCode
 
 #Fixme
-def fpgaConfigCheck(firmwareName):
+def fpgaConfigCheck(firmwareName,fileName):
 	returnCode = 0
 	return returnCode
 
-def fwStatusParser(firmwareName, fAddress):
-	pingReturnCode = firmwarePingCheck(fAddress)
+def fwStatusParser(firmwareName, fAddress,fileName):
+	pingReturnCode = firmwarePingCheck(fAddress,fileName)
 	if pingReturnCode == 2:
 		return "Ping failed","color:red"
 
-	fpgaReturnCode = fpgaConfigCheck(firmwareName)
+	fpgaReturnCode = fpgaConfigCheck(firmwareName,fileName)
 	if fpgaReturnCode == 1:
 		return "FPGA configuration failed", "color:red"
 	
@@ -32,6 +35,7 @@ def fwStatusParser(firmwareName, fAddress):
 
 
 FwStatusCheck = {
+	""				  :       '''Please run frimware check  first ''',
 	"Ping failed"     :       '''Please check: 
 								 1. FC7 board is connected
 								 2. FC7 is connected to PC via Ethernet cable
