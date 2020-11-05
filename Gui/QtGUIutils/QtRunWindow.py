@@ -2,7 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
-		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
+		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QHBoxLayout,
 		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter)
@@ -27,7 +27,7 @@ class QtRunWindow(QWidget):
 		self.GroupBoxSeg = [1, 10,  1]
 		self.HorizontalSeg = [3, 5]
 		self.VerticalSegCol0 = [1,3]
-		self.VerticalSegCol1 = [3,2]
+		self.VerticalSegCol1 = [2,2]
 		self.processingFlag = False
 		self.input_dir = ''
 		self.output_dir = ''
@@ -37,6 +37,8 @@ class QtRunWindow(QWidget):
 		self.currentTest = ""
 		self.backSignal = False
 		self.haltSignal = False
+		self.DisplayW = 450
+		self.DisplayH = 450
 		#Fixme: QTimer to be added to update the page automatically
 
 		self.mainLayout = QGridLayout()
@@ -53,7 +55,7 @@ class QtRunWindow(QWidget):
 		self.run_process.finished.connect(self.on_finish)
 
 	def setLoginUI(self):
-		self.setGeometry(200, 200, 1000, 1600)  
+		self.setGeometry(100, 100, 1000, 1800)  
 		self.setWindowTitle('Run Control Page')  
 		self.show()
 
@@ -130,6 +132,7 @@ class QtRunWindow(QWidget):
 		TerminalSP = TerminalBox.sizePolicy()
 		TerminalSP.setVerticalStretch(self.VerticalSegCol0[1])
 		TerminalBox.setSizePolicy(TerminalSP)
+		TerminalBox.setMinimumWidth(400)
 
 		ConsoleLayout = QGridLayout()
 		
@@ -148,10 +151,24 @@ class QtRunWindow(QWidget):
 		OutputBox.setSizePolicy(OutputBoxSP)
 
 		OutputLayout = QGridLayout()
+		self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
 		self.DisplayLabel = QLabel()
-		self.DisplayView = QPixmap('test_plots/test_best1.png') 
+		self.DisplayView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 		self.DisplayLabel.setPixmap(self.DisplayView)
-		OutputLayout.addWidget(self.DisplayLabel)
+		self.ReferTitle = QLabel('<font size="6"> Reference: </font>')
+		self.ReferLabel = QLabel()
+		self.ReferView = QPixmap('test_plots/test_gain_refer.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		self.ReferLabel.setPixmap(self.ReferView)
+		self.ListWidget = QListWidget()
+		self.ListWidget.setMinimumWidth(150)
+		self.ListWidget.insertItem(0, "Module_0_Chip_0")
+		self.ListWidget.clicked.connect(self.clickedOutputItem)
+
+		OutputLayout.addWidget(self.DisplayTitle,0,0,1,2)
+		OutputLayout.addWidget(self.DisplayLabel,1,0,1,2)
+		OutputLayout.addWidget(self.ReferTitle,0,2,1,2)
+		OutputLayout.addWidget(self.ReferLabel,1,2,1,2)
+		OutputLayout.addWidget(self.ListWidget,0,4,2,1)
 		OutputBox.setLayout(OutputLayout)
 
 		#Group Box for history
@@ -269,8 +286,6 @@ class QtRunWindow(QWidget):
 		self.view.setModel(self.proxy)
 		self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 		self.view.update()
-
-
 
 	def sendBackSignal(self):
 		self.backSignal = True
@@ -410,13 +425,21 @@ class QtRunWindow(QWidget):
 			except:
 				QMessageBox.information(self,"Error","Unable to save to DB", QMessageBox.Ok)
 				return
+		self.refreshHistory()
 
 
 	#######################################################################
 	##  For result display
 	#######################################################################
 	def displayResult(self):
-		self.DisplayLabel.setPixmap(QPixmap("test_plots/pixelalive_ex.png"))
+		#Fixme: remake the list
+		updatePixmap = QPixmap("test_plots/pixelalive_ex.png").scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		self.DisplayLabel.setPixmap(updatePixmap)
+
+	def clickedOutputItem(self, qmodelindex):
+		#Fixme: Extract the info from ROOT file
+		item = self.ListWidget.currentItem()
+		print(item.text())
 
 	#######################################################################
 	##  For real-time terminal display
