@@ -1,7 +1,7 @@
 # Ph2_ACF_GUI
 Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 
-Uses the following python packages: `tkinter` (https://tkdocs.com/tutorial/install.html), `pillow`
+Uses the following python packages: PyQt5 (https://pypi.org/project/PyQt5/), pyqt-darktheme (https://pypi.org/project/pyqt-darktheme/)
 
 Recipe for running  pixel gui
 

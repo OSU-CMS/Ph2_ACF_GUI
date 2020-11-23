@@ -1,10 +1,12 @@
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap 
+from PyQt5.QtGui import QFont, QPixmap, QPalette
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit, QHBoxLayout,
 		QVBoxLayout, QWidget, QMainWindow, QMessageBox)
+
+#from guidarktheme.widget_template import DarkPalette
 
 import sys
 import os
@@ -33,10 +35,32 @@ class QtApplication(QWidget):
 
 	def setLoginUI(self):
 		self.setGeometry(300, 300, 400, 500)  
-		self.setWindowTitle('Phase2 Pixel Module Test GUI')  
-		QApplication.setStyle(QStyleFactory.create('macintosh'))
-		QApplication.setPalette(QApplication.style().standardPalette())
-		#QApplication.setPalette(QApplication.palette())
+		self.setWindowTitle('Phase2 Pixel Module Test GUI')
+
+		if sys.platform.startswith("darwin"):
+			QApplication.setStyle(QStyleFactory.create('macintosh'))
+			QApplication.setPalette(QApplication.style().standardPalette())
+		elif sys.platform.startswith("linux") or sys.platform.startswith("win"):
+			darkPalette = QPalette()
+			darkPalette.setColor(QPalette.Window, QColor(53,53,53))
+			darkPalette.setColor(QPalette.WindowText, Qt.white)
+			darkPalette.setColor(QPalette.Base, QColor(25,25,25))
+			darkPalette.setColor(QPalette.AlternateBase, QColor(53,53,53))
+			darkPalette.setColor(QPalette.ToolTipBase, Qt.white)
+			darkPalette.setColor(QPalette.ToolTipText, Qt.white)
+			darkPalette.setColor(QPalette.Text, Qt.white)
+			darkPalette.setColor(QPalette.Button, QColor(53,53,53))
+			darkPalette.setColor(QPalette.ButtonText, Qt.white)
+			darkPalette.setColor(QPalette.BrightText, Qt.red)
+			darkPalette.setColor(QPalette.Link, QColor(42, 130, 218))
+
+			darkPalette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+			darkPalette.setColor(QPalette.HighlightedText, Qt.black)
+
+			QApplication.setStyle(QStyleFactory.create('Fusion'))
+			QApplication.setPalette(darkPalette)
+		else:
+			print("This GUI supports Win/Linux/MacOS only")
 		self.show()
 
 	def initLog(self):
@@ -152,7 +176,7 @@ class QtApplication(QWidget):
 
 		self.LogoLayout = QHBoxLayout()
 		OSULogoLabel = QLabel()
-		OSUpixmap = QPixmap("icons/osuicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		OSUpixmap = QPixmap("icons/osuicon.jpg").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 		OSULogoLabel.setPixmap(OSUpixmap)
 		CMSLogoLabel = QLabel()
 		CMSpixmap = QPixmap("icons/cmsicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
