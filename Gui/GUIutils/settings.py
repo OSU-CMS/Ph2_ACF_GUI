@@ -15,7 +15,7 @@ DBNames = {
 
 FirmwareList =  {
 	'fc7.board.1' 			 :  '192.168.1.80',
-	'fc7.board.2'			 :  '192.168.1.81',
+	'fc7.board.2'			 :  '127.0.0.1' #'192.168.1.81',
 }
 
 ConfigFiles = {
@@ -60,7 +60,8 @@ SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 
 CompositeTest = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
-	'AllScan': ['Latency','PixelAlive', 'GainScan'],
+	'AllScan': ['Latency','PixelAlive', 'GainScan','SCurveScan','ThresholdEqualization','GainOptimization','ThresholdMinimization',
+				'ThresholdAdjustment','InjectionDelay','ClockDelay','Physics'],
 	'StandardStep1': ['Latency','PixelAlive'],
 	'StandardStep2': ['Latency','PixelAlive', 'SCurveScan'],
 	'StandardStep3': ['Latency','PixelAlive'],

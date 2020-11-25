@@ -12,6 +12,7 @@ import os
 import subprocess
 import threading
 import time
+import random
 from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import *
@@ -19,6 +20,7 @@ from Gui.GUIutils.guiUtils import *
 #from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtCustomizeWindow import *
 from Gui.QtGUIutils.QtTableWidget import *
+from Gui.QtGUIutils.QtMatplotlibUtils import *
 
 class QtRunWindow(QWidget):
 	def __init__(self,master, info):
@@ -45,7 +47,9 @@ class QtRunWindow(QWidget):
 		self.DisplayH = 450
 		self.runNext = threading.Event()
 		self.testIndexTracker = -1
+		self.outputDirQueue = []
 		#Fixme: QTimer to be added to update the page automatically
+		self.grades = []
 
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
@@ -205,10 +209,13 @@ class QtRunWindow(QWidget):
 		self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
 		self.HistoryLayout = QGridLayout()
-		self.HistoryLayout.addWidget(self.lineEdit, 0, 1, 1, 1)
-		self.HistoryLayout.addWidget(self.view, 1, 0, 1, 3)
-		self.HistoryLayout.addWidget(self.comboBox, 0, 2, 1, 1)
-		self.HistoryLayout.addWidget(self.label, 0, 0, 1, 1)
+		#self.HistoryLayout.addWidget(self.lineEdit, 0, 1, 1, 1)
+		#self.HistoryLayout.addWidget(self.view, 1, 0, 1, 3)
+		#self.HistoryLayout.addWidget(self.comboBox, 0, 2, 1, 1)
+		#self.HistoryLayout.addWidget(self.label, 0, 0, 1, 1)
+
+		self.StatusCanvas = RunStatusCanvas(parent=self,width=5, height=4, dpi=100)
+		self.HistoryLayout.addWidget(self.StatusCanvas)
 
 		self.HistoryBox.setLayout(self.HistoryLayout)
 
@@ -367,6 +374,10 @@ class QtRunWindow(QWidget):
 		#self.RunButton.deleteLater()
 		#self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
 		testName = self.info[1]
+
+		self.input_dir = self.output_dir
+		self.output_dir = ""
+
 		if isCompositeTest(testName):
 			#Fixme: threading make GUI freeze
 			#self.runAllTests = threading.Thread(target=self.runCompositeTest(testName))
@@ -397,8 +408,7 @@ class QtRunWindow(QWidget):
 		self.run_process.start("ping",["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
 		self.displayResult()
-		self.input_dir = self.output_dir
-		self.output_dir = ""
+		
 
 		#Question = QMessageBox()
 		#Question.setIcon(QMessageBox.Question)
@@ -428,6 +438,14 @@ class QtRunWindow(QWidget):
 		else:
 			return
 
+	def validateTest(self):
+		self.grades.append(random.uniform(50, 100))
+		self.StatusCanvas.renew()
+		self.StatusCanvas.update()
+		self.HistoryLayout.removeWidget(self.StatusCanvas)
+		self.HistoryLayout.addWidget(self.StatusCanvas)
+
+
 	def saveTest(self):
 		#if self.parent.current_test_grade < 0:
 		if self.run_process.state() == QProcess.Running:
@@ -444,7 +462,7 @@ class QtRunWindow(QWidget):
 				DQMFile = self.output_dir + "/" + outputfile
 				time_stamp = datetime.fromisoformat(self.output_dir.split('_')[-2])
 
-				testing_info = [self.info[0], self.parent.TryUsername, self.info[1], time_stamp.strftime('%Y-%m-%d %H:%M:%S.%f'), self.grade, DQMFile]
+				testing_info = [self.info[0], self.parent.TryUsername, self.currentTest, time_stamp.strftime('%Y-%m-%d %H:%M:%S.%f'), self.grade, DQMFile]
 				insertTestResult(self.connection, testing_info)
 				# fixme 
 				#database.createTestEntry(testing_info)
@@ -486,6 +504,7 @@ class QtRunWindow(QWidget):
 			if self.testIndexTracker == len(CompositeList[self.info[1]]):
 				self.RunButton.setText("&Finish")
 		#self.ContinueButton.setDisabled(False)
+		self.validateTest()
 
 	#######################################################################
 	##  For real-time terminal display

@@ -1,8 +1,3 @@
-import matplotlib
-matplotlib.use('Qt5Agg')
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QFont, QPixmap 
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
@@ -15,25 +10,7 @@ import sys
 import os
 import numpy
 
-class SummaryCanvas(FigureCanvas):
-	def __init__(self, parent=None, width=5, height=4, dpi=100):
-		fig = Figure(figsize=(width, height), dpi=dpi)
-		self.axes = fig.add_subplot(111)
-
-		self.compute_initial_figure()
-
-		FigureCanvas.__init__(self, fig)
-		self.setParent(parent)
-
-		FigureCanvas.setSizePolicy(self,
-								   QSizePolicy.Expanding,
-								   QSizePolicy.Expanding)
-		FigureCanvas.updateGeometry(self)
-		
-	def compute_initial_figure(self):
-		t = numpy.arange(0.0, 3.0, 0.01)
-		s = numpy.power(t,2)
-		self.axes.plot(t, s)
+from Gui.QtGUIutils.QtMatplotlibUtils import *
 
 class QtSummaryWindow(QWidget):
 	def __init__(self,master):

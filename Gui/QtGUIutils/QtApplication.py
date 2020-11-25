@@ -1,5 +1,5 @@
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap, QPalette
+from PyQt5.QtGui import QFont, QPixmap, QPalette,  QImage
 from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
@@ -176,10 +176,12 @@ class QtApplication(QWidget):
 
 		self.LogoLayout = QHBoxLayout()
 		OSULogoLabel = QLabel()
-		OSUpixmap = QPixmap("icons/osuicon.jpg").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		OSUimage = QImage("icons/osuicon.jpg").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		OSUpixmap = QPixmap.fromImage(OSUimage)
 		OSULogoLabel.setPixmap(OSUpixmap)
 		CMSLogoLabel = QLabel()
-		CMSpixmap = QPixmap("icons/cmsicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		CMSimage = QImage("icons/cmsicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		CMSpixmap = QPixmap.fromImage(CMSimage)
 		CMSLogoLabel.setPixmap(CMSpixmap)
 		self.LogoLayout.addWidget(OSULogoLabel)
 		self.LogoLayout.addStretch(1)
