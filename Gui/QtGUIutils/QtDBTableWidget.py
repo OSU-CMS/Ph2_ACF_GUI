@@ -16,15 +16,9 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
 from Gui.GUIutils.settings import *
 
-Color={
-	"Local"  : QColor(255,0,0),
-	"Remote" : QColor(0,0,0),
-	"Synced" : QColor(0,0,255),
-}
-
-class QtTableWidget(QSortFilterProxyModel):
+class QtDBTableWidget(QSortFilterProxyModel):
 	def __init__(self, dataList, orderIndex = 4):
-		super(QtTableWidget,self).__init__()
+		super(QtDBTableWidget,self).__init__()
 
 		self.orderIndex = int(orderIndex)
 
@@ -34,18 +28,12 @@ class QtTableWidget(QSortFilterProxyModel):
 		self.dataBody.sort(key=lambda x: x[self.orderIndex], reverse=True)
 
 		self.model = QStandardItemModel()
-		self.model.setHorizontalHeaderLabels(["Details"]+self.dataHeader)
+		self.model.setHorizontalHeaderLabels(self.dataHeader)
 
 		for row in range(len(self.dataBody)):
 			RowContents = []
-			ButtonItem = QStandardItem()
-			RowContents.append(ButtonItem)
 			for column in range(len(self.dataHeader)):
-				if column == 0:
-					brush = QBrush()
-					brush.setColor(Color[self.dataBody[row][0]])
 				item = QStandardItem("{0}".format(self.dataBody[row][column])) 
-				item.setForeground(brush)
 				RowContents.append(item)
 			self.model.invisibleRootItem().appendRow(RowContents)		
 		self.setSourceModel(self.model)

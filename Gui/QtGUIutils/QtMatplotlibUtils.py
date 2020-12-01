@@ -67,8 +67,6 @@ class RunStatusCanvas(FigureCanvas):
 		addLength = len(x)-len(y)
 		for i in range(addLength):
 			y = numpy.append(y,[0.0])
-
-		print(y)
 		
 		self.axes.bar(x,y)
 		self.axes.set_xticks(range(len(t)))

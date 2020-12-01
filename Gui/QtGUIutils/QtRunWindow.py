@@ -191,22 +191,22 @@ class QtRunWindow(QWidget):
 		self.HistoryBox.setSizePolicy(HistoryBoxSP)
 
 		self.HistoryLayout = QGridLayout()
-		self.dataList = getLocalRemoteTests(self.connection, self.info[0])
 
-		self.proxy = QtTableWidget(self.dataList)
+		# Display the table for module history
+		#self.dataList = getLocalRemoteTests(self.connection, self.info[0])
+		#self.proxy = QtTableWidget(self.dataList)
+		#self.lineEdit       = QLineEdit()
+		#self.lineEdit.textChanged.connect(self.proxy.on_lineEdit_textChanged)
+		#self.view           = QTableView()
+		#self.view.setSortingEnabled(True)
+		#self.comboBox       = QComboBox()
+		#self.comboBox.addItems(["{0}".format(x) for x in self.dataList[0]])
+		#self.comboBox.currentIndexChanged.connect(self.proxy.on_comboBox_currentIndexChanged)
+		#self.label          = QLabel()
+		#self.label.setText("Regex Filter")
 
-		self.lineEdit       = QLineEdit()
-		self.lineEdit.textChanged.connect(self.proxy.on_lineEdit_textChanged)
-		self.view           = QTableView()
-		self.view.setSortingEnabled(True)
-		self.comboBox       = QComboBox()
-		self.comboBox.addItems(["{0}".format(x) for x in self.dataList[0]])
-		self.comboBox.currentIndexChanged.connect(self.proxy.on_comboBox_currentIndexChanged)
-		self.label          = QLabel()
-		self.label.setText("Regex Filter")
-
-		self.view.setModel(self.proxy)
-		self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
+		#self.view.setModel(self.proxy)
+		#self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
 		self.HistoryLayout = QGridLayout()
 		#self.HistoryLayout.addWidget(self.lineEdit, 0, 1, 1, 1)

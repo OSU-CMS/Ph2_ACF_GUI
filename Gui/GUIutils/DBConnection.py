@@ -8,6 +8,7 @@
 '''
 
 import mysql.connector
+from mysql.connector import Error
 import subprocess
 import os
 
@@ -188,4 +189,116 @@ def getLocalRemoteTests(dbconnection, module_id = None):
 			allTests.append(['Synced']+remoteTest)
 
 	return allTests
+
+
+#####################################################
+## Functions for Purdue schema
+#####################################################
+
+SampleDB_Schema = {
+	"people"	:	["username","name","full_name","email","institute","password","timezone","permissions"],
+	"institute" :	["institute","description","timezone"],
+}
+
+def describeTable(dbconnection, table):
+	try:
+		sql_query = ''' DESCRIBE {} '''.format(table)
+		cur = dbconnection.cursor()
+		cur.execute(sql_query)
+		alltuple =  cur.fetchall()
+		header = list(map(lambda x: alltuple[x][0], range(0,len(alltuple))))
+		return header
+	except mysql.connector.Error as error:
+		print("Failed describing MySQL table: {}".format(error))
+		return []
+
+def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
+	try:
+		constrains = []
+		for key, value in kwargs.items():
+			if type(value) == type(str()):
+				constrains.append(''' {}="{}"  '''.format(key,value))
+			else:
+				constrains.append(''' {}={}  '''.format(key,value))
+		sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(table," AND ".join(constrains))
+		print(sql_query)
+		cur = dbconnection.cursor()
+		cur.execute(sql_query)
+		alltuple =  cur.fetchall()
+		allList = [list(i) for i in alltuple]
+		return allList
+	except mysql.connector.Error as error:
+		print("Failed retrieving MySQL table:{}".format(error))
+		return []
+
+def retrieveGenericTable(dbconnection, table):
+	try:
+		sql_query = ''' SELECT  * FROM {}'''.format(table)
+		print(sql_query)
+		cur = dbconnection.cursor()
+		cur.execute(sql_query)
+		alltuple =  cur.fetchall()
+		allList = [list(i) for i in alltuple]
+		return allList
+	except mysql.connector.Error as error:
+		print("Failed retrieving MySQL table:{}".format(error))
+		return []
+	
+def insertGenericTable(dbconnection, table, args, data):
+	try:
+		pre_query = '''INSERT INTO ''' + str(table) + ''' ('''+ ",".join(["{}"]*len(args))+''')
+					VALUES ('''+ ",".join(['%s']*len(args))+''')'''
+		sql_query = pre_query.format(*args)
+		cur = dbconnection.cursor()
+		cur.execute(sql_query,tuple(data))
+		dbconnection.commit()
+		return True
+	except mysql.connector.Error as error:
+		print("Failed inserting MySQL table {}:  {}".format(table, error))
+		return False
+
+def createNewUser(dbconnection, args, data):
+	try:
+		pre_query = '''INSERT INTO people ('''+ ",".join(["{}"]*len(args))+''')
+					VALUES ('''+ ",".join(['%s']*len(args))+''')'''
+		sql_query = pre_query.format(*args)
+		cur = dbconnection.cursor()
+		cur.execute(sql_query,tuple(data))
+		dbconnection.commit()
+		return True
+	except:
+		return False
+
+def describeInstitute(dbconnection):
+	sql_query = ''' DESCRIBE institute '''
+	cur = dbconnection.cursor()
+	cur.execute(sql_query)
+	alltuple =  cur.fetchall()
+	header = list(map(lambda x: alltuple[x][0], range(0,len(alltuple))))
+	return header
+
+def retrieveAllInstitute(dbconnection):
+	sql_query = ''' SELECT * FROM institute '''
+	cur = dbconnection.cursor()
+	cur.execute(sql_query)
+	alltuple =  cur.fetchall()
+	allInstitutes = [list(i) for i in alltuple]
+	return allInstitutes
+
+
+##########################################################################
+##  Functions for column selection
+##########################################################################
+
+def getByColumnName(column_name, header, databody):
+	try:
+		index = header.index(column_name)
+	except:
+		print("column_name not found")
+	output = list(map(lambda x: databody[x][index], range(0,len(databody))))
+	return output
+
+##########################################################################
+##  Functions for column selection (END)
+##########################################################################
 

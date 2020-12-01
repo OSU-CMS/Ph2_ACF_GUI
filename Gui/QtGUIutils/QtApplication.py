@@ -18,6 +18,7 @@ from Gui.QtGUIutils.QtFwCheckWindow  import *
 from Gui.QtGUIutils.QtSummaryWindow import *
 from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtModuleReviewWindow import *
+from Gui.QtGUIutils.QtDBConsoleWindow import *
 
 class QtApplication(QWidget):
 	def __init__(self):
@@ -362,6 +363,25 @@ class QtApplication(QWidget):
 		layout.addWidget(self.ReviewModuleButton,3, 0, 1, 1)
 		layout.addWidget(self.ReviewModuleEdit,  3, 1, 1, 2)
 
+		####################################################
+		# Functions for expert mode
+		####################################################
+
+		if self.expertMode:
+			self.DBConsoleButton = QPushButton("&DB Console")
+			self.DBConsoleButton.setMinimumWidth(kMinimumWidth)
+			self.DBConsoleButton.setMaximumWidth(kMaximumWidth)
+			self.DBConsoleButton.setMinimumHeight(kMinimumHeight)
+			self.DBConsoleButton.setMaximumHeight(kMaximumHeight)
+			self.DBConsoleButton.clicked.connect(self.openDBConsole)
+			DBConsoleLabel = QLabel("Console for database")
+			layout.addWidget(self.DBConsoleButton, 4, 0, 1, 1)
+			layout.addWidget(DBConsoleLabel, 4, 1, 1, 2)
+
+		####################################################
+		# Functions for expert mode  (END)
+		####################################################
+
 		self.MainOption.setLayout(layout)
 
 		self.AppOption = QGroupBox()
@@ -428,6 +448,9 @@ class QtApplication(QWidget):
 			self.ModuleReviewWindow =  QtModuleReviewWindow(self, Module_ID)
 		else:
 			QMessageBox.information(None, "Error", "Please enter a valid module ID", QMessageBox.Ok)
+
+	def openDBConsole(self):
+		self.StartDBConsole = QtDBConsoleWindow(self)
 
 	def checkFirmware(self):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
