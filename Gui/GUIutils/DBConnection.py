@@ -216,15 +216,15 @@ def describeTable(dbconnection, table,  KeepAutoIncre = False):
 
 def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
 	try:
-		constrains = []
+		constraints = []
+		values =  []
 		for key, value in kwargs.items():
-			if type(value) == type(str()):
-				constrains.append(''' {}="{}"  '''.format(key,value))
-			else:
-				constrains.append(''' {}={}  '''.format(key,value))
-		sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(table," AND ".join(constrains))
+			values.append(value)
+			constraints.append(''' {}=%s  '''.format(key))
+		sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(table," AND ".join(constraints))
 		cur = dbconnection.cursor()
-		cur.execute(sql_query)
+		cur.execute(sql_query,tuple(values))
+
 		alltuple =  cur.fetchall()
 		allList = [list(i) for i in alltuple]
 		return allList
@@ -284,6 +284,24 @@ def retrieveAllInstitute(dbconnection):
 	alltuple =  cur.fetchall()
 	allInstitutes = [list(i) for i in alltuple]
 	return allInstitutes
+
+def updateGenericTable(dbconnection, table, column, data, **kwargs):
+	# A tricky way
+	try:
+		constraints = []
+		values =  []
+		for key, value in kwargs.items():
+			values.append(value)
+			constraints.append(''' {}=%s  '''.format(key))
+		sql_query = '''UPDATE ''' + str(table) + ''' SET '''+ ",".join( list(column[i]+"=%s" for i in range(len(column))) )+'''
+					WHERE (''' + " AND ".join(constraints) + ''')'''
+		cur = dbconnection.cursor()
+		cur.execute(sql_query,tuple(data+values))
+		dbconnection.commit()
+		return True
+	except mysql.connector.Error as error:
+		print("Failed inserting MySQL table {}:  {}".format(table, error))
+		return False
 
 
 ##########################################################################

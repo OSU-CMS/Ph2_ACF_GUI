@@ -42,7 +42,28 @@ class QtDBConsoleWindow(QMainWindow):
 
 		self.menubar =self.menuBar()
 		self.menubar.setNativeMenuBar(False)
-		self.actionConsole = self.menubar.addMenu("&Database")
+
+		###################################################
+		##  Database Menu
+		###################################################
+		self.actionDatabase = self.menubar.addMenu("&Database")
+
+		self.ViewerAction = QAction("&View Table")
+		self.ViewerAction.triggered.connect(self.viewTable)
+		self.actionDatabase.addAction(self.ViewerAction)
+
+		###################################################
+		##  Shipment Menu
+		###################################################
+		self.actionShipment = self.menubar.addMenu("&Shipment")
+
+		self.sendPackAction = QAction("&Send Package")
+		self.sendPackAction.triggered.connect(self.sendPackage)
+		self.actionShipment.addAction(self.sendPackAction)
+
+		self.receivePackAction = QAction("&Receive Package")
+		self.receivePackAction.triggered.connect(self.receivePackage)
+		self.actionShipment.addAction(self.receivePackAction)
 
 		###################################################
 		##  User Menu
@@ -84,6 +105,445 @@ class QtDBConsoleWindow(QMainWindow):
 
 	def enableMenuItem(self,item, enabled):
 		item.setEnabled(enabled)
+
+	##########################################################################
+	##  Functions for Table Viewer
+	##########################################################################
+
+	def viewTable(self):
+		pass
+
+	##########################################################################
+	##  Functions for Table Viewer  (END)
+	##########################################################################
+
+	##########################################################################
+	##  Functions for Shipment
+	##########################################################################
+
+	def sendPackage(self):
+		self.sendPackageTab = QWidget()
+		
+		# Add tabs
+		self.MainTabs.addTab(self.sendPackageTab,"Send Package")
+		self.sendPackAction.setDisabled(True)
+		self.sendPackageTab.layout = QGridLayout(self)
+		sendPackageLabel = QLabel('<font size="12"> Package Delivery </font>')
+		sendPackageLabel.setMaximumHeight(60)
+
+		self.SPSenderLabel = QLabel('Sender:')
+		self.SPSenderEdit = QLineEdit('')
+		self.SPSenderEdit.setEchoMode(QLineEdit.Normal)
+		self.SPSenderEdit.setPlaceholderText('Sender Name')
+
+		self.SPReceiverLabel = QLabel('Receiver:')
+		self.SPReceiverEdit = QLineEdit('')
+		self.SPReceiverEdit.setEchoMode(QLineEdit.Normal)
+		self.SPReceiverEdit.setPlaceholderText('Receiver Name')
+		self.SPReceiverEdit.setDisabled(True)
+
+		siteList = getByColumnName("institute",describeInstitute(self.connection),retrieveAllInstitute(self.connection))
+
+		self.SPOriginLabel = QLabel('Origin:')
+		self.SPOriginCombo = QComboBox()
+		self.SPOriginCombo.addItems(["{0}".format(x) for x in siteList])
+
+		self.SPDestinationLabel = QLabel('Destination:')
+		self.SPDestinationCombo = QComboBox()
+		self.SPDestinationCombo.addItems(["{0}".format(x) for x in siteList])
+
+		self.SPDateSentLabel = QLabel('date sent:')
+		self.SPDateSentEdit = QDateTimeEdit()
+		self.SPDateSentEdit.setDateTime(QDateTime.currentDateTime())
+
+		self.SPDateReceivedLabel = QLabel('date received:')
+		self.SPDateReceivedEdit = QDateTimeEdit()
+		self.SPDateReceivedEdit.setDisabled(True)
+		#self.SPDateReceivedEdit.setDateTime(QDateTime.currentDateTime())
+
+		self.SPCarrierLabel = QLabel('Carrier:')
+		self.SPCarrierEdit = QLineEdit('')
+		self.SPCarrierEdit.setEchoMode(QLineEdit.Normal)
+		self.SPCarrierEdit.setPlaceholderText('carrier name')
+
+		self.SPTrackingLabel = QLabel('Tracking Number:')
+		self.SPTrackingEdit = QLineEdit('')
+		self.SPTrackingEdit.setEchoMode(QLineEdit.Normal)
+		self.SPTrackingEdit.setPlaceholderText('Tracking Code')
+
+		self.SPCommentLabel = QLabel('Comment:')
+		self.SPCommentEdit = QTextEdit('')
+		self.SPCommentEdit.setPlaceholderText("Your comment")
+
+		self.SPFeedBackLabel = QLabel()
+
+		self.SPSubmitButton = QPushButton('Submit')
+		self.SPSubmitButton.clicked.connect(self.submitSPRequest)
+
+		self.sendPackageTab.layout.addWidget(sendPackageLabel,0,0,1,4,Qt.AlignTop)
+		self.sendPackageTab.layout.addWidget(self.SPSenderLabel,1,0,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPSenderEdit,1,1,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPDateSentLabel,1,2,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPDateSentEdit,1,3,1,1)
+
+		self.sendPackageTab.layout.addWidget(self.SPOriginLabel,2,0,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPOriginCombo,2,1,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPDestinationLabel,2,2,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPDestinationCombo,2,3,1,1)
+
+		self.sendPackageTab.layout.addWidget(self.SPCarrierLabel,3,0,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPCarrierEdit,3,1,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPTrackingLabel,3,2,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPTrackingEdit,3,3,1,1)
+
+		self.sendPackageTab.layout.addWidget(self.SPCommentLabel,4,0,1,4,Qt.AlignLeft)
+		self.sendPackageTab.layout.addWidget(self.SPCommentEdit,5,0,3,4)
+		self.sendPackageTab.layout.addWidget(self.SPFeedBackLabel,8,0,1,2)
+		self.sendPackageTab.layout.addWidget(self.SPSubmitButton,8,3,1,1)
+
+		self.sendPackageTab.setLayout(self.sendPackageTab.layout)
+		self.MainTabs.setCurrentWidget(self.sendPackageTab)
+
+	def submitSPRequest(self):
+		if self.SPTrackingEdit.text()=="":
+			self.SPFeedBackLabel.setText("Please make sure Tracking Number are filled")
+			return
+		if self.SPSenderEdit.text() == "":
+			self.SPFeedBackLabel.setText("Please make sure sender are filled")
+			return
+		Args = describeTable(self.connection, "shipment")
+		Data = []
+		SubmitArgs = []
+		for arg in Args:
+			if arg == "origin":
+				Data.append(self.SPOriginCombo.currentText())
+				SubmitArgs.append(arg)
+			if arg == "destination":
+				Data.append(self.SPDestinationCombo.currentText())
+				SubmitArgs.append(arg)
+			if arg == "sender":
+				Data.append(self.SPSenderEdit.text())
+				SubmitArgs.append(arg)
+			if arg == "date_sent":
+				Data.append(self.SPDateSentEdit.dateTime().toUTC().toString("yyyy-dd-MM hh:mm:ss.z"))
+				SubmitArgs.append(arg)
+			if arg == "carrier":
+				Data.append(self.SPCarrierEdit.text())
+				SubmitArgs.append(arg)
+			if arg == "tracking_number":
+				Data.append(self.SPTrackingEdit.text())
+				SubmitArgs.append(arg)
+			if arg == "comment":
+				Data.append(self.SPCommentEdit.toPlainText())
+				SubmitArgs.append(arg)
+		try:
+			insertGenericTable(self.connection,"shipment",SubmitArgs,Data)
+		except:
+			print("Failed to submit the shipment record")
+			return
+
+		self.SPSenderLabel.deleteLater()
+		self.SPSenderEdit.deleteLater()
+		self.SPDateSentLabel.deleteLater()
+		self.SPDateSentEdit.deleteLater()
+
+		self.SPOriginLabel.deleteLater()
+		self.SPOriginCombo.deleteLater()
+		self.SPDestinationLabel.deleteLater()
+		self.SPDestinationCombo.deleteLater()
+
+		self.SPCarrierLabel.deleteLater()
+		self.SPCarrierEdit.deleteLater()
+		self.SPTrackingLabel.deleteLater()
+		self.SPTrackingEdit.deleteLater()
+
+		self.SPCommentLabel.deleteLater()
+		self.SPCommentEdit.deleteLater()
+		self.SPFeedBackLabel.deleteLater()
+		self.SPSubmitButton.deleteLater()
+
+		self.sendPackageTab.layout.removeWidget(self.SPSenderLabel)
+		self.sendPackageTab.layout.removeWidget(self.SPSenderEdit)
+		self.sendPackageTab.layout.removeWidget(self.SPDateSentLabel)
+		self.sendPackageTab.layout.removeWidget(self.SPDateSentEdit)
+
+		self.sendPackageTab.layout.removeWidget(self.SPOriginLabel)
+		self.sendPackageTab.layout.removeWidget(self.SPOriginCombo)
+		#self.sendPackageTab.layout.removeWidget(self.SPDestinationLabel)
+		#self.sendPackageTab.layout.removeWidget(self.SPDestinationCombo)
+
+		self.sendPackageTab.layout.removeWidget(self.SPCarrierLabel)
+		self.sendPackageTab.layout.removeWidget(self.SPCarrierEdit)
+		self.sendPackageTab.layout.removeWidget(self.SPTrackingLabel)
+		self.sendPackageTab.layout.removeWidget(self.SPTrackingEdit)
+
+		self.sendPackageTab.layout.removeWidget(self.SPCommentLabel)
+		self.sendPackageTab.layout.removeWidget(self.SPCommentEdit)
+		self.sendPackageTab.layout.removeWidget(self.SPFeedBackLabel)
+		self.sendPackageTab.layout.removeWidget(self.SPSubmitButton)
+
+		self.SPFeedBackLabel = QLabel("Submitted")
+		self.SPFeedBackLabel.setStyleSheet("color:green")
+		self.SPContinueButton =  QPushButton('Continue')
+		self.SPContinueButton.clicked.connect(self.recreateSP)
+		self.SPCloseButton =  QPushButton('Close')
+		self.SPCloseButton.clicked.connect(self.closeSP)
+		self.sendPackageTab.layout.addWidget(self.SPFeedBackLabel,1,0,1,2)
+		self.sendPackageTab.layout.addWidget(self.SPContinueButton,1,3,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPContinueButton,1,4,1,1)
+		return
+
+	def recreateSP(self):
+		self.closeTab(self.MainTabs.currentIndex())
+		self.sendPackage()
+	
+	def closeSP(self):
+		self.closeTab(self.MainTabs.currentIndex())
+
+	def receivePackage(self):
+		self.receivePackageTab = QWidget()
+		
+		# Add tabs
+		self.MainTabs.addTab(self.receivePackageTab,"Receive Package")
+		self.receivePackAction.setDisabled(True)
+		self.receivePackageTab.layout = QGridLayout(self)
+		receivePackageLabel = QLabel('<font size="12"> Package Delivery </font>')
+		receivePackageLabel.setMaximumHeight(60)
+
+		self.RPIDLabel = QLabel('ID:')
+		self.RPIDEdit = QLineEdit('')
+		self.RPIDEdit.setEchoMode(QLineEdit.Normal)
+		self.RPIDEdit.setPlaceholderText('Shipment ID')
+		self.RPFetchButton = QPushButton("Fetch")
+		self.RPFetchButton.clicked.connect(self.fillRPRequest)
+
+		self.RPSenderLabel = QLabel('Sender:')
+		self.RPSenderEdit = QLineEdit('')
+		self.RPSenderEdit.setEchoMode(QLineEdit.Normal)
+		self.RPSenderEdit.setPlaceholderText('Sender Name')
+		self.RPSenderEdit.setDisabled(True)
+
+		self.RPReceiverLabel = QLabel('Receiver:')
+		self.RPReceiverEdit = QLineEdit('')
+		self.RPReceiverEdit.setEchoMode(QLineEdit.Normal)
+		self.RPReceiverEdit.setPlaceholderText('Receiver Name')
+
+		siteList = getByColumnName("institute",describeInstitute(self.connection),retrieveAllInstitute(self.connection))
+
+		self.RPOriginLabel = QLabel('Origin:')
+		self.RPOriginCombo = QComboBox()
+		self.RPOriginCombo.addItems(["{0}".format(x) for x in siteList])
+		self.RPOriginCombo.setDisabled(True)
+
+		self.RPDestinationLabel = QLabel('Destination:')
+		self.RPDestinationCombo = QComboBox()
+		self.RPDestinationCombo.addItems(["{0}".format(x) for x in siteList])
+		self.RPDestinationCombo.setDisabled(True)
+
+		self.RPDateSentLabel = QLabel('date sent:')
+		self.RPDateSentEdit = QDateTimeEdit()
+		#self.RPDateSentEdit.setDateTime(QDateTime.currentDateTime())
+		self.RPDateSentEdit.setDisabled(True)
+
+		self.RPDateReceivedLabel = QLabel('date received:')
+		self.RPDateReceivedEdit = QDateTimeEdit()
+		self.RPDateReceivedEdit.setDateTime(QDateTime.currentDateTime())
+
+		self.RPCarrierLabel = QLabel('Carrier:')
+		self.RPCarrierEdit = QLineEdit('')
+		self.RPCarrierEdit.setEchoMode(QLineEdit.Normal)
+		self.RPCarrierEdit.setPlaceholderText('carrier name')
+		self.RPCarrierEdit.setDisabled(True)
+
+		self.RPTrackingLabel = QLabel('Tracking Number:')
+		self.RPTrackingEdit = QLineEdit('')
+		self.RPTrackingEdit.setEchoMode(QLineEdit.Normal)
+		self.RPTrackingEdit.setPlaceholderText('Tracking Code')
+		self.RPTrackingEdit.setDisabled(True)
+
+		self.RPCommentLabel = QLabel('Comment:')
+		self.RPCommentEdit = QTextEdit('')
+		self.RPCommentEdit.setPlaceholderText("Your comment")
+
+		self.RPFeedBackLabel = QLabel()
+
+		self.RPSubmitButton = QPushButton('Submit')
+		self.RPSubmitButton.clicked.connect(self.submitRPRequest)
+
+		self.receivePackageTab.layout.addWidget(receivePackageLabel,0,0,1,4,Qt.AlignTop)
+
+		self.receivePackageTab.layout.addWidget(self.RPIDLabel,1,0,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPIDEdit,1,1,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPFetchButton,1,2,1,1)
+
+		self.receivePackageTab.layout.addWidget(self.RPSenderLabel,2,0,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPSenderEdit,2,1,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPDateSentLabel,2,2,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPDateSentEdit,2,3,1,1)
+
+		self.receivePackageTab.layout.addWidget(self.RPReceiverLabel,3,0,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPReceiverEdit,3,1,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPDateReceivedLabel,3,2,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPDateReceivedEdit,3,3,1,1)
+
+		self.receivePackageTab.layout.addWidget(self.RPOriginLabel,4,0,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPOriginCombo,4,1,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPDestinationLabel,4,2,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPDestinationCombo,4,3,1,1)
+
+		self.receivePackageTab.layout.addWidget(self.RPCarrierLabel,5,0,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPCarrierEdit,5,1,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPTrackingLabel,5,2,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPTrackingEdit,5,3,1,1)
+
+		self.receivePackageTab.layout.addWidget(self.RPCommentLabel,6,0,1,4,Qt.AlignLeft)
+		self.receivePackageTab.layout.addWidget(self.RPCommentEdit,7,0,3,4)
+		self.receivePackageTab.layout.addWidget(self.RPFeedBackLabel,10,0,1,3)
+		self.receivePackageTab.layout.addWidget(self.RPSubmitButton,10,3,1,1)
+
+		self.receivePackageTab.setLayout(self.receivePackageTab.layout)
+		self.MainTabs.setCurrentWidget(self.receivePackageTab)
+
+	def fillRPRequest(self):
+		try:
+			header = describeTable(self.connection,"shipment",True)
+			shipmentInfo = retrieveWithConstraint(self.connection,"shipment",id=self.RPIDEdit.text())
+		except:
+			return
+		if len(shipmentInfo) > 0 and len(header) == len(shipmentInfo[0]):
+			self.RPFeedBackLabel.setText("Delivery Record found")
+			self.RPSenderEdit.setText(getByColumnName("sender",header,shipmentInfo)[0])
+			origin_index = self.RPOriginCombo.findText(getByColumnName("origin",header,shipmentInfo)[0])
+			self.RPOriginCombo.setCurrentIndex(origin_index)
+			destination_index = self.RPDestinationCombo.findText(getByColumnName("destination",header,shipmentInfo)[0])
+			self.RPDestinationCombo.setCurrentIndex(destination_index)
+			time_string = getByColumnName("date_sent",header,shipmentInfo)[0].strftime("%m/%d/%Y, %H:%M:%S")
+			print(time_string)
+			self.RPDateSentEdit.setDateTime(QDateTime.fromString(time_string))
+			self.RPCarrierEdit.setText(getByColumnName("carrier",header,shipmentInfo)[0])
+			self.RPTrackingEdit.setText(getByColumnName("tracking_number",header,shipmentInfo)[0])
+			self.RPCommentEdit.setText(getByColumnName("comment",header,shipmentInfo)[0])
+		else:
+			self.RPFeedBackLabel.setText("Shipment ID not found")
+			self.RPSenderEdit.setText("")
+			origin_index = self.RPOriginCombo.findText("")
+			self.RPOriginCombo.setCurrentIndex(origin_index)
+			destination_index = self.RPDestinationCombo.findText("")
+			self.RPDestinationCombo.setCurrentIndex(destination_index)
+			#time_string = datetime.strftime("%m/%d/%Y, %H:%M:%S")
+			#self.RPDateSentEdit.setDateTime(QDateTime.fromString(time_string))
+			self.RPCarrierEdit.setText("")
+			self.RPTrackingEdit.setText("")
+			self.RPCommentEdit.setText("")
+
+	def submitRPRequest(self):
+		if self.RPTrackingEdit.text()=="":
+			self.RPFeedBackLabel.setText("Please make sure Tracking Number are filled")
+			return
+		if self.RPReceiverEdit.text() == "":
+			self.RPFeedBackLabel.setText("Please make sure receiver are filled")
+			return
+		if self.RPDateReceivedEdit.text() == "":
+			self.RPFeedBackLabel.setText("Please make sure received time are filled")
+			return
+		Args = describeTable(self.connection, "shipment")
+		Data = []
+		SubmitArgs = []
+		for arg in Args:
+			if arg == "receiver":
+				Data.append(self.RPReceiverEdit.text())
+				SubmitArgs.append(arg)
+			if arg == "date_received":
+				Data.append(self.RPDateReceivedEdit.dateTime().toUTC().toString("yyyy-dd-MM hh:mm:ss.z"))
+				SubmitArgs.append(arg)
+			if arg == "comment":
+				Data.append(self.RPCommentEdit.toPlainText())
+				SubmitArgs.append(arg)
+		try:
+			updateGenericTable(self.connection,"shipment",SubmitArgs,Data,id=int(self.RPIDEdit.text()))
+		except:
+			print("Failed to submit the shipment record")
+			return
+
+		self.RPIDLabel.deleteLater()
+		self.RPIDEdit.deleteLater()
+		self.RPFetchButton.deleLater()
+
+		self.RPSenderLabel.deleteLater()
+		self.RPSenderEdit.deleteLater()
+		self.RPDateSentLabel.deleteLater()
+		self.RPDateSentEdit.deleteLater()
+
+		self.RPReceiverLabel.deleteLater()
+		self.RPReceiverEdit.deleteLater()
+		self.RPDateReceivedLabel.deleteLater()
+		self.RPDateReceivedEdit.deleteLater()
+
+		self.RPOriginLabel.deleteLater()
+		self.RPOriginCombo.deleteLater()
+		self.RPDestinationLabel.deleteLater()
+		self.RPDestinationCombo.deleteLater()
+
+		self.RPCarrierLabel.deleteLater()
+		self.RPCarrierEdit.deleteLater()
+		self.RPTrackingLabel.deleteLater()
+		self.RPTrackingEdit.deleteLater()
+
+		self.RPCommentLabel.deleteLater()
+		self.RPCommentEdit.deleteLater()
+		self.RPFeedBackLabel.deleteLater()
+		self.RPSubmitButton.deleteLater()
+
+		self.receivePackageTab.layout.removeWidget(self.RPIDEdit)
+		self.receivePackageTab.layout.removeWidget(self.RPIDLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPFetchButton)
+
+		self.receivePackageTab.layout.removeWidget(self.RPSenderLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPSenderEdit)
+		self.receivePackageTab.layout.removeWidget(self.RPDateSentLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPDateSentEdit)
+
+		self.receivePackageTab.layout.removeWidget(self.RPReceiverLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPReceiverEdit)
+		self.receivePackageTab.layout.removeWidget(self.RPDateReceivedLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPDateReceivedEdit)
+
+		self.receivePackageTab.layout.removeWidget(self.RPOriginLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPOriginCombo)
+		self.receivePackageTab.layout.removeWidget(self.RPDestinationLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPDestinationCombo)
+
+		self.receivePackageTab.layout.removeWidget(self.RPCarrierLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPCarrierEdit)
+		self.receivePackageTab.layout.removeWidget(self.RPTrackingLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPTrackingEdit)
+
+		self.receivePackageTab.layout.removeWidget(self.RPCommentLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPCommentEdit)
+		self.receivePackageTab.layout.removeWidget(self.RPFeedBackLabel)
+		self.receivePackageTab.layout.removeWidget(self.RPSubmitButton)
+
+		self.RPFeedBackLabel = QLabel("Submitted")
+		self.RPFeedBackLabel.setStyleSheet("color:green")
+		self.RPContinueButton =  QPushButton('Continue')
+		self.RPContinueButton.clicked.connect(self.recreateRP)
+		self.RPCloseButton =  QPushButton('Close')
+		self.RPCloseButton.clicked.connect(self.closeRP)
+		self.receivePackageTab.layout.addWidget(self.RPFeedBackLabel,1,0,1,2)
+		self.receivePackageTab.layout.addWidget(self.RPContinueButton,1,3,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPContinueButton,1,4,1,1)
+		return
+
+	def recreateRP(self):
+		self.closeTab(self.MainTabs.currentIndex())
+		self.receivePackage()
+	
+	def closeRP(self):
+		self.closeTab(self.MainTabs.currentIndex())
+
+	##########################################################################
+	##  Functions for Shipment  (END)
+	##########################################################################
 
 	def displayUsers(self):
 		self.processing.append("UserDisplay")
@@ -227,7 +687,6 @@ class QtDBConsoleWindow(QMainWindow):
 		Data.append(self.AUPasswordEdit.text())
 		Data.append(TimeZone[0])
 		Data.append(0)
-		print(Data)
 		try:
 			createNewUser(self.connection, Args, Data)
 			self.AUFeedBackLabel.setText("Query submitted")
@@ -381,6 +840,10 @@ class QtDBConsoleWindow(QMainWindow):
 		self.closeTab(self.MainTabs.currentIndex())
 		self.fileComplaint()
 
+	##########################################################################
+	##  Functions for Complaint submission (END)
+	##########################################################################
+
 	def createHeadLine(self):
 		self.deactivateMenuBar()
 		self.HeadBox = QGroupBox()
@@ -488,21 +951,15 @@ class QtDBConsoleWindow(QMainWindow):
 		self.AppOption = QGroupBox()
 		self.StartLayout = QHBoxLayout()
 
-		self.SyncButton = QPushButton("&Sync to DB")
-		self.SyncButton.clicked.connect(self.syncDB)
-
-		self.ResetButton = QPushButton("&Reset")
-		self.ResetButton.clicked.connect(self.destroyMain)
-		self.ResetButton.clicked.connect(self.createMain)
+		self.ResetButton = QPushButton("&Refresh")
 
 		self.FinishButton = QPushButton("&Finish")
 		self.FinishButton.setDefault(True)
 		self.FinishButton.clicked.connect(self.closeWindow)
 
-		self.StartLayout.addStretch(1)
-		self.StartLayout.addWidget(self.SyncButton)
 		self.StartLayout.addWidget(self.ResetButton)
 		self.StartLayout.addWidget(self.FinishButton)
+		self.StartLayout.addStretch(1)
 		self.AppOption.setLayout(self.StartLayout)
 
 		self.mainLayout.addWidget(self.AppOption, sum(self.GroupBoxSeg[0:2]), 0, self.GroupBoxSeg[2], 1)
@@ -526,7 +983,7 @@ class QtDBConsoleWindow(QMainWindow):
 
 		self.connection = QtStartConnection(self.TryUsername, self.TryPassword, self.TryHostAddress, self.TryDatabase)
 
-		if self.connection:
+		if isActive(self.connection):
 			self.connectedHeadLine()
 
 	def syncDB(self):
@@ -548,6 +1005,12 @@ class QtDBConsoleWindow(QMainWindow):
 			return
 		if text == "Complaint":
 			self.ComplaintAction.setDisabled(False)
+			return
+		if text == "Send Package":
+			self.sendPackAction.setDisabled(False)
+			return
+		if text == "Receive Package":
+			self.receivePackAction.setDisabled(False)
 			return
 
 	def closeWindow(self):
