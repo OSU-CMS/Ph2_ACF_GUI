@@ -11,6 +11,7 @@ import mysql.connector
 from mysql.connector import Error
 import subprocess
 import os
+from itertools import compress
 
 from subprocess import Popen, PIPE
 from Gui.GUIutils.ErrorWindow import *
@@ -200,14 +201,15 @@ SampleDB_Schema = {
 	"institute" :	["institute","description","timezone"],
 }
 
-def describeTable(dbconnection, table):
+def describeTable(dbconnection, table,  KeepAutoIncre = False):
 	try:
 		sql_query = ''' DESCRIBE {} '''.format(table)
 		cur = dbconnection.cursor()
 		cur.execute(sql_query)
 		alltuple =  cur.fetchall()
+		auto_incre_filter = list(map(lambda x: alltuple[x][5] != "auto_increment" or KeepAutoIncre , range(0,len(alltuple))))
 		header = list(map(lambda x: alltuple[x][0], range(0,len(alltuple))))
-		return header
+		return list(compress(header, auto_incre_filter))
 	except mysql.connector.Error as error:
 		print("Failed describing MySQL table: {}".format(error))
 		return []
@@ -221,7 +223,6 @@ def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
 			else:
 				constrains.append(''' {}={}  '''.format(key,value))
 		sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(table," AND ".join(constrains))
-		print(sql_query)
 		cur = dbconnection.cursor()
 		cur.execute(sql_query)
 		alltuple =  cur.fetchall()
@@ -234,7 +235,6 @@ def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
 def retrieveGenericTable(dbconnection, table):
 	try:
 		sql_query = ''' SELECT  * FROM {}'''.format(table)
-		print(sql_query)
 		cur = dbconnection.cursor()
 		cur.execute(sql_query)
 		alltuple =  cur.fetchall()
