@@ -28,10 +28,16 @@ class QtTableWidget(QSortFilterProxyModel):
 
 		self.orderIndex = int(orderIndex)
 
-
-		self.dataHeader = dataList[0]
-		self.dataBody = dataList[1:]
-		self.dataBody.sort(key=lambda x: x[self.orderIndex], reverse=True)
+		if len(dataList) ==  0:
+			self.dataHeader = []
+			self.dataBody = []
+		elif len(dataList) == 1:
+			self.dataHeader = dataList[0]
+			self.dataBody = []
+		else:
+			self.dataHeader = dataList[0]
+			self.dataBody = dataList[1:]
+			self.dataBody.sort(key=lambda x: x[self.orderIndex], reverse=True)
 
 		self.model = QStandardItemModel()
 		self.model.setHorizontalHeaderLabels(["Details"]+self.dataHeader)

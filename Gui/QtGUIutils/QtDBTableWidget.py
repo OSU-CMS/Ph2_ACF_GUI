@@ -17,21 +17,33 @@ from Gui.GUIutils.guiUtils import *
 from Gui.GUIutils.settings import *
 
 class QtDBTableWidget(QSortFilterProxyModel):
-	def __init__(self, dataList, orderIndex = 4):
+	def __init__(self, dataList, orderIndex = 0, withButton = False):
 		super(QtDBTableWidget,self).__init__()
 
 		self.orderIndex = int(orderIndex)
 
-
-		self.dataHeader = dataList[0]
-		self.dataBody = dataList[1:]
-		self.dataBody.sort(key=lambda x: x[self.orderIndex], reverse=True)
+		if len(dataList) ==  0:
+			self.dataHeader = []
+			self.dataBody = []
+		elif len(dataList) == 1:
+			self.dataHeader = dataList[0]
+			self.dataBody = []
+		else:
+			self.dataHeader = dataList[0]
+			self.dataBody = dataList[1:]
+			self.dataBody.sort(key=lambda x: x[self.orderIndex], reverse=True)
 
 		self.model = QStandardItemModel()
-		self.model.setHorizontalHeaderLabels(self.dataHeader)
+		if withButton:
+			self.model.setHorizontalHeaderLabels(["Details"]+self.dataHeader)
+		else:
+			self.model.setHorizontalHeaderLabels(self.dataHeader)
 
 		for row in range(len(self.dataBody)):
 			RowContents = []
+			if withButton:
+				ButtonItem = QStandardItem()
+				RowContents.append(ButtonItem)
 			for column in range(len(self.dataHeader)):
 				item = QStandardItem("{0}".format(self.dataBody[row][column])) 
 				RowContents.append(item)
