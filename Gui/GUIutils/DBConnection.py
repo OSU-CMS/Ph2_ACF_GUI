@@ -58,7 +58,7 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 	except (ValueError,RuntimeError, TypeError, NameError,mysql.connector.Error):
 		msg = QMessageBox()
 		msg.information(None,"Error","Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address", QMessageBox.Ok)
-		return
+		return "Offline"
 	return connection
 
 def checkDBConnection(dbconnection):
@@ -201,6 +201,14 @@ SampleDB_Schema = {
 	"institute" :	["institute","description","timezone"],
 }
 
+def getTableList(dbconnection):
+	sql_query = '''show tables'''
+	cur = dbconnection.cursor()
+	cur.execute(sql_query)
+	alltuple =  cur.fetchall()
+	tablelist = list(map(lambda x: alltuple[x][0], range(0,len(alltuple))))
+	return tablelist
+
 def describeTable(dbconnection, table,  KeepAutoIncre = False):
 	try:
 		sql_query = ''' DESCRIBE {} '''.format(table)
@@ -218,10 +226,19 @@ def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
 	try:
 		constraints = []
 		values =  []
+		columnList = []
 		for key, value in kwargs.items():
-			values.append(value)
-			constraints.append(''' {}=%s  '''.format(key))
-		sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(table," AND ".join(constraints))
+			if key == "columns" and type(value) == type(columnList):
+				columnList = value
+			else:
+				values.append(value)
+				constraints.append(''' {}=%s  '''.format(key))
+
+		if len(columnList) > 0:
+			sql_query = ''' SELECT  ''' +  ",".join(columnList) + ''' FROM {} WHERE {}'''.format(table," AND ".join(constraints))
+		else:
+			sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(table," AND ".join(constraints))
+		
 		cur = dbconnection.cursor()
 		cur.execute(sql_query,tuple(values))
 
@@ -232,15 +249,44 @@ def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
 		print("Failed retrieving MySQL table:{}".format(error))
 		return []
 
-def retrieveGenericTable(dbconnection, table):
+def retrieveWithConstraintSyntax(dbconnection, table, syntax, **kwargs):
 	try:
-		sql_query = ''' SELECT  * FROM {}'''.format(table)
+		columnList = []
+		for key, value in kwargs.items():
+			if key == "columns" and type(value) == type(columnList):
+				columnList = value
+		if len(columnList) > 0:
+			sql_query = ''' SELECT  ''' + ",".join(columnList) + ''' FROM  ''' + '''{}'''.format(table)
+		else:	
+			sql_query = ''' SELECT  * FROM {}'''.format(table)
+
+		sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(str(table),str(syntax))
+		cur = dbconnection.cursor()
+		cur.execute(sql_query)
+
+		alltuple =  cur.fetchall()
+		allList = [list(i) for i in alltuple]
+		return allList
+	except mysql.connector.Error as error:
+		print("Failed retrieving MySQL table:{}".format(error))
+		return []
+
+def retrieveGenericTable(dbconnection, table, **kwargs):
+	try:
+		columnList = []
+		for key, value in kwargs.items():
+			if key == "columns" and type(value) == type(columnList):
+				columnList = value
+		if len(columnList) > 0:
+			sql_query = ''' SELECT  ''' + ",".join(columnList) + ''' FROM  ''' + '''{}'''.format(table)
+		else:	
+			sql_query = ''' SELECT  * FROM {}'''.format(table)
 		cur = dbconnection.cursor()
 		cur.execute(sql_query)
 		alltuple =  cur.fetchall()
 		allList = [list(i) for i in alltuple]
 		return allList
-	except mysql.connector.Error as error:
+	except Exception as error:
 		print("Failed retrieving MySQL table:{}".format(error))
 		return []
 	
@@ -253,7 +299,7 @@ def insertGenericTable(dbconnection, table, args, data):
 		cur.execute(sql_query,tuple(data))
 		dbconnection.commit()
 		return True
-	except mysql.connector.Error as error:
+	except Exception as error:
 		print("Failed inserting MySQL table {}:  {}".format(table, error))
 		return False
 
@@ -266,7 +312,8 @@ def createNewUser(dbconnection, args, data):
 		cur.execute(sql_query,tuple(data))
 		dbconnection.commit()
 		return True
-	except:
+	except Exception as err:
+		print(err)
 		return False
 
 def describeInstitute(dbconnection):
