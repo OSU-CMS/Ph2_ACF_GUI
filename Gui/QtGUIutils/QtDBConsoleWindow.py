@@ -15,6 +15,9 @@ from subprocess import Popen, PIPE
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtDBTableWidget import *
+from Gui.QtGUIutils.QtViewTableTab  import *
+from Gui.QtGUIutils.QtImageInsertionTab import *
+from Gui.QtGUIutils.QtImageViewerTab import *
 
 class QtDBConsoleWindow(QMainWindow):
 	def __init__(self,master):
@@ -51,6 +54,19 @@ class QtDBConsoleWindow(QMainWindow):
 		self.ViewerAction = QAction("&View Table")
 		self.ViewerAction.triggered.connect(self.viewTable)
 		self.actionDatabase.addAction(self.ViewerAction)
+
+		###################################################
+		##  Image Menu
+		###################################################	
+		self.actionImage = self.menubar.addMenu("&Image")
+
+		self.InsertImgAction = QAction("&Insert Image")
+		self.InsertImgAction.triggered.connect(self.insertImage)
+		self.actionImage.addAction(self.InsertImgAction)
+
+		self.ViewImgAction = QAction("&View Image")
+		self.ViewImgAction.triggered.connect(self.viewImage)
+		self.actionImage.addAction(self.ViewImgAction)
 
 		###################################################
 		##  Shipment Menu
@@ -111,10 +127,32 @@ class QtDBConsoleWindow(QMainWindow):
 	##########################################################################
 
 	def viewTable(self):
-		pass
+		viewTableTab = QtViewTableTab(self)
+		self.MainTabs.addTab(viewTableTab, "Database Viewer")
+		self.MainTabs.setCurrentWidget(viewTableTab)
 
 	##########################################################################
-	##  Functions for Table Viewer  (END)
+	##  Functions for Table Viewer (END)
+	##########################################################################
+
+	##########################################################################
+	##  Functions for Image
+	##########################################################################
+
+	def insertImage(self):
+		insertImageTab = QtImageInsertionTab(self)
+		self.InsertImgAction.setDisabled(True)
+		self.MainTabs.addTab(insertImageTab, "Insert Image")
+		self.MainTabs.setCurrentWidget(insertImageTab)
+
+
+	def viewImage(self):
+		viewImageTab = QtImageViewerTab(self)
+		self.MainTabs.addTab(viewImageTab, "Image  Viewer")
+		self.MainTabs.setCurrentWidget(viewImageTab)
+
+	##########################################################################
+	##  Functions for Image (END)
 	##########################################################################
 
 	##########################################################################
@@ -290,7 +328,7 @@ class QtDBConsoleWindow(QMainWindow):
 		self.SPCloseButton.clicked.connect(self.closeSP)
 		self.sendPackageTab.layout.addWidget(self.SPFeedBackLabel,1,0,1,2)
 		self.sendPackageTab.layout.addWidget(self.SPContinueButton,1,3,1,1)
-		self.sendPackageTab.layout.addWidget(self.SPContinueButton,1,4,1,1)
+		self.sendPackageTab.layout.addWidget(self.SPCloseButton,1,4,1,1)
 		return
 
 	def recreateSP(self):
@@ -531,7 +569,7 @@ class QtDBConsoleWindow(QMainWindow):
 		self.RPCloseButton.clicked.connect(self.closeRP)
 		self.receivePackageTab.layout.addWidget(self.RPFeedBackLabel,1,0,1,2)
 		self.receivePackageTab.layout.addWidget(self.RPContinueButton,1,3,1,1)
-		self.receivePackageTab.layout.addWidget(self.RPContinueButton,1,4,1,1)
+		self.receivePackageTab.layout.addWidget(self.RPCloseButton,1,4,1,1)
 		return
 
 	def recreateRP(self):
@@ -556,7 +594,7 @@ class QtDBConsoleWindow(QMainWindow):
 
 		dataList = ([describeTable(self.connection, "people")]+retrieveGenericTable(self.connection,"people"))
 
-		proxy = QtDBTableWidget(dataList,1)
+		proxy = QtDBTableWidget(dataList,0)
 
 		lineEdit       = QLineEdit()
 		lineEdit.textChanged.connect(proxy.on_lineEdit_textChanged)
@@ -718,7 +756,7 @@ class QtDBConsoleWindow(QMainWindow):
 
 		dataList = ([describeInstitute(self.connection)]+retrieveAllInstitute(self.connection))
 
-		proxy = QtDBTableWidget(dataList,1)
+		proxy = QtDBTableWidget(dataList,0)
 
 		lineEdit       = QLineEdit()
 		lineEdit.textChanged.connect(proxy.on_lineEdit_textChanged)
@@ -1011,6 +1049,9 @@ class QtDBConsoleWindow(QMainWindow):
 			return
 		if text == "Receive Package":
 			self.receivePackAction.setDisabled(False)
+			return
+		if text == "Insert Image":
+			self.InsertImgAction.setDisabled(False)
 			return
 
 	def closeWindow(self):
