@@ -234,7 +234,7 @@ class QtApplication(QWidget):
 			print("Connect to database...")
 			self.connection = QtStartConnection(self.TryUsername, self.TryPassword, self.TryHostAddress, self.TryDatabase)
 
-			if self.connection:
+			if isActive(self.connection):
 				self.destroyLogin()
 				self.createMain()
 		else:

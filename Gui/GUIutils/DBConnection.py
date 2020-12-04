@@ -85,7 +85,8 @@ def getAllTests(dbconnection):
 	if dbconnection == "Offline":
 		remoteList = []
 	elif dbconnection.is_connected():
-		remoteList = retrieveAllTests(dbconnection)
+		#remoteList = retrieveAllTests(dbconnection)
+		remoteList = ()
 		remoteList = [list(i) for i in remoteList]
 	else:
 		QMessageBox().information(None, "Warning", "Database connection broken", QMessageBox.Ok)
@@ -141,53 +142,66 @@ def insertTestResult(dbconnection, record):
 	dbconnection.commit()
 	return cur.lastrowid
 
-def getLocalTests(module_id):
+def getLocalTests(module_id, columns=[]):
 	getDirectories = subprocess.run('find {0} -mindepth 2 -maxdepth 2 -type d'.format(os.environ.get("DATA_dir")), shell=True, stdout=subprocess.PIPE)
 	dirList = getDirectories.stdout.decode('utf-8').rstrip('\n').split('\n')
 	localTests = []
 	for dirName in dirList:
 		if "_Module{0}_".format(str(module_id or '')) in dirName:
-			test = formatter(dirName)
+			test = formatter(dirName,columns)
 			localTests.append(test)
 	return localTests
 
-def getLocalRemoteTests(dbconnection, module_id = None):
+def getLocalRemoteTests(dbconnection, module_id = None, columns = []):
 	if isActive(dbconnection):
 		if module_id:
-			remoteTests = retrieveModuleTests(dbconnection, module_id)
+			remoteTests = retrieveGenericTable(dbconnection, "tests", columns = columns)
 			remoteTests = [list(i) for i in remoteTests]
 		else:
-			remoteTests = retrieveAllTestResults(dbconnection)
+			remoteTests = retrieveWithConstraint(dbconnection, "tests", part_id = int(module_id), columns = columns)
 			remoteTests = [list(i) for i in remoteTests]
 	else:
 		remoteTests = []
 
-	localTests = getLocalTests(module_id)
+	localTests = getLocalTests(module_id, columns)
 
-	if remoteTests != []:
-		RemoteSet = set([ele[3] for ele in remoteTests])
+	try:
+		timeIndex = columns.index("date")
+	except:
+		timeIndex = -1
+
+	if remoteTests != [] and  timeIndex != -1:
+		RemoteSet = set([ele[timeIndex] for ele in remoteTests])
 	else:
 		RemoteSet = set([])
-	if localTests != []:
-		LocalSet = set([ele[3] for ele in localTests])
+	if localTests != [] and  timeIndex != -1:
+		LocalSet = set([ele[timeIndex] for ele in localTests])
 	else:
 		LocalSet = set([])
+
 	OnlyRemoteSet = RemoteSet.difference(LocalSet)
 	InterSet = RemoteSet.intersection(LocalSet)
 	OnlyLocalSet = LocalSet.difference(RemoteSet)
 
-	allTests = [header]
+	allTests = [["Source"]+columns+["localFile"]]
 
-	for localTest in localTests:
-		if localTest[3] in OnlyLocalSet:
-			allTests.append(['Local']+localTest)
+	if(timeIndex != -1):
+		for localTest in localTests:
+			if localTest[timeIndex] in OnlyLocalSet:
+				allTests.append(['Local']+localTest)
+			if localTest[timeIndex] in InterSet:
+				allTests.append(['Synced']+localTest)
 	
-	for remoteTest in remoteTests:
-		if remoteTest[3] in OnlyRemoteSet:
-			allTests.append(['Remote']+remoteTest)
-		
-		if remoteTest[3] in InterSet:
-			allTests.append(['Synced']+remoteTest)
+		for remoteTest in remoteTests:
+			if remoteTest[timeIndex] in OnlyRemoteSet:
+				allTests.append(['Remote']+remoteTest + [""])
+	
+	else:
+		for localTest in localTests:
+			allTests.append(['']+localTest)
+	
+		for remoteTest in remoteTests:
+			allTests.append(['']+remoteTest + [""])
 
 	return allTests
 

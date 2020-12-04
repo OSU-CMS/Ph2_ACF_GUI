@@ -44,7 +44,7 @@ class QtDBTableWidget(QSortFilterProxyModel):
 			if withButton:
 				ButtonItem = QStandardItem()
 				RowContents.append(ButtonItem)
-			for column in range(len(self.dataHeader)):
+			for column in range(len(self.dataBody[row])):
 				item = QStandardItem("{0}".format(self.dataBody[row][column])) 
 				RowContents.append(item)
 			self.model.invisibleRootItem().appendRow(RowContents)		

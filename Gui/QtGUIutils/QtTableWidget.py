@@ -46,7 +46,7 @@ class QtTableWidget(QSortFilterProxyModel):
 			RowContents = []
 			ButtonItem = QStandardItem()
 			RowContents.append(ButtonItem)
-			for column in range(len(self.dataHeader)):
+			for column in range(len(self.dataBody[row])):
 				if column == 0:
 					brush = QBrush()
 					brush.setColor(Color[self.dataBody[row][0]])

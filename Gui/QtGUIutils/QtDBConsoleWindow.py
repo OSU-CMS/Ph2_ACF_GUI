@@ -505,7 +505,7 @@ class QtDBConsoleWindow(QMainWindow):
 
 		self.RPIDLabel.deleteLater()
 		self.RPIDEdit.deleteLater()
-		self.RPFetchButton.deleLater()
+		self.RPFetchButton.deleteLater()
 
 		self.RPSenderLabel.deleteLater()
 		self.RPSenderEdit.deleteLater()

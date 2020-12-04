@@ -155,8 +155,6 @@ class QtRunWindow(QWidget):
 		ConsoleLayout.addWidget(self.ConsoleView)
 		TerminalBox.setLayout(ConsoleLayout)
 
-			
-
 		#Group Box for output display
 		OutputBox = QGroupBox("&Result")
 		OutputBoxSP = OutputBox.sizePolicy()
@@ -297,11 +295,12 @@ class QtRunWindow(QWidget):
 		self.master.ExitButton.setDisabled(False)
 
 	def refreshHistory(self):
-		self.dataList = getLocalRemoteTests(self.connection, self.info[0])
-		self.proxy = QtTableWidget(self.dataList)
-		self.view.setModel(self.proxy)
-		self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
-		self.view.update()
+		#self.dataList = getLocalRemoteTests(self.connection, self.info[0])
+		#self.proxy = QtTableWidget(self.dataList)
+		#self.view.setModel(self.proxy)
+		#self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
+		#self.view.update()
+		pass
 
 	def sendBackSignal(self):
 		self.backSignal = True
@@ -314,7 +313,6 @@ class QtRunWindow(QWidget):
 		pass
 
 	def configTest(self):
-		self.input_dir = ""
 		if self.currentTest == "" and isCompositeTest(self.info[1]):
 			testName = CompositeList[self.info[1]][0]
 		elif self.currentTest ==  None:
@@ -405,7 +403,8 @@ class QtRunWindow(QWidget):
 		#self.ContinueButton.setDisabled(True)
 		#self.run_process.setProgram()
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-		self.run_process.start("ping",["-c","5","www.google.com"])
+		#self.run_process.start("echo",["Testing {}".format(testName)])
+		self.run_process.start("ping", ["-c","2","www.google.com"])
 		#self.run_process.waitForFinished()
 		self.displayResult()
 		
@@ -424,7 +423,7 @@ class QtRunWindow(QWidget):
 		#	self.saveTest()
 		#if reply == QMessageBox.No or reply == QMessageBox.Save:
 		#	self.haltSignal = True
-		self.refreshHistory()
+		#self.refreshHistory()
 		self.finishSingal = False
 
 
@@ -463,7 +462,7 @@ class QtRunWindow(QWidget):
 				time_stamp = datetime.fromisoformat(self.output_dir.split('_')[-2])
 
 				testing_info = [self.info[0], self.parent.TryUsername, self.currentTest, time_stamp.strftime('%Y-%m-%d %H:%M:%S.%f'), self.grade, DQMFile]
-				insertTestResult(self.connection, testing_info)
+				#insertTestResult(self.connection, testing_info)
 				# fixme 
 				#database.createTestEntry(testing_info)
 			except:
@@ -496,15 +495,20 @@ class QtRunWindow(QWidget):
 
 	@QtCore.pyqtSlot()
 	def on_finish(self):
-		self.RunButton.setDisabled(False)
+		self.RunButton.setDisabled(True)
 		self.RunButton.setText("&Continue")
 		self.finishSingal = True
 		self.testIndexTracker += 1
 		if isCompositeTest(self.info[1]):
 			if self.testIndexTracker == len(CompositeList[self.info[1]]):
 				self.RunButton.setText("&Finish")
-		#self.ContinueButton.setDisabled(False)
+				self.RunButton.setDisabled(True)
+		if isSingleTest(self.info[1]):
+			self.RunButton.setText("&Finish")
+			self.RunButton.setDisabled(True)
 		self.validateTest()
+		if isCompositeTest(self.info[1]):
+			self.runTest()
 
 	#######################################################################
 	##  For real-time terminal display

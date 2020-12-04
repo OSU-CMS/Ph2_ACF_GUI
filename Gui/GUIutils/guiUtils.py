@@ -20,7 +20,7 @@ import hashlib
 from queue import Queue, Empty
 from threading import Thread
 from tkinter import ttk
-from datetime import datetime
+from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
 from itertools import islice
 from textwrap import dedent
@@ -65,7 +65,10 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir, DBConnection):
 				os.makedirs(test_dir)
 			except OSError:
 				print("Can not create directory: {0}".format(test_dir))
-		time_stamp = datetime.utcnow().isoformat() + "_UTC"
+		time = datetime.utcnow()
+		timeRound = time - timedelta(microseconds=time.microsecond)
+		time_stamp = timeRound.isoformat() + "_UTC"
+
 		Output_Dir = test_dir + "/Test_Module" + str(Module_ID) + "_" + str(Test) + "_" + str(time_stamp)
 		try:
 			os.makedirs(Output_Dir)
@@ -76,15 +79,15 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir, DBConnection):
 	#FIXME:
 	#Get the appropiate XML config file and RD53 file from either DB or local, copy to output file
 	#Store the XML config and RD53 config to created folder and DB
-	if isActive(DBConnection):
-		header = retriveTestTableHeader(DBConnection)
-		col_names = list(map(lambda x: header[x][0], range(0,len(header))))
-		index = col_names.index('DQMFile')
-		latest_record  = retrieveModuleLastTest(DBConnection, Module_ID)
-		if latest_record and index:
-			Input_Dir = "/".join(str(latest_record[0][index]).split('/')[:-1])
-		else:
-			Input_Dir = ""
+	#if isActive(DBConnection):
+	#	header = retriveTestTableHeader(DBConnection)
+	#	col_names = list(map(lambda x: header[x][0], range(0,len(header))))
+	#	index = col_names.index('DQMFile')
+	#	latest_record  = retrieveModuleLastTest(DBConnection, Module_ID)
+	#	if latest_record and index:
+	#		Input_Dir = "/".join(str(latest_record[0][index]).split('/')[:-1])
+	#	else:
+	#		Input_Dir = ""
 		return Output_Dir, Input_Dir
 
 	else:
@@ -199,15 +202,30 @@ def isSingleTest(TestName):
 	else:
 		return False
 
-def formatter(DirName):
+def formatter(DirName, columns):
 	dirName = DirName.split('/')[-1]
-	Module_ID = dirName.split('_')[1].lstrip("Module")
-	User = 'local'
-	Test = dirName.split('_')[2]
-	Grade = -1
-	TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
-	DQMFile = DirName
-
-	return [Module_ID, User, Test, TimeStamp, Grade, DQMFile]
+	ReturnList  = []
+	for column in columns:
+		if column  == "id":
+			ReturnList.append("")
+		if column  == "part_id":
+			Module_ID = dirName.split('_')[1].lstrip("Module")
+			ReturnList.append(Module_ID)
+		if column == "username":
+			ReturnList.append("local")
+		if column == "testname":
+			ReturnList.append(dirName.split('_')[2])
+		if column == "grade":
+			Grade = -1
+			ReturnList.append(Grade)
+		if column == "date":
+			TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
+			ReturnList.append(TimeStamp)
+		if column == "description":
+			ReturnList.append("")
+		if column == "type":
+			ReturnList.append("")
+	ReturnList.append(DirName)
+	return ReturnList
 	
 

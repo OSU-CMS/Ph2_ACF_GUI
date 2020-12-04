@@ -15,6 +15,7 @@ import random
 import numpy
 
 from Gui.GUIutils.settings import *
+from Gui.GUIutils.guiUtils import *
 
 ## Class for Module testing Summary
 class SummaryCanvas(FigureCanvas):
@@ -42,8 +43,11 @@ class RunStatusCanvas(FigureCanvas):
 	def __init__(self, parent, width=5, height=4, dpi=100):
 		self.parent = parent
 		self.xticks = ['']
-		for i in range(len(CompositeList[self.parent.info[1]])):
-			self.xticks.append(Test[CompositeList[self.parent.info[1]][i]])
+		if isCompositeTest(self.parent.info[1]):
+			for i in range(len(CompositeList[self.parent.info[1]])):
+				self.xticks.append(Test[CompositeList[self.parent.info[1]][i]])
+		if isSingleTest(self.parent.info[1]):
+			self.xticks.append(Test[self.parent.info[1]])
 		self.grades = self.parent.grades
 
 		self.fig = Figure(figsize=(width, height), dpi=dpi)
@@ -61,7 +65,11 @@ class RunStatusCanvas(FigureCanvas):
 		
 	def compute_initial_figure(self):
 		self.axes.cla()
-		x = numpy.array(range(1,1+len(CompositeList[self.parent.info[1]])))
+		if isCompositeTest(self.parent.info[1]):
+			x = numpy.array(range(1,1+len(CompositeList[self.parent.info[1]])))
+		if isSingleTest(self.parent.info[1]):
+			x = numpy.array(range(1,2))
+		
 		t = numpy.array(self.xticks)
 		y = numpy.array(self.grades)
 		addLength = len(x)-len(y)
@@ -74,8 +82,11 @@ class RunStatusCanvas(FigureCanvas):
 	
 	def renew(self):
 		self.xticks = ['']
-		for i in range(len(CompositeList[self.parent.info[1]])):
-			self.xticks.append(Test[CompositeList[self.parent.info[1]][i]])
+		if isCompositeTest(self.parent.info[1]):
+			for i in range(len(CompositeList[self.parent.info[1]])):
+				self.xticks.append(Test[CompositeList[self.parent.info[1]][i]])
+		if isSingleTest(self.parent.info[1]):
+			self.xticks.append(Test[self.parent.info[1]])
 		self.grades = self.parent.grades
 		self.compute_initial_figure()
 		

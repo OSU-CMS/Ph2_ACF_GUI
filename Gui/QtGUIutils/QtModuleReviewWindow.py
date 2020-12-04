@@ -24,6 +24,7 @@ class QtModuleReviewWindow(QWidget):
 		self.info = info
 		self.connection = self.master.connection
 		self.GroupBoxSeg = [1, 10,  1]
+		self.columns = ["id","part_id","username","description","testname","grade","date"]
 		#Fixme: QTimer to be added to update the page automatically
 
 		self.mainLayout = QGridLayout()
@@ -77,7 +78,8 @@ class QtModuleReviewWindow(QWidget):
 		HistoryBox = QGroupBox("&Record")
 
 		HistoryLayout = QGridLayout()
-		dataList = getLocalRemoteTests(self.connection, self.info)
+
+		dataList = getLocalRemoteTests(self.connection, self.info, self.columns)
 
 		self.proxy = QtTableWidget(dataList)
 
@@ -159,8 +161,45 @@ class QtModuleReviewWindow(QWidget):
 		print("Close"+DQMFile)
 
 	def syncDB(self):
+		if(not isActive(self.connection)):
+			return
+
 		selectedrows = self.view.selectionModel().selectedRows()
 		for index in selectedrows:
 			rowNumber = index.row()
-			print(self.proxy.data(self.proxy.index(rowNumber, 3)))
+			if self.proxy.data(self.proxy.index(rowNumber,1))!= "Local":
+				print("This record is verified to be local")
+				continue
+
+			################################
+			##  Block  to get binary Info
+			################################
+			if self.proxy.dataBody[rowNumber][len(self.proxy.dataHeader)-1] != "":
+				print("Local File found: {}".format(self.proxy.dataBody[rowNumber][len(self.proxy.dataHeader)-1]))
+
+			SubmitArgs = []
+			Value = []
+			for column in self.columns:
+				if column == "part_id" or column == "date" or column == "testname":
+					SubmitArgs.append(column)
+					Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
+				if column == "description":
+					SubmitArgs.append(column)
+					Value.append("No Comment")
+				if column == "grade":
+					SubmitArgs.append(column)
+					Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
+				if column == "username":
+					SubmitArgs.append(column)
+					Value.append(self.master.TryUsername)
+			
+			SubmitArgs.append("data")
+			Value.append("")
+			try:
+				insertGenericTable(self.connection, "tests", SubmitArgs, Value)
+			except:
+				print("Failed to insert")
+
+		self.destroyMain()
+		self.createMain()
 
