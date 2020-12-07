@@ -146,15 +146,21 @@ def getLocalTests(module_id, columns=[]):
 	getDirectories = subprocess.run('find {0} -mindepth 2 -maxdepth 2 -type d'.format(os.environ.get("DATA_dir")), shell=True, stdout=subprocess.PIPE)
 	dirList = getDirectories.stdout.decode('utf-8').rstrip('\n').split('\n')
 	localTests = []
-	for dirName in dirList:
-		if "_Module{0}_".format(str(module_id or '')) in dirName:
-			test = formatter(dirName,columns)
-			localTests.append(test)
+	if module_id:
+		for dirName in dirList:
+			if "_Module{0}_".format(str(module_id)) in dirName:
+				test = formatter(dirName,columns)
+				localTests.append(test)
+	else:
+		for dirName in dirList:
+			if "_Module" in dirName:
+				test = formatter(dirName,columns)
+				localTests.append(test)
 	return localTests
 
 def getLocalRemoteTests(dbconnection, module_id = None, columns = []):
 	if isActive(dbconnection):
-		if module_id:
+		if module_id == None:
 			remoteTests = retrieveGenericTable(dbconnection, "tests", columns = columns)
 			remoteTests = [list(i) for i in remoteTests]
 		else:

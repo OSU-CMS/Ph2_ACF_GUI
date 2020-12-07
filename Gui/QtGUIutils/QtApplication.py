@@ -341,6 +341,7 @@ class QtApplication(QWidget):
 		self.ReviewButton.setMaximumWidth(kMaximumWidth)
 		self.ReviewButton.setMinimumHeight(kMinimumHeight)
 		self.ReviewButton.setMaximumHeight(kMaximumHeight)
+		self.ReviewButton.clicked.connect(self.openReviewWindow)
 		ReviewLabel = QLabel("Review all results")
 
 		self.ReviewModuleButton = QPushButton("&Show Module")
@@ -440,7 +441,7 @@ class QtApplication(QWidget):
 		self.SummaryButton.setDisabled(True)
 
 	def openReviewWindow(self):
-		pass
+		self.ReviewWindow =  QtModuleReviewWindow(self)
 
 	def openModuleReviewWindow(self):
 		Module_ID = self.ReviewModuleEdit.text()

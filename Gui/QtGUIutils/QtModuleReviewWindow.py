@@ -18,7 +18,7 @@ from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtTableWidget import *
 
 class QtModuleReviewWindow(QWidget):
-	def __init__(self,master, info):
+	def __init__(self,master, info = None):
 		super(QtModuleReviewWindow,self).__init__()
 		self.master = master
 		self.info = info

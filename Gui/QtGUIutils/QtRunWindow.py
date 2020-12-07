@@ -50,6 +50,7 @@ class QtRunWindow(QWidget):
 		self.outputDirQueue = []
 		#Fixme: QTimer to be added to update the page automatically
 		self.grades = []
+		self.autoSave = False
 
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
@@ -129,8 +130,15 @@ class QtRunWindow(QWidget):
 		#self.ContinueButton.clicked.connect(self.sendProceedSignal)
 		self.AbortButton = QPushButton("&Abort")
 		self.AbortButton.clicked.connect(self.abortTest)
-		self.SaveButton = QPushButton("&Save")
-		self.SaveButton.clicked.connect(self.saveTest)
+		#self.SaveButton = QPushButton("&Save")
+		#self.SaveButton.clicked.connect(self.saveTest)
+		self.saveCheckBox = QCheckBox("&auto-save to DB")
+		self.saveCheckBox.setMaximumHeight(30)
+		self.saveCheckBox.setChecked(self.autoSave)
+		if not isActive(self.connection):
+			self.saveCheckBox.setChecked(False)
+			self.saveCheckBox.setDisabled(False)
+		self.saveCheckBox.clicked.connect(self.setAutoSave)
 
 		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
 		self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
@@ -351,6 +359,13 @@ class QtRunWindow(QWidget):
 		self.config_file = ""
 		return
 
+	def saveConfigs(self):
+		try:
+			print("{0}/test/CMSIT_RD53.txt".format(os.environ.get("Ph2_ACF_AREA")))
+			os.system("cp {0}/test/CMSIT_RD53.txt {1}/CMSIT_RD53_OUT.txt".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+		except:
+			print("Failed to copy {0}/CMSIT_RD53.txt to {1}/CMSIT_RD53_OUT.txt".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+
 	def customizeTest(self):
 		print("Customize configuration")
 		self.CustomizedButton.setDisabled(True)
@@ -368,6 +383,7 @@ class QtRunWindow(QWidget):
 		self.rd53_file  = ""
 
 	def runTest(self):
+		self.saveCheckBox.setDisabled()
 		#self.ControlLayout.removeWidget(self.RunButton)
 		#self.RunButton.deleteLater()
 		#self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
@@ -403,8 +419,8 @@ class QtRunWindow(QWidget):
 		#self.ContinueButton.setDisabled(True)
 		#self.run_process.setProgram()
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-		#self.run_process.start("echo",["Testing {}".format(testName)])
-		self.run_process.start("ping", ["-c","2","www.google.com"])
+		self.run_process.start("echo",["Testing {}".format(testName)])
+		#self.run_process.start("ping", ["-c","2","www.google.com"])
 		#self.run_process.waitForFinished()
 		self.displayResult()
 		
@@ -438,7 +454,9 @@ class QtRunWindow(QWidget):
 			return
 
 	def validateTest(self):
+		# Fixme: the grading for test results
 		self.grades.append(random.uniform(50, 100))
+		time.sleep(0.5)
 		self.StatusCanvas.renew()
 		self.StatusCanvas.update()
 		self.HistoryLayout.removeWidget(self.StatusCanvas)
@@ -451,9 +469,13 @@ class QtRunWindow(QWidget):
 			QMessageBox.critical(self,"Error","Process not finished",QMessageBox.Ok)
 			return
 
-		if isActive(self.connection):
+		try:
+			os.system("cp {0}/test/Results/Run*.root {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+		except:
+			print("Failed to copy file to output directory")
+
+		if isActive(self.connection) and self.autoSave:
 			try:
-				os.system("cp {0}/test/Results/Run*.root {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
 				getfile = subprocess.run('ls -alt {0}/test/Results/Run*.root'.format(self.output_dir), shell=True, stdout=subprocess.PIPE)
 				filelist = getfile.stdout.decode('utf-8')
 				outputfile = filelist.rstrip('\n').split('\n')[-1].split(' ')[-1]
@@ -499,6 +521,8 @@ class QtRunWindow(QWidget):
 		self.RunButton.setText("&Continue")
 		self.finishSingal = True
 		self.testIndexTracker += 1
+		self.saveConfigs()
+
 		if isCompositeTest(self.info[1]):
 			if self.testIndexTracker == len(CompositeList[self.info[1]]):
 				self.RunButton.setText("&Finish")
@@ -506,13 +530,24 @@ class QtRunWindow(QWidget):
 		if isSingleTest(self.info[1]):
 			self.RunButton.setText("&Finish")
 			self.RunButton.setDisabled(True)
+
 		self.validateTest()
+		self.saveTest()
+
+
 		if isCompositeTest(self.info[1]):
 			self.runTest()
 
 	#######################################################################
 	##  For real-time terminal display
 	#######################################################################
+
+	def setAutoSave(self):
+		if self.autoSave:
+			self.autoSave =  False
+		else:
+			self.autoSave = True
+		self.saveCheckBox.setChecked(self.autoSave)
 
 	def closeEvent(self, event):
 		if self.processingFlag == True:
