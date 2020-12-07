@@ -21,6 +21,7 @@ from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtCustomizeWindow import *
 from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
+from Gui.QtGUIutils.QtLoginDialog import *
 
 class QtRunWindow(QWidget):
 	def __init__(self,master, info):
@@ -318,7 +319,18 @@ class QtRunWindow(QWidget):
 		self.runNext.set()
 
 	def connectDB(self):
-		pass
+		if isActive(self.master.connection):
+			self.connection  = self.master.connection
+			self.refresh()
+			self.saveCheckBox.setDisabled(False)
+			return
+
+		LoginDialog = QtLoginDialog(self.master)
+		response = LoginDialog.exec_()
+		if response == QDialog.Accepted:
+			self.connectDB()
+		else:
+			return
 
 	def configTest(self):
 		if self.currentTest == "" and isCompositeTest(self.info[1]):
@@ -383,7 +395,6 @@ class QtRunWindow(QWidget):
 		self.rd53_file  = ""
 
 	def runTest(self):
-		self.saveCheckBox.setDisabled(True)
 		#self.ControlLayout.removeWidget(self.RunButton)
 		#self.RunButton.deleteLater()
 		#self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
@@ -547,6 +558,12 @@ class QtRunWindow(QWidget):
 	#######################################################################
 	##  For real-time terminal display
 	#######################################################################
+
+	def refresh(self):
+		self.destroyHeadLine()
+		self.createHeadLine()
+		self.destroyApp()
+		self.createApp()
 
 	def setAutoSave(self):
 		if self.autoSave:

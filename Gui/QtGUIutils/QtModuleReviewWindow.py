@@ -16,6 +16,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtTableWidget import *
+from Gui.QtGUIutils.QtLoginDialog import *
 
 class QtModuleReviewWindow(QWidget):
 	def __init__(self,master, info = None):
@@ -55,6 +56,10 @@ class QtModuleReviewWindow(QWidget):
 
 		self.ConnectButton = QPushButton("&Connect to DB")
 		self.ConnectButton.clicked.connect(self.connectDB)
+		if(isActive(self.connection)):
+			self.ConnectButton.setDisabled(True)
+		else:
+			self.ConnectButton.setDisabled(False)
 
 		self.HeadLayout.addWidget(HeadLabel)
 		self.HeadLayout.addStretch(1)
@@ -125,6 +130,8 @@ class QtModuleReviewWindow(QWidget):
 
 		self.SyncButton = QPushButton("&Sync to DB")
 		self.SyncButton.clicked.connect(self.syncDB)
+		if not isActive(self.connection):
+			self.SyncButton.setDisabled(True)
 
 		self.ResetButton = QPushButton("&Reset")
 		self.ResetButton.clicked.connect(self.destroyMain)
@@ -153,7 +160,17 @@ class QtModuleReviewWindow(QWidget):
 		self.backSignal = True
 
 	def connectDB(self):
-		pass
+		if isActive(self.master.connection):
+			self.connection  = self.master.connection
+			self.refresh()
+			return
+
+		LoginDialog = QtLoginDialog(self.master)
+		response = LoginDialog.exec_()
+		if response == QDialog.Accepted:
+			self.connectDB()
+		else:
+			return
 
 	def openDQM(self, DQMFile):
 		print("Open"+DQMFile)
@@ -203,3 +220,10 @@ class QtModuleReviewWindow(QWidget):
 		self.destroyMain()
 		self.createMain()
 
+	def refresh(self):
+			self.destroyHeadLine()
+			self.destroyMain()
+			self.destroyApp()
+			self.createHeadLine()
+			self.createMain()
+			self.createApp()
