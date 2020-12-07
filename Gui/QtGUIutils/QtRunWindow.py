@@ -47,6 +47,7 @@ class QtRunWindow(QWidget):
 		self.DisplayH = 450
 		self.runNext = threading.Event()
 		self.testIndexTracker = -1
+		self.listWidgetIndex = 0
 		self.outputDirQueue = []
 		#Fixme: QTimer to be added to update the page automatically
 		self.grades = []
@@ -137,14 +138,14 @@ class QtRunWindow(QWidget):
 		self.saveCheckBox.setChecked(self.autoSave)
 		if not isActive(self.connection):
 			self.saveCheckBox.setChecked(False)
-			self.saveCheckBox.setDisabled(False)
+			self.saveCheckBox.setDisabled(True)
 		self.saveCheckBox.clicked.connect(self.setAutoSave)
 
 		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
 		self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
 		self.ControlLayout.addWidget(self.RunButton,1,0,1,1)
 		self.ControlLayout.addWidget(self.AbortButton,1,1,1,1)
-		self.ControlLayout.addWidget(self.SaveButton,1,2,1,1)
+		self.ControlLayout.addWidget(self.saveCheckBox,1,2,1,1)
 
 		ControllerBox.setLayout(self.ControlLayout)
 
@@ -180,7 +181,6 @@ class QtRunWindow(QWidget):
 		self.ReferLabel.setPixmap(self.ReferView)
 		self.ListWidget = QListWidget()
 		self.ListWidget.setMinimumWidth(150)
-		self.ListWidget.insertItem(0, "Module_0_Chip_0")
 		self.ListWidget.clicked.connect(self.clickedOutputItem)
 
 		OutputLayout.addWidget(self.DisplayTitle,0,0,1,2)
@@ -383,7 +383,7 @@ class QtRunWindow(QWidget):
 		self.rd53_file  = ""
 
 	def runTest(self):
-		self.saveCheckBox.setDisabled()
+		self.saveCheckBox.setDisabled(True)
 		#self.ControlLayout.removeWidget(self.RunButton)
 		#self.RunButton.deleteLater()
 		#self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
@@ -520,6 +520,12 @@ class QtRunWindow(QWidget):
 		self.RunButton.setDisabled(True)
 		self.RunButton.setText("&Continue")
 		self.finishSingal = True
+
+		if isCompositeTest(self.info[1]):
+			self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info[1]][self.testIndexTracker-1]))
+		if isSingleTest(self.info[1]):
+			self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info[1]))
+
 		self.testIndexTracker += 1
 		self.saveConfigs()
 
