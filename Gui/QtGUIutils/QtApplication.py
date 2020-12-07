@@ -273,7 +273,7 @@ class QtApplication(QWidget):
 			#FwStatusValue.setStyleSheet(FwStatusColor)
 			self.StatusList.append([FwNameLabel,FwStatusValue])
 
-		self.UseButton = []
+		self.UseButtons = []
 
 		StatusLayout = QGridLayout()
 
@@ -290,7 +290,7 @@ class QtApplication(QWidget):
 				UseButton.toggle()
 				UseButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.switchFw(x))
 				UseButton.setCheckable(True)
-				self.UseButton.append(UseButton)
+				self.UseButtons.append(UseButton)
 				StatusLayout.addWidget(UseButton, index, 0, 1, 1)
 				StatusLayout.addWidget(items[0], index, 1,  1, 1)
 				StatusLayout.addWidget(items[1], index, 2,  1, 2)
@@ -456,10 +456,11 @@ class QtApplication(QWidget):
 	def checkFirmware(self):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
 			fileName = self.LogList[index]
-			FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress,fileName)
-			self.StatusList[index+1][1].setText(FwStatusComment)
-			self.StatusList[index+1][1].setStyleSheet(FwStatusColor)
-			self.UseButton[index].setDisabled(False)
+			if firmwareName != self.FwUnderUsed:
+				FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress,fileName)
+				self.StatusList[index+1][1].setText(FwStatusComment)
+				self.StatusList[index+1][1].setStyleSheet(FwStatusColor)
+			self.UseButtons[index].setDisabled(False)
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
 			self.occupyFw("{0}".format(index))
@@ -477,7 +478,7 @@ class QtApplication(QWidget):
 		return -1
 
 	def switchFw(self, index):
-		if self.UseButton[int(index)].isChecked():
+		if self.UseButtons[int(index)].isChecked():
 			self.occupyFw(index)
 		else:
 			self.releaseFw(index)
@@ -485,7 +486,7 @@ class QtApplication(QWidget):
 	def occupyFw(self, index):
 		if self.StatusList[int(index)+1][1].text() == "Connected":
 			self.NewTestButton.setDisabled(False)
-		for i ,button in enumerate(self.UseButton):
+		for i ,button in enumerate(self.UseButtons):
 			if i == int(index):
 				button.setChecked(True)
 				button.setText("&In use")
@@ -494,7 +495,7 @@ class QtApplication(QWidget):
 				button.setDisabled(True)
 
 	def releaseFw(self, index):
-		for i ,button in enumerate(self.UseButton):
+		for i ,button in enumerate(self.UseButtons):
 			if i == int(index):
 				self.FwUnderUsed = ''
 				button.setText("&Use")
