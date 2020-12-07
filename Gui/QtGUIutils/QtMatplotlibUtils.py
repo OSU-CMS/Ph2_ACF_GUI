@@ -32,6 +32,7 @@ class SummaryCanvas(FigureCanvas):
 								   QSizePolicy.Expanding,
 								   QSizePolicy.Expanding)
 		FigureCanvas.updateGeometry(self)
+		FigureCanvas.setMinimumHeight(1)
 		
 	def compute_initial_figure(self):
 		t = numpy.arange(0.0, 3.0, 0.01)
@@ -43,6 +44,7 @@ class RunStatusCanvas(FigureCanvas):
 	def __init__(self, parent, width=5, height=4, dpi=100):
 		self.parent = parent
 		self.xticks = ['']
+
 		if isCompositeTest(self.parent.info[1]):
 			for i in range(len(CompositeList[self.parent.info[1]])):
 				self.xticks.append(Test[CompositeList[self.parent.info[1]][i]])
@@ -57,6 +59,7 @@ class RunStatusCanvas(FigureCanvas):
 
 		FigureCanvas.__init__(self, self.fig)
 		self.setParent(self.parent)
+		self.setMinimumHeight(1)
 
 		FigureCanvas.setSizePolicy(self,
 								   QSizePolicy.Expanding,

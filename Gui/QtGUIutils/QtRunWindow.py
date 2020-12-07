@@ -174,11 +174,13 @@ class QtRunWindow(QWidget):
 		OutputLayout = QGridLayout()
 		self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
 		self.DisplayLabel = QLabel()
+		self.DisplayLabel.setScaledContents(True)
 		self.DisplayView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 		self.DisplayLabel.setPixmap(self.DisplayView)
 		self.ReferTitle = QLabel('<font size="6"> Reference: </font>')
 		self.ReferLabel = QLabel()
-		self.ReferView = QPixmap('test_plots/test_gain_refer.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		self.ReferLabel.setScaledContents(True)
+		self.ReferView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 		self.ReferLabel.setPixmap(self.ReferView)
 		self.ListWidget = QListWidget()
 		self.ListWidget.setMinimumWidth(150)
@@ -515,7 +517,10 @@ class QtRunWindow(QWidget):
 	def clickedOutputItem(self, qmodelindex):
 		#Fixme: Extract the info from ROOT file
 		item = self.ListWidget.currentItem()
-		print(item.text())
+		referName = item.text().split("_")[0]
+		if referName in ["GainScan","Latency","NoiseScan","PixelAlive","SCurveScan","ThresholdEqualization"]:
+			self.ReferView = QPixmap(os.environ.get('GUI_dir')+'/Gui/test_plots/{0}.png'.format(referName)).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+			self.ReferLabel.setPixmap(self.ReferView)
 
 	#######################################################################
 	##  For real-time terminal display

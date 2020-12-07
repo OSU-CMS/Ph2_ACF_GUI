@@ -501,6 +501,7 @@ class QtApplication(QWidget):
 				button.setText("&Use")
 				button.setDown(False)
 				button.setDisabled(False)
+				self.NewTestButton.setDisabled(True)
 			else:
 				button.setDisabled(False)
 
