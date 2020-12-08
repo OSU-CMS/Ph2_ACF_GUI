@@ -15,6 +15,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.QtGUIutils.QtFwCheckWindow  import *
+from Gui.QtGUIutils.QtFwStatusWindow import *
 from Gui.QtGUIutils.QtSummaryWindow import *
 from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtModuleReviewWindow import *
@@ -28,6 +29,8 @@ class QtApplication(QWidget):
 		self.ProcessingTest = False
 		self.expertMode = False
 		self.FwUnderUsed = ''
+		self.FwStatusVerboseDict = {}
+		self.FPGAConfigDict = {}
 		self.LogList = {}
 
 		self.setLoginUI()
@@ -272,6 +275,7 @@ class QtApplication(QWidget):
 			#FwStatusValue.setText(FwStatusComment)
 			#FwStatusValue.setStyleSheet(FwStatusColor)
 			self.StatusList.append([FwNameLabel,FwStatusValue])
+			self.FwStatusVerboseDict[str(firmwareName)] = {}
 
 		self.UseButtons = []
 
@@ -294,12 +298,15 @@ class QtApplication(QWidget):
 				StatusLayout.addWidget(UseButton, index, 0, 1, 1)
 				StatusLayout.addWidget(items[0], index, 1,  1, 1)
 				StatusLayout.addWidget(items[1], index, 2,  1, 2)
-				SolutionButton = QPushButton("&Solutions")
+				FPGAConfigButton = QPushButton("&Change uDTC firmware")
+				FPGAConfigButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.setuDTCFw(x))
+				StatusLayout.addWidget(FPGAConfigButton, index, 4, 1, 1)
+				SolutionButton = QPushButton("&Firmware Status")
 				SolutionButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.showCommentFw(x))
-				StatusLayout.addWidget(SolutionButton, index, 4, 1, 1)
+				StatusLayout.addWidget(SolutionButton, index, 5, 1, 1)
 				LogButton = QPushButton("&Log")
 				LogButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.showLogFw(x))
-				StatusLayout.addWidget(LogButton, index, 5, 1, 1)
+				StatusLayout.addWidget(LogButton, index, 6, 1, 1)
 
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
@@ -399,6 +406,7 @@ class QtApplication(QWidget):
 		if self.ProcessingTest:
 			self.LogoutButton.setDisabled(True)
 		self.LogoutButton.clicked.connect(self.destroyMain)
+		self.LogoutButton.clicked.connect(self.setLoginUI)
 		self.LogoutButton.clicked.connect(self.createLogin)
 
 		self.ExitButton = QPushButton("&Exit")
@@ -417,6 +425,8 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.MainOption)
 		self.mainLayout.addWidget(self.AppOption)
 
+		self.checkFirmware()
+
 	def disableBoxs(self):
 		self.FirmwareStatus.setDisabled(True)
 		self.MainOption.setDisabled(True)
@@ -430,7 +440,7 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.AppOption)
 
 	def openNewTest(self):
-		self.StartNewTest = QtStartWindow(self)
+		self.StartNewTest = QtStartWindow(self,self.FwUnderUsed)
 		self.NewTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
 		self.ExitButton.setDisabled(True)
@@ -457,9 +467,10 @@ class QtApplication(QWidget):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
 			fileName = self.LogList[index]
 			if firmwareName != self.FwUnderUsed:
-				FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress,fileName)
+				FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(firmwareName,fwAddress,fileName)
 				self.StatusList[index+1][1].setText(FwStatusComment)
 				self.StatusList[index+1][1].setStyleSheet(FwStatusColor)
+				self.FwStatusVerboseDict[str(firmwareName)] = FwStatusVerbose
 			self.UseButtons[index].setDisabled(False)
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
@@ -467,8 +478,8 @@ class QtApplication(QWidget):
 
 
 	def getFwComment(self,firmwareName,fwAddress,fileName):
-		comment,color = fwStatusParser(firmwareName,fwAddress,fileName)
-		return comment,color
+		comment,color, verboseInfo = fwStatusParser(firmwareName,fwAddress,fileName)
+		return comment,color, verboseInfo
 
 	def getIndex(self, element, List2D):
 		print(element)
@@ -506,13 +517,20 @@ class QtApplication(QWidget):
 				button.setDisabled(False)
 
 	def showCommentFw(self, index):
+		fwName  = self.StatusList[int(index)+1][0].text()
 		comment = self.StatusList[int(index)+1][1].text()
 		solution = FwStatusCheck[comment]
-		QMessageBox.information(None, "Info", "{}".format(solution), QMessageBox.Ok)
+		verboseInfo =  self.FwStatusVerboseDict[self.StatusList[int(index)+1][0].text()]
+		#QMessageBox.information(None, "Info", "{}".format(solution), QMessageBox.Ok)
+		self.FwStatusWindow = QtFwStatusWindow(self,fwName,verboseInfo,solution)
+
 
 	def showLogFw(self, index):
 		fileName = self.LogList[int(index)]
 		self.FwLogWindow = QtFwCheckWindow(self,fileName)
+
+	def setuDTCFw(self, index):
+		pass
 			
 	###############################################################
 	##  Main page and related functions  (END)

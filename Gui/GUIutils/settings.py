@@ -10,12 +10,18 @@ DBNames = {
 	'All'					 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
 	'Central-remote'		 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
 	'local'					 :  ['phase2pixel_test'],
-	'OSU-remote'			 :  ['phase2pixel_test', 'SampleDB'],
+	'OSU-remote'			 :  ['SampleDB','phase2pixel_test'],
 }
 
 FirmwareList =  {
 	'fc7.board.1' 			 :  '192.168.1.80',
 	'fc7.board.2'			 :  '127.0.0.1' #'192.168.1.81',
+}
+
+# Set the IT_uTDC_firmware for test
+FPGAConfigList =  {
+	'fc7.board.1' 			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28',
+	'fc7.board.2'			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
 }
 
 ConfigFiles = {
@@ -68,4 +74,5 @@ CompositeList = {
 	'StandardStep4': ['Latency','PixelAlive']
 }
 firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
-header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile']
+
+header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using

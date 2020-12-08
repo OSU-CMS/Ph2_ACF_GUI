@@ -18,8 +18,8 @@ from Gui.GUIutils.settings import *
 
 Color={
 	"Local"  : QColor(255,0,0),
-	"Remote" : QColor(0,0,0),
-	"Synced" : QColor(0,0,255),
+	"Remote" : QColor(0,255,0),
+	"Synced" : QColor(0,255,255),
 }
 
 class QtTableWidget(QSortFilterProxyModel):
