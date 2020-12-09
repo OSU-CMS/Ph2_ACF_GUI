@@ -119,7 +119,7 @@ def SetupXMLConfig(Input_Dir, Output_Dir):
 ##########################################################################
 ##########################################################################
 
-def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName):
+def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 	try:
 		root,tree = LoadXML(InputFile)
 		fwIP = FirmwareList[firmwareName]
@@ -128,11 +128,18 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName):
 			if fwIP not in Node.attrib['uri']:
 				Node.set('uri','chtcp-2.0://localhost:10203?target={}:50001'.format(fwIP))
 				changeMade = True
-		
+
+		for Node in root.findall(".//RD53"):
+			for key in RD53Dict.keys():
+				if Node.attrib["Id"] == str(key):
+					Node.set('configfile','CMSIT_RD53_{}.txt'.format(key))
+					changeMade = True
+
 		if changeMade:
 			ModifiedFile = InputFile+".changed"
 			tree.write(ModifiedFile)
 			InputFile = ModifiedFile
+
 	except Exception as error:
 		print("Failed to set up the XML file, {}".format(error))
 

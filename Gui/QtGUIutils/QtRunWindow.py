@@ -360,26 +360,26 @@ class QtRunWindow(QWidget):
 
 		self.output_dir, self.input_dir = ConfigureTest(testName, self.info[0], self.output_dir, self.input_dir, self.connection)
 
+		for key in self.rd53_file.keys():
+			if self.rd53_file[key] == None:
+				self.rd53_file[key] = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_RD53.txt"
 		if self.input_dir == "":
-			if self.config_file == "":
-				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
-				SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName)
-				#QMessageBox.information(None,"Noitce", "Using default XML configuration",QMessageBox.Ok)
-			else:
-				SetupXMLConfigfromFile(self.config_file,self.output_dir,self.firmwareName)
-		else:
-			if self.config_file != "":
-				SetupXMLConfigfromFile(self.config_file,self.output_dir)
-			else:
-				SetupXMLConfig(self.input_dir,self.output_dir)
-
-		if self.input_dir == "":
-			for key in self.rd53_file.keys():
-				if self.rd53_file[key] == None:
-					self.rd53_file[key] = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_RD53.txt"
 			SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
 		else:
 			SetupRD53Config(self.input_dir,self.output_dir, self.rd53_file)
+
+		if self.input_dir == "":
+			if self.config_file == "":
+				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
+				SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName,self.rd53_file)
+				#QMessageBox.information(None,"Noitce", "Using default XML configuration",QMessageBox.Ok)
+			else:
+				SetupXMLConfigfromFile(self.config_file,self.output_dir,self.firmwareName,self.rd53_file)
+		else:
+			if self.config_file != "":
+				SetupXMLConfigfromFile(self.config_file,self.output_dir,self.firmwareName,self.rd53_file)
+			else:
+				SetupXMLConfig(self.input_dir,self.output_dir)
 
 		self.initializeRD53Dict()
 		self.config_file = ""
@@ -445,8 +445,10 @@ class QtRunWindow(QWidget):
 		#self.ContinueButton.setDisabled(True)
 		#self.run_process.setProgram()
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-		self.run_process.start("echo",["Testing {}".format(testName)])
-		#self.run_process.start("ping", ["-c","2","www.google.com"])
+		self.run_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
+		#self.run_process.start("echo",["Testing {}".format(testName)])
+		self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
+		#self.run_process.start("ping", ["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
 		self.displayResult()
 		
@@ -466,7 +468,7 @@ class QtRunWindow(QWidget):
 		#if reply == QMessageBox.No or reply == QMessageBox.Save:
 		#	self.haltSignal = True
 		#self.refreshHistory()
-		self.finishSingal = False
+		#self.finishSingal = False
 
 
 	def abortTest(self):
@@ -516,7 +518,6 @@ class QtRunWindow(QWidget):
 			except:
 				QMessageBox.information(self,"Error","Unable to save to DB", QMessageBox.Ok)
 				return
-		self.refreshHistory()
 
 
 	#######################################################################
@@ -550,6 +551,7 @@ class QtRunWindow(QWidget):
 		self.RunButton.setText("&Continue")
 		self.finishSingal = True
 
+		#Fixme: multi-chip to be added
 		if isCompositeTest(self.info[1]):
 			self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info[1]][self.testIndexTracker-1]))
 		if isSingleTest(self.info[1]):
@@ -567,8 +569,8 @@ class QtRunWindow(QWidget):
 			self.RunButton.setDisabled(True)
 
 		self.validateTest()
+		self.refreshHistory()
 		self.saveTest()
-
 
 		if isCompositeTest(self.info[1]):
 			self.runTest()
