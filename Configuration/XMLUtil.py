@@ -19,19 +19,19 @@ def LoadXML(filename="CMSIT.xml"):
 
 def ShowXMLTree(XMLroot, depth=0):
   depth += 1
-  print "--"*(depth-1), "|", XMLroot.tag, XMLroot.attrib, XMLroot.text 
+  print("--"*(depth-1), "|", XMLroot.tag, XMLroot.attrib, XMLroot.text)
   for child in XMLroot:
     ShowXMLTree(child,depth)
 
 def ModifyBeboard(XMLroot, BeboardModule):
   def __init__(self):
-    print "Nothing Done"
+    print("Nothing Done")
 
 class HWDescription():
   BeBoardList = []
   Settings = {}
   def __init__(self):
-    print "Setting HWDescription"
+    print("Setting HWDescription")
   def AddBeBoard(self, BeBoardModule):
     self.BeBoardList.append(BeBoardModule)
   def AddSettings(self, Settings):
@@ -173,7 +173,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
 
   xmlstr = prettify(Node_HWInterface)
   with open(outputFile, "w") as f:
-    f.write(str(xmlstr.decode('UTF-8')))
+    f.write(str(xmlstr))
     #f.write(ET.tostring(Node_HWInterface, 'utf-8'))
     f.close()  
         

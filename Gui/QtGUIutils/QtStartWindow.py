@@ -340,7 +340,8 @@ class QtStartWindow(QWidget):
 			return
 		self.info = [self.ModuleIDEdit.text(), str(self.TestCombo.currentText())]
 		self.runFlag = True
-		self.master.RunNewTest = QtRunWindow(self.master,self.info)
+		ModuleType  = str(self.TypeCombo.currentText())
+		self.master.RunNewTest = QtRunWindow(self.master,self.info, self.firmwareName, ModuleType)
 		self.close()
 
 	def closeEvent(self, event):

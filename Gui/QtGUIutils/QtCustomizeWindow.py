@@ -15,11 +15,54 @@ from subprocess import Popen, PIPE
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
 
+class RD53Widget(QWidget):
+	def __init__(self, index):
+		super(RD53Widget,self).__init__()
+		self.id = index
+		self.mainLayout = QGridLayout()
+		self.createBody()
+		self.setLayout(self.mainLayout)
+
+	def createBody(self):
+		kMinimumWidth = 120
+		kMaximumWidth = 150
+		kMinimumHeight = 30
+		kMaximumHeight = 80
+
+		RD53Label = QLabel("RD53 ID: {}".format(self.id))
+		self.RD53Edit = QLineEdit('')
+		self.RD53Edit.setEchoMode(QLineEdit.Normal)
+		#self.RD53Edit.setPlaceholderText('{0}'.format(self.master.rd53_file))
+		self.RD53Edit.setMinimumWidth(kMinimumWidth)
+		self.RD53Edit.setMaximumHeight(kMaximumHeight)
+		self.RD53Button = QPushButton("&Browse..")
+		self.RD53Button.clicked.connect(self.openFileBrowserText)
+
+		self.mainLayout.addWidget(RD53Label,  0,0,1,1, Qt.AlignRight)
+		self.mainLayout.addWidget(self.RD53Edit,   0,1,1,3)
+		self.mainLayout.addWidget(self.RD53Button, 0,4,1,1)
+
+	def openFileBrowserText(self):
+		options = QFileDialog.Options()
+		options |= QFileDialog.DontUseNativeDialog
+		fileName, _ = QFileDialog.getOpenFileName(self,"RD53 configuration", "","All Files (*);;Text Files (*.txt)", options=options)
+		if fileName.split('.')[-1] != "txt":
+			QMessageBox.information(None,"Warning","Not a valid txt file", QMessageBox.Ok)
+		self.RD53Edit.setText(fileName)
+
+	def text(self):
+		return self.RD53Edit.text()
+
+
+
 class QtCustomizeWindow(QWidget):
-	def __init__(self,master):
+	def __init__(self,master, rd53dict):
 		super(QtCustomizeWindow,self).__init__()
 		self.master = master
 		self.connection = self.master.connection
+		self.rd53_file = rd53dict
+
+		self.RD53List = []
 		self.GroupBoxSeg = [1, 3, 1]
 
 		#Fixme: QTimer to be added to update the page automatically
@@ -78,23 +121,14 @@ class QtCustomizeWindow(QWidget):
 		self.XMLButton = QPushButton("&Browse..")
 		self.XMLButton.clicked.connect(self.openFileBrowserXML)
 
-
-		RD53Label = QLabel("RD53:")
-		self.RD53Edit = QLineEdit('')
-		self.RD53Edit.setEchoMode(QLineEdit.Normal)
-		self.RD53Edit.setPlaceholderText('{0}'.format(self.master.rd53_file))
-		self.RD53Edit.setMinimumWidth(kMinimumWidth)
-		self.RD53Edit.setMaximumHeight(kMaximumHeight)
-		self.RD53Button = QPushButton("&Browse..")
-		self.RD53Button.clicked.connect(self.openFileBrowserText)
-
-
 		mainbodylayout.addWidget(XMLLabel,   0,0,1,1, Qt.AlignRight)
 		mainbodylayout.addWidget(self.XMLEdit,    0,1,1,3)
 		mainbodylayout.addWidget(self.XMLButton,  0,4,1,1)
-		mainbodylayout.addWidget(RD53Label,  1,0,1,1, Qt.AlignRight)
-		mainbodylayout.addWidget(self.RD53Edit,   1,1,1,3)
-		mainbodylayout.addWidget(self.RD53Button, 1,4,1,1)
+
+		for key in self.rd53_file.keys():
+			RD53Edit = RD53Widget(key)
+			self.RD53List.append(RD53Edit)
+			mainbodylayout.addWidget(RD53Edit,key+1,0,1,5)
 
 		self.MainBodyBox.setLayout(mainbodylayout)
 		self.mainLayout.addWidget(self.MainBodyBox, sum(self.GroupBoxSeg[0:1]), 0, self.GroupBoxSeg[1], 1)
@@ -136,25 +170,26 @@ class QtCustomizeWindow(QWidget):
 	def closeWindow(self):
 		self.close()
 
-	def openFileBrowserText(self):
-		options = QFileDialog.Options()
-		options |= QFileDialog.DontUseNativeDialog
-		fileName, _ = QFileDialog.getOpenFileName(self,"RD53 configuration", "","All Files (*);;Text Files (*.txt)", options=options)
-		if fileName.split('.')[-1] != "txt":
-			QMessageBox.information(None,"Warning","Not a valid txt file", QMessageBox.Ok)
-		self.RD53Edit.setText(fileName)
-
 	def openFileBrowserXML(self):
 		options = QFileDialog.Options()
 		options |= QFileDialog.DontUseNativeDialog
 		fileName, _ = QFileDialog.getOpenFileName(self,"CMSIT configuration", "","All Files (*);;XML Files (*.xml)", options=options)
 		if fileName.split('.')[-1] != "xml":
 			QMessageBox.information(None,"Warning","Not a valid XML file", QMessageBox.Ok)
+
+		if self.validateXML() != True:
+			QMessageBox.information(None,"Warning","XML file failed the validation", QMessageBox.Ok)
+
 		self.XMLEdit.setText(fileName)
+	
+	def validateXML(self):
+		return True
 
 	def confirmFiles(self):
 		self.master.config_file = self.XMLEdit.text()
-		self.master.rd53_file = self.RD53Edit.text()
+		#self.master.rd53_file = self.RD53Edit.text()
+		for key in self.rd53_file.keys():
+			self.master.rd53_file[key] = self.RD53List[int(key)].text() 
 
 	def occupied(self):
 		self.master.RunButton.setDisabled(True)

@@ -24,26 +24,32 @@ from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
 
 class QtRunWindow(QWidget):
-	def __init__(self,master, info):
+	def __init__(self,master, info, firmwareName, ModuleType):
 		super(QtRunWindow,self).__init__()
 		self.master = master
 		self.info = info
 		self.connection = self.master.connection
+		self.firmwareName = firmwareName
+		self.ModuleType = ModuleType
+
 		self.GroupBoxSeg = [1, 10,  1]
 		self.HorizontalSeg = [3, 5]
 		self.VerticalSegCol0 = [1,3]
 		self.VerticalSegCol1 = [2,2]
+
 		self.processingFlag = False
 		self.input_dir = ''
 		self.output_dir = ''
 		self.config_file = '' #os.environ.get('GUI_dir')+ConfigFiles.get(self.calibration, "None")
-		self.rd53_file  = ''
+		self.rd53_file  = {}
 		self.grade = -1
 		self.currentTest = ""
+
 		self.backSignal = False
 		self.haltSignal = False
 		self.finishSingal = False
 		self.proceedSignal = False
+
 		self.DisplayW = 450
 		self.DisplayH = 450
 		self.runNext = threading.Event()
@@ -58,6 +64,7 @@ class QtRunWindow(QWidget):
 		self.setLayout(self.mainLayout)
 
 		self.setLoginUI()
+		self.initializeRD53Dict()
 		self.createHeadLine()
 		self.createMain()
 		self.createApp()
@@ -71,6 +78,15 @@ class QtRunWindow(QWidget):
 		self.setGeometry(100, 100, 1000, 1800)  
 		self.setWindowTitle('Run Control Page')  
 		self.show()
+
+	def  initializeRD53Dict(self):
+		if self.ModuleType == "SingleSCC":
+			self.rd53_file = {0: None}
+		elif self.ModuleType == "DualSCC":
+			self.rd53_file = {0: None, 1: None}
+		elif self.ModuleType == "QuadSCC":
+			for i in range(4):
+				self.rd53_file[i] = None
 
 	def createHeadLine(self):
 		self.HeadBox = QGroupBox()
@@ -347,10 +363,10 @@ class QtRunWindow(QWidget):
 		if self.input_dir == "":
 			if self.config_file == "":
 				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
-				SetupXMLConfigfromFile(config_file,self.output_dir)
+				SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName)
 				#QMessageBox.information(None,"Noitce", "Using default XML configuration",QMessageBox.Ok)
 			else:
-				SetupXMLConfigfromFile(self.config_file,self.output_dir)
+				SetupXMLConfigfromFile(self.config_file,self.output_dir,self.firmwareName)
 		else:
 			if self.config_file != "":
 				SetupXMLConfigfromFile(self.config_file,self.output_dir)
@@ -358,34 +374,30 @@ class QtRunWindow(QWidget):
 				SetupXMLConfig(self.input_dir,self.output_dir)
 
 		if self.input_dir == "":
-			if self.rd53_file == "":
-				rd53_file = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_RD53.txt"
-				SetupRD53ConfigfromFile(rd53_file,self.output_dir)
-			else:
-				SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
+			for key in self.rd53_file.keys():
+				if self.rd53_file[key] == None:
+					self.rd53_file[key] = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_RD53.txt"
+			SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
 		else:
-			if self.rd53_file == "":
-				SetupRD53Config(self.input_dir,self.output_dir)
-			else:
-				SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
+			SetupRD53Config(self.input_dir,self.output_dir, self.rd53_file)
 
-		self.rd53_file = ""
+		self.initializeRD53Dict()
 		self.config_file = ""
 		return
 
 	def saveConfigs(self):
-		try:
-			print("{0}/test/CMSIT_RD53.txt".format(os.environ.get("Ph2_ACF_AREA")))
-			os.system("cp {0}/test/CMSIT_RD53.txt {1}/CMSIT_RD53_OUT.txt".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
-		except:
-			print("Failed to copy {0}/CMSIT_RD53.txt to {1}/CMSIT_RD53_OUT.txt".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+		for key in self.rd53_file.keys():
+			try:
+				os.system("cp {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(os.environ.get("Ph2_ACF_AREA"),key,self.output_dir))
+			except:
+				print("Failed to copy {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(os.environ.get("Ph2_ACF_AREA"),key,self.output_dir))
 
 	def customizeTest(self):
 		print("Customize configuration")
 		self.CustomizedButton.setDisabled(True)
 		self.ResetButton.setDisabled(True)
 		self.RunButton.setDisabled(True)
-		self.CustomizedWindow = QtCustomizeWindow(self)
+		self.CustomizedWindow = QtCustomizeWindow(self, self.rd53_file)
 		self.CustomizedButton.setDisabled(False)
 		self.ResetButton.setDisabled(False)
 		self.RunButton.setDisabled(False)
@@ -394,9 +406,10 @@ class QtRunWindow(QWidget):
 		self.input_dir = ""
 		self.output_dir = ""
 		self.config_file = ""
-		self.rd53_file  = ""
+		self.initializeRD53Dict()
 
 	def runTest(self):
+		self.ResetButton.setDisabled(True)
 		#self.ControlLayout.removeWidget(self.RunButton)
 		#self.RunButton.deleteLater()
 		#self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)

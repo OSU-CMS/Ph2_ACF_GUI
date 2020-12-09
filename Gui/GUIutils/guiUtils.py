@@ -30,6 +30,7 @@ from tkinter import scrolledtext
 
 from  Gui.GUIutils.settings import *
 from  Gui.GUIutils.DBConnection import *
+from  Configuration.XMLUtil import *
 
 ##########################################################################
 ##########################################################################
@@ -118,7 +119,23 @@ def SetupXMLConfig(Input_Dir, Output_Dir):
 ##########################################################################
 ##########################################################################
 
-def SetupXMLConfigfromFile(InputFile, Output_Dir):
+def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName):
+	try:
+		root,tree = LoadXML(InputFile)
+		fwIP = FirmwareList[firmwareName]
+		changeMade = False
+		for Node in root.findall(".//connection"):
+			if fwIP not in Node.attrib['uri']:
+				Node.set('uri','chtcp-2.0://localhost:10203?target={}:50001'.format(fwIP))
+				changeMade = True
+		
+		if changeMade:
+			ModifiedFile = InputFile+".changed"
+			tree.write(ModifiedFile)
+			InputFile = ModifiedFile
+	except Exception as error:
+		print("Failed to set up the XML file, {}".format(error))
+
 	try:
 		os.system("cp {0} {1}/CMSIT.xml".format(InputFile,Output_Dir))
 	except OSError:
@@ -131,28 +148,30 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir):
 ##########################################################################
 ##########################################################################
 
-def SetupRD53Config(Input_Dir, Output_Dir):
-	try:
-		os.system("cp {0}/CMSIT_RD53_OUT.txt {1}/CMSIT_RD53_IN.txt".format(Input_Dir,Output_Dir))
-	except OSError:
-		print("Can not copy the RD53 configuration files to {0}".format(Output_Dir))
-	try:
-		os.system("cp {0}/CMSIT_RD53_IN.txt  {1}/test/CMSIT_RD53.txt".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
-	except OSError:
-		print("Can not copy {0}/CMSIT_RD53_IN.txt to {1}/test/CMSIT_RD53.txt".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
+	for key in RD53Dict.keys():
+		try:
+			os.system("cp {0}/CMSIT_RD53_{1}_OUT.txt {2}/CMSIT_RD53_{1}_IN.txt".format(Input_Dir,key,Output_Dir))
+		except OSError:
+			print("Can not copy the RD53 configuration files to {0} for RD53 ID: {1}".format(Output_Dir, key))
+		try:
+			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+		except OSError:
+			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
 
 ##########################################################################
 ##########################################################################
 
-def SetupRD53ConfigfromFile(InputFile, Output_Dir):
-	try:
-		os.system("cp {0} {1}/CMSIT_RD53_IN.txt".format(InputFile,Output_Dir))
-	except OSError:
-		print("Can not copy the XML files {0} to {1}".format(InputFile,Output_Dir))
-	try:
-		os.system("cp {0}/CMSIT_RD53_IN.txt  {1}/test/CMSIT_RD53.txt".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
-	except OSError:
-		print("Can not copy {0}/CMSIT_RD53_IN.txt to {1}/test/CMSIT_RD53.txt".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
+	for key in InputFileDict.keys():
+		try:
+			os.system("cp {0} {1}/CMSIT_RD53_{2}_IN.txt".format(InputFileDict[key],Output_Dir,key))
+		except OSError:
+			print("Can not copy the XML files {0} to {1}".format(InputFileDict[key],Output_Dir))
+		try:
+			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+		except OSError:
+			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
 
 ##########################################################################
 ##  Functions for setting up XML and RD53 configuration (END)
