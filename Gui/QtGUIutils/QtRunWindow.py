@@ -334,7 +334,7 @@ class QtRunWindow(QWidget):
 
 	def sendProceedSignal(self):
 		self.proceedSignal = True
-		self.runNext.set()
+		#self.runNext.set()
 
 	def connectDB(self):
 		if isActive(self.master.connection):
