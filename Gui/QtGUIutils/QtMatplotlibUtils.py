@@ -32,7 +32,6 @@ class SummaryCanvas(FigureCanvas):
 								   QSizePolicy.Expanding,
 								   QSizePolicy.Expanding)
 		FigureCanvas.updateGeometry(self)
-		FigureCanvas.setMinimumHeight(1)
 		
 	def compute_initial_figure(self):
 		t = numpy.arange(0.0, 3.0, 0.01)
