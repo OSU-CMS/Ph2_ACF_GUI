@@ -10,30 +10,31 @@ import subprocess
 from  subprocess import Popen,PIPE
 from  datetime import datetime
 
-def firmwarePingCheck(fAddress,fileName):
+def firmwarePingCheck(firmware,fileName):
+	fAddress  =  firmware.getIPAddress()
 	outputFile = open(fileName,'a+')
 	subprocess.run(["echo","\n[{0}]\n".format(datetime.now().strftime("%d/%m/%Y %H:%M:%S"))], stdout=outputFile, stderr=outputFile)
 	returnCode = subprocess.run(["ping","-c","1","-W","1",fAddress], stdout=outputFile, stderr=outputFile).returncode
 	return returnCode
 
 #Fixme, firmware check to be decided and implemented
-def fpgaConfigCheck(firmwareName, fileName, **kwargs):
+def fpgaConfigCheck(firmware, fileName, **kwargs):
 	returnCode = 0
 	return returnCode
 
-def test3Check(firmwareName, fileName, **kwargs):
+def test3Check(firmware, fileName, **kwargs):
 	returnCode = 0
 	return returnCode
 
-def test4Check(firmwareName, fileName, **kwargs):
+def test4Check(firmware, fileName, **kwargs):
 	returnCode = 0
 	return returnCode
 
-def test5Check(firmwareName, fileName, **kwargs):
+def test5Check(firmware, fileName, **kwargs):
 	returnCode = 0
 	return returnCode
 
-def	fwStatusParser(firmwareName, fAddress, fileName, **kwargs):
+def	fwStatusParser(firmware, fileName, **kwargs):
 	verboseInfo = {
 		"Ping test"				: " ",
 		"FPGA configuration"	: " ",
@@ -41,7 +42,7 @@ def	fwStatusParser(firmwareName, fAddress, fileName, **kwargs):
 		"Fw test4"				: " ",
 		"Fw test5"				: " "
 	}
-	pingReturnCode = firmwarePingCheck(fAddress,fileName)
+	pingReturnCode = firmwarePingCheck(firmware,fileName)
 	if pingReturnCode == 2:
 		verboseInfo["Ping test"] = "Failed"
 		return "Ping failed","color:red",verboseInfo
@@ -51,7 +52,7 @@ def	fwStatusParser(firmwareName, fAddress, fileName, **kwargs):
 		verboseInfo["Ping test"] = "Unknown"
 		return "Ping failed","color:red",verboseInfo
 
-	fpgaReturnCode = fpgaConfigCheck(firmwareName,fileName)
+	fpgaReturnCode = fpgaConfigCheck(firmware,fileName)
 	if fpgaReturnCode == 1:
 		verboseInfo["FPGA configuration"] = "Failed"
 		return "FPGA configuration failed", "color:red",verboseInfo
@@ -62,7 +63,7 @@ def	fwStatusParser(firmwareName, fAddress, fileName, **kwargs):
 		return "FPGA configuration failed", "color:red",verboseInfo
 
 	## Dummy test
-	test3ReturnCode = fpgaConfigCheck(firmwareName,fileName)
+	test3ReturnCode = fpgaConfigCheck(firmware,fileName)
 	if fpgaReturnCode == 1:
 		verboseInfo["Fw test3"] = "Failed"
 		return "Fw test3 failed", "color:red",verboseInfo
@@ -72,7 +73,7 @@ def	fwStatusParser(firmwareName, fAddress, fileName, **kwargs):
 		verboseInfo["Fw test3"] = "Unknown"
 		return "Fw test3 failed", "color:red",verboseInfo
 
-	test4ReturnCode = fpgaConfigCheck(firmwareName,fileName)
+	test4ReturnCode = fpgaConfigCheck(firmware,fileName)
 	if fpgaReturnCode == 1:
 		verboseInfo["Fw test4"] = "Failed"
 		return "Fw test4 failed", "color:red",verboseInfo
@@ -82,7 +83,7 @@ def	fwStatusParser(firmwareName, fAddress, fileName, **kwargs):
 		verboseInfo["Fw test4"] = "Unknown"
 		return "Fw test4 failed", "color:red",verboseInfo
 
-	test5ReturnCode = fpgaConfigCheck(firmwareName,fileName)
+	test5ReturnCode = fpgaConfigCheck(firmware,fileName)
 	if fpgaReturnCode == 1:
 		verboseInfo["Fw test5"] = "Failed"
 		return "Fw test5 failed", "color:red",verboseInfo

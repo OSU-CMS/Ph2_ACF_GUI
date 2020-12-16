@@ -24,20 +24,33 @@ FPGAConfigList =  {
 	'fc7.board.2'			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
 }
 
+ModuleType = {
+	1	:	"SingleSCC",
+	2	:	"DualSCC",
+	3	:	"QuadSCC",
+}
+
+BoxSize = {
+	"SingleSCC" : 1,
+	"DualSCC"	: 2,
+	"QuadSCC"	: 4
+}
+
+
 ConfigFiles = {
-	'Latency'                :  '/Configuration/CMSIT.xml',
-	'PixelAlive'             :  '/Configuration/CMSIT.xml',
-	'NoiseScan'              :  '/Configuration/CMSIT.xml',
-	'SCurveScan'             :  '/Configuration/CMSIT.xml',
-	'GainScan'               :  '/Configuration/CMSIT.xml',
-	'ThresholdEqualization'  :  '/Configuration/CMSIT.xml',
-	'GainOptimization'       :  '/Configuration/CMSIT.xml',
-	'ThresholdMinimization'  :  '/Configuration/CMSIT.xml',
-	'ThresholdAdjustment'    :  '/Configuration/CMSIT.xml',
-	'InjectionDelay'         :  '/Configuration/CMSIT.xml',
-	'ClockDelay'             :  '/Configuration/CMSIT.xml',
-	'Physics'                :  '/Configuration/CMSIT.xml',
-	'AllScan'                :  '/Configuration/CMSIT.xml',
+	'Latency'                :  '/Configuration/Defaults/CMSIT.xml',
+	'PixelAlive'             :  '/Configuration/Defaults/CMSIT.xml',
+	'NoiseScan'              :  '/Configuration/Defaults/CMSIT.xml',
+	'SCurveScan'             :  '/Configuration/Defaults/CMSIT.xml',
+	'GainScan'               :  '/Configuration/Defaults/CMSIT.xml',
+	'ThresholdEqualization'  :  '/Configuration/Defaults/CMSIT.xml',
+	'GainOptimization'       :  '/Configuration/Defaults/CMSIT.xml',
+	'ThresholdMinimization'  :  '/Configuration/Defaults/CMSIT.xml',
+	'ThresholdAdjustment'    :  '/Configuration/Defaults/CMSIT.xml',
+	'InjectionDelay'         :  '/Configuration/Defaults/CMSIT.xml',
+	'ClockDelay'             :  '/Configuration/Defaults/CMSIT.xml',
+	'Physics'                :  '/Configuration/Defaults/CMSIT.xml',
+	'AllScan'                :  '/Configuration/Defaults/CMSIT.xml',
 }
 
 Test = {

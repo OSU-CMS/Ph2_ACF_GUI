@@ -24,14 +24,15 @@ from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
 
 class QtRunWindow(QWidget):
-	def __init__(self,master, info, firmwareName, ModuleType):
+	def __init__(self,master,info,firmware):
 		super(QtRunWindow,self).__init__()
 		self.master = master
+		self.firmware = firmware
 		self.info = info
 		self.connection = self.master.connection
-		self.firmwareName = firmwareName
-		self.ModuleType = ModuleType
-
+		self.firmwareName = self.firmware.getBoardName()
+		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+		
 		self.GroupBoxSeg = [1, 10,  1]
 		self.HorizontalSeg = [3, 5]
 		self.VerticalSegCol0 = [1,3]
@@ -379,7 +380,9 @@ class QtRunWindow(QWidget):
 			if self.config_file != "":
 				SetupXMLConfigfromFile(self.config_file,self.output_dir,self.firmwareName,self.rd53_file)
 			else:
-				SetupXMLConfig(self.input_dir,self.output_dir)
+				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
+				SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName,self.rd53_file)
+				#SetupXMLConfig(self.input_dir,self.output_dir)
 
 		self.initializeRD53Dict()
 		self.config_file = ""
@@ -418,6 +421,11 @@ class QtRunWindow(QWidget):
 		self.input_dir = self.output_dir
 		self.output_dir = ""
 
+		self.StatusCanvas.renew()
+		self.StatusCanvas.update()
+		self.HistoryLayout.removeWidget(self.StatusCanvas)
+		self.HistoryLayout.addWidget(self.StatusCanvas)
+
 		if isCompositeTest(testName):
 			#Fixme: threading make GUI freeze
 			#self.runAllTests = threading.Thread(target=self.runCompositeTest(testName))
@@ -446,8 +454,8 @@ class QtRunWindow(QWidget):
 		#self.run_process.setProgram()
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
 		self.run_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
-		#self.run_process.start("echo",["Testing {}".format(testName)])
-		self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
+		self.run_process.start("echo",["Testing {}".format(testName)])
+		#self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
 		#self.run_process.start("ping", ["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
 		self.displayResult()

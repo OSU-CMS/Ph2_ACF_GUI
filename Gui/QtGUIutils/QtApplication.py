@@ -20,6 +20,8 @@ from Gui.QtGUIutils.QtSummaryWindow import *
 from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtModuleReviewWindow import *
 from Gui.QtGUIutils.QtDBConsoleWindow import *
+from Gui.QtGUIutils.QtuDTCDialog import *
+from Gui.python.Firmware import *
 
 class QtApplication(QWidget):
 	def __init__(self):
@@ -29,6 +31,7 @@ class QtApplication(QWidget):
 		self.ProcessingTest = False
 		self.expertMode = False
 		self.FwUnderUsed = ''
+		self.FwDict = {}
 		self.FwStatusVerboseDict = {}
 		self.FPGAConfigDict = {}
 		self.LogList = {}
@@ -44,6 +47,7 @@ class QtApplication(QWidget):
 		if sys.platform.startswith("darwin"):
 			QApplication.setStyle(QStyleFactory.create('macintosh'))
 			QApplication.setPalette(QApplication.style().standardPalette())
+			
 		elif sys.platform.startswith("linux") or sys.platform.startswith("win"):
 			darkPalette = QPalette()
 			darkPalette.setColor(QPalette.Window, QColor(53,53,53))
@@ -240,10 +244,12 @@ class QtApplication(QWidget):
 			if isActive(self.connection):
 				self.destroyLogin()
 				self.createMain()
+				self.checkFirmware()
 		else:
 			self.connection = "Offline"
 			self.destroyLogin()
 			self.createMain()
+			self.checkFirmware()
 
 	###############################################################
 	##  Login page and related functions  (END)
@@ -276,6 +282,11 @@ class QtApplication(QWidget):
 			#FwStatusValue.setStyleSheet(FwStatusColor)
 			self.StatusList.append([FwNameLabel,FwStatusValue])
 			self.FwStatusVerboseDict[str(firmwareName)] = {}
+			BeBoard = QtBeBoard()
+			BeBoard.setBoardName(firmwareName)
+			BeBoard.setIPAddress(FirmwareList[firmwareName])
+			BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
+			self.FwDict[firmwareName] = BeBoard
 
 		self.UseButtons = []
 
@@ -425,7 +436,6 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.MainOption)
 		self.mainLayout.addWidget(self.AppOption)
 
-		self.checkFirmware()
 
 	def disableBoxs(self):
 		self.FirmwareStatus.setDisabled(True)
@@ -440,7 +450,8 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.AppOption)
 
 	def openNewTest(self):
-		self.StartNewTest = QtStartWindow(self,self.FwUnderUsed)
+		FwModule = self.FwDict[self.FwUnderUsed]
+		self.StartNewTest = QtStartWindow(self,FwModule)
 		self.NewTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
 		self.ExitButton.setDisabled(True)
@@ -467,7 +478,7 @@ class QtApplication(QWidget):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
 			fileName = self.LogList[index]
 			if firmwareName != self.FwUnderUsed:
-				FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(firmwareName,fwAddress,fileName)
+				FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(firmwareName,fileName)
 				self.StatusList[index+1][1].setText(FwStatusComment)
 				self.StatusList[index+1][1].setStyleSheet(FwStatusColor)
 				self.FwStatusVerboseDict[str(firmwareName)] = FwStatusVerbose
@@ -477,8 +488,8 @@ class QtApplication(QWidget):
 			self.occupyFw("{0}".format(index))
 
 
-	def getFwComment(self,firmwareName,fwAddress,fileName):
-		comment,color, verboseInfo = fwStatusParser(firmwareName,fwAddress,fileName)
+	def getFwComment(self,firmwareName,fileName):
+		comment,color, verboseInfo = fwStatusParser(self.FwDict[firmwareName],fileName)
 		return comment,color, verboseInfo
 
 	def getIndex(self, element, List2D):
@@ -530,7 +541,16 @@ class QtApplication(QWidget):
 		self.FwLogWindow = QtFwCheckWindow(self,fileName)
 
 	def setuDTCFw(self, index):
-		pass
+		fwName = self.StatusList[int(index)+1][0].text()
+		firmware = self.FwDict[fwName]
+		changeuDTCDialog = QtuDTCDialog(self,firmware)
+
+		response = changeuDTCDialog.exec_()
+		if response == QDialog.Accepted:
+			firmware.setFPGAConfig(changeuDTCDialog.uDTCFile)
+		
+		self.checkFirmware()
+		
 			
 	###############################################################
 	##  Main page and related functions  (END)
