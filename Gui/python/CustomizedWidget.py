@@ -121,7 +121,7 @@ class BeBoardBox(QWidget):
 		for index, module in enumerate(self.ModuleList):
 			FwModule = QtModule()
 			FwModule.setModuleID(module.getID())
-			FwModule.setModuleType(module.getType)
+			FwModule.setModuleType(module.getType())
 			self.firmware.addModule(index,FwModule)
 		return self.firmware
 

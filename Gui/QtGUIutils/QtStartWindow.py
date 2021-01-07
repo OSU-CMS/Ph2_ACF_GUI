@@ -219,7 +219,7 @@ class QtStartWindow(QWidget):
 
 
 	def openRunWindow(self):
-		for module in self.ModuleList:
+		for module in self.BeBoardWidget.getModules():
 			if module.getID() == "":
 				QMessageBox.information(None,"Error","No valid modlue ID!", QMessageBox.Ok)
 				return

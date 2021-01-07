@@ -25,11 +25,14 @@ class QtModule():
 		return self.__moduleID
 
 	def setModuleType(self, fwType):
-		self.__moduleType = fwType
+		if fwType in ModuleType.values():
+			self.__moduleType = fwType
+		else:
+			self.__moduleType = "SingleSCC"
 		self.setupChips()
 
 	def getModuleType(self):
-		return self.__moduleType()
+		return self.__moduleType
 
 	def setupChips(self, **kwargs):
 		self.__chipDict = {}
@@ -71,7 +74,7 @@ class QtBeBoard():
 		else:
 			return False
 
-	def getAllModule(self):
+	def getAllModules(self):
 		return self.__moduleDict
 
 	def getModuleByIndex(self, key):

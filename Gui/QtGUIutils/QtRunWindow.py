@@ -81,13 +81,12 @@ class QtRunWindow(QWidget):
 		self.show()
 
 	def  initializeRD53Dict(self):
-		if self.ModuleType == "SingleSCC":
-			self.rd53_file = {0: None}
-		elif self.ModuleType == "DualSCC":
-			self.rd53_file = {0: None, 1: None}
-		elif self.ModuleType == "QuadSCC":
-			for i in range(4):
-				self.rd53_file[i] = None
+		for module in self.firmware.getAllModules().values():
+			moduleId = module.getModuleID()
+			moduleType = module.getModuleType()
+			for i in range(BoxSize[moduleType]):
+				self.rd53_file = {"{0}_{1}".format(moduleId,i): None}
+
 
 	def createHeadLine(self):
 		self.HeadBox = QGroupBox()
@@ -359,7 +358,11 @@ class QtRunWindow(QWidget):
 		else:
 			testName = self.currentTest
 
-		self.output_dir, self.input_dir = ConfigureTest(testName, self.info[0], self.output_dir, self.input_dir, self.connection)
+		ModuleIDs = []
+		for module in self.firmware.getAllModules().values():
+			ModuleIDs.append(str(module.getModuleID()))
+			
+		self.output_dir, self.input_dir = ConfigureTest(testName, "_".join(ModuleIDs), self.output_dir, self.input_dir, self.connection)
 
 		for key in self.rd53_file.keys():
 			if self.rd53_file[key] == None:

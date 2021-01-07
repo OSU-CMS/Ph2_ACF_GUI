@@ -304,6 +304,9 @@ class QtApplication(QWidget):
 				UseButton.setDisabled(True)
 				UseButton.toggle()
 				UseButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.switchFw(x))
+				UseButton.clicked.connect(self.destroyMain)
+				UseButton.clicked.connect(self.createMain)
+				UseButton.clicked.connect(self.checkFirmware)
 				UseButton.setCheckable(True)
 				self.UseButtons.append(UseButton)
 				StatusLayout.addWidget(UseButton, index, 0, 1, 1)
@@ -322,7 +325,6 @@ class QtApplication(QWidget):
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
 			self.occupyFw("{0}".format(index))
-
 
 		self.FirmwareStatus.setLayout(StatusLayout)
 		self.FirmwareStatus.setDisabled(False)
@@ -350,6 +352,8 @@ class QtApplication(QWidget):
 		self.NewTestButton.setMaximumHeight(kMaximumHeight)
 		self.NewTestButton.clicked.connect(self.openNewTest)
 		self.NewTestButton.setDisabled(True)
+		if self.FwUnderUsed != '':
+			self.NewTestButton.setDisabled(False)
 		if self.ProcessingTest == True:
 			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
@@ -485,6 +489,15 @@ class QtApplication(QWidget):
 			self.UseButtons[index].setDisabled(False)
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
+			self.StatusList[index+1][1].setText("Connected")
+			self.StatusList[index+1][1].setStyleSheet("color: green")
+			self.occupyFw("{0}".format(index))
+	
+	def refreshFirmware(self):
+		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
+			self.UseButtons[index].setDisabled(False)
+		if self.FwUnderUsed != '':
+			index = self.getIndex(self.FwUnderUsed,self.StatusList)
 			self.occupyFw("{0}".format(index))
 
 
@@ -504,6 +517,7 @@ class QtApplication(QWidget):
 			self.occupyFw(index)
 		else:
 			self.releaseFw(index)
+			self.checkFirmware
 
 	def occupyFw(self, index):
 		if self.StatusList[int(index)+1][1].text() == "Connected":

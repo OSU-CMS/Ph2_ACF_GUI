@@ -125,10 +125,10 @@ class QtCustomizeWindow(QWidget):
 		mainbodylayout.addWidget(self.XMLEdit,    0,1,1,3)
 		mainbodylayout.addWidget(self.XMLButton,  0,4,1,1)
 
-		for key in self.rd53_file.keys():
+		for index, key in enumerate(self.rd53_file.keys()):
 			RD53Edit = RD53Widget(key)
 			self.RD53List.append(RD53Edit)
-			mainbodylayout.addWidget(RD53Edit,key+1,0,1,5)
+			mainbodylayout.addWidget(RD53Edit,index+1,0,1,5)
 
 		self.MainBodyBox.setLayout(mainbodylayout)
 		self.mainLayout.addWidget(self.MainBodyBox, sum(self.GroupBoxSeg[0:1]), 0, self.GroupBoxSeg[1], 1)
