@@ -35,6 +35,7 @@ class QtApplication(QWidget):
 		self.FwStatusVerboseDict = {}
 		self.FPGAConfigDict = {}
 		self.LogList = {}
+		self.PYTHON_VERSION = str(sys.version).split(" ")[0]
 
 		self.setLoginUI()
 		self.initLog()
@@ -304,9 +305,12 @@ class QtApplication(QWidget):
 				UseButton.setDisabled(True)
 				UseButton.toggle()
 				UseButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.switchFw(x))
-				UseButton.clicked.connect(self.destroyMain)
-				UseButton.clicked.connect(self.createMain)
-				UseButton.clicked.connect(self.checkFirmware)
+				if self.PYTHON_VERSION.startswith(("3.7","3.9"))
+					UseButton.clicked.connect(self.update)
+				if self.PYTHON_VERSION.startswith(("3.8"))
+					UseButton.clicked.connect(self.destroyMain)
+					UseButton.clicked.connect(self.createMain)
+					UseButton.clicked.connect(self.checkFirmware)
 				UseButton.setCheckable(True)
 				self.UseButtons.append(UseButton)
 				StatusLayout.addWidget(UseButton, index, 0, 1, 1)
