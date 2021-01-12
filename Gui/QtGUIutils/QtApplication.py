@@ -305,9 +305,9 @@ class QtApplication(QWidget):
 				UseButton.setDisabled(True)
 				UseButton.toggle()
 				UseButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.switchFw(x))
-				if self.PYTHON_VERSION.startswith(("3.7","3.9"))
+				if self.PYTHON_VERSION.startswith(("3.7","3.9")):
 					UseButton.clicked.connect(self.update)
-				if self.PYTHON_VERSION.startswith(("3.8"))
+				if self.PYTHON_VERSION.startswith(("3.8")):
 					UseButton.clicked.connect(self.destroyMain)
 					UseButton.clicked.connect(self.createMain)
 					UseButton.clicked.connect(self.checkFirmware)
@@ -415,10 +415,16 @@ class QtApplication(QWidget):
 		self.AppLayout = QHBoxLayout()
 
 		self.RefreshButton = QPushButton("&Refresh")
-		self.RefreshButton.clicked.connect(self.disableBoxs)
-		self.RefreshButton.clicked.connect(self.destroyMain)
-		self.RefreshButton.clicked.connect(self.createMain)
-		self.RefreshButton.clicked.connect(self.checkFirmware)
+		if self.PYTHON_VERSION.startswith("3.8"):
+			self.RefreshButton.clicked.connect(self.disableBoxs)
+			self.RefreshButton.clicked.connect(self.destroyMain)
+			self.RefreshButton.clicked.connect(self.createMain)
+			self.RefreshButton.clicked.connect(self.checkFirmware)
+		elif self.PYTHON_VERSION.startswith(("3.7","3.9")):
+			self.RefreshButton.clicked.connect(self.disableBoxs)
+			self.RefreshButton.clicked.connect(self.checkFirmware)
+			self.RefreshButton.clicked.connect(self.enableBoxs)
+			self.update()
 
 		self.LogoutButton = QPushButton("&Logout")
 		# Fixme: more conditions to be added
@@ -448,6 +454,10 @@ class QtApplication(QWidget):
 	def disableBoxs(self):
 		self.FirmwareStatus.setDisabled(True)
 		self.MainOption.setDisabled(True)
+	
+	def enableBoxs(self):
+		self.FirmwareStatus.setDisabled(False)
+		self.MainOption.setDisabled(False)
 
 	def destroyMain(self):
 		self.FirmwareStatus.deleteLater()
@@ -510,7 +520,6 @@ class QtApplication(QWidget):
 		return comment,color, verboseInfo
 
 	def getIndex(self, element, List2D):
-		print(element)
 		for index, item in enumerate(List2D):
 			if item[0].text() == element:
 				return index - 1
@@ -530,6 +539,7 @@ class QtApplication(QWidget):
 			if i == int(index):
 				button.setChecked(True)
 				button.setText("&In use")
+				self.CheckButton.setDisabled(True)
 				self.FwUnderUsed = self.StatusList[i+1][0].text()
 			else:
 				button.setDisabled(True)
@@ -541,6 +551,7 @@ class QtApplication(QWidget):
 				button.setText("&Use")
 				button.setDown(False)
 				button.setDisabled(False)
+				self.CheckButton.setDisabled(False)
 				self.NewTestButton.setDisabled(True)
 			else:
 				button.setDisabled(False)

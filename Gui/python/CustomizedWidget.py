@@ -124,16 +124,24 @@ class BeBoardBox(QWidget):
 
 	def removeModule(self, index):
 		self.ModuleList.pop(index)
-		#self.deleteList()
-		#self.createList()
-		self.updateList()
+		if str(sys.version).startswith("3.8"):
+			self.deleteList()
+			self.createList()
+		elif str(sys.version).startswith(("3.7","3.9")):
+			self.updateList()
+		else:
+			self.updateList()
 		self.changed.emit()
 	
 	def addModule(self):
 		self.ModuleList.append(ModuleBox())
-		#self.deleteList()
-		#self.createList()
-		self.updateList()
+		if str(sys.version).startswith("3.8"):
+			self.deleteList()
+			self.createList()
+		elif str(sys.version).startswith(("3.7","3.9")):
+			self.updateList()
+		else:
+			self.updateList()
 		self.changed.emit()
 
 	def getModules(self):
