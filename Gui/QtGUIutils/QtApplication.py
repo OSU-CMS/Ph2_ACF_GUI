@@ -45,11 +45,11 @@ class QtApplication(QWidget):
 		self.setGeometry(300, 300, 400, 500)  
 		self.setWindowTitle('Phase2 Pixel Module Test GUI')
 
-		if sys.platform.startswith("darwin"):
+		if False and sys.platform.startswith("darwin"):
 			QApplication.setStyle(QStyleFactory.create('macintosh'))
 			QApplication.setPalette(QApplication.style().standardPalette())
-			
-		elif sys.platform.startswith("linux") or sys.platform.startswith("win"):
+	
+		elif sys.platform.startswith("linux") or sys.platform.startswith("win") or sys.platform.startswith("darwin"):
 			darkPalette = QPalette()
 			darkPalette.setColor(QPalette.Window, QColor(53,53,53))
 			darkPalette.setColor(QPalette.WindowText, Qt.white)

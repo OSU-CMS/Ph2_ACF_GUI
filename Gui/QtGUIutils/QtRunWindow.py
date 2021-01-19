@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
-		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QHBoxLayout,
+		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QTreeWidget, QHBoxLayout,
 		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter)
 
 import sys
@@ -22,6 +22,7 @@ from Gui.QtGUIutils.QtCustomizeWindow import *
 from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
+from Gui.python.ResultTreeWidget import *
 
 class QtRunWindow(QWidget):
 	def __init__(self,master,info,firmware):
@@ -188,25 +189,30 @@ class QtRunWindow(QWidget):
 		OutputBox.setSizePolicy(OutputBoxSP)
 
 		OutputLayout = QGridLayout()
-		self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
-		self.DisplayLabel = QLabel()
-		self.DisplayLabel.setScaledContents(True)
-		self.DisplayView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		self.DisplayLabel.setPixmap(self.DisplayView)
-		self.ReferTitle = QLabel('<font size="6"> Reference: </font>')
-		self.ReferLabel = QLabel()
-		self.ReferLabel.setScaledContents(True)
-		self.ReferView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		self.ReferLabel.setPixmap(self.ReferView)
-		self.ListWidget = QListWidget()
-		self.ListWidget.setMinimumWidth(150)
-		self.ListWidget.clicked.connect(self.clickedOutputItem)
+		self.ResultWidget = ResultTreeWidget()
+		#self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
+		#self.DisplayLabel = QLabel()
+		#self.DisplayLabel.setScaledContents(True)
+		#self.DisplayView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		#self.DisplayLabel.setPixmap(self.DisplayView)
+		#self.ReferTitle = QLabel('<font size="6"> Reference: </font>')
+		#self.ReferLabel = QLabel()
+		#self.ReferLabel.setScaledContents(True)
+		#self.ReferView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		#self.ReferLabel.setPixmap(self.ReferView)
 
-		OutputLayout.addWidget(self.DisplayTitle,0,0,1,2)
-		OutputLayout.addWidget(self.DisplayLabel,1,0,1,2)
-		OutputLayout.addWidget(self.ReferTitle,0,2,1,2)
-		OutputLayout.addWidget(self.ReferLabel,1,2,1,2)
-		OutputLayout.addWidget(self.ListWidget,0,4,2,1)
+		#self.ListWidget = QListWidget()
+		#self.ListWidget.setMinimumWidth(150)
+		#self.ListWidget.clicked.connect(self.clickedOutputItem)
+		##To be removed (END)
+
+		#OutputLayout.addWidget(self.DisplayTitle,0,0,1,2)
+		#OutputLayout.addWidget(self.DisplayLabel,1,0,1,2)
+		#OutputLayout.addWidget(self.ReferTitle,0,2,1,2)
+		#OutputLayout.addWidget(self.ReferLabel,1,2,1,2)
+		#OutputLayout.addWidget(self.ListWidget,0,4,2,1)
+
+		OutputLayout.addWidget(self.ResultWidget,0,0,1,1)
 		OutputBox.setLayout(OutputLayout)
 
 		#Group Box for history
@@ -536,8 +542,9 @@ class QtRunWindow(QWidget):
 	#######################################################################
 	def displayResult(self):
 		#Fixme: remake the list
-		updatePixmap = QPixmap("test_plots/pixelalive_ex.png").scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		self.DisplayLabel.setPixmap(updatePixmap)
+		#updatePixmap = QPixmap("test_plots/pixelalive_ex.png").scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		#self.DisplayLabel.setPixmap(updatePixmap)
+		pass
 
 	def clickedOutputItem(self, qmodelindex):
 		#Fixme: Extract the info from ROOT file
@@ -562,11 +569,14 @@ class QtRunWindow(QWidget):
 		self.RunButton.setText("&Continue")
 		self.finishSingal = True
 
-		#Fixme: multi-chip to be added
-		if isCompositeTest(self.info[1]):
-			self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info[1]][self.testIndexTracker-1]))
-		if isSingleTest(self.info[1]):
-			self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info[1]))
+		#To be removed
+		#if isCompositeTest(self.info[1]):
+		#	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info[1]][self.testIndexTracker-1]))
+		#if isSingleTest(self.info[1]):
+		#	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info[1]))
+		
+		# For test
+		self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
 
 		self.testIndexTracker += 1
 		self.saveConfigs()
@@ -582,6 +592,7 @@ class QtRunWindow(QWidget):
 		self.validateTest()
 		self.refreshHistory()
 		self.saveTest()
+		self.update()
 
 		if isCompositeTest(self.info[1]):
 			self.runTest()
