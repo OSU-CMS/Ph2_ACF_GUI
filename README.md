@@ -3,7 +3,43 @@ Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 
 Uses the following python packages: PyQt5 (https://pypi.org/project/PyQt5/), pyqt-darktheme (https://pypi.org/project/pyqt-darktheme/)
 
-Recipe for running  pixel gui
+
+################################
+Set up the software environment:
+################################
+
+ANACONDA (RECOMMANDED) 
+
+1. Install the ANACONDA:
+https://docs.anaconda.com/anaconda/install/
+
+run "conda --version" to check if the  installation is succesful
+
+2. Create environment for GUI:
+Run:
+conda create --name GUI python=3.9   # Create the new environment
+conda activate GUI                   # Use the environment "GUI"
+
+3. Install PyQt5:
+pip install PyQt5
+
+4. Install MySQL connector:
+pip install mysql-connector-python
+
+5. Install Pillow:
+pip install Pillow
+
+6. Install NumPy:
+pip install numpy
+
+7. Install Matplotlib
+pip install matplotlib
+
+With each new ternimal for GUI, run "conda activate GUI" to activate the environment
+
+################################
+Run the GUI
+################################
 
 ```
 source Setup.sh
