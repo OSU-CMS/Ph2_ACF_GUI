@@ -87,16 +87,16 @@ FESettings = {
 
 
 FESettings_Dict = {
-	'Latency'					:	FESettings,
-	'PixelAlive'				:	FESettings,
-    'NoiseScan'					:   FESettings,
-	'GainScan'					:	FESettings,
-	'SCurveScan'				:	FESettings,
-	'ThresholdEqualization'		:	FESettings,
-	'GainOptimization'			:	FESettings,
-	'ThresholdMinimization'		:	FESettings,
-	'ThresholdAdjustment'		:	FESettings,
-	'InjectionDelay'			:	FESettings,
-	'ClockDelay'				:	FESettings,
-	'Physics'					:	FESettings,
+    'Latency'                   :    FESettings,
+    'PixelAlive'                :    FESettings,
+    'NoiseScan'                 :    FESettings,
+    'GainScan'                  :    FESettings,
+    'SCurveScan'                :    FESettings,
+    'ThresholdEqualization'     :    FESettings,
+    'GainOptimization'          :    FESettings,
+    'ThresholdMinimization'     :    FESettings,
+    'ThresholdAdjustment'       :    FESettings,
+    'InjectionDelay'            :    FESettings,
+    'ClockDelay'                :    FESettings,
+    'Physics'                   :    FESettings,
 }
