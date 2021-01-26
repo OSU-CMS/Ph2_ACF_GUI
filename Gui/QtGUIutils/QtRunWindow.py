@@ -82,12 +82,12 @@ class QtRunWindow(QWidget):
 		self.show()
 
 	def  initializeRD53Dict(self):
+		self.rd53_file = {}
 		for module in self.firmware.getAllModules().values():
 			moduleId = module.getModuleID()
 			moduleType = module.getModuleType()
 			for i in range(BoxSize[moduleType]):
-				self.rd53_file = {"{0}_{1}".format(moduleId,i): None}
-
+				self.rd53_file["{0}_{1}".format(moduleId,i)] = None
 
 	def createHeadLine(self):
 		self.HeadBox = QGroupBox()
@@ -368,7 +368,7 @@ class QtRunWindow(QWidget):
 		for module in self.firmware.getAllModules().values():
 			ModuleIDs.append(str(module.getModuleID()))
 			
-		self.output_dir, self.input_dir = ConfigureTest(testName, "_".join(ModuleIDs), self.output_dir, self.input_dir, self.connection)
+		self.output_dir, self.input_dir = ConfigureTest(testName, "_Module".join(ModuleIDs), self.output_dir, self.input_dir, self.connection)
 
 		for key in self.rd53_file.keys():
 			if self.rd53_file[key] == None:
@@ -380,8 +380,19 @@ class QtRunWindow(QWidget):
 
 		if self.input_dir == "":
 			if self.config_file == "":
-				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
-				SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName,self.rd53_file)
+				tmpDir = os.environ.get('GUI_dir') + "/Gui/.tmp"
+				if not os.path.isdir(tmpDir)  and os.environ.get('GUI_dir'):
+					try:
+						os.mkdir(tmpDir)
+						logger.info("Creating "+tmpDir)
+					except:
+						logger.warning("Failed to create "+tmpDir)
+				config_file = GenerateXMLConfig(self.firmware,self.currentTest,tmpDir)
+				#config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
+				if config_file:
+					SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName,self.rd53_file)
+				else:
+					logger.warning("No Valid XML configuration file")
 				#QMessageBox.information(None,"Noitce", "Using default XML configuration",QMessageBox.Ok)
 			else:
 				SetupXMLConfigfromFile(self.config_file,self.output_dir,self.firmwareName,self.rd53_file)
@@ -389,8 +400,23 @@ class QtRunWindow(QWidget):
 			if self.config_file != "":
 				SetupXMLConfigfromFile(self.config_file,self.output_dir,self.firmwareName,self.rd53_file)
 			else:
-				config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
-				SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName,self.rd53_file)
+				tmpDir = os.environ.get('GUI_dir') + "/Gui/.tmp"
+				if not os.path.isdir(tmpDir)  and os.environ.get('GUI_dir'):
+					try:
+						os.mkdir(tmpDir)
+						logger.info("Creating "+tmpDir)
+					except:
+						logger.warning("Failed to create "+tmpDir)
+				config_file = GenerateXMLConfig(self.firmware,self.currentTest,tmpDir)
+				#config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
+				if config_file:
+					SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName,self.rd53_file)
+				else:
+					logger.warning("No Valid XML configuration file")
+
+				# To be remove:
+				#config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
+				#SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName,self.rd53_file)
 				#SetupXMLConfig(self.input_dir,self.output_dir)
 
 		self.initializeRD53Dict()
@@ -574,9 +600,6 @@ class QtRunWindow(QWidget):
 		#	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info[1]][self.testIndexTracker-1]))
 		#if isSingleTest(self.info[1]):
 		#	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info[1]))
-		
-		# For test
-		self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
 
 		self.testIndexTracker += 1
 		self.saveConfigs()
@@ -592,6 +615,9 @@ class QtRunWindow(QWidget):
 		self.validateTest()
 		self.refreshHistory()
 		self.saveTest()
+		# For test
+		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
+		self.ResultWidget.updateResult(self.output_dir)
 		self.update()
 
 		if isCompositeTest(self.info[1]):
