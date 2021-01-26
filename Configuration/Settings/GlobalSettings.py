@@ -33,16 +33,16 @@ globalSettings = {
 }
 
 globalSettings_Dict = {
-	'Latency'					:	globalSettings,
-	'PixelAlive'				:	globalSettings,
-	'NoiseScan'					:   globalSettings,
-	'GainScan'					:	globalSettings,
-	'SCurveScan'				:	globalSettings,
-	'ThresholdEqualization'		:	globalSettings,
-	'GainOptimization'			:	globalSettings,
-	'ThresholdMinimization'		:	globalSettings,
-	'ThresholdAdjustment'		:	globalSettings,
-	'InjectionDelay'			:	globalSettings,
-	'ClockDelay'				:	globalSettings,
-	'Physics'					:	globalSettings,
+    'Latency'                    :    globalSettings,
+    'PixelAlive'                 :    globalSettings,
+    'NoiseScan'                  :   globalSettings,
+    'GainScan'                   :    globalSettings,
+    'SCurveScan'                 :    globalSettings,
+    'ThresholdEqualization'      :    globalSettings,
+    'GainOptimization'           :    globalSettings,
+    'ThresholdMinimization'      :    globalSettings,
+    'ThresholdAdjustment'        :    globalSettings,
+    'InjectionDelay'             :    globalSettings,
+    'ClockDelay'                 :    globalSettings,
+    'Physics'                    :    globalSettings,
 }

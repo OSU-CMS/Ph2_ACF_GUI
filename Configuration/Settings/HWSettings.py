@@ -90,16 +90,16 @@ HWSettings_Physics = copy.deepcopy(HWSettings)
 
 
 HWSettings_Dict = {
-	'Latency'					:	HWSettings_Latency,
-	'PixelAlive'				:	HWSettings_PixelAlive,
-	'NoiseScan'					:   HWSettings_NoiseScan,
-	'GainScan'					:	HWSettings_GainScan,
-	'SCurveScan'				:	HWSettings_SCurve,
-	'ThresholdEqualization'		:	HWSettings_ThresEqu,
-	'GainOptimization'			:	HWSettings_GainOpt,
-	'ThresholdMinimization'		:	HWSettings_ThresMin,
-	'ThresholdAdjustment'		:	HWSettings_ThresAdj,
-	'InjectionDelay'			:	HWSettings_InjDelay,
-	'ClockDelay'				:	HWSettings_ClockDelay,
-	'Physics'					:	HWSettings_Physics,
+    'Latency'                    :    HWSettings_Latency,
+    'PixelAlive'                 :    HWSettings_PixelAlive,
+    'NoiseScan'                  :   HWSettings_NoiseScan,
+    'GainScan'                   :    HWSettings_GainScan,
+    'SCurveScan'                 :    HWSettings_SCurve,
+    'ThresholdEqualization'      :    HWSettings_ThresEqu,
+    'GainOptimization'           :    HWSettings_GainOpt,
+    'ThresholdMinimization'      :    HWSettings_ThresMin,
+    'ThresholdAdjustment'        :    HWSettings_ThresAdj,
+    'InjectionDelay'             :    HWSettings_InjDelay,
+    'ClockDelay'                 :    HWSettings_ClockDelay,
+    'Physics'                    :    HWSettings_Physics,
 }

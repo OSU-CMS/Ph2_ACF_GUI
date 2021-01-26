@@ -54,12 +54,6 @@ ConfigFiles = {
 }
 
 Test = {
-	'AllScan'                :  'noise',
-	'StandardStep1'          :  'noise',
-	'StandardStep2'          :  'threqu',
-	'StandardStep3'          :  'scurve',
-	'StandardStep4'          :  'injdelay',
-	'StandardStep5'          :  'scurve',
 	'Latency'                :  'latency',
 	'PixelAlive'             :  'pixelalive',
 	'NoiseScan'              :  'noise',
