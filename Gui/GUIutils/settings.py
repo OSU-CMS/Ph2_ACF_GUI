@@ -15,7 +15,7 @@ DBNames = {
 
 FirmwareList =  {
 	'fc7.board.1' 			 :  '192.168.1.80',
-	'fc7.board.2'			 :  '127.0.0.1' #'192.168.1.81',
+	'fc7.board.2'			 :  '192.168.1.81',
 }
 
 # Set the IT_uTDC_firmware for test
@@ -54,11 +54,12 @@ ConfigFiles = {
 }
 
 Test = {
-	'AllScan'                :  'pixelalive',
-	'StandardStep1'          :  'pixelalive',
-	'StandardStep2'          :  'pixelalive',
-	'StandardStep3'          :  'pixelalive',
-	'StandardStep4'          :  'pixelalive',
+	'AllScan'                :  'noise',
+	'StandardStep1'          :  'noise',
+	'StandardStep2'          :  'threqu',
+	'StandardStep3'          :  'scurve',
+	'StandardStep4'          :  'injdelay',
+	'StandardStep5'          :  'scurve',
 	'Latency'                :  'latency',
 	'PixelAlive'             :  'pixelalive',
 	'NoiseScan'              :  'noise',
@@ -79,12 +80,15 @@ SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 
 CompositeTest = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
-	'AllScan': ['Latency','PixelAlive', 'GainScan','SCurveScan','ThresholdEqualization','GainOptimization','ThresholdMinimization',
-				'ThresholdAdjustment','InjectionDelay','ClockDelay','Physics'],
-	'StandardStep1': ['Latency','PixelAlive'],
-	'StandardStep2': ['Latency','PixelAlive', 'SCurveScan'],
-	'StandardStep3': ['Latency','PixelAlive'],
-	'StandardStep4': ['Latency','PixelAlive']
+	'AllScan': ['NoiseScan','PixelAlive','ThresholdMinimization',
+				'ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdMinimization',
+				'SCurveScan','GainScan','GainOptimization',
+				'InjectionDelay','SCurveScan'],
+	'StandardStep1': ['NoiseScan','PixelAlive','ThresholdMinimization'],
+	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdMinimization'],
+	'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
+	'StandardStep4': ['InjectionDelay'],
+	'StandardStep5': ['SCurveScan']
 }
 firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 

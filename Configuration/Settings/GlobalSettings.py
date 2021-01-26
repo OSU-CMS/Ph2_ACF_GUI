@@ -31,3 +31,18 @@ globalSettings = {
 'CMDERR_CNT'             :     "0",
 'SKIPPED_TRIGGER_CNT'    :     "1",
 }
+
+globalSettings_Dict = {
+	'Latency'					:	globalSettings,
+	'PixelAlive'				:	globalSettings,
+	'NoiseScan'					:   globalSettings,
+	'GainScan'					:	globalSettings,
+	'SCurveScan'				:	globalSettings,
+	'ThresholdEqualization'		:	globalSettings,
+	'GainOptimization'			:	globalSettings,
+	'ThresholdMinimization'		:	globalSettings,
+	'ThresholdAdjustment'		:	globalSettings,
+	'InjectionDelay'			:	globalSettings,
+	'ClockDelay'				:	globalSettings,
+	'Physics'					:	globalSettings,
+}

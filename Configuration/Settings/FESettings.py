@@ -84,3 +84,19 @@ FESettings = {
 'ADC_MAXIMUM_VOLT'      :  "839",
 'TEMPSENS_IDEAL_FACTOR' : "1225",
 }
+
+
+FESettings_Dict = {
+	'Latency'					:	FESettings,
+	'PixelAlive'				:	FESettings,
+    'NoiseScan'					:   FESettings,
+	'GainScan'					:	FESettings,
+	'SCurveScan'				:	FESettings,
+	'ThresholdEqualization'		:	FESettings,
+	'GainOptimization'			:	FESettings,
+	'ThresholdMinimization'		:	FESettings,
+	'ThresholdAdjustment'		:	FESettings,
+	'InjectionDelay'			:	FESettings,
+	'ClockDelay'				:	FESettings,
+	'Physics'					:	FESettings,
+}

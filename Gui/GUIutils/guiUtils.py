@@ -32,6 +32,10 @@ from  Gui.GUIutils.settings import *
 from  Gui.GUIutils.DBConnection import *
 from  Configuration.XMLUtil import *
 
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 ##########################################################################
 ##########################################################################
 
@@ -130,10 +134,13 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 				changeMade = True
 
 		for Node in root.findall(".//RD53"):
-			for key in RD53Dict.keys():
-				if Node.attrib["Id"] == str(key):
-					Node.set('configfile','CMSIT_RD53_{}.txt'.format(key))
-					changeMade = True
+			ParentNode = Node.getparent().getparent()
+			ChipKey = "{}_{}".format(ParentNode.attrib["Id"],Node.attrib["Id"])
+			if ChipKey in RD53Dict.keys():
+				Node.set('configfile','CMSIT_RD53_{}.txt'.format(ChipKey))
+				changeMade = True
+			else:
+				logger.info("Chip with key {} not listed in rd53 list, Please check the XML configuration".format(ChipKey))
 
 		if changeMade:
 			ModifiedFile = InputFile+".changed"
@@ -179,6 +186,35 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
 			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
 		except OSError:
 			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+
+
+def GenerateXMLConfig(firmwareList, testName, outputDir):
+	try:
+		outputFile = outputDir + "/CMSIT_" + testName +".xml" 
+
+		HWDescription0 = HWDescription()
+		BeBoardModule0 = BeBoardModule()
+		for module in firmwareList.getAllModules().values():
+			OpticalGroupModule0 = OGModule()
+			OpticalGroupModule0.SetOpticalGrp(module.getModuleID(),module.getFMCID())
+			HyBridModule0 = HyBridModule()
+			for chip in module.getChips().values():
+				FEChip = FE()
+				FEChip.SetFE(chip.getID(),chip.getLane())
+				FEChip.ConfigureFE(FESettings_Dict[testName])
+				HyBridModule0.AddFE(FEChip)
+			HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
+			OpticalGroupModule0.AddHyBrid(HyBridModule0)
+			BeBoardModule0.AddOGModule(OpticalGroupModule0)
+		BeBoardModule0.SetRegisterValue(RegisterSettings)
+		HWDescription0.AddBeBoard(BeBoardModule0)
+		HWDescription0.AddSettings(HWSettings_Dict[testName])
+		GenerateHWDescriptionXML(HWDescription0,outputFile)
+	except:
+		logger.warning("Unexpcted issue generating {}. Please check the file".format(outputFile))
+		outputFile = None
+
+	return outputFile
 
 ##########################################################################
 ##  Functions for setting up XML and RD53 configuration (END)
@@ -240,7 +276,7 @@ def formatter(DirName, columns):
 		if column == "username":
 			ReturnList.append("local")
 		if column == "testname":
-			ReturnList.append(dirName.split('_')[2])
+			ReturnList.append(dirName.split('_')[-3])
 		if column == "grade":
 			Grade = -1
 			ReturnList.append(Grade)

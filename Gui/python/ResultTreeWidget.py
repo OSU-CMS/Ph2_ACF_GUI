@@ -29,7 +29,7 @@ class ResultTreeWidget(QWidget):
 		self.setupUi()
 
 		# For test:
-		self.updateResult("/Users/czkaiweb/Research/data")
+		# self.updateResult("/Users/czkaiweb/Research/data")
 		
 	def setupUi(self):
 		self.DisplayTitle = QLabel('<font size="6"> Result: </font>')

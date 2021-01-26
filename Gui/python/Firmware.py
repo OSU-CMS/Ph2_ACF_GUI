@@ -3,12 +3,26 @@ from Gui.GUIutils.settings import *
 class QtChip():
 	def __init__(self):
 		self.__chipID = ""
+		self.__chipLane = ""
+	
+	def setID(self, id):
+		self.__chipID = str(id)
+
+	def getID(self):
+		return self.__chipID
+
+	def setLane(self, lane):
+		self.__chipLane = str(lane)
+	
+	def getLane(self):
+		return self.__chipLane
 
 
 class QtModule():
 	def __init__(self, **kwargs):
 		self.__moduleID =  ""
 		self.__moduleType = "SingleSCC"
+		self.__FMCID = "0"
 		self.__chipDict = {}
 		for key,value in kwargs.items():
 			if key == "id":
@@ -23,6 +37,12 @@ class QtModule():
 	
 	def getModuleID(self):
 		return self.__moduleID
+
+	def setFMCID(self, fmcId):
+		self.__FMCID = fmcId
+
+	def getFMCID(self):
+		return self.__FMCID
 
 	def setModuleType(self, fwType):
 		if fwType in ModuleType.values():
@@ -41,7 +61,13 @@ class QtModule():
 			return
 		for i in range(BoxSize[self.__moduleType]):
 			FEChip = QtChip()
+			#FEChip.setID(8)
+			FEChip.setID(i)
+			FEChip.setLane(i)
 			self.__chipDict[i] = FEChip
+	
+	def getChips(self):
+		return self.__chipDict
 	
 
 class QtBeBoard():

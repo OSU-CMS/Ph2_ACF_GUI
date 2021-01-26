@@ -1,9 +1,14 @@
+import copy
+
 HWSettings = {
 "nEvents"        :   100, 
 "nEvtsBurst"     :   100,
 
 "nTRIGxEvent"    :    10,
 "INJtype"        :     1,
+"ResetMask"      :     0,
+"ResetTDAC"      :     0,
+
 
 "ROWstart"       :     0,
 "ROWstop"        :   191,
@@ -26,6 +31,7 @@ HWSettings = {
 "ThrStop"        :   440,
 "TargetThreshold":  2000,
 "TargetOcc"      :  1e-6,
+"UnstuckPixels"  :     0,
 
 "DoFast"         :     0,
 "DisplayHisto"   :     0,
@@ -33,5 +39,67 @@ HWSettings = {
 
 "SaveBinaryData" :     0,
 "nHITxCol"       :     1,
-"nClkDelays"     :   300,
+"InjLatency"     :    32,
+"nClkDelays"     :   280,
+}
+
+HWSettings_Latency = copy.deepcopy(HWSettings)
+HWSettings_Latency["LatencyStart"] = 110
+HWSettings_Latency["LatencyStop"] = 150
+HWSettings_Latency["DoFast"] = 1
+
+HWSettings_PixelAlive = copy.deepcopy(HWSettings)
+
+HWSettings_NoiseScan = copy.deepcopy(HWSettings)
+HWSettings_NoiseScan["nEvents"] = 1e7
+HWSettings_NoiseScan["nEvtsBurst"] = 1e4
+HWSettings_NoiseScan["INJtype"] = 0
+HWSettings_NoiseScan["nClkDelays"] = 10
+
+HWSettings_SCurve =  copy.deepcopy(HWSettings)
+
+HWSettings_ThresEqu = copy.deepcopy(HWSettings)
+HWSettings_ThresEqu["nEvents"] = 500
+HWSettings_ThresEqu["nEvtsBurst"] = 500
+
+HWSettings_GainScan = copy.deepcopy(HWSettings)
+HWSettings_GainScan["VCalHstop"] = 4000
+HWSettings_GainScan["VCalHnsteps"] = 12
+
+HWSettings_GainOpt = copy.deepcopy(HWSettings)
+
+HWSettings_ThresMin = copy.deepcopy(HWSettings)
+HWSettings_ThresMin["nEvents"] = 1e7
+HWSettings_ThresMin["nEvtsBurst"] = 1e4
+HWSettings_ThresMin["INJtype"] = 0
+HWSettings_ThresMin["nClkDelays"] = 10
+
+HWSettings_ThresAdj = copy.deepcopy(HWSettings)
+
+HWSettings_InjDelay = copy.deepcopy(HWSettings)
+HWSettings_InjDelay["nTRIGxEvent"] = 1
+HWSettings_InjDelay["DoFast"] = 1
+
+HWSettings_ClockDelay = copy.deepcopy(HWSettings)
+HWSettings_ClockDelay["nTRIGxEvent"] = 1
+HWSettings_ClockDelay["DoFast"] = 1
+
+HWSettings_Physics = copy.deepcopy(HWSettings)
+
+
+
+
+HWSettings_Dict = {
+	'Latency'					:	HWSettings_Latency,
+	'PixelAlive'				:	HWSettings_PixelAlive,
+	'NoiseScan'					:   HWSettings_NoiseScan,
+	'GainScan'					:	HWSettings_GainScan,
+	'SCurveScan'				:	HWSettings_SCurve,
+	'ThresholdEqualization'		:	HWSettings_ThresEqu,
+	'GainOptimization'			:	HWSettings_GainOpt,
+	'ThresholdMinimization'		:	HWSettings_ThresMin,
+	'ThresholdAdjustment'		:	HWSettings_ThresAdj,
+	'InjectionDelay'			:	HWSettings_InjDelay,
+	'ClockDelay'				:	HWSettings_ClockDelay,
+	'Physics'					:	HWSettings_Physics,
 }
