@@ -35,6 +35,9 @@ pip install numpy
 7. Install Matplotlib
 pip install matplotlib
 
+8. Install lxml
+pip install lxml
+
 With each new ternimal for GUI, run "conda activate GUI" to activate the environment
 
 ################################
