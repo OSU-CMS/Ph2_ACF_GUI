@@ -15,7 +15,7 @@ DBNames = {
 
 FirmwareList =  {
 	'fc7.board.1' 			 :  '192.168.1.80',
-	'fc7.board.2'			 :  '192.168.1.81',
+	'fc7.board.2'			 :  '127.0.0.1',  #'192.168.1.81',
 }
 
 # Set the IT_uTDC_firmware for test
@@ -54,6 +54,12 @@ ConfigFiles = {
 }
 
 Test = {
+	'AllScan'                :  'noise',
+	'StandardStep1'          :  'noise',
+	'StandardStep2'          :  'threqu',
+	'StandardStep3'          :  'scurve',
+	'StandardStep4'          :  'injdelay',
+	'StandardStep5'          :  'scurve',
 	'Latency'                :  'latency',
 	'PixelAlive'             :  'pixelalive',
 	'NoiseScan'              :  'noise',
