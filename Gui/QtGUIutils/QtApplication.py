@@ -55,16 +55,28 @@ class QtApplication(QWidget):
 			darkPalette.setColor(QPalette.WindowText, Qt.white)
 			darkPalette.setColor(QPalette.Base, QColor(25,25,25))
 			darkPalette.setColor(QPalette.AlternateBase, QColor(53,53,53))
-			darkPalette.setColor(QPalette.ToolTipBase, Qt.white)
+			darkPalette.setColor(QPalette.ToolTipBase, Qt.darkGray)
 			darkPalette.setColor(QPalette.ToolTipText, Qt.white)
 			darkPalette.setColor(QPalette.Text, Qt.white)
 			darkPalette.setColor(QPalette.Button, QColor(53,53,53))
 			darkPalette.setColor(QPalette.ButtonText, Qt.white)
 			darkPalette.setColor(QPalette.BrightText, Qt.red)
 			darkPalette.setColor(QPalette.Link, QColor(42, 130, 218))
-
 			darkPalette.setColor(QPalette.Highlight, QColor(42, 130, 218))
 			darkPalette.setColor(QPalette.HighlightedText, Qt.black)
+
+			darkPalette.setColor(QPalette.Disabled, QPalette.Window, Qt.lightGray)
+			darkPalette.setColor(QPalette.Disabled, QPalette.WindowText, Qt.gray)
+			darkPalette.setColor(QPalette.Disabled, QPalette.Base, Qt.darkGray)
+			darkPalette.setColor(QPalette.Disabled, QPalette.ToolTipBase, Qt.darkGray)
+			darkPalette.setColor(QPalette.Disabled, QPalette.ToolTipText, Qt.white)
+			darkPalette.setColor(QPalette.Disabled, QPalette.Text, Qt.gray)
+			darkPalette.setColor(QPalette.Disabled, QPalette.Button, QColor(73,73,73))
+			darkPalette.setColor(QPalette.Disabled, QPalette.ButtonText, Qt.lightGray)
+			darkPalette.setColor(QPalette.Disabled, QPalette.BrightText, Qt.lightGray)
+			darkPalette.setColor(QPalette.Disabled, QPalette.Highlight, Qt.lightGray)
+			darkPalette.setColor(QPalette.Disabled, QPalette.HighlightedText, Qt.gray)
+
 
 			QApplication.setStyle(QStyleFactory.create('Fusion'))
 			QApplication.setPalette(darkPalette)
@@ -317,6 +329,10 @@ class QtApplication(QWidget):
 				StatusLayout.addWidget(items[0], index, 1,  1, 1)
 				StatusLayout.addWidget(items[1], index, 2,  1, 2)
 				FPGAConfigButton = QPushButton("&Change uDTC firmware")
+				if self.expertMode is False:
+					FPGAConfigButton.setDisabled(True)
+					FPGAConfigButton.setToolTip('Enter expert mode to change uDTC firmware')
+
 				FPGAConfigButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.setuDTCFw(x))
 				StatusLayout.addWidget(FPGAConfigButton, index, 4, 1, 1)
 				SolutionButton = QPushButton("&Firmware Status")
@@ -414,6 +430,11 @@ class QtApplication(QWidget):
 		self.AppOption = QGroupBox()
 		self.AppLayout = QHBoxLayout()
 
+		if self.expertMode is False:
+			self.ExpertButton = QPushButton("&Enter Expert Mode")
+			self.ExpertButton.clicked.connect(self.goExpert)
+			
+
 		self.RefreshButton = QPushButton("&Refresh")
 		if self.PYTHON_VERSION.startswith("3.8"):
 			self.RefreshButton.clicked.connect(self.disableBoxs)
@@ -440,6 +461,8 @@ class QtApplication(QWidget):
 			self.ExitButton.setDisabled(True)
 		#self.ExitButton.clicked.connect(QApplication.quit)
 		self.ExitButton.clicked.connect(self.close)
+		if self.expertMode is False:
+			self.AppLayout.addWidget(self.ExpertButton)
 		self.AppLayout.addStretch(1)
 		self.AppLayout.addWidget(self.RefreshButton)
 		self.AppLayout.addWidget(self.LogoutButton)
@@ -580,6 +603,15 @@ class QtApplication(QWidget):
 		
 		self.checkFirmware()
 		
+	def goExpert(self):
+		self.expertMode = True
+
+		## Authority check for expert mode
+
+		self.destroyMain()
+		self.createMain()
+		self.checkFirmware()
+
 			
 	###############################################################
 	##  Main page and related functions  (END)
