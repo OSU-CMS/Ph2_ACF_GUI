@@ -83,7 +83,7 @@ class QtuDTCDialog(QDialog):
 			print("Failed to modify the XML:  {}".format(error))
 
 		try:
-			pipes = subprocess.run(["fpgaConfig","-c",InputFile,"-l"], stdout=PIPE, stderr=PIPE)
+			pipes = subprocess.run(["fpgaconfig","-c",InputFile,"-l"], stdout=PIPE, stderr=PIPE)
 			stdout, stderr = pipes.communicate()
 
 			if pipes.returncode != 0:
