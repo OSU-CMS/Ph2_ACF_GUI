@@ -189,7 +189,7 @@ class QtModuleReviewWindow(QWidget):
 				continue
 
 			################################
-			##  Block  to get binary Info
+			##  Block to get binary Info
 			################################
 			if self.proxy.dataBody[rowNumber][len(self.proxy.dataHeader)-1] != "":
 				print("Local File found: {}".format(self.proxy.dataBody[rowNumber][len(self.proxy.dataHeader)-1]))
