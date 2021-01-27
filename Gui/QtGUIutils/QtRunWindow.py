@@ -33,6 +33,7 @@ class QtRunWindow(QWidget):
 		self.connection = self.master.connection
 		self.firmwareName = self.firmware.getBoardName()
 		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+		self.RunNumber = "-1"
 		
 		self.GroupBoxSeg = [1, 10,  1]
 		self.HorizontalSeg = [3, 5]
@@ -357,6 +358,17 @@ class QtRunWindow(QWidget):
 			return
 
 	def configTest(self):
+		try:
+			RunNumberFileName = os.environ.get("Ph2_ACF")+"/test/RunNumber.txt"
+			if os.path.isfile(RunNumberFileName):
+				runNumberFile = open(RunNumberFileName,"r")
+				runNumberText = runNumberFile.readlines()
+				self.RunNumber = runNumberText[0].split('\n')[0]
+				logger.info("RunNumber: {}",format(self.RunNumber))
+		except:
+			logger.warning("Failed to retrive RunNumber")
+		
+
 		if self.currentTest == "" and isCompositeTest(self.info[1]):
 			testName = CompositeList[self.info[1]][0]
 		elif self.currentTest ==  None:
@@ -489,8 +501,9 @@ class QtRunWindow(QWidget):
 		#self.run_process.setProgram()
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
 		self.run_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
-		self.run_process.start("echo",["Testing {}".format(testName)])
-		#self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
+		self.run_process.start("echo",["Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(Test[self.currentTest])])
+		if Test[self.currentTest] in ["pixelalive","noisescan","latency","injdelay","clockdelay","threqu","thrmin"]:
+			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
 		#self.run_process.start("ping", ["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
 		self.displayResult()
@@ -541,13 +554,13 @@ class QtRunWindow(QWidget):
 			return
 
 		try:
-			os.system("cp {0}/test/Results/Run*.root {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+			os.system("cp {0}/test/Results/Run{1}*.root {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
 		except:
 			print("Failed to copy file to output directory")
 
 		if isActive(self.connection) and self.autoSave:
 			try:
-				getfile = subprocess.run('ls -alt {0}/test/Results/Run*.root'.format(self.output_dir), shell=True, stdout=subprocess.PIPE)
+				getfile = subprocess.run('ls -alt {0}/Run{1}*.root'.format(self.output_dir,self.RunNumber), shell=True, stdout=subprocess.PIPE)
 				filelist = getfile.stdout.decode('utf-8')
 				outputfile = filelist.rstrip('\n').split('\n')[-1].split(' ')[-1]
 				# Fixme. to be decided
