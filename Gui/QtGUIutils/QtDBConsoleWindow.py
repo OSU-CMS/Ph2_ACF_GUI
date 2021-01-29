@@ -947,7 +947,7 @@ class QtDBConsoleWindow(QMainWindow):
 
 		statusString, colorString = checkDBConnection(self.connection)		
 		DBStatusLabel = QLabel()
-		DBStatusLabel.setText("Database:{}/{}".format(str(self.HostName.currentText()),str(self.DatabaseCombo.currentText())))
+		DBStatusLabel.setText("Database:{}/{}".format(self.TryHostAddress,self.TryDatabase))
 		DBStatusValue = QLabel()
 		DBStatusValue.setText(statusString)
 		DBStatusValue.setStyleSheet(colorString)
