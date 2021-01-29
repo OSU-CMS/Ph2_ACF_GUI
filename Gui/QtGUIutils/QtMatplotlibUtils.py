@@ -73,6 +73,7 @@ class RunStatusCanvas(FigureCanvas):
 			x = numpy.array(range(1,2))
 		
 		t = numpy.array(self.xticks)
+		# Fixme: Extend to grades as dictionary
 		y = numpy.array(self.grades)
 		addLength = len(x)-len(y)
 		for i in range(addLength):
