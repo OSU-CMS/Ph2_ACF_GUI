@@ -149,13 +149,15 @@ def getLocalTests(module_id, columns=[]):
 	if module_id:
 		for dirName in dirList:
 			if "_Module{0}_".format(str(module_id)) in dirName:
-				test = formatter(dirName,columns)
+				test = formatter(dirName,columns,part_id=str(module_id))
 				localTests.append(test)
 	else:
 		for dirName in dirList:
 			if "_Module" in dirName:
-				test = formatter(dirName,columns)
-				localTests.append(test)
+				moduleList = [module for module in dirName.split('_') if "Module"  in module]
+				for module in moduleList:
+					test = formatter(dirName,columns,part_id=str(module.lstrip("Module")))
+					localTests.append(test)
 	return localTests
 
 def getLocalRemoteTests(dbconnection, module_id = None, columns = []):
@@ -192,15 +194,15 @@ def getLocalRemoteTests(dbconnection, module_id = None, columns = []):
 	allTests = [["Source"]+columns+["localFile"]]
 
 	if(timeIndex != -1):
+		for remoteTest in remoteTests:
+			if remoteTest[timeIndex] in OnlyRemoteSet:
+				allTests.append(['Remote']+remoteTest + [""])
 		for localTest in localTests:
 			if localTest[timeIndex] in OnlyLocalSet:
 				allTests.append(['Local']+localTest)
 			if localTest[timeIndex] in InterSet:
 				allTests.append(['Synced']+localTest)
 	
-		for remoteTest in remoteTests:
-			if remoteTest[timeIndex] in OnlyRemoteSet:
-				allTests.append(['Remote']+remoteTest + [""])
 	
 	else:
 		for localTest in localTests:
