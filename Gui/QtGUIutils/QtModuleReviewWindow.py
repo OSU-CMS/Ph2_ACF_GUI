@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 import sys
 import os
 import subprocess
+import hashlib
 from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import *
@@ -17,6 +18,11 @@ from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtLoginDialog import *
+from Gui.python.ROOTInterface import *
+
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class QtModuleReviewWindow(QWidget):
 	def __init__(self,master, info = None):
@@ -25,7 +31,7 @@ class QtModuleReviewWindow(QWidget):
 		self.info = info
 		self.connection = self.master.connection
 		self.GroupBoxSeg = [1, 10,  1]
-		self.columns = ["id","part_id","username","description","testname","grade","date"]
+		self.columns = ["id","part_id","username","description","testname","data_id","grade","date"]
 		#Fixme: QTimer to be added to update the page automatically
 
 		self.mainLayout = QGridLayout()
@@ -87,6 +93,7 @@ class QtModuleReviewWindow(QWidget):
 		dataList = getLocalRemoteTests(self.connection, self.info, self.columns)
 
 		self.proxy = QtTableWidget(dataList)
+		self.proxy.filtering.connect(self.addButtons)
 
 		self.lineEdit       = QLineEdit()
 		self.lineEdit.textChanged.connect(self.proxy.on_lineEdit_textChanged)
@@ -102,10 +109,11 @@ class QtModuleReviewWindow(QWidget):
 		self.view.setSelectionBehavior(QAbstractItemView.SelectRows)
 		self.view.setSelectionMode(QAbstractItemView.MultiSelection)
 		self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
-		for row in range(len(self.proxy.dataBody)):
-			DetailButton = QPushButton("&Show...")
-			DetailButton.clicked.connect(lambda state, x="{0}".format(self.proxy.dataBody[row][len(self.proxy.dataHeader)-1]) : self.openDQM(x))
-			self.view.setIndexWidget(self.proxy.index(row,0),DetailButton)
+		self.addButtons()
+		#for row in range(len(self.proxy.dataBody)):
+		#	DetailButton = QPushButton("&Show...")
+		#	DetailButton.clicked.connect(lambda state, x="{0}".format(self.proxy.dataBody[row][len(self.proxy.dataHeader)-1]) : self.openDQM(x))
+		#	self.view.setIndexWidget(self.proxy.index(row,0),DetailButton)
 
 		HistoryLayout = QGridLayout()
 		HistoryLayout.addWidget(self.lineEdit, 0, 1, 1, 1)
@@ -119,6 +127,12 @@ class QtModuleReviewWindow(QWidget):
 
 		self.MainBodyBox.setLayout(mainbodylayout)
 		self.mainLayout.addWidget(self.MainBodyBox, sum(self.GroupBoxSeg[0:1]), 0, self.GroupBoxSeg[1], 1)
+
+	def addButtons(self):
+		for row in range(self.proxy.rowCount()):
+			DetailButton = QPushButton("&Show...")
+			DetailButton.clicked.connect(lambda state, x="{0}".format(self.proxy.data(self.proxy.index(row,len(self.proxy.dataHeader)))) : self.openDQM(x))
+			self.view.setIndexWidget(self.proxy.index(row,0),DetailButton)
 
 	def destroyMain(self):
 		self.MainBodyBox.deleteLater()
@@ -185,40 +199,62 @@ class QtModuleReviewWindow(QWidget):
 		for index in selectedrows:
 			rowNumber = index.row()
 			if self.proxy.data(self.proxy.index(rowNumber,1))!= "Local":
-				print("This record is verified to be local")
+				print("This record is verified to be Non-local")
 				continue
 
-			################################
-			##  Block to get binary Info
-			################################
-			if self.proxy.dataBody[rowNumber][len(self.proxy.dataHeader)-1] != "":
-				print("Local File found: {}".format(self.proxy.dataBody[rowNumber][len(self.proxy.dataHeader)-1]))
+			if self.proxy.data(self.proxy.index(rowNumber,1)) == "Local":
+				################################
+				##  Block to get binary Info
+				################################
+				localDir = self.proxy.data(self.proxy.index(rowNumber,len(self.proxy.dataHeader)))
+				if localDir != "":
+					print("Local Directory found in : {}".format(localDir))
 
-			SubmitArgs = []
-			Value = []
-			for column in self.columns:
-				if column == "part_id" or column == "date" or column == "testname":
-					SubmitArgs.append(column)
-					Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
-				if column == "description":
-					SubmitArgs.append(column)
-					Value.append("No Comment")
-				if column == "grade":
-					SubmitArgs.append(column)
-					Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
-				if column == "username":
-					SubmitArgs.append(column)
-					Value.append(self.master.TryUsername)
+				getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(localDir), shell=True, stdout=subprocess.PIPE)
+				fileList = getFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+
+				if fileList  == [""]:
+					logger.warning("No ROOT file found in the local folder, skipping the record...")
+					continue
+				for submitFile in fileList:
+					data_id = hashlib.md5('{}'.format(submitFile).encode()).hexdigest()
+					if self.checkRemoteFile(data_id):
+						self.uploadFile(submitFile, data_id)
+					SubmitArgs = []
+					Value = []
+					for column in self.columns:
+						if column == "part_id" or column == "date" or column == "testname":
+							SubmitArgs.append(column)
+							Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
+						if column == "description":
+							SubmitArgs.append(column)
+							Value.append("No Comment")
+						if column == "grade":
+							SubmitArgs.append(column)
+							Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
+						if column == "data_id":
+							SubmitArgs.append(column)
+							Value.append(data_id)
+						if column == "username":
+							SubmitArgs.append(column)
+							Value.append(self.master.TryUsername)
 			
-			SubmitArgs.append("data")
-			Value.append("")
-			try:
-				insertGenericTable(self.connection, "tests", SubmitArgs, Value)
-			except:
-				print("Failed to insert")
+					try:
+						insertGenericTable(self.connection, "tests", SubmitArgs, Value)
+					except:
+						print("Failed to insert")
+				
 
 		self.destroyMain()
 		self.createMain()
+
+	def uploadFile(self, fileName, file_id):
+		data = b'test'
+		insertGenericTable(self.connection, "result_files", ["file_id","file_content"],[file_id,data])
+
+	def checkRemoteFile(self, file_id):
+		remoteRecords = retrieveWithConstraint(self.connection,"result_files",file_id = file_id, columns = ["file_id"])
+		return remoteRecords == []
 
 	def refresh(self):
 			self.destroyHeadLine()

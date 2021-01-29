@@ -23,6 +23,7 @@ Color={
 }
 
 class QtTableWidget(QSortFilterProxyModel):
+	filtering = pyqtSignal()
 	def __init__(self, dataList, orderIndex = 4):
 		super(QtTableWidget,self).__init__()
 
@@ -44,7 +45,7 @@ class QtTableWidget(QSortFilterProxyModel):
 
 		for row in range(len(self.dataBody)):
 			RowContents = []
-			ButtonItem = QStandardItem()
+			ButtonItem = QStandardItem()			
 			RowContents.append(ButtonItem)
 			for column in range(len(self.dataBody[row])):
 				if column == 0:
@@ -65,7 +66,8 @@ class QtTableWidget(QSortFilterProxyModel):
 										)
 
 		self.setFilterRegExp(filterString)
-		self.setFilterKeyColumn(filterColumn)
+		self.setFilterKeyColumn(filterColumn+1)
+		self.filtering.emit()
 
 	@QtCore.pyqtSlot(int)
 	def on_signalMapper_mapped(self, i):
@@ -77,7 +79,8 @@ class QtTableWidget(QSortFilterProxyModel):
 										)
 
 		self.setFilterRegExp(filterString)
-		self.setFilterKeyColumn(filterColumn)
+		self.setFilterKeyColumn(filterColumn+1)
+		self.filtering.emit()
 
 	@QtCore.pyqtSlot(str)
 	def on_lineEdit_textChanged(self, text):
@@ -87,7 +90,9 @@ class QtTableWidget(QSortFilterProxyModel):
 									)
 
 		self.setFilterRegExp(search)
+		self.filtering.emit()
 
 	@QtCore.pyqtSlot(int)
 	def on_comboBox_currentIndexChanged(self, index):
-		self.setFilterKeyColumn(index)
+		self.setFilterKeyColumn(index+1)
+		self.filtering.emit()
