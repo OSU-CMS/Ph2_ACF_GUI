@@ -264,15 +264,19 @@ def isSingleTest(TestName):
 	else:
 		return False
 
-def formatter(DirName, columns):
+def formatter(DirName, columns, **kwargs):
 	dirName = DirName.split('/')[-1]
 	ReturnList  = []
 	for column in columns:
 		if column  == "id":
 			ReturnList.append("")
 		if column  == "part_id":
-			Module_ID = dirName.split('_')[1].lstrip("Module")
-			ReturnList.append(Module_ID)
+			if 'part_id' in kwargs.keys():
+				Module_ID = kwargs['part_id']
+				ReturnList.append(Module_ID)	
+			else:
+				Module_ID = dirName.split('_')[1].lstrip("Module")
+				ReturnList.append(Module_ID)
 		if column == "username":
 			ReturnList.append("local")
 		if column == "testname":
@@ -283,6 +287,9 @@ def formatter(DirName, columns):
 		if column == "date":
 			TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
 			ReturnList.append(TimeStamp)
+		if column == "data_id":
+			data_id = ""
+			ReturnList.append(data_id)
 		if column == "description":
 			ReturnList.append("")
 		if column == "type":

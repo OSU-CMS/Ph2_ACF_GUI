@@ -444,6 +444,8 @@ class QtApplication(QWidget):
 		elif self.PYTHON_VERSION.startswith(("3.7","3.9")):
 			self.RefreshButton.clicked.connect(self.disableBoxs)
 			self.RefreshButton.clicked.connect(self.checkFirmware)
+			self.RefreshButton.clicked.connect(self.destroyMain)
+			self.RefreshButton.clicked.connect(self.createMain)
 			self.RefreshButton.clicked.connect(self.enableBoxs)
 			self.update()
 
