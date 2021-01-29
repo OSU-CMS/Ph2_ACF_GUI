@@ -23,6 +23,7 @@ from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
 from Gui.python.ResultTreeWidget import *
+from Gui.python.TestValidator import *
 
 class QtRunWindow(QWidget):
 	def __init__(self,master,info,firmware):
@@ -539,7 +540,8 @@ class QtRunWindow(QWidget):
 
 	def validateTest(self):
 		# Fixme: the grading for test results
-		self.grades.append(random.uniform(50, 100))
+		grade = ResultGrader(self.output_dir, self.firmware)
+		self.grades.append(grade)
 		time.sleep(0.5)
 		self.StatusCanvas.renew()
 		self.StatusCanvas.update()
@@ -558,6 +560,7 @@ class QtRunWindow(QWidget):
 		except:
 			print("Failed to copy file to output directory")
 
+	def saveTestToDB(self):
 		if isActive(self.connection) and self.autoSave:
 			try:
 				getfile = subprocess.run('ls -alt {0}/Run{1}*.root'.format(self.output_dir,self.RunNumber), shell=True, stdout=subprocess.PIPE)
@@ -574,6 +577,7 @@ class QtRunWindow(QWidget):
 			except:
 				QMessageBox.information(self,"Error","Unable to save to DB", QMessageBox.Ok)
 				return
+
 
 
 	#######################################################################
@@ -625,12 +629,21 @@ class QtRunWindow(QWidget):
 			self.RunButton.setText("&Finish")
 			self.RunButton.setDisabled(True)
 
-		self.validateTest()
-		self.refreshHistory()
+		# Save the output ROOT file to output_dir
 		self.saveTest()
+
+		# validate the results
+		self.validateTest()
+
+		# show the score of test
+		self.refreshHistory()
+
 		# For test
 		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
 		self.ResultWidget.updateResult(self.output_dir)
+
+		if self.autoSave:
+			self.saveTestToDB()
 		self.update()
 
 		if isCompositeTest(self.info[1]):
