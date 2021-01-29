@@ -89,6 +89,10 @@ def TCanvas2JPG(outputDir, canvas):
 		logger.warning("Failed to save "+ outputFile)
 	return outputFile
 
+def GetBinary(fileName):
+	binaryData = ROOT.TFile(fileName)
+	return binaryData	
+
 if __name__ == "__main__":
 	nodes =  GetDirectory("/Users/czkaiweb/Research/data/Run0060_ThrMinimization.root")
 	showDirectory(nodes)
