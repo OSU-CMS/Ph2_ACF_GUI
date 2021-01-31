@@ -540,9 +540,9 @@ class QtRunWindow(QWidget):
 
 	def validateTest(self):
 		# Fixme: the grading for test results
-		grade = ResultGrader(self.output_dir, self.firmware)
+		grade = ResultGrader(self.output_dir, self.currentTest, self.RunNumber)
 		self.grades.append(grade)
-		time.sleep(0.5)
+		time.sleep(1.0)
 		self.StatusCanvas.renew()
 		self.StatusCanvas.update()
 		self.HistoryLayout.removeWidget(self.StatusCanvas)
@@ -563,17 +563,78 @@ class QtRunWindow(QWidget):
 	def saveTestToDB(self):
 		if isActive(self.connection) and self.autoSave:
 			try:
-				getfile = subprocess.run('ls -alt {0}/Run{1}*.root'.format(self.output_dir,self.RunNumber), shell=True, stdout=subprocess.PIPE)
-				filelist = getfile.stdout.decode('utf-8')
-				outputfile = filelist.rstrip('\n').split('\n')[-1].split(' ')[-1]
-				# Fixme. to be decided
-				DQMFile = self.output_dir + "/" + outputfile
-				time_stamp = datetime.fromisoformat(self.output_dir.split('_')[-2])
+				localDir = self.output_dir
+				getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(localDir), shell=True, stdout=subprocess.PIPE)
+				fileList = getFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+				moduleList = [module for module in localDir.split('_') if "Module" in module]
 
-				testing_info = [self.info[0], self.parent.TryUsername, self.currentTest, time_stamp.strftime('%Y-%m-%d %H:%M:%S.%f'), self.grade, DQMFile]
-				#insertTestResult(self.connection, testing_info)
-				# fixme 
-				#database.createTestEntry(testing_info)
+				if fileList  == [""]:
+					logger.warning("No ROOT file found in the local folder, skipping...")
+					return
+
+				## Submit all files
+				for submitFile in fileList:
+					data_id = hashlib.md5('{}'.format(submitFile).encode()).hexdigest()
+					if self.checkRemoteFile(data_id):
+						self.uploadFile(submitFile, data_id)
+
+					## Submit records for all modules
+					for module in moduleList:
+						getConfigInFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
+						configInFileList = getConfigInFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+						getConfigOutFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
+						configOutFileList = getConfigOutFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+
+						configcolumns = []
+						configdata = []
+						for configInFile in configInFileList:
+							if configInFile != [""]:
+								configcolumns.append("Chip{}InConfig".format(configInFile.split('_')[-2]))
+								configInBuffer = open(configInFile,'rb')
+								configInBin = configInBuffer.read()
+								configdata.append(configInBin)
+						for configOutFile in configOutFileList:
+							if configOutFile != [""]:
+								configcolumns.append("Chip{}OutConfig".format(configOutFile.split('_')[-2]))
+								configOutBuffer = open(configOutFile,'rb')
+								configOutBin = configOutBuffer.read()
+								configdata.append(configOutBin)
+					
+						Columns = ["part_id","date","testname","description","grade","data_id","username"]
+						SubmitArgs = []
+						Value = []
+
+						record = formatter(localDir,Columns, part_id=module)
+						for column in ['part_id']:
+							if column == "part_id":
+								SubmitArgs.append(column)
+								Value.append(module)
+							if column == "date":
+								SubmitArgs.append(column)
+								Value.append(record[Columns.index(column)])
+							if column == "testname":
+								SubmitArgs.append(column)
+								Value.append(record[Columns.index(column)])
+							if column == "description":
+								SubmitArgs.append(column)
+								Value.append("No Comment")
+							if column == "grade":
+								SubmitArgs.append(column)
+								Value.append(-1)
+							if column == "data_id":
+								SubmitArgs.append(column)
+								Value.append(data_id)
+							if column == "username":
+								SubmitArgs.append(column)
+								Value.append(self.master.TryUsername)
+
+						SubmitArgs = SubmitArgs + configcolumns
+						Value = Value + configdata
+			
+						try:
+							insertGenericTable(self.connection, "tests", SubmitArgs, Value)
+						except:
+							print("Failed to insert")
 			except:
 				QMessageBox.information(self,"Error","Unable to save to DB", QMessageBox.Ok)
 				return

@@ -68,20 +68,44 @@ class RunStatusCanvas(FigureCanvas):
 	def compute_initial_figure(self):
 		self.axes.cla()
 		if isCompositeTest(self.parent.info[1]):
-			x = numpy.array(range(1,1+len(CompositeList[self.parent.info[1]])))
+			xList = [ x for x in range(1,1+len(CompositeList[self.parent.info[1]]))]
 		if isSingleTest(self.parent.info[1]):
-			x = numpy.array(range(1,2))
+			xList = [ x for x in range(1,2)]
 		
 		t = numpy.array(self.xticks)
 		# Fixme: Extend to grades as dictionary
-		y = numpy.array(self.grades)
-		addLength = len(x)-len(y)
-		for i in range(addLength):
-			y = numpy.append(y,[0.0])
+
+		if len(self.grades) == 0:
+			return
+
+		if len(self.grades[0].keys()) == 0:
+			return
 		
-		self.axes.bar(x,y)
+		allGrades = []
+		allXs = []
+		moduleList = self.grades[0].keys()
+
+		width_cluster = 0.7
+		width_bar = width_cluster/len(moduleList)
+		
+		index = 0
+		for module in moduleList:
+			module_grades = []
+			for grade in self.grades:
+				module_grades.append(grade.get(module,0))
+			for i in range(len(xList)-len(self.grades)):
+				module_grades.append(0.0)
+			allXs.append( [ x + (width_bar*index)-width_cluster/2.0 for x in xList])
+			allGrades.append(module_grades)
+			index = index + 1
+
+		for i, module in enumerate(moduleList):
+			x = numpy.array(allXs[i])
+			self.axes.bar(x,allGrades[i], width = width_bar, align = "edge", label="Module {}".format(module))
+
 		self.axes.set_xticks(range(len(t)))
 		self.axes.set_xticklabels(t)
+		self.axes.legend()
 	
 	def renew(self):
 		self.xticks = ['']

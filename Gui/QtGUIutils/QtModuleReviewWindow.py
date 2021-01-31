@@ -216,10 +216,34 @@ class QtModuleReviewWindow(QWidget):
 				if fileList  == [""]:
 					logger.warning("No ROOT file found in the local folder, skipping the record...")
 					continue
+
+				module_id = self.proxy.data(self.proxy.index(rowNumber,self.columns.index("part_id")+2))
 				for submitFile in fileList:
+					print("Submitting  {}".format(submitFile))
 					data_id = hashlib.md5('{}'.format(submitFile).encode()).hexdigest()
 					if self.checkRemoteFile(data_id):
 						self.uploadFile(submitFile, data_id)
+
+					getConfigInFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
+					configInFileList = getConfigInFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+					getConfigOutFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
+					configOutFileList = getConfigOutFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+
+					configcolumns = []
+					configdata = []
+					for configInFile in configInFileList:
+						if configInFile != [""]:
+							configcolumns.append("Chip{}InConfig".format(configInFile.split('_')[-2]))
+							configInBuffer = open(configInFile,'rb')
+							configInBin = configInBuffer.read()
+							configdata.append(configInBin)
+					for configOutFile in configOutFileList:
+						if configOutFile != [""]:
+							configcolumns.append("Chip{}OutConfig".format(configOutFile.split('_')[-2]))
+							configOutBuffer = open(configOutFile,'rb')
+							configOutBin = configOutBuffer.read()
+							configdata.append(configOutBin)
+					
 					SubmitArgs = []
 					Value = []
 					for column in self.columns:
@@ -238,6 +262,9 @@ class QtModuleReviewWindow(QWidget):
 						if column == "username":
 							SubmitArgs.append(column)
 							Value.append(self.master.TryUsername)
+
+					SubmitArgs = SubmitArgs + configcolumns
+					Value = Value + configdata
 			
 					try:
 						insertGenericTable(self.connection, "tests", SubmitArgs, Value)
@@ -249,7 +276,8 @@ class QtModuleReviewWindow(QWidget):
 		self.createMain()
 
 	def uploadFile(self, fileName, file_id):
-		data = b'test'
+		fileBuffer = open(fileName, 'rb')
+		data = fileBuffer.read()
 		insertGenericTable(self.connection, "result_files", ["file_id","file_content"],[file_id,data])
 
 	def checkRemoteFile(self, file_id):

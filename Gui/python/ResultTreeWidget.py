@@ -70,7 +70,7 @@ class ResultTreeWidget(QWidget):
 			self.displayResult(canvas)
 
 	def DirectoryVAL(self, QTreeNode, node):
-		if node.getDaugthers != []:
+		if node.getDaugthers() != []:
 			for Node in node.getDaugthers():
 				CurrentNode = QTreeWidgetItem()
 				if Node.getClassName() ==  "TCanvas":
@@ -94,7 +94,10 @@ class ResultTreeWidget(QWidget):
 
 	def updateResult(self, sourceFolder):
 		process = subprocess.run('find {0} -type f -name "*.root" '.format(sourceFolder), shell=True, stdout=subprocess.PIPE)
-		self.FileList += process.stdout.decode('utf-8').rstrip("\n").split("\n")
+		stepFiles = process.stdout.decode('utf-8').rstrip("\n").split("\n")
+		if stepFiles == [""]:
+			return
+		self.FileList += stepFiles
 
 		for File in self.FileList:
 			CurrentNode = QTreeWidgetItem()
