@@ -365,7 +365,7 @@ class QtRunWindow(QWidget):
 				runNumberFile = open(RunNumberFileName,"r")
 				runNumberText = runNumberFile.readlines()
 				self.RunNumber = runNumberText[0].split('\n')[0]
-				logger.info("RunNumber: {}",format(self.RunNumber))
+				logger.info("RunNumber: {}".format(self.RunNumber))
 		except:
 			logger.warning("Failed to retrive RunNumber")
 		
