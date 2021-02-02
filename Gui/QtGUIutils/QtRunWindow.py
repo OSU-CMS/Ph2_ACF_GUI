@@ -503,6 +503,7 @@ class QtRunWindow(QWidget):
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
 		self.run_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
 		self.run_process.start("echo",["Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(Test[self.currentTest])])
+		self.run_process.waitForFinished()
 		if Test[self.currentTest] in ["pixelalive","noisescan","latency","injdelay","clockdelay","threqu","thrmin"]:
 			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
 		#self.run_process.start("ping", ["-c","5","www.google.com"])
