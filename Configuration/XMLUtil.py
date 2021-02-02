@@ -187,7 +187,7 @@ def SetNodeRegister(Node, Dict):
 
 
 def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
-  Node_HWInterface = ET.Element('HWInterface')
+  Node_HWInterface = ET.Element('HwDescription')
   BeBoardList = HWDescription.BeBoardList
   for BeBoard in BeBoardList:
     Node_BeBoard = ET.SubElement(Node_HWInterface, 'BeBoard')
