@@ -360,7 +360,7 @@ class QtRunWindow(QWidget):
 
 	def configTest(self):
 		try:
-			RunNumberFileName = os.environ.get("Ph2_ACF")+"/test/RunNumber.txt"
+			RunNumberFileName = os.environ.get('Ph2_ACF_AREA')+"/test/RunNumber.txt"
 			if os.path.isfile(RunNumberFileName):
 				runNumberFile = open(RunNumberFileName,"r")
 				runNumberText = runNumberFile.readlines()
