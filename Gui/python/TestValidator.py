@@ -25,6 +25,13 @@ def ResultGrader(inputDir, testName, runNumber):
 		for module in ExpectedModuleList:
 			Grade[module] = 1.0
 
+	for key in Grade.keys():
+		gradeFile = open("{}/Grade_Module{}.txt".format(inputDir,key),"w")
+		gradeFile.write("Test:       {}\n".format(testName))
+		gradeFile.write("runNumber:  {}\n".format(runNumber))
+		gradeFile.write("Grade:      {}\n".format(Grade[key]))
+		gradeFile.close()
+
 	return Grade
 
 def GetCanvasVAL(node,canvasList):

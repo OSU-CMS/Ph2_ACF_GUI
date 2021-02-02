@@ -267,6 +267,8 @@ def isSingleTest(TestName):
 def formatter(DirName, columns, **kwargs):
 	dirName = DirName.split('/')[-1]
 	ReturnList  = []
+	Module_ID = None
+	recheckFlag = False
 	for column in columns:
 		if column  == "id":
 			ReturnList.append("")
@@ -275,14 +277,29 @@ def formatter(DirName, columns, **kwargs):
 				Module_ID = kwargs['part_id']
 				ReturnList.append(Module_ID)	
 			else:
-				Module_ID = dirName.split('_')[1].lstrip("Module")
-				ReturnList.append(Module_ID)
+				Module = dirName.split('_')[1]
+				if "Module" in Module:
+					Module_ID = Module.lstrip("Module")
+					ReturnList.append(Module_ID)
+				else:
+					Module_ID = "-1"
+					ReturnList.append(Module_ID)
 		if column == "username":
 			ReturnList.append("local")
 		if column == "testname":
 			ReturnList.append(dirName.split('_')[-3])
 		if column == "grade":
-			Grade = -1
+			if Module_ID:
+				gradeFileName =  "{}/Grade_Module{}.txt".format(DirName,Module_ID)
+				if os.path.isfile(gradeFileName):
+					gradeFile = open(gradeFileName,"r")
+					content = gradeFile.readlines()
+					Grade = float(content[-1].split(' ')[-1])
+				else:
+					Grade  = -1
+			else:
+				Grade = -1
+				recheckFlag = True
 			ReturnList.append(Grade)
 		if column == "date":
 			TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
@@ -294,7 +311,22 @@ def formatter(DirName, columns, **kwargs):
 			ReturnList.append("")
 		if column == "type":
 			ReturnList.append("")
+
+	if recheckFlag:
+		if "part_id" in columns:
+			indexModule = columns.index("part_id")
+			indexGrade = column.index("grade")
+			Module_ID = ReturnList[indexModule]
+			gradeFileName =  "{}/Grade_Module{}.txt".format(DirName,Module_ID)
+			if os.path.isfile(gradeFileName):
+				gradeFile = open(gradeFileName,"r")
+				content = gradeFile.readlines()
+				Grade = float(content[-1].split(' ')[-1])
+				ReturnList[indexGrade] = Grade
+			else:
+				ReturnList[indexGrade] = -1
+		else:
+			pass
+
 	ReturnList.append(DirName)
 	return ReturnList
-	
-
