@@ -210,7 +210,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
       HyBridList = OGModule.HyBridList
 
       for HyBridModule in HyBridList:
-        Node_HyBrid = ET.SubElement(Node_OGModule, 'HyBrid')
+        Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
         Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,'Status':HyBridModule.Status})
         Node_FEPath = ET.SubElement(Node_HyBrid, HyBridModule.HyBridType+'_Files')
         Node_FEPath = SetNodeAttribute(Node_FEPath,{'file':HyBridModule.File_Path})
