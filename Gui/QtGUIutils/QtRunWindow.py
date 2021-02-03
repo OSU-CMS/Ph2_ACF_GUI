@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import (QPixmap, QTextCursor)
 from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
@@ -24,6 +24,7 @@ from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
 from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import *
+from Gui.python.ANSIColoringParser import *
 
 class QtRunWindow(QWidget):
 	def __init__(self,master,info,firmware):
@@ -504,7 +505,7 @@ class QtRunWindow(QWidget):
 		self.run_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
 		self.run_process.start("echo",["Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(Test[self.currentTest])])
 		self.run_process.waitForFinished()
-		if Test[self.currentTest] in ["pixelalive","noisescan","latency","injdelay","clockdelay","threqu","thrmin"]:
+		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin"]:
 			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
 		#self.run_process.start("ping", ["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
@@ -666,6 +667,18 @@ class QtRunWindow(QWidget):
 	@QtCore.pyqtSlot()
 	def on_readyReadStandardOutput(self):
 		text = self.run_process.readAllStandardOutput().data().decode()
+		numUpAnchor, text = parseANSI(text)
+		if numUpAnchor > 0:
+			textCursor = self.ConsoleView.textCursor()
+			textCursor.beginEditBlock()
+			textCursor.movePosition(QTextCursor.StartOfLine, QTextCursor.MoveAnchor)
+			for numUp in range(numUpAnchor):
+				textCursor.movePosition(QTextCursor.Up, QTextCursor.KeepAnchor)
+				textCursor.select(QTextCursor.LineUnderCursor)
+				textCursor.removeSelectedText()
+			textCursor.endEditBlock()
+			self.ConsoleView.setTextCursor(textCursor)
+			
 		self.ConsoleView.append(text)
 
 	@QtCore.pyqtSlot()
