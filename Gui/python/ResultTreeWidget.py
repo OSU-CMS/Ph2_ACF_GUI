@@ -18,11 +18,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 class ResultTreeWidget(QWidget):
-	def __init__(self):
+	def __init__(self,width,height):
 		super(ResultTreeWidget,self).__init__()
-		self.DisplayW = 600
-		self.DisplayH = 600
+		self.DisplayW = width
+		self.DisplayH = height
 		self.FileList = []
+		self.displayingImage = ""
 
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
@@ -35,6 +36,7 @@ class ResultTreeWidget(QWidget):
 		self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
 		self.DisplayLabel = QLabel()
 		self.DisplayLabel.setScaledContents(True)
+		self.displayingImage = 'test_plots/test_best1.png'
 		self.DisplayView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 		self.DisplayLabel.setPixmap(self.DisplayView)
 		self.ReferTitle = QLabel('<font size="6"> Reference: </font>')
@@ -54,6 +56,11 @@ class ResultTreeWidget(QWidget):
 		#self.mainLayout.addWidget(self.ReferTitle,0,2,1,2)
 		#self.mainLayout.addWidget(self.ReferLabel,1,2,1,2)
 		self.mainLayout.addWidget(self.OutputTree,0,4,2,1)
+
+	def resizeImage(self, width, height):
+		self.DisplayView = QPixmap(self.displayingImage).scaled(QSize(width,height), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		self.DisplayLabel.setPixmap(self.DisplayView)
+		self.update
 
 	@QtCore.pyqtSlot(QTreeWidgetItem, int)
 	def onItemClicked(self, item, col):
@@ -115,6 +122,7 @@ class ResultTreeWidget(QWidget):
 			except:
 				logger.warning("Failed to create "+tmpDir)
 		jpgFile = TCanvas2JPG(tmpDir, canvas)
+		self.displayingImage = jpgFile
 
 		try:
 			self.DisplayView = QPixmap(jpgFile).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)

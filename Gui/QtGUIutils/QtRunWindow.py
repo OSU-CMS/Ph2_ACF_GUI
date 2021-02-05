@@ -27,6 +27,7 @@ from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
 
 class QtRunWindow(QWidget):
+	resized = pyqtSignal()
 	def __init__(self,master,info,firmware):
 		super(QtRunWindow,self).__init__()
 		self.master = master
@@ -41,6 +42,8 @@ class QtRunWindow(QWidget):
 		self.HorizontalSeg = [3, 5]
 		self.VerticalSegCol0 = [1,3]
 		self.VerticalSegCol1 = [2,2]
+		self.DisplayH = self.height()*3./7
+		self.DisplayW = self.width()*3./7
 
 		self.processingFlag = False
 		self.input_dir = ''
@@ -57,8 +60,6 @@ class QtRunWindow(QWidget):
 		self.finishSingal = False
 		self.proceedSignal = False
 
-		self.DisplayW = 450
-		self.DisplayH = 450
 		self.runNext = threading.Event()
 		self.testIndexTracker = -1
 		self.listWidgetIndex = 0
@@ -77,6 +78,8 @@ class QtRunWindow(QWidget):
 		self.createApp()
 		self.occupied()
 
+		self.resized.connect(self.rescaleImage)
+
 		self.run_process = QProcess(self)
 		self.run_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput)
 		self.run_process.finished.connect(self.on_finish)
@@ -85,8 +88,14 @@ class QtRunWindow(QWidget):
 		self.info_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput_info)
 
 	def setLoginUI(self):
-		self.setGeometry(100, 100, 1000, 1800)  
-		self.setWindowTitle('Run Control Page')  
+		X_ll = self.master.dimension.width()/10
+		Y_ll = self.master.dimension.height()/10
+		X_ru = self.master.dimension.width()*8./10
+		Y_ru = self.master.dimension.height()*8./10
+		self.setGeometry(X_ll, Y_ll, X_ru, Y_ru)  
+		self.setWindowTitle('Run Control Page') 
+		self.DisplayH = self.height()*3./7
+		self.DisplayW = self.width()*3./7 
 		self.show()
 
 	def  initializeRD53Dict(self):
@@ -199,7 +208,7 @@ class QtRunWindow(QWidget):
 		OutputBox.setSizePolicy(OutputBoxSP)
 
 		OutputLayout = QGridLayout()
-		self.ResultWidget = ResultTreeWidget()
+		self.ResultWidget = ResultTreeWidget(self.DisplayW,self.DisplayH)
 		#self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
 		#self.DisplayLabel = QLabel()
 		#self.DisplayLabel.setScaledContents(True)
@@ -781,6 +790,16 @@ class QtRunWindow(QWidget):
 		self.createHeadLine()
 		self.destroyApp()
 		self.createApp()
+
+	def resizeEvent(self, event):
+		self.resized.emit()
+		return super(QtRunWindow, self).resizeEvent(event)
+
+	def rescaleImage(self):
+		self.DisplayH = self.height()*3./7
+		self.DisplayW = self.width()*3./7
+		self.ResultWidget.resizeImage(self.DisplayW,self.DisplayH)
+
 
 	def setAutoSave(self):
 		if self.autoSave:
