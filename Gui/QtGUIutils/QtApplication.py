@@ -24,7 +24,7 @@ from Gui.QtGUIutils.QtuDTCDialog import *
 from Gui.python.Firmware import *
 
 class QtApplication(QWidget):
-	def __init__(self):
+	def __init__(self, dimension):
 		super(QtApplication,self).__init__()
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
@@ -36,6 +36,7 @@ class QtApplication(QWidget):
 		self.FPGAConfigDict = {}
 		self.LogList = {}
 		self.PYTHON_VERSION = str(sys.version).split(" ")[0]
+		self.dimension = dimension
 
 		self.setLoginUI()
 		self.initLog()
