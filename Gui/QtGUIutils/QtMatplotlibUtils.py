@@ -103,9 +103,11 @@ class RunStatusCanvas(FigureCanvas):
 			x = numpy.array(allXs[i])
 			self.axes.bar(x,allGrades[i], width = width_bar, align = "edge", label="Module {}".format(module))
 
+		self.axes.plot([0,len(t)], [0.6,0.6], color='green', linestyle='dashed',linewidth=3)
 		self.axes.set_xticks(range(len(t)))
 		self.axes.set_xticklabels(t)
 		self.axes.legend()
+		self.axes.set_xlim([0,len(t)])
 	
 	def renew(self):
 		self.xticks = ['']
