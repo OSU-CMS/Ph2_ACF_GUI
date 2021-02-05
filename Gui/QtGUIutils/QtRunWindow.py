@@ -2,7 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtGui import (QPixmap, QTextCursor)
 from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
-		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget,
+		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPlainTextEdit,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QTreeWidget, QHBoxLayout,
 		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter)
@@ -49,6 +49,8 @@ class QtRunWindow(QWidget):
 		self.rd53_file  = {}
 		self.grade = -1
 		self.currentTest = ""
+		self.outputFile = ""
+		self.errorFile = ""
 
 		self.backSignal = False
 		self.haltSignal = False
@@ -78,6 +80,9 @@ class QtRunWindow(QWidget):
 		self.run_process = QProcess(self)
 		self.run_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput)
 		self.run_process.finished.connect(self.on_finish)
+
+		self.info_process = QProcess(self)
+		self.info_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput_info)
 
 	def setLoginUI(self):
 		self.setGeometry(100, 100, 1000, 1800)  
@@ -179,9 +184,11 @@ class QtRunWindow(QWidget):
 
 		ConsoleLayout = QGridLayout()
 		
-		self.ConsoleView = QTextEdit()
+		self.ConsoleView = QPlainTextEdit()
 		self.ConsoleView.setStyleSheet("QTextEdit { background-color: rgb(10, 10, 10); color : white; }")
-
+		#self.ConsoleView.setCenterOnScroll(True)
+		self.ConsoleView.ensureCursorVisible()
+		
 		ConsoleLayout.addWidget(self.ConsoleView)
 		TerminalBox.setLayout(ConsoleLayout)
 
@@ -498,15 +505,29 @@ class QtRunWindow(QWidget):
 	def runSingleTest(self,testName):	
 		self.currentTest = testName
 		self.configTest()
+		self.outputFile = self.output_dir + "/output.txt"
+		self.errorFile = self.output_dir + "/error.txt"
 		self.RunButton.setDisabled(True)
 		#self.ContinueButton.setDisabled(True)
 		#self.run_process.setProgram()
+		self.info_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+		self.info_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
+		self.info_process.start("echo",["Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(Test[self.currentTest])])
+		self.info_process.waitForFinished()
+
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
 		self.run_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
-		self.run_process.start("echo",["Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(Test[self.currentTest])])
-		self.run_process.waitForFinished()
+		#self.run_process.setStandardOutputFile(self.outputFile)
+		#self.run_process.setStandardErrorFile(self.errorFile)
+		
+		#self.run_process.start("python", ["signal_generator.py"])
+		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
+
 		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin"]:
 			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
+		#else:
+		#	self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
+	
 		#self.run_process.start("ping", ["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
 		self.displayResult()
@@ -666,21 +687,48 @@ class QtRunWindow(QWidget):
 
 	@QtCore.pyqtSlot()
 	def on_readyReadStandardOutput(self):
-		text = self.run_process.readAllStandardOutput().data().decode()
-		numUpAnchor, text = parseANSI(text)
-		if numUpAnchor > 0:
-			textCursor = self.ConsoleView.textCursor()
-			textCursor.beginEditBlock()
-			textCursor.movePosition(QTextCursor.StartOfLine, QTextCursor.MoveAnchor)
-			for numUp in range(numUpAnchor):
-				textCursor.movePosition(QTextCursor.Up, QTextCursor.KeepAnchor)
-				textCursor.select(QTextCursor.LineUnderCursor)
-				textCursor.removeSelectedText()
-			textCursor.endEditBlock()
-			self.ConsoleView.setTextCursor(textCursor)
-			
-		self.ConsoleView.append(text)
+		if os.path.exists(self.outputFile):
+			outputfile = open(self.outputFile,"a")
+		else:
+			outputfile = open(self.outputFile,"w")
+		
+		alltext = self.run_process.readAllStandardOutput().data().decode()
+		outputfile.write(alltext)
+		outputfile.close()
+		textline = alltext.split('\n')
 
+		for textStr in textline:
+			text = textStr.encode('ascii')
+			numUpAnchor, text = parseANSI(text)
+			if numUpAnchor > 0:
+				textCursor = self.ConsoleView.textCursor()
+				textCursor.beginEditBlock()
+				textCursor.movePosition(QTextCursor.End, QTextCursor.MoveAnchor)
+				textCursor.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+				for numUp in range(numUpAnchor):
+					textCursor.movePosition(QTextCursor.Up, QTextCursor.KeepAnchor)
+				textCursor.removeSelectedText()
+				#textCursor.deletePreviousChar()
+				textCursor.endEditBlock()
+				self.ConsoleView.setTextCursor(textCursor)
+
+			self.ConsoleView.appendHtml(text.decode("utf-8"))
+		
+	@QtCore.pyqtSlot()
+	def on_readyReadStandardOutput_info(self):
+		if os.path.exists(self.outputFile):
+			outputfile = open(self.outputFile,"a")
+		else:
+			outputfile = open(self.outputFile,"w")
+		
+		alltext = self.info_process.readAllStandardOutput().data().decode()
+		outputfile.write(alltext)
+		outputfile.close()
+		textline = alltext.split('\n')
+
+		for textStr in textline:
+			self.ConsoleView.appendHtml(textStr)
+		
 	@QtCore.pyqtSlot()
 	def on_finish(self):
 		self.RunButton.setDisabled(True)
