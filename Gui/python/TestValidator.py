@@ -106,7 +106,7 @@ def GradePixelAlive(canvasList):
 		GradePerChip = []
 		for Chip_ID in factorPerModule[Module_ID].keys():
 			factorLowEff = (1-factorPerModule[Module_ID][Chip_ID]["numLowEffNonIsoBin"]/nLowEffBinsThreshold)
-			score =  100.0 * factorPerModule[Module_ID][Chip_ID]["AvgOccu"] * 0 if factorLowEff < 0.0 else factorLowEff
+			score =  factorPerModule[Module_ID][Chip_ID]["AvgOccu"] * 0 if factorLowEff < 0.0 else factorLowEff
 			GradePerChip.append(score)
 		if GradePerChip != []:
 			grade[Module_ID] = min(GradePerChip)
