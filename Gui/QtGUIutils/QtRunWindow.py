@@ -717,7 +717,7 @@ class QtRunWindow(QWidget):
 				for numUp in range(numUpAnchor):
 					textCursor.movePosition(QTextCursor.Up, QTextCursor.KeepAnchor)
 				textCursor.removeSelectedText()
-				#textCursor.deletePreviousChar()
+				textCursor.deletePreviousChar()
 				textCursor.endEditBlock()
 				self.ConsoleView.setTextCursor(textCursor)
 
