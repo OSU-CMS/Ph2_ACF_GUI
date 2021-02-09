@@ -1,5 +1,5 @@
 import ROOT
-
+import time
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -68,6 +68,7 @@ def DirectoryVLR(node,depth):
 	print(nodeName+";"+node.getClassName())
 	if node.getClassName() == "TCanvas":
 		obj = node.getObject()
+		obj.SetBatch(ROOT.kTRUE)
 		obj.Draw()
 		obj.SaveAs(node.getKeyName()+".jpg")
 	for node in node.getDaugthers():
@@ -79,8 +80,10 @@ def showDirectory(nodes):
 		DirectoryVLR(node,0)
 
 def TCanvas2JPG(outputDir, canvas):
-	outputFile = outputDir+"/display.jpg"
+	seconds = time.time()
+	outputFile = outputDir+"/display{}.jpg".format(seconds)
 	try:
+		canvas.SetBatch(ROOT.kTRUE)
 		canvas.Draw()
 		canvas.Print(outputFile)
 		#canvas.Close()
