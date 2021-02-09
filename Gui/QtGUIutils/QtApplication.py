@@ -631,6 +631,7 @@ class QtApplication(QWidget):
 
 		if reply == QMessageBox.Yes:
 			print('Application terminated')
+			os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
 			event.accept()
 		else:
 			event.ignore()
