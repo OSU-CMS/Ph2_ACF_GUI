@@ -46,6 +46,7 @@ class QtRunWindow(QWidget):
 		self.DisplayW = self.width()*3./7
 
 		self.processingFlag = False
+		self.ProgressBarList = []
 		self.input_dir = ''
 		self.output_dir = ''
 		self.config_file = '' #os.environ.get('GUI_dir')+ConfigFiles.get(self.calibration, "None")
@@ -83,16 +84,19 @@ class QtRunWindow(QWidget):
 		self.run_process = QProcess(self)
 		self.run_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput)
 		self.run_process.finished.connect(self.on_finish)
+		self.readingOutput = False
+		self.ProgressingMode = "Configure"
+		self.ProgressValue = 0
 
 		self.info_process = QProcess(self)
 		self.info_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput_info)
 
 	def setLoginUI(self):
-		X_ll = self.master.dimension.width()/10
-		Y_ll = self.master.dimension.height()/10
-		X_ru = self.master.dimension.width()*8./10
-		Y_ru = self.master.dimension.height()*8./10
-		self.setGeometry(X_ll, Y_ll, X_ru, Y_ru)  
+		X = self.master.dimension.width()/10
+		Y = self.master.dimension.height()/10
+		Width = self.master.dimension.width()*8./10
+		Height = self.master.dimension.height()*8./10
+		self.setGeometry(X, Y, Width, Height)  
 		self.setWindowTitle('Run Control Page') 
 		self.DisplayH = self.height()*3./7
 		self.DisplayW = self.width()*3./7 
@@ -161,6 +165,7 @@ class QtRunWindow(QWidget):
 		self.ResetButton.clicked.connect(self.resetConfigTest)
 		self.RunButton = QPushButton("&Run")
 		self.RunButton.setDefault(True)
+		self.RunButton.clicked.connect(self.initialTest)
 		self.RunButton.clicked.connect(self.runTest)
 		#self.ContinueButton = QPushButton("&Continue")
 		#self.ContinueButton.clicked.connect(self.sendProceedSignal)
@@ -208,7 +213,7 @@ class QtRunWindow(QWidget):
 		OutputBox.setSizePolicy(OutputBoxSP)
 
 		OutputLayout = QGridLayout()
-		self.ResultWidget = ResultTreeWidget(self.DisplayW,self.DisplayH)
+		self.ResultWidget = ResultTreeWidget(self.info,self.DisplayW,self.DisplayH,self.master)
 		#self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
 		#self.DisplayLabel = QLabel()
 		#self.DisplayLabel.setScaledContents(True)
@@ -476,6 +481,12 @@ class QtRunWindow(QWidget):
 		self.config_file = ""
 		self.initializeRD53Dict()
 
+	def initialTest(self):
+		if "Re" in self.RunButton.text():
+			self.grades = []
+			for index in range(len(CompositeList[self.info[1]])):
+				self.ResultWidget.ProgressBar[index].setValue(0)
+
 	def runTest(self):
 		self.ResetButton.setDisabled(True)
 		#self.ControlLayout.removeWidget(self.RunButton)
@@ -492,9 +503,6 @@ class QtRunWindow(QWidget):
 		self.HistoryLayout.addWidget(self.StatusCanvas)
 
 		if isCompositeTest(testName):
-			#Fixme: threading make GUI freeze
-			#self.runAllTests = threading.Thread(target=self.runCompositeTest(testName))
-			#self.runAllTests.start()
 			self.runCompositeTest(testName)
 		elif isSingleTest(testName):
 			self.runSingleTest(testName)
@@ -506,6 +514,7 @@ class QtRunWindow(QWidget):
 		if self.haltSignal:
 			return
 		if self.testIndexTracker == len(CompositeList[self.info[1]]):
+			self.testIndexTracker = 0
 			return
 		testName = CompositeList[self.info[1]][self.testIndexTracker]
 		self.runSingleTest(testName)
@@ -516,7 +525,6 @@ class QtRunWindow(QWidget):
 		self.configTest()
 		self.outputFile = self.output_dir + "/output.txt"
 		self.errorFile = self.output_dir + "/error.txt"
-		self.RunButton.setDisabled(True)
 		#self.ContinueButton.setDisabled(True)
 		#self.run_process.setProgram()
 		self.info_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
@@ -531,11 +539,12 @@ class QtRunWindow(QWidget):
 		
 		#self.run_process.start("python", ["signal_generator.py"])
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
+		#self.run_process.start("./SignalGenerator")
 
 		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin"]:
 			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
-		#else:
-		#	self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
+		else:
+			self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
 	
 		#self.run_process.start("ping", ["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
@@ -569,12 +578,14 @@ class QtRunWindow(QWidget):
 			self.sendProceedSignal()
 		else:
 			return
+		self.RunButton.setText("Re-run")
+		self.RunButton.setDisabled(False)
 
 	def validateTest(self):
 		# Fixme: the grading for test results
 		grade = ResultGrader(self.output_dir, self.currentTest, self.RunNumber)
 		self.grades.append(grade)
-		time.sleep(1.0)
+		time.sleep(0.5)
 		self.StatusCanvas.renew()
 		self.StatusCanvas.update()
 		self.HistoryLayout.removeWidget(self.StatusCanvas)
@@ -696,6 +707,10 @@ class QtRunWindow(QWidget):
 
 	@QtCore.pyqtSlot()
 	def on_readyReadStandardOutput(self):
+		if self.readingOutput == True:
+			print("Thread competition detected")
+			return
+		self.readingOutput = True
 		if os.path.exists(self.outputFile):
 			outputfile = open(self.outputFile,"a")
 		else:
@@ -705,23 +720,39 @@ class QtRunWindow(QWidget):
 		outputfile.write(alltext)
 		outputfile.close()
 		textline = alltext.split('\n')
+		#fileLines = open(self.outputFile,"r")
+		#textline = fileLines.readlines()
 
 		for textStr in textline:
+			if "@@@ Initializing the Hardware @@@" in textStr:
+				self.ProgressingMode = "Configure"
+			if "@@@ Performing" in textStr:
+				self.ProgressingMode = "Perform"
+				self.ConsoleView.appendHtml('<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest))
+			if "Readout chip error report" in textStr:
+				self.ProgressingMode = "Summary"
+			if self.ProgressingMode == "Perform":
+				if ">>>> Progress :" in textStr:
+					self.ProgressValue = float(textStr.split(" ")[3].rstrip("%"))
+					self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)
+				continue
 			text = textStr.encode('ascii')
 			numUpAnchor, text = parseANSI(text)
-			if numUpAnchor > 0:
-				textCursor = self.ConsoleView.textCursor()
-				textCursor.beginEditBlock()
-				textCursor.movePosition(QTextCursor.End, QTextCursor.MoveAnchor)
-				textCursor.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
-				for numUp in range(numUpAnchor):
-					textCursor.movePosition(QTextCursor.Up, QTextCursor.KeepAnchor)
-				textCursor.removeSelectedText()
-				textCursor.deletePreviousChar()
-				textCursor.endEditBlock()
-				self.ConsoleView.setTextCursor(textCursor)
-
+			#if numUpAnchor > 0:
+			#	textCursor = self.ConsoleView.textCursor()
+			#	textCursor.beginEditBlock()
+			#	textCursor.movePosition(QTextCursor.End, QTextCursor.MoveAnchor)
+			#	textCursor.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
+			#	for numUp in range(numUpAnchor):
+			#		textCursor.movePosition(QTextCursor.Up, QTextCursor.KeepAnchor)
+			#	textCursor.removeSelectedText()
+			#	textCursor.deletePreviousChar()
+			#	textCursor.endEditBlock()
+			#	self.ConsoleView.setTextCursor(textCursor)
+			textCursor = self.ConsoleView.textCursor()
+			self.ConsoleView.setTextCursor(textCursor)
 			self.ConsoleView.appendHtml(text.decode("utf-8"))
+		self.readingOutput = False
 		
 	@QtCore.pyqtSlot()
 	def on_readyReadStandardOutput_info(self):
@@ -755,11 +786,13 @@ class QtRunWindow(QWidget):
 
 		if isCompositeTest(self.info[1]):
 			if self.testIndexTracker == len(CompositeList[self.info[1]]):
-				self.RunButton.setText("&Finish")
-				self.RunButton.setDisabled(True)
+				self.RunButton.setText("&Re-run")
+				self.RunButton.setDisabled(False)
 		if isSingleTest(self.info[1]):
-			self.RunButton.setText("&Finish")
-			self.RunButton.setDisabled(True)
+			#self.RunButton.setText("&Finish")
+			#self.RunButton.setDisabled(True)
+			self.RunButton.setText("&Re-run")
+			self.RunButton.setDisabled(False)
 
 		# Save the output ROOT file to output_dir
 		self.saveTest()
