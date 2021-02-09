@@ -40,7 +40,7 @@ class ResultTreeWidget(QWidget):
 		self.setupUi()
 
 		# For test:
-		self.updateResult("/Users/czkaiweb/Research/data")
+		# self.updateResult("/Users/czkaiweb/Research/data")
 		
 	def initializeProgressBar(self):
 		if isCompositeTest(self.info[1]):
