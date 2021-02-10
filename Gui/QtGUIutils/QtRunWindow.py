@@ -618,7 +618,7 @@ class QtRunWindow(QWidget):
 				## Submit all files
 				for submitFile in fileList:
 					data_id = hashlib.md5('{}'.format(submitFile).encode()).hexdigest()
-					if self.checkRemoteFile(data_id):
+					if not self.checkRemoteFile(data_id):
 						self.uploadFile(submitFile, data_id)
 
 					## Submit records for all modules
@@ -682,7 +682,14 @@ class QtRunWindow(QWidget):
 				QMessageBox.information(self,"Error","Unable to save to DB", QMessageBox.Ok)
 				return
 
+	def checkRemoteFile(self, file_id):
+		remoteRecords = retrieveWithConstraint(self.connection,"result_files",file_id = file_id, columns = ["file_id"])
+		return remoteRecords != []
 
+	def uploadFile(self, fileName, file_id):
+		fileBuffer = open(fileName, 'rb')
+		data = fileBuffer.read()
+		insertGenericTable(self.connection, "result_files", ["file_id","file_content"],[file_id,data])
 
 	#######################################################################
 	##  For result display

@@ -444,11 +444,11 @@ class QtApplication(QWidget):
 			self.RefreshButton.clicked.connect(self.checkFirmware)
 		elif self.PYTHON_VERSION.startswith(("3.7","3.9")):
 			self.RefreshButton.clicked.connect(self.disableBoxs)
-			self.RefreshButton.clicked.connect(self.checkFirmware)
 			self.RefreshButton.clicked.connect(self.destroyMain)
-			self.RefreshButton.clicked.connect(self.createMain)
+			self.RefreshButton.clicked.connect(self.reCreateMain)
+			#self.RefreshButton.clicked.connect(self.checkFirmware)
 			self.RefreshButton.clicked.connect(self.enableBoxs)
-			self.update()
+			self.RefreshButton.clicked.connect(self.update)
 
 		self.LogoutButton = QPushButton("&Logout")
 		# Fixme: more conditions to be added
@@ -475,6 +475,11 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.FirmwareStatus)
 		self.mainLayout.addWidget(self.MainOption)
 		self.mainLayout.addWidget(self.AppOption)
+
+	def reCreateMain(self):
+		print("Refreshing the main page")
+		self.createMain()
+		self.checkFirmware()
 
 
 	def disableBoxs(self):
@@ -565,6 +570,7 @@ class QtApplication(QWidget):
 			if i == int(index):
 				button.setChecked(True)
 				button.setText("&In use")
+				button.setDisabled(False)
 				self.CheckButton.setDisabled(True)
 				self.FwUnderUsed = self.StatusList[i+1][0].text()
 			else:

@@ -221,7 +221,7 @@ class QtModuleReviewWindow(QWidget):
 				for submitFile in fileList:
 					print("Submitting  {}".format(submitFile))
 					data_id = hashlib.md5('{}'.format(submitFile).encode()).hexdigest()
-					if self.checkRemoteFile(data_id):
+					if not self.checkRemoteFile(data_id):
 						self.uploadFile(submitFile, data_id)
 
 					getConfigInFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
@@ -282,7 +282,7 @@ class QtModuleReviewWindow(QWidget):
 
 	def checkRemoteFile(self, file_id):
 		remoteRecords = retrieveWithConstraint(self.connection,"result_files",file_id = file_id, columns = ["file_id"])
-		return remoteRecords == []
+		return remoteRecords != []
 
 	def refresh(self):
 			self.destroyHeadLine()
