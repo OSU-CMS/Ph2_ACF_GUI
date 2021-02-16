@@ -1,10 +1,10 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtGui import (QPixmap, QTextCursor)
+from PyQt5.QtGui import (QPixmap, QTextCursor, QColor)
 from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPlainTextEdit,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
-		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QTreeWidget, QHBoxLayout,
+		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QTreeWidget, QHBoxLayout,
 		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter)
 
 import sys
@@ -67,6 +67,7 @@ class QtRunWindow(QWidget):
 		self.outputDirQueue = []
 		#Fixme: QTimer to be added to update the page automatically
 		self.grades = []
+		self.modulestatus = []
 		self.autoSave = False
 
 		self.mainLayout = QGridLayout()
@@ -269,9 +270,16 @@ class QtRunWindow(QWidget):
 		#self.HistoryLayout.addWidget(self.comboBox, 0, 2, 1, 1)
 		#self.HistoryLayout.addWidget(self.label, 0, 0, 1, 1)
 
-		self.StatusCanvas = RunStatusCanvas(parent=self,width=5, height=4, dpi=100)
-		self.HistoryLayout.addWidget(self.StatusCanvas)
-
+		#self.StatusCanvas = RunStatusCanvas(parent=self,width=5, height=4, dpi=100)
+		self.StatusTable = QTableWidget()
+		self.header = ["TestName"]
+		for key in self.rd53_file.keys():
+			ChipName = key.split("_")
+			self.header.append("Module{}_Chip{}".format(ChipName[0],ChipName[1]))
+		self.StatusTable.setColumnCount(len(self.header))
+		self.StatusTable.setHorizontalHeaderLabels(self.header)
+		self.StatusTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
+		self.HistoryLayout.addWidget(self.StatusTable)
 		self.HistoryBox.setLayout(self.HistoryLayout)
 
 		
@@ -357,7 +365,27 @@ class QtRunWindow(QWidget):
 		#self.view.setModel(self.proxy)
 		#self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 		#self.view.update()
-		pass
+		self.HistoryLayout.removeWidget(self.StatusTable)
+		self.StatusTable.setRowCount(0)
+		for index,test in enumerate(self.modulestatus):
+			row = self.StatusTable.rowCount()
+			self.StatusTable.setRowCount(row + 1)
+			self.StatusTable.setItem(row,0,QTableWidgetItem(CompositeList[self.info[1]][index]))
+			for moduleKey in test.keys():
+				for chipKey in test[moduleKey].keys():
+					ChipID = "Module{}_Chip{}".format(moduleKey,chipKey)
+					status = "Pass" if test[moduleKey][chipKey] == True else "Failed"
+					if  ChipID in self.header:
+						columnId = self.header.index(ChipID)
+						self.StatusTable.setItem(row,columnId,QTableWidgetItem(status))
+						if status == "Pass":
+							self.StatusTable.item(row,columnId).setBackground(QColor(Qt.green))
+						elif status == "Failed":
+							self.StatusTable.item(row,columnId).setBackground(QColor(Qt.red))
+
+		self.HistoryLayout.addWidget(self.StatusTable)
+		
+		
 
 	def sendBackSignal(self):
 		self.backSignal = True
@@ -497,10 +525,10 @@ class QtRunWindow(QWidget):
 		self.input_dir = self.output_dir
 		self.output_dir = ""
 
-		self.StatusCanvas.renew()
-		self.StatusCanvas.update()
-		self.HistoryLayout.removeWidget(self.StatusCanvas)
-		self.HistoryLayout.addWidget(self.StatusCanvas)
+		#self.StatusCanvas.renew()
+		#self.StatusCanvas.update()
+		#self.HistoryLayout.removeWidget(self.StatusCanvas)
+		#self.HistoryLayout.addWidget(self.StatusCanvas)
 
 		if isCompositeTest(testName):
 			self.runCompositeTest(testName)
@@ -539,12 +567,12 @@ class QtRunWindow(QWidget):
 		
 		#self.run_process.start("python", ["signal_generator.py"])
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
-		#self.run_process.start("./SignalGenerator")
+		self.run_process.start("./SignalGenerator")
 
-		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin"]:
-			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
-		else:
-			self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
+		#if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin"]:
+		#	self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
+		#else:
+		#	self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
 	
 		#self.run_process.start("ping", ["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
@@ -583,13 +611,14 @@ class QtRunWindow(QWidget):
 
 	def validateTest(self):
 		# Fixme: the grading for test results
-		grade = ResultGrader(self.output_dir, self.currentTest, self.RunNumber)
+		grade, passmodule = ResultGrader(self.output_dir, self.currentTest, self.RunNumber)
 		self.grades.append(grade)
+		self.modulestatus.append(passmodule)
 		time.sleep(0.5)
-		self.StatusCanvas.renew()
-		self.StatusCanvas.update()
-		self.HistoryLayout.removeWidget(self.StatusCanvas)
-		self.HistoryLayout.addWidget(self.StatusCanvas)
+		#self.StatusCanvas.renew()
+		#self.StatusCanvas.update()
+		#self.HistoryLayout.removeWidget(self.StatusCanvas)
+		#self.HistoryLayout.addWidget(self.StatusCanvas)
 
 
 	def saveTest(self):
