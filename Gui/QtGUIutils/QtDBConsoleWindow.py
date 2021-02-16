@@ -38,6 +38,8 @@ class QtDBConsoleWindow(QMainWindow):
 		self.createHeadLine()
 		self.createMain()
 		self.createApp()
+		if isActive(self.connection):
+			self.connectDB()
 
 	def setLoginUI(self):
 		self.setGeometry(200, 200, 600, 1200)  
@@ -902,17 +904,17 @@ class QtDBConsoleWindow(QMainWindow):
 		self.PasswordEdit.setMinimumWidth(150)
 		self.PasswordEdit.setMaximumHeight(20)
 
-		HostLabel = QLabel("HostName:")
-		self.HostName = QComboBox()
-		self.HostName.addItems(DBServerIP.keys())
-		self.HostName.currentIndexChanged.connect(self.changeDBList)
-		HostLabel.setBuddy(self.HostName)
+		HostLabel = QLabel("Host IP:")
+		self.HostEdit = QLineEdit('128.146.38.1')
+		self.HostEdit.setEchoMode(QLineEdit.Normal)
+		self.HostEdit.setMinimumWidth(150)
+		self.HostEdit.setMaximumHeight(30)
 
 		DatabaseLabel = QLabel("Database:")
-		self.DatabaseCombo = QComboBox()
-		self.DBNames = DBNames['All']
-		self.DatabaseCombo.addItems(self.DBNames)
-		self.DatabaseCombo.setCurrentIndex(0)
+		self.DatabaseEdit = QLineEdit('SampleDB')
+		self.DatabaseEdit.setEchoMode(QLineEdit.Normal)
+		self.DatabaseEdit.setMinimumWidth(150)
+		self.DatabaseEdit.setMaximumHeight(30)
 		
 		self.ConnectButton = QPushButton("&Connect to DB")
 		self.ConnectButton.clicked.connect(self.connectDB)
@@ -922,9 +924,9 @@ class QtDBConsoleWindow(QMainWindow):
 		self.HeadLayout.addWidget(PasswordLabel)
 		self.HeadLayout.addWidget(self.PasswordEdit)
 		self.HeadLayout.addWidget(HostLabel)
-		self.HeadLayout.addWidget(self.HostName)
+		self.HeadLayout.addWidget(self.HostEdit)
 		self.HeadLayout.addWidget(DatabaseLabel)
-		self.HeadLayout.addWidget(self.DatabaseCombo)
+		self.HeadLayout.addWidget(self.DatabaseEdit)
 		self.HeadLayout.addWidget(self.ConnectButton)
 
 		self.HeadBox.setLayout(self.HeadLayout)
@@ -935,6 +937,9 @@ class QtDBConsoleWindow(QMainWindow):
 		self.HeadBox.deleteLater()
 		self.mainLayout.removeWidget(self.HeadBox)
 
+	def clearLogInfo(self):
+		self.connection = "Offline"
+	
 	def connectedHeadLine(self):
 		self.activateMenuBar()
 		self.HeadBox.deleteLater()
@@ -954,6 +959,7 @@ class QtDBConsoleWindow(QMainWindow):
 
 		self.SwitchButton = QPushButton("&Switch DB")
 		self.SwitchButton.clicked.connect(self.destroyHeadLine)
+		self.SwitchButton.clicked.connect(self.clearLogInfo)
 		self.SwitchButton.clicked.connect(self.createHeadLine)
 
 		self.HeadLayout.addWidget(WelcomeLabel)
@@ -1010,19 +1016,28 @@ class QtDBConsoleWindow(QMainWindow):
 		self.backSignal = True
 
 	def connectDB(self):
-		self.TryUsername = self.UsernameEdit.text()
-		self.TryPassword = self.PasswordEdit.text()
-		self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
-		self.TryDatabase = str(self.DatabaseCombo.currentText())
+		try:
+			if isActive(self.connection):
+				self.TryUsername = self.master.TryUsername
+				self.TryHostAddress = self.master.TryHostAddress
+				self.TryDatabase = self.master.TryDatabase
+				self.connectedHeadLine()
+				return
+			self.TryUsername = self.UsernameEdit.text()
+			self.TryPassword = self.PasswordEdit.text()
+			self.TryHostAddress = self.HostEdit.text()
+			self.TryDatabase = self.DatabaseEdit.text()
 
-		if self.TryUsername == '':
-			msg.information(None,"Error","Please enter a valid username", QMessageBox.Ok)
-			return
+			if self.TryUsername == '':
+				msg.information(None,"Error","Please enter a valid username", QMessageBox.Ok)
+				return
 
-		self.connection = QtStartConnection(self.TryUsername, self.TryPassword, self.TryHostAddress, self.TryDatabase)
+			self.connection = QtStartConnection(self.TryUsername, self.TryPassword, self.TryHostAddress, self.TryDatabase)
 
-		if isActive(self.connection):
-			self.connectedHeadLine()
+			if isActive(self.connection):
+				self.connectedHeadLine()
+		except Exception as err:
+			print("Error in connecting to database, {}".format(repr(err)))
 
 	def syncDB(self):
 		pass

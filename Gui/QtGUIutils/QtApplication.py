@@ -128,6 +128,7 @@ class QtApplication(QWidget):
 			self.HostName.currentIndexChanged.connect(self.changeDBList)
 			HostLabel.setBuddy(self.HostName)
 		else:
+			HostLabel.setText("HostIPAddr")
 			self.HostEdit = QLineEdit('128.146.38.1')
 			self.HostEdit.setEchoMode(QLineEdit.Normal)
 			self.HostEdit.setMinimumWidth(150)
@@ -140,7 +141,7 @@ class QtApplication(QWidget):
 			self.DatabaseCombo.addItems(self.DBNames)
 			self.DatabaseCombo.setCurrentIndex(0)
 		else:
-			self.DatabaseEdit = QLineEdit('phase2pixel_test')
+			self.DatabaseEdit = QLineEdit('SampleDB')
 			self.DatabaseEdit.setEchoMode(QLineEdit.Normal)
 			self.DatabaseEdit.setMinimumWidth(150)
 			self.DatabaseEdit.setMaximumHeight(30)
@@ -215,10 +216,13 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
 
 	def changeDBList(self):
-		self.DBNames = DBNames[str(self.HostName.currentText())]
-		self.DatabaseCombo.clear()
-		self.DatabaseCombo.addItems(self.DBNames)
-		self.DatabaseCombo.setCurrentIndex(0)
+		try:
+			self.DBNames = DBNames[str(self.HostName.currentText())]
+			self.DatabaseCombo.clear()
+			self.DatabaseCombo.addItems(self.DBNames)
+			self.DatabaseCombo.setCurrentIndex(0)
+		except:
+			print("Unable to change database")
 
 	def switchMode(self):
 		if self.expertMode:
@@ -236,34 +240,39 @@ class QtApplication(QWidget):
 	def checkLogin(self):
 		msg = QMessageBox()
 
-		if self.expertMode == True:
-			self.TryUsername = self.UsernameEdit.text()
-			self.TryPassword = self.PasswordEdit.text()
-			self.TryHostAddress = self.HostEdit.text()
-			self.TryDatabase = self.DatabaseEdit.text()
-		else:
-			self.TryUsername = self.UsernameEdit.text()
-			self.TryPassword = self.PasswordEdit.text()
-			self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
-			self.TryDatabase = str(self.DatabaseCombo.currentText())
+		try:
+			if self.expertMode == True:
+				self.TryUsername = self.UsernameEdit.text()
+				self.TryPassword = self.PasswordEdit.text()
+				self.TryHostAddress = self.HostEdit.text()
+				self.TryDatabase = self.DatabaseEdit.text()
+			else:
+				self.TryUsername = self.UsernameEdit.text()
+				self.TryPassword = self.PasswordEdit.text()
+				self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+				self.TryDatabase = str(self.DatabaseCombo.currentText())
+		except:
+			print("Unexpected content detected ")
 
+		try:
+			if self.TryUsername == '':
+				msg.information(None,"Error","Please enter a valid username", QMessageBox.Ok)
+				return
+			if self.disableCheckBox.isChecked() == False:
+				print("Connect to database...")
+				self.connection = QtStartConnection(self.TryUsername, self.TryPassword, self.TryHostAddress, self.TryDatabase)
 
-		if self.TryUsername == '':
-			msg.information(None,"Error","Please enter a valid username", QMessageBox.Ok)
-			return
-		if self.disableCheckBox.isChecked() == False:
-			print("Connect to database...")
-			self.connection = QtStartConnection(self.TryUsername, self.TryPassword, self.TryHostAddress, self.TryDatabase)
-
-			if isActive(self.connection):
-				self.destroyLogin()
-				self.createMain()
-				self.checkFirmware()
-		else:
-			self.connection = "Offline"
-			self.destroyLogin()
-			self.createMain()
-			self.checkFirmware()
+				if isActive(self.connection):
+					self.destroyLogin()
+					self.createMain()
+					self.checkFirmware()
+				else:
+					self.connection = "Offline"
+					self.destroyLogin()
+					self.createMain()
+					self.checkFirmware()
+		except Exception as err:
+			print("Failed to connect the database: {}".format(repr(err)))
 
 	###############################################################
 	##  Login page and related functions  (END)
@@ -287,20 +296,23 @@ class QtApplication(QWidget):
 		self.StatusList = []
 		self.StatusList.append([DBStatusLabel, DBStatusValue])
 
-		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
-			FwNameLabel = QLabel()
-			FwNameLabel.setText(firmwareName)
-			FwStatusValue = QLabel()
-			#FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress)
-			#FwStatusValue.setText(FwStatusComment)
-			#FwStatusValue.setStyleSheet(FwStatusColor)
-			self.StatusList.append([FwNameLabel,FwStatusValue])
-			self.FwStatusVerboseDict[str(firmwareName)] = {}
-			BeBoard = QtBeBoard()
-			BeBoard.setBoardName(firmwareName)
-			BeBoard.setIPAddress(FirmwareList[firmwareName])
-			BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
-			self.FwDict[firmwareName] = BeBoard
+		try:
+			for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
+				FwNameLabel = QLabel()
+				FwNameLabel.setText(firmwareName)
+				FwStatusValue = QLabel()
+				#FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress)
+				#FwStatusValue.setText(FwStatusComment)
+				#FwStatusValue.setStyleSheet(FwStatusColor)
+				self.StatusList.append([FwNameLabel,FwStatusValue])
+				self.FwStatusVerboseDict[str(firmwareName)] = {}
+				BeBoard = QtBeBoard()
+				BeBoard.setBoardName(firmwareName)
+				BeBoard.setIPAddress(FirmwareList[firmwareName])
+				BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
+				self.FwDict[firmwareName] = BeBoard
+		except Exception as err:
+			print("Failed to list the firmware: {}".format(repr(err)))
 
 		self.UseButtons = []
 
@@ -318,7 +330,7 @@ class QtApplication(QWidget):
 				UseButton.setDisabled(True)
 				UseButton.toggle()
 				UseButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.switchFw(x))
-				if self.PYTHON_VERSION.startswith(("3.7","3.9")):
+				if self.PYTHON_VERSION.startswith(("3.6","3.7","3.9")):
 					UseButton.clicked.connect(self.update)
 				if self.PYTHON_VERSION.startswith(("3.8")):
 					UseButton.clicked.connect(self.destroyMain)

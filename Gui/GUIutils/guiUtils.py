@@ -99,11 +99,15 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir, DBConnection):
 		return Output_Dir, Input_Dir
 
 def isActive(dbconnection):
-	if dbconnection == "Offline":
-		return False
-	elif dbconnection.is_connected():
-		return True
-	else:
+	try:
+		if dbconnection == "Offline":
+			return False
+		elif dbconnection.is_connected():
+			return True
+		else:
+			return False
+	except Exception as err:
+		print("Unexpected form, {}".format(repr(err)))
 		return False
 
 ##########################################################################

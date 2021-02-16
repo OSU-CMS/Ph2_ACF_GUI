@@ -9,7 +9,7 @@ DBServerIP = {
 DBNames = {
 	'All'					 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
 	'Central-remote'		 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
-	'local'					 :  ['phase2pixel_test'],
+	'local'					 :  ['SampleDB','phase2pixel_test'],
 	'OSU-remote'			 :  ['SampleDB','phase2pixel_test'],
 }
 
