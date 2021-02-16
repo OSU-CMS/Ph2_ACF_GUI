@@ -149,15 +149,29 @@ def getLocalTests(module_id, columns=[]):
 	if module_id:
 		for dirName in dirList:
 			if "_Module{0}_".format(str(module_id)) in dirName:
-				test = formatter(dirName,columns,part_id=str(module_id))
-				localTests.append(test)
+				try:
+					#getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(dirName), shell=True, stdout=subprocess.PIPE)
+					#fileList = getFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+					#if fileList  == [""]:
+					#	continue
+					test = formatter(dirName,columns,part_id=str(module_id))
+					localTests.append(test)
+				except Exception as err:
+					print("Error detected while formatting the directory name, {}".format(repr(err)))
 	else:
 		for dirName in dirList:
+			#getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(dirName), shell=True, stdout=subprocess.PIPE)
+			#fileList = getFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+			#if fileList  == [""]:
+			#	continue
 			if "_Module" in dirName:
 				moduleList = [module for module in dirName.split('_') if "Module"  in module]
 				for module in moduleList:
-					test = formatter(dirName,columns,part_id=str(module.lstrip("Module")))
-					localTests.append(test)
+					try:
+						test = formatter(dirName,columns,part_id=str(module.lstrip("Module")))
+						localTests.append(test)
+					except Exception as err:
+						print("Error detected while formatting the directory name, {}".format(repr(err)))
 	return localTests
 
 def getLocalRemoteTests(dbconnection, module_id = None, columns = []):

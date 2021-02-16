@@ -678,8 +678,9 @@ class QtRunWindow(QWidget):
 							insertGenericTable(self.connection, "tests", SubmitArgs, Value)
 						except:
 							print("Failed to insert")
-			except:
+			except Exception as err:
 				QMessageBox.information(self,"Error","Unable to save to DB", QMessageBox.Ok)
+				print("Error: {}".format(repr(err)))
 				return
 
 	def checkRemoteFile(self, file_id):

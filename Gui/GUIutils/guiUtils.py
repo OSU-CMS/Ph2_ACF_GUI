@@ -306,7 +306,10 @@ def formatter(DirName, columns, **kwargs):
 				recheckFlag = True
 			ReturnList.append(Grade)
 		if column == "date":
-			TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
+			if str(sys.version).split(" ")[0].startswith(("3.7","3.8","3.9")):
+				TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
+			elif str(sys.version).split(" ")[0].startswith(("3.6")):
+				TimeStamp = datetime.strptime(dirName.split('_')[-2].split('.')[0], '%Y-%m-%dT%H:%M:%S')
 			ReturnList.append(TimeStamp)
 		if column == "data_id":
 			data_id = ""

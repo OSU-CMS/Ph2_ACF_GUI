@@ -266,11 +266,11 @@ class QtApplication(QWidget):
 					self.destroyLogin()
 					self.createMain()
 					self.checkFirmware()
-				else:
-					self.connection = "Offline"
-					self.destroyLogin()
-					self.createMain()
-					self.checkFirmware()
+			else:
+				self.connection = "Offline"
+				self.destroyLogin()
+				self.createMain()
+				self.checkFirmware()
 		except Exception as err:
 			print("Failed to connect the database: {}".format(repr(err)))
 

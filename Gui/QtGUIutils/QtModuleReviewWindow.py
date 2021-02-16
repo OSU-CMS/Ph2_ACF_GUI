@@ -197,79 +197,82 @@ class QtModuleReviewWindow(QWidget):
 
 		selectedrows = self.view.selectionModel().selectedRows()
 		for index in selectedrows:
-			rowNumber = index.row()
-			if self.proxy.data(self.proxy.index(rowNumber,1))!= "Local":
-				print("This record is verified to be Non-local")
-				continue
+			try:
+				rowNumber = index.row()
+				if self.proxy.data(self.proxy.index(rowNumber,1))!= "Local":
+					print("This record is verified to be Non-local")
+					continue
 
-			if self.proxy.data(self.proxy.index(rowNumber,1)) == "Local":
+				if self.proxy.data(self.proxy.index(rowNumber,1)) == "Local":
 				################################
 				##  Block to get binary Info
 				################################
-				localDir = self.proxy.data(self.proxy.index(rowNumber,len(self.proxy.dataHeader)))
-				if localDir != "":
-					print("Local Directory found in : {}".format(localDir))
+					localDir = self.proxy.data(self.proxy.index(rowNumber,len(self.proxy.dataHeader)))
+					if localDir != "":
+						print("Local Directory found in : {}".format(localDir))
 
-				getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(localDir), shell=True, stdout=subprocess.PIPE)
-				fileList = getFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+					getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(localDir), shell=True, stdout=subprocess.PIPE)
+					fileList = getFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
 
-				if fileList  == [""]:
-					logger.warning("No ROOT file found in the local folder, skipping the record...")
-					continue
+					if fileList  == [""]:
+						logger.warning("No ROOT file found in the local folder, skipping the record...")
+						continue
 
-				module_id = self.proxy.data(self.proxy.index(rowNumber,self.columns.index("part_id")+2))
-				for submitFile in fileList:
-					print("Submitting  {}".format(submitFile))
-					data_id = hashlib.md5('{}'.format(submitFile).encode()).hexdigest()
-					if not self.checkRemoteFile(data_id):
-						self.uploadFile(submitFile, data_id)
+					module_id = self.proxy.data(self.proxy.index(rowNumber,self.columns.index("part_id")+2))
+					for submitFile in fileList:
+						print("Submitting  {}".format(submitFile))
+						data_id = hashlib.md5('{}'.format(submitFile).encode()).hexdigest()
+						if not self.checkRemoteFile(data_id):
+							self.uploadFile(submitFile, data_id)
 
-					getConfigInFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
-					configInFileList = getConfigInFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
-					getConfigOutFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
-					configOutFileList = getConfigOutFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+						getConfigInFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
+						configInFileList = getConfigInFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
+						getConfigOutFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
+						configOutFileList = getConfigOutFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
 
-					configcolumns = []
-					configdata = []
-					for configInFile in configInFileList:
-						if configInFile != [""]:
-							configcolumns.append("Chip{}InConfig".format(configInFile.split('_')[-2]))
-							configInBuffer = open(configInFile,'rb')
-							configInBin = configInBuffer.read()
-							configdata.append(configInBin)
-					for configOutFile in configOutFileList:
-						if configOutFile != [""]:
-							configcolumns.append("Chip{}OutConfig".format(configOutFile.split('_')[-2]))
-							configOutBuffer = open(configOutFile,'rb')
-							configOutBin = configOutBuffer.read()
-							configdata.append(configOutBin)
+						configcolumns = []
+						configdata = []
+						for configInFile in configInFileList:
+							if configInFile != [""]:
+								configcolumns.append("Chip{}InConfig".format(configInFile.split('_')[-2]))
+								configInBuffer = open(configInFile,'rb')
+								configInBin = configInBuffer.read()
+								configdata.append(configInBin)
+						for configOutFile in configOutFileList:
+							if configOutFile != [""]:
+								configcolumns.append("Chip{}OutConfig".format(configOutFile.split('_')[-2]))
+								configOutBuffer = open(configOutFile,'rb')
+								configOutBin = configOutBuffer.read()
+								configdata.append(configOutBin)
 					
-					SubmitArgs = []
-					Value = []
-					for column in self.columns:
-						if column == "part_id" or column == "date" or column == "testname":
-							SubmitArgs.append(column)
-							Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
-						if column == "description":
-							SubmitArgs.append(column)
-							Value.append("No Comment")
-						if column == "grade":
-							SubmitArgs.append(column)
-							Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
-						if column == "data_id":
-							SubmitArgs.append(column)
-							Value.append(data_id)
-						if column == "username":
-							SubmitArgs.append(column)
-							Value.append(self.master.TryUsername)
+						SubmitArgs = []
+						Value = []
+						for column in self.columns:
+							if column == "part_id" or column == "date" or column == "testname":
+								SubmitArgs.append(column)
+								Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
+							if column == "description":
+								SubmitArgs.append(column)
+								Value.append("No Comment")
+							if column == "grade":
+								SubmitArgs.append(column)
+								Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
+							if column == "data_id":
+								SubmitArgs.append(column)
+								Value.append(data_id)
+							if column == "username":
+								SubmitArgs.append(column)
+								Value.append(self.master.TryUsername)
 
-					SubmitArgs = SubmitArgs + configcolumns
-					Value = Value + configdata
+						SubmitArgs = SubmitArgs + configcolumns
+						Value = Value + configdata
 			
-					try:
-						insertGenericTable(self.connection, "tests", SubmitArgs, Value)
-					except:
-						print("Failed to insert")
+						try:
+							insertGenericTable(self.connection, "tests", SubmitArgs, Value)
+						except:
+							print("Failed to insert")
+			except Exception  as err:
+				print("Error: {}".format(repr(err)))	
 				
 
 		self.destroyMain()
