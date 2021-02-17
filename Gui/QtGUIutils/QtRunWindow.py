@@ -370,7 +370,10 @@ class QtRunWindow(QWidget):
 		for index,test in enumerate(self.modulestatus):
 			row = self.StatusTable.rowCount()
 			self.StatusTable.setRowCount(row + 1)
-			self.StatusTable.setItem(row,0,QTableWidgetItem(CompositeList[self.info[1]][index]))
+			if isCompositeTest(self.info[1]):
+				self.StatusTable.setItem(row,0,QTableWidgetItem(CompositeList[self.info[1]][index]))
+			else:
+				self.StatusTable.setItem(row,0,QTableWidgetItem(self.info[1]))
 			for moduleKey in test.keys():
 				for chipKey in test[moduleKey].keys():
 					ChipID = "Module{}_Chip{}".format(moduleKey,chipKey)
@@ -614,6 +617,15 @@ class QtRunWindow(QWidget):
 		grade, passmodule = ResultGrader(self.output_dir, self.currentTest, self.RunNumber)
 		self.grades.append(grade)
 		self.modulestatus.append(passmodule)
+
+		self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Pass")
+		self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: green")
+		for module in passmodule.values():
+			if False in module.values():
+				self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Failed")
+				self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: red")
+		
+
 		time.sleep(0.5)
 		#self.StatusCanvas.renew()
 		#self.StatusCanvas.update()

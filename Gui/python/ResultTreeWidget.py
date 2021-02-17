@@ -3,7 +3,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, 
-		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
+		QProgressBar, QPushButton, QRadioButton, QScrollBar, QScrollArea, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget, QMainWindow)
 
 import sys
@@ -30,6 +30,7 @@ class ResultTreeWidget(QWidget):
 		self.info = info
 		self.ProgressBarList = []
 		self.ProgressBar = {}
+		self.StatusLabel = {}
 		self.displayingImage = ""
 		self.Plot = []
 		self.count = 0
@@ -67,15 +68,21 @@ class ResultTreeWidget(QWidget):
 		#self.ReferView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 		#self.ReferLabel.setPixmap(self.ReferView)
 
+
+		self.ScrollArea = QScrollArea()
 		self.ProgressWidget = QWidget()
+		self.ProgressWidget.setMinimumWidth(400)
 		self.ProgressLayout = QGridLayout()
+		self.ProgressLayout.setAlignment(Qt.AlignTop)
 
 		for index, key in enumerate(self.ProgressBar.keys()):
 			testLabel = QLabel('<b>{}</b>'.format(self.ProgressBarList[index]))
 			testProgress = self.ProgressBar[key]
-
+			statusLabel =  QLabel()
 			self.ProgressLayout.addWidget(testLabel,index,0,1,1,Qt.AlignTop)
 			self.ProgressLayout.addWidget(testProgress,index,1,1,4,Qt.AlignTop)
+			self.ProgressLayout.addWidget(statusLabel,index,5,1,1, Qt.AlignTop)
+			self.StatusLabel[index] = statusLabel
 
 		self.ProgressWidget.setLayout(self.ProgressLayout)
 
@@ -87,6 +94,8 @@ class ResultTreeWidget(QWidget):
 		self.TreeRoot = QTreeWidgetItem(self.OutputTree)
 		self.TreeRoot.setText(0,"Files..")
 
+		self.ScrollArea.setWidget(self.ProgressWidget)
+
 
 		## Old display: To be removed
 		#self.mainLayout.addWidget(self.DisplayTitle,0,0,1,2)
@@ -95,7 +104,7 @@ class ResultTreeWidget(QWidget):
 		#self.mainLayout.addWidget(self.ReferLabel,1,2,1,2)
 		#self.mainLayout.addWidget(self.OutputTree,0,4,2,1)
 
-		self.mainLayout.addWidget(self.ProgressWidget,0,0,1,2)
+		self.mainLayout.addWidget(self.ScrollArea,0,0,1,2)
 		self.mainLayout.addWidget(self.OutputTree,0,2,1,2)
 
 	## Old methods: To be removed

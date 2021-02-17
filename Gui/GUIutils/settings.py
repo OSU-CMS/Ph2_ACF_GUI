@@ -74,6 +74,21 @@ Test = {
 	'Physics'                :  'physics',
 }
 
+TestName2File = {
+	'Latency'                :  'Latency',
+	'PixelAlive'             :  'PixelAlive',
+	'NoiseScan'              :  'NoiseScan',
+	'SCurveScan'             :  'SCurve',
+	'GainScan'               :  'Gain',
+	'ThresholdEqualization'  :  'ThrEqualization',
+	'GainOptimization'       :  'GainOptimization',
+	'ThresholdMinimization'  :  'ThrMinimization',
+	'ThresholdAdjustment'    :  'ThrAdjustment',
+	'InjectionDelay'         :  'InjectionDelay',
+	'ClockDelay'             :  'ClockDelay',
+	'Physics'                :  'Physics',
+}
+
 SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 					 'ThresholdEqualization','GainOptimization','ThresholdMinimization',
 					 'ThresholdAdjustment','InjectionDelay','ClockDelay','Physics']
