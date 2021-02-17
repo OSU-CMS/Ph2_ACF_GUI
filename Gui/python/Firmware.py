@@ -23,6 +23,7 @@ class QtModule():
 		self.__moduleID =  ""
 		self.__moduleType = "SingleSCC"
 		self.__FMCID = "0"
+		self.__OGID = "0"
 		self.__chipDict = {}
 		for key,value in kwargs.items():
 			if key == "id":
@@ -44,12 +45,18 @@ class QtModule():
 	def getFMCID(self):
 		return self.__FMCID
 
+	def setOpticalGroupID(self, ogId):
+		self.__OGID = ogId
+
+	def getOpticalGroupID(self):
+		return self.__OGID
+
 	def setModuleType(self, fwType):
 		if fwType in ModuleType.values():
 			self.__moduleType = fwType
 		else:
 			self.__moduleType = "SingleSCC"
-		self.setupChips()
+		self.setupChips() 
 
 	def getModuleType(self):
 		return self.__moduleType
