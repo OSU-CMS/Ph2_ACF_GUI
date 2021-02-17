@@ -200,8 +200,9 @@ def GenerateXMLConfig(firmwareList, testName, outputDir):
 		BeBoardModule0 = BeBoardModule()
 		for module in firmwareList.getAllModules().values():
 			OpticalGroupModule0 = OGModule()
-			OpticalGroupModule0.SetOpticalGrp(module.getModuleID(),module.getFMCID())
+			OpticalGroupModule0.SetOpticalGrp(module.getOpticalGroupID(),module.getFMCID())
 			HyBridModule0 = HyBridModule()
+			HyBridModule0.SetHyBridModule(module.getModuleID(),"1")
 			for chip in module.getChips().values():
 				FEChip = FE()
 				FEChip.SetFE(chip.getID(),chip.getLane())
