@@ -785,7 +785,8 @@ class QtRunWindow(QWidget):
 			if self.ProgressingMode == "Perform":
 				if ">>>> Progress :" in textStr:
 					try:
-						self.ProgressValue = float(textStr.split()[3].rstrip("%"))
+						index = textStr.split().index("Progress")+2
+						self.ProgressValue = float(textStr.split()[index].rstrip("%"))
 						self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)
 					except:
 						pass
