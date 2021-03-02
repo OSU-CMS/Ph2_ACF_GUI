@@ -784,8 +784,11 @@ class QtRunWindow(QWidget):
 				self.ProgressingMode = "Summary"
 			if self.ProgressingMode == "Perform":
 				if ">>>> Progress :" in textStr:
-					self.ProgressValue = float(textStr.split(" ")[3].rstrip("%"))
-					self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)
+					try:
+						self.ProgressValue = float(textStr.split()[3].rstrip("%"))
+						self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)
+					except:
+						pass
 				continue
 			text = textStr.encode('ascii')
 			numUpAnchor, text = parseANSI(text)

@@ -8,8 +8,8 @@ if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
 	for line in iplines:
 		if line.startswith("#"):
 			continue
-		firmwareName = line.split(" ")[0]
-		ip_address = line.split(" ")[1]
+		firmwareName = line.strip().split()[0]
+		ip_address = line.strip().split()[1]
 		if len(ip_address.split('.')) != 4:
 			raise ValueError('{} is not valid ip address'.format(ip_address))
 		FirmwareList[firmwareName] = ip_address
