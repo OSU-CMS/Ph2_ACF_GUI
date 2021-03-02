@@ -572,7 +572,7 @@ class QtRunWindow(QWidget):
 		
 		#self.run_process.start("python", ["signal_generator.py"])
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
-		self.run_process.start("./SignalGenerator")
+		#self.run_process.start("./SignalGenerator")
 
 		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin"]:
 			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
