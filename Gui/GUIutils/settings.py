@@ -1,3 +1,25 @@
+import os
+
+FirmwareList = {}
+
+if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
+	IPfile = open(os.environ.get('GUI_dir')+"/fc7_ip_address.txt")
+	iplines = IPfile.readlines()
+	for line in iplines:
+		if line.startswith("#"):
+			continue
+		firmwareName = line.split(" ")[0]
+		ip_address = line.split(" ")[1]
+		if len(ip_address.split('.')) != 4:
+			raise ValueError('{} is not valid ip address'.format(ip_address))
+		FirmwareList[firmwareName] = ip_address
+
+else:
+	FirmwareList =  {
+	'fc7.board.1' 			 :  '192.168.1.80',
+	'fc7.board.2'			 :  '127.0.0.1',#'192.168.1.81',
+	}
+
 DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
 	'local'					 :  '127.0.0.1',
@@ -11,11 +33,6 @@ DBNames = {
 	'Central-remote'		 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
 	'local'					 :  ['SampleDB','phase2pixel_test'],
 	'OSU-remote'			 :  ['SampleDB','phase2pixel_test'],
-}
-
-FirmwareList =  {
-	'fc7.board.1' 			 :  '192.168.1.80',
-	'fc7.board.2'			 :  '192.168.1.81',
 }
 
 # Set the IT_uTDC_firmware for test
