@@ -20,7 +20,7 @@ class QtChip():
 
 class QtModule():
 	def __init__(self, **kwargs):
-		self.__moduleID =  ""
+		self.__moduleID =  "0"
 		self.__moduleType = "SingleSCC"
 		self.__FMCID = "0"
 		self.__OGID = "0"

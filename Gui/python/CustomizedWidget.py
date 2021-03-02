@@ -150,8 +150,8 @@ class BeBoardBox(QWidget):
 	def getFirmwareDescription(self, **kwargs):
 		for index, module in enumerate(self.ModuleList):
 			FwModule = QtModule()
-			FwModule.setOpticalGroupID(module.getID())
 			#FwModule.setModuleID(module.getID())
+			FwModule.setOpticalGroupID(module.getID())
 			FwModule.setModuleType(module.getType())
 			self.firmware.addModule(index,FwModule)
 		return self.firmware

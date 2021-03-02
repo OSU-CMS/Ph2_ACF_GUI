@@ -229,7 +229,8 @@ class QtStartWindow(QWidget):
 			return
 
 		self.firmware = self.BeBoardWidget.getFirmwareDescription()
-		self.info = [self.firmware.getModuleByIndex(0).getModuleID(), str(self.TestCombo.currentText())]
+		#self.info = [self.firmware.getModuleByIndex(0).getModuleID(), str(self.TestCombo.currentText())]
+		self.info = [self.firmware.getModuleByIndex(0).getOpticalGroupID(), str(self.TestCombo.currentText())]
 		self.runFlag = True
 		self.master.RunNewTest = QtRunWindow(self.master, self.info, self.firmware)
 		self.close()

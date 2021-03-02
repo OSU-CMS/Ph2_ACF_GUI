@@ -106,7 +106,8 @@ class QtRunWindow(QWidget):
 	def  initializeRD53Dict(self):
 		self.rd53_file = {}
 		for module in self.firmware.getAllModules().values():
-			moduleId = module.getModuleID()
+			#moduleId = module.getModuleID()
+			moduleId = module.getOpticalGroupID()
 			moduleType = module.getModuleType()
 			for i in range(BoxSize[moduleType]):
 				self.rd53_file["{0}_{1}".format(moduleId,i)] = None
@@ -432,7 +433,8 @@ class QtRunWindow(QWidget):
 
 		ModuleIDs = []
 		for module in self.firmware.getAllModules().values():
-			ModuleIDs.append(str(module.getModuleID()))
+			#ModuleIDs.append(str(module.getModuleID()))
+			ModuleIDs.append(str(module.getOpticalGroupID()))
 			
 		self.output_dir, self.input_dir = ConfigureTest(testName, "_Module".join(ModuleIDs), self.output_dir, self.input_dir, self.connection)
 
@@ -570,7 +572,7 @@ class QtRunWindow(QWidget):
 		
 		#self.run_process.start("python", ["signal_generator.py"])
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
-		#self.run_process.start("./SignalGenerator")
+		self.run_process.start("./SignalGenerator")
 
 		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin"]:
 			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
