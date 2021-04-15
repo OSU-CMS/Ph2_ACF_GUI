@@ -12,6 +12,10 @@ import os
 import subprocess
 from subprocess import Popen, PIPE
 
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 from Gui.GUIutils.settings import *
 from Configuration.XMLUtil import *
 from Gui.python.Firmware import *
@@ -42,7 +46,8 @@ class QtuDTCDialog(QDialog):
 
 		button_login = QPushButton("&OK")
 		button_login.setDefault(True)
-		button_login.clicked.connect(self.finish)
+		button_login.clicked.connect(self.configFwImage)
+		#button_login.clicked.connect(self.finish)
 
 		if not self.master.expertMode:
 			CommentLabel.setText("uDTC firmware can only be changed under expert mode")
@@ -65,7 +70,7 @@ class QtuDTCDialog(QDialog):
 
 	def fetchFPGAConfigs(self):
 		try:
-			InputFile = os.environ.get('GUI_dir')+'/Configuration/Defaults/CMSIT.xml'
+			InputFile = os.environ.get('Ph2_ACF_AREA')+'/settings/CMSIT.xml'
 			root,tree = LoadXML(InputFile)
 			fwIP = self.module.getIPAddress()
 			changeMade = False
@@ -73,36 +78,40 @@ class QtuDTCDialog(QDialog):
 				if fwIP not in Node.attrib['uri']:
 					Node.set('uri','chtcp-2.0://localhost:10203?target={}:50001'.format(fwIP))
 					changeMade = True
-
-			if changeMade:
-				ModifiedFile = InputFile+".changed"
-				tree.write(ModifiedFile)
-				InputFile = ModifiedFile
+			for Node in root.findall(".//RD53"):
+				Node.set('configfile',"../Configuration/CMSIT_RD53.txt")
+				changeMode = True
+			#if changeMode:
+				#xml_output = ET.tostring(root,pretty_print=True)
+				#print(xml_output)
+			ModifiedFile = InputFile+".gui"
+			tree.write(ModifiedFile)
+			InputFile = ModifiedFile
 
 		except Exception as error:
 			print("Failed to modify the XML:  {}".format(error))
 
 		try:
 			pipes = subprocess.run(["fpgaconfig","-c",InputFile,"-l"], stdout=PIPE, stderr=PIPE)
-			stdout, stderr = pipes.communicate()
-
+			stdout, stderr = pipes.stdout,pipes.stderr
 			if pipes.returncode != 0:
-				print("{0}s. Code: {1}".format(stderr.strip(), pipes.returncode))
+				logger.info("{0}s. Code: {1}".format(stderr.strip(), pipes.returncode))
 				return []
 		
 			nImages = -1
 			ImageList = []
-			for line in stdout.split('\n'):
-				if "firmware images on SD card:" == " ".join(line.split(' ')[4:]):
-					nImages = int(line.split(' ')[3])
-				if "-" == " ".join(line.split(' ')[3]):
-					ImageList.append(line.split(' ')[4])
-			if nImages != len(ImageList):
-				print("Warning: fetched image number is not consistent with imaged list, please check carefully")
-
+			lines = stdout.decode('UTF-8').splitlines()
+			for line in lines:
+				if "firmware images on SD card:" == " ".join(line.split()[4:]):
+					nImages = int(line.split()[3])
+				if "-" == line.split()[3] and ".bit" in line:
+					ImageList.append(line.split()[4])
+			if nImages != len(ImageList)+1:
+				logger.warning("fetched image number is not consistent with imaged list, please check carefully")
 			return ImageList
+
 		except Exception as error:
-			print("Failed to fetch the firmware image list: {}".format(error))
+			logger.error("Failed to fetch the firmware image list: {}".format(error))
 			return []
 
 	def getFPGAConfigs(self):
@@ -110,8 +119,14 @@ class QtuDTCDialog(QDialog):
 		self.ConfigCombo.addItems(self.ConfigNames)
 		self.ConfigCombo.setCurrentIndex(0)
 	
-	def finish(self):
+	def configFwImage(self):
 		self.uDTCFile = self.ConfigCombo.currentText()
+		logger.info("Loading firmware image: {}".format(self.uDTCFile))
+		pipe = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/settings/CMSIT.xml.gui',"-i",self.uDTCFile], stdout=PIPE, stderr=PIPE)
+		logger.info(pipe.stdout.decode('UTF-8'))
+		self.finish()
+
+	def finish(self):
 		self.accept()
 
 
