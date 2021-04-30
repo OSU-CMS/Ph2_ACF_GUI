@@ -14,6 +14,7 @@ import os
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
+from Gui.GUIutils.GPIBInterface import PowerSupply
 from Gui.QtGUIutils.QtFwCheckWindow  import *
 from Gui.QtGUIutils.QtFwStatusWindow import *
 from Gui.QtGUIutils.QtSummaryWindow import *
@@ -37,6 +38,7 @@ class QtApplication(QWidget):
 		self.LogList = {}
 		self.PYTHON_VERSION = str(sys.version).split(" ")[0]
 		self.dimension = dimension
+		self.powersupply = PowerSupply()
 
 		self.setLoginUI()
 		self.initLog()
@@ -361,6 +363,33 @@ class QtApplication(QWidget):
 
 		self.FirmwareStatus.setLayout(StatusLayout)
 		self.FirmwareStatus.setDisabled(False)
+
+		self.PowerRemoteControl = QCheckBox("Use power remote control")
+		self.PowerRemoteControl.toggled.connect(self.switchPowerPanel)
+
+		self.PowerGroup = QGroupBox("Power")
+		self.PowerLayout = QHBoxLayout()
+		self.PowerStatusLabel = QLabel()
+		self.PowerStatusLabel.setText("Choose Power:")
+		self.PowerList = self.powersupply.listResources()
+		self.PowerCombo = QComboBox()
+		self.PowerCombo.addItems(self.PowerList)
+		self.PowerStatusValue = QLabel()
+		self.UsePowerSupply = QPushButton("&Use")
+		self.UsePowerSupply.clicked.connect(self.frozePowerPanel)
+		self.ReleasePowerSupply = QPushButton("&Release")
+		self.ReleasePowerSupply.clicked.connect(self.releasePowerPanel)
+		self.ReleasePowerSupply.setDisabled(True)
+
+		self.PowerLayout.addWidget(self.PowerStatusLabel)
+		self.PowerLayout.addWidget(self.PowerCombo)
+		self.PowerLayout.addWidget(self.PowerStatusValue)
+		self.PowerLayout.addStretch(1)
+		self.PowerLayout.addWidget(self.UsePowerSupply)
+		self.PowerLayout.addWidget(self.ReleasePowerSupply)
+
+		self.PowerGroup.setLayout(self.PowerLayout)
+
 				
 		self.MainOption = QGroupBox("Main")
 
@@ -485,6 +514,8 @@ class QtApplication(QWidget):
 		self.AppOption.setLayout(self.AppLayout)
 
 		self.mainLayout.addWidget(self.FirmwareStatus)
+		self.mainLayout.addWidget(self.PowerGroup)
+		self.mainLayout.addWidget(self.PowerRemoteControl)
 		self.mainLayout.addWidget(self.MainOption)
 		self.mainLayout.addWidget(self.AppOption)
 
@@ -534,6 +565,38 @@ class QtApplication(QWidget):
 
 	def openDBConsole(self):
 		self.StartDBConsole = QtDBConsoleWindow(self)
+
+	def switchPowerPanel(self):
+		if self.PowerRemoteControl.isChecked():
+			self.PowerGroup.setDisabled(False)
+		else:
+			self.PowerGroup.setDisabled(True)
+	
+	def frozePowerPanel(self):
+		# Block for PowerSupply operation
+		#self.powersupply.setInstrument(self.PowerCombo.currentText())
+
+		# Block for GUI front-end
+		statusString = "Under development"
+		if "successful" in statusString:
+			self.PowerStatusValue.setStyleSheet("color:green")
+		else:
+			self.PowerStatusValue.setStyleSheet("color:red")
+		if "successful" in statusString or "Under development" == statusString:
+			self.PowerCombo.setDisabled(True)
+			self.PowerStatusValue.setText(statusString)
+			self.UsePowerSupply.setDisabled(True)
+			self.ReleasePowerSupply.setDisabled(False)
+
+		else:
+			self.PowerStatusValue.setText(statusString)
+
+	def releasePowerPanel(self):
+		self.PowerCombo.setDisabled(False)
+		self.PowerStatusValue.setText("")
+		self.UsePowerSupply.setDisabled(False)
+		self.ReleasePowerSupply.setDisabled(True)
+
 
 	def checkFirmware(self):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
