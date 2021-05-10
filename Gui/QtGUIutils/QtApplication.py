@@ -538,6 +538,8 @@ class QtApplication(QWidget):
 		self.MainOption.deleteLater()
 		self.AppOption.deleteLater()
 		self.mainLayout.removeWidget(self.FirmwareStatus)
+		self.mainLayout.removeWidget(self.PowerGroup)
+		self.mainLayout.removeWidget(self.PowerRemoteControl)
 		self.mainLayout.removeWidget(self.MainOption)
 		self.mainLayout.removeWidget(self.AppOption)
 
@@ -596,6 +598,7 @@ class QtApplication(QWidget):
 		self.PowerStatusValue.setText("")
 		self.UsePowerSupply.setDisabled(False)
 		self.ReleasePowerSupply.setDisabled(True)
+		self.PowerList = self.powersupply.listResources()
 
 
 	def checkFirmware(self):
