@@ -45,10 +45,10 @@ class PowerSupply():
 			try:
 				pipe = subprocess.Popen(['udevadm', 'info', ' --query', 'all', '--name', device.lstrip("ASRL").rstrip("::INSTR"), '--attribute-walk'], stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
 				raw_output = pipe.communicate()[0]
-				vendor_list = [info for info in  raw_output.splitlines() if b'ARRTS{idVendor}' in info or b'ARRTS{vendor}' in info]
-				product_list = [info for info in  raw_output.splitlines() if b'ARRTS{idProduct}' in info or b'ARRTS{product}' in info]
-				idvendor = vendor_list[0].decode("UTF-8").split("==").lstrip('"').rstrip('"').replace('0x','')
-				idproduct = product_list[0].decode("UTF-8").split("==").lstrip('"').rstrip('"').replace('0x','')
+				vendor_list = [info for info in  raw_output.splitlines() if b'ATTRS{idVendor}' in info or b'ATTRS{vendor}' in info]
+				product_list = [info for info in  raw_output.splitlines() if b'ATTRS{idProduct}' in info or b'ATTRS{product}' in info]
+				idvendor = vendor_list[0].decode("UTF-8").split("==")[1].lstrip('"').rstrip('"').replace('0x','')
+				idproduct = product_list[0].decode("UTF-8").split("==")[1].lstrip('"').rstrip('"').replace('0x','')
 				deviceId = "{}:{}".format(idvendor,idproduct)
 				pipeUSB = subprocess.Popen(['lsusb','-d',deviceId], stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
 				usbInfo = pipeUSB.communicate()[0]
