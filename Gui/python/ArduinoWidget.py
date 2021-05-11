@@ -31,6 +31,11 @@ class ArduinoWidget(QWidget):
 		self.ArduinoList = self.listResources()
 		self.ArduinoCombo = QComboBox()
 		self.ArduinoCombo.addItems(self.ArduinoList)
+		self.ArduinoBaudRate = QLabel()
+		self.ArduinoBaudRate.setText("BaudRate:")
+		self.ArduinoBaudRateList = [ str(rate) for rate in [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200] ]
+		self.ArduinoBRCombo = QComboBox()
+		self.ArduinoBRCombo.addItems(self.ArduinoBaudRateList)
 		self.UseArduino = QPushButton("&Use")
 		self.UseArduino.clicked.connect(self.frozeArduinoPanel)
 		self.ReleaseArduino = QPushButton("&Release")
@@ -39,14 +44,16 @@ class ArduinoWidget(QWidget):
 
 		self.ArduinoBox.addWidget(self.ArduinoStatusLabel)
 		self.ArduinoBox.addWidget(self.ArduinoCombo)
+		self.ArduinoBox.addWidget(self.ArduinoBaudRate)
+		self.ArduinoBox.addWidget(self.ArduinoBRCombo)
 		self.ArduinoBox.addStretch(1)
 		self.ArduinoBox.addWidget(self.UseArduino)
 		self.ArduinoBox.addWidget(self.ReleaseArduino)
 		self.ArduinoGroup.setLayout(self.ArduinoBox)
 		self.mainLayout.addWidget(self.ArduinoGroup,0,0)
 
-		self.ArduionMeasureValue = QLabel()
-		self.mainLayout.addWidget(self.ArduionMeasureValue,0,1)
+		self.ArduinoMeasureValue = QLabel()
+		self.mainLayout.addWidget(self.ArduinoMeasureValue,1,0)
 
 
 	def listResources(self):
@@ -66,10 +73,10 @@ class ArduinoWidget(QWidget):
 			try:
 				pipe = subprocess.Popen(['udevadm', 'info', ' --query', 'all', '--name', device.lstrip("ASRL").rstrip("::INSTR"), '--attribute-walk'], stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
 				raw_output = pipe.communicate()[0]
-				vendor_list = [info for info in  raw_output.splitlines() if b'ARRTS{idVendor}' in info or b'ARRTS{vendor}' in info]
-				product_list = [info for info in  raw_output.splitlines() if b'ARRTS{idProduct}' in info or b'ARRTS{product}' in info]
-				idvendor = vendor_list[0].decode("UTF-8").split("==").lstrip('"').rstrip('"').replace('0x','')
-				idproduct = product_list[0].decode("UTF-8").split("==").lstrip('"').rstrip('"').replace('0x','')
+				vendor_list = [info for info in  raw_output.splitlines() if b'ATTRS{idVendor}' in info or b'ATTRS{vendor}' in info]
+				product_list = [info for info in  raw_output.splitlines() if b'ATTRS{idProduct}' in info or b'ATTRS{product}' in info]
+				idvendor = vendor_list[0].decode("UTF-8").split("==")[1].lstrip('"').rstrip('"').replace('0x','')
+				idproduct = product_list[0].decode("UTF-8").split("==")[1].lstrip('"').rstrip('"').replace('0x','')
 				deviceId = "{}:{}".format(idvendor,idproduct)
 				pipeUSB = subprocess.Popen(['lsusb','-d',deviceId], stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
 				usbInfo = pipeUSB.communicate()[0]
@@ -88,7 +95,7 @@ class ArduinoWidget(QWidget):
 
 	def frozeArduinoPanel(self):
 		# Block for ArduinoSupply operation
-		self.setSerial(self.deviceMap[self.ArduinoCombo.currentText()])
+		self.setSerial(self.deviceMap[self.ArduinoCombo.currentText()],self.ArduinoBRCombo.currentText())
 		self.ArduinoCombo.setDisabled(True)
 		self.UseArduino.setDisabled(True)
 		self.ReleaseArduino.setDisabled(False)
@@ -97,18 +104,30 @@ class ArduinoWidget(QWidget):
 	def releaseArduinoPanel(self):
 		self.serial.close()
 		self.ArduinoCombo.setDisabled(False)
-		self.ArduinoStatusValue.setText("")
-		self.UseArduinoSupply.setDisabled(False)
-		self.ReleaseArduinoSupply.setDisabled(True)
+		self.ArduinoMeasureValue.setText("")
+		self.UseArduino.setDisabled(False)
+		self.ReleaseArduino.setDisabled(True)
 		self.ArduinoList = self.listResources()
 
-	def setSerial(self, deviceName):
+	def setSerial(self, deviceName, baudRate):
+		deviceName= deviceName.lstrip("ASRL").rstrip("::INSTR")
+		baudMap = {
+			"1200"  : QtSerialPort.QSerialPort.Baud1200, 
+			"2400"  : QtSerialPort.QSerialPort.Baud2400,
+			"4800"  : QtSerialPort.QSerialPort.Baud4800,
+			"9600"  : QtSerialPort.QSerialPort.Baud9600,
+			"19200" : QtSerialPort.QSerialPort.Baud19200, 
+			"38400" : QtSerialPort.QSerialPort.Baud38400,
+			"57600" : QtSerialPort.QSerialPort.Baud57600,
+			"115200": QtSerialPort.QSerialPort.Baud115200,
+			}
 		self.serial = QtSerialPort.QSerialPort(
 			deviceName,
-			baudRate=QtSerialPort.QSerialPort.Baud9600,
+			baudRate= baudMap[baudRate],
 			readyRead=self.receive
 		)
-		self.serial.open()
+		self.serial.open(QIODevice.ReadOnly)
+		print(self.serial.isOpen())
 
 	@QtCore.pyqtSlot()
 	def receive(self):
@@ -116,4 +135,4 @@ class ArduinoWidget(QWidget):
 			text = self.serial.readLine().data().decode()
 			text = text.rstrip('\r\n')
 			logger.info("Arduino Measurement: {}".format(text))
-			self.ArduionMeasureValue.setText(text)
+			self.ArduinoMeasureValue.setText(text)

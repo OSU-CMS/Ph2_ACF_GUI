@@ -523,6 +523,8 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.FirmwareStatus)
 		self.mainLayout.addWidget(self.PowerGroup)
 		self.mainLayout.addWidget(self.PowerRemoteControl)
+		self.mainLayout.addWidget(self.ArduinoGroup)
+		self.mainLayout.addWidget(self.ArduinoControl)
 		self.mainLayout.addWidget(self.MainOption)
 		self.mainLayout.addWidget(self.AppOption)
 
@@ -547,6 +549,8 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.FirmwareStatus)
 		self.mainLayout.removeWidget(self.PowerGroup)
 		self.mainLayout.removeWidget(self.PowerRemoteControl)
+		self.mainLayout.removeWidget(self.ArduinoGroup)
+		self.mainLayout.removeWidget(self.ArduinoControl)
 		self.mainLayout.removeWidget(self.MainOption)
 		self.mainLayout.removeWidget(self.AppOption)
 
