@@ -23,6 +23,7 @@ from Gui.QtGUIutils.QtModuleReviewWindow import *
 from Gui.QtGUIutils.QtDBConsoleWindow import *
 from Gui.QtGUIutils.QtuDTCDialog import *
 from Gui.python.Firmware import *
+from Gui.python.ArduinoWidget import *
 
 class QtApplication(QWidget):
 	def __init__(self, dimension):
@@ -365,6 +366,7 @@ class QtApplication(QWidget):
 		self.FirmwareStatus.setDisabled(False)
 
 		self.PowerRemoteControl = QCheckBox("Use power remote control")
+		self.PowerRemoteControl.setChecked(True)
 		self.PowerRemoteControl.toggled.connect(self.switchPowerPanel)
 
 		self.PowerGroup = QGroupBox("Power")
@@ -389,6 +391,11 @@ class QtApplication(QWidget):
 		self.PowerLayout.addWidget(self.ReleasePowerSupply)
 
 		self.PowerGroup.setLayout(self.PowerLayout)
+
+		self.ArduinoGroup = ArduinoWidget()
+		self.ArduinoControl = QCheckBox("Use arduino monitoring")
+		self.ArduinoControl.setChecked(True)
+		self.ArduinoControl.toggled.connect(self.switchArduinoPanel)
 
 				
 		self.MainOption = QGroupBox("Main")
@@ -600,6 +607,11 @@ class QtApplication(QWidget):
 		self.ReleasePowerSupply.setDisabled(True)
 		self.PowerList = self.powersupply.listResources()
 
+	def switchArduinoPanel(self):
+		if self.ArduinoControl.isChecked():
+			self.ArduinoGroup.setDisabled(False)
+		else:
+			self.ArduinoGroup.setDisabled(True)
 
 	def checkFirmware(self):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
