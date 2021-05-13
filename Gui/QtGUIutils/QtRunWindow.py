@@ -31,6 +31,7 @@ class QtRunWindow(QWidget):
 	def __init__(self,master,info,firmware):
 		super(QtRunWindow,self).__init__()
 		self.master = master
+		self.master.globalStop.connect(self.urgentStop)
 		self.firmware = firmware
 		self.info = info
 		self.connection = self.master.connection
@@ -613,6 +614,14 @@ class QtRunWindow(QWidget):
 			return
 		self.RunButton.setText("Re-run")
 		self.RunButton.setDisabled(False)
+	
+	def urgentStop(self):
+		self.run_process.kill()
+		self.haltSignal = True
+		self.sendProceedSignal()
+
+		self.RunButton.setText("Re-run")
+		self.RunButton.setDisabled(True)
 
 	def validateTest(self):
 		# Fixme: the grading for test results
@@ -906,6 +915,7 @@ class QtRunWindow(QWidget):
 
 			if reply == QMessageBox.Yes:
 				self.release()
+				self.master.powersupply.TurnOff()
 				event.accept()
 			else:
 				self.backSignal = False

@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit, QHBoxLayout,
 		QVBoxLayout, QWidget, QMainWindow, QMessageBox)
 
+from UserCustoms.python.ArduinoParser import *
 import pyvisa as visa
 import subprocess
 
@@ -15,12 +16,14 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 class ArduinoWidget(QWidget):
+	stop = pyqtSignal()
 	def __init__(self):
 		super(ArduinoWidget,self).__init__()
 		self.mainLayout = QGridLayout()
 		self.createArduino()
 		self.setLayout(self.mainLayout)
 		self.serial = None
+		self.stopCount  = 0
 
 
 	def createArduino(self):
@@ -134,5 +137,19 @@ class ArduinoWidget(QWidget):
 		while self.serial.canReadLine():
 			text = self.serial.readLine().data().decode()
 			text = text.rstrip('\r\n')
-			logger.info("Arduino Measurement: {}".format(text))
-			self.ArduinoMeasureValue.setText(text)
+			StopSignal,measureText = ArduinoParser(text)
+			self.ArduinoMeasureValue.setText(measureText)
+			if StopSignal:
+				self.stopCount += 1
+				logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))
+			else:
+				self.stopCount = 0 
+		
+			if self.stopCount >= 10:
+				self.StopSignal()
+				self.stopCount = 0
+
+	@QtCore.pyqtSlot()
+	def StopSignal(self):
+		self.stop.emit()
+

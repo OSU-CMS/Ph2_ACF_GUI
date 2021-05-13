@@ -26,6 +26,7 @@ from Gui.python.Firmware import *
 from Gui.python.ArduinoWidget import *
 
 class QtApplication(QWidget):
+	globalStop = pyqtSignal()
 	def __init__(self, dimension):
 		super(QtApplication,self).__init__()
 		self.mainLayout = QGridLayout()
@@ -393,6 +394,7 @@ class QtApplication(QWidget):
 		self.PowerGroup.setLayout(self.PowerLayout)
 
 		self.ArduinoGroup = ArduinoWidget()
+		self.ArduinoGroup.stop.connect(self.GlobalStop)
 		self.ArduinoControl = QCheckBox("Use arduino monitoring")
 		self.ArduinoControl.setChecked(True)
 		self.ArduinoControl.toggled.connect(self.switchArduinoPanel)
@@ -716,6 +718,16 @@ class QtApplication(QWidget):
 		self.checkFirmware()
 
 			
+	###############################################################
+	##  Global stop signal
+	###############################################################
+	@QtCore.pyqtSlot()
+	def GlobalStop(self):
+		print("Critical status detected: Emitting Global Stop signal")
+		self.globalStop.emit()
+		self.powersupply.TurnOff()
+		self.releasePowerPanel()
+
 	###############################################################
 	##  Main page and related functions  (END)
 	###############################################################

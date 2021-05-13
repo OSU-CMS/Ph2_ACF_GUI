@@ -69,16 +69,25 @@ class PowerSupply():
 		pass
 
 	def TurnOn(self):
-		SCPI.InitailDevice(self.Instrument)
-		SCPI.SetVoltage(self.Instrument)
-		SCPI.setComplianceLimit(self.Instrument)
-		SCPI.TurnOn(self.Instrument)
+		try:
+			SCPI.InitailDevice(self.Instrument)
+			SCPI.SetVoltage(self.Instrument)
+			SCPI.setComplianceLimit(self.Instrument)
+			SCPI.TurnOn(self.Instrument)
+		except Exception as err:
+			logging.error("Failed to turn on the sourceMeter:{}".format(err))
 
 	def TurnOff(self):
-		SCPI.TurnOff(self.Instrument)
+		try:
+			SCPI.TurnOff(self.Instrument)
+		except Exception as err:
+			logging.error("Failed to turn off the sourceMeter:{}".format(err))
 
 	def ReadVoltage(self):
 		SCPI.ReadVoltage(self.Instrument)
+
+	def ReadCurret(self):
+		SCPI.ReadCurrent(self.Instrument)
 
 if __name__ == "__main__":
 	power = PowerSupply()
