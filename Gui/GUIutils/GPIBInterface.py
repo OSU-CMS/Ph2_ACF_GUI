@@ -1,5 +1,6 @@
 import pyvisa as visa
 
+import importlib
 import subprocess
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -10,6 +11,7 @@ class PowerSupply():
 		self.Model = model
 		self.Status = "OFF"
 		self.deviceMap = {}
+		self.Instrument = None
 		#Not used for pyvisa
 		#self.BoardNumber = int(boardnumber)
 		#self.PrimaryAddress = int(primaryaddress)
@@ -21,7 +23,7 @@ class PowerSupply():
 		self.ResourcesManager = visa.ResourceManager('@py')
 
 	def setSCPIParser(self):
-		import Gui.python.Keithley2400RS232 as SCPI
+		self.SCPI = importlib.import_module("Gui.python.Keithley2400RS232")
 
 	def listResources(self):
 		try:
@@ -35,7 +37,8 @@ class PowerSupply():
 
 	def setInstrument(self,resourceName):
 		try:
-			self.Instrument = self.ResourcesManager.open_resource("{},read_termination='\r',write_termination='\r'".format(self.deviceMap[resourceName]))
+			self.Instrument = self.ResourcesManager.open_resource("{}".format(self.deviceMap[resourceName]),read_termination='\r',write_termination='\r')
+			self.setSCPIParser()
 		except Exception as err:
 			logger.error("Failed to open resource {0}: {1}".format(resourceName,err))
 
@@ -52,7 +55,7 @@ class PowerSupply():
 				deviceId = "{}:{}".format(idvendor,idproduct)
 				pipeUSB = subprocess.Popen(['lsusb','-d',deviceId], stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
 				usbInfo = pipeUSB.communicate()[0]
-				deviceName = usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(' ')
+				deviceName = usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(' ').rstrip('\n')
 				if deviceName == None:
 					logger.warning("No device name found for {}:".format(device))
 					self.deviceMap[device] = device
@@ -63,31 +66,31 @@ class PowerSupply():
 				self.deviceMap[device] = device
 
 	def getInfo(self):
-		self.Instrument.query(b'*IDN?')
+		self.SCPI.GetInfo(self.Instrument)
 		
 	def startRemoteCtl(self):
 		pass
 
 	def TurnOn(self):
 		try:
-			SCPI.InitailDevice(self.Instrument)
-			SCPI.SetVoltage(self.Instrument)
-			SCPI.setComplianceLimit(self.Instrument)
-			SCPI.TurnOn(self.Instrument)
+			self.SCPI.InitailDevice(self.Instrument)
+			self.SCPI.SetVoltage(self.Instrument)
+			self.SCPI.setComplianceLimit(self.Instrument)
+			self.SCPI.TurnOn(self.Instrument)
 		except Exception as err:
 			logging.error("Failed to turn on the sourceMeter:{}".format(err))
 
 	def TurnOff(self):
 		try:
-			SCPI.TurnOff(self.Instrument)
+			self.SCPI.TurnOff(self.Instrument)
 		except Exception as err:
 			logging.error("Failed to turn off the sourceMeter:{}".format(err))
 
 	def ReadVoltage(self):
-		SCPI.ReadVoltage(self.Instrument)
+		self.SCPI.ReadVoltage(self.Instrument)
 
 	def ReadCurret(self):
-		SCPI.ReadCurrent(self.Instrument)
+		self.SCPI.ReadCurrent(self.Instrument)
 
 if __name__ == "__main__":
 	power = PowerSupply()

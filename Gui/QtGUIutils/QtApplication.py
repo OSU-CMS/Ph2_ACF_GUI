@@ -589,8 +589,9 @@ class QtApplication(QWidget):
 	
 	def frozePowerPanel(self):
 		# Block for PowerSupply operation
-		#self.powersupply.setInstrument(self.PowerCombo.currentText())
-
+		self.powersupply.setInstrument(self.PowerCombo.currentText())
+		self.powersupply.getInfo()
+		self.powersupply.TurnOn()
 		# Block for GUI front-end
 		statusString = "Under development"
 		if "successful" in statusString:
@@ -607,6 +608,7 @@ class QtApplication(QWidget):
 			self.PowerStatusValue.setText(statusString)
 
 	def releasePowerPanel(self):
+		self.powersupply.TurnOff()
 		self.PowerCombo.setDisabled(False)
 		self.PowerStatusValue.setText("")
 		self.UsePowerSupply.setDisabled(False)
@@ -743,6 +745,7 @@ class QtApplication(QWidget):
 
 		if reply == QMessageBox.Yes:
 			print('Application terminated')
+			self.powersupply.TurnOff()
 			os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
 			event.accept()
 		else:

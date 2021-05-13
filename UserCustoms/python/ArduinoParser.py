@@ -1,3 +1,5 @@
+import re
+
 def ArduinoParser(text):
     StopSingal, ProbeReadsText = ArduinoParserCustomOSU(text)
     return StopSingal, ProbeReadsText
@@ -16,13 +18,13 @@ ThresholdMapOSU = {
 }
 def ArduinoParserCustomOSU(text):
     StopSignal = False
-    values = text.split(" ")[5:]
+    values = re.split(" |\t",text)[5:]
     readValue = {}
     ProbeReads = []
     for index,value in enumerate(values):
         value = value.rstrip(":")
         if value in ProbeMapOSU.keys():
-            readValue[value] = str(values[index+1])
+            readValue[value] = float(values[index+1])
 
     for probeName,probeValue in readValue.items():
         if probeName in ThresholdMapOSU.keys():
@@ -30,16 +32,15 @@ def ArduinoParserCustomOSU(text):
                 continue
             else:
                 if probeValue < ThresholdMapOSU[probeName][0] or  probeValue > ThresholdMapOSU[probeName][1]:
-                    colorCode = "#008000"
+                    colorCode = "#FF0000"
                     if probeName in ['MAX31850','MAX31865']:
                         StopSignal = True
                 else:
-                    colorCode = "#FF0000"
-                ProbeReads.append('{0}:<p style="color:{1}";>{2}</p>'.format(ProbeMapOSU[probeName],colorCode,probeValue))
+                    colorCode = "#008000"
+                ProbeReads.append('{0}:<span style="color:{1}";>{2}</span>'.format(ProbeMapOSU[probeName],colorCode,probeValue))
         else:
             ProbeReads.append('{0}:{1}'.format(ProbeMapOSU[probeName],probeValue))
-
-    ProbeReadsText = '\n'.join(ProbeReads)
+    ProbeReadsText = '\t'.join(ProbeReads)
     return StopSignal,ProbeReadsText
 
 

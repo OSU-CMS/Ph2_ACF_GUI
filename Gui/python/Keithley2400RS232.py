@@ -14,13 +14,19 @@ def InitailDevice(device):
 	except Exception as err:
 		logger.error("Error occured while setting voltage source mode: {}".format(err))
 
+def GetInfo(device):
+	try:
+		print(device.query("*IDN?"))
+	except Exception as err:
+		logger.error("Error occured while requesting the identification: {}".format(err))
+
 def TurnOn(device):
 	try:
 		device.write(":OUTPUT  ON")
 	except Exception as err:
 		logger.error("Error occured while turning on the device: {}".format(err))
 
-def TurnOFF(device):
+def TurnOff(device):
 	try:
 		device.write(":OUTPUT OFF")
 	except  Exception as err:
