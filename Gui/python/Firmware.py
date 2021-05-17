@@ -131,6 +131,5 @@ class QtBeBoard():
 		return False
 
 	def removeAllModule(self):
-		for key in self.__moduleDict.keys():
-			self.__moduleDict.pop(key)
+		self.__moduleDict.clear()
 		

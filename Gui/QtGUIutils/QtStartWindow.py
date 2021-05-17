@@ -128,6 +128,7 @@ class QtStartWindow(QWidget):
 		testlayout.addWidget(self.TestCombo,0,1,1,1)
 		self.TestBox.setLayout(testlayout)
 
+		self.firmware.removeAllModule()
 		self.BeBoardWidget = BeBoardBox(self.firmware)   #FLAG
 		self.BeBoardWidget.changed.connect(self.destroyMain)
 		self.BeBoardWidget.changed.connect(self.createMain)
@@ -229,11 +230,11 @@ class QtStartWindow(QWidget):
 			QMessageBox().information(None, "Error", "Front-End parameter check failed", QMessageBox.Ok)
 			return
 
-		self.firmware = self.BeBoardWidget.getFirmwareDescription()
+		self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
 		#self.info = [self.firmware.getModuleByIndex(0).getModuleID(), str(self.TestCombo.currentText())]
 		self.info = [self.firmware.getModuleByIndex(0).getOpticalGroupID(), str(self.TestCombo.currentText())]
 		self.runFlag = True
-		self.master.RunNewTest = QtRunWindow(self.master, self.info, self.firmware)
+		self.master.RunNewTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
 		self.close()
 
 	def closeEvent(self, event):
