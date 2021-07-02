@@ -8,11 +8,6 @@ def InitailDevice(device):
 	except Exception as err:
 		logger.error("Error occured while restore defaults: {}".format(err))
 	# Select voltage source mode
-	try:
-		device.write(":SOURCE:FUCNCTION VOLT")
-		device.write(":SOURCE:VOLTAGE:MODE FIX")
-	except Exception as err:
-		logger.error("Error occured while setting voltage source mode: {}".format(err))
 
 def GetInfo(device):
 	try:
@@ -22,33 +17,34 @@ def GetInfo(device):
 
 def TurnOn(device):
 	try:
-		device.write(":OUTPUT  ON")
+		device.write(":STATE  ON")
 	except Exception as err:
 		logger.error("Error occured while turning on the device: {}".format(err))
 
 def TurnOff(device):
 	try:
-		device.write(":OUTPUT OFF")
+		device.write(":STATE OFF")
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
 
 def SetVoltage(device, voltage = 0.0):
 	# Set Voltage range 2V and output to 1.78V
 	try:
-		device.write(":SOURCE:VOLTAGE:RANGE 2")
-		device.write(":SOURCE:VOLTAGE:LEV 1.78")
+		device.write("SOURCE:VOLTAGE:PROTECTION:LEV 1.8")
+		device.write("SOURCE:VOLTAGE:LEV:IMM:AMP 1.78")
 	except Exception as err:
 		logger.error("Error occured while setting voltage level: {}".format(err))
 
 def setComplianceLimit(device, compcurrent = 0.0):
+	## Current limit should be passed as argument
 	try:
-		device.write(":SENSE:CURR:PROT 6")
+		device.write(":SOURCE:CURR:PROTECTION:LEV 8")
 	except Exception as err:
 		logger.error("Error occured while setting compliance: {}".format(err))
 
 def ReadVoltage(device):
 	try:
-		device.write(' :SENSE:FUNCTION "VOLT" ')
+		device.write(' MEASURE:VOLT ?')
 		device.read_termination = '\r'
 		device.write(':READ?')
 		Measure = device.read()
@@ -59,7 +55,7 @@ def ReadVoltage(device):
 
 def ReadCurrent(device):
 	try:
-		device.write(' :SENSE:FUNCTION "CURR" ')
+		device.write(' MEASURE:CURR ?')
 		device.read_termination = '\r'
 		device.write(':READ?')
 		Measure = device.read()

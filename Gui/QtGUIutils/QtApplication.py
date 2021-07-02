@@ -40,7 +40,8 @@ class QtApplication(QWidget):
 		self.LogList = {}
 		self.PYTHON_VERSION = str(sys.version).split(" ")[0]
 		self.dimension = dimension
-		self.powersupply = PowerSupply()
+		self.HVpowersupply = PowerSupply(powertype = "HV")
+		self.LVpowersupply = PowerSupply(powertype = "LV")
 
 		self.setLoginUI()
 		self.initLog()
@@ -366,32 +367,60 @@ class QtApplication(QWidget):
 		self.FirmwareStatus.setLayout(StatusLayout)
 		self.FirmwareStatus.setDisabled(False)
 
-		self.PowerRemoteControl = QCheckBox("Use power remote control")
-		self.PowerRemoteControl.setChecked(True)
-		self.PowerRemoteControl.toggled.connect(self.switchPowerPanel)
+		self.HVPowerRemoteControl = QCheckBox("Use HV power remote control")
+		self.HVPowerRemoteControl.setChecked(True)
+		self.HVPowerRemoteControl.toggled.connect(self.switchHVPowerPanel)
 
-		self.PowerGroup = QGroupBox("Power")
-		self.PowerLayout = QHBoxLayout()
-		self.PowerStatusLabel = QLabel()
-		self.PowerStatusLabel.setText("Choose Power:")
-		self.PowerList = self.powersupply.listResources()
-		self.PowerCombo = QComboBox()
-		self.PowerCombo.addItems(self.PowerList)
-		self.PowerStatusValue = QLabel()
-		self.UsePowerSupply = QPushButton("&Use")
-		self.UsePowerSupply.clicked.connect(self.frozePowerPanel)
-		self.ReleasePowerSupply = QPushButton("&Release")
-		self.ReleasePowerSupply.clicked.connect(self.releasePowerPanel)
-		self.ReleasePowerSupply.setDisabled(True)
+		self.HVPowerGroup = QGroupBox("HV Power")
+		self.HVPowerLayout = QHBoxLayout()
+		self.HVPowerStatusLabel = QLabel()
+		self.HVPowerStatusLabel.setText("Choose HV Power:")
+		self.HVPowerList = self.HVpowersupply.listResources()
+		self.HVPowerCombo = QComboBox()
+		self.HVPowerCombo.addItems(self.HVPowerList)
+		self.HVPowerStatusValue = QLabel()
+		self.UseHVPowerSupply = QPushButton("&Use")
+		self.UseHVPowerSupply.clicked.connect(self.frozeHVPowerPanel)
+		self.ReleaseHVPowerSupply = QPushButton("&Release")
+		self.ReleaseHVPowerSupply.clicked.connect(self.releaseHVPowerPanel)
+		self.ReleaseHVPowerSupply.setDisabled(True)
 
-		self.PowerLayout.addWidget(self.PowerStatusLabel)
-		self.PowerLayout.addWidget(self.PowerCombo)
-		self.PowerLayout.addWidget(self.PowerStatusValue)
-		self.PowerLayout.addStretch(1)
-		self.PowerLayout.addWidget(self.UsePowerSupply)
-		self.PowerLayout.addWidget(self.ReleasePowerSupply)
+		self.HVPowerLayout.addWidget(self.HVPowerStatusLabel)
+		self.HVPowerLayout.addWidget(self.HVPowerCombo)
+		self.HVPowerLayout.addWidget(self.HVPowerStatusValue)
+		self.HVPowerLayout.addStretch(1)
+		self.HVPowerLayout.addWidget(self.UseHVPowerSupply)
+		self.HVPowerLayout.addWidget(self.ReleaseHVPowerSupply)
 
-		self.PowerGroup.setLayout(self.PowerLayout)
+		self.HVPowerGroup.setLayout(self.HVPowerLayout)
+
+
+		self.LVPowerRemoteControl = QCheckBox("Use LV power remote control")
+		self.LVPowerRemoteControl.setChecked(True)
+		self.LVPowerRemoteControl.toggled.connect(self.switchLVPowerPanel)
+
+		self.LVPowerGroup = QGroupBox("LV Power")
+		self.LVPowerLayout = QHBoxLayout()
+		self.LVPowerStatusLabel = QLabel()
+		self.LVPowerStatusLabel.setText("Choose LV Power:")
+		self.LVPowerList = self.LVpowersupply.listResources()
+		self.LVPowerCombo = QComboBox()
+		self.LVPowerCombo.addItems(self.LVPowerList)
+		self.LVPowerStatusValue = QLabel()
+		self.UseLVPowerSupply = QPushButton("&Use")
+		self.UseLVPowerSupply.clicked.connect(self.frozeLVPowerPanel)
+		self.ReleaseLVPowerSupply = QPushButton("&Release")
+		self.ReleaseLVPowerSupply.clicked.connect(self.releaseLVPowerPanel)
+		self.ReleaseLVPowerSupply.setDisabled(True)
+
+		self.LVPowerLayout.addWidget(self.LVPowerStatusLabel)
+		self.LVPowerLayout.addWidget(self.LVPowerCombo)
+		self.LVPowerLayout.addWidget(self.LVPowerStatusValue)
+		self.LVPowerLayout.addStretch(1)
+		self.LVPowerLayout.addWidget(self.UseLVPowerSupply)
+		self.LVPowerLayout.addWidget(self.ReleaseLVPowerSupply)
+
+		self.LVPowerGroup.setLayout(self.LVPowerLayout)
 
 		self.ArduinoGroup = ArduinoWidget()
 		self.ArduinoGroup.stop.connect(self.GlobalStop)
@@ -523,8 +552,10 @@ class QtApplication(QWidget):
 		self.AppOption.setLayout(self.AppLayout)
 
 		self.mainLayout.addWidget(self.FirmwareStatus)
-		self.mainLayout.addWidget(self.PowerGroup)
-		self.mainLayout.addWidget(self.PowerRemoteControl)
+		self.mainLayout.addWidget(self.HVPowerGroup)
+		self.mainLayout.addWidget(self.HVPowerRemoteControl)
+		self.mainLayout.addWidget(self.LVPowerGroup)
+		self.mainLayout.addWidget(self.LVPowerRemoteControl)
 		self.mainLayout.addWidget(self.ArduinoGroup)
 		self.mainLayout.addWidget(self.ArduinoControl)
 		self.mainLayout.addWidget(self.MainOption)
@@ -549,8 +580,10 @@ class QtApplication(QWidget):
 		self.MainOption.deleteLater()
 		self.AppOption.deleteLater()
 		self.mainLayout.removeWidget(self.FirmwareStatus)
-		self.mainLayout.removeWidget(self.PowerGroup)
-		self.mainLayout.removeWidget(self.PowerRemoteControl)
+		self.mainLayout.removeWidget(self.HVPowerGroup)
+		self.mainLayout.removeWidget(self.HVPowerRemoteControl)
+		self.mainLayout.removeWidget(self.LVPowerGroup)
+		self.mainLayout.removeWidget(self.LVPowerRemoteControl)
 		self.mainLayout.removeWidget(self.ArduinoGroup)
 		self.mainLayout.removeWidget(self.ArduinoControl)
 		self.mainLayout.removeWidget(self.MainOption)
@@ -581,39 +614,73 @@ class QtApplication(QWidget):
 	def openDBConsole(self):
 		self.StartDBConsole = QtDBConsoleWindow(self)
 
-	def switchPowerPanel(self):
-		if self.PowerRemoteControl.isChecked():
-			self.PowerGroup.setDisabled(False)
+	def switchHVPowerPanel(self):
+		if self.HVPowerRemoteControl.isChecked():
+			self.HVPowerGroup.setDisabled(False)
 		else:
-			self.PowerGroup.setDisabled(True)
+			self.HVPowerGroup.setDisabled(True)
 	
-	def frozePowerPanel(self):
-		# Block for PowerSupply operation
-		self.powersupply.setInstrument(self.PowerCombo.currentText())
-		self.powersupply.getInfo()
-		self.powersupply.TurnOn()
+	def frozeHVPowerPanel(self):
+		# Block for HVPowerSupply operation
+		self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
+		self.HVpowersupply.getInfo()
+		self.HVpowersupply.TurnOn()
 		# Block for GUI front-end
 		statusString = "Under development"
 		if "successful" in statusString:
-			self.PowerStatusValue.setStyleSheet("color:green")
+			self.HVPowerStatusValue.setStyleSheet("color:green")
 		else:
-			self.PowerStatusValue.setStyleSheet("color:red")
+			self.HVPowerStatusValue.setStyleSheet("color:red")
 		if "successful" in statusString or "Under development" == statusString:
-			self.PowerCombo.setDisabled(True)
-			self.PowerStatusValue.setText(statusString)
-			self.UsePowerSupply.setDisabled(True)
-			self.ReleasePowerSupply.setDisabled(False)
+			self.HVPowerCombo.setDisabled(True)
+			self.HVPowerStatusValue.setText(statusString)
+			self.UseHVPowerSupply.setDisabled(True)
+			self.ReleaseHVPowerSupply.setDisabled(False)
 
 		else:
-			self.PowerStatusValue.setText(statusString)
+			self.HVPowerStatusValue.setText(statusString)
 
-	def releasePowerPanel(self):
-		self.powersupply.TurnOff()
-		self.PowerCombo.setDisabled(False)
-		self.PowerStatusValue.setText("")
-		self.UsePowerSupply.setDisabled(False)
-		self.ReleasePowerSupply.setDisabled(True)
-		self.PowerList = self.powersupply.listResources()
+	def releaseHVPowerPanel(self):
+		self.HVpowersupply.TurnOff()
+		self.HVPowerCombo.setDisabled(False)
+		self.HVPowerStatusValue.setText("")
+		self.UseHVPowerSupply.setDisabled(False)
+		self.ReleaseHVPowerSupply.setDisabled(True)
+		self.HVPowerList = self.HVpowersupply.listResources()
+
+	def switchLVPowerPanel(self):
+		if self.LVPowerRemoteControl.isChecked():
+			self.LVPowerGroup.setDisabled(False)
+		else:
+			self.LVPowerGroup.setDisabled(True)
+	
+	def frozeLVPowerPanel(self):
+		# Block for LVPowerSupply operation
+		self.LVpowersupply.setInstrument(self.LVPowerCombo.currentText())
+		self.LVpowersupply.getInfo()
+		self.LVpowersupply.TurnOn()
+		# Block for GUI front-end
+		statusString = "Under development"
+		if "successful" in statusString:
+			self.LVPowerStatusValue.setStyleSheet("color:green")
+		else:
+			self.LVPowerStatusValue.setStyleSheet("color:red")
+		if "successful" in statusString or "Under development" == statusString:
+			self.LVPowerCombo.setDisabled(True)
+			self.LVPowerStatusValue.setText(statusString)
+			self.UseLVPowerSupply.setDisabled(True)
+			self.ReleaseLVPowerSupply.setDisabled(False)
+
+		else:
+			self.LVPowerStatusValue.setText(statusString)
+
+	def releaseLVPowerPanel(self):
+		self.LVpowersupply.TurnOff()
+		self.LVPowerCombo.setDisabled(False)
+		self.LVPowerStatusValue.setText("")
+		self.UseLVPowerSupply.setDisabled(False)
+		self.ReleaseLVPowerSupply.setDisabled(True)
+		self.LVPowerList = self.LVpowersupply.listResources()
 
 	def switchArduinoPanel(self):
 		if self.ArduinoControl.isChecked():
@@ -727,8 +794,10 @@ class QtApplication(QWidget):
 	def GlobalStop(self):
 		print("Critical status detected: Emitting Global Stop signal")
 		self.globalStop.emit()
-		self.powersupply.TurnOff()
-		self.releasePowerPanel()
+		self.HVpowersupply.TurnOff()
+		self.releaseHVPowerPanel()
+		self.LVpowersupply.TurnOff()
+		self.releaseLVPowerPanel()
 
 	###############################################################
 	##  Main page and related functions  (END)
@@ -745,7 +814,8 @@ class QtApplication(QWidget):
 
 		if reply == QMessageBox.Yes:
 			print('Application terminated')
-			self.powersupply.TurnOff()
+			self.HVpowersupply.TurnOff()
+			self.LVpowersupply.TurnOff()
 			os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
 			event.accept()
 		else:

@@ -7,23 +7,54 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 class PowerSupply():
-	def __init__(self,model = "Keithley", boardnumber = 0, primaryaddress = 24):
+	def __init__(self,model = "Keithley", boardnumber = 0, primaryaddress = 24, powertype = "HV"):
 		self.Model = model
 		self.Status = "OFF"
 		self.deviceMap = {}
 		self.Instrument = None
+		self.PowerType = powertype
+		self.PoweringMode = powermode
+		self.CompCurrent = compcurrent
 		#Not used for pyvisa
 		#self.BoardNumber = int(boardnumber)
 		#self.PrimaryAddress = int(primaryaddress)
 		self.setResourceManager()
 		self.setSCPIParser()
-		
+
+	def setPowerType(self,powertype):
+		if powertype != "HV" and powertype != "LV":
+			logger.error("Power Type: {} not supported".format(powertype))
+		else:
+			self.PowerType = powertype
+
+	def isHV(self):
+		if self.PowerType == "HV":
+			return True
+		else:
+			return False
+
+	def isLV(self):
+		if self.PowerType == "LV":
+			return True
+		else:
+			return False
+	
+	def setPoweringMode(self, powermode="direct"):
+		self.PoweringMode = powermode
+
+	def setCompCurrent(self, compcurrent = 1.05):
+		self.CompCurrent = compcurrent
 	
 	def setResourceManager(self):
 		self.ResourcesManager = visa.ResourceManager('@py')
 
 	def setSCPIParser(self):
-		self.SCPI = importlib.import_module("Gui.python.Keithley2400RS232")
+		if self.Model == "Keithley":
+			self.SCPI = importlib.import_module("Gui.python.Keithley2400RS232")
+
+		elif self.Model == "KeySight":
+			self.SCPI = importlib.import_module("Gui.python.KeySightE3633RS232")
+
 
 	def listResources(self):
 		try:
@@ -74,8 +105,8 @@ class PowerSupply():
 	def TurnOn(self):
 		try:
 			self.SCPI.InitailDevice(self.Instrument)
-			self.SCPI.SetVoltage(self.Instrument)
-			self.SCPI.setComplianceLimit(self.Instrument)
+			self.SCPI.SetVoltage(self.Instrument,self.PoweringMode)
+			self.SCPI.setComplianceLimit(self.Instrument,self.CompCurrent)
 			self.SCPI.TurnOn(self.Instrument)
 		except Exception as err:
 			logging.error("Failed to turn on the sourceMeter:{}".format(err))
