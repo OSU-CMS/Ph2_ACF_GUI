@@ -13,8 +13,8 @@ class PowerSupply():
 		self.deviceMap = {}
 		self.Instrument = None
 		self.PowerType = powertype
-		self.PoweringMode = powermode
-		self.CompCurrent = compcurrent
+		self.PoweringMode = None
+		self.CompCurrent = None
 		#Not used for pyvisa
 		#self.BoardNumber = int(boardnumber)
 		#self.PrimaryAddress = int(primaryaddress)
@@ -49,10 +49,10 @@ class PowerSupply():
 		self.ResourcesManager = visa.ResourceManager('@py')
 
 	def setSCPIParser(self):
-		if self.Model == "Keithley":
+		if self.Model == "Keithley" and self.isHV():
 			self.SCPI = importlib.import_module("Gui.python.Keithley2400RS232")
 
-		elif self.Model == "KeySight":
+		elif self.Model == "KeySight" and self.isLV():
 			self.SCPI = importlib.import_module("Gui.python.KeySightE3633RS232")
 
 
@@ -105,8 +105,8 @@ class PowerSupply():
 	def TurnOn(self):
 		try:
 			self.SCPI.InitailDevice(self.Instrument)
-			self.SCPI.SetVoltage(self.Instrument,self.PoweringMode)
-			self.SCPI.setComplianceLimit(self.Instrument,self.CompCurrent)
+			self.SCPI.SetVoltage(self.Instrument)
+			self.SCPI.setComplianceLimit(self.Instrumentt)
 			self.SCPI.TurnOn(self.Instrument)
 		except Exception as err:
 			logging.error("Failed to turn on the sourceMeter:{}".format(err))
@@ -122,6 +122,15 @@ class PowerSupply():
 
 	def ReadCurret(self):
 		self.SCPI.ReadCurrent(self.Instrument)
+
+	def RampingUp(self, hvTarget = 0.0, stepLength = 1.0):
+		try:
+			if self.isHV():
+				self.SCPI.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
+			else:
+				logging.info("Not a HV power supply, abort")
+		except Exception as err:
+			logging.error("Failed to ramp the voltage to {0}:{1}".format(hvTarget,err))
 
 if __name__ == "__main__":
 	power = PowerSupply()

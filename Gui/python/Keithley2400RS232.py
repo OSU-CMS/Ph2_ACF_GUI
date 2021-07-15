@@ -32,17 +32,17 @@ def TurnOff(device):
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
 
-def SetVoltage(device, voltage = 0.0):
+def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 	# Set Voltage range 2V and output to 1.78V
 	try:
-		device.write(":SOURCE:VOLTAGE:RANGE 2")
-		device.write(":SOURCE:VOLTAGE:LEV 1.78")
+		device.write(":SOURCE:VOLTAGE:RANGE {0}".format(VoltProtection))
+		device.write(":SOURCE:VOLTAGE:LEV {0}".format(voltage))
 	except Exception as err:
 		logger.error("Error occured while setting voltage level: {}".format(err))
 
 def setComplianceLimit(device, compcurrent = 0.0):
 	try:
-		device.write(":SENSE:CURR:PROT 6")
+		device.write(":SENSE:CURR:PROT {0}".format(compcurrent))
 	except Exception as err:
 		logger.error("Error occured while setting compliance: {}".format(err))
 
@@ -67,3 +67,9 @@ def ReadCurrent(device):
 		return MeasureCurr
 	except Exception as err:
 		logger.error("Error occured while reading current value: {}".format(err))
+
+def RampingUpVoltage(device, hvTarget, stepLength):
+	try:
+		device.write('')
+	except Exception as err:
+		logger.error("Error occured while ramping up the voltage to {0}, {1}".format(hvTarget,err))
