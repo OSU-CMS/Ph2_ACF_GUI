@@ -97,8 +97,11 @@ class PowerSupply():
 				self.deviceMap[device] = device
 
 	def getInfo(self):
-		self.SCPI.GetInfo(self.Instrument)
-		
+		try:
+			info = self.SCPI.GetInfo(self.Instrument)
+		except Exception as err:
+			logging.error("Failed to get instrument information:{}".format(err))
+
 	def startRemoteCtl(self):
 		pass
 
