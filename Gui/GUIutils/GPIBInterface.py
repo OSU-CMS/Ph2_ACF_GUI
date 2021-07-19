@@ -136,6 +136,6 @@ class PowerSupply():
 			logging.error("Failed to ramp the voltage to {0}:{1}".format(hvTarget,err))
 
 if __name__ == "__main__":
-	power = PowerSupply()
+	power = PowerSupply(powertype = "LV")
 	deviceList = power.listResources()
 	print(deviceList)
