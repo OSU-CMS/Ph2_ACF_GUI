@@ -93,7 +93,8 @@ class QtStartWindow(QWidget):
 	def __init__(self,master, firmware):
 		super(QtStartWindow,self).__init__()
 		self.master = master
-		self.master.powersupply.TurnOn()
+		self.master.HVpowersupply.TurnOn()
+		self.master.LVpowersupply.TurnOn()
 		self.firmware = firmware
 		self.firmwareName = firmware.getBoardName()
 		self.connection = self.master.connection

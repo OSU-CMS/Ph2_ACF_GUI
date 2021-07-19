@@ -52,7 +52,7 @@ class BeBoardModule():
     self.eventType = "VR"
     self.id = "cmsinnertracker.crate0.slot0" 
     self.uri = "chtcp-2.0://localhost:10203?target=192.168.1.80:50001" 
-    self.address_table = "file://../settings/address_tables/CMSIT_address_table.xml"
+    self.address_table = "file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml"
     self.FEModuleList = []
     self.RegisterSettings = {}
     self.OpticalGroupList =  []
@@ -66,6 +66,9 @@ class BeBoardModule():
     self.Id = str(Id)
     self.boardType = boardType
     self.eventType = eventType
+
+  def SetURI(self, ipAddress="0.0.0.0"):
+    self.uri = "chtcp-2.0://localhost:10203?target={0}:50001".format(ipAddress)
 
   def AddFEModule(self, FEModule):
     self.FEModuleList.append(FEModule)
