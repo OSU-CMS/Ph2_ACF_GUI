@@ -65,7 +65,7 @@ def GetCanvasVAL(node,canvasList):
 			for Node in node.getDaugthers():
 				if Node.getClassName() ==  "TCanvas":
 					CanvasName = Node.getKeyName()
-					Module_ID_Sec = CanvasName.split("_")[3]
+					Module_ID_Sec = CanvasName.split("_")[2] ##To be CHECKED!!!!!
 					if ("H" in Module_ID_Sec):
 						Module_ID = Module_ID_Sec.lstrip("H(").rstrip(")")
 					elif ("M" in Module_ID_Sec):
