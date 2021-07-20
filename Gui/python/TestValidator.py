@@ -70,6 +70,8 @@ def GetCanvasVAL(node,canvasList):
 						Module_ID = Module_ID_Sec.lstrip("H(").rstrip(")")
 					elif ("M" in Module_ID_Sec):
 						Module_ID = Module_ID_Sec.lstrip("M(").rstrip(")")
+					elif ("O" in Module_ID_Sec):
+						Module_ID = Module_ID_Sec.lstrip("O(").rstrip(")")
 					else:
 						Module_ID = -1
 					#Chip_ID = CanvasName.split("_")[5].lstrip("O(").rstrip(")")
