@@ -651,7 +651,10 @@ class QtRunWindow(QWidget):
 			return
 
 		try:
-			os.system("cp {0}/test/Results/Run{1}*.root {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
+			if self.RunNumber == "-1":
+				os.system("cp {0}/test/Results/Run000000*.root {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+			else:
+				os.system("cp {0}/test/Results/Run{1}*.root {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
 		except:
 			print("Failed to copy file to output directory")
 
