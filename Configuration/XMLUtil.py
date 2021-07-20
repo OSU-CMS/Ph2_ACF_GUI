@@ -3,6 +3,7 @@ from xml.dom import minidom
 from Configuration.Settings.GlobalSettings import *
 from Configuration.Settings.FESettings import *
 from Configuration.Settings.HWSettings import *
+from Configuration.Settings.MonitoringSettings import *
 from Configuration.Settings.RegisterSettings import *
 
 def prettify(elem):
@@ -32,6 +33,7 @@ class HWDescription():
   def __init__(self):
     self.BeBoardList = []
     self.Settings = {}
+    self.MonitoringList =  []
     print("Setting HWDescription")
 
   def AddBeBoard(self, BeBoardModule):
@@ -39,6 +41,9 @@ class HWDescription():
 
   def AddSettings(self, Settings):
     self.Settings = Settings
+
+  def AddMonitoring(self, MonitoringModule):
+    self.MonitoringList.append(MonitoringModule)
 
   def reset(self):
     self.BeBoardList = []
@@ -150,6 +155,21 @@ class FE():
   def ConfigureFE(self, settingList):
     self.settingList = settingList
 
+class MonitoringModule():
+  def __init__(self):
+    self.Type="RD53"
+    self.Enable="0"
+    self.SleepTime=1000
+    self.MonitoringList = {}
+  def SetType(self, Type):
+    self.Type=Type
+  def SetEnable(self, enable):
+    self.Enable=enable
+  def SetSleepTime(self, sleepTime):
+    self.SleepTime=sleepTime
+  def SetMonitoringList(self, monitoringList):
+    self.MonitoringList=monitoringList
+
 def SetNodeAttribute(Node, Dict):
    for key in Dict:
      Node.set(key,Dict[key])
@@ -188,6 +208,14 @@ def SetNodeRegister(Node, Dict):
     Node_Reg.text = str(Dict[key])
   return Node
 
+def SetMonitoring(Node, MonitoringItem):
+  Node_Monitoring = ET.SubElement(Node, 'Monitoring')
+  Node_Monitoring = SetNodeAttribute(Node_Monitoring,{'type':MonitoringItem.Type,'enable':MonitoringItem.Enable})
+  Node_SleepTime  = ET.SubElement(Node_Monitoring, 'MonitoringSleepTime')
+  Node_SleepTime.text = str(MonitoringItem.SleepTime)
+  Node_MonitoringElements = ET.SubElement(Node_Monitoring, 'MonitoringElements')
+  Node_MonitoringElements = SetNodeAttribute(Node_MonitoringElements,MonitoringItem.MonitoringList)
+  return Node
 
 def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
   Node_HWInterface = ET.Element('HwDescription')
@@ -232,6 +260,12 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
   Node_Settings = ET.SubElement(Node_HWInterface, 'Settings')
   Node_Settings = SetNodeValue(Node_Settings, HWDescription.Settings)
 
+  Node_MonitoringSettings = ET.SubElement(Node_HWInterface, 'MonitoringSettings')
+  MonitoringList = HWDescription.MonitoringList
+  for MonitoringItem in MonitoringList:
+    Node_Monitoring = ET.SubElement(Node_MonitoringSettings, 'Monitoring')
+    Node_Monitoring = SetMonitoring(Node_Monitoring, MonitoringItem)
+    
   xmlstr = prettify(Node_HWInterface)
   with open(outputFile, "w") as f:
     f.write(str(xmlstr))

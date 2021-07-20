@@ -39,9 +39,16 @@ FESettings = {
 'VOLTAGE_TRIM_DIG'      :   "16",
 'VOLTAGE_TRIM_ANA'      :   "16",
 
+'CML_CONFIG_SER_EN_TAP' : "0b00",
+'CML_CONFIG_SER_INV_TAP': "0b00",
+'CML_TAP0_BIAS'         :  "500",
+'CML_TAP1_BIAS'         :    "0",
+'CML_TAP2_BIAS'         :    "0",
+
 'MONITOR_CONFIG_ADC'    :    "5",
 'MONITOR_CONFIG_BG'     :   "12",
 'ADC_OFFSET_VOLT'       :   "63",
+
 'ADC_MAXIMUM_VOLT'      :  "839",
 'TEMPSENS_IDEAL_FACTOR' : "1225",
 }

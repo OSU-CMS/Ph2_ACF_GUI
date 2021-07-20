@@ -193,7 +193,7 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
 
 
 def GenerateXMLConfig(firmwareList, testName, outputDir):
-	try:
+	#try:
 		outputFile = outputDir + "/CMSIT_" + testName +".xml" 
 
 		HWDescription0 = HWDescription()
@@ -214,12 +214,15 @@ def GenerateXMLConfig(firmwareList, testName, outputDir):
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		HWDescription0.AddBeBoard(BeBoardModule0)
 		HWDescription0.AddSettings(HWSettings_Dict[testName])
+		MonitoringModule0 = MonitoringModule()
+		MonitoringModule0.SetMonitoringList(MonitoringList)
+		HWDescription0.AddMonitoring(MonitoringModule0)
 		GenerateHWDescriptionXML(HWDescription0,outputFile)
-	except:
-		logger.warning("Unexpcted issue generating {}. Please check the file".format(outputFile))
-		outputFile = None
+	#except:
+	#	logger.warning("Unexpcted issue generating {}. Please check the file".format(outputFile))
+	#	outputFile = None
 
-	return outputFile
+		return outputFile
 
 ##########################################################################
 ##  Functions for setting up XML and RD53 configuration (END)

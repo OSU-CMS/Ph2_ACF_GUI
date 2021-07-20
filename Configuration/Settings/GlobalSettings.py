@@ -11,6 +11,26 @@ globalSettings = {
 'EN_MACRO_COL_CAL_LIN_4' : "65535",
 'EN_MACRO_COL_CAL_LIN_5' :    "15",
 
+'EN_MACRO_COL_CAL_SYNC_1': "65535",
+'EN_MACRO_COL_CAL_SYNC_2': "65535",
+'EN_MACRO_COL_CAL_SYNC_3': "65535",
+'EN_MACRO_COL_CAL_SYNC_4': "65535",
+
+'EN_MACRO_COL_CAL_DIFF_1': "65535",
+'EN_MACRO_COL_CAL_DIFF_2': "65535",
+'EN_MACRO_COL_CAL_DIFF_3': "65535",
+'EN_MACRO_COL_CAL_DIFF_4': "65535",
+'EN_MACRO_COL_CAL_DIFF_5':    "15",
+
+'HITOR_0_MASK_LIN_0'     :     "0",
+'HITOR_0_MASK_LIN_1'     :     "0",
+'HITOR_1_MASK_LIN_0'     :     "0",
+'HITOR_1_MASK_LIN_1'     :     "0",
+'HITOR_2_MASK_LIN_0'     :     "0",
+'HITOR_2_MASK_LIN_1'     :     "0",
+'HITOR_3_MASK_LIN_0'     :     "0",
+'HITOR_3_MASK_LIN_1'     :     "0",
+
 'HITOR_0_MASK_SYNC'      : "65535",
 'HITOR_1_MASK_SYNC'      : "65535",
 'HITOR_2_MASK_SYNC'      : "65535",
@@ -30,6 +50,11 @@ globalSettings = {
 'BITFLIP_ERR_CNT'        :     "0",
 'CMDERR_CNT'             :     "0",
 'SKIPPED_TRIGGER_CNT'    :     "1",
+'HITOR_0_CNT'            :     "0",
+'HITOR_1_CNT'            :     "0",
+'HITOR_2_CNT'            :     "0",
+'HITOR_3_CNT'            :     "0",
+
 }
 
 globalSettings_Dict = {
