@@ -49,10 +49,10 @@ class PowerSupply():
 		self.ResourcesManager = visa.ResourceManager('@py')
 
 	def setSCPIParser(self):
-		if self.Model == "Keithley" and self.isHV():
+		if self.isHV():
 			self.SCPI = importlib.import_module("Gui.python.Keithley2400RS232")
 
-		elif self.Model == "KeySight" and self.isLV():
+		elif self.isLV():
 			self.SCPI = importlib.import_module("Gui.python.KeySightE3633RS232")
 
 
