@@ -2,28 +2,31 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def InitailDevice(device):
+def InitialDevice(device):
 	try:
-		device.write("*RST")
+		device.write(":SYSTEM:REMOTE")
+		device.write("*RST")		
 	except Exception as err:
 		logger.error("Error occured while restore defaults: {}".format(err))
 	# Select voltage source mode
 
 def GetInfo(device):
 	try:
-		print(device.query("*IDN?"))
+		info =  device.query("*IDN?")
+		print(info)
+		return info
 	except Exception as err:
 		logger.error("Error occured while requesting the identification: {}".format(err))
 
 def TurnOn(device):
 	try:
-		device.write(":STATE  ON")
+		device.write(":OUTPUT ON")
 	except Exception as err:
 		logger.error("Error occured while turning on the device: {}".format(err))
 
 def TurnOff(device):
 	try:
-		device.write(":STATE OFF")
+		device.write(":OUTPUT OFF")
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
 
@@ -52,22 +55,16 @@ def setComplianceLimit(device, compcurrent = 0.0):
 
 def ReadVoltage(device):
 	try:
-		device.write(' MEASURE:VOLT ?')
-		device.read_termination = '\r'
-		device.write(':READ?')
-		Measure = device.read()
-		MeasureVolt = float(Measure.split(',')[0])
+		MeasureVolt = device.query("MEASURE:VOLTAGE?")
+		#MeasureVolt = float(Measure.split(',')[0])
 		return MeasureVolt
 	except Exception as err:
 		logger.error("Error occured while reading voltage value: {}".format(err))
 
 def ReadCurrent(device):
 	try:
-		device.write(' MEASURE:CURR ?')
-		device.read_termination = '\r'
-		device.write(':READ?')
-		Measure = device.read()
-		MeasureCurr = float(Measure.split(',')[0])
+		MeasureCurr = device.query("MEASURE:VOLTAGE?")
+		#MeasureCurr = float(Measure.split(',')[0])
 		return MeasureCurr
 	except Exception as err:
 		logger.error("Error occured while reading current value: {}".format(err))

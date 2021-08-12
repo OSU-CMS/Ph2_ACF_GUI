@@ -53,6 +53,19 @@ BoxSize = {
 	"QuadSCC"	: 4
 }
 
+HVPowerSupplyModel = {
+	"Keithley2400 (RS232)"    :  "Gui.python.Keithley2400RS232",
+}
+
+LVPowerSupplyModel = {
+	"KeySightE3633 (RS232)"   :  "Gui.python.KeySightE3633RS232",
+}
+
+PowerSupplyModel_Termination = {
+	"Keithley2400 (RS232)"    :  '\r',
+	"KeySightE3633 (RS232)"   :  '\r\n',
+}
+
 
 ConfigFiles = {
 	'Latency'                :  '/Configuration/Defaults/CMSIT.xml',

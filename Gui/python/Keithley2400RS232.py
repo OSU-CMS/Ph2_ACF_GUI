@@ -2,7 +2,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-def InitailDevice(device):
+def InitialDevice(device):
 	try:
 		device.write("*RST")
 	except Exception as err:
@@ -16,7 +16,9 @@ def InitailDevice(device):
 
 def GetInfo(device):
 	try:
-		print(device.query("*IDN?"))
+		info =  device.query("*IDN?")
+		print(info)
+		return info
 	except Exception as err:
 		logger.error("Error occured while requesting the identification: {}".format(err))
 

@@ -378,6 +378,10 @@ class QtApplication(QWidget):
 		self.HVPowerList = self.HVpowersupply.listResources()
 		self.HVPowerCombo = QComboBox()
 		self.HVPowerCombo.addItems(self.HVPowerList)
+		self.HVPowerModelLabel = QLabel()
+		self.HVPowerModelLabel.setText("HV Power Model:")
+		self.HVPowerModelCombo = QComboBox()
+		self.HVPowerModelCombo.addItems(HVPowerSupplyModel.keys())
 		self.HVPowerStatusValue = QLabel()
 		self.UseHVPowerSupply = QPushButton("&Use")
 		self.UseHVPowerSupply.clicked.connect(self.frozeHVPowerPanel)
@@ -387,6 +391,8 @@ class QtApplication(QWidget):
 
 		self.HVPowerLayout.addWidget(self.HVPowerStatusLabel)
 		self.HVPowerLayout.addWidget(self.HVPowerCombo)
+		self.HVPowerLayout.addWidget(self.HVPowerModelLabel)
+		self.HVPowerLayout.addWidget(self.HVPowerModelCombo)
 		self.HVPowerLayout.addWidget(self.HVPowerStatusValue)
 		self.HVPowerLayout.addStretch(1)
 		self.HVPowerLayout.addWidget(self.UseHVPowerSupply)
@@ -406,6 +412,10 @@ class QtApplication(QWidget):
 		self.LVPowerList = self.LVpowersupply.listResources()
 		self.LVPowerCombo = QComboBox()
 		self.LVPowerCombo.addItems(self.LVPowerList)
+		self.LVPowerModelLabel = QLabel()
+		self.LVPowerModelLabel.setText("LV Power Model:")
+		self.LVPowerModelCombo = QComboBox()
+		self.LVPowerModelCombo.addItems(LVPowerSupplyModel.keys())
 		self.LVPowerStatusValue = QLabel()
 		self.UseLVPowerSupply = QPushButton("&Use")
 		self.UseLVPowerSupply.clicked.connect(self.frozeLVPowerPanel)
@@ -415,6 +425,8 @@ class QtApplication(QWidget):
 
 		self.LVPowerLayout.addWidget(self.LVPowerStatusLabel)
 		self.LVPowerLayout.addWidget(self.LVPowerCombo)
+		self.LVPowerLayout.addWidget(self.LVPowerModelLabel)
+		self.LVPowerLayout.addWidget(self.LVPowerModelCombo)
 		self.LVPowerLayout.addWidget(self.LVPowerStatusValue)
 		self.LVPowerLayout.addStretch(1)
 		self.LVPowerLayout.addWidget(self.UseLVPowerSupply)
@@ -622,21 +634,21 @@ class QtApplication(QWidget):
 	
 	def frozeHVPowerPanel(self):
 		# Block for HVPowerSupply operation
+		self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
 		self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
 		self.HVpowersupply.getInfo()
-		self.HVpowersupply.TurnOn()
+		# self.HVpowersupply.TurnOn()
 		# Block for GUI front-end
-		statusString = "Under development"
-		if "successful" in statusString:
+		statusString = self.HVpowersupply.getInfo()
+		if statusString != "No valid device" :
 			self.HVPowerStatusValue.setStyleSheet("color:green")
 		else:
 			self.HVPowerStatusValue.setStyleSheet("color:red")
-		if "successful" in statusString or "Under development" == statusString:
+		if statusString:
 			self.HVPowerCombo.setDisabled(True)
 			self.HVPowerStatusValue.setText(statusString)
 			self.UseHVPowerSupply.setDisabled(True)
 			self.ReleaseHVPowerSupply.setDisabled(False)
-
 		else:
 			self.HVPowerStatusValue.setText(statusString)
 
@@ -656,23 +668,23 @@ class QtApplication(QWidget):
 	
 	def frozeLVPowerPanel(self):
 		# Block for LVPowerSupply operation
+		self.LVpowersupply.setPowerModel(LVPowerSupplyModel[self.LVPowerModelCombo.currentText()])
 		self.LVpowersupply.setInstrument(self.LVPowerCombo.currentText())
 		self.LVpowersupply.getInfo()
-		self.LVpowersupply.TurnOn()
+		#self.LVpowersupply.TurnOn()
 		# Block for GUI front-end
-		statusString = "Under development"
-		if "successful" in statusString:
+		statusString = self.LVpowersupply.getInfo()
+		if statusString != "No valid device":
 			self.LVPowerStatusValue.setStyleSheet("color:green")
 		else:
 			self.LVPowerStatusValue.setStyleSheet("color:red")
-		if "successful" in statusString or "Under development" == statusString:
+		if statusString:
 			self.LVPowerCombo.setDisabled(True)
 			self.LVPowerStatusValue.setText(statusString)
 			self.UseLVPowerSupply.setDisabled(True)
 			self.ReleaseLVPowerSupply.setDisabled(False)
-
 		else:
-			self.LVPowerStatusValue.setText(statusString)
+			self.LVPowerStatusValue.setText("No valid device")
 
 	def releaseLVPowerPanel(self):
 		self.LVpowersupply.TurnOff()
