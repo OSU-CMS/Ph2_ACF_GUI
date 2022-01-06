@@ -1,3 +1,5 @@
+#November 19 2021:  Edited by Matt Joyce.  Added information for Purdue database to DBNames and DBServerIP
+
 import os
 
 FirmwareList = {}
@@ -24,6 +26,7 @@ DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
 	'local'					 :  '127.0.0.1',
 	'OSU-remote'			 :  '128.146.38.1',
+        'Purdue-remote'                  :  'cmsfpixdb.physics.purdue.edu',
 }
 
 
@@ -33,6 +36,7 @@ DBNames = {
 	'Central-remote'		 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
 	'local'					 :  ['SampleDB','phase2pixel_test'],
 	'OSU-remote'			 :  ['SampleDB','phase2pixel_test'],
+        'Purdue-remote'                  :  ['cmsfpix_phase2'],
 }
 
 # Set the IT_uTDC_firmware for test

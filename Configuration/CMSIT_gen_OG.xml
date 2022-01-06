@@ -1,0 +1,125 @@
+<?xml version="1.0" ?>
+<HwDescription>
+  <BeBoard Id="0" boardType="RD53" eventType="VR">
+    <connection address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=192.168.1.80:50001"/>
+    <OpticalGroup FMCId="0" Id="0">
+      <Hybrid Id="0" Status="1">
+        <RD53_Files file="./"/>
+        <RD53 Id="0" Lane="0" configfile="CMSIT_RD53.txt">
+          <Settings ADC_MAXIMUM_VOLT="839" ADC_OFFSET_VOLT="63" CLK_DATA_DELAY="0" CML_CONFIG_SER_EN_TAP="0b00" CML_CONFIG_SER_INV_TAP="0b00" CML_TAP0_BIAS="500" CML_TAP1_BIAS="0" CML_TAP2_BIAS="0" COMP_DIFF="1023" COMP_LIN="110" CONF_FE_DIFF="0" CONF_FE_SYNC="2" FC_BIAS_LIN="20" FOL_DIFF="542" GP_LVDS_ROUTE="0" IBIASP1_SYNC="100" IBIASP2_SYNC="150" IBIAS_DISC_SYNC="280" IBIAS_KRUM_SYNC="55" IBIAS_SF_SYNC="80" ICTRL_SYNCT_SYNC="100" INJECTION_SELECT="9" KRUM_CURR_LIN="29" LATENCY_CONFIG="136" LCC_DIFF="20" LDAC_LIN="130" MONITOR_CONFIG_ADC="5" MONITOR_CONFIG_BG="12" PA_IN_BIAS_LIN="350" PRECOMP_DIFF="512" PRMP_DIFF="511" REF_KRUM_LIN="300" TEMPSENS_IDEAL_FACTOR="1225" VBL_SYNC="360" VCAL_HIGH="600" VCAL_MED="100" VFF_DIFF="40" VOLTAGE_TRIM_ANA="16" VOLTAGE_TRIM_DIG="16" VREF_KRUM_SYNC="450" VTH1_DIFF="700" VTH2_DIFF="100" VTH_SYNC="400" Vthreshold_LIN="400"/>
+        </RD53>
+        <Global BITFLIP_ERR_CNT="0" BITFLIP_WNG_CNT="0" CMDERR_CNT="0" EN_CORE_COL_DIFF_1="0" EN_CORE_COL_DIFF_2="0" EN_CORE_COL_LIN_1="65535" EN_CORE_COL_LIN_2="1" EN_CORE_COL_SYNC="0" EN_MACRO_COL_CAL_DIFF_1="65535" EN_MACRO_COL_CAL_DIFF_2="65535" EN_MACRO_COL_CAL_DIFF_3="65535" EN_MACRO_COL_CAL_DIFF_4="65535" EN_MACRO_COL_CAL_DIFF_5="15" EN_MACRO_COL_CAL_LIN_1="65535" EN_MACRO_COL_CAL_LIN_2="65535" EN_MACRO_COL_CAL_LIN_3="65535" EN_MACRO_COL_CAL_LIN_4="65535" EN_MACRO_COL_CAL_LIN_5="15" EN_MACRO_COL_CAL_SYNC_1="65535" EN_MACRO_COL_CAL_SYNC_2="65535" EN_MACRO_COL_CAL_SYNC_3="65535" EN_MACRO_COL_CAL_SYNC_4="65535" HITOR_0_CNT="0" HITOR_0_MASK_DIFF_0="65535" HITOR_0_MASK_DIFF_1="1" HITOR_0_MASK_LIN_0="0" HITOR_0_MASK_LIN_1="0" HITOR_0_MASK_SYNC="65535" HITOR_1_CNT="0" HITOR_1_MASK_DIFF_0="65535" HITOR_1_MASK_DIFF_1="1" HITOR_1_MASK_LIN_0="0" HITOR_1_MASK_LIN_1="0" HITOR_1_MASK_SYNC="65535" HITOR_2_CNT="0" HITOR_2_MASK_DIFF_0="65535" HITOR_2_MASK_DIFF_1="1" HITOR_2_MASK_LIN_0="0" HITOR_2_MASK_LIN_1="0" HITOR_2_MASK_SYNC="65535" HITOR_3_CNT="0" HITOR_3_MASK_DIFF_0="65535" HITOR_3_MASK_DIFF_1="1" HITOR_3_MASK_LIN_0="0" HITOR_3_MASK_LIN_1="0" HITOR_3_MASK_SYNC="65535" LOCKLOSS_CNT="0" SKIPPED_TRIGGER_CNT="1"/>
+      </Hybrid>
+    </OpticalGroup>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="fast_cmd_reg_2">
+          <Register name="trigger_source">2</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="fast_cmd_reg_2">
+          <Register name="HitOr_enable_l12">0</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg1">
+          <Register name="dio5_ch1_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg1">
+          <Register name="dio5_ch2_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="dio5_ch3_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="dio5_ch4_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="dio5_ch5_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="ext_clk_en">0</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="fast_cmd_reg_3">
+          <Register name="triggers_to_accept">10</Register>
+        </Register>
+      </Register>
+    </Register>
+  </BeBoard>
+  <Settings>
+    <Setting name="nEvents">100</Setting>
+    <Setting name="nEvtsBurst">100</Setting>
+    <Setting name="VDDDTrimTarget">1.3</Setting>
+    <Setting name="VDDATrimTarget">1.2</Setting>
+    <Setting name="VDDDTrimTolerance">0.01</Setting>
+    <Setting name="VDDATrimTolerance">0.01</Setting>
+    <Setting name="nTRIGxEvent">10</Setting>
+    <Setting name="INJtype">1</Setting>
+    <Setting name="ResetMask">0</Setting>
+    <Setting name="ResetTDAC">0</Setting>
+    <Setting name="ROWstart">0</Setting>
+    <Setting name="ROWstop">191</Setting>
+    <Setting name="COLstart">128</Setting>
+    <Setting name="COLstop">263</Setting>
+    <Setting name="LatencyStart">0</Setting>
+    <Setting name="LatencyStop">511</Setting>
+    <Setting name="VCalHstart">100</Setting>
+    <Setting name="VCalHstop">600</Setting>
+    <Setting name="VCalHnsteps">50</Setting>
+    <Setting name="VCalMED">100</Setting>
+    <Setting name="TargetCharge">20000</Setting>
+    <Setting name="KrumCurrStart">0</Setting>
+    <Setting name="KrumCurrStop">127</Setting>
+    <Setting name="ThrStart">340</Setting>
+    <Setting name="ThrStop">440</Setting>
+    <Setting name="TargetThr">2000</Setting>
+    <Setting name="TargetOcc">1e-06</Setting>
+    <Setting name="UnstuckPixels">0</Setting>
+    <Setting name="TAP0Start">0</Setting>
+    <Setting name="TAP0Stop">1023</Setting>
+    <Setting name="TAP1Start">0</Setting>
+    <Setting name="TAP1Stop">511</Setting>
+    <Setting name="TAP2Start">0</Setting>
+    <Setting name="TAP2Stop">511</Setting>
+    <Setting name="chain2Test">0</Setting>
+    <Setting name="byTime">1</Setting>
+    <Setting name="framesORtime">10</Setting>
+    <Setting name="DoFast">0</Setting>
+    <Setting name="DisplayHisto">0</Setting>
+    <Setting name="UpdateChipCfg">1</Setting>
+    <Setting name="SaveBinaryData">0</Setting>
+    <Setting name="nHITxCol">1</Setting>
+    <Setting name="InjLatency">32</Setting>
+    <Setting name="nClkDelays">280</Setting>
+  </Settings>
+  <MonitoringSettings/>
+</HwDescription>

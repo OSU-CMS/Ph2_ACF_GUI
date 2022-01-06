@@ -1,0 +1,114 @@
+<HwDescription>
+  <BeBoard Id="0" boardType="RD53" eventType="VR">
+    <connection id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=192.168.1.80:50001" address_table="file://../settings/address_tables/CMSIT_address_table.xml"/>
+
+    <!-- Frontend chip configuration -->
+    <OpticalGroup Id="0" FMCId="0">
+      <!--
+      <lpGBT_Files path="./" />
+      <lpGBT configfile="CMSIT_lpGBT.txt">
+        <Settings
+            EPRXDllConfig = "81"
+            />
+      </lpGBT>
+      -->
+      <Hybrid Id="0" Status="1">
+        <RD53_Files path="./"/>
+
+        <RD53 Id="0" Lane="0" configfile="CMSIT_RD53.txt">
+          <!-- Overwrite .txt configuration file settings -->
+          <Settings PA_IN_BIAS_LIN="350" FC_BIAS_LIN="20" KRUM_CURR_LIN="29" LDAC_LIN="130" COMP_LIN="110" REF_KRUM_LIN="300" Vthreshold_LIN="400" IBIASP1_SYNC="100" IBIASP2_SYNC="150" IBIAS_SF_SYNC="80" IBIAS_KRUM_SYNC="55" IBIAS_DISC_SYNC="280" ICTRL_SYNCT_SYNC="100" VBL_SYNC="360" VTH_SYNC="400" VREF_KRUM_SYNC="450" CONF_FE_SYNC="2" PRMP_DIFF="511" FOL_DIFF="542" PRECOMP_DIFF="512" COMP_DIFF="1023" VFF_DIFF="40" VTH1_DIFF="700" VTH2_DIFF="100" LCC_DIFF="20" CONF_FE_DIFF="0" VCAL_HIGH="600" VCAL_MED="100" GP_LVDS_ROUTE="0" LATENCY_CONFIG="136" CLK_DATA_DELAY="0" INJECTION_SELECT="9" VOLTAGE_TRIM="648" ADC_MONITOR_CONFIG="5" BG_MONITOR_CONFIG="12" ADC_OFFSET_VOLT="63" ADC_MAXIMUM_VOLT="839" TEMPSENS_IDEAL_FACTOR="1225"/>
+          <!--
+              Monitoring: ADC_MONITOR_CONFIG, BG_MONITOR_CONFIG, ADC_OFFSET_VOLT, ADC_MAXIMUM_VOLT, TEMPSENS_IDEAL_FACTOR
+              CLK_DATA_DELAY: [8] clk phase; [7:4] clk delay; [3:0] data delay
+          -->
+        </RD53>
+
+        <Global EN_CORE_COL_SYNC="0" EN_CORE_COL_LIN_1="65535" EN_CORE_COL_LIN_2="1" EN_CORE_COL_DIFF_1="0" EN_CORE_COL_DIFF_2="0" EN_MACRO_COL_CAL_LIN_1="65535" EN_MACRO_COL_CAL_LIN_2="65535" EN_MACRO_COL_CAL_LIN_3="65535" EN_MACRO_COL_CAL_LIN_4="65535" EN_MACRO_COL_CAL_LIN_5="15" EN_MACRO_COL_CAL_SYNC_1="65535" EN_MACRO_COL_CAL_SYNC_2="65535" EN_MACRO_COL_CAL_SYNC_3="65535" EN_MACRO_COL_CAL_SYNC_4="65535" EN_MACRO_COL_CAL_DIFF_1="65535" EN_MACRO_COL_CAL_DIFF_2="65535" EN_MACRO_COL_CAL_DIFF_3="65535" EN_MACRO_COL_CAL_DIFF_4="65535" EN_MACRO_COL_CAL_DIFF_5="15" HITOR_0_MASK_SYNC="65535" HITOR_1_MASK_SYNC="65535" HITOR_2_MASK_SYNC="65535" HITOR_3_MASK_SYNC="65535" HITOR_0_MASK_DIFF_0="65535" HITOR_0_MASK_DIFF_1="1" HITOR_1_MASK_DIFF_0="65535" HITOR_1_MASK_DIFF_1="1" HITOR_2_MASK_DIFF_0="65535" HITOR_2_MASK_DIFF_1="1" HITOR_3_MASK_DIFF_0="65535" HITOR_3_MASK_DIFF_1="1" LOCKLOSS_CNT="0" BITFLIP_WNG_CNT="0" BITFLIP_ERR_CNT="0" CMDERR_CNT="0" SKIPPED_TRIGGER_CNT="0"/>
+      </Hybrid>
+    </OpticalGroup>
+
+    <!-- Configuration for backend readout board -->
+    <Register name="user">
+      <Register name="ctrl_regs">
+
+        <Register name="fast_cmd_reg_2">
+          <Register name="trigger_source"> 2 </Register>
+          <!-- 1=IPBus, 2=Test-FSM, 3=TTC, 4=TLU, 5=External, 6=Hit-Or, 7=User-defined frequency -->
+          <Register name="HitOr_enable_l12"> 0 </Register>
+          <!-- Enable HitOr port: set trigger_source to proper value then this register, 0b0001 enable HitOr from left-most connector, 0b1000 enable HitOr from right-most connector -->
+        </Register>
+
+        <Register name="ext_tlu_reg2">
+          <Register name="ext_clk_en"> 0 </Register>
+        </Register>
+
+        <!--
+        <Register name="fast_cmd_reg_3">
+          <Register name="triggers_to_accept"> 10 </Register>
+        </Register>
+        -->
+
+      </Register>
+    </Register>
+
+  </BeBoard>
+
+  <Settings>
+    <!--
+        === Calibration parameters ===
+        INJtype       = 0: no injection;                             INJtype       = 1: analog;         INJtype = 2: digital
+        DoFast        = 0: run on all pixels in the selected region; DoFast        = 1: run on a subset
+        DisplayHisto  = 0: don't display;                            DisplayHisto  = 1: display
+        UpdateChipCfg = 0: don't update;                             UpdateChipCfg = 1: update
+
+        TargetCharge: average charge (electrons) corresponding to ToT point = max value - 1
+        TargetOcc:    average fraction of acceptable hits per pixel
+    -->
+    <Setting name="nEvents">          100 </Setting>
+    <Setting name="nEvtsBurst">       100 </Setting>
+    <!-- For Noise and Threshold Minimization
+    <Setting name="nEvents">     10000000 </Setting>
+    <Setting name="nEvtsBurst">     10000 </Setting>
+    -->
+
+    <Setting name="nTRIGxEvent">       10 </Setting>
+    <Setting name="INJtype">            1 </Setting>
+
+    <Setting name="ROWstart">           0 </Setting>
+    <Setting name="ROWstop">          191 </Setting>
+    <Setting name="COLstart">         128 </Setting>
+    <Setting name="COLstop">          263 </Setting>
+
+    <Setting name="LatencyStart">       0 </Setting>
+    <Setting name="LatencyStop">      511 </Setting>
+
+    <Setting name="VCalHstart">       100 </Setting>
+    <Setting name="VCalHstop">        600 </Setting>
+    <Setting name="VCalHnsteps">       50 </Setting>
+    <Setting name="VCalMED">          100 </Setting>
+
+    <Setting name="TargetCharge">   20000 </Setting>
+    <Setting name="KrumCurrStart">      0 </Setting>
+    <Setting name="KrumCurrStop">     127 </Setting>
+
+    <Setting name="ThrStart">         340 </Setting>
+    <Setting name="ThrStop">          440 </Setting>
+    <Setting name="TargetThr">       2000 </Setting>
+    <Setting name="TargetOcc">       1e-6 </Setting>
+
+    <Setting name="DoFast">             0 </Setting>
+    <Setting name="DisplayHisto">       0 </Setting>
+    <Setting name="UpdateChipCfg">      1 </Setting>
+
+    <!-- === Expert settings ===
+         SaveBinaryData = 0: do not save raw data in binary format; SaveBinaryData = 1: save raw data in binary format
+         nHITxCol:      number of simultaneously injected pixels per column (it must be a divider of chip rows)
+         nClkDelays:    controls the delay between two consecutive injections in terms of 100ns period
+    -->
+    <Setting name="SaveBinaryData">     0 </Setting>
+    <Setting name="nHITxCol">           1 </Setting>
+    <Setting name="nClkDelays">       280 </Setting>
+  </Settings>
+
+</HwDescription>
