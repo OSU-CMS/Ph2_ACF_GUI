@@ -31,7 +31,8 @@ class QtModuleReviewWindow(QWidget):
 		self.info = info
 		self.connection = self.master.connection
 		self.GroupBoxSeg = [1, 10,  1]
-		self.columns = ["id","part_id","username","description","testname","data_id","grade","date"]
+		#self.columns = ["id","part_id","username","description","testname","data_id","grade","date"]
+		self.columns = ["id","date","description","data","part_id","type"]
 		#Fixme: QTimer to be added to update the page automatically
 
 		self.mainLayout = QGridLayout()
