@@ -634,10 +634,11 @@ class QtApplication(QWidget):
 	
 	def frozeHVPowerPanel(self):
 		# Block for HVPowerSupply operation
-		self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
+		#self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
+		self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
 		self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
 		self.HVpowersupply.getInfo()
-		# self.HVpowersupply.TurnOn()
+		self.HVpowersupply.TurnOn()
 		# Block for GUI front-end
 		statusString = self.HVpowersupply.getInfo()
 		if statusString != "No valid device" :
@@ -668,7 +669,7 @@ class QtApplication(QWidget):
 	
 	def frozeLVPowerPanel(self):
 		# Block for LVPowerSupply operation
-		self.LVpowersupply.setPowerModel(LVPowerSupplyModel[self.LVPowerModelCombo.currentText()])
+		self.LVpowersupply.setPowerModel(self.LVPowerModelCombo.currentText())
 		self.LVpowersupply.setInstrument(self.LVPowerCombo.currentText())
 		self.LVpowersupply.getInfo()
 		#self.LVpowersupply.TurnOn()
