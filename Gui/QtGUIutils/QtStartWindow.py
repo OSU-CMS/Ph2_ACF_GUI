@@ -80,17 +80,19 @@ class SummaryBox(QWidget):
 			voltage = float(voltage)
 			if current < 0.6 and current > 0.3: 
 				self.result = True
-				self.CheckLabel.setText("current: {} OK\n voltage: {}".format(current,voltage))
+				self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
 				self.CheckLabel.setStyleSheet("color:green")
 			else:
 				self.result = False
-				self.CheckLabel.setText("current: {}\n voltage: {}".format(current,voltage))
+				self.CheckLabel.setText("Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
 				self.CheckLabel.setStyleSheet("color:red")
+			return self.result
 		except Exception as err:
 			self.result = False
 			self.CheckLabel.setText("No measurement")
 			self.CheckLabel.setStyleSheet("color:red")
 			#logging.Error("Failed to check current")
+			return False
 
 	def getDetails(self):
 		pass
@@ -255,7 +257,7 @@ class QtStartWindow(QWidget):
 				QMessageBox.information(None,"Error","No valid modlue ID!", QMessageBox.Ok)
 				return
 
-		if self.checkFwPar() == False:
+		if self.passCheck == False:
 			reply = QMessageBox().question(None, "Error", "Front-End parameter check failed, forced to continue?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 			if reply == QMessageBox.No:
 				return

@@ -1,14 +1,22 @@
 import logging
+import time
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 def InitialDevice(device):
 	try:
+		#device.write("*RST")
 		device.write(":SYSTEM:REMOTE")
-		device.write("*RST")		
+		#SetRemote(device)
 	except Exception as err:
 		logger.error("Error occured while restore defaults: {}".format(err))
 	# Select voltage source mode
+
+def Reset(device):
+	try:
+		device.write("*RST")
+	except Exception as err:
+		logger.error("Error while resetting {}".format(err))
 
 def GetInfo(device):
 	try:
@@ -32,12 +40,15 @@ def TurnOff(device):
 def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 	# Set Voltage range 2V and output to 1.78V
 	try:
-		reply = device.write(":SOURCE:VOLTAGE:PROTECTION:STATE ON")
+		#reply = device.write(":SOURCE:VOLTAGE:PROTECTION:STATE ON")
 		#state = device.query(":SOURCE:VOLTAGE:PROTECTION:STATE?")
-		#print(state)
 		#if not state:
 		#	logging.info("Voltage protection state: OFF")
-		reply = device.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
+		#reply = device.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
+		#time.sleep(0.3)
+		#reply = device.query(":SOURCE:VOLTAGE:PROTECTION:LEV?")
+		#print(reply)
+		#time.sleep(0.05)
 		reply = device.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(voltage))
 	except Exception as err:
 		logger.error("Error occured while setting voltage level: {}".format(err))
@@ -45,7 +56,7 @@ def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 def setComplianceLimit(device, compcurrent = 0.0):
 	## Current limit should be passed as argument
 	try:
-		device.write(":SOURCE:CURR:PROTECTION:STATE ON")
+		#device.write(":SOURCE:CURR:PROTECTION:STATE ON")
 		#state = device.query(":SOURCE:CURR:PROTECTION:STATE?")
 		#if not state:
 		#	logging.info("Current protection state: OFF")

@@ -239,7 +239,7 @@ void KeySightChannel::setVoltage(float voltage)
 {
     std::string command;
     command.reserve(50);
-    std::sprintf(&command[0], ":SOURCE:VOLTAGE:LEV:IMM:AMP %e", voltage);
+    std::sprintf(&command[0], ":SOURCE:VOLTAGE:LEV:IMM %e", voltage);
     write(command.c_str());
     fSetVoltage = voltage;
 }
@@ -254,7 +254,7 @@ void KeySightChannel::setCurrent(float current)
 {
     std::string command;
     command.reserve(50);
-    std::sprintf(&command[0], ":SOURCE:CURRENT:LEV:IMM:AMP %e", current);
+    std::sprintf(&command[0], ":SOURCE:CURRENT:LEV:IMM %e", current);
     write(command.c_str());
 }
 
@@ -328,12 +328,13 @@ float KeySightChannel::getOutputVoltage(void)
     if(isOn())
     {
         // Somehow the current should be read first before the voltage is measured, otherwise, the voltage measurement is "old"
-        fConnection->write("form:elem curr");
-        fConnection->read(":meas:curr?");
+        //fConnection->write("form:elem curr");
+        //fConnection->read(":meas:curr?");
 
-        fConnection->write(":form:elem volt");
+        //fConnection->write(":form:elem volt");
         // usleep(100);
-        std::string const answer = fConnection->read("MEASURE:VOLTAGE?");
+         fConnection->write("MEASURE:VOLTAGE?");
+        std::string const answer =  fConnection->read("MEASURE:VOLTAGE?");
         sscanf(answer.c_str(), "%f", &result);
     }
     return result;
@@ -366,7 +367,7 @@ float KeySightChannel::getCurrent(void)
     float result = 0;
     if(isOn())
     {
-        fConnection->write("form:elem curr");
+        //fConnection->write("form:elem curr");
         // usleep(100);
         std::string const answer = fConnection->read(":SOURCE:CURRENT?");
         // answer             = fConnection->read(":meas:curr?");

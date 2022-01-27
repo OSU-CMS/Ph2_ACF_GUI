@@ -331,8 +331,8 @@ def insertGenericTable(dbconnection, table, args, data):
 		pre_query = '''INSERT INTO ''' + str(table) + ''' ('''+ ",".join(["{}"]*len(args))+''')
 					VALUES ('''+ ",".join(['%s']*len(args))+''')'''
 		sql_query = pre_query.format(*args)
-		print (sql_query)
-		print (data)
+		#print (sql_query)
+		#print (data)
 		cur = dbconnection.cursor()
 		cur.execute(sql_query,data)
 		dbconnection.commit()

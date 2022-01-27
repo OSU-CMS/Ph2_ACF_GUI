@@ -653,12 +653,12 @@ class QtRunWindow(QWidget):
 		try:
 			if self.RunNumber == "-1":
 				os.system("cp {0}/test/Results/Run000000*.root {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
-				os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
-				os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+				#os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+				#os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
 			else:
 				os.system("cp {0}/test/Results/Run{1}*.root {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
-				os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
-				os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
+				#os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
+				#os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
 		except:
 			print("Failed to copy file to output directory")
 
@@ -682,11 +682,15 @@ class QtRunWindow(QWidget):
 
 					## Submit records for all modules
 					for module in moduleList:
-						getConfigInFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
+						#print ("Module is {0}".format(module))
+						module_id = module.strip('Module')
+						#print ("Module_ID is {0}".format(module_id))
+						getConfigInFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE) #changed module_id to module
 						configInFileList = getConfigInFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
-						getConfigOutFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
+						getConfigOutFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE) #changed module_id to module
 						configOutFileList = getConfigOutFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
-
+						getXMLFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.xml"  '.format(localDir), shell=True, stdout=subprocess.PIPE)
+						XMLFileList = getXMLFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
 						configcolumns = []
 						configdata = []
 						for configInFile in configInFileList:
@@ -701,19 +705,39 @@ class QtRunWindow(QWidget):
 								configOutBuffer = open(configOutFile,'rb')
 								configOutBin = configOutBuffer.read()
 								configdata.append(configOutBin)
-					
+						
+						xmlcolumns = []
+						xmldata = []
+						if len(XMLFileList) > 1:
+							print ("Warning!  There are multiple xml files here!")
+						for XMLFile in XMLFileList:
+							if XMLFile != [""]:
+								xmlcolumns.append("xml_file")
+								xmlBuffer = open(XMLFile, 'rb')
+								xmlBin = xmlBuffer.read()
+								xmldata.append(xmlBin)
+
 						#Columns = ["part_id","date","testname","description","grade","data_id","username", "config_file", "xml_file"]
-						Columns = ["part_id","test_id","test_name","date","test_grade","user","Chip0InConfig","Chip0OutConfig","Chip1InConfig","Chip1OutConfig","Chip2InConfig","Chip2OutConfig","Chip3InConfig","Chip3OutConfig","plot1","plot2"]
+						#Columns = ["part_id","test_id","test_name","date","test_grade","user","Chip0InConfig","Chip0OutConfig","Chip1InConfig","Chip1OutConfig","Chip2InConfig","Chip2OutConfig","Chip3InConfig","Chip3OutConfig","plot1","plot2"]
+						Columns = ["part_id","test_id","test_name","date","test_grade","user","plot1","plot2","root_file"]
 						SubmitArgs = []
 						Value = []
 						record = formatter(localDir,Columns, part_id=module)
-						for column in ['part_id']:
+						#record = formatter(localDir,Columns, part_id=str(module_id))
+						#for column in ['part_id']:
+						for column in Columns:
 							if column == "part_id":
 								SubmitArgs.append(column) 
 								Value.append(module) 
 							if column == "date":
 								SubmitArgs.append(column)
-								Value.append(record[Columns.index(column)])
+								if str(sys.version).split(" ")[0].startswith(("3.7","3.8","3.9")):
+									TimeStamp = datetime.fromisoformat(localDir.split('_')[-2])
+								elif str(sys.version).split(" ")[0].startswith(("3.6")):
+									TimeStamp = datetime.strptime(localDir.split('_')[-2].split('.')[0], '%Y-%m-%dT%H:%M:%S')
+								#print ("timestamp is {0}".format(TimeStamp))
+								Value.append(TimeStamp)
+								#Value.append(record[Columns.index(column)])
 							if column == "test_name":
 								SubmitArgs.append(column)
 								Value.append(record[Columns.index(column)])
@@ -729,12 +753,15 @@ class QtRunWindow(QWidget):
 							if column == "user":
 								SubmitArgs.append(column)
 								Value.append(self.master.TryUsername)
+							if column == "root_file":
+								SubmitArgs.append(column)
+								Value.append(submitFile.split("/")[-1])
 
-						SubmitArgs = SubmitArgs + configcolumns
-						Value = Value + configdata
+						SubmitArgs = SubmitArgs + configcolumns + xmlcolumns
+						Value = Value + configdata + xmldata
 			
 						try:
-							insertGenericTable(self.connection, "module_test", SubmitArgs, Value)
+							insertGenericTable(self.connection, "module_tests", SubmitArgs, Value)
 						except:
 							print("Failed to insert")
 			except Exception as err:

@@ -193,7 +193,7 @@ class PowerSupply():
 	def TurnOn(self):
 		self.setCompCurrent()
 		if self.UsingPythonInterface == True:
-			try:
+			#try:
 				self.hwInterface.InitialDevice(self.Instrument)
 				Voltage = 0.0
 				VoltProtection = 1.0
@@ -203,13 +203,15 @@ class PowerSupply():
 				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
 					Voltage = 1.78
 					VoltProtection = 1.8
-				logging.info("Setting LV to {}".format(Voltage))
-				self.Instrument.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(Voltage))
+				if self.PowerType == "LV":
+					logging.info("Setting LV to {}".format(Voltage))
+					#self.Instrument.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
+					#self.Instrument.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(Voltage))
 				self.hwInterface.SetVoltage(self.Instrument, voltage = Voltage, VoltProtection = VoltProtection)
-				self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
+				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.TurnOn(self.Instrument)
-			except Exception as err:
-				logging.error("Failed to turn on the sourceMeter:{}".format(err))
+			#except Exception as err:
+			#	logging.error("Failed to turn on the sourceMeter:{}".format(err))
 		else:
 			try:
 				Voltage = 0.0
