@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Plot
+    PlotFlag		 = "true"
+    SaveFlag    	 = "true"
+    SaveFormat		 = "pdf,png"
+    SaveFolder  	 = "results/IV_data/"
+    FileName    	 = "3D_ITSensorIV"
+    FileHeader		 = "Voltage,Current"
+    MatplotlibFlag	 = "true"
+>
+</Plot>
+<Devices>
+    <PowerSupply 
+        ID		 = "MyKeithley"
+        InUse       	 = "Yes"
+        Model       	 = "Keithley" 
+        Connection  	 = "Serial"
+	Port        	 = "/dev/ttyUSB0"
+	BaudRate    	 = "9600"
+	FlowControl 	 = "false"
+	Parity	    	 = "false"
+	RemoveEcho  	 = "false"
+	Terminator  	 = "LF"
+	Suffix	    	 = "LF"
+	Timeout	    	 = "1"
+    >
+    <Channel ID="Front" Channel="FRON" InUse ="No"/>
+    <Channel ID="Rear" Channel="REAR" InUse ="Yes"/>
+    </PowerSupply>
+</Devices>
+<Options	
+    Polarity		 = "negative"
+    Compliance	 	 = "2.e-6"
+    CurrentReadRangeAmp	 = "-1"
+    waitTimeSeconds      = "2"
+    VoltStepSize	 = "5"
+    Vmax		 = "80"
+    Panel		 = "rear"
+    VoltStepSizeRampDown = "10"
+    nPointsPerVolt	 = "10"
+>		
+</Options>
+
+

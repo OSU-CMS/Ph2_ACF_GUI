@@ -844,7 +844,7 @@ class QtDBConsoleWindow(QMainWindow):
 		Data.append(self.FCDateTimeEdit.dateTime().toUTC().toString("yyyy-dd-MM hh:mm:ss.z"))
 		Data.append(self.FCCommentEdit.toPlainText())
 		Data.append(self.FCNameEdit.text())
-		print(Data)
+		#print(Data)
 		try:
 			insertGenericTable(self.connection,"complaint",Args,Data)
 		except:

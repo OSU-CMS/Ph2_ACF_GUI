@@ -63,6 +63,7 @@ class ArduinoWidget(QWidget):
 		self.ResourcesManager = visa.ResourceManager('@py')
 		try:
 			self.ResourcesList = self.ResourcesManager.list_resources()
+			print(self.ResourcesList)
 			self.getDeviceName()
 			return list(self.deviceMap.keys())
 		except Exception as err:
@@ -98,10 +99,15 @@ class ArduinoWidget(QWidget):
 
 	def frozeArduinoPanel(self):
 		# Block for ArduinoSupply operation
-		self.setSerial(self.deviceMap[self.ArduinoCombo.currentText()],self.ArduinoBRCombo.currentText())
-		self.ArduinoCombo.setDisabled(True)
-		self.UseArduino.setDisabled(True)
-		self.ReleaseArduino.setDisabled(False)
+		try:
+			self.setSerial(self.deviceMap[self.ArduinoCombo.currentText()],self.ArduinoBRCombo.currentText())
+			#print(self.deviceMap[self.ArduinoCombo.currentText()])
+			self.ArduinoCombo.setDisabled(True)
+			self.ArduinoBRCombo.setDisabled(True)
+			self.UseArduino.setDisabled(True)
+			self.ReleaseArduino.setDisabled(False)
+		except err as Exception:
+			logger.error("Unable to use Arduino")
 
 
 	def releaseArduinoPanel(self):
@@ -109,6 +115,7 @@ class ArduinoWidget(QWidget):
 		self.ArduinoCombo.setDisabled(False)
 		self.ArduinoMeasureValue.setText("")
 		self.UseArduino.setDisabled(False)
+		self.ArduinoBRCombo.setDisabled(False)
 		self.ReleaseArduino.setDisabled(True)
 		self.ArduinoList = self.listResources()
 

@@ -58,16 +58,21 @@ BoxSize = {
 }
 
 HVPowerSupplyModel = {
-	"Keithley2400 (RS232)"    :  "Gui.python.Keithley2400RS232",
+	"Keithley 2410 (RS232)"    :  "Gui.python.Keithley2400RS232",
 }
 
 LVPowerSupplyModel = {
-	"KeySightE3633 (RS232)"   :  "Gui.python.KeySightE3633RS232",
+	"KeySight E3633 (RS232)"   :  "Gui.python.KeySightE3633RS232",
 }
 
 PowerSupplyModel_Termination = {
-	"Keithley2400 (RS232)"    :  '\r',
-	"KeySightE3633 (RS232)"   :  '\r\n',
+	"Keithley 2410 (RS232)"    :  '\r',
+	"KeySight E3633 (RS232)"   :  '\r\n',
+}
+
+PowerSupplyModel_XML_Termination = {
+	"Keithley 2410 (RS232)"    :  "CR",
+	"KeySight E3633 (RS232)"   :  "CRLF",
 }
 
 

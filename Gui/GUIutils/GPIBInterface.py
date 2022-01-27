@@ -6,6 +6,7 @@ import logging
 
 from Gui.GUIutils.settings import *
 from Configuration.XMLUtil import *
+from Gui.python.TCP_Interface import *
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -23,12 +24,13 @@ class PowerSupply():
 		self.XMLConfig = None
 		self.Port = None
 		self.DeviceNode = None
+		self.Answer = None
 		#Not used for pyvisa
 		#self.BoardNumber = int(boardnumber)
 		#self.PrimaryAddress = int(primaryaddress)
 		self.initPowerSupply()
 		self.setResourceManager()
-		#self.setSCPIParser()
+		#self.sethwInterfaceParser()
 
 	def initPowerSupply(self):
 		if os.environ.get("PowerSupplyArea") != None:
@@ -46,16 +48,10 @@ class PowerSupply():
 			self.PowerType = powertype
 
 	def isHV(self):
-		if self.PowerType == "HV":
-			return True
-		else:
-			return False
+		return self.PowerType == "HV"
 
 	def isLV(self):
-		if self.PowerType == "LV":
-			return True
-		else:
-			return False
+		return self.PowerType == "LV"
 
 	def setPowerModel(self, model):
 		self.Model = model
@@ -69,33 +65,39 @@ class PowerSupply():
 	def setResourceManager(self):
 		self.ResourcesManager = visa.ResourceManager('@py')
 
-	def setSCPIParser(self):
+	def sethwInterfaceParser(self):
 		if self.UsingPythonInterface == False:
 			return None
 		if self.isHV():
-			self.SCPI = importlib.import_module(HVPowerSupplyModel[self.Model])
+			self.hwInterface = importlib.import_module(HVPowerSupplyModel[self.Model])
 
 		elif self.isLV():
-			self.SCPI = importlib.import_module(LVPowerSupplyModel[self.Model])
+			self.hwInterface = importlib.import_module(LVPowerSupplyModel[self.Model])
 
 	def setDeviceXMLConfig(self):
-		ChannelFront = Channel()
-		PowerSupply0 = PowerSupplyNode()
-		PowerSupply0.ID = "{0}{1}".format(self.PowerType,self.Model.split()[0])
-		PowerSupply0.Port = self.Port
-		PowerSupply0.Model = self.Model.split()[0]
-		PowerSupply0.Terminator = PowerSupplyModel_Termination[self.Model]
-		PowerSupply0.addChannel(ChannelFront)
-		Device0 = Device()
-		Device0.setPowerSupply(PowerSupply0)
-		self.DeviceNode = Device0
-		return Device0
+		try:
+			ChannelFront = Channel()
+			PowerSupply0 = PowerSupplyNode()
+			self.ID = "{0}{1}".format(self.PowerType,self.Model.split()[0])
+			PowerSupply0.ID = self.ID
+			PowerSupply0.Port = self.Port
+			PowerSupply0.Model = self.Model.split()[0]
+			PowerSupply0.Suffix = PowerSupplyModel_XML_Termination[self.Model]
+			PowerSupply0.Terminator = PowerSupplyModel_XML_Termination[self.Model]
+			PowerSupply0.addChannel(ChannelFront)
+			Device0 = Device()
+			Device0.setPowerSupply(PowerSupply0)
+			self.DeviceNode = Device0
+			return Device0
+		except Exception as err:
+			logger.error("Error: Device not set properly in XML format with {0}".format(err))
+			return None
 		
 
 	def generateXMLConfig(self):
 		if self.UsingPythonInterface == False:
 			try:
-				XMLConfigFile = os.environ.get('GUI_dir')+"/Gui/.tmp/{0}PowerSupply.xml".format(self.PowerType)
+				XMLConfigFile = os.environ.get('GUI_dir')+"/power_supply/{0}PowerSupply.xml".format(self.PowerType)
 				deviceConfig = self.setDeviceXMLConfig()
 				GeneratePowerSupplyXML(deviceConfig,outputFile=XMLConfigFile)
 				self.XMLConfig = XMLConfigFile
@@ -124,16 +126,26 @@ class PowerSupply():
 				self.Instrument = self.ResourcesManager.open_resource("{}".format(self.deviceMap[resourceName]))
 				self.Instrument.read_termination=PowerSupplyModel_Termination[self.Model]
 				self.Instrument.write_termination=PowerSupplyModel_Termination[self.Model]
-				self.Port = resourceName.lstrip("ASRL").rstrip("::INSTR")
-				self.setSCPIParser()
+				self.Port = self.deviceMap[resourceName].lstrip("ASRL").rstrip("::INSTR")
+				self.sethwInterfaceParser()
 			except Exception as err:
 				logger.error("Failed to open resource {0}: {1}".format(resourceName,err))
 
 		else:
-			self.Port=resourceName.lstrip("ASRL").rstrip("::INSTR")
+			self.Port=self.deviceMap[resourceName].lstrip("ASRL").rstrip("::INSTR")
 			self.generateXMLConfig()
+			self.createInterface(self.XMLConfig)
 
+	def createInterface(self, xmlFile):
+		self.hwInterface = TCP_Interface(os.environ.get('GUI_dir')+"/power_supply", xmlFile)
+		self.hwInterface.update.connect(self.hwUpdate)
 
+	def hwUpdate(self, pHead, pAnswer):
+		if pAnswer is not None:
+			self.Answer = pAnswer
+			logger.info("TCP: PowerSupply {} - {}:{}".format(self.PowerType, pHead,pAnswer))
+		else:
+			self.Answer = None
 
 	def getDeviceName(self):
 		self.deviceMap = {}
@@ -161,14 +173,16 @@ class PowerSupply():
 	def getInfo(self):
 		if self.UsingPythonInterface == True:
 			try:
-				info = self.SCPI.GetInfo(self.Instrument)
+				info = self.hwInterface.GetInfo(self.Instrument)
 				return info
 			except Exception as err:
 				logging.error("Failed to get instrument information:{}".format(err))
 				return "No valid device"
 		else:
 			try:
-				pass
+				cmd = "GetInfo,PowerSupplyId:" + self.ID
+				self.hwInterface.executeCommand(cmd)
+				return self.Answer
 			except Exception as err:
 				logging.error("Failed to get instrument information:{}".format(err))
 				return "No valid device"
@@ -177,54 +191,119 @@ class PowerSupply():
 		pass
 
 	def TurnOn(self):
+		self.setCompCurrent()
 		if self.UsingPythonInterface == True:
-			try:
-				self.SCPI.InitialDevice(self.Instrument)
+			#try:
+				self.hwInterface.InitialDevice(self.Instrument)
 				Voltage = 0.0
 				VoltProtection = 1.0
-				if self.PowerType ==  "LV" and self.PoweringMode == "direct":
+				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
 					Voltage = 1.18
 					VoltProtection = 1.2
-				if self.PowerType == "LV" and self.PoweringMode == "LDO":
+				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
 					Voltage = 1.78
 					VoltProtection = 1.8
-				self.SCPI.SetVoltage(self.Instrument, voltage = Voltage, VoltProtection = VoltProtection)
-				self.SCPI.setComplianceLimit(self.Instrument,self.CompCurrent)
-				self.SCPI.TurnOn(self.Instrument)
+				if self.PowerType == "LV":
+					logging.info("Setting LV to {}".format(Voltage))
+					#self.Instrument.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
+					#self.Instrument.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(Voltage))
+				self.hwInterface.SetVoltage(self.Instrument, voltage = Voltage, VoltProtection = VoltProtection)
+				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
+				self.hwInterface.TurnOn(self.Instrument)
+			#except Exception as err:
+			#	logging.error("Failed to turn on the sourceMeter:{}".format(err))
+		else:
+			try:
+				Voltage = 0.0
+				VoltProtection = 1.0
+				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
+					Voltage = 1.18
+					VoltProtection = 1.2
+				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
+					Voltage = 1.78
+					VoltProtection = 1.8
+				# Setting Voltage
+				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ Voltage
+				self.hwInterface.executeCommand(cmd)
+				# Setting current compliance
+				cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ self.CompCurrent
+				self.hwInterface.executeCommand(cmd)
+				cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+				self.hwInterface.executeCommand(cmd)
+				return self.Answer
 			except Exception as err:
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
-		else:
-			pass
+				return None
+
 
 	def TurnOff(self):
 		if self.UsingPythonInterface == True:
 			try:
-				self.SCPI.TurnOff(self.Instrument)
+				self.hwInterface.TurnOff(self.Instrument)
 			except Exception as err:
 				logging.error("Failed to turn off the sourceMeter:{}".format(err))
 		else:
-			pass
+			try:
+				cmd = "TurnOff,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+				self.hwInterface.executeCommand(cmd)
+			except Exception as err:
+				logging.error("Failed to turn off the sourceMeter:{}".format(err))
 
 	def ReadVoltage(self):
 		if self.UsingPythonInterface == True:
-			self.SCPI.ReadVoltage(self.Instrument)
+			try:
+				voltage = self.hwInterface.ReadVoltage(self.Instrument)
+				return voltage
+			except Exception as err:
+				return None
 		else:
 			pass
 
-	def ReadCurret(self):
-		if self.UsingPythonInterface == True:
-			self.SCPI.ReadCurrent(self.Instrument)
+	def SetVoltage(self, voltage = 0.0):
+		if self.powertype == "HV":
+			return
+
+		if self.UsingPythonInterface ==  True:
+			try:
+				pass
+			except Exception as err:
+				logging.err("Failed to set {} voltage to {}".format(self.powertype, voltage))
 		else:
-			pass
+			try:
+				pass
+			except Exception as err:
+				logging.err("Failed to set {} voltage to {}".format(self.powertype, voltage))
+
+
+	def ReadCurrent(self):
+		if self.UsingPythonInterface == True:
+			try:
+				current = self.hwInterface.ReadCurrent(self.Instrument)
+				return current
+			except Exception as err:
+					pass
+		else:
+			try:
+				cmd = "GetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+				current = self.hwInterface.executeCommand(cmd)
+				return current
+			except Exception as err:
+				logging.error("Failed to retrive current")
+			
 
 	def RampingUp(self, hvTarget = 0.0, stepLength = 1.0):
 		try:
 			if self.isHV():
-				self.SCPI.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
+				self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
 			else:
 				logging.info("Not a HV power supply, abort")
 		except Exception as err:
 			logging.error("Failed to ramp the voltage to {0}:{1}".format(hvTarget,err))
+
+	def customized(self,cmd):
+		if "Keith" in self.Model:
+			cmd = "K2410:" + cmd
+		return cmd
 
 if __name__ == "__main__":
 	power = PowerSupply(powertype = "LV")

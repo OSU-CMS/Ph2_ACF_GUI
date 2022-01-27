@@ -420,7 +420,7 @@ class PowerSupplyNode():
 
 class Channel():
   def __init__(self):
-    self.ID="Front"
+    self.ID= "Front"
     self.Channel="FRON"
     self.InUse ="Yes"
   

@@ -8,7 +8,7 @@ Uses the following python packages: PyQt5 (https://pypi.org/project/PyQt5/), pyq
 Set up the software environment:
 ################################
 
-ANACONDA (RECOMMANDED) 
+ANACONDA (RECOMMENDED) 
 
 1. Install the ANACONDA:
 https://docs.anaconda.com/anaconda/install/
@@ -44,10 +44,11 @@ With each new ternimal for GUI, run "conda activate GUI" to activate the environ
 Run the GUI
 ################################
 
+You will first need to modify Setup.sh to include the paths to your Ph2_ACF working area and where you are locally storing test results.Next you will need to edit fc7_ip_address.txt so that the ip addresses for you fc7 boards are listed.
 ```
 source Setup.sh
 cd Gui
-python3 runApplication
+python3 QtApplication.py
 ```
 
 

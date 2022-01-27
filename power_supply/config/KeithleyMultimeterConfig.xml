@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Devices>
+  <Multimeter
+    ID          =   "KeithleyMultimeter"
+    InUse       =   "Yes"
+    Model       =   "KeithleyMultimeter" 
+    Connection  =   "Ethernet"
+    IPAddress   =   "192.168.0.3"
+    Port	=   "5025"
+    Timeout	=   "1"
+    Series	=   "DMM6500"
+    />
+</Devices>
+

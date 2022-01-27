@@ -275,6 +275,7 @@ def isSingleTest(TestName):
 def formatter(DirName, columns, **kwargs):
 	dirName = DirName.split('/')[-1]
 	ReturnList  = []
+	ReturnDict = {}
 	Module_ID = None
 	recheckFlag = False
 	for column in columns:
@@ -283,20 +284,25 @@ def formatter(DirName, columns, **kwargs):
 		if column  == "part_id":
 			if 'part_id' in kwargs.keys():
 				Module_ID = kwargs['part_id']
-				ReturnList.append(Module_ID)	
+				ReturnList.append(Module_ID)
+				ReturnDict.update({"part_id": Module_ID})	
 			else:
 				Module = dirName.split('_')[1]
 				if "Module" in Module:
 					Module_ID = Module.lstrip("Module")
 					ReturnList.append(Module_ID)
+					ReturnDict.update({"part_id": Module_ID})
 				else:
 					Module_ID = "-1"
 					ReturnList.append(Module_ID)
-		if column == "username":
+					ReturnDict.update({"part_id": Module_ID})
+		if column == "user":
 			ReturnList.append("local")
-		if column == "testname":
+			ReturnDict.update({"user":"local"})
+		if column == "test_name":
 			ReturnList.append(dirName.split('_')[-3])
-		if column == "grade":
+			ReturnDict.update({"test_name":dirName.split('_')[-3]})
+		if column == "test_grade":
 			if Module_ID:
 				gradeFileName =  "{}/Grade_Module{}.txt".format(DirName,Module_ID)
 				if os.path.isfile(gradeFileName):
@@ -309,24 +315,28 @@ def formatter(DirName, columns, **kwargs):
 				Grade = -1
 				recheckFlag = True
 			ReturnList.append(Grade)
+			ReturnDict.update({"test_grade":Grade})
 		if column == "date":
 			if str(sys.version).split(" ")[0].startswith(("3.7","3.8","3.9")):
 				TimeStamp = datetime.fromisoformat(dirName.split('_')[-2])
 			elif str(sys.version).split(" ")[0].startswith(("3.6")):
 				TimeStamp = datetime.strptime(dirName.split('_')[-2].split('.')[0], '%Y-%m-%dT%H:%M:%S')
 			ReturnList.append(TimeStamp)
-		if column == "data_id":
+			ReturnDict.update({"date":TimeStamp})
+		if column == "test_id":
 			data_id = ""
 			ReturnList.append(data_id)
-		if column == "description":
-			ReturnList.append("")
-		if column == "type":
-			ReturnList.append("")
+			ReturnDict.update({"test_id":data_id})
+
+		#if column == "description":
+		#	ReturnList.append("")
+		#if column == "type":
+		#	ReturnList.append("")
 
 	if recheckFlag:
 		if "part_id" in columns:
 			indexModule = columns.index("part_id")
-			indexGrade = column.index("grade")
+			indexGrade = column.index("test_grade")
 			Module_ID = ReturnList[indexModule]
 			gradeFileName =  "{}/Grade_Module{}.txt".format(DirName,Module_ID)
 			if os.path.isfile(gradeFileName):
@@ -340,4 +350,6 @@ def formatter(DirName, columns, **kwargs):
 			pass
 
 	ReturnList.append(DirName)
+	#ReturnDict.update({"localFile":DirName})
 	return ReturnList
+	#return ReturnDict

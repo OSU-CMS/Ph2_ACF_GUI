@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<Devices>
+  <PowerSupply BaudRate="9600" Connection="Serial" FlowControl="false" ID="HVKeithley" InUse="Yes" Model="Keithley" Parity="false" Port="/dev/ttyUSB0" RemoveEcho="false" Suffix="CR" Terminator="CR" Timeout="1">
+    <Channel Channel="FRON" ID="Front" InUse="Yes"/>
+  </PowerSupply>
+</Devices>

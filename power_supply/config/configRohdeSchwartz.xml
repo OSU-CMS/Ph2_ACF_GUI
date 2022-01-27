@@ -1,0 +1,39 @@
+<?xml version="1.0"? encoding="UTF-8"?>
+<!--
+<Devices>
+    <PowerSupply
+        ID          =   "MyRohdeSchwarz"
+        InUse       =   "Yes"
+        Model       =   "RohdeSchwarz" 
+        Connection  =   "Ethernet"
+        IPAddress   =   "192.168.13.231"
+        Port        =   "5025"
+
+    <Channel ID=""        Channel="1,2,3"  InUse =""/>
+    <Channel ID="LV_Module1" Channel="1" InUse ="Yes" />
+    <Channel ID="LV_Module2" Channel="2" InUse ="Yes" />
+    <Channel ID="LV_Module3" Channel="3" InUse ="Yes" />
+    </PowerSupply> 
+</Devices>
+-->
+<Devices>
+  <PowerSupply 
+  BaudRate="9600" 
+  Connection="Serial" 
+  FlowControl="False" 
+  ID="MyRohdeSchwarz" 
+  InUse="Yes" 
+  Model="RohdeSchwarz" 
+  Parity="False" 
+  Port="/dev/ttyACM1" 
+  RemoveEcho="False" 
+  Suffix="LF" 
+  Terminator="LF" 
+  Timeout="1">
+    <Channel Channel="1" ID="LV_Module1" InUse="Yes"/>
+    <Channel Channel="2" ID="LV_Module2" InUse="Yes"/>
+    <Channel Channel="3" ID="LV_Module3" InUse="Yes"/>
+    <Channel Channel="4" ID="LV_Module4" InUse="Yes"/>
+  </PowerSupply>
+</Devices>
+

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Devices>
+    <PowerSupply
+        ID          =   "HyHameg"
+        InUse       =   "Yes"
+        Model       =   "Hameg7044"
+        Connection  =   "Serial"
+	      Port        =   "/dev/ttyUSB1"
+	      BaudRate    =	  "9600"
+	      FlowControl =	  "false"
+	      Parity	    = 	"false"
+	      RemoveEcho  =	  "false"
+	      Terminator  =  	"CR"
+	      Suffix	    = 	"CR"
+	      Timeout	    =  	"1"
+    >
+    <Channel ID="LV_Module1" Channel="1" InUse ="Yes"/>
+    <Channel ID="LV_Module2" Channel="2" InUse ="Yes"/>
+    <Channel ID="LV_Module3" Channel="3" InUse ="Yes"/>
+    <Channel ID="LV_Module4" Channel="4" InUse ="Yes"/>
+  </PowerSupply>
+</Devices>
