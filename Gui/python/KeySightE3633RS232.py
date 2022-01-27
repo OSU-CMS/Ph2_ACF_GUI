@@ -32,8 +32,6 @@ def TurnOff(device):
 def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 	# Set Voltage range 2V and output to 1.78V
 	try:
-		reply = device.query("*IDN?")
-		print(reply)
 		reply = device.write(":SOURCE:VOLTAGE:PROTECTION:STATE ON")
 		#state = device.query(":SOURCE:VOLTAGE:PROTECTION:STATE?")
 		#print(state)
