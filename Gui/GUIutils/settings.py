@@ -70,6 +70,11 @@ PowerSupplyModel_Termination = {
 	"KeySight E3633 (RS232)"   :  '\r\n',
 }
 
+PowerSupplyModel_XML_Termination = {
+	"Keithley 2410 (RS232)"    :  "CR",
+	"KeySight E3633 (RS232)"   :  "CRLF",
+}
+
 
 ConfigFiles = {
 	'Latency'                :  '/Configuration/Defaults/CMSIT.xml',

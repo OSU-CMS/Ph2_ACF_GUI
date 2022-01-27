@@ -42,6 +42,7 @@ class QtApplication(QWidget):
 		self.dimension = dimension
 		self.HVpowersupply = PowerSupply(powertype = "HV")
 		self.LVpowersupply = PowerSupply(powertype = "LV")
+		self.PowerRemoteControl = {"HV":True, "LV": True}
 
 		self.setLoginUI()
 		self.initLog()
@@ -629,29 +630,28 @@ class QtApplication(QWidget):
 	def switchHVPowerPanel(self):
 		if self.HVPowerRemoteControl.isChecked():
 			self.HVPowerGroup.setDisabled(False)
+			self.PowerRemoteControl["HV"] = True
 		else:
 			self.HVPowerGroup.setDisabled(True)
+			self.PowerRemoteControl["HV"] = False
 	
 	def frozeHVPowerPanel(self):
 		# Block for HVPowerSupply operation
 		#self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
 		self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
 		self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
-		self.HVpowersupply.getInfo()
-		self.HVpowersupply.TurnOn()
+		#self.HVpowersupply.TurnOn()
 		# Block for GUI front-end
 		statusString = self.HVpowersupply.getInfo()
-		if statusString != "No valid device" :
+		if statusString != "No valid device" and statusString != None:
 			self.HVPowerStatusValue.setStyleSheet("color:green")
-		else:
-			self.HVPowerStatusValue.setStyleSheet("color:red")
-		if statusString:
 			self.HVPowerCombo.setDisabled(True)
 			self.HVPowerStatusValue.setText(statusString)
 			self.UseHVPowerSupply.setDisabled(True)
 			self.ReleaseHVPowerSupply.setDisabled(False)
 		else:
-			self.HVPowerStatusValue.setText(statusString)
+			self.HVPowerStatusValue.setStyleSheet("color:red")
+			self.HVPowerStatusValue.setText("No valid device")
 
 	def releaseHVPowerPanel(self):
 		self.HVpowersupply.TurnOff()
@@ -664,8 +664,10 @@ class QtApplication(QWidget):
 	def switchLVPowerPanel(self):
 		if self.LVPowerRemoteControl.isChecked():
 			self.LVPowerGroup.setDisabled(False)
+			self.PowerRemoteControl["LV"] = True
 		else:
 			self.LVPowerGroup.setDisabled(True)
+			self.PowerRemoteControl["LV"] = False
 	
 	def frozeLVPowerPanel(self):
 		# Block for LVPowerSupply operation

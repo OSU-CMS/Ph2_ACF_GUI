@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<iv_curve>
+  <!-- path = "results/"-->
+  <!-- path = "../SerialPoweringTestFirenze/" -->
+  <!-- file = "FI_02_dda_03_ddd.csv" -->
+  <!-- file = "SCC_TV_FI_03_dda_02_ddd.csv" -->
+  <!-- file = "SCC_033_FI_03_dda_02_ddd_both_zeroing.csv" -->
+  <save
+    path = "/home/antonio/Desktop/Share/"
+    file = "SCC_TV_FI_03_dda_02_ddd_down.csv"
+    />
+  <devices>
+    <multimeter
+      configFile = "config/iv_instruments_config.xml"
+      ID	 = "KeithleyMultimeter"
+      readType	  = "scannerCard"
+      />
+    <power_supply
+      configFile = "config/iv_instruments_config.xml"
+      ID	 = "TTi"
+      />
+  </devices>
+  <!--
+    Scanner card input labeling:
+    - 1-5 "green" wires, different grounds;
+    - 6-10 "red" wires, common ground;
+  -->
+  <scannerCard
+    nChannels	  = "10"
+    channel_1	  = ""
+    channel_2	  = ""
+    channel_3	  = ""
+    channel_4	  = "Vin"
+    channel_5	  = "VrefA"
+    channel_6	  = "VoffA"
+    channel_7	  = "VrefD"
+    channel_8	  = "VoffD"
+    channel_9	  = "Vdda"
+    channel_10	  = "Vddd"
+    />
+  <curve_type> Current </curve_type>
+  <test_points type = "Current">
+    <!-- Units are Ampere -->
+    <Settings
+      direction = "down"
+      lower     = '0'
+      higher    = '2.3'
+      step_size = '0.1'
+      zeroing   = "no"
+      maxVoltage  = "2.0"
+      />
+  </test_points>
+  <test_points type = "Voltage">
+    <!-- Units are Volts -->
+    <Settings
+      direction = "up"
+      lower     = '0'
+      higher    = '2'
+      step_size = '0.1'
+      zeroing   = "no"
+      maxCurrent  = "1.0"
+      />
+  </test_points>
+</iv_curve>

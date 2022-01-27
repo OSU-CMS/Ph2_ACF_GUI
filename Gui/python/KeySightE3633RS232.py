@@ -13,7 +13,6 @@ def InitialDevice(device):
 def GetInfo(device):
 	try:
 		info =  device.query("*IDN?")
-		print(info)
 		return info
 	except Exception as err:
 		logger.error("Error occured while requesting the identification: {}".format(err))
@@ -33,12 +32,15 @@ def TurnOff(device):
 def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 	# Set Voltage range 2V and output to 1.78V
 	try:
-		device.write(":SOURCE:VOLTAGE:PROTECTION:STATE ON")
-		state = device.query(":SOURCE:VOLTAGE:PROTECTION:STATE?")
-		if not state:
-			logging.info("Voltage protection state: OFF")
-		device.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
-		device.write(":SOURCE:VOLTAGE:LEV:IMM:AMP {0}".format(voltage))
+		reply = device.query("*IDN?")
+		print(reply)
+		reply = device.write(":SOURCE:VOLTAGE:PROTECTION:STATE ON")
+		#state = device.query(":SOURCE:VOLTAGE:PROTECTION:STATE?")
+		#print(state)
+		#if not state:
+		#	logging.info("Voltage protection state: OFF")
+		reply = device.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
+		reply = device.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(voltage))
 	except Exception as err:
 		logger.error("Error occured while setting voltage level: {}".format(err))
 
@@ -46,9 +48,9 @@ def setComplianceLimit(device, compcurrent = 0.0):
 	## Current limit should be passed as argument
 	try:
 		device.write(":SOURCE:CURR:PROTECTION:STATE ON")
-		state = device.query(":SOURCE:CURR:PROTECTION:STATE?")
-		if not state:
-			logging.info("Current protection state: OFF")
+		#state = device.query(":SOURCE:CURR:PROTECTION:STATE?")
+		#if not state:
+		#	logging.info("Current protection state: OFF")
 		device.write(":SOURCE:CURR:PROTECTION:LEV {0}".format(compcurrent))
 	except Exception as err:
 		logger.error("Error occured while setting compliance: {}".format(err))
@@ -63,7 +65,7 @@ def ReadVoltage(device):
 
 def ReadCurrent(device):
 	try:
-		MeasureCurr = device.query("MEASURE:VOLTAGE?")
+		MeasureCurr = device.query("MEASURE:CURRENT?")
 		#MeasureCurr = float(Measure.split(',')[0])
 		return MeasureCurr
 	except Exception as err:

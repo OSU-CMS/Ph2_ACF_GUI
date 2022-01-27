@@ -18,9 +18,10 @@ from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
 
 class SummaryBox(QWidget):
-	def __init__(self,module, index=0):
+	def __init__(self,master,module, index=0):
 		super(SummaryBox,self).__init__()
 		self.module = module
+		self.master = master
 		self.index = index
 		self.result = False
 		self.verboseResult = {}
@@ -30,7 +31,7 @@ class SummaryBox(QWidget):
 		self.initResult()
 		self.createBody()
 		self.measureFwPar()
-		self.checkFwPar()
+		#self.checkFwPar()
 		self.setLayout(self.mainLayout)
 	
 	def initResult(self):
@@ -45,7 +46,7 @@ class SummaryBox(QWidget):
 		PowerModeLabel.setText("FE Power Mode:")
 		self.PowerModeCombo = QComboBox()
 		self.PowerModeCombo.addItems(FEPowerUpVD.keys())
-		self.PowerModeCombo.currentTextChanged.connect(self.checkFwPar)
+		#self.PowerModeCombo.currentTextChanged.connect(self.checkFwPar)
 
 		self.CheckLabel = QLabel()
 		self.DetailsButton = QPushButton("Details")
@@ -67,9 +68,29 @@ class SummaryBox(QWidget):
 			self.verboseResult[key] = value
 
 	def checkFwPar(self):
-		self.result = True
-		self.CheckLabel.setText("OK")
-		self.CheckLabel.setStyleSheet("color:green")
+		# To be finished
+		try:
+			if self.master.PowerRemoteControl["LV"]:
+				self.master.LVpowersupply.setPoweringMode(self.PowerModeCombo.currentText())
+				self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+				self.master.LVpowersupply.TurnOn()
+			current = self.master.LVpowersupply.ReadCurrent()
+			current = float(current)
+			voltage = self.master.LVpowersupply.ReadVoltage()
+			voltage = float(voltage)
+			if current < 0.6 and current > 0.3: 
+				self.result = True
+				self.CheckLabel.setText("current: {} OK\n voltage: {}".format(current,voltage))
+				self.CheckLabel.setStyleSheet("color:green")
+			else:
+				self.result = False
+				self.CheckLabel.setText("current: {}\n voltage: {}".format(current,voltage))
+				self.CheckLabel.setStyleSheet("color:red")
+		except Exception as err:
+			self.result = False
+			self.CheckLabel.setText("No measurement")
+			self.CheckLabel.setStyleSheet("color:red")
+			#logging.Error("Failed to check current")
 
 	def getDetails(self):
 		pass
@@ -101,6 +122,7 @@ class QtStartWindow(QWidget):
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
 		self.runFlag = False
+		self.passCheck = False
 
 		self.setLoginUI()
 		self.createHead()
@@ -149,7 +171,7 @@ class QtStartWindow(QWidget):
         ## To be finished
 		self.ModuleList = []
 		for  i, module  in enumerate(self.BeBoardWidget.ModuleList):
-			ModuleSummaryBox = SummaryBox(module)
+			ModuleSummaryBox = SummaryBox(master= self.master,module = module)
 			self.ModuleList.append(ModuleSummaryBox)
 			firmwarePar.addWidget(ModuleSummaryBox, math.floor(i/2), math.ceil( i%2 /2), 1, 1)
 
@@ -173,6 +195,9 @@ class QtStartWindow(QWidget):
 		self.ResetButton.clicked.connect(self.destroyMain)
 		self.ResetButton.clicked.connect(self.createMain)
 
+		self.CheckButton = QPushButton("&Check")
+		self.CheckButton.clicked.connect(self.checkFwPar)
+
 		self.NextButton = QPushButton("&Next")
 		self.NextButton.setDefault(True)
 		#self.NextButton.setDisabled(True)
@@ -181,6 +206,7 @@ class QtStartWindow(QWidget):
 		self.StartLayout.addStretch(1)
 		self.StartLayout.addWidget(self.CancelButton)
 		self.StartLayout.addWidget(self.ResetButton)
+		self.StartLayout.addWidget(self.CheckButton)
 		self.StartLayout.addWidget(self.NextButton)
 		self.AppOption.setLayout(self.StartLayout)
 
@@ -213,7 +239,9 @@ class QtStartWindow(QWidget):
 	def checkFwPar(self):
 		GlobalCheck = True
 		for item in self.ModuleList:
+			item.checkFwPar()
 			GlobalCheck = GlobalCheck and item.getResult()
+		self.passCheck = GlobalCheck
 		return GlobalCheck
 
 	def setupBeBoard(self):
@@ -228,8 +256,9 @@ class QtStartWindow(QWidget):
 				return
 
 		if self.checkFwPar() == False:
-			QMessageBox().information(None, "Error", "Front-End parameter check failed", QMessageBox.Ok)
-			return
+			reply = QMessageBox().question(None, "Error", "Front-End parameter check failed, forced to continue?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+			if reply == QMessageBox.No:
+				return
 
 		self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
 		#self.info = [self.firmware.getModuleByIndex(0).getModuleID(), str(self.TestCombo.currentText())]

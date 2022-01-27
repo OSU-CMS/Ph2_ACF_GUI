@@ -32,9 +32,10 @@ class QtModuleReviewWindow(QWidget):
 		self.connection = self.master.connection
 		self.GroupBoxSeg = [1, 10,  1]
 		#self.columns = ["id","part_id","username","description","testname","data_id","grade","date"]
-		self.columns = ["id","date","description","data","part_id","type"]
+		#self.columns = ["part_id","test_id","test_name","date","test_grade","user","Chip0InConfig","Chip0OutConfig","Chip1InConfig","Chip1OutConfig","Chip2InConfig","Chip2OutConfig","Chip3InConfig","Chip3OutConfig","plot1","plot2","root_file"]
+		self.columns = ["part_id","test_id","test_name","date","test_grade","user","plot1","plot2","root_file"]
 		#Fixme: QTimer to be added to update the page automatically
-
+		print ("The review window got opened")
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
 
@@ -92,7 +93,6 @@ class QtModuleReviewWindow(QWidget):
 		HistoryLayout = QGridLayout()
 
 		dataList = getLocalRemoteTests(self.connection, self.info, self.columns)
-
 		self.proxy = QtTableWidget(dataList)
 		self.proxy.filtering.connect(self.addButtons)
 
@@ -193,10 +193,12 @@ class QtModuleReviewWindow(QWidget):
 		print("Close"+DQMFile)
 
 	def syncDB(self):
+		print ("syncDB button was pushed!")
 		if(not isActive(self.connection)):
 			return
-
+		print ("syncDB is trying to do a thing")
 		selectedrows = self.view.selectionModel().selectedRows()
+		print ("the selected rows are {0}".format(selectedrows))
 		for index in selectedrows:
 			try:
 				rowNumber = index.row()
@@ -205,16 +207,19 @@ class QtModuleReviewWindow(QWidget):
 					continue
 
 				if self.proxy.data(self.proxy.index(rowNumber,1)) == "Local":
+					print ("trying to send local stuff to DB")
 				################################
 				##  Block to get binary Info
 				################################
-					localDir = self.proxy.data(self.proxy.index(rowNumber,len(self.proxy.dataHeader)))
+					#localDir = self.proxy.data(self.proxy.index(rowNumber,len(self.proxy.dataHeader)))
+					localDir = self.proxy.data(self.proxy.index(rowNumber,8)) #This is a temporary hack!!!
+					print ("local dir is {0}".format(localDir))
 					if localDir != "":
 						print("Local Directory found in : {}".format(localDir))
 
 					getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(localDir), shell=True, stdout=subprocess.PIPE)
 					fileList = getFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
-
+					print ("the filelist is {0}".format(fileList))
 					if fileList  == [""]:
 						logger.warning("No ROOT file found in the local folder, skipping the record...")
 						continue
@@ -230,46 +235,62 @@ class QtModuleReviewWindow(QWidget):
 						configInFileList = getConfigInFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
 						getConfigOutFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(localDir,module_id), shell=True, stdout=subprocess.PIPE)
 						configOutFileList = getConfigOutFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
-
+						getXMLFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.xml"  '.format(localDir), shell=True, stdout=subprocess.PIPE)
+						XMLFileList = getXMLFiles.stdout.decode('utf-8').rstrip('\n').split('\n')
 						configcolumns = []
 						configdata = []
 						for configInFile in configInFileList:
+							print ("config files are: {0}".format(configInFile))
 							if configInFile != [""]:
 								configcolumns.append("Chip{}InConfig".format(configInFile.split('_')[-2]))
 								configInBuffer = open(configInFile,'rb')
 								configInBin = configInBuffer.read()
-								configdata.append(configInBin)
+								configdata.append(configInBin)	
 						for configOutFile in configOutFileList:
 							if configOutFile != [""]:
 								configcolumns.append("Chip{}OutConfig".format(configOutFile.split('_')[-2]))
 								configOutBuffer = open(configOutFile,'rb')
 								configOutBin = configOutBuffer.read()
 								configdata.append(configOutBin)
-					
+						xmlcolumns = []
+						xmldata = []
+						if len(XMLFileList) > 1:
+							print ("Warning!  There are multiple xml files here!")
+						for XMLFile in XMLFileList:
+							if XMLFile != [""]:
+								xmlcolumns.append("xml_file")
+								xmlBuffer = open(XMLFile, 'rb')
+								xmlBin = xmlBuffer.read()
+								xmldata.append(xmlBin)
+
 						SubmitArgs = []
 						Value = []
 						for column in self.columns:
-							if column == "part_id" or column == "date" or column == "testname":
+							if column == "part_id" or column == "date" or column == "test_name":
 								SubmitArgs.append(column)
 								Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
 							if column == "description":
 								SubmitArgs.append(column)
 								Value.append("No Comment")
-							if column == "grade":
+							if column == "test_grade":
 								SubmitArgs.append(column)
 								Value.append(self.proxy.data(self.proxy.index(rowNumber,self.columns.index(column)+2)))
-							if column == "data_id":
+							if column == "test_id":
 								SubmitArgs.append(column)
 								Value.append(data_id)
-							if column == "username":
+							if column == "user":
 								SubmitArgs.append(column)
 								Value.append(self.master.TryUsername)
+							if column == "root_file":
+								SubmitArgs.append(column)
+								Value.append(submitFile.split("/")[-1])
 
-						SubmitArgs = SubmitArgs + configcolumns
-						Value = Value + configdata
+						SubmitArgs = SubmitArgs + configcolumns + xmlcolumns
+						Value = Value + configdata + xmldata
 			
 						try:
-							insertGenericTable(self.connection, "tests", SubmitArgs, Value)
+							insertGenericTable(self.connection, "module_tests", SubmitArgs, Value)
+							print ("trying to insert table")
 						except:
 							print("Failed to insert")
 			except Exception  as err:

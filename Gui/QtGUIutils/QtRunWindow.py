@@ -653,8 +653,12 @@ class QtRunWindow(QWidget):
 		try:
 			if self.RunNumber == "-1":
 				os.system("cp {0}/test/Results/Run000000*.root {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+				os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+				os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
 			else:
 				os.system("cp {0}/test/Results/Run{1}*.root {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
+				os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
+				os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
 		except:
 			print("Failed to copy file to output directory")
 
@@ -698,31 +702,31 @@ class QtRunWindow(QWidget):
 								configOutBin = configOutBuffer.read()
 								configdata.append(configOutBin)
 					
-						Columns = ["part_id","date","testname","description","grade","data_id","username"]
+						#Columns = ["part_id","date","testname","description","grade","data_id","username", "config_file", "xml_file"]
+						Columns = ["part_id","test_id","test_name","date","test_grade","user","Chip0InConfig","Chip0OutConfig","Chip1InConfig","Chip1OutConfig","Chip2InConfig","Chip2OutConfig","Chip3InConfig","Chip3OutConfig","plot1","plot2"]
 						SubmitArgs = []
 						Value = []
-
 						record = formatter(localDir,Columns, part_id=module)
 						for column in ['part_id']:
 							if column == "part_id":
-								SubmitArgs.append(column)
-								Value.append(module)
+								SubmitArgs.append(column) 
+								Value.append(module) 
 							if column == "date":
 								SubmitArgs.append(column)
 								Value.append(record[Columns.index(column)])
-							if column == "testname":
+							if column == "test_name":
 								SubmitArgs.append(column)
 								Value.append(record[Columns.index(column)])
 							if column == "description":
 								SubmitArgs.append(column)
 								Value.append("No Comment")
-							if column == "grade":
+							if column == "test_grade":
 								SubmitArgs.append(column)
 								Value.append(-1)
-							if column == "data_id":
+							if column == "test_id":
 								SubmitArgs.append(column)
 								Value.append(data_id)
-							if column == "username":
+							if column == "user":
 								SubmitArgs.append(column)
 								Value.append(self.master.TryUsername)
 
@@ -730,7 +734,7 @@ class QtRunWindow(QWidget):
 						Value = Value + configdata
 			
 						try:
-							insertGenericTable(self.connection, "tests", SubmitArgs, Value)
+							insertGenericTable(self.connection, "module_test", SubmitArgs, Value)
 						except:
 							print("Failed to insert")
 			except Exception as err:

@@ -65,7 +65,7 @@ def ReadCurrent(device):
 		device.read_termination = '\r'
 		device.write(':READ?')
 		Measure = device.read()
-		MeasureCurr = float(Measure.split(',')[0])
+		MeasureCurr = float(Measure.split(',')[1])
 		return MeasureCurr
 	except Exception as err:
 		logger.error("Error occured while reading current value: {}".format(err))

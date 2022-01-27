@@ -1,0 +1,19 @@
+<?xml version="1.0"? encoding="UTF-8"?>
+<Devices>
+
+    <Arduino
+      ID          =   "MyArduino"
+      InUse       =   "Yes"
+      Model       =   "ArduinoKIRA"
+      Connection  =   "Serial"
+      Port        =   "/dev/ttyACM0"
+      BaudRate    =	  "9600"
+	    FlowControl =	  "false"
+	    Parity	    = 	"false"
+	    RemoveEcho  =	  "false"
+	    Terminator  =  	"CR"
+	    Suffix	    = 	"CR"
+	    Timeout	    =  	"1"
+    >
+    </Arduino>
+</Devices>

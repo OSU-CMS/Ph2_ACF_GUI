@@ -1,6 +1,6 @@
 export Ph2_ACF_AREA=/home/RD53A/workspace/v4.0.1/Ph2_ACF
 export GUI_dir=$PWD
-UsePowerSupplyLib=true
+UsePowerSupplyLib=false
 if [ "$UsePowerSupplyLib" = true ]
 then
     export PowerSupplyArea=$PWD/power_supply

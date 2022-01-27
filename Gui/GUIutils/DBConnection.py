@@ -177,16 +177,16 @@ def getLocalTests(module_id, columns=[]):
 def getLocalRemoteTests(dbconnection, module_id = None, columns = []):
 	if isActive(dbconnection):
 		if module_id == None:
-			remoteTests = retrieveGenericTable(dbconnection, "tests", columns = columns)
+			remoteTests = retrieveGenericTable(dbconnection, "module_tests", columns = columns) #changed table name
 			remoteTests = [list(i) for i in remoteTests]
 		else:
-			remoteTests = retrieveWithConstraint(dbconnection, "tests", part_id = int(module_id), columns = columns)
+			remoteTests = retrieveWithConstraint(dbconnection, "module_tests", part_id = int(module_id), columns = columns) #changed table name
 			remoteTests = [list(i) for i in remoteTests]
 	else:
 		remoteTests = []
 
 	localTests = getLocalTests(module_id, columns)
-
+	#localTests = []
 	try:
 		timeIndex = columns.index("date")
 	except:
@@ -205,8 +205,8 @@ def getLocalRemoteTests(dbconnection, module_id = None, columns = []):
 	InterSet = RemoteSet.intersection(LocalSet)
 	OnlyLocalSet = LocalSet.difference(RemoteSet)
 
-	allTests = [["Source"]+columns+["localFile"]]
-
+#	allTests = [["Source"]+columns+["localFile"]] #commented to test
+	allTests = [["Source"]+columns]
 	if(timeIndex != -1):
 		for remoteTest in remoteTests:
 			if remoteTest[timeIndex] in OnlyRemoteSet:
@@ -331,8 +331,10 @@ def insertGenericTable(dbconnection, table, args, data):
 		pre_query = '''INSERT INTO ''' + str(table) + ''' ('''+ ",".join(["{}"]*len(args))+''')
 					VALUES ('''+ ",".join(['%s']*len(args))+''')'''
 		sql_query = pre_query.format(*args)
+		print (sql_query)
+		print (data)
 		cur = dbconnection.cursor()
-		cur.execute(sql_query,tuple(data))
+		cur.execute(sql_query,data)
 		dbconnection.commit()
 		return True
 	except Exception as error:

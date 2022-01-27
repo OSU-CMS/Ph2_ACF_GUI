@@ -1,0 +1,20 @@
+<?xml version="1.0"? encoding="UTF-8"?>
+<Devices>
+    <Scope 
+        ID          =   "AgilentScope"
+        InUse       =   "Yes"
+        Connection  =   "USBTMC"
+	Port        =   "/dev/usbtmc0"
+	Terminator  =	"\n"
+	Suffix	    =	"\n"
+	Timeout	    =	"200"
+	Model       =   "Agilent"
+	RemoveEcho  =   "false"
+	storeImagePath = "C:\Users\Administrator\Documents\lpGBT\NOINV\"
+    >
+    <Channel ID="main" Channel="1" InUse ="Yes"/>     <!-- Channel numbering starts from 1 /-->
+    <Channel ID="secondary" Channel="2" InUse ="Yes"/> <!-- Channel numbering starts from 1 /-->
+    <Channel ID="third" Channel="3" InUse ="Yes"/> <!-- Channel numbering starts from 1 /-->
+    <Channel ID="fourth" Channel="4" InUse ="Yes"/> <!-- Channel numbering starts from 1 /-->
+    </Scope>
+</Devices>
