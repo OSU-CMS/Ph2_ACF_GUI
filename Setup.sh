@@ -19,3 +19,4 @@ then
     source setup.sh
 fi
 cd $GUI_dir
+

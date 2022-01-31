@@ -16,3 +16,4 @@ pip packages:
 	PyQt5
 	Pillow
 	mysql-connector-python
+	pyvisa
