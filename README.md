@@ -3,7 +3,7 @@ Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 
 Uses the following python packages: PyQt5 (https://pypi.org/project/PyQt5/), pyqt-darktheme (https://pypi.org/project/pyqt-darktheme/)
 
-The following instructions assumes that you already have Ph2_ACF set up.
+The following instructions assume that you already have Ph2_ACF set up.
 
 ##########################
 Set up the software environment:
@@ -12,27 +12,30 @@ Set up the software environment:
 1. Install PyQt5:
 pip install PyQt5
 
-2. Install MySQL connector:
+2. Install pyqt-darktheme:
+pip install pyqt-darktheme
+
+3. Install MySQL connector:
 pip install mysql-connector-python
 
-3. Install Pillow:
+4. Install Pillow:
 pip install Pillow
 
-4. Install NumPy:
+5. Install NumPy:
 pip install numpy
 
-5. Install Matplotlib:
+6. Install Matplotlib:
 pip install matplotlib
 
-6. Install lxml:
+7. Install lxml:
 pip install lxml
 
-7. Install pyvisa:
+8. Install pyvisa:
 pip install pyvisa
 
-8. Modify Setup.sh to include the paths to your Ph2_ACF working area and where you are locally storing test results.
+9. Modify Setup.sh to include the paths to your Ph2_ACF working area and where you are locally storing test results.
 
-9. Edit fc7_ip_address.txt so that the ip addresses for you fc7 boards are listed.
+10. Edit fc7_ip_address.txt so that the ip addresses for you fc7 boards are listed.
 
 
 ################################

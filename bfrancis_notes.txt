@@ -1,3 +1,0 @@
-sudo pip3 install pillow
-matplotlib
-PyQt5
