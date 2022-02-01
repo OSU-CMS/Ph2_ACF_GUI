@@ -5,9 +5,9 @@ Uses the following python packages: PyQt5 (https://pypi.org/project/PyQt5/), pyq
 
 The following instructions assumes that you already have Ph2_ACF set up.
 
-################################
+##########################
 Set up the software environment:
-################################
+##########################
 
 1. Install PyQt5:
 pip install PyQt5
@@ -45,9 +45,9 @@ cd Gui
 python3 QtApplication.py
 ```
 
-########################################
+##############
 SET UP USING ANACONDA (WORK IN PROGRESS) 
-########################################
+##############
 
 1. Install the ANACONDA:
 https://docs.anaconda.com/anaconda/install/
@@ -101,6 +101,7 @@ With each new ternimal for GUI, run "conda activate GUI" to activate the environ
 
 
 --------------------------- OLD RECIPE --------------------
+
 Recipe for running pixel gui:
 ```
 cd Gui && python setupDatabase.py

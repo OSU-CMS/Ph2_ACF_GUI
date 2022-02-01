@@ -1,5 +1,5 @@
 < set up Ph2_ACF >
-git clone https://github.com/czkaiweb/Ph2_ACF_GUI.git
+git clone https://github.com/OSU-CMS/Ph2_ACF_GUI.git
 cd Ph2_ACF_GUI/
 < modify Setup.sh>
 source Setup.sh
