@@ -119,6 +119,7 @@ class QtStartWindow(QWidget):
 		#self.master.HVpowersupply.TurnOn()
 		#self.master.LVpowersupply.TurnOn()
 		self.firmware = firmware
+		self.firmwares = firmware
 		self.firmwareName = firmware.getBoardName()
 		self.connection = self.master.connection
 		self.mainLayout = QGridLayout()
@@ -165,11 +166,6 @@ class QtStartWindow(QWidget):
 	def createMain(self):
 		self.firmwareCheckBox = QGroupBox()
 		firmwarePar  = QGridLayout()
-		BoxSize = {
-			"SingleSCC" : 1,
-			"DualSCC"	: 2,
-			"QuadSCC"	: 4
-		}
         ## To be finished
 		self.ModuleList = []
 		for  i, module  in enumerate(self.BeBoardWidget.ModuleList):
@@ -253,8 +249,11 @@ class QtStartWindow(QWidget):
 
 	def openRunWindow(self):
 		for module in self.BeBoardWidget.getModules():
+			if module.getSerialNumber() == "":
+				QMessageBox.information(None,"Error","No valid serial number!", QMessageBox.Ok)
+				return
 			if module.getID() == "":
-				QMessageBox.information(None,"Error","No valid modlue ID!", QMessageBox.Ok)
+				QMessageBox.information(None,"Error","No valid ID!", QMessageBox.Ok)
 				return
 
 		if self.passCheck == False:
@@ -266,6 +265,7 @@ class QtStartWindow(QWidget):
 		#self.info = [self.firmware.getModuleByIndex(0).getModuleID(), str(self.TestCombo.currentText())]
 		self.info = [self.firmware.getModuleByIndex(0).getOpticalGroupID(), str(self.TestCombo.currentText())]
 		self.runFlag = True
+		self.master.BeBoardWidget = self.BeBoardWidget
 		self.master.RunNewTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
 		self.close()
 

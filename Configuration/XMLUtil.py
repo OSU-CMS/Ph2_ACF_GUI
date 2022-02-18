@@ -183,7 +183,8 @@ def SetNodeValue(Node, Dict):
    for key in Dict:
      Node_setting = ET.SubElement(Node, 'Setting')
      Node_setting.set('name',key)
-     Node_setting.text =  str(Dict[key]) 
+     Node_setting.text =  str(Dict[key])
+     ET.tostring(Node_setting)
    return Node
 
 def FindSubNode(Node,NodeString):
@@ -533,8 +534,12 @@ if __name__ == "__main__":
   
   # Config Front-end Chip
   FE0_0_0 = FE()
+  FE0_0_0.SetFE(0,0,"RD53.txt")
   FE0_0_0.ConfigureFE(FESettings)
 
+  FE0_0_1 = FE()
+  FE0_0_1.SetFE(1,1,"RD53.txt")
+  FE0_0_1.ConfigureFE(FESettings)
   # Config Front-end Module
   #FEModule0_0 = FEModule()
   #FEModule0_0.AddFE(FE0_0_0)
@@ -543,6 +548,7 @@ if __name__ == "__main__":
   # Config HyBrid
   HyBrid0_0 = HyBridModule()
   HyBrid0_0.AddFE(FE0_0_0)
+  HyBrid0_0.AddFE(FE0_0_1)
   HyBrid0_0.ConfigureGlobal(globalSettings)
   # Config Optical Group
   OpticalGroup0_0 = OGModule()

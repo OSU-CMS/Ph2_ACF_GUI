@@ -34,7 +34,7 @@ class ResultTreeWidget(QWidget):
 		self.displayingImage = ""
 		self.Plot = []
 		self.count = 0
-
+		self.runtime = {}
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
 		self.initializeProgressBar()
@@ -46,14 +46,18 @@ class ResultTreeWidget(QWidget):
 	def initializeProgressBar(self):
 		if isCompositeTest(self.info[1]):
 			self.ProgressBarList = CompositeList[self.info[1]]
+			self.runtimeList = CompositeList[self.info[1]]
 		else:
 			self.ProgressBarList= [self.info[1]]
+			self.runtimeList = [self.info[1]]
 
 		for index, obj in enumerate(self.ProgressBarList):
 			ProgressBar = QProgressBar()
 			ProgressBar.setMinimum(0)
 			ProgressBar.setMaximum(100)
 			self.ProgressBar[index] = ProgressBar
+			runtime = QLabel()
+			self.runtime[index] = runtime
 
 	def setupUi(self):
 		#self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
@@ -79,9 +83,11 @@ class ResultTreeWidget(QWidget):
 			testLabel = QLabel('<b>{}</b>'.format(self.ProgressBarList[index]))
 			testProgress = self.ProgressBar[key]
 			statusLabel =  QLabel()
+			
 			self.ProgressLayout.addWidget(testLabel,index,0,1,1,Qt.AlignTop)
 			self.ProgressLayout.addWidget(testProgress,index,1,1,4,Qt.AlignTop)
-			self.ProgressLayout.addWidget(statusLabel,index,5,1,1, Qt.AlignTop)
+			self.ProgressLayout.addWidget(statusLabel,index,6,1,1, Qt.AlignTop)
+			self.ProgressLayout.addWidget(self.runtime[index],index,5,1,1,Qt.AlignTop)
 			self.StatusLabel[index] = statusLabel
 
 		self.ProgressWidget.setLayout(self.ProgressLayout)

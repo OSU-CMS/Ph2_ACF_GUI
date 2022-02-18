@@ -29,11 +29,20 @@ class ModuleBox(QWidget):
 		self.setLayout(self.mainLayout)
 
 	def createRow(self):
+		SerialLabel = QLabel("SerialNumber:")
+		self.SerialEdit = QLineEdit()
+		#self.SerialEdit.setMinimumWidth(120)
+		#self.SerialEdit.setMaximumWidth(200)
+		
+		FMCLabel = QLabel("FMC:")
+		self.FMCEdit = QLineEdit()
+		#self.FMCEdit.setMinimumWidth(120)
+		#self.FMCEdit.setMaximumWidth(200)
 
-		IDLabel = QLabel("Module  ID:")
+		IDLabel = QLabel("ID:")
 		self.IDEdit = QLineEdit()
-		self.IDEdit.setMinimumWidth(120)
-		self.IDEdit.setMaximumWidth(200)
+		#self.IDEdit.setMinimumWidth(120)
+		#self.IDEdit.setMaximumWidth(200)
 		self.IDEdit.textChanged.connect(self.on_TypeChanged)
 
 		TypeLabel = QLabel("Type:")
@@ -42,10 +51,20 @@ class ModuleBox(QWidget):
 		self.TypeCombo.currentIndexChanged.connect(self.on_TypeChanged)
 		TypeLabel.setBuddy(self.TypeCombo)
 
-		self.mainLayout.addWidget(IDLabel,0,0,1,1)
-		self.mainLayout.addWidget(self.IDEdit,0,1,1,1)
-		self.mainLayout.addWidget(TypeLabel,0,2,1,1)
-		self.mainLayout.addWidget(self.TypeCombo,0,3,1,1)
+		self.mainLayout.addWidget(SerialLabel,0,0,1,1)
+		self.mainLayout.addWidget(self.SerialEdit,0,1,1,1)
+		self.mainLayout.addWidget(FMCLabel,0,2,1,1)
+		self.mainLayout.addWidget(self.FMCEdit,0,3,1,1)
+		self.mainLayout.addWidget(IDLabel,0,4,1,1)
+		self.mainLayout.addWidget(self.IDEdit,0,5,1,1)
+		self.mainLayout.addWidget(TypeLabel,0,6,1,1)
+		self.mainLayout.addWidget(self.TypeCombo,0,7,1,1)
+
+	def getSerialNumber(self):
+		return self.SerialEdit.text()
+
+	def getFMCID(self):
+		return self.FMCEdit.text()
 
 	def getID(self):
 		return self.IDEdit.text()
@@ -101,7 +120,7 @@ class BeBoardBox(QWidget):
 					self.ListLayout.removeWidget(widget)
 
 		for index, module in enumerate(self.ModuleList):
-			module.setMaximumWidth(500)
+			#module.setMaximumWidth(500)
 			module.setMaximumHeight(50)
 			module.typechanged.connect(self.on_TypeChanged)
 			self.ListLayout.addWidget(module,index,0,1,1)
@@ -150,9 +169,12 @@ class BeBoardBox(QWidget):
 	def getFirmwareDescription(self, **kwargs):
 		for index, module in enumerate(self.ModuleList):
 			FwModule = QtModule()
-			#FwModule.setModuleID(module.getID())
-			FwModule.setOpticalGroupID(module.getID())
+			FwModule.setModuleID(module.getID())
+			FwModule.setFMCID(module.getFMCID())
+			FwModule.setModuleName(module.getSerialNumber())
+			#FwModule.setOpticalGroupID(module.getID())
 			FwModule.setModuleType(module.getType())
+			#for chip in module
 			self.firmware.addModule(index,FwModule)
 		return self.firmware
 

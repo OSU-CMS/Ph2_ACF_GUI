@@ -34,6 +34,9 @@ class QtApplication(QWidget):
 		self.ProcessingTest = False
 		self.expertMode = False
 		self.FwUnderUsed = ''
+
+		# self.FwUnderUsed = []
+
 		self.FwDict = {}
 		self.FwStatusVerboseDict = {}
 		self.FPGAConfigDict = {}
@@ -365,6 +368,11 @@ class QtApplication(QWidget):
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
 			self.occupyFw("{0}".format(index))
 
+		#if self.FwUnderUsed != []:
+		#	for fw in self.FwUnderUsed:
+		#		index = self.getIndex(fw,self.StatusList)
+		#		self.occupyFw("{0}".format(index))
+
 		self.FirmwareStatus.setLayout(StatusLayout)
 		self.FirmwareStatus.setDisabled(False)
 
@@ -467,6 +475,9 @@ class QtApplication(QWidget):
 		self.NewTestButton.setDisabled(True)
 		if self.FwUnderUsed != '':
 			self.NewTestButton.setDisabled(False)
+		# Vectorized fw
+		#if self.FwUnderUsed != '':
+		#	self.NewTestButton.setDisabled(False)
 		if self.ProcessingTest == True:
 			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
@@ -590,6 +601,12 @@ class QtApplication(QWidget):
 
 	def destroyMain(self):
 		self.FirmwareStatus.deleteLater()
+		self.HVPowerGroup.deleteLater()
+		self.HVPowerRemoteControl.deleteLater()
+		self.LVPowerGroup.deleteLater()
+		self.LVPowerRemoteControl.deleteLater()
+		self.ArduinoGroup.deleteLater()
+		self.ArduinoControl.deleteLater()
 		self.MainOption.deleteLater()
 		self.AppOption.deleteLater()
 		self.mainLayout.removeWidget(self.FirmwareStatus)
@@ -604,6 +621,10 @@ class QtApplication(QWidget):
 
 	def openNewTest(self):
 		FwModule = self.FwDict[self.FwUnderUsed]
+		# Vectorized the firmware
+		#FwModule = []
+		#for fw in self.FwUnderUsed:
+		#	FwModule.append(self.FwDict[fw])
 		self.StartNewTest = QtStartWindow(self,FwModule)
 		self.NewTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
@@ -707,6 +728,7 @@ class QtApplication(QWidget):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
 			fileName = self.LogList[index]
 			if firmwareName != self.FwUnderUsed:
+			#if firmwareName not in self.FwUnderUsed:
 				FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(firmwareName,fileName)
 				self.StatusList[index+1][1].setText(FwStatusComment)
 				self.StatusList[index+1][1].setStyleSheet(FwStatusColor)
@@ -717,6 +739,12 @@ class QtApplication(QWidget):
 			self.StatusList[index+1][1].setText("Connected")
 			self.StatusList[index+1][1].setStyleSheet("color: green")
 			self.occupyFw("{0}".format(index))
+		#if self.FwUnderUsed != []:
+		#	for fw in self.FwUnderUsed:
+		#		index = self.getIndex(fw,self.StatusList)
+		#		self.StatusList[index+1][1].setText("Connected")
+		#		self.StatusList[index+1][1].setStyleSheet("color: green")
+		#		self.occupyFw("{0}".format(index))
 	
 	def refreshFirmware(self):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
@@ -724,6 +752,11 @@ class QtApplication(QWidget):
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
 			self.occupyFw("{0}".format(index))
+
+		#if self.FwUnderUsed != []:
+		#	for fw in self.FwUnderUsed:
+		#		index = self.getIndex(self.fw,self.StatusList)
+		#		self.occupyFw("{0}".format(index))
 
 
 	def getFwComment(self,firmwareName,fileName):
@@ -753,13 +786,17 @@ class QtApplication(QWidget):
 				button.setDisabled(False)
 				self.CheckButton.setDisabled(True)
 				self.FwUnderUsed = self.StatusList[i+1][0].text()
+				#self.FwUnderUsed.append(self.StatusList[i+1][0].text())
 			else:
-				button.setDisabled(True)
+				button.setDisabled(False)
 
 	def releaseFw(self, index):
 		for i ,button in enumerate(self.UseButtons):
 			if i == int(index):
 				self.FwUnderUsed = ''
+				# vectorzied fw
+				#fwIndex = self.FwUnderUsed.index(self.StatusList[i+1][0].text())
+				#self.FwUnderUsed.pop(fwIndex)
 				button.setText("&Use")
 				button.setDown(False)
 				button.setDisabled(False)

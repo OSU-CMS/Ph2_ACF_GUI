@@ -18,8 +18,10 @@ class QtChip():
 		return self.__chipLane
 
 
+# Dedicated for OpticalGroup and 
 class QtModule():
 	def __init__(self, **kwargs):
+		self.__moduleName = "SerialNumber1"
 		self.__moduleID =  "0"
 		self.__moduleType = "SingleSCC"
 		self.__FMCID = "0"
@@ -32,6 +34,12 @@ class QtModule():
 				self.__moduleType = str(value)
 
 		self.setupChips()
+	
+	def setModuleName(self, name):
+		self.__moduleName = name
+
+	def getModuleName(self):
+		return self.__moduleName
 
 	def setModuleID(self, id):
 		self.__moduleID = id
@@ -69,12 +77,47 @@ class QtModule():
 		for i in range(BoxSize[self.__moduleType]):
 			FEChip = QtChip()
 			#FEChip.setID(8)
+			LaneID = str(i)
+			FEChip.setID(ModuleLaneMap[self.__moduleType][LaneID])
+			FEChip.setLane(LaneID)
+			self.__chipDict[i] = FEChip
+	
+	def getChips(self):
+		return self.__chipDict
+
+class QtOpticalGroup():
+	def __init__(self):
+		self.__FMCID = "0"
+		self.__OGID = "0"
+		self.__moduleDict = {}
+
+	def setFMCID(self, fmcId):
+		self.__FMCID = fmcId
+
+	def getFMCID(self):
+		return self.__FMCID
+
+	def setOpticalGroupID(self, ogId):
+		self.__OGID = ogId
+
+	def getOpticalGroupID(self):
+		return self.__OGID
+
+	def setupModule(self, **kwargs):
+		self.__moduleDict = {}
+		if "module" in kwargs.keys():
+			pass
+			return
+		for i in range(BoxSize[self.__moduleType]):
+			FEChip = QtChip()
+			#FEChip.setID(8)
 			FEChip.setID(i)
 			FEChip.setLane(i)
 			self.__chipDict[i] = FEChip
 	
 	def getChips(self):
 		return self.__chipDict
+
 	
 
 class QtBeBoard():

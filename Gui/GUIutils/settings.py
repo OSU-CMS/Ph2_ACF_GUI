@@ -26,7 +26,7 @@ DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
 	'local'					 :  '127.0.0.1',
 	'OSU-remote'			 :  '128.146.38.1',
-        'Purdue-remote'                  :  'cmsfpixdb.physics.purdue.edu',
+    'Purdue-remote'                  :  'cmsfpixdb.physics.purdue.edu',
 }
 
 
@@ -47,14 +47,23 @@ FPGAConfigList =  {
 
 ModuleType = {
 	1	:	"SingleSCC",
-	2	:	"DualSCC",
-	3	:	"QuadSCC",
+	2	:	"TFPX Quad",
+	3	:	"TEPX Quad",
+	4	:	"TBPX Quad",
+}
+
+ModuleLaneMap = {
+	"TFPX Quad": {"0":"4","1":"2","2":"7","3":"5"},
+	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
+	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
+	"SingleSCC": {"0":"0"},
 }
 
 BoxSize = {
 	"SingleSCC" : 1,
-	"DualSCC"	: 2,
-	"QuadSCC"	: 4
+	"TFPX Quad"	: 4,
+	"TEPX Quad" : 4,
+	"TBPX Quad"	: 4,
 }
 
 HVPowerSupplyModel = {

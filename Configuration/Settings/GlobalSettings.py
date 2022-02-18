@@ -60,7 +60,7 @@ globalSettings = {
 globalSettings_Dict = {
     'Latency'                    :    globalSettings,
     'PixelAlive'                 :    globalSettings,
-    'NoiseScan'                  :   globalSettings,
+    'NoiseScan'                  :    globalSettings,
     'GainScan'                   :    globalSettings,
     'SCurveScan'                 :    globalSettings,
     'ThresholdEqualization'      :    globalSettings,

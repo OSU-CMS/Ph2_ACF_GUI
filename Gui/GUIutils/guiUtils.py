@@ -138,7 +138,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 				changeMade = True
 
 		for Node in root.findall(".//RD53"):
-			ParentNode = Node.getparent().getparent()
+			ParentNode = Node.getparent() #.getparent()
 			ChipKey = "{}_{}".format(ParentNode.attrib["Id"],Node.attrib["Id"])
 			if ChipKey in RD53Dict.keys():
 				Node.set('configfile','CMSIT_RD53_{}.txt'.format(ChipKey))
@@ -198,19 +198,28 @@ def GenerateXMLConfig(firmwareList, testName, outputDir):
 
 		HWDescription0 = HWDescription()
 		BeBoardModule0 = BeBoardModule()
+		AllModules = firmwareList.getAllModules().values()
+		for module in AllModules:
+			AllOG = {}
+			OpticalGroupModule = OGModule()
+			OpticalGroupModule.SetOpticalGrp(module.getOpticalGroupID(),module.getFMCID())
+			AllOG[module.getOpticalGroupID()] = OpticalGroupModule
+
 		for module in firmwareList.getAllModules().values():
-			OpticalGroupModule0 = OGModule()
-			OpticalGroupModule0.SetOpticalGrp(module.getOpticalGroupID(),module.getFMCID())
+			OpticalGroupModule0 = AllOG[module.getOpticalGroupID()]
 			HyBridModule0 = HyBridModule()
 			HyBridModule0.SetHyBridModule(module.getModuleID(),"1")
 			for chip in module.getChips().values():
 				FEChip = FE()
-				FEChip.SetFE(chip.getID(),chip.getLane())
+				FEChip.SetFE(chip.getID(),chip.getLane(),"CMSIT_RD53_{0}_{1}_{2}.txt".format(module.getModuleName(),module.getModuleID(),chip.getLane()))
 				FEChip.ConfigureFE(FESettings_Dict[testName])
 				HyBridModule0.AddFE(FEChip)
 			HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
 			OpticalGroupModule0.AddHyBrid(HyBridModule0)
-			BeBoardModule0.AddOGModule(OpticalGroupModule0)
+
+		for OpticalGroupModule in AllOG.values():
+			BeBoardModule0.AddOGModule(OpticalGroupModule)
+
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		HWDescription0.AddBeBoard(BeBoardModule0)
 		HWDescription0.AddSettings(HWSettings_Dict[testName])
