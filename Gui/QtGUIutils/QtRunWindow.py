@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 
 import sys
 import os
+import re
 import subprocess
 import threading
 import time
@@ -26,6 +27,7 @@ from Gui.QtGUIutils.QtLoginDialog import *
 from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
+from Gui.python.TestHandler import *
 
 class QtRunWindow(QWidget):
 	resized = pyqtSignal()
@@ -566,6 +568,7 @@ class QtRunWindow(QWidget):
 
 	def runSingleTest(self,testName):
 		self.starttime = None
+		self.ProgressingMode = "None"
 		self.currentTest = testName
 		self.configTest()
 		self.outputFile = self.output_dir + "/output.txt"
@@ -626,6 +629,7 @@ class QtRunWindow(QWidget):
 			self.run_process.kill()
 			self.haltSignal = True
 			self.sendProceedSignal()
+			self.starttime = None
 		else:
 			return
 		self.RunButton.setText("Re-run")
@@ -852,17 +856,43 @@ class QtRunWindow(QWidget):
 					try:
 						index = textStr.split().index("Progress")+2
 						self.ProgressValue = float(textStr.split()[index].rstrip("%"))
-						self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)						
+						if self.ProgressValue == 100:
+							self.ProgressingMode = "Summary"
+						self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)										
 					except:
 						pass
+					
 				continue
+			#	if ("Global threshold for" in textStr):
+
+			elif (self.ProgressingMode == "Summary"):
+				toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
+				if toUpdate:
+					try:
+						#print("made it to Summary")
+						UpdatedValuetext = textStr.split()[valueIndex]
+						#print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
+						UpdatedValue = int(re.sub(r'\033\[(\d|;)+?m','',UpdatedValuetext))
+						print("New {0} value is {1}".format(UpdatedFEKey,UpdatedValue))
+						print(textStr.split())
+						#globalThreshold = int(textStr.split()[-1])
+						chipIdentifier = textStr.split('=')[-1].split('is')[0]
+						chipIdentifier = re.sub(r'\033\[(\d|;)+?m','',chipIdentifier).split(']')[0]
+						HybridIDKey = chipIdentifier.split("/")[2]
+						ChipIDKey = chipIdentifier.split("/")[3]
+						print("hybrid id {0}".format(HybridIDKey))
+						print("chipID {0}".format(ChipIDKey))
+						updatedXMLValueKey = "{}/{}".format(HybridIDKey,ChipIDKey)
+						updatedXMLValues[updatedXMLValueKey][UpdatedFEKey] = UpdatedValue
+						
+					except Exception as err:
+						logger.error("Failed to update ")
+										
 			elif "@@@ Initializing the Hardware @@@" in textStr:
 				self.ProgressingMode = "Configure"
 			elif "@@@ Performing" in textStr:
 				self.ProgressingMode = "Perform"
 				self.ConsoleView.appendHtml('<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest))
-			elif "Readout chip error report" in textStr:
-				self.ProgressingMode = "Summary"
 
 			text = textStr.encode('ascii')
 			numUpAnchor, text = parseANSI(text)
@@ -881,6 +911,22 @@ class QtRunWindow(QWidget):
 			self.ConsoleView.setTextCursor(textCursor)
 			self.ConsoleView.appendHtml(text.decode("utf-8"))
 		self.readingOutput = False
+
+	def updateNeeded(self,textStr):
+		currentTest = Test[self.currentTest]
+		if  currentTest in ["thradj","thrmin"] and "Global threshold for" in textStr:
+			return True,"Vthreshold_LIN",-1
+		elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
+			return True,"KRUM_CURR_LIN",-1
+		elif currentTest in ["injdelay"]:
+			if "New latency dac" in textStr:
+				return True,"LATENCY_CONFIG",-2
+			elif "New injection delay" in textStr:
+				return True,"INJECTION_SELECT",-2
+			else:
+				return (False, None, 0)
+		else:
+			return (False, None, 0)
 		
 	@QtCore.pyqtSlot()
 	def on_readyReadStandardOutput_info(self):
@@ -942,7 +988,6 @@ class QtRunWindow(QWidget):
 
 		if status == False and isCompositeTest(self.info[1]) and self.testIndexTracker < len(CompositeList[self.info[1]]):
 			self.forceContinue()
-			return
 
 		if isCompositeTest(self.info[1]):
 			self.runTest()
@@ -979,13 +1024,13 @@ class QtRunWindow(QWidget):
 				QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
+			return
+		else:
 			self.run_process.kill()
 			self.haltSignal = True
 			self.sendProceedSignal()
 			self.RunButton.setText("Re-run")
 			self.RunButton.setDisabled(False)
-		else:
-			pass
 		
 
 	def closeEvent(self, event):
