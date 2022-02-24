@@ -6,8 +6,8 @@ HWSettings = {
 
 "VDDDTrimTarget"    :  1.30,
 "VDDATrimTarget"    :  1.20,
-"VDDDTrimTolerance" :  0.02,
-"VDDATrimTolerance" :  0.02,
+"VDDDTrimTolerance" :  0.01,
+"VDDATrimTolerance" :  0.01,
 
 "nTRIGxEvent"       :    10,
 "INJtype"           :     1,
