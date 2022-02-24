@@ -62,7 +62,7 @@ class QtCustomizeWindow(QWidget):
 		self.connection = self.master.connection
 		self.rd53_file = rd53dict
 
-		self.RD53List = []
+		self.RD53List = {}
 		self.GroupBoxSeg = [1, 3, 1]
 
 		#Fixme: QTimer to be added to update the page automatically
@@ -127,7 +127,7 @@ class QtCustomizeWindow(QWidget):
 
 		for index, key in enumerate(self.rd53_file.keys()):
 			RD53Edit = RD53Widget(key)
-			self.RD53List.append(RD53Edit)
+			self.RD53List[key] = RD53Edit
 			mainbodylayout.addWidget(RD53Edit,index+1,0,1,5)
 
 		self.MainBodyBox.setLayout(mainbodylayout)
@@ -189,7 +189,7 @@ class QtCustomizeWindow(QWidget):
 		self.master.config_file = self.XMLEdit.text()
 		#self.master.rd53_file = self.RD53Edit.text()
 		for key in self.rd53_file.keys():
-			self.master.rd53_file[key] = self.RD53List[int(key)].text() 
+			self.master.rd53_file[key] = self.RD53List[key].text() 
 
 	def occupied(self):
 		self.master.RunButton.setDisabled(True)
