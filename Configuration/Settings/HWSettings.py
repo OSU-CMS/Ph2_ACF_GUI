@@ -6,8 +6,8 @@ HWSettings = {
 
 "VDDDTrimTarget"    :  1.30,
 "VDDATrimTarget"    :  1.20,
-"VDDDTrimTolerance" :  0.01,
-"VDDATrimTolerance" :  0.01,
+"VDDDTrimTolerance" :  0.02,
+"VDDATrimTolerance" :  0.02,
 
 "nTRIGxEvent"       :    10,
 "INJtype"           :     1,
@@ -99,8 +99,10 @@ HWSettings_GainOpt["VCalHnsteps"] = 20
 HWSettings_ThresMin = copy.deepcopy(HWSettings)
 HWSettings_ThresMin["nEvents"] = 1e7
 HWSettings_ThresMin["nEvtsBurst"] = 1e4
-HWSettings_ThresMin["INJtype"] = 1
+HWSettings_ThresMin["INJtype"] = 0
 HWSettings_ThresMin["nClkDelays"] = 10
+HWSettings_ThresMin["ThrStart"] = 370
+HWSettings_ThresMin["nTRIGxEvent"] = 1
 
 HWSettings_ThresAdj = copy.deepcopy(HWSettings)
 
