@@ -1,6 +1,7 @@
 #November 19 2021:  Edited by Matt Joyce.  Added information for Purdue database to DBNames and DBServerIP
 
 import os
+from collections import defaultdict
 
 FirmwareList = {}
 
@@ -143,16 +144,21 @@ SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 
 CompositeTest = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
-	'AllScan': ['NoiseScan','PixelAlive','ThresholdMinimization',
-				'ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdMinimization',
+	'AllScan': ['NoiseScan','PixelAlive','ThresholdAdjustment',
+				'ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment',
 				'SCurveScan','GainScan','GainOptimization',
 				'InjectionDelay','SCurveScan'],
-	'StandardStep1': ['NoiseScan','PixelAlive','ThresholdMinimization'],
-	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdMinimization'],
+	'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
+	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
 	'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
 	'StandardStep4': ['InjectionDelay'],
 	'StandardStep5': ['SCurveScan']
 }
 firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 
+# Reserved for updated value for XML configuration
+updatedXMLValues = defaultdict(dict)
+
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
+
+
