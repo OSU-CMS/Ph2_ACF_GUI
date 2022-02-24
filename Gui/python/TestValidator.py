@@ -35,7 +35,7 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 			if os.path.isfile(FileName):
 				Nodes = GetDirectory(FileName)
 				for Node in Nodes:
-					CanvasList = GetCanvasVAL(Node, CanvasList)
+					CanvasList = GetCanvasVAL(Node, CanvasList, ModuleMap)
 				Grade, PassModule = FakeGrade(CanvasList)
 				if set(Grade.keys()) != set(ExpectedModuleList):
 					logger.warning("Retrived modules from ROOT file doesn't match with folder name")
@@ -223,7 +223,7 @@ def GradeSCurveScan(canvasList):
 				factorPerModule[key][Chip_ID]["StdDev1D"] = StdDev1D
 
 	StdThreshold = 15.0
-	ChipThreshold = 0.5
+	ChipThreshold = -0.1
 
 	for Module_ID in factorPerModule.keys():
 		GradePerChip = {}
@@ -263,7 +263,7 @@ def GradeGainScan(canvasList):
 			if True:
 				factorPerModule[key][Chip_ID]["fakeScore"] = 1.0
 
-	ChipThreshold = 0.5
+	ChipThreshold = -0.5
 
 	for Module_ID in factorPerModule.keys():
 		GradePerChip = {}
