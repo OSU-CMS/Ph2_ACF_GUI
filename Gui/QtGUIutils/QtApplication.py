@@ -788,7 +788,7 @@ class QtApplication(QWidget):
 				self.FwUnderUsed = self.StatusList[i+1][0].text()
 				#self.FwUnderUsed.append(self.StatusList[i+1][0].text())
 			else:
-				button.setDisabled(False)
+				button.setDisabled(True)
 
 	def releaseFw(self, index):
 		for i ,button in enumerate(self.UseButtons):
