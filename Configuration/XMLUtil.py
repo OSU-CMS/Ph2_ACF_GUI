@@ -131,11 +131,14 @@ class HyBridModule():
     self.HyBridType = "RD53"
     self.Id="0" 
     self.Status="1"
+    self.Name = "Serial1"
     self.File_Path = "./"
     self.FEList = []
     self.globalSetting = {}
   def SetHyBridType(self, Type):
     self.HyBridType = str(Type)
+  def SetHyBridName(self, name):
+    self.Name = str(name)
   def SetFEFilePath(self,File_Path):
     self.File_Path = File_Path
   def SetHyBridModule(self, Id, Status):
@@ -247,7 +250,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
 
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
-        Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,'Status':HyBridModule.Status})
+        Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,'Status':HyBridModule.Status,'Name':HyBridModule.Name})
         Node_FEPath = ET.SubElement(Node_HyBrid, HyBridModule.HyBridType+'_Files')
         Node_FEPath = SetNodeAttribute(Node_FEPath,{'file':HyBridModule.File_Path})
         FEList = HyBridModule.FEList
