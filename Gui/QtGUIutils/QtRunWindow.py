@@ -42,6 +42,9 @@ class QtRunWindow(QWidget):
 		self.ModuleMap = dict()
 		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
 		self.RunNumber = "-1"
+
+		#Add TestProcedureHandler
+		self.testHander = TestHandler(master,info,firmware)
 		
 		self.GroupBoxSeg = [1, 10,  1]
 		self.HorizontalSeg = [3, 5]
@@ -108,6 +111,7 @@ class QtRunWindow(QWidget):
 		self.DisplayW = self.width()*3./7 
 		self.show()
 
+	# In Handler
 	def  initializeRD53Dict(self):
 		self.rd53_file = {}
 		beboardId = 0
@@ -514,6 +518,7 @@ class QtRunWindow(QWidget):
 		self.ResetButton.setDisabled(True)
 		self.RunButton.setDisabled(True)
 		self.CustomizedWindow = QtCustomizeWindow(self, self.rd53_file)
+		#self.CustomizedWindow = QtCustomizeWindow(self, self.testHander.rd53_file)
 		self.CustomizedButton.setDisabled(False)
 		self.ResetButton.setDisabled(False)
 		self.RunButton.setDisabled(False)
