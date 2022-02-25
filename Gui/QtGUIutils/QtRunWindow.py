@@ -9,9 +9,11 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 
 import sys
 import os
+import re
 import subprocess
 import threading
 import time
+from datetime import datetime
 import random
 from subprocess import Popen, PIPE
 
@@ -25,6 +27,7 @@ from Gui.QtGUIutils.QtLoginDialog import *
 from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
+from Gui.python.TestHandler import *
 
 class QtRunWindow(QWidget):
 	resized = pyqtSignal()
@@ -36,6 +39,7 @@ class QtRunWindow(QWidget):
 		self.info = info
 		self.connection = self.master.connection
 		self.firmwareName = self.firmware.getBoardName()
+		self.ModuleMap = dict()
 		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
 		self.RunNumber = "-1"
 		
@@ -87,9 +91,9 @@ class QtRunWindow(QWidget):
 		self.run_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput)
 		self.run_process.finished.connect(self.on_finish)
 		self.readingOutput = False
-		self.ProgressingMode = "Configure"
+		self.ProgressingMode = "None"
 		self.ProgressValue = 0
-
+		self.runtimeList = []
 		self.info_process = QProcess(self)
 		self.info_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput_info)
 
@@ -106,12 +110,17 @@ class QtRunWindow(QWidget):
 
 	def  initializeRD53Dict(self):
 		self.rd53_file = {}
+		beboardId = 0
 		for module in self.firmware.getAllModules().values():
-			#moduleId = module.getModuleID()
-			moduleId = module.getOpticalGroupID()
+
+			ogId = module.getOpticalGroupID()
+			moduleName = module.getModuleName()
+			moduleId = module.getModuleID()
 			moduleType = module.getModuleType()
 			for i in range(BoxSize[moduleType]):
-				self.rd53_file["{0}_{1}".format(moduleId,i)] = None
+				self.rd53_file["{0}_{1}_{2}".format(moduleName,moduleId,i)] = None
+			fwPath = "{0}_{1}_{2}".format(beboardId,ogId,moduleId)
+			self.ModuleMap[fwPath] = moduleName
 
 	def createHeadLine(self):
 		self.HeadBox = QGroupBox()
@@ -277,7 +286,7 @@ class QtRunWindow(QWidget):
 		self.header = ["TestName"]
 		for key in self.rd53_file.keys():
 			ChipName = key.split("_")
-			self.header.append("Module{}_Chip{}".format(ChipName[0],ChipName[1]))
+			self.header.append("Module{}_Chip{}".format(ChipName[0],ChipName[2]))
 		self.StatusTable.setColumnCount(len(self.header))
 		self.StatusTable.setHorizontalHeaderLabels(self.header)
 		self.StatusTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -435,7 +444,7 @@ class QtRunWindow(QWidget):
 		ModuleIDs = []
 		for module in self.firmware.getAllModules().values():
 			#ModuleIDs.append(str(module.getModuleID()))
-			ModuleIDs.append(str(module.getOpticalGroupID()))
+			ModuleIDs.append(str(module.getModuleName()))
 			
 		self.output_dir, self.input_dir = ConfigureTest(testName, "_Module".join(ModuleIDs), self.output_dir, self.input_dir, self.connection)
 
@@ -518,8 +527,11 @@ class QtRunWindow(QWidget):
 	def initialTest(self):
 		if "Re" in self.RunButton.text():
 			self.grades = []
-			for index in range(len(CompositeList[self.info[1]])):
-				self.ResultWidget.ProgressBar[index].setValue(0)
+			if isCompositeTest(self.info[1]):
+				for index in range(len(CompositeList[self.info[1]])):
+					self.ResultWidget.ProgressBar[index].setValue(0)
+			else:
+				self.ResultWidget.ProgressBar[0].setValue(0)
 
 	def runTest(self):
 		self.ResetButton.setDisabled(True)
@@ -554,11 +566,17 @@ class QtRunWindow(QWidget):
 		self.runSingleTest(testName)
 
 
-	def runSingleTest(self,testName):	
+	def runSingleTest(self,testName):
+		self.starttime = None
+		self.ProgressingMode = "None"
 		self.currentTest = testName
 		self.configTest()
 		self.outputFile = self.output_dir + "/output.txt"
 		self.errorFile = self.output_dir + "/error.txt"
+		if os.path.exists(self.outputFile):
+			self.outputfile = open(self.outputFile,"a")
+		else:
+			self.outputfile = open(self.outputFile,"w")
 		#self.ContinueButton.setDisabled(True)
 		#self.run_process.setProgram()
 		self.info_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
@@ -575,11 +593,12 @@ class QtRunWindow(QWidget):
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
 		#self.run_process.start("./SignalGenerator")
 
-		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin","scurve"]:
+		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin","scurve","gainopt","thradj","physics","gain"]:
 			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
 		else:
 			self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
 	
+
 		#self.run_process.start("ping", ["-c","5","www.google.com"])
 		#self.run_process.waitForFinished()
 		self.displayResult()
@@ -610,6 +629,7 @@ class QtRunWindow(QWidget):
 			self.run_process.kill()
 			self.haltSignal = True
 			self.sendProceedSignal()
+			self.starttime = None
 		else:
 			return
 		self.RunButton.setText("Re-run")
@@ -624,25 +644,30 @@ class QtRunWindow(QWidget):
 		self.RunButton.setDisabled(True)
 
 	def validateTest(self):
-		# Fixme: the grading for test results
-		grade, passmodule = ResultGrader(self.output_dir, self.currentTest, self.RunNumber)
-		self.grades.append(grade)
-		self.modulestatus.append(passmodule)
-
-		self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Pass")
-		self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: green")
-		for module in passmodule.values():
-			if False in module.values():
-				self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Failed")
-				self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: red")
+		try:
+			status = True
+			# Fixme: the grading for test results
+			grade, passmodule = ResultGrader(self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap)
+			self.grades.append(grade)
+			self.modulestatus.append(passmodule)
+		
+			self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Pass")
+			self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: green")
+			for module in passmodule.values():
+				if False in module.values():
+					status = False
+					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Failed")
+					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: red")
 		
 
-		time.sleep(0.5)
+			time.sleep(0.5)
+			return status
 		#self.StatusCanvas.renew()
 		#self.StatusCanvas.update()
 		#self.HistoryLayout.removeWidget(self.StatusCanvas)
 		#self.HistoryLayout.addWidget(self.StatusCanvas)
-
+		except Exception as err:
+			logger.error(err)
 
 	def saveTest(self):
 		#if self.parent.current_test_grade < 0:
@@ -791,7 +816,7 @@ class QtRunWindow(QWidget):
 		#Fixme: Extract the info from ROOT file
 		item = self.ListWidget.currentItem()
 		referName = item.text().split("_")[0]
-		if referName in ["GainScan","Latency","NoiseScan","PixelAlive","SCurveScan","ThresholdEqualization"]:
+		if referName in ["GainScan","Latency","NoiseScan","PixelAlive","SCurveScan","ThresholdEqualization","GainOptimization","ThresholdMinimization","InjectionDelay"]:
 			self.ReferView = QPixmap(os.environ.get('GUI_dir')+'/Gui/test_plots/{0}.png'.format(referName)).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 			self.ReferLabel.setPixmap(self.ReferView)
 
@@ -805,35 +830,70 @@ class QtRunWindow(QWidget):
 			print("Thread competition detected")
 			return
 		self.readingOutput = True
-		if os.path.exists(self.outputFile):
-			outputfile = open(self.outputFile,"a")
-		else:
-			outputfile = open(self.outputFile,"w")
 		
 		alltext = self.run_process.readAllStandardOutput().data().decode()
-		outputfile.write(alltext)
-		outputfile.close()
+		self.outputfile.write(alltext)
+		#outputfile.close()
 		textline = alltext.split('\n')
 		#fileLines = open(self.outputFile,"r")
 		#textline = fileLines.readlines()
 
 		for textStr in textline:
-			if "@@@ Initializing the Hardware @@@" in textStr:
-				self.ProgressingMode = "Configure"
-			if "@@@ Performing" in textStr:
-				self.ProgressingMode = "Perform"
-				self.ConsoleView.appendHtml('<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest))
-			if "Readout chip error report" in textStr:
-				self.ProgressingMode = "Summary"
-			if self.ProgressingMode == "Perform":
+			try: 
+				if self.starttime != None:
+					self.currentTime = time.time()
+					runningTime = self.currentTime - self.starttime
+				else:
+					self.starttime = time.time()
+					self.currentTime = self.starttime
+				
+				self.ResultWidget.runtime[self.testIndexTracker].setText('{0} s'.format(round(runningTime,1)))
+			except Exception as err:
+				logger.info("Error occures while parsing running time, {0}".format(err))
+
+			if self.ProgressingMode == "Perform":			
 				if ">>>> Progress :" in textStr:
 					try:
 						index = textStr.split().index("Progress")+2
 						self.ProgressValue = float(textStr.split()[index].rstrip("%"))
-						self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)
+						if self.ProgressValue == 100:
+							self.ProgressingMode = "Summary"
+						self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)										
 					except:
 						pass
+					
 				continue
+			#	if ("Global threshold for" in textStr):
+
+			elif (self.ProgressingMode == "Summary"):
+				toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
+				if toUpdate:
+					try:
+						#print("made it to Summary")
+						UpdatedValuetext = textStr.split()[valueIndex]
+						#print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
+						UpdatedValue = int(re.sub(r'\033\[(\d|;)+?m','',UpdatedValuetext))
+						print("New {0} value is {1}".format(UpdatedFEKey,UpdatedValue))
+						print(textStr.split())
+						#globalThreshold = int(textStr.split()[-1])
+						chipIdentifier = textStr.split('=')[-1].split('is')[0]
+						chipIdentifier = re.sub(r'\033\[(\d|;)+?m','',chipIdentifier).split(']')[0]
+						HybridIDKey = chipIdentifier.split("/")[2]
+						ChipIDKey = chipIdentifier.split("/")[3]
+						print("hybrid id {0}".format(HybridIDKey))
+						print("chipID {0}".format(ChipIDKey))
+						updatedXMLValueKey = "{}/{}".format(HybridIDKey,ChipIDKey)
+						updatedXMLValues[updatedXMLValueKey][UpdatedFEKey] = UpdatedValue
+						
+					except Exception as err:
+						logger.error("Failed to update ")
+										
+			elif "@@@ Initializing the Hardware @@@" in textStr:
+				self.ProgressingMode = "Configure"
+			elif "@@@ Performing" in textStr:
+				self.ProgressingMode = "Perform"
+				self.ConsoleView.appendHtml('<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest))
+
 			text = textStr.encode('ascii')
 			numUpAnchor, text = parseANSI(text)
 			#if numUpAnchor > 0:
@@ -851,6 +911,22 @@ class QtRunWindow(QWidget):
 			self.ConsoleView.setTextCursor(textCursor)
 			self.ConsoleView.appendHtml(text.decode("utf-8"))
 		self.readingOutput = False
+
+	def updateNeeded(self,textStr):
+		currentTest = Test[self.currentTest]
+		if  currentTest in ["thradj","thrmin"] and "Global threshold for" in textStr:
+			return True,"Vthreshold_LIN",-1
+		elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
+			return True,"KRUM_CURR_LIN",-1
+		elif currentTest in ["injdelay"]:
+			if "New latency dac" in textStr:
+				return True,"LATENCY_CONFIG",-2
+			elif "New injection delay" in textStr:
+				return True,"INJECTION_SELECT",-2
+			else:
+				return (False, None, 0)
+		else:
+			return (False, None, 0)
 		
 	@QtCore.pyqtSlot()
 	def on_readyReadStandardOutput_info(self):
@@ -872,6 +948,7 @@ class QtRunWindow(QWidget):
 		self.RunButton.setDisabled(True)
 		self.RunButton.setText("&Continue")
 		self.finishSingal = True
+		self.outputfile.close()
 
 		#To be removed
 		#if isCompositeTest(self.info[1]):
@@ -896,7 +973,7 @@ class QtRunWindow(QWidget):
 		self.saveTest()
 
 		# validate the results
-		self.validateTest()
+		status = self.validateTest()
 
 		# show the score of test
 		self.refreshHistory()
@@ -908,6 +985,9 @@ class QtRunWindow(QWidget):
 		if self.autoSave:
 			self.saveTestToDB()
 		self.update()
+
+		if status == False and isCompositeTest(self.info[1]) and self.testIndexTracker < len(CompositeList[self.info[1]]):
+			self.forceContinue()
 
 		if isCompositeTest(self.info[1]):
 			self.runTest()
@@ -938,6 +1018,20 @@ class QtRunWindow(QWidget):
 		else:
 			self.autoSave = True
 		self.saveCheckBox.setChecked(self.autoSave)
+	
+	def forceContinue(self):
+		reply = QMessageBox.question(self, 'Abort following tests', 'Failed component detected, continue to following test?',
+				QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
+
+		if reply == QMessageBox.Yes:
+			return
+		else:
+			self.run_process.kill()
+			self.haltSignal = True
+			self.sendProceedSignal()
+			self.RunButton.setText("Re-run")
+			self.RunButton.setDisabled(False)
+		
 
 	def closeEvent(self, event):
 		if self.processingFlag == True:

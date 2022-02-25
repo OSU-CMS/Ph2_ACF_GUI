@@ -35,7 +35,7 @@ pip install pyvisa
 
 9. Modify Setup.sh to include the paths to your Ph2_ACF working area and where you are locally storing test results.
 
-10. Edit fc7_ip_address.txt so that the ip addresses for you fc7 boards are listed.
+10. Edit fc7_ip_address.txt so that the ip addresses for your fc7 boards are listed.
 
 
 ################################
@@ -85,7 +85,7 @@ pip install pyvisa
 
 10. Modify Setup.sh to include the paths to your Ph2_ACF working area and where you are locally storing test results.
 
-11. Edit fc7_ip_address.txt so that the ip addresses for you fc7 boards are listed.
+11. Edit fc7_ip_address.txt so that the ip addresses for your fc7 boards are listed.
 
 With each new ternimal for GUI, run "conda activate GUI" to activate the environment
 

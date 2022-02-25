@@ -2,11 +2,11 @@ import ROOT
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
 import os
-
+import re
 from  Gui.GUIutils.settings import *
 from  Gui.python.ROOTInterface import *
 
-def ResultGrader(inputDir, testName, runNumber):
+def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 	Grade = {}
 	PassModule = {}
 	ExpectedModuleList = [ module.lstrip("Module") for module in inputDir.split('_') if "Module" in module]
@@ -17,7 +17,7 @@ def ResultGrader(inputDir, testName, runNumber):
 			if os.path.isfile(FileName):
 				Nodes = GetDirectory(FileName)
 				for Node in Nodes:
-					CanvasList = GetCanvasVAL(Node, CanvasList)
+					CanvasList = GetCanvasVAL(Node, CanvasList,ModuleMap)
 				Grade, PassModule = eval("Grade{}(CanvasList)".format(testName))
 				if set(Grade.keys()) != set(ExpectedModuleList):
 					logger.warning("Retrived modules from ROOT file doesn't match with folder name")
@@ -35,7 +35,7 @@ def ResultGrader(inputDir, testName, runNumber):
 			if os.path.isfile(FileName):
 				Nodes = GetDirectory(FileName)
 				for Node in Nodes:
-					CanvasList = GetCanvasVAL(Node, CanvasList)
+					CanvasList = GetCanvasVAL(Node, CanvasList, ModuleMap)
 				Grade, PassModule = FakeGrade(CanvasList)
 				if set(Grade.keys()) != set(ExpectedModuleList):
 					logger.warning("Retrived modules from ROOT file doesn't match with folder name")
@@ -60,27 +60,37 @@ def ResultGrader(inputDir, testName, runNumber):
 	print(PassModule)
 	return Grade, PassModule
 
-def GetCanvasVAL(node,canvasList):
+def GetCanvasVAL(node,canvasList,ModuleMap):
 	if node.getDaugthers() != []:
 			for Node in node.getDaugthers():
 				if Node.getClassName() ==  "TCanvas":
 					CanvasName = Node.getKeyName()
-					Module_ID_Sec = CanvasName.split("_")[2] ##To be CHECKED!!!!!
-					if ("H" in Module_ID_Sec):
-						Module_ID = Module_ID_Sec.lstrip("H(").rstrip(")")
-					elif ("M" in Module_ID_Sec):
-						Module_ID = Module_ID_Sec.lstrip("M(").rstrip(")")
-					elif ("O" in Module_ID_Sec):
-						Module_ID = Module_ID_Sec.lstrip("O(").rstrip(")")
+					FWConfigList = CanvasName.split("_")
+					BeboardID = re.sub(r'[A-Z]\(|\)','',FWConfigList[1])
+					OGID = re.sub(r'[A-Z]\(|\)','',FWConfigList[2])
+					HyBridID = re.sub(r'[A-Z]\(|\)','',FWConfigList[3])
+					ChipID = re.sub(r'[A-Z]\(|\)','',FWConfigList[5])
+					ModulePath = "{0}_{1}_{2}".format(BeboardID,OGID,HyBridID)
+					if ModulePath in ModuleMap.keys():
+						ModuleName = ModuleMap[ModulePath]
 					else:
-						Module_ID = -1
+						continue
+					#Module_ID_Sec = CanvasName.split("_")[2] ##To be CHECKED!!!!!
+					#if ("H" in Module_ID_Sec):
+					#	Module_ID = Module_ID_Sec.lstrip("H(").rstrip(")")
+					#elif ("M" in Module_ID_Sec):
+					#	Module_ID = Module_ID_Sec.lstrip("M(").rstrip(")")
+					#elif ("O" in Module_ID_Sec):
+					#	Module_ID = Module_ID_Sec.lstrip("O(").rstrip(")")
+					#else:
+					#	Module_ID = -1
 					#Chip_ID = CanvasName.split("_")[5].lstrip("O(").rstrip(")")
-					if Module_ID not in canvasList.keys():
-						canvasList[Module_ID] = {}
-						canvasList[Module_ID][CanvasName] = Node.getObject()
+					if ModuleName not in canvasList.keys():
+						canvasList[ModuleName] = {}
+						canvasList[ModuleName][CanvasName] = Node.getObject()
 					else:
-						canvasList[Module_ID][CanvasName] = Node.getObject()
-				canvasList = GetCanvasVAL(Node, canvasList)
+						canvasList[ModuleName][CanvasName] = Node.getObject()
+				canvasList = GetCanvasVAL(Node, canvasList,ModuleMap)
 			return canvasList
 	else:
 		return canvasList
@@ -213,7 +223,7 @@ def GradeSCurveScan(canvasList):
 				factorPerModule[key][Chip_ID]["StdDev1D"] = StdDev1D
 
 	StdThreshold = 15.0
-	ChipThreshold = 0.5
+	ChipThreshold = -0.1
 
 	for Module_ID in factorPerModule.keys():
 		GradePerChip = {}
@@ -253,7 +263,7 @@ def GradeGainScan(canvasList):
 			if True:
 				factorPerModule[key][Chip_ID]["fakeScore"] = 1.0
 
-	ChipThreshold = 0.5
+	ChipThreshold = -0.5
 
 	for Module_ID in factorPerModule.keys():
 		GradePerChip = {}

@@ -131,11 +131,14 @@ class HyBridModule():
     self.HyBridType = "RD53"
     self.Id="0" 
     self.Status="1"
+    self.Name = "Serial1"
     self.File_Path = "./"
     self.FEList = []
     self.globalSetting = {}
   def SetHyBridType(self, Type):
     self.HyBridType = str(Type)
+  def SetHyBridName(self, name):
+    self.Name = str(name)
   def SetFEFilePath(self,File_Path):
     self.File_Path = File_Path
   def SetHyBridModule(self, Id, Status):
@@ -183,7 +186,8 @@ def SetNodeValue(Node, Dict):
    for key in Dict:
      Node_setting = ET.SubElement(Node, 'Setting')
      Node_setting.set('name',key)
-     Node_setting.text =  str(Dict[key]) 
+     Node_setting.text =  str(Dict[key])
+     ET.tostring(Node_setting)
    return Node
 
 def FindSubNode(Node,NodeString):
@@ -246,7 +250,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
 
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
-        Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,'Status':HyBridModule.Status})
+        Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,'Status':HyBridModule.Status,'Name':HyBridModule.Name})
         Node_FEPath = ET.SubElement(Node_HyBrid, HyBridModule.HyBridType+'_Files')
         Node_FEPath = SetNodeAttribute(Node_FEPath,{'file':HyBridModule.File_Path})
         FEList = HyBridModule.FEList
@@ -533,8 +537,12 @@ if __name__ == "__main__":
   
   # Config Front-end Chip
   FE0_0_0 = FE()
+  FE0_0_0.SetFE(0,0,"RD53.txt")
   FE0_0_0.ConfigureFE(FESettings)
 
+  FE0_0_1 = FE()
+  FE0_0_1.SetFE(1,1,"RD53.txt")
+  FE0_0_1.ConfigureFE(FESettings)
   # Config Front-end Module
   #FEModule0_0 = FEModule()
   #FEModule0_0.AddFE(FE0_0_0)
@@ -543,6 +551,7 @@ if __name__ == "__main__":
   # Config HyBrid
   HyBrid0_0 = HyBridModule()
   HyBrid0_0.AddFE(FE0_0_0)
+  HyBrid0_0.AddFE(FE0_0_1)
   HyBrid0_0.ConfigureGlobal(globalSettings)
   # Config Optical Group
   OpticalGroup0_0 = OGModule()

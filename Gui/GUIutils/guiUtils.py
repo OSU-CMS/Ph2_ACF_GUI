@@ -57,8 +57,6 @@ def iter_except(function, exception):
 	except:
 		return
 
-
-
 ##########################################################################
 ##########################################################################
 
@@ -128,24 +126,62 @@ def SetupXMLConfig(Input_Dir, Output_Dir):
 ##########################################################################
 
 def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
+	changeMade = False
 	try:
 		root,tree = LoadXML(InputFile)
 		fwIP = FirmwareList[firmwareName]
-		changeMade = False
 		for Node in root.findall(".//connection"):
 			if fwIP not in Node.attrib['uri']:
 				Node.set('uri','chtcp-2.0://localhost:10203?target={}:50001'.format(fwIP))
 				changeMade = True
 
+
+		counter = 0
 		for Node in root.findall(".//RD53"):
-			ParentNode = Node.getparent().getparent()
-			ChipKey = "{}_{}".format(ParentNode.attrib["Id"],Node.attrib["Id"])
+			ParentNode = Node.getparent() #.getparent()
+			try:
+				ChipKey = "{}_{}_{}".format(ParentNode.attrib["Name"],ParentNode.attrib["Id"],Node.attrib["Id"])
+			except:
+				ChipKey = "{}_{}".format(ParentNode.attrib["Id"],Node.attrib["Id"])
 			if ChipKey in RD53Dict.keys():
 				Node.set('configfile','CMSIT_RD53_{}.txt'.format(ChipKey))
 				changeMade = True
 			else:
-				logger.info("Chip with key {} not listed in rd53 list, Please check the XML configuration".format(ChipKey))
+				try:
+					keyList = list(RD53Dict.keys())
+					ChipKey = keyList[counter]
+					Node.set('configfile','CMSIT_RD53_{}.txt'.format(ChipKey))
+					changeMade = True
+					logger.info("Chip with key {} not listed in rd53 list, Please check the XML configuration".format(ChipKey))
+				except Exception as err:
+					pass
+			counter += 1
+	except Exception as error:
+		print("Failed to set up the XML file, {}".format(error))
 
+	try:
+		print('lenth of XML dict is {0}'.format(len(updatedXMLValues)))
+		if len(updatedXMLValues) > 0:
+			changeMade = True
+			print(updatedXMLValues)
+
+			for Node in root.findall(".//Settings"):
+				print("Found Settings Node!")
+				if 'Vthreshold_LIN' in Node.attrib:
+					RD53Node = Node.getparent()
+					HyBridNode = RD53Node.getparent()
+					chipKeyName ="{0}/{1}".format(HyBridNode.attrib["Id"],RD53Node.attrib["Lane"])
+					print('chipKeyName is {0}'.format(chipKeyName))
+					if len(updatedXMLValues[chipKeyName]) > 0:
+						for key in updatedXMLValues[chipKeyName].keys():
+							Node.set(key,str(updatedXMLValues[chipKeyName][key]))
+							print('Node {0} has been set to {1}'.format(key,updatedXMLValues[chipKeyName][key]))
+				
+	except Exception as error:
+		print("Failed to set up the XML file, {}".format(error))
+
+
+	try:
 		if changeMade:
 			ModifiedFile = InputFile+".changed"
 			tree.write(ModifiedFile)
@@ -192,25 +228,35 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
 			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
 
 
-def GenerateXMLConfig(firmwareList, testName, outputDir):
+def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 	#try:
 		outputFile = outputDir + "/CMSIT_" + testName +".xml" 
 
 		HWDescription0 = HWDescription()
 		BeBoardModule0 = BeBoardModule()
+		AllModules = firmwareList.getAllModules().values()
+		for module in AllModules:
+			AllOG = {}
+			OpticalGroupModule = OGModule()
+			OpticalGroupModule.SetOpticalGrp(module.getOpticalGroupID(),module.getFMCID())
+			AllOG[module.getOpticalGroupID()] = OpticalGroupModule
+
 		for module in firmwareList.getAllModules().values():
-			OpticalGroupModule0 = OGModule()
-			OpticalGroupModule0.SetOpticalGrp(module.getOpticalGroupID(),module.getFMCID())
+			OpticalGroupModule0 = AllOG[module.getOpticalGroupID()]
 			HyBridModule0 = HyBridModule()
 			HyBridModule0.SetHyBridModule(module.getModuleID(),"1")
+			HyBridModule0.SetHyBridName(module.getModuleName())
 			for chip in module.getChips().values():
 				FEChip = FE()
-				FEChip.SetFE(chip.getID(),chip.getLane())
+				FEChip.SetFE(chip.getID(),chip.getLane(),"CMSIT_RD53_{0}_{1}_{2}.txt".format(module.getModuleName(),module.getModuleID(),chip.getLane()))
 				FEChip.ConfigureFE(FESettings_Dict[testName])
 				HyBridModule0.AddFE(FEChip)
 			HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
 			OpticalGroupModule0.AddHyBrid(HyBridModule0)
-			BeBoardModule0.AddOGModule(OpticalGroupModule0)
+
+		for OpticalGroupModule in AllOG.values():
+			BeBoardModule0.AddOGModule(OpticalGroupModule)
+
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		HWDescription0.AddBeBoard(BeBoardModule0)
 		HWDescription0.AddSettings(HWSettings_Dict[testName])

@@ -43,10 +43,20 @@ HWSettings = {
 "TAP1Stop"          :   511,
 "TAP2Start"         :     0,
 "TAP2Stop"          :   511,
+"InvTAP2"           :     0,
 
 "chain2Test"        :     0,
 "byTime"            :     1,
 "framesORtime"      :    10,
+
+"RegNameDAC1"       :   'VCAL_HIGH',
+"StartValueDAC1"    :   250,
+"StopValueDAC1"     :   600,
+"StepDAC1"          :    50,
+"RegNameDAC2"       :    'user.ctrl_regs.fast_cmd_reg_5.delay_after_inject_pulse',
+"StartValueDAC2"    :    28,
+"StopValueDAC2"     :    50,
+"StepDAC2"          :     1,
 
 "DoFast"            :     0,
 "DisplayHisto"      :     0,
@@ -70,24 +80,29 @@ HWSettings_NoiseScan["nEvents"] = 1e7
 HWSettings_NoiseScan["nEvtsBurst"] = 1e4
 HWSettings_NoiseScan["INJtype"] = 0
 HWSettings_NoiseScan["nClkDelays"] = 10
+HWSettings_NoiseScan["nTRIGxEvent"] = 1
 
 HWSettings_SCurve =  copy.deepcopy(HWSettings)
 
 HWSettings_ThresEqu = copy.deepcopy(HWSettings)
-HWSettings_ThresEqu["nEvents"] = 500
-HWSettings_ThresEqu["nEvtsBurst"] = 500
+HWSettings_ThresEqu["nEvents"] = 100
+HWSettings_ThresEqu["nEvtsBurst"] = 100
 
 HWSettings_GainScan = copy.deepcopy(HWSettings)
 HWSettings_GainScan["VCalHstop"] = 4000
-HWSettings_GainScan["VCalHnsteps"] = 12
+HWSettings_GainScan["VCalHnsteps"] = 20
 
 HWSettings_GainOpt = copy.deepcopy(HWSettings)
+HWSettings_GainOpt["VCalHstop"] = 4000
+HWSettings_GainOpt["VCalHnsteps"] = 20
 
 HWSettings_ThresMin = copy.deepcopy(HWSettings)
 HWSettings_ThresMin["nEvents"] = 1e7
 HWSettings_ThresMin["nEvtsBurst"] = 1e4
 HWSettings_ThresMin["INJtype"] = 0
 HWSettings_ThresMin["nClkDelays"] = 10
+HWSettings_ThresMin["ThrStart"] = 370
+HWSettings_ThresMin["nTRIGxEvent"] = 1
 
 HWSettings_ThresAdj = copy.deepcopy(HWSettings)
 
@@ -107,7 +122,7 @@ HWSettings_Physics = copy.deepcopy(HWSettings)
 HWSettings_Dict = {
     'Latency'                    :    HWSettings_Latency,
     'PixelAlive'                 :    HWSettings_PixelAlive,
-    'NoiseScan'                  :   HWSettings_NoiseScan,
+    'NoiseScan'                  :    HWSettings_NoiseScan,
     'GainScan'                   :    HWSettings_GainScan,
     'SCurveScan'                 :    HWSettings_SCurve,
     'ThresholdEqualization'      :    HWSettings_ThresEqu,

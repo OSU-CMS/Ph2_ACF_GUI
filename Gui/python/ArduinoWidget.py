@@ -142,19 +142,25 @@ class ArduinoWidget(QWidget):
 	@QtCore.pyqtSlot()
 	def receive(self):
 		while self.serial.canReadLine():
-			text = self.serial.readLine().data().decode()
-			text = text.rstrip('\r\n')
-			StopSignal,measureText = ArduinoParser(text)
-			self.ArduinoMeasureValue.setText(measureText)
-			if StopSignal:
-				self.stopCount += 1
-				logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))
-			else:
-				self.stopCount = 0 
+
+			try:
+				text = self.serial.readLine().data().decode("utf-8","ignore")
+				print(text)
+				text = text.rstrip('\r\n')
+				StopSignal,measureText = ArduinoParser(text)
+				self.ArduinoMeasureValue.setText(measureText)
+				if StopSignal:
+					self.stopCount += 1
+					logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))
+				else:
+					self.stopCount = 0 
 		
-			if self.stopCount >= 10:
-				self.StopSignal()
-				self.stopCount = 0
+				if self.stopCount >= 10:
+					self.StopSignal()
+					self.stopCount = 0
+
+			except Exception as err:
+				logger.error("{0}".format(err))
 
 	@QtCore.pyqtSlot()
 	def StopSignal(self):

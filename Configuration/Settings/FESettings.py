@@ -14,7 +14,7 @@ FESettings = {
 'IBIAS_DISC_SYNC'       :  "280",
 'ICTRL_SYNCT_SYNC'      :  "100",
 'VBL_SYNC'              :  "360",
-'VTH_SYNC'              :  "400",
+'VTH_SYNC'              :  "150",
 'VREF_KRUM_SYNC'        :  "450",
 'CONF_FE_SYNC'          :    "2",
 
