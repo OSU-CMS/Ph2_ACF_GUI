@@ -19,7 +19,7 @@ if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
 
 else:
 	FirmwareList =  {
-	'fc7.board.1' 			 :  '192.168.1.80',
+	'fc7.board.1'			 :  '192.168.1.80',
 	'fc7.board.2'			 :  '127.0.0.1',#'192.168.1.81',
 	}
 
@@ -27,7 +27,7 @@ DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
 	'local'					 :  '127.0.0.1',
 	'OSU-remote'			 :  '128.146.38.1',
-    'Purdue-remote'          :  'cmsfpixdb.physics.purdue.edu',
+	'Purdue-remote'			 :  'cmsfpixdb.physics.purdue.edu',
 }
 
 
@@ -37,12 +37,12 @@ DBNames = {
 	'Central-remote'		 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
 	'local'					 :  ['SampleDB','phase2pixel_test'],
 	'OSU-remote'			 :  ['SampleDB','phase2pixel_test'],
-    'Purdue-remote'          :  ['cmsfpix_phase2'],
+	'Purdue-remote'			 :  ['cmsfpix_phase2'],
 }
 
 # Set the IT_uTDC_firmware for test
 FPGAConfigList =  {
-	'fc7.board.1' 			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28',
+	'fc7.board.1'			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28',
 	'fc7.board.2'			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
 }
 
@@ -98,17 +98,10 @@ ConfigFiles = {
 	'ThresholdAdjustment'    :  '/Configuration/Defaults/CMSIT.xml',
 	'InjectionDelay'         :  '/Configuration/Defaults/CMSIT.xml',
 	'ClockDelay'             :  '/Configuration/Defaults/CMSIT.xml',
-<<<<<<< HEAD
 	'BitErrorRate'           :  '/Configuration/Defaults/CMSIT.xml',
 	'DataRBOptimization'     :  '/Configuration/Defaults/CMSIT.xml',
 	'ChipIntVoltageTuning'   :  '/Configuration/Defaults/CMSIT.xml',
 	'GenericDAC-DAC'         :  '/Configuration/Defaults/CMSIT.xml',
-=======
-	'BitErrorRateTest'       :  '/Configuration/Defaults/CMSIT.xml',
-	'DataReadbackOpt'        :  '/Configuration/Defaults/CMSIT.xml',
-	'ChipIntVoltageTune'     :  '/Configuration/Defaults/CMSIT.xml',
-	'GenDACDACScan'          :  '/Configuration/Defaults/CMSIT.xml',
->>>>>>> 92260fbc06235feef80b41600935bc1e2c17b0f9
 	'Physics'                :  '/Configuration/Defaults/CMSIT.xml',
 	'AllScan'                :  '/Configuration/Defaults/CMSIT.xml',
 }
@@ -131,17 +124,10 @@ Test = {
 	'ThresholdAdjustment'    :  'thradj',
 	'InjectionDelay'         :  'injdelay',
 	'ClockDelay'             :  'clockdelay',
-<<<<<<< HEAD
 	'BitErrorRate'           :  'bertest',
 	'DataRBOptimization'     :  'datarbopt',
 	'ChipIntVoltageTuning'   :  'voltagetuning',
 	'GenericDAC-DAC'         :  'gendacdac',
-=======
-	'BitErrorRateTest'       :  'bertest',
-	'DataReadbackOpt'        :  'datarbopt',
-	'ChipIntVoltageTune'     :  'voltagetuning',
-	'GenDACDACScan'          :  'gendacdac',
->>>>>>> 92260fbc06235feef80b41600935bc1e2c17b0f9
 	'Physics'                :  'physics',
 }
 
@@ -157,27 +143,16 @@ TestName2File = {
 	'ThresholdAdjustment'    :  'ThrAdjustment',
 	'InjectionDelay'         :  'InjectionDelay',
 	'ClockDelay'             :  'ClockDelay',
-<<<<<<< HEAD
 	'BitErrorRate'           :  'BitErrRate',
 	'DataRBOptimization'     :  'DataRBOpt',
 	'ChipIntVoltageTuning'   :  'VoltageTuning',
 	'GenericDAC-DAC'         :  'GenDACDAC',
-=======
-	'BitErrorRateTest'       :  'BitErrorRateTest',
-	'DataReadbackOpt'        :  'DataReadbackOpt',
-	'ChipIntVoltageTune'     :  'ChipIntVoltageTune',
-	'GenDACDACScan'          :  'GenDACDACScan',
->>>>>>> 92260fbc06235feef80b41600935bc1e2c17b0f9
 	'Physics'                :  'Physics',
 }
 
 SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
-					 'ThresholdEqualization','GainOptimization','ThresholdMinimization',
-<<<<<<< HEAD
-					 'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
-=======
-					 'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRateTest','DataReadbackOpt','ChipIntVoltageTune','GenDACDACScan','Physics']
->>>>>>> 92260fbc06235feef80b41600935bc1e2c17b0f9
+	'ThresholdEqualization','GainOptimization','ThresholdMinimization',
+	'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
 CompositeTest = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
