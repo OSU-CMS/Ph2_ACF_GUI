@@ -27,7 +27,7 @@ DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
 	'local'					 :  '127.0.0.1',
 	'OSU-remote'			 :  '128.146.38.1',
-    'Purdue-remote'                  :  'cmsfpixdb.physics.purdue.edu',
+    'Purdue-remote'          :  'cmsfpixdb.physics.purdue.edu',
 }
 
 
@@ -98,6 +98,10 @@ ConfigFiles = {
 	'ThresholdAdjustment'    :  '/Configuration/Defaults/CMSIT.xml',
 	'InjectionDelay'         :  '/Configuration/Defaults/CMSIT.xml',
 	'ClockDelay'             :  '/Configuration/Defaults/CMSIT.xml',
+	'BitErrorRate'           :  '/Configuration/Defaults/CMSIT.xml',
+	'DataRBOptimization'     :  '/Configuration/Defaults/CMSIT.xml',
+	'ChipIntVoltageTuning'   :  '/Configuration/Defaults/CMSIT.xml',
+	'GenericDAC-DAC'         :  '/Configuration/Defaults/CMSIT.xml',
 	'Physics'                :  '/Configuration/Defaults/CMSIT.xml',
 	'AllScan'                :  '/Configuration/Defaults/CMSIT.xml',
 }
@@ -120,6 +124,10 @@ Test = {
 	'ThresholdAdjustment'    :  'thradj',
 	'InjectionDelay'         :  'injdelay',
 	'ClockDelay'             :  'clockdelay',
+	'BitErrorRate'           :  'bertest',
+	'DataRBOptimization'     :  'datarbopt',
+	'ChipIntVoltageTuning'   :  'voltagetuning',
+	'GenericDAC-DAC'         :  'gendacdac',
 	'Physics'                :  'physics',
 }
 
@@ -135,12 +143,16 @@ TestName2File = {
 	'ThresholdAdjustment'    :  'ThrAdjustment',
 	'InjectionDelay'         :  'InjectionDelay',
 	'ClockDelay'             :  'ClockDelay',
+	'BitErrorRate'           :  'BitErrRate',
+	'DataRBOptimization'     :  'DataRBOpt',
+	'ChipIntVoltageTuning'   :  'VoltageTuning',
+	'GenericDAC-DAC'         :  'GenDACDAC',
 	'Physics'                :  'Physics',
 }
 
 SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 					 'ThresholdEqualization','GainOptimization','ThresholdMinimization',
-					 'ThresholdAdjustment','InjectionDelay','ClockDelay','Physics']
+					 'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
 CompositeTest = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {

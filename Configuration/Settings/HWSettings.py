@@ -114,6 +114,14 @@ HWSettings_ClockDelay = copy.deepcopy(HWSettings)
 HWSettings_ClockDelay["nTRIGxEvent"] = 1
 HWSettings_ClockDelay["DoFast"] = 1
 
+HWSettings_BitErrRate = copy.deepcopy(HWSettings)
+
+HWSettings_DataRBOpt = copy.deepcopy(HWSettings)
+
+HWSettings_VoltageTuning = copy.deepcopy(HWSettings)
+
+HWSettings_GenDACDAC = copy.deepcopy(HWSettings)
+
 HWSettings_Physics = copy.deepcopy(HWSettings)
 
 
@@ -131,5 +139,9 @@ HWSettings_Dict = {
     'ThresholdAdjustment'        :    HWSettings_ThresAdj,
     'InjectionDelay'             :    HWSettings_InjDelay,
     'ClockDelay'                 :    HWSettings_ClockDelay,
+    'BitErrorRate'               :    HWSettings_BitErrRate,
+    'DataRBOptimization'         :    HWSettings_DataRBOpt,
+    'ChipIntVoltageTuning'       :    HWSettings_VoltageTuning,
+    'GenericDAC-DAC'             :    HWSettings_GenDACDAC,
     'Physics'                    :    HWSettings_Physics,
 }
