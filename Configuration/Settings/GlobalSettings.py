@@ -69,5 +69,9 @@ globalSettings_Dict = {
     'ThresholdAdjustment'        :    globalSettings,
     'InjectionDelay'             :    globalSettings,
     'ClockDelay'                 :    globalSettings,
+    'BitErrorRate'               :    globalSettings,
+    'DataRBOptimization'         :    globalSettings,
+    'ChipIntVoltageTuning'       :    globalSettings,
+    'GenericDAC-DAC'             :    globalSettings,
     'Physics'                    :    globalSettings,
 }
