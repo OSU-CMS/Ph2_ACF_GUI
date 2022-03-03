@@ -28,6 +28,10 @@ from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
 
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 class TestHandler(QObject):
 	backSignal = pyqtSignal(object)
 	haltSignal = pyqtSignal(object)
@@ -35,11 +39,15 @@ class TestHandler(QObject):
 	proceedSignal = pyqtSignal(object)
 	outputString = pyqtSignal(object)
 	stepFinished = pyqtSignal(object)
+	historyRefresh = pyqtSignal(object)
+	updateResult = pyqtSignal(object)
+	updateValidation = pyqtSignal(object,object)
 
-	def __init__(self,master,info,firmware):
+	def __init__(self,window,master,info,firmware):
 		super(TestHandler,self).__init__()
 		self.master = master
 		self.master.globalStop.connect(self.urgentStop)
+		self.window = window
 		self.firmware = firmware
 		self.info = info
 		self.connection = self.master.connection
@@ -60,6 +68,10 @@ class TestHandler(QObject):
 		self.errorFile = ""
 
 		self.autoSave = False
+		self.backSignal = False
+		self.halt = False
+		self.finishSingal = False
+		self.proceedSignal = False
 
 		self.runNext = threading.Event()
 		self.testIndexTracker = -1
@@ -79,6 +91,13 @@ class TestHandler(QObject):
 		self.info_process = QProcess(self)
 		self.info_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput_info)
 
+		self.haltSignal.connect(self.window.finish)
+		self.outputString.connect(self.window.updateConsoleInfo)
+		self.stepFinished.connect(self.window.finish)
+		self.historyRefresh.connect(self.window.refreshHistory)
+		self.updateResult.connect(self.window.updateResult)
+		self.updateValidation.connect(self.window.updateValidation)
+
 		self.initializeRD53Dict()
 
 	def  initializeRD53Dict(self):
@@ -94,6 +113,7 @@ class TestHandler(QObject):
 				self.rd53_file["{0}_{1}_{2}".format(moduleName,moduleId,i)] = None
 			fwPath = "{0}_{1}_{2}".format(beboardId,ogId,moduleId)
 			self.ModuleMap[fwPath] = moduleName
+
 	def configTest(self):
 		try:
 			RunNumberFileName = os.environ.get('Ph2_ACF_AREA')+"/test/RunNumber.txt"
@@ -186,20 +206,13 @@ class TestHandler(QObject):
 		self.config_file = ""
 		self.initializeRD53Dict()
 
-	def initialTest(self):
-		if "Re" in self.RunButton.text():
-			self.grades = []
-			if isCompositeTest(self.info[1]):
-				for index in range(len(CompositeList[self.info[1]])):
-					self.ResultWidget.ProgressBar[index].setValue(0)
-			else:
-				self.ResultWidget.ProgressBar[0].setValue(0)
-
-	def runTest(self):
-		self.ResetButton.setDisabled(True)
+	def runTest(self, reRun = False):
+		#self.ResetButton.setDisabled(True)
 		#self.ControlLayout.removeWidget(self.RunButton)
 		#self.RunButton.deleteLater()
 		#self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
+		if reRun:
+			self.halt = False
 		testName = self.info[1]
 
 		self.input_dir = self.output_dir
@@ -219,7 +232,7 @@ class TestHandler(QObject):
 			return
 
 	def runCompositeTest(self,testName):
-		if self.haltSignal:
+		if self.halt:
 			return
 		if self.testIndexTracker == len(CompositeList[self.info[1]]):
 			self.testIndexTracker = 0
@@ -229,6 +242,7 @@ class TestHandler(QObject):
 
 
 	def runSingleTest(self,testName):
+		print("Executing Single Step test...")
 		self.starttime = None
 		self.ProgressingMode = "None"
 		self.currentTest = testName
@@ -260,12 +274,6 @@ class TestHandler(QObject):
 		else:
 			self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
 	
-
-		#self.run_process.start("ping", ["-c","5","www.google.com"])
-		#self.run_process.waitForFinished()
-		self.displayResult()
-		
-
 		#Question = QMessageBox()
 		#Question.setIcon(QMessageBox.Question)
 		#Question.setWindowTitle('SingleTest Finished')
@@ -288,42 +296,27 @@ class TestHandler(QObject):
 		reply = QMessageBox.question(None, "Abort", "Are you sure to abort?", QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
+			self.halt = True
 			self.run_process.kill()
-			self.haltSignal = True
-			self.sendProceedSignal()
+			#self.haltSignal.emit(self.halt)
 			self.starttime = None
 		else:
 			return
-		self.RunButton.setText("Re-run")
-		self.RunButton.setDisabled(False)
+
 	
 	def urgentStop(self):
 		self.run_process.kill()
-		self.haltSignal = True
-		self.sendProceedSignal()
+		self.halt = True
+		self.haltSignal.emit(self.halt)
+		self.starttime = None
 
-		self.RunButton.setText("Re-run")
-		self.RunButton.setDisabled(True)
 
 	def validateTest(self):
 		try:
-			status = True
-			# Fixme: the grading for test results
+			grade = {}
+			passmodule = {}
 			grade, passmodule = ResultGrader(self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap)
-			self.grades.append(grade)
-			self.modulestatus.append(passmodule)
-		
-			self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Pass")
-			self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: green")
-			for module in passmodule.values():
-				if False in module.values():
-					status = False
-					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Failed")
-					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: red")
-		
-
-			time.sleep(0.5)
-			return status
+			self.updateValidation.emit(grade, passmodule)
 		#self.StatusCanvas.renew()
 		#self.StatusCanvas.update()
 		#self.HistoryLayout.removeWidget(self.StatusCanvas)
@@ -487,11 +480,11 @@ class TestHandler(QObject):
 				if self.starttime != None:
 					self.currentTime = time.time()
 					runningTime = self.currentTime - self.starttime
+					self.window.ResultWidget.runtime[self.testIndexTracker].setText('{0} s'.format(round(runningTime,1)))
 				else:
 					self.starttime = time.time()
 					self.currentTime = self.starttime
-				
-				self.ResultWidget.runtime[self.testIndexTracker].setText('{0} s'.format(round(runningTime,1)))
+			
 			except Exception as err:
 				logger.info("Error occures while parsing running time, {0}".format(err))
 
@@ -502,7 +495,7 @@ class TestHandler(QObject):
 						self.ProgressValue = float(textStr.split()[index].rstrip("%"))
 						if self.ProgressValue == 100:
 							self.ProgressingMode = "Summary"
-						self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)										
+						self.window.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)										
 					except:
 						pass
 					
@@ -536,7 +529,7 @@ class TestHandler(QObject):
 				self.ProgressingMode = "Configure"
 			elif "@@@ Performing" in textStr:
 				self.ProgressingMode = "Perform"
-				self.ConsoleView.appendHtml('<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest))
+				self.outputString.emit('<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest))
 
 			text = textStr.encode('ascii')
 			numUpAnchor, text = parseANSI(text)
@@ -551,9 +544,10 @@ class TestHandler(QObject):
 			#	textCursor.deletePreviousChar()
 			#	textCursor.endEditBlock()
 			#	self.ConsoleView.setTextCursor(textCursor)
-			textCursor = self.ConsoleView.textCursor()
-			self.ConsoleView.setTextCursor(textCursor)
-			self.ConsoleView.appendHtml(text.decode("utf-8"))
+			self.outputString.emit(text.decode("utf-8"))
+			#textCursor = self.window.ConsoleView.textCursor()
+			#self.window.ConsoleView.setTextCursor(textCursor)
+			#self.window.ConsoleView.appendHtml(text.decode("utf-8"))
 		self.readingOutput = False
 
 	def updateNeeded(self,textStr):
@@ -585,14 +579,17 @@ class TestHandler(QObject):
 		textline = alltext.split('\n')
 
 		for textStr in textline:
-			self.ConsoleView.appendHtml(textStr)
+			self.outputString.emit(textStr)
+			#self.ConsoleView.appendHtml(textStr)
 		
 	@QtCore.pyqtSlot()
 	def on_finish(self):
-		self.RunButton.setDisabled(True)
-		self.RunButton.setText("&Continue")
-		self.finishSingal = True
 		self.outputfile.close()
+
+		# While the process is killed:
+		if self.halt == True:
+			self.haltSignal.emit(True)
+			return
 
 		#To be removed
 		#if isCompositeTest(self.info[1]):
@@ -603,15 +600,16 @@ class TestHandler(QObject):
 		self.testIndexTracker += 1
 		self.saveConfigs()
 
+		EnableReRun = False
 		if isCompositeTest(self.info[1]):
 			if self.testIndexTracker == len(CompositeList[self.info[1]]):
-				self.RunButton.setText("&Re-run")
-				self.RunButton.setDisabled(False)
-		if isSingleTest(self.info[1]):
-			#self.RunButton.setText("&Finish")
-			#self.RunButton.setDisabled(True)
-			self.RunButton.setText("&Re-run")
-			self.RunButton.setDisabled(False)
+				EnableReRun = True
+		elif isSingleTest(self.info[1]):
+			EnableReRun = True
+
+		self.stepFinished.emit(EnableReRun)
+
+		
 
 		# Save the output ROOT file to output_dir
 		self.saveTest()
@@ -620,19 +618,29 @@ class TestHandler(QObject):
 		status = self.validateTest()
 
 		# show the score of test
-		self.refreshHistory()
-
-		# For test
-		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
-		self.ResultWidget.updateResult(self.output_dir)
+		self.historyRefresh.emit(self.modulestatus)
+		self.updateResult.emit(self.output_dir)
 
 		if self.autoSave:
 			self.saveTestToDB()
-		self.update()
+		#self.update()
 
 		if status == False and isCompositeTest(self.info[1]) and self.testIndexTracker < len(CompositeList[self.info[1]]):
 			self.forceContinue()
 
 		if isCompositeTest(self.info[1]):
 			self.runTest()
+
+	def forceContinue(self):
+		reply = QMessageBox.question(self, 'Abort following tests', 'Failed component detected, continue to following test?',
+				QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
+
+		if reply == QMessageBox.Yes:
+			return
+		else:
+			self.run_process.kill()
+			self.halt = True
+			self.haltSignal.emit(self.halt)
+			self.starttime = None
+
 
