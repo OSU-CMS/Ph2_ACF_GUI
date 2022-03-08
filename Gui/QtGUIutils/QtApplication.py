@@ -19,6 +19,7 @@ from Gui.QtGUIutils.QtFwCheckWindow  import *
 from Gui.QtGUIutils.QtFwStatusWindow import *
 from Gui.QtGUIutils.QtSummaryWindow import *
 from Gui.QtGUIutils.QtStartWindow import *
+from Gui.QtGUIutils.QtProductionTestWindow import *
 from Gui.QtGUIutils.QtModuleReviewWindow import *
 from Gui.QtGUIutils.QtDBConsoleWindow import *
 from Gui.QtGUIutils.QtuDTCDialog import *
@@ -482,6 +483,14 @@ class QtApplication(QWidget):
 			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
 
+		self.NewProductionTestButton = QPushButton("&Production Test")
+		self.NewProductionTestButton.setMinimumWidth(kMinimumWidth)
+		self.NewProductionTestButton.setMaximumWidth(kMaximumWidth)
+		self.NewProductionTestButton.setMinimumHeight(kMinimumHeight)
+		self.NewProductionTestButton.setMaximumHeight(kMaximumHeight)
+		self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
+		NewProductionTestLabel = QLabel("Open production test")
+
 		self.ReviewButton = QPushButton("&Review")
 		self.ReviewButton.setMinimumWidth(kMinimumWidth)
 		self.ReviewButton.setMaximumWidth(kMaximumWidth)
@@ -509,6 +518,8 @@ class QtApplication(QWidget):
 		layout.addWidget(ReviewLabel,  2, 1, 1, 2)
 		layout.addWidget(self.ReviewModuleButton,3, 0, 1, 1)
 		layout.addWidget(self.ReviewModuleEdit,  3, 1, 1, 2)
+		layout.addWidget(self.NewProductionTestButton,4, 0, 1, 1)
+		layout.addWidget(NewProductionTestLabel, 4, 1, 1, 2)
 
 		####################################################
 		# Functions for expert mode
@@ -618,6 +629,13 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.ArduinoControl)
 		self.mainLayout.removeWidget(self.MainOption)
 		self.mainLayout.removeWidget(self.AppOption)
+
+	def openNewProductionTest(self):
+		self.ProdTestPage = QtProductionTestWindow(self, self.HVpowersupply)
+		self.ProdTestPage.close.connect(self.releaseProdTestButton)
+		self.NewProductionTestButton.setDisabled(True)
+		self.LogoutButton.setDisabled(True)
+		self.ExitButton.setDisabled(True)
 
 	def openNewTest(self):
 		FwModule = self.FwDict[self.FwUnderUsed]
@@ -828,7 +846,12 @@ class QtApplication(QWidget):
 			firmware.setFPGAConfig(changeuDTCDialog.uDTCFile)
 		
 		self.checkFirmware()
-		
+	
+	def releaseProdTestButton(self):
+		self.NewProductionTestButton.setDisabled(False)
+		self.LogoutButton.setDisabled(False)
+		self.ExitButton.setDisabled(False)
+
 	def goExpert(self):
 		self.expertMode = True
 
