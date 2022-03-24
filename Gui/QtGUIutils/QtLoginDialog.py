@@ -116,12 +116,16 @@ class QtLoginDialog(QDialog):
 
 	def checkLogin(self):
 		msg = QMessageBox()
-
+		expertList = ['mjoyce','kwei'] #temporary fix for demonstration
+		if self.UsernameEdit.text() in expertList:
+			self.expertMode = True
 		if self.expertMode == True:
 			self.TryUsername = self.UsernameEdit.text()
 			self.TryPassword = self.PasswordEdit.text()
-			self.TryHostAddress = self.HostEdit.text()
-			self.TryDatabase = self.DatabaseEdit.text()
+			self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+			self.TryDatabase = str(self.DatabaseCombo.currentText())
+#			self.TryHostAddress = self.HostEdit.text()
+#			self.TryDatabase = self.DatabaseEdit.text()
 		else:
 			self.TryUsername = self.UsernameEdit.text()
 			self.TryPassword = self.PasswordEdit.text()

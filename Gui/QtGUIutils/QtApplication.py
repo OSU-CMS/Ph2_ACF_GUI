@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 
 import sys
 import os
+import time
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.settings import *
@@ -19,11 +20,14 @@ from Gui.QtGUIutils.QtFwCheckWindow  import *
 from Gui.QtGUIutils.QtFwStatusWindow import *
 from Gui.QtGUIutils.QtSummaryWindow import *
 from Gui.QtGUIutils.QtStartWindow import *
+from Gui.QtGUIutils.QtProductionTestWindow import *
 from Gui.QtGUIutils.QtModuleReviewWindow import *
 from Gui.QtGUIutils.QtDBConsoleWindow import *
 from Gui.QtGUIutils.QtuDTCDialog import *
 from Gui.python.Firmware import *
 from Gui.python.ArduinoWidget import *
+from Gui.QtGUIutils.QtRunWindow import *
+from Gui.python.SimplifiedMainWidget import *
 
 class QtApplication(QWidget):
 	globalStop = pyqtSignal()
@@ -119,14 +123,16 @@ class QtApplication(QWidget):
 		self.UsernameEdit = QLineEdit('')
 		self.UsernameEdit.setEchoMode(QLineEdit.Normal)
 		self.UsernameEdit.setPlaceholderText('Your username')
-		self.UsernameEdit.setMinimumWidth(150)
+		self.UsernameEdit.setMinimumWidth(220)
+		self.UsernameEdit.setMaximumWidth(260)
 		self.UsernameEdit.setMaximumHeight(30)
 
 		PasswordLabel = QLabel("Password:")
 		self.PasswordEdit = QLineEdit('')
 		self.PasswordEdit.setEchoMode(QLineEdit.Password)
 		self.PasswordEdit.setPlaceholderText('Your password')
-		self.PasswordEdit.setMinimumWidth(150)
+		self.PasswordEdit.setMinimumWidth(220)
+		self.PasswordEdit.setMaximumWidth(260)
 		self.PasswordEdit.setMaximumHeight(30)
 
 		HostLabel = QLabel("HostName:")
@@ -140,7 +146,8 @@ class QtApplication(QWidget):
 			HostLabel.setText("HostIPAddr")
 			self.HostEdit = QLineEdit('128.146.38.1')
 			self.HostEdit.setEchoMode(QLineEdit.Normal)
-			self.HostEdit.setMinimumWidth(150)
+			self.HostEdit.setMinimumWidth(220)
+			self.HostEdit.setMaximumWidth(260)
 			self.HostEdit.setMaximumHeight(30)
 
 		DatabaseLabel = QLabel("Database:")
@@ -152,7 +159,8 @@ class QtApplication(QWidget):
 		else:
 			self.DatabaseEdit = QLineEdit('SampleDB')
 			self.DatabaseEdit.setEchoMode(QLineEdit.Normal)
-			self.DatabaseEdit.setMinimumWidth(150)
+			self.DatabaseEdit.setMinimumWidth(220)
+			self.DatabaseEdit.setMaximumWidth(260)			
 			self.DatabaseEdit.setMaximumHeight(30)
 
 		self.disableCheckBox = QCheckBox("&Do not connect to DB")
@@ -164,10 +172,10 @@ class QtApplication(QWidget):
 			self.disableCheckBox.toggled.connect(self.HostName.setDisabled)
 			self.disableCheckBox.toggled.connect(self.DatabaseCombo.setDisabled)
 
-		self.expertCheckBox = QCheckBox("&Expert Mode")
-		self.expertCheckBox.setMaximumHeight(30)
-		self.expertCheckBox.setChecked(self.expertMode)
-		self.expertCheckBox.clicked.connect(self.switchMode)
+		#self.expertCheckBox = QCheckBox("&Expert Mode")
+		#self.expertCheckBox.setMaximumHeight(30)
+		#self.expertCheckBox.setChecked(self.expertMode)
+		#self.expertCheckBox.clicked.connect(self.switchMode)
 
 		button_login = QPushButton("&Login")
 		button_login.setDefault(True)
@@ -180,18 +188,18 @@ class QtApplication(QWidget):
 		layout.addWidget(self.UsernameEdit,1,2,1,2)
 		layout.addWidget(PasswordLabel,2,1,1,1,Qt.AlignRight)
 		layout.addWidget(self.PasswordEdit,2,2,1,2)
-		layout.addWidget(HostLabel,3,1,1,1,Qt.AlignRight)
-		if self.expertMode:
-			layout.addWidget(self.HostEdit,3,2,1,2)
-		else:
-			layout.addWidget(self.HostName,3,2,1,2)
-		layout.addWidget(DatabaseLabel,4,1,1,1,Qt.AlignRight)
-		if self.expertMode:
-			layout.addWidget(self.DatabaseEdit,4,2,1,2)
-		else:
-			layout.addWidget(self.DatabaseCombo,4,2,1,2)
+		#layout.addWidget(HostLabel,3,1,1,1,Qt.AlignRight)
+		#if self.expertMode:
+		#	layout.addWidget(self.HostEdit,3,2,1,2)
+		#else:
+		#	layout.addWidget(self.HostName,3,2,1,2)
+		#layout.addWidget(DatabaseLabel,4,1,1,1,Qt.AlignRight)
+		#if self.expertMode:
+		#	layout.addWidget(self.DatabaseEdit,4,2,1,2)
+		#else:
+		#	layout.addWidget(self.DatabaseCombo,4,2,1,2)
 		layout.addWidget(self.disableCheckBox,5,2,1,1,Qt.AlignLeft)
-		layout.addWidget(self.expertCheckBox,5,3,1,1,Qt.AlignRight)
+		#layout.addWidget(self.expertCheckBox,5,3,1,1,Qt.AlignRight)
 		layout.addWidget(button_login,6,1,1,3)
 		layout.setRowMinimumHeight(6, 50)
 
@@ -239,6 +247,7 @@ class QtApplication(QWidget):
 		else:
 			self.expertMode = True
 		self.destroyLogin()
+		self.setLoginUI()
 		self.createLogin()
 
 	def destroyLogin(self):
@@ -248,18 +257,25 @@ class QtApplication(QWidget):
 	
 	def checkLogin(self):
 		msg = QMessageBox()
-
+		if self.UsernameEdit.text() in ExpertUserList:
+			self.expertMode = True
 		try:
 			if self.expertMode == True:
 				self.TryUsername = self.UsernameEdit.text()
 				self.TryPassword = self.PasswordEdit.text()
-				self.TryHostAddress = self.HostEdit.text()
-				self.TryDatabase = self.DatabaseEdit.text()
+				self.DisplayedPassword = self.PasswordEdit.displayText()
+				#self.TryHostAddress = self.HostEdit.text()
+				#self.TryDatabase = self.DatabaseEdit.text()
+				self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+				self.TryDatabase = str(self.DatabaseCombo.currentText())
 			else:
 				self.TryUsername = self.UsernameEdit.text()
 				self.TryPassword = self.PasswordEdit.text()
-				self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
-				self.TryDatabase = str(self.DatabaseCombo.currentText())
+				self.DisplayedPassword = self.PasswordEdit.displayText()
+				#self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+				#self.TryDatabase = str(self.DatabaseCombo.currentText())
+				self.TryHostAddress = defaultDBServerIP
+				self.TryDatabase = str(defaultDBName)
 		except:
 			print("Unexpected content detected ")
 
@@ -273,13 +289,22 @@ class QtApplication(QWidget):
 
 				if isActive(self.connection):
 					self.destroyLogin()
-					self.createMain()
+					if self.expertMode:
+						self.createMain()
+					else:
+						self.createSimplifiedMain()
 					self.checkFirmware()
+					
 			else:
 				self.connection = "Offline"
 				self.destroyLogin()
-				self.createMain()
-				self.checkFirmware()
+				if self.expertMode:
+					self.createMain()
+					self.checkFirmware()
+				else:
+					self.createSimplifiedMain()
+				#self.checkFirmware()
+
 		except Exception as err:
 			print("Failed to connect the database: {}".format(repr(err)))
 
@@ -287,6 +312,141 @@ class QtApplication(QWidget):
 	##  Login page and related functions  (END)
 	###############################################################
 
+
+	###############################################################
+	##  Main page for non-expert
+	###############################################################
+	def createSimplifiedMain(self):
+		#self.welcomebox = QGroupBox("Hello,{}!".format(self.TryUsername))
+		#self.FirmwareStatus.setDisabled(True)
+		self.SimpleMain = SimplifiedMainWidget(self)
+		self.mainLayout.addWidget(self.SimpleMain)
+		'''
+		##################################
+		##  Testing some things out #######
+		##################################
+		self.simplifiedStatusBox = QGroupBox("Hello,{}!".format(self.TryUsername))
+		
+
+		statusString, colorString = checkDBConnection(self.connection)
+		DBStatusLabel = QLabel()
+		DBStatusLabel.setText("Database connection:")
+		DBStatusValue = QLabel()
+		DBStatusValue.setText(statusString)
+		DBStatusValue.setStyleSheet(colorString)
+
+		self.HVPowerStatusLabel = QLabel()
+		self.HVPowerStatusValue = QLabel()
+		self.LVPowerStatusLabel = QLabel()
+		self.LVPowerStatusValue = QLabel()
+		
+		self.ModuleEntryBox = QGroupBox("Please scan module QR code")
+		ModuleEntryLayout = QGridLayout()
+
+		SerialLabel = QLabel("SerialNumber:")
+		self.SerialEdit = QLineEdit()
+
+		CableLabel = QLabel("CableNumber")
+		self.CableEdit = QLineEdit()
+
+		#Selecting default HV
+		self.HVpowersupply.setPowerModel(defaultHVModel[0])
+		self.HVpowersupply.setInstrument(defaultUSBPortHV[0])
+		statusString = self.HVpowersupply.getInfo()
+		self.HVPowerStatusLabel.setText("HV status")
+		if statusString != "No valid device" and statusString != None:
+			self.HVPowerStatusValue.setStyleSheet("color:green")
+			self.HVPowerStatusValue.setText(statusString)
+		else:
+			self.HVPowerStatusValue.setStyleSheet("color:red")
+			self.HVPowerStatusValue.setText("No valid device")
+		time.sleep(0.5)
+		#Selecting default LV
+		self.LVpowersupply.setPowerModel(defaultLVModel[0])
+		self.LVpowersupply.setInstrument(defaultUSBPortLV[0])
+		statusString = self.LVpowersupply.getInfo()
+		self.LVPowerStatusLabel.setText("LV status")
+		if statusString != "No valid device" and statusString != None:
+			self.LVPowerStatusValue.setStyleSheet("color:green")
+			self.LVPowerStatusValue.setText(statusString)
+		else:
+			self.LVPowerStatusValue.setStyleSheet("color:red")
+			self.LVPowerStatusValue.setText("No valid device")
+
+		self.StatusList = []
+		self.StatusList.append([DBStatusLabel, DBStatusValue])
+		self.StatusList.append([self.HVPowerStatusLabel, self.HVPowerStatusValue])
+		self.StatusList.append([self.LVPowerStatusLabel, self.LVPowerStatusValue])
+
+		FC7NameLabel = QLabel()
+		FC7NameLabel.setText(defaultFC7)
+		FC7StatusValue = QLabel()
+
+		firmwareName, fwAddress = defaultFC7, defaultFC7IP
+
+		self.BeBoard = QtBeBoard()
+		self.BeBoard.setBoardName(firmwareName)
+		self.BeBoard.setIPAddress(FirmwareList[firmwareName])
+		self.BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
+
+		self.FwDict[firmwareName] = self.BeBoard
+		self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
+	
+		LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),firmwareName)
+		try:
+			logFile  = open(LogFileName, "w")
+			logFile.close()
+		except:
+			QMessageBox(None,"Error","Can not create log files: {}".format(LogFileName))
+		
+		FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(firmwareName,LogFileName)
+		FC7StatusValue.setText(FwStatusComment)
+		FC7StatusValue.setStyleSheet(FwStatusColor)
+		self.FwModule = self.FwDict[firmwareName]
+		
+		self.StatusList.append([FC7NameLabel,FC7StatusValue])
+
+		StatusLayout = QGridLayout()
+
+
+		for index, items in enumerate(self.StatusList):
+			StatusLayout.addWidget(items[0], index, 1,  1, 1)
+			StatusLayout.addWidget(items[1], index, 2,  1, 2)
+
+
+		ModuleEntryLayout.addWidget(self.BeBoardWidget)
+		
+		self.AppOption = QGroupBox()
+		self.StartLayout = QHBoxLayout()
+		self.ExitButton = QPushButton("&Exit")
+		self.ExitButton.clicked.connect(self.close)
+		self.RunButton = QPushButton("&Run Tests")
+		self.RunButton.clicked.connect(self.runNewTest)
+		self.StartLayout.addStretch(1)
+		self.StartLayout.addWidget(self.ExitButton)
+		self.StartLayout.addWidget(self.RunButton)
+		self.AppOption.setLayout(self.StartLayout)
+
+		
+		self.simplifiedStatusBox.setLayout(StatusLayout)
+		self.ModuleEntryBox.setLayout(ModuleEntryLayout)
+		#self.mainLayout.addWidget(self.welcomebox)
+		self.mainLayout.addWidget(self.simplifiedStatusBox)
+		self.mainLayout.addWidget(self.ModuleEntryBox)
+		self.mainLayout.addWidget(self.AppOption)
+
+	def runNewTest(self):
+		self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
+		self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "AllScan"]
+		self.runFlag = True
+		self.RunTest = QtRunWindow(self, self.info, self.firmwareDescription)
+		self.LVpowersupply.setPoweringMode("Direct")
+		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+		self.LVpowersupply.TurnOn()
+		######################################
+		## Testin some things out (end) #######
+		######################################
+	'''
 	###############################################################
 	##  Main page and related functions
 	###############################################################
@@ -302,8 +462,10 @@ class QtApplication(QWidget):
 		DBStatusValue.setText(statusString)
 		DBStatusValue.setStyleSheet(colorString)
 
+
 		self.StatusList = []
 		self.StatusList.append([DBStatusLabel, DBStatusValue])
+		
 
 		try:
 			for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
@@ -375,6 +537,17 @@ class QtApplication(QWidget):
 
 		self.FirmwareStatus.setLayout(StatusLayout)
 		self.FirmwareStatus.setDisabled(False)
+
+		self.UseDefaultGroup = QGroupBox()
+		self.DefaultLayout = QHBoxLayout()
+		self.DefaultButton = QPushButton("&Connet all devices")
+		self.DefaultButton.clicked.connect(self.useDefault)
+		self.DefaultLabel = QLabel()
+		self.DefaultLabel.setText("Connecting to all default devices...")
+		self.DefaultLayout.addWidget(self.DefaultButton)
+		self.DefaultLayout.addWidget(self.DefaultLabel)
+		self.DefaultLayout.addStretch(1)
+		self.UseDefaultGroup.setLayout(self.DefaultLayout)
 
 		self.HVPowerRemoteControl = QCheckBox("Use HV power remote control")
 		self.HVPowerRemoteControl.setChecked(True)
@@ -458,7 +631,8 @@ class QtApplication(QWidget):
 		kMaximumHeight = 100
 
 		self.SummaryButton = QPushButton("&Status summary")
-		self.SummaryButton.setDefault(True)
+		if not self.expertMode:
+			self.SummaryButton.setDisabled(True)
 		self.SummaryButton.setMinimumWidth(kMinimumWidth)
 		self.SummaryButton.setMaximumWidth(kMaximumWidth)
 		self.SummaryButton.setMinimumHeight(kMinimumHeight)
@@ -467,6 +641,7 @@ class QtApplication(QWidget):
 		SummaryLabel = QLabel("Statistics of test status")
 
 		self.NewTestButton = QPushButton("&New")
+		self.NewTestButton.setDefault(True)
 		self.NewTestButton.setMinimumWidth(kMinimumWidth)
 		self.NewTestButton.setMaximumWidth(kMaximumWidth)
 		self.NewTestButton.setMinimumHeight(kMinimumHeight)
@@ -481,6 +656,14 @@ class QtApplication(QWidget):
 		if self.ProcessingTest == True:
 			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
+
+		self.NewProductionTestButton = QPushButton("&Production Test")
+		self.NewProductionTestButton.setMinimumWidth(kMinimumWidth)
+		self.NewProductionTestButton.setMaximumWidth(kMaximumWidth)
+		self.NewProductionTestButton.setMinimumHeight(kMinimumHeight)
+		self.NewProductionTestButton.setMaximumHeight(kMaximumHeight)
+		self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
+		NewProductionTestLabel = QLabel("Open production test")
 
 		self.ReviewButton = QPushButton("&Review")
 		self.ReviewButton.setMinimumWidth(kMinimumWidth)
@@ -501,20 +684,24 @@ class QtApplication(QWidget):
 		self.ReviewModuleEdit.setPlaceholderText('Enter Module ID')
 
 		layout = QGridLayout()
-		layout.addWidget(self.SummaryButton,0, 0, 1, 1)
-		layout.addWidget(SummaryLabel, 0, 1, 1, 2)
-		layout.addWidget(self.NewTestButton,1, 0, 1, 1)
-		layout.addWidget(NewTestLabel, 1, 1, 1, 2)
-		layout.addWidget(self.ReviewButton, 2, 0, 1, 1)
-		layout.addWidget(ReviewLabel,  2, 1, 1, 2)
-		layout.addWidget(self.ReviewModuleButton,3, 0, 1, 1)
-		layout.addWidget(self.ReviewModuleEdit,  3, 1, 1, 2)
+		layout.addWidget(self.NewTestButton,0, 0, 1, 1)
+		layout.addWidget(NewTestLabel, 0, 1, 1, 2)
+		layout.addWidget(self.NewProductionTestButton,1, 0, 1, 1)
+		layout.addWidget(NewProductionTestLabel, 1, 1, 1, 2)
+		layout.addWidget(self.SummaryButton,2, 0, 1, 1)
+		layout.addWidget(SummaryLabel, 2, 1, 1, 2)
+		layout.addWidget(self.ReviewButton, 3, 0, 1, 1)
+		layout.addWidget(ReviewLabel,  3, 1, 1, 2)
+		layout.addWidget(self.ReviewModuleButton,4, 0, 1, 1)
+		layout.addWidget(self.ReviewModuleEdit,  4, 1, 1, 2)
+
 
 		####################################################
 		# Functions for expert mode
 		####################################################
 
 		if self.expertMode:
+			self.SummaryButton.setDisabled(False)
 			self.DBConsoleButton = QPushButton("&DB Console")
 			self.DBConsoleButton.setMinimumWidth(kMinimumWidth)
 			self.DBConsoleButton.setMaximumWidth(kMaximumWidth)
@@ -522,8 +709,8 @@ class QtApplication(QWidget):
 			self.DBConsoleButton.setMaximumHeight(kMaximumHeight)
 			self.DBConsoleButton.clicked.connect(self.openDBConsole)
 			DBConsoleLabel = QLabel("Console for database")
-			layout.addWidget(self.DBConsoleButton, 4, 0, 1, 1)
-			layout.addWidget(DBConsoleLabel, 4, 1, 1, 2)
+			layout.addWidget(self.DBConsoleButton, 5, 0, 1, 1)
+			layout.addWidget(DBConsoleLabel, 5, 1, 1, 2)
 
 		####################################################
 		# Functions for expert mode  (END)
@@ -537,7 +724,6 @@ class QtApplication(QWidget):
 		if self.expertMode is False:
 			self.ExpertButton = QPushButton("&Enter Expert Mode")
 			self.ExpertButton.clicked.connect(self.goExpert)
-			
 
 		self.RefreshButton = QPushButton("&Refresh")
 		if self.PYTHON_VERSION.startswith("3.8"):
@@ -545,6 +731,7 @@ class QtApplication(QWidget):
 			self.RefreshButton.clicked.connect(self.destroyMain)
 			self.RefreshButton.clicked.connect(self.createMain)
 			self.RefreshButton.clicked.connect(self.checkFirmware)
+			self.RefreshButton.clicked.connect(self.setDefault)
 		elif self.PYTHON_VERSION.startswith(("3.7","3.9")):
 			self.RefreshButton.clicked.connect(self.disableBoxs)
 			self.RefreshButton.clicked.connect(self.destroyMain)
@@ -552,6 +739,7 @@ class QtApplication(QWidget):
 			#self.RefreshButton.clicked.connect(self.checkFirmware)
 			self.RefreshButton.clicked.connect(self.enableBoxs)
 			self.RefreshButton.clicked.connect(self.update)
+			self.RefreshButton.clicked.connect(self.setDefault)
 
 		self.LogoutButton = QPushButton("&Logout")
 		# Fixme: more conditions to be added
@@ -576,6 +764,7 @@ class QtApplication(QWidget):
 		self.AppOption.setLayout(self.AppLayout)
 
 		self.mainLayout.addWidget(self.FirmwareStatus)
+		self.mainLayout.addWidget(self.UseDefaultGroup)
 		self.mainLayout.addWidget(self.HVPowerGroup)
 		self.mainLayout.addWidget(self.HVPowerRemoteControl)
 		self.mainLayout.addWidget(self.LVPowerGroup)
@@ -584,6 +773,39 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.ArduinoControl)
 		self.mainLayout.addWidget(self.MainOption)
 		self.mainLayout.addWidget(self.AppOption)
+
+		self.setDefault()
+	
+	def setDefault(self):
+		if self.expertMode is False:
+			self.HVPowerGroup.setDisabled(True)
+			self.HVPowerRemoteControl.setDisabled(True)
+			self.LVPowerGroup.setDisabled(True)
+			self.LVPowerRemoteControl.setDisabled(True)
+			self.ArduinoGroup.disable()
+			self.ArduinoControl.setDisabled(True)
+
+	def useDefault(self):
+			#self.HVPowerCombo.clear()
+			HVIndex = self.HVPowerCombo.findText(defaultUSBPortHV[0])
+			if HVIndex != -1:
+				self.HVPowerCombo.setCurrentIndex(HVIndex)
+			#self.HVPowerCombo.addItems(defaultUSBPortHV)
+			#elf.HVPowerModelCombo.clear()
+			#self.HVPowerModelCombo.addItems(defaultHVModel)
+			#self.LVPowerCombo.clear()
+			LVIndex = self.LVPowerCombo.findText(defaultUSBPortLV[0])
+			if LVIndex != -1:
+				self.LVPowerCombo.setCurrentIndex(LVIndex)
+			#self.LVPowerCombo.addItems(defaultUSBPortLV)
+			#self.LVPowerModelCombo.clear()
+			#self.LVPowerModelCombo.addItems(defaultLVModel)
+			self.frozeHVPowerPanel()
+			self.frozeLVPowerPanel()
+			self.ArduinoGroup.setBaudRate(defaultSensorBaudRate)
+			self.ArduinoGroup.frozeArduinoPanel()
+
+
 
 	def reCreateMain(self):
 		print("Refreshing the main page")
@@ -601,6 +823,7 @@ class QtApplication(QWidget):
 
 	def destroyMain(self):
 		self.FirmwareStatus.deleteLater()
+		self.UseDefaultGroup.deleteLater()
 		self.HVPowerGroup.deleteLater()
 		self.HVPowerRemoteControl.deleteLater()
 		self.LVPowerGroup.deleteLater()
@@ -611,6 +834,7 @@ class QtApplication(QWidget):
 		self.AppOption.deleteLater()
 		self.mainLayout.removeWidget(self.FirmwareStatus)
 		self.mainLayout.removeWidget(self.HVPowerGroup)
+		self.mainLayout.removeWidget(self.UseDefaultGroup)
 		self.mainLayout.removeWidget(self.HVPowerRemoteControl)
 		self.mainLayout.removeWidget(self.LVPowerGroup)
 		self.mainLayout.removeWidget(self.LVPowerRemoteControl)
@@ -618,6 +842,13 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.ArduinoControl)
 		self.mainLayout.removeWidget(self.MainOption)
 		self.mainLayout.removeWidget(self.AppOption)
+
+	def openNewProductionTest(self):
+		self.ProdTestPage = QtProductionTestWindow(self, self.HVpowersupply)
+		self.ProdTestPage.close.connect(self.releaseProdTestButton)
+		self.NewProductionTestButton.setDisabled(True)
+		self.LogoutButton.setDisabled(True)
+		self.ExitButton.setDisabled(True)
 
 	def openNewTest(self):
 		FwModule = self.FwDict[self.FwUnderUsed]
@@ -708,6 +939,7 @@ class QtApplication(QWidget):
 			self.UseLVPowerSupply.setDisabled(True)
 			self.ReleaseLVPowerSupply.setDisabled(False)
 		else:
+			self.LVPowerStatusValue.setStyleSheet("color:red")
 			self.LVPowerStatusValue.setText("No valid device")
 
 	def releaseLVPowerPanel(self):
@@ -720,9 +952,9 @@ class QtApplication(QWidget):
 
 	def switchArduinoPanel(self):
 		if self.ArduinoControl.isChecked():
-			self.ArduinoGroup.setDisabled(False)
+			self.ArduinoGroup.enable()
 		else:
-			self.ArduinoGroup.setDisabled(True)
+			self.ArduinoGroup.disable()
 
 	def checkFirmware(self):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
@@ -733,7 +965,9 @@ class QtApplication(QWidget):
 				self.StatusList[index+1][1].setText(FwStatusComment)
 				self.StatusList[index+1][1].setStyleSheet(FwStatusColor)
 				self.FwStatusVerboseDict[str(firmwareName)] = FwStatusVerbose
-			self.UseButtons[index].setDisabled(False)
+			#This if was added for a test.  
+			if self.expertMode:
+				self.UseButtons[index].setDisabled(False)
 		if self.FwUnderUsed != '':
 			index = self.getIndex(self.FwUnderUsed,self.StatusList)
 			self.StatusList[index+1][1].setText("Connected")
@@ -828,7 +1062,12 @@ class QtApplication(QWidget):
 			firmware.setFPGAConfig(changeuDTCDialog.uDTCFile)
 		
 		self.checkFirmware()
-		
+	
+	def releaseProdTestButton(self):
+		self.NewProductionTestButton.setDisabled(False)
+		self.LogoutButton.setDisabled(False)
+		self.ExitButton.setDisabled(False)
+
 	def goExpert(self):
 		self.expertMode = True
 

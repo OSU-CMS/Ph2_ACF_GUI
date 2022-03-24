@@ -156,6 +156,7 @@ class QtRunWindow(QWidget):
 		self.ResetButton.clicked.connect(self.resetConfigTest)
 		self.RunButton = QPushButton("&Run")
 		self.RunButton.setDefault(True)
+		self.RunButton.clicked.connect(self.resetConfigTest)
 		self.RunButton.clicked.connect(self.initialTest)
 		#self.RunButton.clicked.connect(self.runTest)
 		#self.ContinueButton = QPushButton("&Continue")
@@ -172,12 +173,26 @@ class QtRunWindow(QWidget):
 			self.testHandler.autoSave=False
 			self.saveCheckBox.setDisabled(True)
 		self.saveCheckBox.clicked.connect(self.setAutoSave)
-
+##### previous layout ##########
+		'''
 		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
 		self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
 		self.ControlLayout.addWidget(self.RunButton,1,0,1,1)
 		self.ControlLayout.addWidget(self.AbortButton,1,1,1,1)
 		self.ControlLayout.addWidget(self.saveCheckBox,1,2,1,1)
+		'''
+		if self.master.expertMode == True:
+			self.ControlLayout.addWidget(self.RunButton,0,0,1,1)
+			self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
+			self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
+			self.ControlLayout.addWidget(self.saveCheckBox,1,0,1,1)
+
+		else:
+			pass
+		#	self.ControlLayout.addWidget(self.RunButton,0,0,1,1)
+		#	self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
+		#	self.saveCheckBox.setDisabled(True)
+		#	self.ControlLayout.addWidget(self.saveCheckBox,0,2,1,1)
 
 		ControllerBox.setLayout(self.ControlLayout)
 
@@ -277,7 +292,8 @@ class QtRunWindow(QWidget):
 		self.FinishButton.clicked.connect(self.closeWindow)
 
 		self.StartLayout.addStretch(1)
-		self.StartLayout.addWidget(self.ConnectButton)
+		if self.master.expertMode==True:
+			self.StartLayout.addWidget(self.ConnectButton)
 		self.StartLayout.addWidget(self.BackButton)
 		self.StartLayout.addWidget(self.FinishButton)
 		self.AppOption.setLayout(self.StartLayout)
@@ -292,7 +308,7 @@ class QtRunWindow(QWidget):
 		self.close()
 
 	def creatStartWindow(self):
-		if self.backSignal == True:
+		if self.backSignal == True and self.master.expertMode == True:
 			self.master.openNewTest()
 
 	def occupied(self):
@@ -301,9 +317,14 @@ class QtRunWindow(QWidget):
 	def release(self):
 		self.testHandler.run_process.kill()
 		self.master.ProcessingTest = False
-		self.master.NewTestButton.setDisabled(False)
-		self.master.LogoutButton.setDisabled(False)
-		self.master.ExitButton.setDisabled(False)
+		if self.master.expertMode == True:
+			self.master.NewTestButton.setDisabled(False)
+			self.master.LogoutButton.setDisabled(False)
+			self.master.ExitButton.setDisabled(False)
+		else:
+			self.master.SimpleMain.RunButton.setDisabled(False)
+			self.master.SimpleMain.StopButton.setDisabled(True)
+
 
 	def refreshHistory(self, result):
 		#self.dataList = getLocalRemoteTests(self.connection, self.info[0])

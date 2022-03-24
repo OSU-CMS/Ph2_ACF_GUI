@@ -34,10 +34,15 @@ def TurnOff(device):
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
 
-def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
+def SetVoltageProtection(device,voltProtection = 0.0):
+	try:
+		device.write(":SOURCE:VOLTAGE:RANGE {0}".format(voltProtection))
+	except Exception as err:
+		logger.error("Error occured while setting voltage range: {}".format(err))
+
+def SetVoltage(device, voltage = 0.0):
 	# Set Voltage range 2V and output to 1.78V
 	try:
-		device.write(":SOURCE:VOLTAGE:RANGE {0}".format(VoltProtection))
 		device.write(":SOURCE:VOLTAGE:LEV {0}".format(voltage))
 	except Exception as err:
 		logger.error("Error occured while setting voltage level: {}".format(err))
