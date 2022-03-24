@@ -101,7 +101,7 @@ class ArduinoWidget(QWidget):
 		# Block for ArduinoSupply operation
 		try:
 			self.setSerial(self.deviceMap[self.ArduinoCombo.currentText()],self.ArduinoBRCombo.currentText())
-			#print(self.deviceMap[self.ArduinoCombo.currentText()])
+			print(self.deviceMap[self.ArduinoCombo.currentText()])
 			self.ArduinoCombo.setDisabled(True)
 			self.ArduinoBRCombo.setDisabled(True)
 			self.UseArduino.setDisabled(True)
@@ -118,6 +118,10 @@ class ArduinoWidget(QWidget):
 		self.ArduinoBRCombo.setDisabled(False)
 		self.ReleaseArduino.setDisabled(True)
 		self.ArduinoList = self.listResources()
+
+	def setBaudRate(self, baudRate):
+		self.ArduinoBRCombo.clear()
+		self.ArduinoBRCombo.addItems([str(baudRate)])
 
 	def setSerial(self, deviceName, baudRate):
 		deviceName= deviceName.lstrip("ASRL").rstrip("::INSTR")
@@ -139,14 +143,20 @@ class ArduinoWidget(QWidget):
 		self.serial.open(QIODevice.ReadOnly)
 		print(self.serial.isOpen())
 
+	def disable(self):
+		self.ArduinoGroup.setDisabled(True)
+	
+	def enable(self):
+		self.ArduinoGroup.setDisabled(False)
+
 	@QtCore.pyqtSlot()
 	def receive(self):
 		while self.serial.canReadLine():
 
 			try:
 				text = self.serial.readLine().data().decode("utf-8","ignore")
-				print(text)
 				text = text.rstrip('\r\n')
+				#print ('Arduino text is {0}'.format(text))
 				StopSignal,measureText = ArduinoParser(text)
 				self.ArduinoMeasureValue.setText(measureText)
 				if StopSignal:

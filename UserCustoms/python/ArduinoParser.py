@@ -18,12 +18,14 @@ ThresholdMapOSU = {
 }
 def ArduinoParserCustomOSU(text):
     StopSignal = False
-    values = re.split(" |\t",text)[5:]
+    values = re.split(" |\t",text)[1:]
     readValue = {}
     ProbeReads = []
+
+
     for index,value in enumerate(values):
         value = value.rstrip(":")
-        if value in ProbeMapOSU.keys():
+        if value in ProbeMapOSU.keys() and 'Temperature' not in values[index-1]:
             readValue[value] = float(values[index+1])
 
     for probeName,probeValue in readValue.items():

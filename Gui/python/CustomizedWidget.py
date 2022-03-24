@@ -249,3 +249,191 @@ class StatusBox(QWidget):
 			self.CheckLabel.setText(comment)
 			return False
 		'''
+class SimpleModuleBox(QWidget):
+	typechanged = pyqtSignal()
+	destroy = pyqtSignal()
+
+	def __init__(self):
+		super(SimpleModuleBox,self).__init__()
+		self.mainLayout = QGridLayout()
+		self.createRow()
+		self.setLayout(self.mainLayout)
+
+	def createRow(self):
+		SerialLabel = QLabel("SerialNumber:")
+		self.SerialEdit = QLineEdit()
+		#self.SerialEdit.setMinimumWidth(120)
+		#self.SerialEdit.setMaximumWidth(200)
+		
+		FMCLabel = QLabel("FMC:")
+		#self.FMCEdit = QLineEdit()
+		self.FMCEdit = defaultFMC
+		#self.FMCEdit.setMinimumWidth(120)
+		#self.FMCEdit.setMaximumWidth(200)
+
+		CableIDLabel = QLabel("Cable ID:")
+		self.CableIDEdit = QLineEdit()
+		#self.IDEdit.setMinimumWidth(120)
+		#self.IDEdit.setMaximumWidth(200)
+		self.CableIDEdit.textChanged.connect(self.on_TypeChanged)
+
+		TypeLabel = QLabel("Type:")
+		self.Type = "None"
+
+		self.mainLayout.addWidget(SerialLabel,0,0,1,1)
+		self.mainLayout.addWidget(self.SerialEdit,0,1,1,1)
+		self.mainLayout.addWidget(CableIDLabel,1,0,1,1)
+		self.mainLayout.addWidget(self.CableIDEdit,1,1,1,1)
+	
+	def setSerialNumber(self, serial):
+		self.SerialEdit.setText(serial)
+
+	def getSerialNumber(self):
+		return self.SerialEdit.text()
+
+	def getFMCID(self):
+		return defaultFMC
+
+	def setID(self, laneId):
+		self.CableIDEdit.setText(laneId)
+
+	def getID(self):
+		return self.CableIDEdit.text()
+
+	def setType(self, typeStr):
+		self.Type = typeStr
+
+	def getType(self):
+		return self.Type
+
+	@QtCore.pyqtSlot()
+	def on_TypeChanged(self):
+		self.typechanged.emit()
+
+class SimpleBeBoardBox(QWidget):
+	changed = pyqtSignal()
+
+	def __init__(self,firmware):
+		super(SimpleBeBoardBox,self).__init__()
+		self.firmware = firmware
+		self.ModuleList = []
+		self.mainLayout = QGridLayout()
+		self.currentModule = -1
+
+		self.initList()
+		self.createList()
+
+		self.setLayout(self.mainLayout)
+
+	def initList(self):
+		ModuleRow = SimpleModuleBox()
+		self.ModuleList.append(ModuleRow)
+		self.ModuleList[-1].SerialEdit.setFocus()
+
+	def createList(self):
+		self.ListBox = QGroupBox()
+
+		self.ListLayout = QGridLayout()
+		self.ListLayout.setVerticalSpacing(0)
+		
+		self.updateList()
+
+		self.ListBox.setLayout(self.ListLayout)
+		self.mainLayout.addWidget(self.ListBox,0,0)
+
+	def deleteList(self):
+		self.ListBox.deleteLater()
+		self.mainLayout.removeWidget(self.ListBox)
+
+	def updateList(self):
+		[columns, rows] = [  self.ListLayout.columnCount(),  self.ListLayout.rowCount()]
+		
+		for i in range(columns):
+			for  j in range(rows):
+				item  =  self.ListLayout.itemAtPosition(j,i)
+				if item:
+					widget =  item.widget()
+					self.ListLayout.removeWidget(widget)
+
+		for index, module in enumerate(self.ModuleList):
+			#module.setMaximumWidth(500)
+			module.setMaximumHeight(50)
+			module.typechanged.connect(self.on_TypeChanged)
+			self.ListLayout.addWidget(module,index,0,1,1)
+			# Add "remove" botton
+			if index > 0:
+				RemoveButton = QPushButton("remove")
+				RemoveButton.setMaximumWidth(150)
+				RemoveButton.clicked.connect(lambda x = index: self.removeModule(x))
+				self.ListLayout.addWidget(RemoveButton,index,1,1,1)
+		#ModuleLayout = QFormLayout()
+		#ModuleItem = ModuleBox()
+		
+		#ModuleItem.destroy.connect(partial(self.removeModule,ModuleItem))
+		#ModuleLayout.addRow(ModuleBox())
+		
+		NewButton = QPushButton("add")
+		NewButton.setMaximumWidth(150)
+		NewButton.clicked.connect(self.addModule)
+
+		# For QR code, remove all modules
+		ClearButton = QPushButton("Clear")
+		ClearButton.setMaximumWidth(150)
+		ClearButton.clicked.connect(self.removeModule)
+
+		self.ListLayout.addWidget(NewButton,len(self.ModuleList),1,1,1)
+		#self.ListLayout.addWidget(ClearButton,len(self.ModuleList),0,1,1)
+		self.update()
+
+	def removeModule(self, index):
+		# For Manual change
+		self.ModuleList.pop(index)
+
+		# For QR SCAN
+		# self.ModuleList = []
+		# self.initList()
+
+		if str(sys.version).startswith("3.8"):
+			self.deleteList()
+			self.createList()
+		elif str(sys.version).startswith(("3.7","3.9")):
+			self.updateList()
+		else:
+			self.updateList()
+		self.changed.emit()
+	
+	def addModule(self):
+		self.ModuleList.append(SimpleModuleBox())
+		# For QR Scan
+
+		if str(sys.version).startswith("3.8"):
+			self.deleteList()
+			self.createList()
+		elif str(sys.version).startswith(("3.7","3.9")):
+			self.updateList()
+		else:
+			self.updateList()
+		self.changed.emit()
+
+		self.ModuleList[-1].SerialEdit.setFocus()
+
+	def getModules(self):
+		return self.ModuleList
+
+	def getFirmwareDescription(self, **kwargs):
+		for index, module in enumerate(self.ModuleList):
+			if module.getSerialNumber() == "":
+				continue
+			FwModule = QtModule()
+			FwModule.setModuleID(module.getID())
+			FwModule.setFMCID(module.getFMCID())
+			FwModule.setModuleName(module.getSerialNumber())
+			#FwModule.setOpticalGroupID(module.getID())
+			FwModule.setModuleType(module.getType())
+			#for chip in module
+			self.firmware.addModule(index,FwModule)
+		return self.firmware
+
+	@QtCore.pyqtSlot()
+	def on_TypeChanged(self):
+		self.changed.emit()

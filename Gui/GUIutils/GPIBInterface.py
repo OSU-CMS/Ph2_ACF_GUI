@@ -123,16 +123,21 @@ class PowerSupply():
 	def setInstrument(self,resourceName):
 		if self.UsingPythonInterface == True:
 			try:
-				self.Instrument = self.ResourcesManager.open_resource("{}".format(self.deviceMap[resourceName]))
+				if resourceName in self.deviceMap.keys():
+					self.Instrument = self.ResourcesManager.open_resource("{}".format(resourceName))
+					self.Port = self.deviceMap[resourceName].lstrip("ASRL").rstrip("::INSTR")
+				elif resourceName in self.deviceMap.values():
+					self.Instrument = self.ResourcesManager.open_resource("{}".format(resourceName))
+				else:
+					self.Instrument = self.ResourcesManager.open_resource("{}".format(resourceName))
 				self.Instrument.read_termination=PowerSupplyModel_Termination[self.Model]
 				self.Instrument.write_termination=PowerSupplyModel_Termination[self.Model]
-				self.Port = self.deviceMap[resourceName].lstrip("ASRL").rstrip("::INSTR")
 				self.sethwInterfaceParser()
 			except Exception as err:
 				logger.error("Failed to open resource {0}: {1}".format(resourceName,err))
 
 		else:
-			self.Port=self.deviceMap[resourceName].lstrip("ASRL").rstrip("::INSTR")
+			self.Port=resourceName.lstrip("ASRL").rstrip("::INSTR")
 			self.generateXMLConfig()
 			self.createInterface(self.XMLConfig)
 
@@ -165,7 +170,7 @@ class PowerSupply():
 					logger.warning("No device name found for {}:".format(device))
 					self.deviceMap[device] = device
 				else:
-					self.deviceMap[deviceName] = device
+					self.deviceMap[device] = deviceName
 			except Exception as err:
 				logger.error("Error found:{}".format(err))
 				self.deviceMap[device] = device
@@ -198,8 +203,8 @@ class PowerSupply():
 				Voltage = 0.0
 				VoltProtection = 1.0
 				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
-					Voltage = 1.18
-					VoltProtection = 1.2
+					Voltage = 1.28
+					VoltProtection = 1.3
 				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
 					Voltage = 1.78
 					VoltProtection = 1.8
