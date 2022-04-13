@@ -20,16 +20,17 @@ from Gui.GUIutils.guiUtils import *
 class ScanCanvas(FigureCanvas):
 	def __init__(self,parent,xlabel = "X", ylabel = "Y"):
 		self.parent = parent
-		fig = Figure(figsize=(5, 4), dpi=100)
-		self.axes = fig.add_subplot(111)
+		self.fig = Figure(figsize=(5, 4), dpi=100)
+		self.axes = self.fig.add_subplot(111)
 		self.xlabel = xlabel
 		self.ylabel = ylabel
 		self.X = numpy.array([])
 		self.Y = numpy.array([])
 		self.compute_initial_figure()
-		FigureCanvas.__init__(self, fig)
+		FigureCanvas.__init__(self, self.fig)
 		self.setMinimumHeight(100)
-		self.setParent(parent)
+		if type(parent) == type(QWidget()):
+			self.setParent(parent)
 		FigureCanvas.setSizePolicy(self,
 								   QSizePolicy.Expanding,
 								   QSizePolicy.Expanding)
@@ -50,6 +51,10 @@ class ScanCanvas(FigureCanvas):
 			self.X = numpy.append(self.X,coordicate[0])
 			self.Y = numpy.append(self.Y,coordicate[1])
 		self.compute_initial_figure()
+	
+	def saveToSVG(self,output):
+		self.fig.savefig(output, format="svg", dpi=1200)
+		return output
 
 ## Class for Module testing Summary
 class SummaryCanvas(FigureCanvas):

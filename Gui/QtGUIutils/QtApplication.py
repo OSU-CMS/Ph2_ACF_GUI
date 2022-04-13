@@ -198,7 +198,12 @@ class QtApplication(QWidget):
 		#	layout.addWidget(self.DatabaseEdit,4,2,1,2)
 		#else:
 		#	layout.addWidget(self.DatabaseCombo,4,2,1,2)
-		layout.addWidget(self.disableCheckBox,5,2,1,1,Qt.AlignLeft)
+
+		#######  uncomment for debugging (skips db connection) ####
+
+		#layout.addWidget(self.disableCheckBox,5,2,1,1,Qt.AlignLeft)
+
+		###########################################################
 		#layout.addWidget(self.expertCheckBox,5,3,1,1,Qt.AlignRight)
 		layout.addWidget(button_login,6,1,1,3)
 		layout.setRowMinimumHeight(6, 50)
@@ -266,8 +271,10 @@ class QtApplication(QWidget):
 				self.DisplayedPassword = self.PasswordEdit.displayText()
 				#self.TryHostAddress = self.HostEdit.text()
 				#self.TryDatabase = self.DatabaseEdit.text()
-				self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
-				self.TryDatabase = str(self.DatabaseCombo.currentText())
+				#self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+				#self.TryDatabase = str(self.DatabaseCombo.currentText())
+				self.TryHostAddress = defaultDBServerIP
+				self.TryDatabase = str(defaultDBName)
 			else:
 				self.TryUsername = self.UsernameEdit.text()
 				self.TryPassword = self.PasswordEdit.text()
@@ -283,7 +290,7 @@ class QtApplication(QWidget):
 			if self.TryUsername == '':
 				msg.information(None,"Error","Please enter a valid username", QMessageBox.Ok)
 				return
-			if self.disableCheckBox.isChecked() == False:
+			if self.TryUsername not in ["local","localexpert"] and self.disableCheckBox.isChecked() == False:
 				print("Connect to database...")
 				self.connection = QtStartConnection(self.TryUsername, self.TryPassword, self.TryHostAddress, self.TryDatabase)
 
@@ -907,11 +914,15 @@ class QtApplication(QWidget):
 
 	def releaseHVPowerPanel(self):
 		self.HVpowersupply.TurnOff()
-		self.HVPowerCombo.setDisabled(False)
-		self.HVPowerStatusValue.setText("")
-		self.UseHVPowerSupply.setDisabled(False)
-		self.ReleaseHVPowerSupply.setDisabled(True)
-		self.HVPowerList = self.HVpowersupply.listResources()
+		try:
+			self.HVPowerCombo.setDisabled(False)
+			self.HVPowerStatusValue.setText("")
+			self.UseHVPowerSupply.setDisabled(False)
+			self.ReleaseHVPowerSupply.setDisabled(True)
+			self.HVPowerList = self.HVpowersupply.listResources()
+		#with Exception as err:
+		except Exception as err:
+			print("HV PowerPanel not released properly")
 
 	def switchLVPowerPanel(self):
 		if self.LVPowerRemoteControl.isChecked():
@@ -1086,9 +1097,11 @@ class QtApplication(QWidget):
 		print("Critical status detected: Emitting Global Stop signal")
 		self.globalStop.emit()
 		self.HVpowersupply.TurnOff()
-		self.releaseHVPowerPanel()
 		self.LVpowersupply.TurnOff()
-		self.releaseLVPowerPanel()
+		if self.expertMode == True:
+			self.releaseHVPowerPanel()
+			self.releaseLVPowerPanel()
+
 
 	###############################################################
 	##  Main page and related functions  (END)

@@ -22,6 +22,7 @@ from Gui.python.Firmware import *
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
+from Gui.python.ArduinoWidget import *
 
 class SimplifiedMainWidget(QWidget):
 	def __init__(self, master):
@@ -73,9 +74,9 @@ class SimplifiedMainWidget(QWidget):
 		layout = QGridLayout()
 		layout.setSpacing(20)
 		layout.addWidget(TitleLabel,0,1,1,3,Qt.AlignCenter)
-		layout.addWidget(UsernameLabel,1,1,1,1,Qt.AlignRight)
+		layout.addWidget(UsernameLabel,1,1,1,1,Qt.AlignCenter)
 		layout.addWidget(self.UsernameEdit,1,2,1,2)
-		layout.addWidget(PasswordLabel,2,1,1,1,Qt.AlignRight)
+		layout.addWidget(PasswordLabel,2,1,1,1,Qt.AlignCenter)
 		layout.addWidget(self.PasswordEdit,2,2,1,2)
 
 		#layout.setRowMinimumHeight(6, 50)
@@ -108,7 +109,6 @@ class SimplifiedMainWidget(QWidget):
 		self.LogoGroupBox.setLayout(self.LogoLayout)
 
 		self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
-		#self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
 
 
 
@@ -159,12 +159,10 @@ class SimplifiedMainWidget(QWidget):
 		self.HVPowerStatusValue.setPixmap(self.redledpixmap)
 		if statusString != "No valid device" and statusString != None:
 			self.HVPowerStatusValue.setPixmap(self.greenledpixmap)
-			#self.HVPowerStatusValue.setStyleSheet("color:green")
-			#self.HVPowerStatusValue.setText('Online')
+			
 		else:
 			self.HVPowerStatusValue.setPixmap(self.redledpixmap)
-			#self.HVPowerStatusValue.setStyleSheet("color:red")
-			#self.HVPowerStatusValue.setText("No valid device")
+			
 		time.sleep(0.5)
 		#Selecting default LV
 		self.LVpowersupply.setPowerModel(defaultLVModel[0])
@@ -172,13 +170,9 @@ class SimplifiedMainWidget(QWidget):
 		statusString = self.LVpowersupply.getInfo()
 		self.LVPowerStatusLabel.setText("LV status")
 		if statusString != "No valid device" and statusString != None:
-			#self.LVPowerStatusValue.setStyleSheet("color:green")
-			#self.LVPowerStatusValue.setText('Online')
 			self.LVPowerStatusValue.setPixmap(self.greenledpixmap)
 		else:
 			self.LVPowerStatusValue.setPixmap(self.redledpixmap)
-			#self.LVPowerStatusValue.setStyleSheet("color:red")
-			#self.LVPowerStatusValue.setText("No valid device")
 
 		self.StatusList = []
 		self.StatusList.append([self.DBStatusLabel, self.DBStatusValue])
@@ -217,12 +211,47 @@ class SimplifiedMainWidget(QWidget):
 		
 		self.StatusList.append([self.FC7NameLabel,self.FC7StatusValue])
 
+		#self.ArduinoMonitor = ArduinoWidget()
+		#self.ArduinoMonitor.stop.connect(self.GlobalStop)
+		#self.ArduinoMonitor.enable()
+
+
+		self.ArduinoGroup = ArduinoWidget()
+		self.ArduinoGroup.stop.connect(self.master.GlobalStop)
+		self.ArduinoGroup.enable()
+		self.ArduinoGroup.setBaudRate(defaultSensorBaudRate)
+		self.ArduinoGroup.frozeArduinoPanel()
+
+		self.ArduinoMonitorLabel = QLabel()
+		self.ArduinoMonitorValue = QLabel()
+		self.ArduinoMonitorLabel.setText('Temperature and Humidity')
+		if self.ArduinoGroup.ArduinoGoodStatus == True:
+			self.ArduinoMonitorValue.setPixmap(self.greenledpixmap)
+		else:
+			self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
+
+		self.StatusList.append([self.ArduinoMonitorLabel,self.ArduinoMonitorValue])
 		self.StatusLayout = QGridLayout()
 
-		for index, items in enumerate(self.StatusList):
-			self.StatusLayout.addWidget(items[0], index, 1,  1, 1)
-			self.StatusLayout.addWidget(items[1], index, 2,  1, 2)
-		self.StatusLayout.addWidget(self.RefreshButton,len(self.StatusList) ,1, 1, 1)
+		#for index, items in enumerate(self.StatusList):
+		#	self.StatusLayout.addWidget(items[0], index, 1,  1, 1)
+		#	self.StatusLayout.addWidget(items[1], index, 2,  1, 2)
+
+		self.StatusLayout.addWidget(self.DBStatusLabel,0,1,1,1)
+		self.StatusLayout.addWidget(self.DBStatusValue,0,2,1,1)
+		self.StatusLayout.addWidget(self.HVPowerStatusLabel,0,3,1,1)
+		self.StatusLayout.addWidget(self.HVPowerStatusValue,0,4,1,1)
+
+		self.StatusLayout.addWidget(self.LVPowerStatusLabel,1,1,1,1)
+		self.StatusLayout.addWidget(self.LVPowerStatusValue,1,2,1,1)
+		self.StatusLayout.addWidget(self.FC7NameLabel,1,3,1,1)
+		self.StatusLayout.addWidget(self.FC7StatusValue,1,4,1,1)
+
+		self.StatusLayout.addWidget(self.ArduinoMonitorLabel,2,1,1,1)
+		self.StatusLayout.addWidget(self.ArduinoMonitorValue,2,2,1,1)
+		#self.StatusLayout.addWidget(self.ArduinoGroup.ArduinoMeasureValue)
+		self.StatusLayout.addWidget(self.RefreshButton,2 ,3, 1, 2)
+		#self.StatusLayout.addWidget(self.RefreshButton,len(self.StatusList) ,1, 1, 1)
 
 
 		ModuleEntryLayout.addWidget(self.BeBoardWidget)
@@ -235,6 +264,7 @@ class SimplifiedMainWidget(QWidget):
 		self.ProductionButton = QRadioButton("&Production Test")
 		self.QuickButton = QRadioButton("&Quick Test")
 		self.ProductionButton.setChecked(True)
+		#self.QuickButton.setChecked(True)
 		self.TestGroupLayout.addWidget(self.ProductionButton)
 		self.TestGroupLayout.addWidget(self.QuickButton)
 		self.TestGroup.setLayout(self.TestGroupLayout)
@@ -261,7 +291,7 @@ class SimplifiedMainWidget(QWidget):
 		self.RunButton.clicked.connect(self.runNewTest)
 		self.StartLayout.addStretch(1)
 		self.StartLayout.addWidget(self.TestGroup)
-		self.StartLayout.addWidget(self.ExitButton)
+		#self.StartLayout.addWidget(self.ExitButton)
 		self.StartLayout.addWidget(self.StopButton)
 		self.StartLayout.addWidget(self.RunButton)
 		self.AppOption.setLayout(self.StartLayout)
@@ -285,10 +315,17 @@ class SimplifiedMainWidget(QWidget):
 				return
 
 		self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
-		self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "AllScan"]
+		if self.FwModule.getModuleByIndex(0) == None:
+			QMessageBox.information(None,"Error","No valid Module found!", QMessageBox.Ok)
+			return
+		if self.ProductionButton.isChecked():
+			self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "AllScan"]
+		else:
+			self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "QuickTest"]
+
 		self.runFlag = True
 		self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
-		self.LVpowersupply.setPoweringMode("Direct")
+		self.LVpowersupply.setPoweringMode(defaultPowerMode)
 		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
 		self.LVpowersupply.TurnOn()
 		current = self.LVpowersupply.ReadCurrent()
@@ -301,7 +338,7 @@ class SimplifiedMainWidget(QWidget):
 
 		self.RunTest.resetConfigTest()
 		self.RunTest.initialTest()
-		self.RunTest.runTest()
+		#self.RunTest.runTest()
 
 	def abortTest(self):
 		self.RunTest.abortTest()
@@ -356,12 +393,30 @@ class SimplifiedMainWidget(QWidget):
 			self.FC7StatusValue.setPixmap(self.greenledpixmap)
 		else:
 			self.FC7StatusValue.setPixmap(self.redledpixmap)
+
+		
 		#self.FC7StatusValue.setText(FwStatusComment)
 		#self.FC7StatusValue.setStyleSheet(FwStatusColor)
 		self.FwModule = self.master.FwDict[firmwareName]
 		
 		#self.StatusList.append([self.FC7NameLabel,self.FC7StatusValue])
+		
+		#Arduino stuff
+		#self.ArduinoGroup = ArduinoWidget()
+		self.ArduinoGroup.stop.connect(self.master.GlobalStop)
+		self.ArduinoGroup.createArduino()
+		self.ArduinoGroup.enable()
+		self.ArduinoGroup.setBaudRate(defaultSensorBaudRate)
+		self.ArduinoGroup.frozeArduinoPanel()
 
+		#self.ArduinoMonitorLabel = QLabel()
+		#self.ArduinoMonitorValue = QLabel()
+		if self.ArduinoGroup.ArduinoGoodStatus == True:
+			self.ArduinoMonitorValue.setPixmap(self.greenledpixmap)
+		else:
+			self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
+
+		#self.StatusList.append([self.ArduinoMonitorLabel,self.ArduinoMonitorValue])
 
 		#for index, items in enumerate(self.StatusList):
 		#	self.StatusLayout.addWidget(items[0], index, 1,  1, 1)

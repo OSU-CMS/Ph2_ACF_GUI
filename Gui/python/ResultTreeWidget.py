@@ -5,6 +5,7 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, 
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QScrollArea, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget, QMainWindow)
+from PyQt5 import QtSvg
 
 import sys
 import os
@@ -32,6 +33,10 @@ class ResultTreeWidget(QWidget):
 		self.ProgressBar = {}
 		self.StatusLabel = {}
 		self.displayingImage = ""
+		self.displayList = []
+		self.displayIndex = 0
+		self.allDisplayed = False
+		self.timerFrozen = False
 		self.Plot = []
 		self.count = 0
 		self.runtime = {}
@@ -92,13 +97,23 @@ class ResultTreeWidget(QWidget):
 
 		self.ProgressWidget.setLayout(self.ProgressLayout)
 
-		self.OutputTree = QTreeWidget()
-		self.OutputTree.horizontalScrollBar().setEnabled(True)
-		self.OutputTree.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-		self.OutputTree.setHeaderLabels(['Name'])
-		self.OutputTree.itemClicked.connect(self.onItemClicked)
-		self.TreeRoot = QTreeWidgetItem(self.OutputTree)
-		self.TreeRoot.setText(0,"Files..")
+		if self.master.expertMode:
+			self.OutputTree = QTreeWidget()
+			self.OutputTree.horizontalScrollBar().setEnabled(True)
+			self.OutputTree.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+			self.OutputTree.setHeaderLabels(['Name'])
+			self.OutputTree.itemClicked.connect(self.onItemClicked)
+			self.TreeRoot = QTreeWidgetItem(self.OutputTree)
+			self.TreeRoot.setText(0,"Files..")
+		else:
+			self.TestLabel = QLabel("Test")
+			self.ControlButtom = QPushButton("Pause")
+			self.ControlButtom.clicked.connect(self.controlDisplay)
+			self.SVGWidget =  QtSvg.QSvgWidget()
+			minHeight = 400
+			ratio = 1.5
+			self.SVGWidget.setMinimumHeight(minHeight)
+			self.SVGWidget.setMinimumWidth(minHeight*ratio)
 
 		self.ScrollArea.setWidget(self.ProgressWidget)
 
@@ -110,8 +125,21 @@ class ResultTreeWidget(QWidget):
 		#self.mainLayout.addWidget(self.ReferLabel,1,2,1,2)
 		#self.mainLayout.addWidget(self.OutputTree,0,4,2,1)
 
-		self.mainLayout.addWidget(self.ScrollArea,0,0,1,2)
-		self.mainLayout.addWidget(self.OutputTree,0,2,1,2)
+		self.mainLayout.addWidget(self.ScrollArea,0,0,10,2)
+		if self.master.expertMode:
+			self.mainLayout.addWidget(self.OutputTree,0,2,10,2)
+		else:
+			self.mainLayout.addWidget(self.TestLabel,0,2,1,2)
+			self.mainLayout.addWidget(self.ControlButtom,0,4,1,1)
+			self.mainLayout.addWidget(self.SVGWidget,1,2,9,3)
+
+		if not self.master.expertMode:
+			# Initialize timer:
+			self.timer = QTimer(self)
+			# adding action to timer
+			self.timer.timeout.connect(self.showNextPlot)
+			# update the timer every second
+			self.timer.start(3000)
 
 	## Old methods: To be removed
 	def resizeImage(self, width, height):
@@ -150,6 +178,42 @@ class ResultTreeWidget(QWidget):
 			QTreeNode.addChild(CurrentNode)
 			self.DirectoryVAL(CurrentNode, Node)
 
+	def updateDisplayList(self, step ,resultDict):
+		toBeDisplayed = len(self.displayList)
+		for module in resultDict.keys():
+			for plot in resultDict[module]:
+				if (step,plot) not in self.displayList:
+					self.displayList.append((step,plot))
+
+		if self.allDisplayed:
+			self.displayIndex = toBeDisplayed
+			if not self.timerFrozen:
+				self.showNextPlot()
+			self.allDisplayed = False
+
+	def showNextPlot(self):
+		self.timer.start(3000)
+		if len(self.displayList) == 0:
+			return
+		else:
+			if self.displayIndex == len(self.displayList):
+				self.allDisplayed = True
+			self.displayIndex = self.displayIndex % len(self.displayList)
+			step, displayPlot = self.displayList[self.displayIndex]
+			self.TestLabel.setText("Step{}".format(step))
+			self.SVGWidget.load(displayPlot)
+			self.displayIndex += 1
+
+	def controlDisplay(self):
+		if self.ControlButtom.text() == "Pause":
+			self.timer.stop()
+			self.timerFrozen = True
+			self.ControlButtom.setText("Resume")
+		elif self.ControlButtom.text() == "Resume":
+			self.timer.start()
+			self.timerFrozen = False
+			self.ControlButtom.setText("Pause")
+
 	def updateResult(self, sourceFolder):
 		process = subprocess.run('find {0} -type f -name "*.root" '.format(sourceFolder), shell=True, stdout=subprocess.PIPE)
 		stepFiles = process.stdout.decode('utf-8').rstrip("\n").split("\n")
@@ -172,19 +236,20 @@ class ResultTreeWidget(QWidget):
 				logger.info("Creating "+tmpDir)
 			except:
 				logger.warning("Failed to create "+tmpDir)
-		jpgFile = TCanvas2JPG(tmpDir, canvas)
-		self.displayingImage = jpgFile
+		svgFile = TCanvas2SVG(tmpDir, canvas)
+		self.displayingImage = svgFile
 
 		try:
 			#self.DisplayView = QPixmap(jpgFile).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 			#self.DisplayLabel.setPixmap(self.DisplayView)
 			#self.update
 			self.Plot.append("index")
-			self.Plot[self.count] = QtTCanvasWidget(self.master,jpgFile)
+			self.Plot[self.count] = QtTCanvasWidget(self.master,svgFile)
 			self.count = self.count+1
-			logger.info("Displaying " + jpgFile)
+			logger.info("Displaying " + svgFile)
 		except:
-			logger.error("Failed to display " + jpgFile)
+			logger.error("Failed to display " + svgFile)
 		pass
+	
 
 

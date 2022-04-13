@@ -25,6 +25,8 @@ defaultUSBPortLV = ["ASRL/dev/ttyUSB0::INSTR"]
 defaultLVModel = ["KeySight E3633 (RS232)"]
 # default model for LV power supply
 defaultLVModel = ["KeySight E3633 (RS232)"]
+# default mode for LV powering (Direct,SLDO,etc)
+defaultPowerMode = "Direct"
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 115200
 #default DBServerIP
@@ -34,7 +36,8 @@ defaultDBName = 'SampleDB'
 #List of expert users
 ExpertUserList = [
 	'mjoyce',
-	'kwei'
+	'kwei',
+	'localexpert'
 ]
 
 FirmwareList = {}
@@ -142,6 +145,7 @@ ConfigFiles = {
 
 Test = {
 	'AllScan'                :  'noise',
+	'QuickTest'              :  'noise',
 	'StandardStep1'          :  'noise',
 	'StandardStep2'          :  'threqu',
 	'StandardStep3'          :  'scurve',
@@ -188,7 +192,7 @@ SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 	'ThresholdEqualization','GainOptimization','ThresholdMinimization',
 	'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
-CompositeTest = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+CompositeTest = ['AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
 	'AllScan': ['NoiseScan','PixelAlive','ThresholdAdjustment',
 				'ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment',
@@ -198,7 +202,8 @@ CompositeList = {
 	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
 	'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
 	'StandardStep4': ['InjectionDelay'],
-	'StandardStep5': ['SCurveScan']
+	'StandardStep5': ['SCurveScan'],
+	'QuickTest': ['IVCurve','NoiseScan','PixelAlive']
 }
 firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 

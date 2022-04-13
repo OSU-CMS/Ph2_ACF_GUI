@@ -18,6 +18,7 @@ class IVCurveThread(QThread):
         self.stopVal = 150
         self.stepLength = 10
         self.stepNum = 0
+        self.stepTotal = (self.stopVal-self.startVal)/self.stepLength+1
         self.turnOn()
 
     def turnOn(self):
@@ -44,9 +45,9 @@ class IVCurveThread(QThread):
                 #    voltage = self.powersupply.ReadVoltage()
                 #    current = self.powersupply.ReadCurrent()
                 #    print("voltage:",voltage, " current:",current)
-                measurementStr = {"voltage":voltage,"current":current}
-                self.measureSignal.emit(measurementStr)
                 self.stepNum += 1
+                measurementStr = {"voltage":voltage,"current":current,"percentage":self.stepNum/self.stepTotal}
+                self.measureSignal.emit(measurementStr)
                 self.target = self.startVal + self.stepLength * self.stepNum
             except Exception as err:
                 print("IV Curve scan failed with {}".format(err))

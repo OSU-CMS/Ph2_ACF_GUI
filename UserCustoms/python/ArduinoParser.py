@@ -22,7 +22,6 @@ def ArduinoParserCustomOSU(text):
     readValue = {}
     ProbeReads = []
 
-
     for index,value in enumerate(values):
         value = value.rstrip(":")
         if value in ProbeMapOSU.keys() and 'Temperature' not in values[index-1]:
@@ -37,15 +36,14 @@ def ArduinoParserCustomOSU(text):
                     colorCode = "#FF0000"
                     if probeName in ['MAX31850','MAX31865']:
                         StopSignal = True
+                        
                 else:
                     colorCode = "#008000"
                 ProbeReads.append('{0}:<span style="color:{1}";>{2}</span>'.format(ProbeMapOSU[probeName],colorCode,probeValue))
+                
         else:
             ProbeReads.append('{0}:{1}'.format(ProbeMapOSU[probeName],probeValue))
     ProbeReadsText = '\t'.join(ProbeReads)
     return StopSignal,ProbeReadsText
 
-
-
-
-
+    

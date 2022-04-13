@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QTreeWidget, QHBoxLayout,
 		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter)
+from PyQt5 import QtSvg
 
 class QtTCanvasWidget(QWidget):
 	resized = pyqtSignal()
@@ -21,7 +22,7 @@ class QtTCanvasWidget(QWidget):
 
 		self.setupUi()
 		self.drawPlot()
-		self.resized.connect(self.rescaleImage)
+		#self.resized.connect(self.rescaleImage)
 
 	def setupUi(self):
 		X = self.master.dimension.width()*6./10
@@ -36,21 +37,23 @@ class QtTCanvasWidget(QWidget):
 
 	def drawPlot(self):
 		self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
-		self.DisplayLabel = QLabel()
-		self.DisplayLabel.setScaledContents(True)
-		self.DisplayView = QPixmap(self.canvas).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		self.DisplayLabel.setPixmap(self.DisplayView)
-
+		#self.DisplayLabel = QLabel()
+		#self.DisplayLabel.setScaledContents(True)
+		#self.DisplayView = QPixmap(self.canvas).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		#self.DisplayLabel.setPixmap(self.DisplayView)
+		self.DisplayView = QtSvg.QSvgWidget()
+		self.DisplayView.load(self.canvas)
+		
 		self.mainLayout.addWidget(self.DisplayTitle,0,0,1,1)
-		self.mainLayout.addWidget(self.DisplayLabel,1,0,9,1)
+		self.mainLayout.addWidget(self.DisplayView,1,0,9,1)
 
-	def resizeEvent(self, event):
-		self.resized.emit()
-		return super(QtTCanvasWidget, self).resizeEvent(event)
+	#def resizeEvent(self, event):
+	#	self.resized.emit()
+	#	return super(QtTCanvasWidget, self).resizeEvent(event)
 
-	def rescaleImage(self):
-		self.DisplayH = self.height()*0.9
-		self.DisplayW = self.width()*0.9
-		self.DisplayView = QPixmap(self.canvas).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		self.DisplayLabel.setPixmap(self.DisplayView)
-		self.update()
+	#def rescaleImage(self):
+	#	self.DisplayH = self.height()*0.9
+	#	self.DisplayW = self.width()*0.9
+	#	self.DisplayView = QPixmap(self.canvas).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+	#	self.DisplayLabel.setPixmap(self.DisplayView)
+	#	self.update()

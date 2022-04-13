@@ -56,7 +56,7 @@ class PowerSupply():
 	def setPowerModel(self, model):
 		self.Model = model
 	
-	def setPoweringMode(self, powermode="direct"):
+	def setPoweringMode(self, powermode="Direct"):
 		self.PoweringMode = powermode
 
 	def setCompCurrent(self, compcurrent = 1.05):

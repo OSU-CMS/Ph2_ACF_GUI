@@ -24,6 +24,7 @@ class ArduinoWidget(QWidget):
 		self.setLayout(self.mainLayout)
 		self.serial = None
 		self.stopCount  = 0
+		self.ArduinoGoodStatus = False
 
 
 	def createArduino(self):
@@ -106,8 +107,9 @@ class ArduinoWidget(QWidget):
 			self.ArduinoBRCombo.setDisabled(True)
 			self.UseArduino.setDisabled(True)
 			self.ReleaseArduino.setDisabled(False)
-		except err as Exception:
+		except Exception as err:
 			logger.error("Unable to use Arduino")
+			self.ArduinoGoodStatus = False
 
 
 	def releaseArduinoPanel(self):
@@ -158,13 +160,16 @@ class ArduinoWidget(QWidget):
 				text = text.rstrip('\r\n')
 				#print ('Arduino text is {0}'.format(text))
 				StopSignal,measureText = ArduinoParser(text)
+
 				self.ArduinoMeasureValue.setText(measureText)
 				if StopSignal:
 					self.stopCount += 1
 					logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))
+					self.ArduinoGoodStatus = False
 				else:
-					self.stopCount = 0 
-		
+					self.stopCount = 0
+					self.ArduinoGoodStatus = True
+
 				if self.stopCount >= 10:
 					self.StopSignal()
 					self.stopCount = 0

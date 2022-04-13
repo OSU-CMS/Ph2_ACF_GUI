@@ -1090,6 +1090,7 @@ class QtDBConsoleWindow(QMainWindow):
 
 		if reply == QMessageBox.Yes:
 			print('DB console terminated')
+			self.release()
 			event.accept()
 		else:
 			event.ignore()

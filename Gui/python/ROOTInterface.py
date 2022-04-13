@@ -79,9 +79,28 @@ def showDirectory(nodes):
 		keyName = node.getKeyName()
 		DirectoryVLR(node,0)
 
-def TCanvas2JPG(outputDir, canvas):
-	seconds = time.time()
-	outputFile = outputDir+"/display{}.jpg".format(seconds)
+def TCanvas2JPG(outputDir, canvas, name = None):
+	if not name:
+		seconds = time.time()
+		outputFile = outputDir+"/display{}.jpg".format(seconds)
+	else:
+		outputFile = outputDir+"/{}.jpg".format(name)
+	try:
+		canvas.SetBatch(ROOT.kTRUE)
+		canvas.Draw()
+		canvas.Print(outputFile)
+		#canvas.Close()
+		logger.info(outputFile + " is saved")
+	except:
+		logger.warning("Failed to save "+ outputFile)
+	return outputFile
+
+def TCanvas2SVG(outputDir, canvas, name = None):
+	if not name:
+		seconds = time.time()
+		outputFile = outputDir+"/display{}.svg".format(seconds)
+	else:
+		outputFile = outputDir+"/{}.svg".format(name)
 	try:
 		canvas.SetBatch(ROOT.kTRUE)
 		canvas.Draw()

@@ -315,7 +315,7 @@ class QtRunWindow(QWidget):
 		self.master.ProcessingTest = True
 
 	def release(self):
-		self.testHandler.run_process.kill()
+		self.abortTest()
 		self.master.ProcessingTest = False
 		if self.master.expertMode == True:
 			self.master.NewTestButton.setDisabled(False)
@@ -326,7 +326,7 @@ class QtRunWindow(QWidget):
 			self.master.SimpleMain.StopButton.setDisabled(True)
 
 
-	def refreshHistory(self, result):
+	def refreshHistory(self,result):
 		#self.dataList = getLocalRemoteTests(self.connection, self.info[0])
 		#self.proxy = QtTableWidget(self.dataList)
 		#self.view.setModel(self.proxy)
@@ -334,7 +334,7 @@ class QtRunWindow(QWidget):
 		#self.view.update()
 		self.HistoryLayout.removeWidget(self.StatusTable)
 		self.StatusTable.setRowCount(0)
-		for index,test in enumerate(result):
+		for index,test in enumerate(self.modulestatus):
 			row = self.StatusTable.rowCount()
 			self.StatusTable.setRowCount(row + 1)
 			if isCompositeTest(self.info[1]):
@@ -443,7 +443,11 @@ class QtRunWindow(QWidget):
 
 	def updateResult(self,newResult):
 		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
-		self.ResultWidget.updateResult(newResult)
+		if self.master.expertMode:
+			self.ResultWidget.updateResult(newResult)
+		else:
+			step, displayDict = newResult
+			self.ResultWidget.updateDisplayList(step, displayDict)
 
 	def updateValidation(self,grade,passmodule):
 		try:

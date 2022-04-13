@@ -251,10 +251,12 @@ class StatusBox(QWidget):
 		'''
 class SimpleModuleBox(QWidget):
 	typechanged = pyqtSignal()
+	textchanged = pyqtSignal()
 	destroy = pyqtSignal()
 
 	def __init__(self):
 		super(SimpleModuleBox,self).__init__()
+		self.SerialString = None
 		self.mainLayout = QGridLayout()
 		self.createRow()
 		self.setLayout(self.mainLayout)
@@ -262,6 +264,7 @@ class SimpleModuleBox(QWidget):
 	def createRow(self):
 		SerialLabel = QLabel("SerialNumber:")
 		self.SerialEdit = QLineEdit()
+		self.SerialEdit.returnPressed.connect(self.on_textChange)
 		#self.SerialEdit.setMinimumWidth(120)
 		#self.SerialEdit.setMaximumWidth(200)
 		
@@ -276,6 +279,7 @@ class SimpleModuleBox(QWidget):
 		#self.IDEdit.setMinimumWidth(120)
 		#self.IDEdit.setMaximumWidth(200)
 		self.CableIDEdit.textChanged.connect(self.on_TypeChanged)
+		self.CableIDEdit.setReadOnly(True)
 
 		TypeLabel = QLabel("Type:")
 		self.Type = "None"
@@ -295,7 +299,7 @@ class SimpleModuleBox(QWidget):
 		return defaultFMC
 
 	def setID(self, laneId):
-		self.CableIDEdit.setText(laneId)
+		self.CableIDEdit.setText(str(laneId))
 
 	def getID(self):
 		return self.CableIDEdit.text()
@@ -310,6 +314,12 @@ class SimpleModuleBox(QWidget):
 	def on_TypeChanged(self):
 		self.typechanged.emit()
 
+	@QtCore.pyqtSlot()
+	def on_textChange(self):
+		self.SerialString = self.SerialEdit.text()
+		## Add Parser
+		self.textchanged.emit()
+
 class SimpleBeBoardBox(QWidget):
 	changed = pyqtSignal()
 
@@ -317,6 +327,8 @@ class SimpleBeBoardBox(QWidget):
 		super(SimpleBeBoardBox,self).__init__()
 		self.firmware = firmware
 		self.ModuleList = []
+		self.FilledModuleList = []
+		self.BufferBox = None
 		self.mainLayout = QGridLayout()
 		self.currentModule = -1
 
@@ -359,13 +371,15 @@ class SimpleBeBoardBox(QWidget):
 			#module.setMaximumWidth(500)
 			module.setMaximumHeight(50)
 			module.typechanged.connect(self.on_TypeChanged)
+			module.textchanged.connect(self.on_ModuleFilled)
+			module.setID(index)
 			self.ListLayout.addWidget(module,index,0,1,1)
 			# Add "remove" botton
-			if index > 0:
-				RemoveButton = QPushButton("remove")
-				RemoveButton.setMaximumWidth(150)
-				RemoveButton.clicked.connect(lambda x = index: self.removeModule(x))
-				self.ListLayout.addWidget(RemoveButton,index,1,1,1)
+			#if index > 0:
+			#	RemoveButton = QPushButton("remove")
+			#	RemoveButton.setMaximumWidth(150)
+			#	RemoveButton.clicked.connect(lambda x = index: self.removeModule(x))
+			#	self.ListLayout.addWidget(RemoveButton,index,1,1,1)
 		#ModuleLayout = QFormLayout()
 		#ModuleItem = ModuleBox()
 		
@@ -379,10 +393,10 @@ class SimpleBeBoardBox(QWidget):
 		# For QR code, remove all modules
 		ClearButton = QPushButton("Clear")
 		ClearButton.setMaximumWidth(150)
-		ClearButton.clicked.connect(self.removeModule)
+		ClearButton.clicked.connect(self.clearModule)
 
-		self.ListLayout.addWidget(NewButton,len(self.ModuleList),1,1,1)
-		#self.ListLayout.addWidget(ClearButton,len(self.ModuleList),0,1,1)
+		#self.ListLayout.addWidget(NewButton,len(self.ModuleList),1,1,1)
+		self.ListLayout.addWidget(ClearButton,len(self.ModuleList),0,1,1)
 		self.update()
 
 	def removeModule(self, index):
@@ -401,11 +415,27 @@ class SimpleBeBoardBox(QWidget):
 		else:
 			self.updateList()
 		self.changed.emit()
+
+	def clearModule(self):
+		self.ModuleList = [SimpleModuleBox()]
+		self.FilledModuleList = []
+		self.firmware.removeAllModule()
+
+		if str(sys.version).startswith("3.8"):
+			self.deleteList()
+			self.createList()
+		elif str(sys.version).startswith(("3.7","3.9")):
+			self.updateList()
+		else:
+			self.updateList()
+
+		self.ModuleList[-1].SerialEdit.setFocus()
 	
 	def addModule(self):
 		self.ModuleList.append(SimpleModuleBox())
 		# For QR Scan
-
+		self.BufferBox = SimpleModuleBox()
+		
 		if str(sys.version).startswith("3.8"):
 			self.deleteList()
 			self.createList()
@@ -418,10 +448,10 @@ class SimpleBeBoardBox(QWidget):
 		self.ModuleList[-1].SerialEdit.setFocus()
 
 	def getModules(self):
-		return self.ModuleList
+		return self.FilledModuleList
 
 	def getFirmwareDescription(self, **kwargs):
-		for index, module in enumerate(self.ModuleList):
+		for index, module in enumerate(self.FilledModuleList):
 			if module.getSerialNumber() == "":
 				continue
 			FwModule = QtModule()
@@ -437,3 +467,8 @@ class SimpleBeBoardBox(QWidget):
 	@QtCore.pyqtSlot()
 	def on_TypeChanged(self):
 		self.changed.emit()
+
+	@QtCore.pyqtSlot()
+	def on_ModuleFilled(self):
+		self.FilledModuleList.append(self.ModuleList[-1])
+		self.addModule()
