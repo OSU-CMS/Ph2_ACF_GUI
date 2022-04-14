@@ -329,9 +329,9 @@ class SimplifiedMainWidget(QWidget):
 		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
 		self.LVpowersupply.TurnOn()
 		current = self.LVpowersupply.ReadCurrent()
-		current = float(current)
+		current = float(current) if current else 0.0
 		voltage = self.LVpowersupply.ReadVoltage()
-		voltage = float(voltage)
+		voltage = float(voltage) if voltage else 0.0
 		#print('Current = {0}'.format(current))
 		self.RunButton.setDisabled(True)
 		self.StopButton.setDisabled(False)

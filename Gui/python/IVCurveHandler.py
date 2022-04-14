@@ -47,6 +47,8 @@ class IVCurveThread(QThread):
                 #    print("voltage:",voltage, " current:",current)
                 self.stepNum += 1
                 measurementStr = {"voltage":voltage,"current":current,"percentage":self.stepNum/self.stepTotal}
+                if voltage == None or current == None:
+                    continue
                 self.measureSignal.emit(measurementStr)
                 self.target = self.startVal + self.stepLength * self.stepNum
             except Exception as err:

@@ -4,6 +4,8 @@ UsePowerSupplyLib=false
 if [ "$UsePowerSupplyLib" = true ]
 then
     export PowerSupplyArea=$PWD/power_supply
+else
+    unset PowerSupplyArea
 fi
 export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
 export DATA_dir=/home/RD53A/data/TestResults

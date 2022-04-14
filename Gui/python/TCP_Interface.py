@@ -21,6 +21,7 @@ class TCP_Interface(QObject):
         self.client.sendAndReceivePacket(pCmd)
 
     def handleAnswer( self, pAnswer ):
+        print("answer:",pAnswer)
         if pAnswer is not None:
             self.update.emit("data", pAnswer)
         else:

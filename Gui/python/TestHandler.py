@@ -315,6 +315,8 @@ class TestHandler(QObject):
 			self.run_process.kill()
 			#self.haltSignal.emit(self.halt)
 			self.starttime = None
+			if self.IVCurveHandler:
+				self.IVCurveHandler.stop()
 		else:
 			return
 

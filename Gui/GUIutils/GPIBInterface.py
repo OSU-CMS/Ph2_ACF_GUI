@@ -228,10 +228,10 @@ class PowerSupply():
 					Voltage = 1.78
 					VoltProtection = 1.8
 				# Setting Voltage
-				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ Voltage
+				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(Voltage)
 				self.hwInterface.executeCommand(cmd)
 				# Setting current compliance
-				cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ self.CompCurrent
+				cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(self.CompCurrent)
 				self.hwInterface.executeCommand(cmd)
 				cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
 				self.hwInterface.executeCommand(cmd)
@@ -302,13 +302,14 @@ class PowerSupply():
 
 		if self.UsingPythonInterface == True:
 			try:
-				self.hwInterface.SetVoltage(self.Instrument)
+				self.hwInterface.SetVoltage(self.Instrument,Voltage)
 				self.hwInterface.TurnOn(self.Instrument)
 			except Exception as err:
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
 				return None
 		else:
-			pass
+			cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+			self.hwInterface.executeCommand(cmd)
 
 	def SetHVRange(self, voltRange):
 		if not self.isHV():
@@ -336,7 +337,8 @@ class PowerSupply():
 				logging.error("Failed to set HV target the sourceMeter:{}".format(err))
 				return None
 		else:
-			pass
+			cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltage)
+			self.hwInterface.executeCommand(cmd)
 	
 	def SetHVComplianceLimit(self, compliance):
 		if not self.isHV():
@@ -350,7 +352,9 @@ class PowerSupply():
 				logging.error("Failed to set compliance limit for the sourceMeter:{}".format(err))
 				return None
 		else:
-			pass
+			# Setting current compliance
+			cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(compliance)
+			self.hwInterface.executeCommand(cmd)
 		
 
 
