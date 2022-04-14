@@ -56,7 +56,7 @@ def setComplianceLimit(device, compcurrent = 0.0):
 def ReadVoltage(device):
 	try:
 		device.write(' :SENSE:FUNCTION "VOLT" ')
-		device.read_termination = '\r'
+		#device.read_termination = '\r'
 		device.write(':READ?')
 		Measure = device.read()
 		MeasureVolt = float(Measure.split(',')[0])
@@ -67,10 +67,10 @@ def ReadVoltage(device):
 def ReadCurrent(device):
 	try:
 		device.write(' :SENSE:FUNCTION "CURR" ')
-		device.read_termination = '\r'
+		#device.read_termination = '\r'
 		device.write(':READ?')
 		Measure = device.read()
-		MeasureCurr = float(Measure.split(',')[1])
+		MeasureCurr = float(Measure.split(',')[0])
 		return MeasureCurr
 	except Exception as err:
 		logger.error("Error occured while reading current value: {}".format(err))

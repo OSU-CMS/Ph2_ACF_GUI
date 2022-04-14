@@ -60,6 +60,7 @@ class TestHandler(QObject):
 		self.ModuleMap = dict()
 		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
 		self.RunNumber = "-1"
+		self.IVCurveHandler = None
 
 		self.processingFlag = False
 		self.ProgressBarList = []

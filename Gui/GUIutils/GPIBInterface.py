@@ -302,7 +302,7 @@ class PowerSupply():
 
 		if self.UsingPythonInterface == True:
 			try:
-				self.hwInterface.SetVoltage(self.Instrument,Voltage)
+				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
 			except Exception as err:
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
