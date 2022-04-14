@@ -52,7 +52,7 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 		TryHostAddress = '127.0.0.1'
 
 	if not TryDatabase:
-		TryDatabase = 'phase2pixel_test'
+		TryDatabase = 'SampleDB'
 	try:
 		connection = mysql.connector.connect(user=str(TryUsername), password=str(TryPassword),host=str(TryHostAddress),database=str(TryDatabase))
 	except (ValueError,RuntimeError, TypeError, NameError,mysql.connector.Error):

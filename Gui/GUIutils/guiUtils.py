@@ -345,11 +345,13 @@ def formatter(DirName, columns, **kwargs):
 		if column == "user":
 			ReturnList.append("local")
 			ReturnDict.update({"user":"local"})
+		if column == "test_id":
+			pass
 		if column == "test_name":
 			ReturnList.append(dirName.split('_')[-3])
 			ReturnDict.update({"test_name":dirName.split('_')[-3]})
 		if column == "test_grade":
-			if Module_ID:
+			if Module_ID != None:
 				gradeFileName =  "{}/Grade_Module{}.txt".format(DirName,Module_ID)
 				if os.path.isfile(gradeFileName):
 					gradeFile = open(gradeFileName,"r")
@@ -381,17 +383,20 @@ def formatter(DirName, columns, **kwargs):
 
 	if recheckFlag:
 		if "part_id" in columns:
-			indexModule = columns.index("part_id")
-			indexGrade = column.index("test_grade")
-			Module_ID = ReturnList[indexModule]
-			gradeFileName =  "{}/Grade_Module{}.txt".format(DirName,Module_ID)
-			if os.path.isfile(gradeFileName):
-				gradeFile = open(gradeFileName,"r")
-				content = gradeFile.readlines()
-				Grade = float(content[-1].split(' ')[-1])
-				ReturnList[indexGrade] = Grade
-			else:
-				ReturnList[indexGrade] = -1
+			try:
+				indexModule = columns.index("part_id")
+				indexGrade = columns.index("test_grade")
+				Module_ID = ReturnList[indexModule]
+				gradeFileName =  "{}/Grade_Module{}.txt".format(DirName,Module_ID)
+				if os.path.isfile(gradeFileName):
+					gradeFile = open(gradeFileName,"r")
+					content = gradeFile.readlines()
+					Grade = float(content[-1].split(' ')[-1])
+					ReturnList[indexGrade] = Grade
+				else:
+					ReturnList[indexGrade] = -1
+			except Exception as err:
+				print("recheck failed")
 		else:
 			pass
 

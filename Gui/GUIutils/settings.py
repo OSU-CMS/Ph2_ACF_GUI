@@ -3,6 +3,43 @@
 import os
 from collections import defaultdict
 
+
+######################################################################
+# To be edited by expert as default setting for Hardware configuration
+######################################################################
+# default FC7 boardName
+defaultFC7 = "fc7.board.1"
+# default IP address of IP address
+defaultFC7IP = '192.168.1.80'
+# default fpga config
+defaultFPGAConfig = 'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
+# default FMC board number
+defaultFMC = '0'
+# default USB port for HV power supply
+defaultUSBPortHV = ["ASRL/dev/ttyUSB1::INSTR"]
+# default model for HV power supply
+defaultHVModel = ["Keithley 2410 (RS232)"]
+# default USB port for LV power supply
+defaultUSBPortLV = ["ASRL/dev/ttyUSB0::INSTR"]
+# default model for LV power supply
+defaultLVModel = ["KeySight E3633 (RS232)"]
+# default model for LV power supply
+defaultLVModel = ["KeySight E3633 (RS232)"]
+# default mode for LV powering (Direct,SLDO,etc)
+defaultPowerMode = "Direct"
+#default BaudRate for Arduino sensor
+defaultSensorBaudRate = 115200
+#default DBServerIP
+defaultDBServerIP = '127.0.0.1'
+#default DBName
+defaultDBName = 'SampleDB'
+#List of expert users
+ExpertUserList = [
+	'mjoyce',
+	'kwei',
+	'localexpert'
+]
+
 FirmwareList = {}
 
 if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
@@ -19,7 +56,7 @@ if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
 
 else:
 	FirmwareList =  {
-	'fc7.board.1' 			 :  '192.168.1.80',
+	'fc7.board.1'			 :  '192.168.1.80',
 	'fc7.board.2'			 :  '127.0.0.1',#'192.168.1.81',
 	}
 
@@ -27,7 +64,7 @@ DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
 	'local'					 :  '127.0.0.1',
 	'OSU-remote'			 :  '128.146.38.1',
-    'Purdue-remote'          :  'cmsfpixdb.physics.purdue.edu',
+	'Purdue-remote'			 :  'cmsfpixdb.physics.purdue.edu',
 }
 
 
@@ -37,12 +74,12 @@ DBNames = {
 	'Central-remote'		 :  ['phase2pixel_test', 'DBName2', 'DBName3'],
 	'local'					 :  ['SampleDB','phase2pixel_test'],
 	'OSU-remote'			 :  ['SampleDB','phase2pixel_test'],
-    'Purdue-remote'          :  ['cmsfpix_phase2'],
+	'Purdue-remote'			 :  ['cmsfpix_phase2'],
 }
 
 # Set the IT_uTDC_firmware for test
 FPGAConfigList =  {
-	'fc7.board.1' 			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28',
+	'fc7.board.1'			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28',
 	'fc7.board.2'			 :  'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
 }
 
@@ -98,16 +135,17 @@ ConfigFiles = {
 	'ThresholdAdjustment'    :  '/Configuration/Defaults/CMSIT.xml',
 	'InjectionDelay'         :  '/Configuration/Defaults/CMSIT.xml',
 	'ClockDelay'             :  '/Configuration/Defaults/CMSIT.xml',
-	'BitErrorRateTest'       :  '/Configuration/Defaults/CMSIT.xml',
-	'DataReadbackOpt'        :  '/Configuration/Defaults/CMSIT.xml',
-	'ChipIntVoltageTune'     :  '/Configuration/Defaults/CMSIT.xml',
-	'GenDACDACScan'          :  '/Configuration/Defaults/CMSIT.xml',
+	'BitErrorRate'           :  '/Configuration/Defaults/CMSIT.xml',
+	'DataRBOptimization'     :  '/Configuration/Defaults/CMSIT.xml',
+	'ChipIntVoltageTuning'   :  '/Configuration/Defaults/CMSIT.xml',
+	'GenericDAC-DAC'         :  '/Configuration/Defaults/CMSIT.xml',
 	'Physics'                :  '/Configuration/Defaults/CMSIT.xml',
 	'AllScan'                :  '/Configuration/Defaults/CMSIT.xml',
 }
 
 Test = {
 	'AllScan'                :  'noise',
+	'QuickTest'              :  'noise',
 	'StandardStep1'          :  'noise',
 	'StandardStep2'          :  'threqu',
 	'StandardStep3'          :  'scurve',
@@ -124,10 +162,10 @@ Test = {
 	'ThresholdAdjustment'    :  'thradj',
 	'InjectionDelay'         :  'injdelay',
 	'ClockDelay'             :  'clockdelay',
-	'BitErrorRateTest'       :  'bertest',
-	'DataReadbackOpt'        :  'datarbopt',
-	'ChipIntVoltageTune'     :  'voltagetuning',
-	'GenDACDACScan'          :  'gendacdac',
+	'BitErrorRate'           :  'bertest',
+	'DataRBOptimization'     :  'datarbopt',
+	'ChipIntVoltageTuning'   :  'voltagetuning',
+	'GenericDAC-DAC'         :  'gendacdac',
 	'Physics'                :  'physics',
 }
 
@@ -143,18 +181,18 @@ TestName2File = {
 	'ThresholdAdjustment'    :  'ThrAdjustment',
 	'InjectionDelay'         :  'InjectionDelay',
 	'ClockDelay'             :  'ClockDelay',
-	'BitErrorRateTest'       :  'BitErrorRateTest',
-	'DataReadbackOpt'        :  'DataReadbackOpt',
-	'ChipIntVoltageTune'     :  'ChipIntVoltageTune',
-	'GenDACDACScan'          :  'GenDACDACScan',
+	'BitErrorRate'           :  'BitErrRate',
+	'DataRBOptimization'     :  'DataRBOpt',
+	'ChipIntVoltageTuning'   :  'VoltageTuning',
+	'GenericDAC-DAC'         :  'GenDACDAC',
 	'Physics'                :  'Physics',
 }
 
 SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
-					 'ThresholdEqualization','GainOptimization','ThresholdMinimization',
-					 'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRateTest','DataReadbackOpt','ChipIntVoltageTune','GenDACDACScan','Physics']
+	'ThresholdEqualization','GainOptimization','ThresholdMinimization',
+	'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
-CompositeTest = ['AllScan','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+CompositeTest = ['AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
 	'AllScan': ['NoiseScan','PixelAlive','ThresholdAdjustment',
 				'ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment',
@@ -164,7 +202,8 @@ CompositeList = {
 	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
 	'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
 	'StandardStep4': ['InjectionDelay'],
-	'StandardStep5': ['SCurveScan']
+	'StandardStep5': ['SCurveScan'],
+	'QuickTest': ['IVCurve','NoiseScan','PixelAlive']
 }
 firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 

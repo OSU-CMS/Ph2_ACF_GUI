@@ -18,12 +18,13 @@ ThresholdMapOSU = {
 }
 def ArduinoParserCustomOSU(text):
     StopSignal = False
-    values = re.split(" |\t",text)[5:]
+    values = re.split(" |\t",text)[1:]
     readValue = {}
     ProbeReads = []
+
     for index,value in enumerate(values):
         value = value.rstrip(":")
-        if value in ProbeMapOSU.keys():
+        if value in ProbeMapOSU.keys() and 'Temperature' not in values[index-1]:
             readValue[value] = float(values[index+1])
 
     for probeName,probeValue in readValue.items():
@@ -35,15 +36,14 @@ def ArduinoParserCustomOSU(text):
                     colorCode = "#FF0000"
                     if probeName in ['MAX31850','MAX31865']:
                         StopSignal = True
+                        
                 else:
                     colorCode = "#008000"
                 ProbeReads.append('{0}:<span style="color:{1}";>{2}</span>'.format(ProbeMapOSU[probeName],colorCode,probeValue))
+                
         else:
             ProbeReads.append('{0}:{1}'.format(ProbeMapOSU[probeName],probeValue))
     ProbeReadsText = '\t'.join(ProbeReads)
     return StopSignal,ProbeReadsText
 
-
-
-
-
+    

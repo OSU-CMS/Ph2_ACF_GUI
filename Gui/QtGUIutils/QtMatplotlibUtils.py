@@ -17,6 +17,45 @@ import numpy
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import *
 
+class ScanCanvas(FigureCanvas):
+	def __init__(self,parent,xlabel = "X", ylabel = "Y"):
+		self.parent = parent
+		self.fig = Figure(figsize=(5, 4), dpi=100)
+		self.axes = self.fig.add_subplot(111)
+		self.xlabel = xlabel
+		self.ylabel = ylabel
+		self.X = numpy.array([])
+		self.Y = numpy.array([])
+		self.compute_initial_figure()
+		FigureCanvas.__init__(self, self.fig)
+		self.setMinimumHeight(100)
+		if type(parent) == type(QWidget()):
+			self.setParent(parent)
+		FigureCanvas.setSizePolicy(self,
+								   QSizePolicy.Expanding,
+								   QSizePolicy.Expanding)
+		FigureCanvas.updateGeometry(self)
+
+	def compute_initial_figure(self):
+		self.axes.cla()
+		self.axes.set_xlabel(self.xlabel)
+		self.axes.set_ylabel(self.ylabel)
+		self.axes.plot(self.X, self.Y, color='green', linestyle='dashed',linewidth=3)
+
+	def updatePlots(self, points):
+		self.coordinates = points
+		self.coordinates.sort(key=lambda x:x[0])
+		self.X = numpy.array([])
+		self.Y = numpy.array([])
+		for coordicate in self.coordinates:
+			self.X = numpy.append(self.X,coordicate[0])
+			self.Y = numpy.append(self.Y,coordicate[1])
+		self.compute_initial_figure()
+	
+	def saveToSVG(self,output):
+		self.fig.savefig(output, format="svg", dpi=1200)
+		return output
+
 ## Class for Module testing Summary
 class SummaryCanvas(FigureCanvas):
 	def __init__(self, parent=None, width=5, height=4, dpi=100):
@@ -39,6 +78,7 @@ class SummaryCanvas(FigureCanvas):
 		self.axes.plot(t, s)
 
 
+# Grading display Not used
 class RunStatusCanvas(FigureCanvas):
 	def __init__(self, parent, width=5, height=4, dpi=100):
 		self.parent = parent

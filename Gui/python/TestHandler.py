@@ -26,7 +26,14 @@ from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
 from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import *
+from Gui.python.QResultDialog import *
 from Gui.python.ANSIColoringParser import *
+from Gui.python.IVCurveHandler import *
+from Gui.QtGUIutils.QtMatplotlibUtils import *
+
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class TestHandler(QObject):
 	backSignal = pyqtSignal(object)
@@ -35,11 +42,17 @@ class TestHandler(QObject):
 	proceedSignal = pyqtSignal(object)
 	outputString = pyqtSignal(object)
 	stepFinished = pyqtSignal(object)
+	historyRefresh = pyqtSignal(object)
+	updateResult = pyqtSignal(object)
+	updateValidation = pyqtSignal(object,object)
 
-	def __init__(self,master,info,firmware):
+	def __init__(self,runwindow,master,info,firmware):
 		super(TestHandler,self).__init__()
 		self.master = master
+		self.HVpowersupply = self.master.HVpowersupply
+		self.LVpowersupply = self.master.LVpowersupply
 		self.master.globalStop.connect(self.urgentStop)
+		self.runwindow = runwindow
 		self.firmware = firmware
 		self.info = info
 		self.connection = self.master.connection
@@ -59,10 +72,15 @@ class TestHandler(QObject):
 		self.outputFile = ""
 		self.errorFile = ""
 
-		self.autoSave = False
+		#self.autoSave = False
+		self.autoSave = True
+		self.backSignal = False
+		self.halt = False
+		self.finishSingal = False
+		self.proceedSignal = False
 
 		self.runNext = threading.Event()
-		self.testIndexTracker = -1
+		self.testIndexTracker = 0
 		self.listWidgetIndex = 0
 		self.outputDirQueue = []
 		#Fixme: QTimer to be added to update the page automatically
@@ -79,6 +97,13 @@ class TestHandler(QObject):
 		self.info_process = QProcess(self)
 		self.info_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput_info)
 
+		self.haltSignal.connect(self.runwindow.finish)
+		self.outputString.connect(self.runwindow.updateConsoleInfo)
+		self.stepFinished.connect(self.runwindow.finish)
+		self.historyRefresh.connect(self.runwindow.refreshHistory)
+		self.updateResult.connect(self.runwindow.updateResult)
+		self.updateValidation.connect(self.runwindow.updateValidation)
+
 		self.initializeRD53Dict()
 
 	def  initializeRD53Dict(self):
@@ -94,6 +119,7 @@ class TestHandler(QObject):
 				self.rd53_file["{0}_{1}_{2}".format(moduleName,moduleId,i)] = None
 			fwPath = "{0}_{1}_{2}".format(beboardId,ogId,moduleId)
 			self.ModuleMap[fwPath] = moduleName
+
 	def configTest(self):
 		try:
 			RunNumberFileName = os.environ.get('Ph2_ACF_AREA')+"/test/RunNumber.txt"
@@ -186,20 +212,13 @@ class TestHandler(QObject):
 		self.config_file = ""
 		self.initializeRD53Dict()
 
-	def initialTest(self):
-		if "Re" in self.RunButton.text():
-			self.grades = []
-			if isCompositeTest(self.info[1]):
-				for index in range(len(CompositeList[self.info[1]])):
-					self.ResultWidget.ProgressBar[index].setValue(0)
-			else:
-				self.ResultWidget.ProgressBar[0].setValue(0)
-
-	def runTest(self):
-		self.ResetButton.setDisabled(True)
+	def runTest(self, reRun = False):
+		#self.ResetButton.setDisabled(True)
 		#self.ControlLayout.removeWidget(self.RunButton)
 		#self.RunButton.deleteLater()
 		#self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
+		if reRun:
+			self.halt = False
 		testName = self.info[1]
 
 		self.input_dir = self.output_dir
@@ -219,7 +238,7 @@ class TestHandler(QObject):
 			return
 
 	def runCompositeTest(self,testName):
-		if self.haltSignal:
+		if self.halt:
 			return
 		if self.testIndexTracker == len(CompositeList[self.info[1]]):
 			self.testIndexTracker = 0
@@ -229,6 +248,16 @@ class TestHandler(QObject):
 
 
 	def runSingleTest(self,testName):
+		print("Executing Single Step test...")
+		if testName == "IVCurve":
+			self.IVCurveData = []
+			self.IVCurveResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)")
+			self.IVCurveHandler = IVCurveHandler(self,self.HVpowersupply)
+			self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+			self.IVCurveHandler.IVCurve()
+			return
+			
+
 		self.starttime = None
 		self.ProgressingMode = "None"
 		self.currentTest = testName
@@ -260,15 +289,9 @@ class TestHandler(QObject):
 		else:
 			self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
 	
-
-		#self.run_process.start("ping", ["-c","5","www.google.com"])
-		#self.run_process.waitForFinished()
-		self.displayResult()
-		
-
 		#Question = QMessageBox()
 		#Question.setIcon(QMessageBox.Question)
-		#Question.setWindowTitle('SingleTest Finished')
+		#Question.setrunWindowTitle('SingleTest Finished')
 		#Question.setText('Save current result and proceed?')
 		#Question.setStandardButtons(QMessageBox.No| QMessageBox.Save | QMessageBox.Yes)
 		#Question.setDefaultButton(QMessageBox.Yes)
@@ -288,41 +311,32 @@ class TestHandler(QObject):
 		reply = QMessageBox.question(None, "Abort", "Are you sure to abort?", QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
+			self.halt = True
 			self.run_process.kill()
-			self.haltSignal = True
-			self.sendProceedSignal()
+			#self.haltSignal.emit(self.halt)
 			self.starttime = None
 		else:
 			return
-		self.RunButton.setText("Re-run")
-		self.RunButton.setDisabled(False)
+
 	
 	def urgentStop(self):
 		self.run_process.kill()
-		self.haltSignal = True
-		self.sendProceedSignal()
+		self.halt = True
+		self.haltSignal.emit(self.halt)
+		self.starttime = None
 
-		self.RunButton.setText("Re-run")
-		self.RunButton.setDisabled(True)
 
 	def validateTest(self):
 		try:
+			grade = {}
+			passmodule = {}
+			grade, passmodule, self.figurelist = ResultGrader(self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap)
+			self.updateValidation.emit(grade, passmodule)
+
 			status = True
-			# Fixme: the grading for test results
-			grade, passmodule = ResultGrader(self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap)
-			self.grades.append(grade)
-			self.modulestatus.append(passmodule)
-		
-			self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Pass")
-			self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: green")
 			for module in passmodule.values():
 				if False in module.values():
 					status = False
-					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Failed")
-					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: red")
-		
-
-			time.sleep(0.5)
 			return status
 		#self.StatusCanvas.renew()
 		#self.StatusCanvas.update()
@@ -487,11 +501,11 @@ class TestHandler(QObject):
 				if self.starttime != None:
 					self.currentTime = time.time()
 					runningTime = self.currentTime - self.starttime
+					self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText('{0} s'.format(round(runningTime,1)))
 				else:
 					self.starttime = time.time()
 					self.currentTime = self.starttime
-				
-				self.ResultWidget.runtime[self.testIndexTracker].setText('{0} s'.format(round(runningTime,1)))
+			
 			except Exception as err:
 				logger.info("Error occures while parsing running time, {0}".format(err))
 
@@ -502,7 +516,7 @@ class TestHandler(QObject):
 						self.ProgressValue = float(textStr.split()[index].rstrip("%"))
 						if self.ProgressValue == 100:
 							self.ProgressingMode = "Summary"
-						self.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)										
+						self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)										
 					except:
 						pass
 					
@@ -518,13 +532,13 @@ class TestHandler(QObject):
 						#print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
 						UpdatedValue = int(re.sub(r'\033\[(\d|;)+?m','',UpdatedValuetext))
 						print("New {0} value is {1}".format(UpdatedFEKey,UpdatedValue))
-						print(textStr.split())
+						#print(textStr.split())
 						#globalThreshold = int(textStr.split()[-1])
 						chipIdentifier = textStr.split('=')[-1].split('is')[0]
 						chipIdentifier = re.sub(r'\033\[(\d|;)+?m','',chipIdentifier).split(']')[0]
 						HybridIDKey = chipIdentifier.split("/")[2]
 						ChipIDKey = chipIdentifier.split("/")[3]
-						print("hybrid id {0}".format(HybridIDKey))
+						print("Hybrid id {0}".format(HybridIDKey))
 						print("chipID {0}".format(ChipIDKey))
 						updatedXMLValueKey = "{}/{}".format(HybridIDKey,ChipIDKey)
 						updatedXMLValues[updatedXMLValueKey][UpdatedFEKey] = UpdatedValue
@@ -536,7 +550,7 @@ class TestHandler(QObject):
 				self.ProgressingMode = "Configure"
 			elif "@@@ Performing" in textStr:
 				self.ProgressingMode = "Perform"
-				self.ConsoleView.appendHtml('<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest))
+				self.outputString.emit('<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest))
 
 			text = textStr.encode('ascii')
 			numUpAnchor, text = parseANSI(text)
@@ -551,9 +565,10 @@ class TestHandler(QObject):
 			#	textCursor.deletePreviousChar()
 			#	textCursor.endEditBlock()
 			#	self.ConsoleView.setTextCursor(textCursor)
-			textCursor = self.ConsoleView.textCursor()
-			self.ConsoleView.setTextCursor(textCursor)
-			self.ConsoleView.appendHtml(text.decode("utf-8"))
+			self.outputString.emit(text.decode("utf-8"))
+			#textCursor = self.runwindow.ConsoleView.textCursor()
+			#self.runwindow.ConsoleView.setTextCursor(textCursor)
+			#self.runwindow.ConsoleView.appendHtml(text.decode("utf-8"))
 		self.readingOutput = False
 
 	def updateNeeded(self,textStr):
@@ -585,14 +600,17 @@ class TestHandler(QObject):
 		textline = alltext.split('\n')
 
 		for textStr in textline:
-			self.ConsoleView.appendHtml(textStr)
+			self.outputString.emit(textStr)
+			#self.ConsoleView.appendHtml(textStr)
 		
 	@QtCore.pyqtSlot()
 	def on_finish(self):
-		self.RunButton.setDisabled(True)
-		self.RunButton.setText("&Continue")
-		self.finishSingal = True
 		self.outputfile.close()
+
+		# While the process is killed:
+		if self.halt == True:
+			self.haltSignal.emit(True)
+			return
 
 		#To be removed
 		#if isCompositeTest(self.info[1]):
@@ -603,15 +621,14 @@ class TestHandler(QObject):
 		self.testIndexTracker += 1
 		self.saveConfigs()
 
+		EnableReRun = False
 		if isCompositeTest(self.info[1]):
 			if self.testIndexTracker == len(CompositeList[self.info[1]]):
-				self.RunButton.setText("&Re-run")
-				self.RunButton.setDisabled(False)
-		if isSingleTest(self.info[1]):
-			#self.RunButton.setText("&Finish")
-			#self.RunButton.setDisabled(True)
-			self.RunButton.setText("&Re-run")
-			self.RunButton.setDisabled(False)
+				EnableReRun = True
+		elif isSingleTest(self.info[1]):
+			EnableReRun = True
+
+		self.stepFinished.emit(EnableReRun)
 
 		# Save the output ROOT file to output_dir
 		self.saveTest()
@@ -619,20 +636,74 @@ class TestHandler(QObject):
 		# validate the results
 		status = self.validateTest()
 
-		# show the score of test
-		self.refreshHistory()
+		# manually validate the result
+		print(self.figurelist)
 
-		# For test
-		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
-		self.ResultWidget.updateResult(self.output_dir)
+		if status == False:
+			for key in self.figurelist.keys():
+				for plot in self.figurelist[key]:
+					dialog = QResultDialog(self,plot)
+					result = dialog.exec_()
+					if result:
+						continue
+					else:
+						self.abortTest()
+
+		# show the score of test
+		self.historyRefresh.emit(self.modulestatus)
+		if self.master.expertMode:
+			self.updateResult.emit(self.output_dir)
+		else:
+			step = "{}:{}".format(self.testIndexTracker,self.currentTest)
+			self.updateResult.emit((step,self.figurelist))
 
 		if self.autoSave:
 			self.saveTestToDB()
-		self.update()
+		#self.update()
 
 		if status == False and isCompositeTest(self.info[1]) and self.testIndexTracker < len(CompositeList[self.info[1]]):
 			self.forceContinue()
 
 		if isCompositeTest(self.info[1]):
 			self.runTest()
+
+	def updateMeasurement(self, measureType, measure):
+		if measureType == "IVCurve":
+			Voltage = measure["voltage"]
+			Current = measure["current"]
+			Percentage = measure["percentage"]
+			self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(Percentage*100)	
+			self.IVCurveData.append([Voltage,Current])
+			self.IVCurveResult.updatePlots(self.IVCurveData)
+			tmpDir = os.environ.get('GUI_dir') + "/Gui/.tmp"
+			svgFile = "IVCurve.svg"
+			output = self.IVCurveResult.saveToSVG(tmpDir+"/"+svgFile)
+			self.IVCurveResult.update()
+			if not self.master.expertMode:
+				step = "IVCurve"
+				self.figurelist = {"-1":[output]}
+				self.updateResult.emit((step,self.figurelist))
+
+
+
+	def IVCurveFinished(self):
+		self.testIndexTracker += 1
+		if isCompositeTest(self.info[1]):
+			self.runTest()
+
+	def interactiveCheck(self,plot):
+		pass
+
+	def forceContinue(self):
+		reply = QMessageBox.question(self, 'Abort following tests', 'Failed component detected, continue to following test?',
+				QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
+
+		if reply == QMessageBox.Yes:
+			return
+		else:
+			self.run_process.kill()
+			self.halt = True
+			self.haltSignal.emit(self.halt)
+			self.starttime = None
+
 

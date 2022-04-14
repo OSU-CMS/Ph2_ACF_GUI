@@ -24,6 +24,7 @@ class ArduinoWidget(QWidget):
 		self.setLayout(self.mainLayout)
 		self.serial = None
 		self.stopCount  = 0
+		self.ArduinoGoodStatus = False
 
 
 	def createArduino(self):
@@ -101,13 +102,14 @@ class ArduinoWidget(QWidget):
 		# Block for ArduinoSupply operation
 		try:
 			self.setSerial(self.deviceMap[self.ArduinoCombo.currentText()],self.ArduinoBRCombo.currentText())
-			#print(self.deviceMap[self.ArduinoCombo.currentText()])
+			print(self.deviceMap[self.ArduinoCombo.currentText()])
 			self.ArduinoCombo.setDisabled(True)
 			self.ArduinoBRCombo.setDisabled(True)
 			self.UseArduino.setDisabled(True)
 			self.ReleaseArduino.setDisabled(False)
-		except err as Exception:
+		except Exception as err:
 			logger.error("Unable to use Arduino")
+			self.ArduinoGoodStatus = False
 
 
 	def releaseArduinoPanel(self):
@@ -118,6 +120,10 @@ class ArduinoWidget(QWidget):
 		self.ArduinoBRCombo.setDisabled(False)
 		self.ReleaseArduino.setDisabled(True)
 		self.ArduinoList = self.listResources()
+
+	def setBaudRate(self, baudRate):
+		self.ArduinoBRCombo.clear()
+		self.ArduinoBRCombo.addItems([str(baudRate)])
 
 	def setSerial(self, deviceName, baudRate):
 		deviceName= deviceName.lstrip("ASRL").rstrip("::INSTR")
@@ -139,22 +145,31 @@ class ArduinoWidget(QWidget):
 		self.serial.open(QIODevice.ReadOnly)
 		print(self.serial.isOpen())
 
+	def disable(self):
+		self.ArduinoGroup.setDisabled(True)
+	
+	def enable(self):
+		self.ArduinoGroup.setDisabled(False)
+
 	@QtCore.pyqtSlot()
 	def receive(self):
 		while self.serial.canReadLine():
 
 			try:
 				text = self.serial.readLine().data().decode("utf-8","ignore")
-				print(text)
 				text = text.rstrip('\r\n')
+				#print ('Arduino text is {0}'.format(text))
 				StopSignal,measureText = ArduinoParser(text)
+
 				self.ArduinoMeasureValue.setText(measureText)
 				if StopSignal:
 					self.stopCount += 1
 					logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))
+					self.ArduinoGoodStatus = False
 				else:
-					self.stopCount = 0 
-		
+					self.stopCount = 0
+					self.ArduinoGoodStatus = True
+
 				if self.stopCount >= 10:
 					self.StopSignal()
 					self.stopCount = 0
