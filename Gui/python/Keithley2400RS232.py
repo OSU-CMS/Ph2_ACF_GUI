@@ -30,6 +30,7 @@ def TurnOn(device):
 
 def TurnOff(device):
 	try:
+		device.write(":SOURCE:VOLTAGE:LEV 0")
 		device.write(":OUTPUT OFF")
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
@@ -55,22 +56,24 @@ def setComplianceLimit(device, compcurrent = 0.0):
 
 def ReadVoltage(device):
 	try:
+		device.write(":FORM:ELEM VOLT")
 		device.write(' :SENSE:FUNCTION "VOLT" ')
 		#device.read_termination = '\r'
 		device.write(':READ?')
 		Measure = device.read()
-		MeasureVolt = float(Measure.split(',')[0])
+		MeasureVolt = float(Measure)
 		return MeasureVolt
 	except Exception as err:
 		logger.error("Error occured while reading voltage value: {}".format(err))
 
 def ReadCurrent(device):
 	try:
+		device.write(":FORM:ELEM CURR")
 		device.write(' :SENSE:FUNCTION "CURR" ')
 		#device.read_termination = '\r'
 		device.write(':READ?')
 		Measure = device.read()
-		MeasureCurr = float(Measure.split(',')[0])
+		MeasureCurr = float(Measure)
 		return MeasureCurr
 	except Exception as err:
 		logger.error("Error occured while reading current value: {}".format(err))

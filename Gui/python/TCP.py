@@ -6,9 +6,9 @@ import time, datetime
 from PyQt5.QtCore import *
 
 class TCPServer():
-    def __init__( self, pFolder = None ):
+    def __init__( self, pFolder = None, index = 0):
         print("Ph2_ACF_GUI:\tNew TCP Server")
-        self.index = 0
+        self.index = index
         self.folder = pFolder
         #self.serverSubprocess = None
         self.config = None
@@ -24,7 +24,7 @@ class TCPServer():
             print("Ph2_ACF_GUI:\tTCP Server: Start TCP Device Server at " + self.folder + " with config file " + self.config)
             if not self.isRunning():
                 print("Ph2_ACF_GUI:\tStarting TCP server ...")
-                cmd = "source setup.sh && " + os.environ.get('GUI_dir')+ "/power_supply/bin/PowerSupplyController -c " + self.config #+ " -p " + str( 7010 + self.index) 
+                cmd = "source setup.sh && " + os.environ.get('GUI_dir')+ "/power_supply/bin/PowerSupplyController -c " + self.config + " -p " + str( 7000 + self.index) 
                 self.serverProcess = subprocess.Popen(cmd, stdout=self.logFile, stderr=subprocess.PIPE, encoding = 'UTF-8', shell= True, executable="/bin/bash", cwd=self.folder)
                 self.isRunning()
                 return True
@@ -87,12 +87,12 @@ class TCPServer():
 class TCPClient(QObject):
     tcpAnswer = pyqtSignal(object)
 
-    def __init__( self ):
+    def __init__( self,index = 0 ):
         super(TCPClient, self).__init__(  )
-        self.index = 0
+        self.index = index
         print("Ph2_ACF_GUI:\tNew TCP Client " + str( self.index ))
 
-        self.lib = ctypes.cdll.LoadLibrary(os.environ.get('GUI_dir') + '/NetworkUtils/NetworkUtils.so')
+        self.lib = ctypes.cdll.LoadLibrary(os.environ.get('GUI_dir') + '/power_supply/NetworkUtils/NetworkUtils.so')
 
         self.lib.TCPClient_new.argtypes = [ctypes.c_char_p,ctypes.c_int]
         self.lib.TCPClient_new.restype = ctypes.c_void_p
@@ -126,8 +126,8 @@ class TCPClient(QObject):
     def sendAndReceivePacket( self, pBuffer ):
         #There is only one TCP Client if last call is not long ago, just return most recent value to avoid polling too often
         #result = self.lib.sendAndReceivePacket_new( self.client, pBuffer.encode() ).decode()
-        result = self.lib.sendAndReceivePacket_new(self.client, pBuffer.encode() ).decode()
-
+        result = self.lib.sendAndReceivePacket_new(self.client, pBuffer.encode() )
+        result = result.decode()
         if result == "-1" or result == '':
             result = None
         self.tcpAnswer.emit(result)

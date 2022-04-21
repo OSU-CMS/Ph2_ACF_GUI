@@ -1,6 +1,6 @@
 /*!
- * \authors Monica Scaringella <monica.scaringella@fi.infn.it>, INFN-Firenze
- * \date July 24 2020
+ * \authors Kai Wei <kai.wei@cern.ch>, OSU
+ * \date April 15 2022
  */
 
 #ifndef KeySight_H

@@ -47,8 +47,8 @@ class QtApplication(QWidget):
 		self.LogList = {}
 		self.PYTHON_VERSION = str(sys.version).split(" ")[0]
 		self.dimension = dimension
-		self.HVpowersupply = PowerSupply(powertype = "HV")
-		self.LVpowersupply = PowerSupply(powertype = "LV")
+		self.HVpowersupply = PowerSupply(powertype = "HV",serverIndex = 0)
+		self.LVpowersupply = PowerSupply(powertype = "LV",serverIndex = 1)
 		self.PowerRemoteControl = {"HV":True, "LV": True}
 
 		self.setLoginUI()
@@ -936,7 +936,7 @@ class QtApplication(QWidget):
 		# Block for LVPowerSupply operation
 		self.LVpowersupply.setPowerModel(self.LVPowerModelCombo.currentText())
 		self.LVpowersupply.setInstrument(self.LVPowerCombo.currentText())
-		self.LVpowersupply.getInfo()
+		#self.LVpowersupply.getInfo()
 		#self.LVpowersupply.TurnOn()
 		# Block for GUI front-end
 		statusString = self.LVpowersupply.getInfo()

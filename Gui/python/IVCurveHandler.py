@@ -16,7 +16,7 @@ class IVCurveThread(QThread):
         self.startVal = 0
         self.target = 0
         self.stopVal = 150
-        self.stepLength = 10
+        self.stepLength = 5
         self.stepNum = 0
         self.stepTotal = (self.stopVal-self.startVal)/self.stepLength+1
         self.turnOn()
@@ -47,7 +47,10 @@ class IVCurveThread(QThread):
                 #    print("voltage:",voltage, " current:",current)
                 self.stepNum += 1
                 measurementStr = {"voltage":voltage,"current":current,"percentage":self.stepNum/self.stepTotal}
+                print(measurementStr)
                 if voltage == None or current == None:
+                    self.stepNum -= 1
+                    self.target = self.startVal + self.stepLength * self.stepNum
                     continue
                 self.measureSignal.emit(measurementStr)
                 self.target = self.startVal + self.stepLength * self.stepNum
