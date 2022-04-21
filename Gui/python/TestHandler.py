@@ -679,6 +679,12 @@ class TestHandler(QObject):
 			self.IVCurveData.append([Voltage,Current])
 			self.IVCurveResult.updatePlots(self.IVCurveData)
 			tmpDir = os.environ.get('GUI_dir') + "/Gui/.tmp"
+			if not os.path.isdir(tmpDir)  and os.environ.get('GUI_dir'):
+				try:
+					os.mkdir(tmpDir)
+					logger.info("Creating "+tmpDir)
+				except:
+					logger.warning("Failed to create "+tmpDir)
 			svgFile = "IVCurve.svg"
 			output = self.IVCurveResult.saveToSVG(tmpDir+"/"+svgFile)
 			self.IVCurveResult.update()
