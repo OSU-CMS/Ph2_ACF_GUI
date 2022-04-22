@@ -17,7 +17,8 @@ boost::program_options::variables_map process_program_options(const int argc, co
     desc.add_options()("help,h", "produce help message")("config,c",
                                                          boost::program_options::value<std::string>()->default_value("default"),
                                                          "set configuration file path (default files defined for each test) "
-                                                         "...")("verbose,v", boost::program_options::value<std::string>()->implicit_value("0"), "verbosity level");
+                                                         "...")("verbose,v", boost::program_options::value<std::string>()->implicit_value("0"), "verbosity level")
+                                                         ("port,p",boost::program_options::value<int>()->implicit_value(PORT),"set server listening port");
 
     boost::program_options::variables_map vm;
     try
@@ -49,7 +50,7 @@ int main(int argc, char** argv)
 {
     boost::program_options::variables_map v_map = process_program_options(argc, argv);
 
-    PowerSupplyInterface thePowerSupplyInterface(PORT, v_map["config"].as<std::string>());
+    PowerSupplyInterface thePowerSupplyInterface(v_map["port"].as<int>(), v_map["config"].as<std::string>());
     thePowerSupplyInterface.startAccept();
 
     while(true) { std::this_thread::sleep_for(std::chrono::milliseconds(1000)); }

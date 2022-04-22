@@ -1,9 +1,11 @@
 export Ph2_ACF_AREA=/home/RD53A/workspace/v4.0.2/Ph2_ACF
 export GUI_dir=$PWD
-UsePowerSupplyLib=false
+UsePowerSupplyLib=true
 if [ "$UsePowerSupplyLib" = true ]
 then
     export PowerSupplyArea=$PWD/power_supply
+else
+    unset PowerSupplyArea
 fi
 export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
 export DATA_dir=/home/RD53A/data/TestResults

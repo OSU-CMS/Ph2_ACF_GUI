@@ -1,8 +1,11 @@
 import re
 
 def ArduinoParser(text):
-    StopSingal, ProbeReadsText = ArduinoParserCustomOSU(text)
-    return StopSingal, ProbeReadsText
+    try:
+        StopSingal, ProbeReadsText = ArduinoParserCustomOSU(text)
+        return StopSingal, ProbeReadsText
+    except Exception as err:
+        return False,""
 
 
 #################Arduino formatting for OSU###############

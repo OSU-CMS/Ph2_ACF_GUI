@@ -8,12 +8,12 @@ import threading
 class TCP_Interface(QObject):
     update = pyqtSignal ( object , object )
 
-    def __init__( self, pPackageFolder,pConfigFile ):
+    def __init__( self, pPackageFolder,pConfigFile, index ):
         super(TCP_Interface, self).__init__(  )
         print("PH2_ACF_GUI:\tNew TCP Interface")
-        self.server = TCPServer(pPackageFolder)
+        self.server = TCPServer(pPackageFolder,index)
         self.server.start(pConfigFile)
-        self.client = TCPClient()
+        self.client = TCPClient(index)
         self.client.connectClient()
         self.client.tcpAnswer.connect(self.handleAnswer)
 
@@ -21,6 +21,7 @@ class TCP_Interface(QObject):
         self.client.sendAndReceivePacket(pCmd)
 
     def handleAnswer( self, pAnswer ):
+        print("answer:",pAnswer)
         if pAnswer is not None:
             self.update.emit("data", pAnswer)
         else:

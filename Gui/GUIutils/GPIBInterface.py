@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 class PowerSupply():
-	def __init__(self,model = "Keithley", boardnumber = 0, primaryaddress = 24, powertype = "HV"):
+	def __init__(self,model = "Keithley", boardnumber = 0, primaryaddress = 24, powertype = "HV",serverIndex = 0):
 		self.Model = model
 		self.Status = "OFF"
 		self.deviceMap = {}
@@ -25,6 +25,8 @@ class PowerSupply():
 		self.Port = None
 		self.DeviceNode = None
 		self.Answer = None
+		self.maxTries = 10
+		self.ServerIndex = serverIndex
 		#Not used for pyvisa
 		#self.BoardNumber = int(boardnumber)
 		#self.PrimaryAddress = int(primaryaddress)
@@ -142,7 +144,7 @@ class PowerSupply():
 			self.createInterface(self.XMLConfig)
 
 	def createInterface(self, xmlFile):
-		self.hwInterface = TCP_Interface(os.environ.get('GUI_dir')+"/power_supply", xmlFile)
+		self.hwInterface = TCP_Interface(os.environ.get('GUI_dir')+"/power_supply", xmlFile, self.ServerIndex)
 		self.hwInterface.update.connect(self.hwUpdate)
 
 	def hwUpdate(self, pHead, pAnswer):
@@ -185,8 +187,13 @@ class PowerSupply():
 				return "No valid device"
 		else:
 			try:
+				self.Answer = None
+				nTry = 0
 				cmd = "GetInfo,PowerSupplyId:" + self.ID
 				self.hwInterface.executeCommand(cmd)
+				while self.Answer == None and nTry < self.maxTries:
+					time.sleep(0.1)
+					nTry += 1
 				return self.Answer
 			except Exception as err:
 				logging.error("Failed to get instrument information:{}".format(err))
@@ -219,6 +226,8 @@ class PowerSupply():
 			#	logging.error("Failed to turn on the sourceMeter:{}".format(err))
 		else:
 			try:
+				self.Answer = None
+				nTry = 0
 				Voltage = 0.0
 				VoltProtection = 1.0
 				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
@@ -228,14 +237,25 @@ class PowerSupply():
 					Voltage = 1.78
 					VoltProtection = 1.8
 				# Setting Voltage
-				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ Voltage
+				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(Voltage)
 				self.hwInterface.executeCommand(cmd)
+				time.sleep(1)
 				# Setting current compliance
-				cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ self.CompCurrent
+				cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(self.CompCurrent)
 				self.hwInterface.executeCommand(cmd)
+				time.sleep(1)
 				cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
 				self.hwInterface.executeCommand(cmd)
-				return self.Answer
+
+				time.sleep(1)
+				cmd = "GetOutputVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front"
+				self.hwInterface.executeCommand(cmd)
+				while self.Answer == None and nTry < self.maxTries:
+					time.sleep(0.1)
+					nTry += 1
+				self.Answer = -99 if self.Answer == None else self.Answer
+				if abs(float(self.Answer) - float(Voltage)) > 0.1:
+					logging.warning("Voltage not consistent with setting value")
 			except Exception as err:
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
 				return None
@@ -262,7 +282,17 @@ class PowerSupply():
 			except Exception as err:
 				return None
 		else:
-			pass
+			try:
+				self.Answer = None
+				nTry = 0
+				cmd = "GetOutputVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+				self.hwInterface.executeCommand(cmd)
+				while self.Answer == None and nTry < self.maxTries:
+					time.sleep(0.1)
+					nTry += 1
+				return float(self.Answer)
+			except Exception as err:
+				logging.error("Failed to retrive voltage")
 
 	def SetVoltage(self, voltage = 0.0):
 		if self.powertype == "HV":
@@ -289,9 +319,14 @@ class PowerSupply():
 					pass
 		else:
 			try:
+				self.Answer = None
+				nTry = 0
 				cmd = "GetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
-				current = self.hwInterface.executeCommand(cmd)
-				return current
+				self.hwInterface.executeCommand(cmd)
+				while self.Answer == None and nTry < self.maxTries:
+					time.sleep(0.1)
+					nTry += 1
+				return float(self.Answer)
 			except Exception as err:
 				logging.error("Failed to retrive current")
 	
@@ -302,13 +337,15 @@ class PowerSupply():
 
 		if self.UsingPythonInterface == True:
 			try:
+				self.hwInterface.InitialDevice(self.Instrument)
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
 			except Exception as err:
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
 				return None
 		else:
-			pass
+			cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+			self.hwInterface.executeCommand(cmd)
 
 	def SetHVRange(self, voltRange):
 		if not self.isHV():
@@ -322,7 +359,8 @@ class PowerSupply():
 				logging.error("Failed to set range for the sourceMeter:{}".format(err))
 				return None
 		else:
-			pass
+			cmd = "setOverVoltageProtection,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltRange)
+			self.hwInterface.executeCommand(cmd)
 
 	def SetHVVoltage(self, voltage):
 		if not self.isHV():
@@ -336,7 +374,8 @@ class PowerSupply():
 				logging.error("Failed to set HV target the sourceMeter:{}".format(err))
 				return None
 		else:
-			pass
+			cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltage)
+			self.hwInterface.executeCommand(cmd)
 	
 	def SetHVComplianceLimit(self, compliance):
 		if not self.isHV():
@@ -350,7 +389,9 @@ class PowerSupply():
 				logging.error("Failed to set compliance limit for the sourceMeter:{}".format(err))
 				return None
 		else:
-			pass
+			# Setting current compliance
+			cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(compliance)
+			self.hwInterface.executeCommand(cmd)
 		
 
 

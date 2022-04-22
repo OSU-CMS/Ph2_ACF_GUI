@@ -1,6 +1,6 @@
 /*!
- * \authors Monica Scaringella <monica.scaringella@fi.infn.it>, INFN-Firenze
- * \date July 24 2020
+ * \authors Kai Wei <kai.wei@cern.ch>, OSU
+ * \date April 15 2022
  */
 
 #include "KeySight.h"
@@ -154,7 +154,7 @@ KeySightChannel::~KeySightChannel() {}
 */
 void KeySightChannel::write(std::string command)
 {
-    fConnection->write(fChannelCommand);
+    //fConnection->write(fChannelCommand);
     fConnection->write(command);
 }
 
@@ -178,7 +178,7 @@ std::string KeySightChannel::read(std::string command)
 */
 void KeySightChannel::turnOn(void)
 {
-    write(":OUTPUT ON");
+    write(":outp:stat on");
     std::cout << "Turn on channel " << fConfiguration.attribute("Channel").value() << " output." << std::endl;
 }
 
@@ -189,7 +189,7 @@ void KeySightChannel::turnOn(void)
 */
 void KeySightChannel::turnOff(void)
 {
-    write(":OUTPUT OFF");
+    write(":outp:stat off");
     std::cout << "Turn off channel " << fConfiguration.attribute("Channel").value() << " output." << std::endl;
 }
 
@@ -211,9 +211,11 @@ bool KeySightChannel::isOn(void)
     */
 
     // Only the selected channel can be activated. If not selected it is not on by default
-    std::string currentChannel = fConnection->read(":ROUT:TERM?");        // Get selected channel
+    /*std::string currentChannel = fConnection->read(":ROUT:TERM?");        // Get selected channel
+    std::cout << currentChannel << std::endl;
     currentChannel.erase(4, 1);                                           // Somehow the power supply returns FRON_ instead of FRONT
     std::string thisChannel(fConfiguration.attribute("Channel").value()); // Check the name of this channel
+    std::cout << thisChannel << std::endl;
     thisChannel.erase(4, 1);
     int result;
     if(currentChannel == thisChannel) // Compare and check if the output is enabled
@@ -225,6 +227,10 @@ bool KeySightChannel::isOn(void)
     {
         result = false;
     }
+    return result;*/
+    int result = false;
+    std::string const answer = fConnection->read(":outp:state?");
+    sscanf(answer.c_str(), "%d", &result);
     return result;
 }
 
@@ -333,7 +339,7 @@ float KeySightChannel::getOutputVoltage(void)
 
         //fConnection->write(":form:elem volt");
         // usleep(100);
-         fConnection->write("MEASURE:VOLTAGE?");
+        fConnection->write("MEASURE:VOLTAGE?");
         std::string const answer =  fConnection->read("MEASURE:VOLTAGE?");
         sscanf(answer.c_str(), "%f", &result);
     }

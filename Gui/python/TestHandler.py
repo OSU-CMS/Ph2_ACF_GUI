@@ -60,6 +60,7 @@ class TestHandler(QObject):
 		self.ModuleMap = dict()
 		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
 		self.RunNumber = "-1"
+		self.IVCurveHandler = None
 
 		self.processingFlag = False
 		self.ProgressBarList = []
@@ -315,6 +316,8 @@ class TestHandler(QObject):
 			self.run_process.kill()
 			#self.haltSignal.emit(self.halt)
 			self.starttime = None
+			if self.IVCurveHandler:
+				self.IVCurveHandler.stop()
 		else:
 			return
 
@@ -676,6 +679,12 @@ class TestHandler(QObject):
 			self.IVCurveData.append([Voltage,Current])
 			self.IVCurveResult.updatePlots(self.IVCurveData)
 			tmpDir = os.environ.get('GUI_dir') + "/Gui/.tmp"
+			if not os.path.isdir(tmpDir)  and os.environ.get('GUI_dir'):
+				try:
+					os.mkdir(tmpDir)
+					logger.info("Creating "+tmpDir)
+				except:
+					logger.warning("Failed to create "+tmpDir)
 			svgFile = "IVCurve.svg"
 			output = self.IVCurveResult.saveToSVG(tmpDir+"/"+svgFile)
 			self.IVCurveResult.update()

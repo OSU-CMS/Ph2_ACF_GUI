@@ -19,34 +19,34 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
 
     std::cout << __PRETTY_FUNCTION__ << " Message received from OTSDAQ: " << buffer << std::endl;
 
-    if(buffer.find("Initialize") < 10) // Changing the status changes the mode in
+    if(buffer.find("Initialize") != std::string::npos) // Changing the status changes the mode in
                                // threadMain (BBC) function
     {
         return "InitializeDone";
     }
-    else if(buffer.find("Start") < 10) // Changing the status changes the
+    else if(buffer.find("Start") != std::string::npos) // Changing the status changes the
                                             // mode in threadMain (BBC)
                                             // function
     {
         return "StartDone";
     }
-    else if(buffer.find("Stop") < 10)
+    else if(buffer.find("Stop") != std::string::npos)
     {
         return "StopDone";
     }
-    else if(buffer.find("Halt") < 10)
+    else if(buffer.find("Halt") != std::string::npos)
     {
         return "HaltDone";
     }
-    else if(buffer.find("Pause") < 10)
+    else if(buffer.find("Pause") != std::string::npos)
     {
         return "PauseDone";
     }
-    else if(buffer.find("Resume") < 10)
+    else if(buffer.find("Resume") != std::string::npos)
     {
         return "ResumeDone";
     }
-    else if(buffer.find("Configure") < 10)
+    else if(buffer.find("Configure") != std::string::npos)
     {
         return "ConfigureDone";
     }
@@ -62,7 +62,7 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
         return replayMessage;
     }
     //else if(buffer.substr(0, 6) == "TurnOn")
-    else if(buffer.find("TurnOn") < 10)
+    else if(buffer.find("TurnOn") != std::string::npos)
     {
         std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
         std::string channelId     = getVariableValue("ChannelId", buffer);
@@ -72,7 +72,7 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
         return "TurnOnDone";
     }
     //else if(buffer.substr(0, 7) == "TurnOff")
-    else if(buffer.find("TurnOff") < 10)
+    else if(buffer.find("TurnOff") != std::string::npos)
     {
         std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
         std::string channelId     = getVariableValue("ChannelId", buffer);
@@ -82,14 +82,14 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
         return "TurnOffDone";
     }
     //else if(buffer.substr(0, 9) == "GetStatus")
-    else if(buffer.find("GetStatus") < 10)
+    else if(buffer.find("GetStatus") != std::string::npos)
     {
         std::string replayMessage;
         replayMessage += "TimeStamp:" + getTimeStamp();
         for(const auto& readoutChannel: fHandler.getStatus()) { replayMessage += ("," + readoutChannel); }
         return replayMessage;
     }
-    else if(buffer.find("GetInfo") < 10)
+    else if(buffer.find("GetInfo") != std::string::npos)
     {
         std::string replayMessage;
         std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
@@ -99,7 +99,7 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
         //std::cout << replayMessage << std::endl;
         return replayMessage;
     }
-    else if(buffer.find("SetVoltage") < 10)
+    else if(buffer.find("SetVoltage") != std::string::npos)
     {
         std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
         std::string channelId     = getVariableValue("ChannelId", buffer);
@@ -107,21 +107,30 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
         fHandler.getPowerSupply(powerSupplyId)->getChannel(channelId)->setVoltage(voltage);
         return "SetVoltageDone";
     }
-    else if(buffer.find("GetCurrent") < 10)
+    else if(buffer.find("setOverVoltageProtection") != std::string::npos)
+    {
+        std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
+        std::string channelId     = getVariableValue("ChannelId", buffer);
+        float       voltage       = std::stof(getVariableValue("Value", buffer));
+        fHandler.getPowerSupply(powerSupplyId)->getChannel(channelId)->setOverVoltageProtection(voltage);
+        return "setOverVoltageProtection";
+    }  
+    else if(buffer.find("GetCurrent") != std::string::npos)
     {
         std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
         std::string channelId     = getVariableValue("ChannelId", buffer);
         float       current       = fHandler.getPowerSupply(powerSupplyId)->getChannel(channelId)->getCurrent();
+        std::cout << "interface current: " << current << std::endl;
         return std::to_string(current);
     }
-    else if(buffer.find("GetSetVoltage") < 10)
+    else if(buffer.find("GetOutputVoltage") != std::string::npos)
     {
         std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
         std::string channelId     = getVariableValue("ChannelId", buffer);
-        float       voltage       = fHandler.getPowerSupply(powerSupplyId)->getChannel(channelId)->getSetVoltage();
+        float       voltage       = fHandler.getPowerSupply(powerSupplyId)->getChannel(channelId)->getOutputVoltage();
         return std::to_string(voltage);
     }
-    else if(buffer.find("SetCurrentCompliance") < 10)
+    else if(buffer.find("SetCurrentCompliance") != std::string::npos)
     {
         std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
         std::string channelId     = getVariableValue("ChannelId", buffer);
@@ -130,12 +139,12 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
         return "SetCurrentComplianceDone";
     }
     //else if(buffer.substr(0, 6) == "Error:")
-    else if(buffer.find("Error:") < 10)
+    else if(buffer.find("Error:") != std::string::npos)
     {
         if(buffer == "Error: Connection closed") std::cerr << __PRETTY_FUNCTION__ << buffer << ". Closing client server connection!" << std::endl;
         return "";
     }
-    else if(buffer.find("Scope:") < 10)
+    else if(buffer.find("Scope:") != std::string::npos)
     {
         std::vector<std::string> arguments;
         boost::split(arguments, buffer, boost::is_any_of(":"));
@@ -143,14 +152,14 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
         std::string          command      = arguments.at(2);
         ScopeAgilent*        scope        = dynamic_cast<ScopeAgilent*>(fHandler.getScope("AgilentScope"));
         ScopeAgilentChannel* scopechannel = dynamic_cast<ScopeAgilentChannel*>(scope->getChannel(channel));
-        if(command.find("setEOM=") < 10)
+        if(command.find("setEOM=") != std::string::npos)
         {
             std::vector<std::string> subargs;
             boost::split(subargs, command, boost::is_any_of("="));
             scopechannel->setEOMeasurement(subargs.at(1));
             return "Observables for EOM set.";
         }
-        if(command.find("acquireEOM=") < 10)
+        if(command.find("acquireEOM=") != std::string::npos)
         {
             std::vector<std::string> subargs;
             boost::split(subargs, command, boost::is_any_of("="));

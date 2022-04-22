@@ -242,6 +242,7 @@ void KeithleyChannel::setVoltage(float voltage)
     std::sprintf(&command[0], ":source:voltage %e", voltage);
     write(command.c_str());
     fSetVoltage = voltage;
+    std::cout << "Setting Voltage to" << command.c_str() << std::endl; 
 }
 
 /*!
@@ -256,6 +257,7 @@ void KeithleyChannel::setCurrent(float current)
     command.reserve(50);
     std::sprintf(&command[0], ":source:current %e", current);
     write(command.c_str());
+    std::cout << "Setting Current to" << command.c_str() << std::endl; 
 }
 
 /*!
@@ -271,6 +273,7 @@ void KeithleyChannel::setVoltageCompliance(float voltage)
     command.reserve(50);
     std::sprintf(&command[0], "sense:voltage:protection %e", voltage);
     write(command.c_str());
+    std::cout << "Setting Voltage Compliance to" << command.c_str() << std::endl; 
 }
 
 /*!
@@ -297,9 +300,13 @@ void KeithleyChannel::setCurrentCompliance(float current)
 */
 void KeithleyChannel::setOverVoltageProtection(float voltage)
 {
-    std::stringstream error;
-    error << "setOverVoltageProtection: command not implemented for Keithley 2410 aborting ...";
-    throw std::runtime_error(error.str());
+    std::string command;
+    command.reserve(50);
+    std::sprintf(&command[0], ":source:voltage:range %e", voltage);
+    write(command.c_str());
+    //std::stringstream error;
+    //error << "setOverVoltageProtection: command not implemented for Keithley 2410 aborting ...";
+    //throw std::runtime_error(error.str());
 }
 
 /*!
@@ -352,6 +359,7 @@ float KeithleyChannel::getSetVoltage(void)
     float             result;
     std::string const answer = fConnection->read(":source:voltage?");
     sscanf(answer.c_str(), "%f", &result);
+    std::cout << "Getting voltage" << result << std::endl; 
     return result;
 }
 
@@ -371,6 +379,7 @@ float KeithleyChannel::getCurrent(void)
         std::string const answer = fConnection->read(":meas:curr?");
         // answer             = fConnection->read(":meas:curr?");
         sscanf(answer.c_str(), "%f", &result);
+        std::cout << "Getting current" << result << std::endl; 
     }
     return result;
 }
