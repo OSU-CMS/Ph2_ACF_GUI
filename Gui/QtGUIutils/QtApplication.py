@@ -829,6 +829,7 @@ class QtApplication(QWidget):
 		self.MainOption.setDisabled(False)
 
 	def destroyMain(self):
+		self.expertMode = False
 		self.FirmwareStatus.deleteLater()
 		self.UseDefaultGroup.deleteLater()
 		self.HVPowerGroup.deleteLater()

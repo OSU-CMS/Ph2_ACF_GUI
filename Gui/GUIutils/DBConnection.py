@@ -14,7 +14,6 @@ import os
 from itertools import compress
 
 from subprocess import Popen, PIPE
-from Gui.GUIutils.ErrorWindow import *
 from PyQt5.QtWidgets import (QMessageBox)
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import *
