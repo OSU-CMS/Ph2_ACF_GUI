@@ -26,7 +26,7 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 				for module in ExpectedModuleList:
 					Grade[module] = {0 : -1.0}
 					PassModule[module] = {0: False}
-					figureList = []
+					figureList = {}
 		except Exception as err:
 			print("Failed to get the score: {}".format(repr(err)))
 			
@@ -45,7 +45,7 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 				for module in ExpectedModuleList:
 					Grade[module] = {0 : -1.0}
 					PassModule[module] = {0: False}
-					figureList = []
+					figureList = {}
 		except Exception as err:
 			print("Failed to get the fake score: {}".format(repr(err)))
 
