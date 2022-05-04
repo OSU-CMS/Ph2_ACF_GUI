@@ -124,6 +124,7 @@ class PowerSupply():
 
 	def setInstrument(self,resourceName):
 		if self.UsingPythonInterface == True:
+			self.sethwInterfaceParser()
 			try:
 				if resourceName in self.deviceMap.keys():
 					self.Instrument = self.ResourcesManager.open_resource("{}".format(resourceName))
@@ -134,7 +135,7 @@ class PowerSupply():
 					self.Instrument = self.ResourcesManager.open_resource("{}".format(resourceName))
 				self.Instrument.read_termination=PowerSupplyModel_Termination[self.Model]
 				self.Instrument.write_termination=PowerSupplyModel_Termination[self.Model]
-				self.sethwInterfaceParser()
+
 			except Exception as err:
 				logger.error("Failed to open resource {0}: {1}".format(resourceName,err))
 
@@ -205,7 +206,7 @@ class PowerSupply():
 	def TurnOn(self):
 		self.setCompCurrent()
 		if self.UsingPythonInterface == True:
-			#try:
+			try:
 				self.hwInterface.InitialDevice(self.Instrument)
 				Voltage = 0.0
 				VoltProtection = 1.0
@@ -222,8 +223,8 @@ class PowerSupply():
 				self.hwInterface.SetVoltage(self.Instrument, voltage = Voltage, VoltProtection = VoltProtection)
 				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.TurnOn(self.Instrument)
-			#except Exception as err:
-			#	logging.error("Failed to turn on the sourceMeter:{}".format(err))
+			except Exception as err:
+				logging.error("Failed to turn on the sourceMeter:{}".format(err))
 		else:
 			try:
 				self.Answer = None
