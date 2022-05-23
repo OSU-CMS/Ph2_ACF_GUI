@@ -665,11 +665,12 @@ class QtApplication(QWidget):
 			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
 
-		self.PeltiaControlButton = QPushButton("Peltia Control")
+		self.PeltiaControlButton = QPushButton("&Peltia Control")
 		self.PeltiaControlButton.setMinimumWidth(kMinimumWidth)
 		self.PeltiaControlButton.setMaximumWidth(kMaximumWidth)
 		self.PeltiaControlButton.setMinimumHeight(kMinimumHeight)
 		self.PeltiaControlButton.setMaximumHeight(kMaximumHeight)
+		self.PeltiaControlButton.clicked.connect(self.Peltia)
 		self.PeltiaLabel = QLabel("Peltia Control")
 		
 
@@ -890,6 +891,10 @@ class QtApplication(QWidget):
 
 	def openReviewWindow(self):
 		self.ReviewWindow =  QtModuleReviewWindow(self)
+	
+	def Peltia(self):
+		self.PeltiaWindow = Peltia(self.dimension)
+		self.PeltiaWindow.MainWindow.show()
 
 	def openModuleReviewWindow(self):
 		Module_ID = self.ReviewModuleEdit.text()

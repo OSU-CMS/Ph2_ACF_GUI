@@ -12,7 +12,12 @@ from cgi import test
 from PyQt5 import QtCore, QtGui, QtWidgets 
 from PyQt5.QtWidgets import QWidget
 
-class Ui_MainWindow(QWidget):
+class Peltia(QWidget):
+    def __init__(self, dimension):
+        super(Peltia, self).__init__()
+        self.MainWindow = QtWidgets.QMainWindow()
+        self.setupUi(self.MainWindow)
+
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(532, 361)
@@ -89,7 +94,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Ui_MainWindow()
+    ui = Peltia()
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())
