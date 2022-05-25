@@ -127,5 +127,5 @@ class PeltierController:
 
 if __name__ == "__main__":
     # If your port and/or baud rate are different change these parameters
-    pelt = PeltierController("com4",9600)
+    pelt = PeltierController(peltierPort,peltierBaud)
 
