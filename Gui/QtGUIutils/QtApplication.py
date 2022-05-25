@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit, QHBoxLayout,
-		QVBoxLayout, QWidget, QMainWindow, QMessageBox)
+		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QScrollArea)
 
 #from guidarktheme.widget_template import DarkPalette
 
@@ -24,16 +24,18 @@ from Gui.QtGUIutils.QtProductionTestWindow import *
 from Gui.QtGUIutils.QtModuleReviewWindow import *
 from Gui.QtGUIutils.QtDBConsoleWindow import *
 from Gui.QtGUIutils.QtuDTCDialog import *
+from Gui.QtGUIutils.PeltiaCoolingApp import *
 from Gui.python.Firmware import *
 from Gui.python.ArduinoWidget import *
 from Gui.QtGUIutils.QtRunWindow import *
 from Gui.python.SimplifiedMainWidget import *
 
+# The main widget class that you have to setup if you want a widget
 class QtApplication(QWidget):
-	globalStop = pyqtSignal()
+	globalStop = pyqtSignal() # A signal than can trigger another function
 	def __init__(self, dimension):
 		super(QtApplication,self).__init__()
-		self.mainLayout = QGridLayout()
+		self.mainLayout = QGridLayout() # Sets the layout of the widget on a grid
 		self.setLayout(self.mainLayout)
 		self.ProcessingTest = False
 		self.expertMode = False
@@ -50,15 +52,14 @@ class QtApplication(QWidget):
 		self.HVpowersupply = PowerSupply(powertype = "HV",serverIndex = 0)
 		self.LVpowersupply = PowerSupply(powertype = "LV",serverIndex = 1)
 		self.PowerRemoteControl = {"HV":True, "LV": True}
-
 		self.setLoginUI()
 		self.initLog()
 		self.createLogin()
-
+	# Just sets up the look of the login screen 
 	def setLoginUI(self):
 		self.setGeometry(300, 300, 400, 500)  
 		self.setWindowTitle('Phase2 Pixel Module Test GUI')
-
+		# This never runs
 		if False and sys.platform.startswith("darwin"):
 			QApplication.setStyle(QStyleFactory.create('macintosh'))
 			QApplication.setPalette(QApplication.style().standardPalette())
@@ -97,7 +98,7 @@ class QtApplication(QWidget):
 		else:
 			print("This GUI supports Win/Linux/MacOS only")
 		self.show()
-
+	# Creates the Log files
 	def initLog(self):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
 			LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),firmwareName)
@@ -457,12 +458,13 @@ class QtApplication(QWidget):
 	###############################################################
 	##  Main page and related functions
 	###############################################################
-	
+	# The main window that you see after logging in
+	# TODO Create tab that will show the readings
 	def createMain(self):
 		statusString, colorString = checkDBConnection(self.connection)
 		self.FirmwareStatus = QGroupBox("Hello,{}!".format(self.TryUsername))
 		self.FirmwareStatus.setDisabled(True)
-		
+		# Gives status of connection to the database
 		DBStatusLabel = QLabel()
 		DBStatusLabel.setText("Database connection:")
 		DBStatusValue = QLabel()
@@ -473,7 +475,6 @@ class QtApplication(QWidget):
 		self.StatusList = []
 		self.StatusList.append([DBStatusLabel, DBStatusValue])
 		
-
 		try:
 			for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
 				FwNameLabel = QLabel()
@@ -664,6 +665,15 @@ class QtApplication(QWidget):
 			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
 
+		self.PeltiaControlButton = QPushButton("&Peltia Control")
+		self.PeltiaControlButton.setMinimumWidth(kMinimumWidth)
+		self.PeltiaControlButton.setMaximumWidth(kMaximumWidth)
+		self.PeltiaControlButton.setMinimumHeight(kMinimumHeight)
+		self.PeltiaControlButton.setMaximumHeight(kMaximumHeight)
+		self.PeltiaControlButton.clicked.connect(self.Peltia)
+		self.PeltiaLabel = QLabel("Peltia Control")
+		
+
 		self.NewProductionTestButton = QPushButton("&Production Test")
 		self.NewProductionTestButton.setMinimumWidth(kMinimumWidth)
 		self.NewProductionTestButton.setMaximumWidth(kMaximumWidth)
@@ -690,17 +700,21 @@ class QtApplication(QWidget):
 		self.ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
 		self.ReviewModuleEdit.setPlaceholderText('Enter Module ID')
 
+		
+		
 		layout = QGridLayout()
-		layout.addWidget(self.NewTestButton,0, 0, 1, 1)
-		layout.addWidget(NewTestLabel, 0, 1, 1, 2)
-		layout.addWidget(self.NewProductionTestButton,1, 0, 1, 1)
-		layout.addWidget(NewProductionTestLabel, 1, 1, 1, 2)
-		layout.addWidget(self.SummaryButton,2, 0, 1, 1)
-		layout.addWidget(SummaryLabel, 2, 1, 1, 2)
-		layout.addWidget(self.ReviewButton, 3, 0, 1, 1)
-		layout.addWidget(ReviewLabel,  3, 1, 1, 2)
-		layout.addWidget(self.ReviewModuleButton,4, 0, 1, 1)
-		layout.addWidget(self.ReviewModuleEdit,  4, 1, 1, 2)
+		layout.addWidget(self.PeltiaControlButton,0,0,1,1)
+		layout.addWidget(self.PeltiaLabel, 0,1,1,2)
+		layout.addWidget(self.NewTestButton,1, 0, 1, 1)
+		layout.addWidget(NewTestLabel, 1, 1, 1, 2)
+		layout.addWidget(self.NewProductionTestButton,2, 0, 1, 1)
+		layout.addWidget(NewProductionTestLabel, 2, 1, 1, 2)
+		layout.addWidget(self.SummaryButton,3, 0, 1, 1)
+		layout.addWidget(SummaryLabel, 3, 1, 1, 2)
+		layout.addWidget(self.ReviewButton, 4, 0, 1, 1)
+		layout.addWidget(ReviewLabel,  4, 1, 1, 2)
+		layout.addWidget(self.ReviewModuleButton,6, 0, 1, 1)
+		layout.addWidget(self.ReviewModuleEdit,  6, 1, 1, 1)
 
 
 		####################################################
@@ -757,6 +771,8 @@ class QtApplication(QWidget):
 		self.LogoutButton.clicked.connect(self.createLogin)
 
 		self.ExitButton = QPushButton("&Exit")
+
+		
 		# Fixme: more conditions to be added
 		if self.ProcessingTest:
 			self.ExitButton.setDisabled(True)
@@ -777,7 +793,7 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.LVPowerGroup)
 		self.mainLayout.addWidget(self.LVPowerRemoteControl)
 		self.mainLayout.addWidget(self.ArduinoGroup)
-		self.mainLayout.addWidget(self.ArduinoControl)
+		self.mainLayout.addWidget(self.ArduinoControl)		
 		self.mainLayout.addWidget(self.MainOption)
 		self.mainLayout.addWidget(self.AppOption)
 
@@ -811,7 +827,6 @@ class QtApplication(QWidget):
 			self.frozeLVPowerPanel()
 			self.ArduinoGroup.setBaudRate(defaultSensorBaudRate)
 			self.ArduinoGroup.frozeArduinoPanel()
-
 
 
 	def reCreateMain(self):
@@ -876,6 +891,10 @@ class QtApplication(QWidget):
 
 	def openReviewWindow(self):
 		self.ReviewWindow =  QtModuleReviewWindow(self)
+	
+	def Peltia(self):
+		self.PeltiaWindow = Peltia(self.dimension)
+		self.PeltiaWindow.MainWindow.show()
 
 	def openModuleReviewWindow(self):
 		Module_ID = self.ReviewModuleEdit.text()
@@ -1127,4 +1146,26 @@ class QtApplication(QWidget):
 			event.ignore()
 
 
+# This extra class is being setup so that QtApplication is scrollable
+class MainWindow(QMainWindow):
+	def __init__(self, dimension):
+		super().__init__()
+		self.dimension = dimension
+		self.initUI()
+		self.setGeometry(300, 300, 400, 500)
+	def initUI(self):
+		self.scroll = QScrollArea()
+		self.widget = QtApplication(self.dimension)
+		
+
+		# Properties of Scroll Area
+		self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+		self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+		self.scroll.setWidgetResizable(True)
+		self.scroll.setWidget(self.widget)
+		self.setCentralWidget(self.scroll)
+		self.show()
+		return
+
+		
 		
