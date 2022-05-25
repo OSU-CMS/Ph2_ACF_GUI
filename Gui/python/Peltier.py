@@ -1,4 +1,5 @@
 import serial
+from Gui.GUIutils.settings import *
 
 class PeltierController:
     def __init__(self, port, baud, timeout=1):
@@ -20,6 +21,11 @@ class PeltierController:
         #self.ser = serial.Serial(port, baud, timeout=1)
 
         #self.setupConnection()
+    def readTemperature(self):
+        message = self.recieveMessage
+        message = message[1:9]
+
+
 
     # Used to create the message that will set the "desire control setting"
     def setTemperature(self, temp):
