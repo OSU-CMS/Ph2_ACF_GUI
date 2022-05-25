@@ -24,6 +24,8 @@ class PeltierController:
     def readTemperature(self):
         message = self.recieveMessage
         message = message[1:9]
+        message = "".join(message) # Converts the list of digits to single string
+        return int(message,16)/100
 
 
 
