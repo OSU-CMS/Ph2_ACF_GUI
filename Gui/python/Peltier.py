@@ -21,18 +21,17 @@ class PeltierController:
                             } 
         self.buffer = [0,0,0,0,0,0,0,0,0,0,0,0] # Used to read the messages from peltier
         
-        #self.ser = serial.Serial(port, baud, timeout=1) # Setting up the connection to peltier
+        self.ser = serial.Serial(port, baud, timeout=1) # Setting up the connection to peltier
 
-        #self.setupConnection()
+        self.setupConnection()
     
     def readTemperature(self):
         command = ['*','0','0','0','1','0','0','0','0','0','0','0','0','4','1','\r']
-        #self.sendCommand(command)
-        #message = self.recieveMessage
-        #message = message[1:9]
-        #message = "".join(message) # Converts the list of digits to single string
-        message = '3e8' 
-        return int(message,16)/100 * random.random()
+        self.sendCommand(command)
+        message = self.recieveMessage
+        message = message[1:9]
+        message = "".join(message) # Converts the list of digits to single string 
+        return int(message,16)/100 
 
 
 
@@ -55,8 +54,8 @@ class PeltierController:
             value[-(i+1)] = temp[-(i+1)]
         ss = self.checksum(aa + cc + value)
         message = stx + aa + cc + value + ss + etx
-        print(message)
-        return(message)
+        self.sendCommand(message)
+        print(f"Set temp to {temp}")
 
     # Finds the twos compliment necessary for negative temperatures
     def twosCompliment(self, num):

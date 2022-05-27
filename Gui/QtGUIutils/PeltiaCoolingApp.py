@@ -94,7 +94,7 @@ class Peltia(QWidget):
         self.currentTempLabel.setText(_translate("MainWindow", "Current Temp"))
 
     def setTemp(self):
-        print(self.setTempInput.value() * 40)
+        self.pelt.setTemperature(self.setTempInput.value())
         # Send temperature reading to device
     
     def getTemp(self):
