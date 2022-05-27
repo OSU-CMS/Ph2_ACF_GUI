@@ -25,7 +25,7 @@ class PeltierController:
 
         #self.setupConnection()
     
-    def readTemperature(self, message):
+    def readTemperature(self):
         command = ['*','0','0','0','1','0','0','0','0','0','0','0','0','4','1','\r']
         #self.sendCommand(command)
         #message = self.recieveMessage
