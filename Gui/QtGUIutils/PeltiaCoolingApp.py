@@ -12,7 +12,6 @@ from cgi import test
 from PyQt5 import QtCore, QtGui, QtWidgets 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import QTimer
-import random
 from Gui.python.Peltier import PeltierController
 
 class Peltia(QWidget):
@@ -30,7 +29,7 @@ class Peltia(QWidget):
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(532, 361)
+        MainWindow.resize(400, 300)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self.centralwidget)
@@ -38,21 +37,18 @@ class Peltia(QWidget):
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
-        self.gridLayout.addWidget(self.lcdNumber, 4, 1, 1, 1)
         self.currentTempDisplay = QtWidgets.QLCDNumber(self.centralwidget)
         self.currentTempDisplay.setObjectName("currentTempDisplay")
-        self.gridLayout.addWidget(self.currentTempDisplay, 4, 0, 1, 1)
-        self.gridLayout.addWidget(self.currentHumidityLabel, 5, 0, 1, 1)
+        self.gridLayout.addWidget(self.currentTempDisplay, 3, 0, 1, 1)
         self.setTempButton = QtWidgets.QPushButton(self.centralwidget)
         self.setTempButton.setObjectName("setTempButton")
         self.gridLayout.addWidget(self.setTempButton, 1, 1, 1, 1)
         self.setTempInput = QtWidgets.QDoubleSpinBox(self.centralwidget)
         self.setTempInput.setObjectName("setTempInput")
         self.gridLayout.addWidget(self.setTempInput, 1, 0, 1, 1)
-        self.gridLayout.addWidget(self.currentVoltageLabel, 2, 0, 1, 1)
         self.currentTempLabel = QtWidgets.QLabel(self.centralwidget)
         self.currentTempLabel.setObjectName("currentTempLabel")
-        self.gridLayout.addWidget(self.currentTempLabel, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.currentTempLabel, 2, 0, 1, 1)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 532, 22))
