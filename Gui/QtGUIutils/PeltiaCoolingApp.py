@@ -11,12 +11,22 @@
 from cgi import test
 from PyQt5 import QtCore, QtGui, QtWidgets 
 from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import QTimer
+import random
+from Gui.python.Peltier import PeltierController
 
 class Peltia(QWidget):
     def __init__(self, dimension):
         super(Peltia, self).__init__()
         self.MainWindow = QtWidgets.QMainWindow()
+        
+        self.pelt = PeltierController('com4',9600)
+        #Create a timer that sends out a signal at regular intervals
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.showTemp)
+
         self.setupUi(self.MainWindow)
+        self.timer.start(1000) # Send the timer signal every 1000ms
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
@@ -87,6 +97,13 @@ class Peltia(QWidget):
         print(self.setTempInput.value() * 40)
         # Send temperature reading to device
     
+    def getTemp(self):
+        return self.pelt.readTemperature()
+
+    def showTemp(self):
+        temp = self.getTemp()
+        self.currentTempDisplay.display(temp)
+        
     
 
 
@@ -94,7 +111,7 @@ if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
     MainWindow = QtWidgets.QMainWindow()
-    ui = Peltia()
+    ui = Peltia(500)
     ui.setupUi(MainWindow)
     MainWindow.show()
     sys.exit(app.exec_())

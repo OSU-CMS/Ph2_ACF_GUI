@@ -10,7 +10,7 @@
 
 from cgi import test
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from ArduinoWidget.py import *
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -78,6 +78,7 @@ class Ui_MainWindow(object):
         self.currentVoltageLabel.setText(_translate("MainWindow", "Voltage"))
         self.currentTempLabel.setText(_translate("MainWindow", "Current Temp"))
 
+    
     def test(self):
         print('test')
     def setTemp(self):

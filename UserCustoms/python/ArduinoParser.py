@@ -12,7 +12,8 @@ def ArduinoParser(text):
 ProbeMapOSU = {
     'DHT11': "Humidity",
     'MAX31850': "Temperature(single wire)",
-    'MAX31865': "Temperature(triple wire)"
+    'MAX31865': "Temperature(triple wire)",
+    # TODO Add probes that I will need here
 }
 ThresholdMapOSU = {
     'DHT11': [0,60],
@@ -26,7 +27,7 @@ def ArduinoParserCustomOSU(text):
     ProbeReads = []
 
     for index,value in enumerate(values):
-        value = value.rstrip(":") 
+        value = value.rstrip(":") # Removes the ending colon
         if value in ProbeMapOSU.keys() and 'Temperature' not in values[index-1]:
             readValue[value] = float(values[index+1])
 

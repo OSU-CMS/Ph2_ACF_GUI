@@ -1,5 +1,6 @@
 import serial
 from Gui.GUIutils.settings import *
+import random
 
 class PeltierController:
     def __init__(self, port, baud, timeout=1):
@@ -16,16 +17,22 @@ class PeltierController:
                             'Proportional Bandwidth Write': ['1','d'],
                             'Proportional Bandwidth Read' : ['5','1'],
                             'Choose Temperature Units Write':['3','2'],
-                            'Choose Temperature Units Read' : ['4','b']} 
+                            'Choose Temperature Units Read' : ['4','b'],
+                            } 
         self.buffer = [0,0,0,0,0,0,0,0,0,0,0,0] # Used to read the messages from peltier
-        #self.ser = serial.Serial(port, baud, timeout=1)
+        
+        #self.ser = serial.Serial(port, baud, timeout=1) # Setting up the connection to peltier
 
         #self.setupConnection()
-    def readTemperature(self):
-        message = self.recieveMessage
-        message = message[1:9]
-        message = "".join(message) # Converts the list of digits to single string
-        return int(message,16)/100
+    
+    def readTemperature(self, message):
+        command = ['*','0','0','0','1','0','0','0','0','0','0','0','0','4','1','\r']
+        #self.sendCommand(command)
+        #message = self.recieveMessage
+        #message = message[1:9]
+        #message = "".join(message) # Converts the list of digits to single string
+        message = '3e8' 
+        return int(message,16)/100 * random.random()
 
 
 
@@ -48,6 +55,7 @@ class PeltierController:
             value[-(i+1)] = temp[-(i+1)]
         ss = self.checksum(aa + cc + value)
         message = stx + aa + cc + value + ss + etx
+        print(message)
         return(message)
 
     # Finds the twos compliment necessary for negative temperatures
@@ -68,13 +76,13 @@ class PeltierController:
             ser.write(bit)
         for i, bit in enumerate(buff):
             buff[i] = ser.read(1)
-        if buff == ['*','0','0','0','0','0','0','0','0','8','0','\r']:
+        if buff == ['*','0','0','0','0','0','0','0','0','8','0','^']:
             print('Complete')
         else:
             print('Error')
         self.buffer_reset()    
         return buff
-
+    
     def convertToHex(self,val):
         if type(val) != list:
             return hex(val) 
@@ -99,12 +107,12 @@ class PeltierController:
         
         return [total[-2], total[-1]]
 
-# Used for all other commands that are not setTemp 
-    def createCommand(self, command):
+# Used for all other commands that are not setTemp
+# Currently you need to format dd yourself which is the input value you want to send 
+    def createCommand(self, command, dd):
         stx = ['*']
         aa = ['0','0']
         cc = self.commandDict[command]
-        dd = ['0','0','0','0','0','3','e','8']
         check = aa + cc + dd
         ss = self.checksum(aa + cc + dd)
         etx = ['/r']
@@ -113,19 +121,12 @@ class PeltierController:
     def sendCommand(self, command):
         for bit in command:
             self.ser.write(bit)
-        self.ser.close()
     
     def recieveMessage(self):
         buff = self.buffer.copy()
         for i in range(len(buff)):
             buff[i] = self.ser.read(1)
         return buff
-
-    #def translateMessage(self, message):
-
-    
-    #def checkConnection(self):
-
 
 if __name__ == "__main__":
     # If your port and/or baud rate are different change these parameters
