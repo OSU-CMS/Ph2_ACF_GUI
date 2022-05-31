@@ -211,15 +211,16 @@ class PowerSupply():
 				Voltage = 0.0
 				VoltProtection = 1.0
 				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
-					Voltage = 1.28
+					Voltage = defaultVoltageMap[self.PoweringMode]
 					VoltProtection = 1.3
 				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
-					Voltage = 1.78
-					VoltProtection = 1.8
+					Voltage = defaultVoltageMap[self.PoweringMode]
+					VoltProtection = 1.85
 				if self.PowerType == "LV":
 					logging.info("Setting LV to {}".format(Voltage))
 					#self.Instrument.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
 					#self.Instrument.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(Voltage))
+				#self.hwInterface.SetCurrent(self.Instrument, 10)
 				self.hwInterface.SetVoltage(self.Instrument, voltage = Voltage, VoltProtection = VoltProtection)
 				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.TurnOn(self.Instrument)
@@ -227,16 +228,18 @@ class PowerSupply():
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
 		else:
 			try:
+				self.InitialDevice()
+				time.sleep(1)
 				self.Answer = None
 				nTry = 0
 				Voltage = 0.0
 				VoltProtection = 1.0
 				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
-					Voltage = 1.18
-					VoltProtection = 1.2
+					Voltage = 1.28
+					VoltProtection = 1.3
 				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
-					Voltage = 1.78
-					VoltProtection = 1.8
+					Voltage = 1.8
+					VoltProtection = 1.85
 				# Setting Voltage
 				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(Voltage)
 				self.hwInterface.executeCommand(cmd)
@@ -260,6 +263,34 @@ class PowerSupply():
 			except Exception as err:
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
 				return None
+
+	# TurnOnLV is only used for SLDO Scan
+	def TurnOnLV(self):
+		if self.UsingPythonInterface == True:
+			try:
+				self.hwInterface.TurnOn(self.Instrument)
+			except Exception as err:
+				logging.error("Failed to turn on the sourceMeter:{}".format(err))
+		else:
+			try:
+				cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+				self.hwInterface.executeCommand(cmd)
+			except Exception as err:
+				logging.error("Failed to turn on the sourceMeter via TCP:{}".format(err))
+
+
+	def InitialDevice(self):
+		if self.UsingPythonInterface == True:
+			try:
+				self.hwInterface.InitialDevice(self.Instrument)
+			except Exception as err:
+				logging.error("Failed to initial the device:{}".format(err))
+		else:
+			try:
+				cmd = "Initialize,PowerSupplyId:" + self.ID + ",PowerSupplyType:" +self.Model.split()[0]
+				self.hwInterface.executeCommand(cmd)
+			except Exception as err:
+				logging.error("Failed to initial the device through TCP:{}".format(err))
 
 
 	def TurnOff(self):
@@ -291,25 +322,66 @@ class PowerSupply():
 				while self.Answer == None and nTry < self.maxTries:
 					time.sleep(0.1)
 					nTry += 1
-				return float(self.Answer)
+					self.hwInterface.executeCommand(cmd)
+				if self.Answer != None:
+					return float(self.Answer)
+				else:
+					return -1
 			except Exception as err:
 				logging.error("Failed to retrive voltage")
 
 	def SetVoltage(self, voltage = 0.0):
-		if self.powertype == "HV":
+		if self.PowerType == "HV":
 			return
 
 		if self.UsingPythonInterface ==  True:
 			try:
-				pass
+				self.hwInterface.SetVoltage(self.Instrument,voltage)
 			except Exception as err:
-				logging.err("Failed to set {} voltage to {}".format(self.powertype, voltage))
+				logging.err("Failed to set {} voltage to {}".format(self.PowerType, voltage))
 		else:
 			try:
-				pass
+				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltage)
+				self.hwInterface.executeCommand(cmd)
+				readBack = self.ReadVoltage()
+				if abs(readBack - voltage) > 0.05:
+					logging.warning("Inconsistence detected between target voltage and measured voltage")
 			except Exception as err:
-				logging.err("Failed to set {} voltage to {}".format(self.powertype, voltage))
+				logging.err("Failed to set {} voltage to {}".format(self.PowerType, voltage))
 
+	def SetRange(self, voltRange):
+		if not self.isLV():
+			logging.info("Try to setVoltage for non-LV power supply")
+			return
+
+		if self.UsingPythonInterface == True:
+			try:
+				self.hwInterface.SetVoltageProtection(self.Instrument,voltRange)
+			except Exception as err:
+				logging.error("Failed to set range for the sourceMeter:{}".format(err))
+				return None
+		else:
+			cmd = "setOverVoltageProtection,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltRange)
+			self.hwInterface.executeCommand(cmd)
+
+	def SetCurrent(self, current = 0.0):
+		if self.PowerType == "HV":
+			return
+
+		if self.UsingPythonInterface ==  True:
+			try:
+				self.hwInterface.SetCurrent(self.Instrument,current)
+			except Exception as err:
+				logging.error("Failed to set {} current to {}".format(self.PowerType, current))
+		else:
+			try:
+				cmd = "SetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltage)
+				self.hwInterface.executeCommand(cmd)
+				readBack = self.ReadCurrent()
+				if abs(readBack - current) > 0.05:
+					logging.warning("Inconsistence detected between target voltage and measured voltage")
+			except Exception as err:
+				logging.error("Failed to set {} current to {}".format(self.PowerType, current))
 
 	def ReadCurrent(self):
 		if self.UsingPythonInterface == True:
@@ -322,12 +394,17 @@ class PowerSupply():
 			try:
 				self.Answer = None
 				nTry = 0
-				cmd = "GetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+				cmd = "GetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front"
 				self.hwInterface.executeCommand(cmd)
 				while self.Answer == None and nTry < self.maxTries:
 					time.sleep(0.1)
 					nTry += 1
-				return float(self.Answer)
+					self.hwInterface.executeCommand(cmd)
+
+				if self.Answer != None:
+					return float(self.Answer)
+				else:
+					return -1
 			except Exception as err:
 				logging.error("Failed to retrive current")
 	
@@ -409,6 +486,38 @@ class PowerSupply():
 		if "Keith" in self.Model:
 			cmd = "K2410:" + cmd
 		return cmd
+
+	def Status(self):
+		if not "KeySight" in self.Model:
+			return -1
+		
+		if self.UsingPythonInterface == True:
+			try:
+				reply = self.hwInterface.Status(self.Instrument)
+				return 1
+			except Exception as err:
+				logging.error("Failed to get the status code:{}".format(err))
+				return None
+		else:
+			# Setting current compliance
+			cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(compliance)
+			self.hwInterface.executeCommand(cmd)
+			#return self.Answer
+			return 1
+
+	def Reset(self):
+		if not "KeySight" in self.Model:
+			return -1
+		if self.UsingPythonInterface == True:
+			try:
+				reply = self.hwInterface.Reset(self.Instrument)
+				return 1
+			except Exception as err:
+				logging.error("Failed to get the status code:{}".format(err))
+				return None
+		else:
+			pass
+			return 1
 
 if __name__ == "__main__":
 	power = PowerSupply(powertype = "LV")

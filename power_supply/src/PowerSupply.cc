@@ -146,3 +146,9 @@ std::string PowerSupply::getPowerType(void) const { return fPowerType; }
 ************************************************
 */
 std::string PowerSupply::getInfo(){ return "emmm";}
+
+/*!
+************************************************
+************************************************
+*/
+void PowerSupply::setRemote(){ ; }

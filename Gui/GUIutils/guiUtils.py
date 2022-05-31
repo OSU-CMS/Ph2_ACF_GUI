@@ -170,7 +170,8 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 				if 'Vthreshold_LIN' in Node.attrib:
 					RD53Node = Node.getparent()
 					HyBridNode = RD53Node.getparent()
-					chipKeyName ="{0}/{1}".format(HyBridNode.attrib["Id"],RD53Node.attrib["Lane"])
+					## Potential Change: please check if it is [HyBrid ID/RD53 ID] or [HyBrid ID/RD53 Lane]
+					chipKeyName ="{0}/{1}".format(HyBridNode.attrib["Id"],RD53Node.attrib["Id"])
 					print('chipKeyName is {0}'.format(chipKeyName))
 					if len(updatedXMLValues[chipKeyName]) > 0:
 						for key in updatedXMLValues[chipKeyName].keys():

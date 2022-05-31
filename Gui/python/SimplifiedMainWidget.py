@@ -316,7 +316,7 @@ class SimplifiedMainWidget(QWidget):
 
 		self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
 		if self.FwModule.getModuleByIndex(0) == None:
-			QMessageBox.information(None,"Error","No valid Module found!", QMessageBox.Ok)
+			QMessageBox.information(None,"Error","No valid Module found!  If manually entering module number be sure to press 'Enter' on keyboard.", QMessageBox.Ok)
 			return
 		if self.ProductionButton.isChecked():
 			self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "AllScan"]

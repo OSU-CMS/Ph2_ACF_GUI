@@ -47,8 +47,8 @@ class QtApplication(QWidget):
 		self.LogList = {}
 		self.PYTHON_VERSION = str(sys.version).split(" ")[0]
 		self.dimension = dimension
-		self.HVpowersupply = PowerSupply(powertype = "HV",serverIndex = 0)
-		self.LVpowersupply = PowerSupply(powertype = "LV",serverIndex = 1)
+		self.HVpowersupply = PowerSupply(powertype = "HV",serverIndex = 1)
+		self.LVpowersupply = PowerSupply(powertype = "LV",serverIndex = 2)
 		self.PowerRemoteControl = {"HV":True, "LV": True}
 
 		self.setLoginUI()
@@ -852,7 +852,7 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.AppOption)
 
 	def openNewProductionTest(self):
-		self.ProdTestPage = QtProductionTestWindow(self, self.HVpowersupply)
+		self.ProdTestPage = QtProductionTestWindow(self, HV= self.HVpowersupply, LV = self.LVpowersupply)
 		self.ProdTestPage.close.connect(self.releaseProdTestButton)
 		self.NewProductionTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)

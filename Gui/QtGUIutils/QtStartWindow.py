@@ -35,7 +35,7 @@ class SummaryBox(QWidget):
 		self.setLayout(self.mainLayout)
 	
 	def initResult(self):
-		for i in range(BoxSize[self.module.getType()]):
+		for i in ModuleLaneMap[self.module.getType()].keys():
 			self.verboseResult[i] = {}
 			self.chipSwitches[i] = True
 

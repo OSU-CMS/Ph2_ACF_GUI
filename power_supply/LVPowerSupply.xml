@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <Devices>
-  <PowerSupply BaudRate="9600" Connection="Serial" FlowControl="false" ID="LVKeySight" InUse="Yes" Model="KeySight" Parity="false" Port="/dev/ttyUSB0" RemoveEcho="false" Suffix="CRLF" Terminator="CRLF" Timeout="1">
+  <PowerSupply BaudRate="9600" Connection="Serial" FlowControl="false" ID="LVKeySight" InUse="Yes" Model="KeySight" Parity="false" Port="/dev/ttyUSBLV" RemoveEcho="false" Suffix="CRLF" Terminator="CRLF" Timeout="1">
     <Channel Channel="FRON" ID="Front" InUse="Yes"/>
   </PowerSupply>
 </Devices>

@@ -22,6 +22,13 @@ std::string PowerSupplyInterface::interpretMessage(const std::string& buffer)
     if(buffer.find("Initialize") != std::string::npos) // Changing the status changes the mode in
                                // threadMain (BBC) function
     {
+        std::string powerSupplyType = getVariableValue("PowerSupplyType", buffer);
+        if (powerSupplyType.find("KeySight"))
+        {
+            std::string powerSupplyId = getVariableValue("PowerSupplyId", buffer);
+            auto        powersupply   = fHandler.getPowerSupply(powerSupplyId);
+            powersupply->setRemote();
+        }
         return "InitializeDone";
     }
     else if(buffer.find("Start") != std::string::npos) // Changing the status changes the
