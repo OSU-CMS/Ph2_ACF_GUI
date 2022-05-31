@@ -74,7 +74,7 @@ class QtModule():
 		if "chips" in kwargs.keys():
 			pass
 			return
-		for i in range(BoxSize[self.__moduleType]):
+		for i in ModuleLaneMap[self.__moduleType].keys():
 			FEChip = QtChip()
 			#FEChip.setID(8)
 			LaneID = str(i)
@@ -108,7 +108,7 @@ class QtOpticalGroup():
 		if "module" in kwargs.keys():
 			pass
 			return
-		for i in range(BoxSize[self.__moduleType]):
+		for i in ModuleLaneMap[self.__moduleType].keys():
 			FEChip = QtChip()
 			#FEChip.setID(8)
 			FEChip.setID(i)

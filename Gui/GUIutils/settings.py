@@ -2,37 +2,8 @@
 
 import os
 from collections import defaultdict
+from Gui.siteSettings import *
 
-
-######################################################################
-# To be edited by expert as default setting for Hardware configuration
-######################################################################
-# default FC7 boardName
-defaultFC7 = "fc7.board.1"
-# default IP address of IP address
-defaultFC7IP = '192.168.1.80'
-# default fpga config
-defaultFPGAConfig = 'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
-# default FMC board number
-defaultFMC = '0'
-# default USB port for HV power supply
-defaultUSBPortHV = ["ASRL/dev/ttyUSB1::INSTR"]
-# default model for HV power supply
-defaultHVModel = ["Keithley 2410 (RS232)"]
-# default USB port for LV power supply
-defaultUSBPortLV = ["ASRL/dev/ttyUSB0::INSTR"]
-# default model for LV power supply
-defaultLVModel = ["KeySight E3633 (RS232)"]
-# default model for LV power supply
-defaultLVModel = ["KeySight E3633 (RS232)"]
-# default mode for LV powering (Direct,SLDO,etc)
-defaultPowerMode = "Direct"
-#default BaudRate for Arduino sensor
-defaultSensorBaudRate = 115200
-#default DBServerIP
-defaultDBServerIP = '127.0.0.1'
-#default DBName
-defaultDBName = 'SampleDB'
 #List of expert users
 ExpertUserList = [
 	'mjoyce',

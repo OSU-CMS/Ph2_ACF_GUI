@@ -24,20 +24,25 @@ from Gui.QtGUIutils.QtLoginDialog import *
 from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import *
 from Gui.python.IVCurveHandler import *
+from Gui.python.SLDOScanHandler import *
 
 class QtProductionTestWindow(QWidget):
 	resized = pyqtSignal()
 	close = pyqtSignal()
-	def __init__(self,master,powersupply = None):
+	def __init__(self,master,HV = None, LV= None):
 		super(QtProductionTestWindow,self).__init__()
 		self.master = master
-		self.powersupply = powersupply
+		self.hvpowersupply = HV
+		self.lvpowersupply = LV
 		self.master.globalStop.connect(self.urgentStop)
 		self.connection = self.master.connection
 
 		# Handlers
 		self.IVCurveHandler = None
 		self.IVCurveResult = None
+
+		self.SLDOScanHandler = None
+		self.SLDOScanResult = None
 
 		self.mainLayout = QGridLayout() # 10*10 segmentation
 		self.setLayout(self.mainLayout)
@@ -75,7 +80,7 @@ class QtProductionTestWindow(QWidget):
 		self.TestsBox.setMaximumWidth(300)
 		self.TestsLayout = QVBoxLayout()
 
-		# Add tests
+		# Add IVCurve
 		self.IVCurveGroupBox = QGroupBox()
 		self.IVCurveBox = QHBoxLayout()
 		self.IVCurveButtom = QPushButton("&I-V Curve")
@@ -87,6 +92,19 @@ class QtProductionTestWindow(QWidget):
 		self.IVCurveBox.addWidget(self.IVCurveAbortButtom)
 		self.IVCurveGroupBox.setLayout(self.IVCurveBox)
 		self.TestsLayout.addWidget(self.IVCurveGroupBox)
+
+		# Add SLDOScan
+		self.SLDOScanGroupBox = QGroupBox()
+		self.SLDOScanBox = QHBoxLayout()
+		self.SLDOScanButtom = QPushButton("&SLDO scan")
+		self.SLDOScanButtom.clicked.connect(self.startSLDOScan)
+		self.SLDOScanAbortButtom = QPushButton("&Abort")
+		self.SLDOScanAbortButtom.clicked.connect(self.abortSLDOScan)
+		self.SLDOScanAbortButtom.setDisabled(True)
+		self.SLDOScanBox.addWidget(self.SLDOScanButtom)
+		self.SLDOScanBox.addWidget(self.SLDOScanAbortButtom)
+		self.SLDOScanGroupBox.setLayout(self.SLDOScanBox)
+		self.TestsLayout.addWidget(self.SLDOScanGroupBox)
 
 		self.TestsLayout.addStretch(1)
 
@@ -128,7 +146,7 @@ class QtProductionTestWindow(QWidget):
 		self.IVCurveData = []
 		self.IVCurveResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)")
 		self.MainTabs.addTab(self.IVCurveResult,"I-V Curve")
-		self.IVCurveHandler = IVCurveHandler(self,self.powersupply)
+		self.IVCurveHandler = IVCurveHandler(self,self.hvpowersupply)
 		self.IVCurveHandler.finished.connect(self.IVCurveFinished)
 		self.IVCurveHandler.IVCurve()
 
@@ -142,6 +160,33 @@ class QtProductionTestWindow(QWidget):
 		self.IVCurveButtom.setDisabled(False)
 		self.IVCurveAbortButtom.setDisabled(True)
 
+	def startSLDOScan(self):
+		self.SLDOScanButtom.setDisabled(True)
+		self.SLDOScanAbortButtom.setDisabled(False)
+		# Clean existing tab
+		if self.SLDOScanResult:
+			index = self.MainTabs.indexOf(self.SLDOScanResult)
+			if index >= 0:
+				self.MainTabs.removeTab(index)
+
+		# Create tab and display result
+		self.SLDOScanData = []
+		self.SLDOScanResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)", sorted = False)
+		self.MainTabs.addTab(self.SLDOScanResult,"SLDO scan")
+		self.SLDOScanHandler = SLDOScanHandler(self,self.lvpowersupply)
+		self.SLDOScanHandler.finished.connect(self.SLDOScanFinished)
+		self.SLDOScanHandler.SLDOScan()
+
+	def abortSLDOScan(self):
+		if self.SLDOScanHandler:
+			self.SLDOScanHandler.stop()
+		self.SLDOScanButtom.setDisabled(False)
+		self.SLDOScanAbortButtom.setDisabled(True)
+	
+	def SLDOScanFinished(self):
+		self.SLDOScanButtom.setDisabled(False)
+		self.SLDOScanAbortButtom.setDisabled(True)
+
 	def updateMeasurement(self, measureType, measure):
 		print(measureType,measure)
 		if measureType == "IVCurve":
@@ -151,9 +196,20 @@ class QtProductionTestWindow(QWidget):
 			self.IVCurveResult.updatePlots(self.IVCurveData)
 			self.IVCurveResult.update()
 			index = self.MainTabs.indexOf(self.IVCurveResult)
-			self.MainTabs.removeTab(index)
+			self.MainTabs.clear()
 			self.MainTabs.addTab(self.IVCurveResult,"I-V Curve")
 			self.MainTabs.setCurrentWidget(self.IVCurveResult)
+
+		if measureType == "SLDOScan":
+			Voltage = measure["voltage"]
+			Current = measure["current"]
+			self.SLDOScanData.append([Voltage,Current])
+			self.SLDOScanResult.updatePlots(self.SLDOScanData)
+			self.SLDOScanResult.update()
+			index = self.MainTabs.indexOf(self.SLDOScanResult)
+			self.MainTabs.clear()
+			self.MainTabs.addTab(self.SLDOScanResult,"SLDO scan")
+			self.MainTabs.setCurrentWidget(self.SLDOScanResult)	
 
 	def closeTab(self, index):
 		self.MainTabs.removeTab(index)

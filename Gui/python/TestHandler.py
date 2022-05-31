@@ -29,6 +29,7 @@ from Gui.python.TestValidator import *
 from Gui.python.QResultDialog import *
 from Gui.python.ANSIColoringParser import *
 from Gui.python.IVCurveHandler import *
+from Gui.python.SLDOScanHandler import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 
 import logging
@@ -51,6 +52,10 @@ class TestHandler(QObject):
 		self.master = master
 		self.HVpowersupply = self.master.HVpowersupply
 		self.LVpowersupply = self.master.LVpowersupply
+		#self.LVpowersupply.Reset()
+		#self.LVpowersupply.InitialDevice()
+		#self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+		#self.LVpowersupply.TurnOn()
 		self.master.globalStop.connect(self.urgentStop)
 		self.runwindow = runwindow
 		self.firmware = firmware
@@ -61,6 +66,7 @@ class TestHandler(QObject):
 		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
 		self.RunNumber = "-1"
 		self.IVCurveHandler = None
+		self.SLDOScanHandler = None
 
 		self.processingFlag = False
 		self.ProgressBarList = []
@@ -116,8 +122,8 @@ class TestHandler(QObject):
 			moduleName = module.getModuleName()
 			moduleId = module.getModuleID()
 			moduleType = module.getModuleType()
-			for i in range(BoxSize[moduleType]):
-				self.rd53_file["{0}_{1}_{2}".format(moduleName,moduleId,i)] = None
+			for i in ModuleLaneMap[moduleType].keys():
+				self.rd53_file["{0}_{1}_{2}".format(moduleName,moduleId,ModuleLaneMap[moduleType][i])] = None
 			fwPath = "{0}_{1}_{2}".format(beboardId,ogId,moduleId)
 			self.ModuleMap[fwPath] = moduleName
 
@@ -257,6 +263,14 @@ class TestHandler(QObject):
 			self.IVCurveHandler.finished.connect(self.IVCurveFinished)
 			self.IVCurveHandler.IVCurve()
 			return
+
+		if testName == "SLDOScan":
+			self.SLDOScanData = []
+			self.SLDOScanResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)")
+			self.SLDOScanHandler = SLDOScanHandler(self,self.LVpowersupply)
+			self.SLDOScanHandler.finished.connect(self.SLDOScanFinished)
+			self.SLDOScanHandler.SLDOScan()
+			return
 			
 
 		self.starttime = None
@@ -318,6 +332,8 @@ class TestHandler(QObject):
 			self.starttime = None
 			if self.IVCurveHandler:
 				self.IVCurveHandler.stop()
+			if self.SLDOScanHandler:
+				self.SLDOScanHandler.stop()
 		else:
 			return
 
@@ -642,6 +658,7 @@ class TestHandler(QObject):
 		# manually validate the result
 		print(self.figurelist)
 
+		notAccept = False
 		if status == False:
 			for key in self.figurelist.keys():
 				for plot in self.figurelist[key]:
@@ -650,7 +667,9 @@ class TestHandler(QObject):
 					if result:
 						continue
 					else:
-						self.abortTest()
+						notAccept = True
+		if notAccept:
+			self.abortTest()
 
 		# show the score of test
 		self.historyRefresh.emit(self.modulestatus)
@@ -671,6 +690,7 @@ class TestHandler(QObject):
 			self.runTest()
 
 	def updateMeasurement(self, measureType, measure):
+		print(measure)
 		if measureType == "IVCurve":
 			Voltage = measure["voltage"]
 			Current = measure["current"]
@@ -692,10 +712,43 @@ class TestHandler(QObject):
 				step = "IVCurve"
 				self.figurelist = {"-1":[output]}
 				self.updateResult.emit((step,self.figurelist))
+		
+		if measureType == "SLDOScan":
+			Voltage = measure["voltage"]
+			Current = measure["current"]
+			Percentage = measure["percentage"]
+			self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(Percentage*100)	
+			if float(Voltage) < -0.1 and float(Current) < -0.1:
+				return
+			self.SLDOScanData.append([Voltage,Current])
+			self.SLDOScanResult.updatePlots(self.SLDOScanData)
+			tmpDir = os.environ.get('GUI_dir') + "/Gui/.tmp"
+			if not os.path.isdir(tmpDir)  and os.environ.get('GUI_dir'):
+				try:
+					os.mkdir(tmpDir)
+					logger.info("Creating "+tmpDir)
+				except:
+					logger.warning("Failed to create "+tmpDir)
+			svgFile = "SLDOScan.svg"
+			output = self.SLDOScanResult.saveToSVG(tmpDir+"/"+svgFile)
+			self.SLDOScanResult.update()
+			if not self.master.expertMode:
+				step = "SLDOScan"
+				self.figurelist = {"-1":[output]}
+				self.updateResult.emit((step,self.figurelist))
 
 
 
 	def IVCurveFinished(self):
+		self.testIndexTracker += 1
+		if isCompositeTest(self.info[1]):
+			self.runTest()
+
+	def SLDOScanFinished(self):
+		self.LVpowersupply.Reset()
+		self.LVpowersupply.InitialDevice()
+		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+		self.LVpowersupply.TurnOn()
 		self.testIndexTracker += 1
 		if isCompositeTest(self.info[1]):
 			self.runTest()

@@ -121,6 +121,17 @@ void KeySight::reset() { fConnection->write("*RST"); }
 */
 bool KeySight::isOpen() { return fConnection->isOpen(); }
 
+/*!
+************************************************
+ * Set the device to receive remote command
+************************************************
+*/
+void KeySight::setRemote()
+{  
+   fConnection->write("SYSTEM:REMOTE");
+}
+
+
 /*******************************************************************/
 /***************************** CHANNEL *****************************/
 /*******************************************************************/
@@ -375,7 +386,7 @@ float KeySightChannel::getCurrent(void)
     {
         //fConnection->write("form:elem curr");
         // usleep(100);
-        std::string const answer = fConnection->read(":SOURCE:CURRENT?");
+        std::string const answer = fConnection->read(":MEAS:CURR?");
         // answer             = fConnection->read(":meas:curr?");
         sscanf(answer.c_str(), "%f", &result);
     }

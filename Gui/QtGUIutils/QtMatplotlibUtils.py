@@ -18,8 +18,9 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import *
 
 class ScanCanvas(FigureCanvas):
-	def __init__(self,parent,xlabel = "X", ylabel = "Y"):
+	def __init__(self,parent,xlabel = "X", ylabel = "Y", sorted = True):
 		self.parent = parent
+		self.sortX = sorted
 		self.fig = Figure(figsize=(5, 4), dpi=100)
 		self.axes = self.fig.add_subplot(111)
 		self.xlabel = xlabel
@@ -44,7 +45,8 @@ class ScanCanvas(FigureCanvas):
 
 	def updatePlots(self, points):
 		self.coordinates = points
-		self.coordinates.sort(key=lambda x:x[0])
+		if self.sortX:
+			self.coordinates.sort(key=lambda x:x[0])
 		self.X = numpy.array([])
 		self.Y = numpy.array([])
 		for coordicate in self.coordinates:

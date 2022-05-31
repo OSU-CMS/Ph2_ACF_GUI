@@ -53,6 +53,21 @@ def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 	except Exception as err:
 		logger.error("Error occured while setting voltage level: {}".format(err))
 
+def SetCurrent(device, current, isMax = False):
+	try:
+		if isMax:
+			reply = device.write(":SOURCE:CURRENT:LEV:IMM 10")
+		else:
+			reply = device.write(":SOURCE:CURRENT:LEV:IMM {0}".format(current))
+	except Exception as err:
+		logger.error("Error occured while setting current level: {}".format(err))
+
+def SetVoltageProtection(device, voltRange = 0):
+	try:
+		reply = device.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(voltRange))
+	except Exception as err:
+		logger.error("Error occured while setting voltage level: {}".format(err))
+
 def setComplianceLimit(device, compcurrent = 0.0):
 	## Current limit should be passed as argument
 	try:
@@ -68,7 +83,7 @@ def ReadVoltage(device):
 	try:
 		MeasureVolt = device.query("MEASURE:VOLTAGE?")
 		#MeasureVolt = float(Measure.split(',')[0])
-		return MeasureVolt
+		return float(MeasureVolt)
 	except Exception as err:
 		logger.error("Error occured while reading voltage value: {}".format(err))
 
@@ -76,6 +91,13 @@ def ReadCurrent(device):
 	try:
 		MeasureCurr = device.query("MEASURE:CURRENT?")
 		#MeasureCurr = float(Measure.split(',')[0])
-		return MeasureCurr
+		return float(MeasureCurr)
 	except Exception as err:
 		logger.error("Error occured while reading current value: {}".format(err))
+
+def Status(device):
+	try:
+		status = device.query("STAT:QUES:COND?")
+		return status
+	except Exception as err:
+		logger.error("Error occured while getting status: {}".format(err))

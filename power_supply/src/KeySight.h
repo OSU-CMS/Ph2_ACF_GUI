@@ -32,6 +32,7 @@ class KeySight : public PowerSupply
     void configure();
     void reset(); // Added 16/06 and to be tested
     bool isOpen();
+    void setRemote();
     std::string getInfo();
 };
 

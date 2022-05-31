@@ -37,6 +37,7 @@ class PowerSupply
     virtual void reset();           // Some power supplies might not need to be reset, so providing a default that does nothing
     void         turnOnChannels();  // This method will turn on ALL channels following the sequence on the configuration file
     void         turnOffChannels(); // This method will turn off ALL channels following the sequence on the configuration file
+    void         setRemote();
 
     // Get/set methods
     PowerSupplyChannel*      getChannel(const std::string& id);
