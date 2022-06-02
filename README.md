@@ -87,6 +87,12 @@ defaultSensorBaudRate = 115200
 defaultDBServerIP = '127.0.0.1'
 #default DBName
 defaultDBName = 'SampleDB'
+
+##### The following settings are for SLDO scans developed for Purdue.#####
+##### Do not modify these settings unless you know what you are doing.####
+#default settings for SLDO scan.
+defaultSLDOscanVoltage = 0.0
+defaultSLDOscanMaxCurrent = 0.0
 ```
 
 
