@@ -1,5 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
+from Gui.siteSettings import *
 
 import time
 
@@ -21,8 +22,10 @@ class SLDOScanThread(QThread):
         self.stepNum = 0
         self.stepTotal = (self.stopVal-self.startVal)/self.stepLength+1
 
-        self.Voltage = 1.3
-        self.maxCurr = 0.3
+        #self.Voltage = 1.3
+        #self.maxCurr = 0.3
+        self.Voltage = defaultSLDOscanVoltage
+        self.maxCurr = defaultSLDOscanMaxCurrent
         self.deltaCurr = 0.001
         self.Current = 0.0
         self.status = None
