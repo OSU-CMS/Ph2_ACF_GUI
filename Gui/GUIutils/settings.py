@@ -59,6 +59,7 @@ ModuleType = {
 	2	:	"TFPX Quad",
 	3	:	"TEPX Quad",
 	4	:	"TBPX Quad",
+	5   : 	"Yellow Module (Purdue)"
 }
 
 ModuleLaneMap = {
@@ -66,6 +67,7 @@ ModuleLaneMap = {
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
+	"Yellow Module (Purdue)" : {"0":"4","1":"5","3":"7"}
 }
 
 BoxSize = {
@@ -73,6 +75,7 @@ BoxSize = {
 	"TFPX Quad"	: 4,
 	"TEPX Quad" : 4,
 	"TBPX Quad"	: 4,
+	"Yellow Module (Purdue)": 3,
 }
 
 HVPowerSupplyModel = {
