@@ -10,7 +10,7 @@
 
 from cgi import test
 from PyQt5 import QtCore, QtGui, QtWidgets 
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import QTimer
 from Gui.python.Peltier import PeltierController
 
@@ -79,8 +79,12 @@ class Peltia(QWidget):
         return self.pelt.readTemperature()
 
     def showTemp(self):
-        temp = self.getTemp()
-        self.currentTempDisplay.display(temp)
+        try:
+            temp = self.getTemp()
+            self.currentTempDisplay.display(temp)
+        except Exception:
+            self.msg = QMessageBox(self)
+            self.msg.setText("Can't read temperature")
         
     
 

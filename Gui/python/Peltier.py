@@ -1,5 +1,6 @@
 import serial
 from Gui.GUIutils.settings import *
+from PyQt5.QtWidgets import QMessageBox
 import random
 
 class PeltierController:
@@ -21,10 +22,15 @@ class PeltierController:
                             } 
         self.buffer = [0,0,0,0,0,0,0,0,0,0,0,0] # Used to read the messages from peltier
         
-        self.ser = serial.Serial(port, baud, timeout=1) # Setting up the connection to peltier
+        try:
+            self.ser = serial.Serial(port, baud, timeout=1) # Setting up the connection to peltier
+            self.setupConnection()
+        except Exception:
+            self.mesg = QMessageBox()
+            self.mesg.setText("Can't open port, check connection")
+            self.mesg.exec()
 
-        self.setupConnection()
-    
+        
     def readTemperature(self):
         command = ['*','0','0','0','1','0','0','0','0','0','0','0','0','4','1','\r']
         self.sendCommand(command)
