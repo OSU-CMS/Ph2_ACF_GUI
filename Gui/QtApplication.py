@@ -13,5 +13,5 @@ from Gui.QtGUIutils.QtApplication import *
 if __name__ == '__main__':
 	app = QApplication([])
 	dimension = app.screens()[0].size()
-	qtApp = QtApplication(dimension)
+	qtApp = MainWindow(dimension)
 	sys.exit(app.exec_())

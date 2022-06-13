@@ -124,7 +124,7 @@ class ArduinoWidget(QWidget):
 	def setBaudRate(self, baudRate):
 		self.ArduinoBRCombo.clear()
 		self.ArduinoBRCombo.addItems([str(baudRate)])
-
+	# TODO Import this function into my class
 	def setSerial(self, deviceName, baudRate):
 		deviceName= deviceName.lstrip("ASRL").rstrip("::INSTR")
 		baudMap = {
@@ -161,7 +161,7 @@ class ArduinoWidget(QWidget):
 				#print ('Arduino text is {0}'.format(text))
 				StopSignal,measureText = ArduinoParser(text)
 
-				self.ArduinoMeasureValue.setText(measureText)
+				self.ArduinoMeasureValue.setText(measureText) 
 				if StopSignal:
 					self.stopCount += 1
 					logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))
