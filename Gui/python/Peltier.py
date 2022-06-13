@@ -5,6 +5,7 @@ import random
 
 class PeltierController:
     def __init__(self, port, baud, timeout=1):
+        self.error = False
         # What the commands do can be found in the TC-36--25 RS232 manual 
         self.commandDict = {'Input1':['0','1'],
                             'Desired Control Value':['0','3'],
@@ -26,6 +27,7 @@ class PeltierController:
             self.ser = serial.Serial(port, baud, timeout=1) # Setting up the connection to peltier
             self.setupConnection()
         except Exception:
+            self.error = True
             self.mesg = QMessageBox()
             self.mesg.setText("Can't open port, check connection")
             self.mesg.exec()
@@ -43,25 +45,29 @@ class PeltierController:
 
     # Used to create the message that will set the "desire control setting"
     def setTemperature(self, temp):
-        stx = ['*']
-        aa = ['0','0']
-        cc = self.commandDict['Fixed Desired Control Setting Write']
-        etx = ['\r']
-        value = ['0','0','0','0','0','0','0','0']
-        temp *= 100
-        temp = int(temp)
-        if temp < 0:
-            temp = self.twosCompliment(temp)
-        temp = self.convertToHex(temp)
-        temp = self.stringToList(temp)
-        cutoff = temp.index('x')
-        temp = temp[cutoff+1:]
-        for i, _ in enumerate(temp):
-            value[-(i+1)] = temp[-(i+1)]
-        ss = self.checksum(aa + cc + value)
-        message = stx + aa + cc + value + ss + etx
-        self.sendCommand(message)
-        print(f"Set temp to {temp}")
+        try:
+            stx = ['*']
+            aa = ['0','0']
+            cc = self.commandDict['Fixed Desired Control Setting Write']
+            etx = ['\r']
+            value = ['0','0','0','0','0','0','0','0']
+            temp *= 100
+            temp = int(temp)
+            if temp < 0:
+                temp = self.twosCompliment(temp)
+            temp = self.convertToHex(temp)
+            temp = self.stringToList(temp)
+            cutoff = temp.index('x')
+            temp = temp[cutoff+1:]
+            for i, _ in enumerate(temp):
+                value[-(i+1)] = temp[-(i+1)]
+            ss = self.checksum(aa + cc + value)
+            message = stx + aa + cc + value + ss + etx
+            self.sendCommand(message)
+            print(f"Set temp to {temp}")
+        except Exception:
+            self.error = True
+            pass
 
     # Finds the twos compliment necessary for negative temperatures
     def twosCompliment(self, num):

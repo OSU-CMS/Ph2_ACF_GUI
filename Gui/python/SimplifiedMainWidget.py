@@ -23,6 +23,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
 from Gui.python.ArduinoWidget import *
+from Gui.python.Peltier import PeltierController
 
 class SimplifiedMainWidget(QWidget):
 	def __init__(self, master):
@@ -39,6 +40,7 @@ class SimplifiedMainWidget(QWidget):
 		self.redledpixmap = QPixmap.fromImage(redledimage)
 		greenledimage = QImage("icons/green-led-on.png").scaled(QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
 		self.greenledpixmap = QPixmap.fromImage(greenledimage)
+		self.peltiercheckbox = QCheckBox()
 		self.createLogin()
 		self.setupMainUI()
 		#self.createLogin()
@@ -140,7 +142,8 @@ class SimplifiedMainWidget(QWidget):
 		self.HVPowerStatusValue = QLabel()
 		self.LVPowerStatusLabel = QLabel()
 		self.LVPowerStatusValue = QLabel()
-		
+		self.PeltierCoolingValue = QLabel()
+
 		self.ModuleEntryBox = QGroupBox("Please scan module QR code")
 		ModuleEntryLayout = QGridLayout()
 
@@ -162,7 +165,7 @@ class SimplifiedMainWidget(QWidget):
 			
 		else:
 			self.HVPowerStatusValue.setPixmap(self.redledpixmap)
-			
+
 		time.sleep(0.5)
 		#Selecting default LV
 		self.LVpowersupply.setPowerModel(defaultLVModel[0])
@@ -230,6 +233,10 @@ class SimplifiedMainWidget(QWidget):
 		else:
 			self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
 
+		self.PeltierCoolingValue.setPixmap(self.redledpixmap)
+		self.peltiercheckbox.stateChanged.connect(self.checkPeltier)
+		self.peltierLabel = QLabel('Set Peltier Controller')
+
 		self.StatusList.append([self.ArduinoMonitorLabel,self.ArduinoMonitorValue])
 		self.StatusLayout = QGridLayout()
 
@@ -250,9 +257,12 @@ class SimplifiedMainWidget(QWidget):
 		self.StatusLayout.addWidget(self.ArduinoMonitorLabel,2,1,1,1)
 		self.StatusLayout.addWidget(self.ArduinoMonitorValue,2,2,1,1)
 		#self.StatusLayout.addWidget(self.ArduinoGroup.ArduinoMeasureValue)
-		self.StatusLayout.addWidget(self.RefreshButton,2 ,3, 1, 2)
+		self.StatusLayout.addWidget(self.RefreshButton,3 ,3, 1, 2)
 		#self.StatusLayout.addWidget(self.RefreshButton,len(self.StatusList) ,1, 1, 1)
-
+		
+		self.StatusLayout.addWidget(self.peltiercheckbox, 2, 5, 1, 1)
+		self.StatusLayout.addWidget(self.peltierLabel, 2, 3, 1, 1)
+		self.StatusLayout.addWidget(self.PeltierCoolingValue, 2, 4, 1, 1)
 
 		ModuleEntryLayout.addWidget(self.BeBoardWidget)
 		
@@ -304,6 +314,20 @@ class SimplifiedMainWidget(QWidget):
 		self.mainLayout.addWidget(self.ModuleEntryBox)
 		self.mainLayout.addWidget(self.AppOption)
 		self.mainLayout.addWidget(self.LogoGroupBox)
+
+	def checkPeltier(self):
+		if self.peltiercheckbox.isChecked():
+			self.Peltier = PeltierController(peltierPort, peltierBaud)
+			self.Peltier.setTemperature(peltierTemp)
+			if not self.Peltier.error: 
+				self.PeltierCoolingValue.setPixmap(self.greenledpixmap)
+			else:
+				self.PeltierCoolingValue.setPixmap(self.redledpixmap)
+		else:
+			self.PeltierCoolingValue.setPixmap(self.redledpixmap)
+
+
+
 
 	def runNewTest(self):
 		for module in self.BeBoardWidget.getModules():

@@ -79,12 +79,9 @@ class Peltia(QWidget):
         return self.pelt.readTemperature()
 
     def showTemp(self):
-        try:
-            temp = self.getTemp()
-            self.currentTempDisplay.display(temp)
-        except Exception:
-            self.msg = QMessageBox(self)
-            self.msg.setText("Can't read temperature")
+        temp = self.getTemp()
+        self.currentTempDisplay.display(temp)
+        
         
     
 
