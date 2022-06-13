@@ -186,4 +186,5 @@ updatedXMLValues = defaultdict(dict)
 
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
 
-
+peltierBaud = 9600
+peltierPort = "com4"
