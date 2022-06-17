@@ -83,9 +83,9 @@ class PeltierController:
         buff = self.buffer.copy()
         message = ['*','0','0','2','9','0','0','0','0','0','0','0','0','4','b','\r']
         for bit in message:
-            ser.write(bit)
+            self.ser.write(bit)
         for i, bit in enumerate(buff):
-            buff[i] = ser.read(1)
+            buff[i] = self.ser.read(1)
         if buff == ['*','0','0','0','0','0','0','0','0','8','0','^']:
             print('Complete')
         else:
@@ -136,7 +136,7 @@ class PeltierController:
         buff = self.buffer.copy()
         for i in range(len(buff)):
             buff[i] = self.ser.read(1)
-        if buff = ['*','X','X','X','X','X','X','X','X','c','0','^']:
+        if buff == ['*','X','X','X','X','X','X','X','X','c','0','^']:
             self.badChecksumMessage = QMessageBox()
             self.badChecksumMessage.setText("Bad Checksum Error")
             self.badChecksumMessage.setIcon(3) # Sets the icon to critical error icon
