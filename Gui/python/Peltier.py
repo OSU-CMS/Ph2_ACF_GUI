@@ -42,7 +42,6 @@ class PeltierController:
         return int(message,16)/100 
 
 
-
     # Used to create the message that will set the "desire control setting"
     def setTemperature(self, temp):
         try:
@@ -90,7 +89,7 @@ class PeltierController:
         if buff == ['*','0','0','0','0','0','0','0','0','8','0','^']:
             print('Complete')
         else:
-            print('Error')
+            print('Issue with reading or writing message from/to controller')
         self.buffer_reset()    
         return buff
     
@@ -137,7 +136,13 @@ class PeltierController:
         buff = self.buffer.copy()
         for i in range(len(buff)):
             buff[i] = self.ser.read(1)
-        return buff
+        if buff = ['*','X','X','X','X','X','X','X','X','c','0','^']:
+            self.badChecksumMessage = QMessageBox()
+            self.badChecksumMessage.setText("Bad Checksum Error")
+            self.badChecksumMessage.setIcon(3) # Sets the icon to critical error icon
+            self.badChecksumMessage.exec()
+        else:
+            return buff
 
 if __name__ == "__main__":
     # If your port and/or baud rate are different change these parameters
