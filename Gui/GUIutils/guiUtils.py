@@ -129,15 +129,19 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 	changeMade = False
 	try:
 		root,tree = LoadXML(InputFile)
+		# FirmwareList just stores the IP address of the FC7 board being used
 		fwIP = FirmwareList[firmwareName]
+		# For all nodes that match .//connection 
 		for Node in root.findall(".//connection"):
 			if fwIP not in Node.attrib['uri']:
 				Node.set('uri','chtcp-2.0://localhost:10203?target={}:50001'.format(fwIP))
 				changeMade = True
 
-
-		counter = 0
-		for Node in root.findall(".//RD53"):
+###----Can probably remove this block that's commented------######
+		#counter = 0
+		
+		'''
+		for Node in root.findall(nodeName[defaultACFVersion]):
 			ParentNode = Node.getparent() #.getparent()
 			try:
 				ChipKey = "{}_{}_{}".format(ParentNode.attrib["Name"],ParentNode.attrib["Id"],Node.attrib["Id"])
@@ -155,7 +159,8 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 					logger.info("Chip with key {} not listed in rd53 list, Please check the XML configuration".format(ChipKey))
 				except Exception as err:
 					pass
-			counter += 1
+			counter += 1'''
+###--------------------------------------------------------#####			
 	except Exception as error:
 		print("Failed to set up the XML file, {}".format(error))
 
@@ -232,10 +237,12 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
 def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 	#try:
 		outputFile = outputDir + "/CMSIT_" + testName +".xml" 
-
+		# Get Hardware discription and a list of the modules
 		HWDescription0 = HWDescription()
 		BeBoardModule0 = BeBoardModule()
 		AllModules = firmwareList.getAllModules().values()
+
+		# Setup all optical groups for the modules
 		for module in AllModules:
 			AllOG = {}
 			OpticalGroupModule = OGModule()
@@ -247,9 +254,10 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 			HyBridModule0 = HyBridModule()
 			HyBridModule0.SetHyBridModule(module.getModuleID(),"1")
 			HyBridModule0.SetHyBridName(module.getModuleName())
+			# Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
 			for chip in module.getChips().values():
 				FEChip = FE()
-				FEChip.SetFE(chip.getID(),chip.getLane(),"CMSIT_RD53_{0}_{1}_{2}.txt".format(module.getModuleName(),module.getModuleID(),chip.getLane()))
+				FEChip.SetFE(chip.getID(),chip.getLane(),"CMSIT_RD53_{0}_{1}_{2}.txt".format(module.getModuleName(),module.getModuleID(),chip.getID()))
 				FEChip.ConfigureFE(FESettings_Dict[testName])
 				HyBridModule0.AddFE(FEChip)
 			HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])

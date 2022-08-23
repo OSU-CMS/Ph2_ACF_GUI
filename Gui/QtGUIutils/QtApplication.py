@@ -547,7 +547,7 @@ class QtApplication(QWidget):
 
 		self.UseDefaultGroup = QGroupBox()
 		self.DefaultLayout = QHBoxLayout()
-		self.DefaultButton = QPushButton("&Connet all devices")
+		self.DefaultButton = QPushButton("&Connect all devices")
 		self.DefaultButton.clicked.connect(self.useDefault)
 		self.DefaultLabel = QLabel()
 		self.DefaultLabel.setText("Connecting to all default devices...")

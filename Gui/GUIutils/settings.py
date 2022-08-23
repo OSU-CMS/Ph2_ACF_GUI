@@ -62,12 +62,21 @@ ModuleType = {
 	5   : 	"Yellow Module (Purdue)"
 }
 
+firmware_image = {
+	"SingleSCC" : {"v4-06":"SCC_ELE_RD53A_v4-5.bit","v4-02":"SCC_ELE_RD53A_v4-2.bit"},
+	"Yellow Module (Purdue)" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TFPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TEPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TBPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+#	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
+}
+
 ModuleLaneMap = {
 	"TFPX Quad": {"0":"4","1":"2","2":"7","3":"5"},
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
-	"Yellow Module (Purdue)" : {"0":"4","1":"5","3":"7"}
+	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"}
 }
 
 BoxSize = {
@@ -186,4 +195,7 @@ updatedXMLValues = defaultdict(dict)
 
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
 
-
+BoardtypeMap = {
+	'v4-06': 'RD53A',
+	'v4-02': 'RD53'
+}

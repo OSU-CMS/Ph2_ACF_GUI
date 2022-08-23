@@ -64,13 +64,17 @@ class TestHandler(QObject):
 		self.firmwareName = self.firmware.getBoardName()
 		self.ModuleMap = dict()
 		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+		self.Ph2_ACF_ver = os.environ.get('Ph2_ACF_VERSION')
+		print('Using version {0} of Ph2_ACF'.format(self.Ph2_ACF_ver))
+		self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
+		print('Firmware version is {0}'.format(self.firmwareImage))
 		self.RunNumber = "-1"
 		self.IVCurveHandler = None
 		self.SLDOScanHandler = None
 
 		self.processingFlag = False
 		self.ProgressBarList = []
-		self.input_dir = ''
+		self.input_dir = ""
 		self.output_dir = ''
 		self.config_file = '' #os.environ.get('GUI_dir')+ConfigFiles.get(self.calibration, "None")
 		self.rd53_file  = {}
@@ -104,6 +108,10 @@ class TestHandler(QObject):
 		self.info_process = QProcess(self)
 		self.info_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput_info)
 
+		##---Adding firmware setting-----
+		self.fw_process = QProcess(self)
+		self.fw_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput)
+
 		self.haltSignal.connect(self.runwindow.finish)
 		self.outputString.connect(self.runwindow.updateConsoleInfo)
 		self.stepFinished.connect(self.runwindow.finish)
@@ -112,6 +120,8 @@ class TestHandler(QObject):
 		self.updateValidation.connect(self.runwindow.updateValidation)
 
 		self.initializeRD53Dict()
+		self.FWisPresent = False
+		self.FWisLoaded = False
 
 	def  initializeRD53Dict(self):
 		self.rd53_file = {}
@@ -128,6 +138,7 @@ class TestHandler(QObject):
 			self.ModuleMap[fwPath] = moduleName
 
 	def configTest(self):
+		# Gets the run number by reading from the RunNumber.txt file.
 		try:
 			RunNumberFileName = os.environ.get('Ph2_ACF_AREA')+"/test/RunNumber.txt"
 			if os.path.isfile(RunNumberFileName):
@@ -136,9 +147,9 @@ class TestHandler(QObject):
 				self.RunNumber = runNumberText[0].split('\n')[0]
 				logger.info("RunNumber: {}".format(self.RunNumber))
 		except:
-			logger.warning("Failed to retrive RunNumber")
+			logger.warning("Failed to retrieve RunNumber")
 		
-
+		# If currentTest is not set check if it's a compositeTest and if so set testname accordingly, otherwise set it based off the test set in info[1]
 		if self.currentTest == "" and isCompositeTest(self.info[1]):
 			testName = CompositeList[self.info[1]][0]
 		elif self.currentTest ==  None:
@@ -150,18 +161,23 @@ class TestHandler(QObject):
 		for module in self.firmware.getAllModules().values():
 			#ModuleIDs.append(str(module.getModuleID()))
 			ModuleIDs.append(str(module.getModuleName()))
-			
+		# output_dir gets set to $DATA_dir/Test_{testname}/Test_Module{ModuleID}_{Test}_{TimeStamp}
 		self.output_dir, self.input_dir = ConfigureTest(testName, "_Module".join(ModuleIDs), self.output_dir, self.input_dir, self.connection)
 
+		# The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
+		# FIXME Fix rd53_file[key] so that it reads the correct txt file depending on what module is connected. -> Done!
 		for key in self.rd53_file.keys():
 			if self.rd53_file[key] == None:
-				self.rd53_file[key] = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_RD53.txt"
+				self.rd53_file[key] = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_{0}.txt".format(BoardtypeMap[os.environ.get('Ph2_ACF_VERSION')])
 		if self.input_dir == "":
+			# Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
 			SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
 		else:
 			SetupRD53Config(self.input_dir,self.output_dir, self.rd53_file)
 
 		if self.input_dir == "":
+			# If no config file(xml file) is given create the XML file and place it into a .tmp directory
+			# Create the directory to store the xml file
 			if self.config_file == "":
 				tmpDir = os.environ.get('GUI_dir') + "/Gui/.tmp"
 				if not os.path.isdir(tmpDir)  and os.environ.get('GUI_dir'):
@@ -170,6 +186,7 @@ class TestHandler(QObject):
 						logger.info("Creating "+tmpDir)
 					except:
 						logger.warning("Failed to create "+tmpDir)
+				# Create the xml file from the text file
 				config_file = GenerateXMLConfig(self.firmware,self.currentTest,tmpDir)
 				#config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
 				if config_file:
@@ -294,6 +311,35 @@ class TestHandler(QObject):
 		self.run_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
 		#self.run_process.setStandardOutputFile(self.outputFile)
 		#self.run_process.setStandardErrorFile(self.errorFile)
+
+
+		self.fw_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+		self.fw_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
+		print("made it to the firmware check")
+		if not self.FWisPresent:
+			print("checking if firmware is on the SD card")
+			fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/test/CMSIT.xml',"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+			print("firmwarelist is {0}".format(fwlist.stdout.decode('UTF-8')))
+			print("firmwareImage is {0}".format(self.firmwareImage))
+			if self.firmwareImage in fwlist.stdout.decode('UTF-8'):
+				self.FWisPresent = True
+				print("firmware saved")
+			else:
+				try:
+					self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
+					print()
+					self.fw_process.waitForFinished()
+					self.FWisPresent = True
+				except:
+					print("unable to save {0} to FC7 SD card".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage))
+
+		if not self.FWisLoaded:
+			self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-i", "{}".format(self.firmwareImage)])
+			self.fw_process.waitForFinished()
+			self.fw_process.start("CMSITminiDAQ",["-f","CMSIT.xml","-r"])
+			self.fw_process.waitForFinished()
+			self.FWisLoaded = True
+			print('Firmware image is now loaded')
 		
 		#self.run_process.start("python", ["signal_generator.py"])
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
@@ -605,7 +651,7 @@ class TestHandler(QObject):
 				return (False, None, 0)
 		else:
 			return (False, None, 0)
-		
+	# Reads data that is normally printed to the terminal and saves it to the output file	
 	@QtCore.pyqtSlot()
 	def on_readyReadStandardOutput_info(self):
 		if os.path.exists(self.outputFile):
