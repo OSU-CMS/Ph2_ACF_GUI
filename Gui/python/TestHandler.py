@@ -323,7 +323,7 @@ class TestHandler(QObject):
 
 
 	def abortTest(self):
-		reply = QMessageBox.question(None, "Abort", "Are you sure to abort?", QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
+		reply = QMessageBox.question(None, "Abort", "Are you sure want to abort?", QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
 			self.halt = True

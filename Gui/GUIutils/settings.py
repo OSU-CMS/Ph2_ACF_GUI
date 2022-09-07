@@ -188,3 +188,4 @@ header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #St
 
 peltierBaud = 9600
 peltierPort = "com4"
+peltierTemp = -20

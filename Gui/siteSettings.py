@@ -34,6 +34,15 @@ defaultDBServerIP = '127.0.0.1'
 #default DBName
 defaultDBName = 'SampleDB'
 
+# The IDs for the modules should start with these values depending on the module type
+moduleID = {
+            "SingleSCC" : "00",
+            "TFPX Quad" : "01",
+            "TEPX Quad" : "02",
+            "TBPX Quad" : "03", 
+            "Yellow Module (Purdue)" : "04"
+}
+
 ##### The following settings are for SLDO scans developed for Purdue.#####
 ##### Do not modify these settings unless you know what you are doing.####
 #default settings for SLDO scan.
