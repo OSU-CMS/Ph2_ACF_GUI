@@ -19,7 +19,7 @@ class Peltia(QWidget):
         super(Peltia, self).__init__()
         self.MainWindow = QtWidgets.QMainWindow()
         
-        self.pelt = PeltierController('com4',9600)
+        self.pelt = PeltierController('/dev/ttyUSB0',9600)
         #Create a timer that sends out a signal at regular intervals
         self.timer = QTimer()
         self.timer.timeout.connect(self.showTemp)
@@ -37,6 +37,8 @@ class Peltia(QWidget):
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setObjectName("label")
         self.gridLayout.addWidget(self.label, 0, 0, 1, 1)
+        self.currentSetTemp = QtWidgets.QPushButton(self.centralwidget)
+        self.gridLayout.addWidget(self.currentSetTemp, 2,1,1,1)
         self.currentTempDisplay = QtWidgets.QLCDNumber(self.centralwidget)
         self.currentTempDisplay.setObjectName("currentTempDisplay")
         self.gridLayout.addWidget(self.currentTempDisplay, 3, 0, 1, 1)
@@ -59,6 +61,7 @@ class Peltia(QWidget):
         MainWindow.setStatusBar(self.statusbar)
 
         self.setTempButton.clicked.connect(self.setTemp)
+        self.currentSetTemp.clicked.connect(self.printSetTemp)
 
 
         self.retranslateUi(MainWindow)
@@ -71,6 +74,9 @@ class Peltia(QWidget):
         self.setTempButton.setText(_translate("MainWindow", "Set Temp"))
         self.currentTempLabel.setText(_translate("MainWindow", "Current Temp"))
 
+
+    def printSetTemp(self):
+        self.pelt.readSetTemperature()
     def setTemp(self):
         self.pelt.setTemperature(self.setTempInput.value())
         # Send temperature reading to device
@@ -81,8 +87,11 @@ class Peltia(QWidget):
     def showTemp(self):
         temp = self.getTemp()
         self.currentTempDisplay.display(temp)
-        
-        
+
+    def closeEvent(self, *args, **kwargs):
+        super(QtWidgets.QMainWindow, self).closeEvent(*args, **kwargs)
+        self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Write', ['0','0','0','0','0','0','0','0']))
+        print("GUI closed")
     
 
 
