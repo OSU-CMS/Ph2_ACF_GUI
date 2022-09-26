@@ -15,9 +15,9 @@ from PyQt5.QtCore import *
 from Gui.python.Peltier import PeltierController
 import time
 
-class Peltia(QWidget):
+class Peltier(QWidget):
     def __init__(self, dimension):
-        super(Peltia, self).__init__()
+        super(Peltier, self).__init__()
         # self.MainWindow = QtWidgets.QMainWindow()
         self.setupUi()
         self.show()
@@ -134,5 +134,5 @@ class Peltia(QWidget):
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    ui = Peltia(500)
+    ui = Peltier(500)
     sys.exit(app.exec_())
