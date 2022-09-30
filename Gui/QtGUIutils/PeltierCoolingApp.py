@@ -14,10 +14,12 @@ from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import *
 from Gui.python.Peltier import PeltierController
 import time
+import os
 
 class Peltier(QWidget):
     def __init__(self, dimension):
         super(Peltier, self).__init__()
+        self.Ph2ACFDirectory = os.getenv("GUI_dir")
         # self.MainWindow = QtWidgets.QMainWindow()
         self.setupUi()
         self.show()
@@ -60,19 +62,15 @@ class Peltier(QWidget):
 
         self.gridLayout.addWidget(self.powerStatusLabel, 1, 2, 1, 1)
         self.gridLayout.addWidget(self.powerStatus, 1, 3, 1, 1)
-        # self.currentSetTempLabel = QtWidgets.QLabel(self)
-        # self.gridLayout.addWidget(self.currentSetTempLabel, 0,1,1,1)
-        # self.setTempButton.clicked.connect(self.printSetTemp)
+        self.setTempButton.clicked.connect(self.printSetTemp)
         self.setTempButton.clicked.connect(self.setTemp)
         self.setLayout(self.gridLayout)
-    ###############################################################################
-    # def retranslateUi(self, MainWindow):                                        #
-    #     _translate = QtCore.QCoreApplication.translate                          #
-    #     MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))       #
-    #     self.label.setText(_translate("MainWindow", "Set Temperature"))         #
-    #     self.setTempButton.setText(_translate("MainWindow", "Set Temp"))        #
-    #     self.currentTempLabel.setText(_translate("MainWindow", "Current Temp")) #
-    ###############################################################################
+    # def retranslateUi(self):
+    #      _translate = QtCore.QCoreApplication.translate
+    #      MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+    #      self.label.setText(_translate("MainWindow", "Set Temperature"))
+    #      self.setTempButton.setText(_translate("MainWindow", "Set Temp"))
+    #      self.currentTempLabel.setText(_translate("MainWindow", "Current Temp"))
 
     def setup(self):
         self.pelt = PeltierController('/dev/ttyUSB0',9600)
@@ -81,12 +79,19 @@ class Peltier(QWidget):
         self.timer.timeout.connect(self.showTemp)
         self.powerTimer.timeout.connect(self.setPowerStatus)
         self.timer.start(500) # Will check the temperature every 500ms
-        self.powerTimer.start(1000) # Will check the power every second
+        self.powerTimer.start(500) # Will check the power every 500ms
         self.image = QtGui.QPixmap()
-        redledimage = QtGui.QImage("../icons/led-red-on.png").scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        redledimage = QtGui.QImage(self.Ph2ACFDirectory + "/Gui/icons/led-red-on.png").scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
         self.redledpixmap = QtGui.QPixmap.fromImage(redledimage)
-        greenledimage = QtGui.QImage("../icons/green-led-on.png").scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        greenledimage = QtGui.QImage(self.Ph2ACFDirectory + "/Gui/icons/green-led-on.png" ).scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
         self.greenledpixmap = QtGui.QPixmap.fromImage(greenledimage)
+
+        self.powerStatus.setPixmap(self.redledpixmap) # The power status will initially always show that it's off, if it's actually on the status will be update in 0.5 seconds.
+        self.powerButton.setEnabled(True)
+        self.polarityButton.setEnabled(True)
+        self.setTempButton.setEnabled(True)
 
     def powerSignal(self):
         print(self.power)

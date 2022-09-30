@@ -85,7 +85,6 @@ class PeltierController:
     # Queries controller for power state of Peltier. Will return 0 if power is off, 1 if on
     def checkPower(self):
         message, passed = self.sendCommand(self.createCommand('Power On/Off Read', ['0','0','0','0','0','0','0','0']))
-        print(message)
         if not passed:
             return
         return message[-4]
@@ -214,7 +213,6 @@ class PeltierController:
         return command
     
     def sendCommand(self, command):
-        print("Command sent", command)
         for bit in command:
             self.ser.write(bit.encode())
         message, passed = self.recieveMessage()
