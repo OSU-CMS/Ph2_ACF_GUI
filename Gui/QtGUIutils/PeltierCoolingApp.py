@@ -31,8 +31,8 @@ class Peltier(QWidget):
         # self.centralwidget = QtWidgets.QWidget(MainWindow)
         # self.centralwidget.setObjectName("centralwidget")
         self.gridLayout = QtWidgets.QGridLayout(self)
-        self.currentSetTemp = QtWidgets.QLabel("The temperature is currently set to: ", self)
-        self.gridLayout.addWidget(self.currentSetTemp, 2,1,1,1)
+        self.currentSetTemp = QtWidgets.QLabel("Current Set Temperature: ", self)
+        self.gridLayout.addWidget(self.currentSetTemp, 3,2,1,1)
         self.startButton = QtWidgets.QPushButton("Start Peltier Controller", self)
         self.startButton.clicked.connect(self.setup)
         self.gridLayout.addWidget(self.startButton, 0,0,1,1)
@@ -62,7 +62,6 @@ class Peltier(QWidget):
 
         self.gridLayout.addWidget(self.powerStatusLabel, 1, 2, 1, 1)
         self.gridLayout.addWidget(self.powerStatus, 1, 3, 1, 1)
-        self.setTempButton.clicked.connect(self.printSetTemp)
         self.setTempButton.clicked.connect(self.setTemp)
         self.setLayout(self.gridLayout)
     # def retranslateUi(self):
@@ -107,11 +106,11 @@ class Peltier(QWidget):
     def printSetTemp(self):
         time.sleep(0.050)
         setTemp = self.pelt.readSetTemperature()
-        self.currentSetTempLabel.setText(f'The Peltier is currently set to {setTemp}')
+        self.currentSetTempLabel.setText(f'Current Set Temperture: {setTemp}')
 
     def setTemp(self):
         self.pelt.setTemperature(self.setTempInput.value())
-        self.currentSetTemp.setText(f"The temperature is currently set to: {self.setTempInput.value()}")
+        self.currentSetTemp.setText(f"Current Set Temperature: {self.setTempInput.value()}")
         # Send temperature reading to device
 
     def changePolarity(self):
