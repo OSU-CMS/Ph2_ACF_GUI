@@ -39,3 +39,10 @@ defaultDBName = 'SampleDB'
 #default settings for SLDO scan.
 defaultSLDOscanVoltage = 0.0
 defaultSLDOscanMaxCurrent = 0.0
+
+
+### Setting for Peltier Controller
+defaultPeltierPort = '/dev/ttyUSB0'
+defaultPeltierBaud = 9600
+defaultPeltierSetTemp = 20
+defaultPeltierWarningTemp = 40

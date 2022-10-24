@@ -12,15 +12,15 @@ from cgi import test
 from PyQt5 import QtCore, QtGui, QtWidgets 
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import *
-from Gui.python.Peltier import PeltierController
+from Gui.python.Peltier import *
 import time
 import os
 
 class Peltier(QWidget):
     def __init__(self, dimension):
         super(Peltier, self).__init__()
+        self.pool = QThreadPool.globalInstance()
         self.Ph2ACFDirectory = os.getenv("GUI_dir")
-        # self.MainWindow = QtWidgets.QMainWindow()
         self.setupUi()
         self.show()
 
@@ -60,65 +60,75 @@ class Peltier(QWidget):
         self.powerButton.clicked.connect(self.powerSignal)
         self.gridLayout.addWidget(self.powerButton, 0, 2, 1, 1)
 
+        self.image = QtGui.QPixmap()
+        redledimage = QtGui.QImage(self.Ph2ACFDirectory + "/Gui/icons/led-red-on.png").scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.redledpixmap = QtGui.QPixmap.fromImage(redledimage)
+        greenledimage = QtGui.QImage(self.Ph2ACFDirectory + "/Gui/icons/green-led-on.png" ).scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.greenledpixmap = QtGui.QPixmap.fromImage(greenledimage)
+        self.powerStatus.setPixmap(self.redledpixmap) # The power status will initially always show that it's off, if it's actually on the status will be update in 0.5 seconds.
+
         self.gridLayout.addWidget(self.powerStatusLabel, 1, 2, 1, 1)
         self.gridLayout.addWidget(self.powerStatus, 1, 3, 1, 1)
         self.setTempButton.clicked.connect(self.setTemp)
         self.setLayout(self.gridLayout)
-    # def retranslateUi(self):
-    #      _translate = QtCore.QCoreApplication.translate
-    #      MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-    #      self.label.setText(_translate("MainWindow", "Set Temperature"))
-    #      self.setTempButton.setText(_translate("MainWindow", "Set Temp"))
-    #      self.currentTempLabel.setText(_translate("MainWindow", "Current Temp"))
 
     def setup(self):
-        self.pelt = PeltierController('/dev/ttyUSB0',9600)
-        self.timer = QTimer()
-        self.powerTimer = QTimer()
-        self.timer.timeout.connect(self.showTemp)
-        self.powerTimer.timeout.connect(self.setPowerStatus)
-        self.timer.start(500) # Will check the temperature every 500ms
-        self.powerTimer.start(500) # Will check the power every 500ms
-        self.image = QtGui.QPixmap()
-        redledimage = QtGui.QImage(self.Ph2ACFDirectory + "/Gui/icons/led-red-on.png").scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        try:
+            self.pelt = PeltierController()
+            print("Instantiated PeltierController")
+            self.setup = startupWorker()
+            print("Instantiated worker")
+            self.setup.signal.finishedSignal.connect(self.enableButtons)
+            print("Sending setup to thread") #FIXME Nothing seems to be printing to terminal, no thread seems to be made either.
+            self.pool.start(self.setup)
 
-        self.redledpixmap = QtGui.QPixmap.fromImage(redledimage)
-        greenledimage = QtGui.QImage(self.Ph2ACFDirectory + "/Gui/icons/green-led-on.png" ).scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        except Exception as e:
+            print("Error while attempting to setup Peltier Controller: ", e)
 
-        self.greenledpixmap = QtGui.QPixmap.fromImage(greenledimage)
 
-        self.powerStatus.setPixmap(self.redledpixmap) # The power status will initially always show that it's off, if it's actually on the status will be update in 0.5 seconds.
+    def enableButtons(self):
         self.powerButton.setEnabled(True)
         self.polarityButton.setEnabled(True)
         self.setTempButton.setEnabled(True)
 
     def powerSignal(self):
-        print(self.power)
         if self.power == '0':
-            self.pelt.powerController('1')
-            print("Turning on controller")
+            try:
+                self.pelt.powerController('1')
+                print("Turning on controller")
+            except Exception as e:
+                print("Could not turn on controller due to error: ", e)
         elif self.power =='1':
-            self.pelt.powerController('0')
-            print('Turning off controller')
+            try:
+                self.pelt.powerController('0')
+                print('Turning off controller')
+            except Exception as e:
+                print("Could not turn off controller due to error: " , e)
         time.sleep(0.5) 
         self.getPower()
 
-    def printSetTemp(self):
-        time.sleep(0.050)
-        setTemp = self.pelt.readSetTemperature()
-        self.currentSetTempLabel.setText(f'Current Set Temperture: {setTemp}')
-
     def setTemp(self):
-        self.pelt.setTemperature(self.setTempInput.value())
-        self.currentSetTemp.setText(f"Current Set Temperature: {self.setTempInput.value()}")
+        try:
+            self.pelt.setTemperature(self.setTempInput.value())
+            self.currentSetTemp.setText(f"Current Set Temperature: {self.setTempInput.value()}")
+        except Exception as e:
+            print("Could not set Temperature")
+            self.currentSetTemp.setText("N/a")
         # Send temperature reading to device
 
     def changePolarity(self):
-        polarity = self.pelt.changePolarity()
-        self.polarityLabel.setText(f"Change Polarity: {polarity}")
+        try:
+            polarity = self.pelt.changePolarity()
+            self.polarityLabel.setText(f"Change Polarity: {polarity}")
+        except Exception as e:
+            print("Could not change polarity due to error: " , e)
 
     def getPower(self):
-        self.power = self.pelt.checkPower()
+        try:
+            self.power = self.pelt.checkPower()
+        except Exception as e:
+            self.powerTimer.stop()
+            print("Could not check power due to error: " , e)
     
     def setPowerStatus(self):
         self.getPower()
@@ -127,13 +137,13 @@ class Peltier(QWidget):
         elif self.power =='1':
             self.powerStatus.setPixmap(self.greenledpixmap)
 
-        
-    def getTemp(self):
-        return self.pelt.readTemperature()
-
     def showTemp(self):
-        temp = self.getTemp()
-        self.currentTempDisplay.display(temp)
+        try:
+            temp = self.pelt.readTemperature()
+            self.currentTempDisplay.display(temp)
+        except Exception as e:
+            self.timer.stop()
+            print("Could not read temperature due to error: ", e)
 
 if __name__ == "__main__":
     import sys
