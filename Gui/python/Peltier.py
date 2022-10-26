@@ -12,6 +12,8 @@ class Signals(QtCore.QObject):
     finishedSignal = pyqtSignal()
     passedSignal = pyqtSignal(bool)
     messageSignal = pyqtSignal(list)
+    powerSignal = pyqtSignal(int)
+    tempSignal = pyqtSignal(float)
 
 
 class PeltierSignalGenerator():
@@ -40,6 +42,8 @@ class PeltierSignalGenerator():
                             'Control Output Polarity Read' : ['4','5']
                             }
         self.checksumError = ['*','X','X','X','X','X','X','X','X','c','0','^']
+        self.buffer = [0,0,0,0,0,0,0,0,0,0,0,0]
+
     def twosCompliment(self, num):
         return pow(2,32) - abs(num)
 
@@ -48,6 +52,7 @@ class PeltierSignalGenerator():
 
     def possibleCommands(self):
         return self.commandDict.keys()
+
     def convertToHex(self,val):
         if type(val) != list:
             return hex(val)
@@ -82,14 +87,14 @@ class PeltierSignalGenerator():
         ss = self.checksum(aa + cc + dd)
         etx = ['\r']
         command = stx + aa + cc + dd + ss + etx
-        print("CMD:",command)
         return command
 
     def sendCommand(self, command):
+        print("SEND: " , command)
         for bit in command:
             self.ser.write(bit.encode())
         message, passed = self.recieveMessage()
-        print("REC:",message)
+        print("REC: " , message)
         return message, passed
 
     # Will recieve message but will only check if the command gave an error, will not decode the message
@@ -106,104 +111,57 @@ class PeltierSignalGenerator():
             return buff, connection
 
 # Worker that will be used to send commands to the Peltier
-class signalWorker(QObject, QRunnable, PeltierSignalGenerator):
-    finished = pyqtSignal()
-    message = pyqtSignal(list)
-
-
-    def __init__(self):
+class signalWorker(QRunnable, PeltierSignalGenerator):
+    def __init__(self, command, message):
         super().__init__()
+        self.signal = Signals()
+        self.command = command
+        self.message = message
 
-    def run(self, command, message):
-        recievedMessage, passed = self.sendCommand(self.createCommand(command, message))
-        message.emit(recievedMessage)
+    def run(self):
+        recievedMessage, passed = self.sendCommand(self.createCommand(self.command, self.message))
+        self.signal.messageSignal.emit(recievedMessage)
+        self.signal.finishedSignal.emit()
+
 
 
 #Used to read power and temperature constantly
-class tempPowerReading(signalWorker):
-    finished = pyqtSignal()
-    messageTemp = pyqtSignal(list)
-    connectionTemp = pyqtSignal(bool)
-    messagePower = pyqtSignal(list)
-    connectionPower = pyqtSignal(bool)
-
+class tempPowerReading(QRunnable, PeltierSignalGenerator):
     def __init__(self):
         super().__init__()
         self.readTemp = True
-
-    def run(self, command, message):
-        while self.readTemp:
-            temperature, passTemp = self.sendCommand(self.createCommand('Input1', '0'))
-            power, passPower = self.sendCommand(self.createCommand('Power On/Off Read' ,'0'))
-            messageTemp.emit(temperature)
-            messagePower.emit(power)
-            connectionTemp.emit(passTemp)
-            connectionPower.emit(passPower)
-            time.sleep(0.5)
-
-class startupWorker(QRunnable):
-
-    def __init__(self):
-        super(startupWorker, self).__init__()
         self.signal = Signals()
 
+    def run(self):
+        while self.readTemp:
+            temperature, passTemp = self.sendCommand(self.createCommand('Input1', ['0','0','0','0','0','0','0','0']))
+            power, passPower = self.sendCommand(self.createCommand('Power On/Off Read' ,['0','0','0','0','0','0','0','0']))
+            temp = "".join(temperature[1:9])
+            temp = int(temp,16)/100
+            power = int(power[8])
+
+            self.signal.powerSignal.emit(power)
+            self.signal.tempSignal.emit(temp)
+            time.sleep(0.5)
+
+
+class startupWorker(QRunnable, PeltierSignalGenerator):
+    def __init__(self):
+        super().__init__()
+        self.signal = Signals()
 
     def run(self):
         print("Running thread")
-       # self.sendCommand(self.createCommand('Set Type Define Write', '1'))
-       # self.sendCommand(self.createCommand('Power On/Off Write' ,'0'))
+        self.sendCommand(self.createCommand('Set Type Define Write', ['0','0','0','0','0','0','0','1']))
+        self.sendCommand(self.createCommand('Power On/Off Write' ,['0','0','0','0','0','0','0','0']))
         self.signal.finishedSignal.emit()
 
-#        command = ['*', '0','0','2','9','0','0','0','0','0','0','0','0','4','b','\r'] # Run command to Set Type Define to computer communicated
 
-        # Read in the message and check if you recieve the correct message back
-        # for bit in command:
-        #     ser.write(bit.encode())
-        # buff =['0','0','0','0','0','0','0','0','0','0','0','0']
-        # for i in range(len(buff)):
-        #     buff[i] = ser.read(1).decode('utf-8')
-        # # If you recieve a checksum error display warning message
-        # if buff == ['*','X','X','X','X','X','X','X','X','c','0','^']:
-        #     self.badChecksumMessage = QMessageBox()
-        #     self.badChecksumMessage.setText("Bad Checksum Error")
-        #     self.badChecksumMessage.setIcon(3) # Sets the icon to critical error icon
-        #     self.badChecksumMessage.exec()
-
-        # # Sends the command to turn off the Peltier
-        # # This should ensure that the Peltier is off unless you turn it on
-        # command = ['*', '0','0','2','d','0','0','0','0','0','0','0','0','7','6','\r']
-        # for bit in command:
-        #     ser.write(bit.encode())
-        # buff =['0','0','0','0','0','0','0','0','0','0','0','0']
-        # for i in range(len(buff)):
-        #     buff[i] = ser.read(1).decode('utf-8')
-        # # If you recieve a bad checksum error give warning message
-        # if buff == ['*','X','X','X','X','X','X','X','X','c','0','^']:
-        #     self.badChecksumMessage = QMessageBox()
-        #     self.badChecksumMessage.setText("Bad Checksum Error")
-        #     self.badChecksumMessage.setIcon(3) # Sets the icon to critical error icon
-        #     self.badChecksumMessage.exec()
-
-
-
-class PeltierController:
+class PeltierController():
     def __init__(self, timeout=1):
-
+        super().__init__()
         self.error = False
-       # What the commands do can be found in the TC-36--25 RS232 manual
-        self.buffer = [0,0,0,0,0,0,0,0,0,0,0,0] # Used to read the messages from peltier
-        # try:
-        #     self.sendCommand(self.createCommand('Control Type Write', ['0','0','0','0','0','0','0','1']))
-        #     self.setupConnection()
-        # except Exception as e:
-        #     print(e)
-        #     self.error = True
-        #     self.mesg = QMessageBox()
-        #     self.mesg.setText("Can't open port, check connection")
-        #     self.mesg.exec()
-    # Queries controller for power state of Peltier. Will return 0 if power is off, 1 if on
-    #def checkBandwidth(self):
-    #    print(self.sendCommand(self.createCommand('Proportional Bandwidth Read', ['0','0','0','0','0','0','0','0'])))
+
     def checkPower(self):
         message, passed = self.sendCommand(self.createCommand('Power On/Off Read', ['0','0','0','0','0','0','0','0']))
         if not passed:

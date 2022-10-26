@@ -20,6 +20,8 @@ class Peltier(QWidget):
     def __init__(self, dimension):
         super(Peltier, self).__init__()
         self.pool = QThreadPool.globalInstance()
+        print("Number of threads being used", self.pool.activeThreadCount())
+        print("Max Number of Threads", self.pool.maxThreadCount())
         self.Ph2ACFDirectory = os.getenv("GUI_dir")
         self.setupUi()
         self.show()
@@ -57,7 +59,7 @@ class Peltier(QWidget):
         self.powerStatusLabel = QtWidgets.QLabel("Power Status of Peltier: ", self)
         self.powerButton = QtWidgets.QPushButton("Peltier Power On/Off")
         self.powerButton.setEnabled(False)
-        self.powerButton.clicked.connect(self.powerSignal)
+        self.powerButton.clicked.connect(self.powerToggle)
         self.gridLayout.addWidget(self.powerButton, 0, 2, 1, 1)
 
         self.image = QtGui.QPixmap()
@@ -75,12 +77,18 @@ class Peltier(QWidget):
     def setup(self):
         try:
             self.pelt = PeltierController()
-            print("Instantiated PeltierController")
-            self.setup = startupWorker()
-            print("Instantiated worker")
-            self.setup.signal.finishedSignal.connect(self.enableButtons)
-            print("Sending setup to thread") #FIXME Nothing seems to be printing to terminal, no thread seems to be made either.
-            self.pool.start(self.setup)
+
+            # Setup controller to be controlled by computer and turn off Peltier if on
+            self.setupWorker = startupWorker()
+            self.setupWorker.signal.finishedSignal.connect(self.enableButtons)
+            self.pool.start(self.setupWorker)
+            time.sleep(1) # Needed to avoid collision with temperature and power reading
+
+            #Start temperature and power monitoring
+            self.tempPower = tempPowerReading()
+            self.tempPower.signal.tempSignal.connect(lambda temp: self.currentTempDisplay.display(temp))
+            self.tempPower.signal.powerSignal.connect(lambda power : self.setPowerStatus(power))
+            self.pool.start(self.tempPower)
 
         except Exception as e:
             print("Error while attempting to setup Peltier Controller: ", e)
@@ -91,21 +99,32 @@ class Peltier(QWidget):
         self.polarityButton.setEnabled(True)
         self.setTempButton.setEnabled(True)
 
-    def powerSignal(self):
-        if self.power == '0':
+
+    def setPowerStatus(self, power):
+        if power:
+            self.powerStatus.setPixmap(self.greenledpixmap)
+            self.powerStatusValue = 1
+        else:
+            self.powerStatus.setPixmap(self.redledpixmap)
+            self.powerStatusValue = 0
+
+    def powerToggle(self):
+        if self.powerStatusValue == 0:
             try:
-                self.pelt.powerController('1')
+                signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','1'])
+                self.pool.start(signalworker)
                 print("Turning on controller")
             except Exception as e:
                 print("Could not turn on controller due to error: ", e)
-        elif self.power =='1':
+        elif self.powerStatusValue == 1:
             try:
-                self.pelt.powerController('0')
+                signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
+                self.pool.start(signalworker)
                 print('Turning off controller')
             except Exception as e:
                 print("Could not turn off controller due to error: " , e)
         time.sleep(0.5) 
-        self.getPower()
+
 
     def setTemp(self):
         try:
@@ -130,13 +149,6 @@ class Peltier(QWidget):
             self.powerTimer.stop()
             print("Could not check power due to error: " , e)
     
-    def setPowerStatus(self):
-        self.getPower()
-        if self.power == '0':
-            self.powerStatus.setPixmap(self.redledpixmap)
-        elif self.power =='1':
-            self.powerStatus.setPixmap(self.greenledpixmap)
-
     def showTemp(self):
         try:
             temp = self.pelt.readTemperature()
