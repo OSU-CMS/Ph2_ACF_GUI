@@ -155,6 +155,8 @@ class startupWorker(QRunnable, PeltierSignalGenerator):
         self.sendCommand(self.createCommand('Set Type Define Write', ['0','0','0','0','0','0','0','1']))
         self.sendCommand(self.createCommand('Power On/Off Write' ,['0','0','0','0','0','0','0','0']))
         self.signal.finishedSignal.emit()
+        message, passed = self.sendCommand(self.createCommand('Control Output Polarity Read', ['0','0','0','0','0','0','0','0']))
+        self.signal.messageSignal.emit(message)
 
 
 class PeltierController():
@@ -220,8 +222,9 @@ class PeltierController():
             temp = temp[cutoff+1:]
             for i, _ in enumerate(temp):
                 value[-(i+1)] = temp[-(i+1)]
-            command = self.createCommand('Fixed Desired Control Setting Write', value)
-            _,_ = self.sendCommand(command)
+            return value
+            #command = self.createCommand('Fixed Desired Control Setting Write', value)
+            #_,_ = self.sendCommand(command)
         except Exception as e:
             print("Exception while trying to set temperature: " ,e)
             self.error = True

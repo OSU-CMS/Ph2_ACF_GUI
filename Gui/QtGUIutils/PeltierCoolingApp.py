@@ -51,9 +51,7 @@ class Peltier(QWidget):
         self.polarityButton = QtWidgets.QPushButton("Change Polarity", self)
         self.polarityButton.setEnabled(False)
         self.gridLayout.addWidget(self.polarityButton, 2, 1, 1, 1)
-        self.polarityButton.clicked.connect(self.changePolarity)
-        self.polarityLabel = QtWidgets.QLabel("N/a", self)
-        self.gridLayout.addWidget(self.polarityLabel, 0, 2, 1, 1)
+        self.polarityButton.clicked.connect(self.polarityToggle)
 
         self.powerStatus = QtWidgets.QLabel(self)
         self.powerStatusLabel = QtWidgets.QLabel("Power Status of Peltier: ", self)
@@ -81,6 +79,7 @@ class Peltier(QWidget):
             # Setup controller to be controlled by computer and turn off Peltier if on
             self.setupWorker = startupWorker()
             self.setupWorker.signal.finishedSignal.connect(self.enableButtons)
+            self.setupWorker.signal.messageSignal.connect(lambda polarity: self.setPolarityStatus(polarity))
             self.pool.start(self.setupWorker)
             time.sleep(1) # Needed to avoid collision with temperature and power reading
 
@@ -89,6 +88,8 @@ class Peltier(QWidget):
             self.tempPower.signal.tempSignal.connect(lambda temp: self.currentTempDisplay.display(temp))
             self.tempPower.signal.powerSignal.connect(lambda power : self.setPowerStatus(power))
             self.pool.start(self.tempPower)
+
+            # Getting Polarity
 
         except Exception as e:
             print("Error while attempting to setup Peltier Controller: ", e)
@@ -125,22 +126,46 @@ class Peltier(QWidget):
                 print("Could not turn off controller due to error: " , e)
         time.sleep(0.5) 
 
+    def setPolarityStatus(self, polarity):
+        if polarity[8] == '0':
+            self.polarityValue = 'HEAT WP1+ and WP2-'
+            print("polarityValue: ", self.polarityValue)
+            self.polarityButton.setText(self.polarityValue)
+        elif polarity[8] == '1':
+            self.polarityValue = 'HEAT WP2+ and WP1-'
+            print("polarityValue: ", self.polarityValue)
+            self.polarityButton.setText(self.polarityValue)
+        else:
+            print("Unexpected value sent back from polarity change function")
+
+    def polarityToggle(self):
+        if self.polarityValue == 'HEAT WP1+ and WP2-':
+            polarityCommand = '1'
+            self.polarityValue = 'HEAT WP2+ and WP1-'
+        elif self.polarityValue == 'HEAT WP2+ and WP1-':
+            polarityCommand = '0'
+            self.polarityValue = 'HEAT WP1+ and WP2-'
+        else:
+            print('Unexpected value read for polarity')
+            return
+        print("Sending Polarity Change")
+        polaritySignal = signalWorker('Control Output Polarity Write', ['0','0','0','0','0','0','0', polarityCommand])
+        self.pool.start(polaritySignal)
+        self.polarityButton.setText(self.polarityValue)
+
+
 
     def setTemp(self):
         try:
-            self.pelt.setTemperature(self.setTempInput.value())
+            messsage = self.pelt.setTemperature(self.setTempInput.value())
+            signalworker = signalWorker('Fixed Desired Control Setting Write', message)
             self.currentSetTemp.setText(f"Current Set Temperature: {self.setTempInput.value()}")
         except Exception as e:
             print("Could not set Temperature")
             self.currentSetTemp.setText("N/a")
         # Send temperature reading to device
 
-    def changePolarity(self):
-        try:
-            polarity = self.pelt.changePolarity()
-            self.polarityLabel.setText(f"Change Polarity: {polarity}")
-        except Exception as e:
-            print("Could not change polarity due to error: " , e)
+
 
     def getPower(self):
         try:
