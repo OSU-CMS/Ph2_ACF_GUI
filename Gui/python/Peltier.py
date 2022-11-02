@@ -120,8 +120,11 @@ class signalWorker(QRunnable, PeltierSignalGenerator):
 
     def run(self):
         recievedMessage, passed = self.sendCommand(self.createCommand(self.command, self.message))
-        self.signal.messageSignal.emit(recievedMessage)
-        self.signal.finishedSignal.emit()
+        try:
+            self.signal.messageSignal.emit(recievedMessage)
+            self.signal.finishedSignal.emit()
+        except RuntimeError:
+            pass
 
 
 
@@ -140,9 +143,14 @@ class tempPowerReading(QRunnable, PeltierSignalGenerator):
             temp = int(temp,16)/100
             power = int(power[8])
 
-            self.signal.powerSignal.emit(power)
-            self.signal.tempSignal.emit(temp)
+            try:
+                self.signal.powerSignal.emit(power)
+                self.signal.tempSignal.emit(temp)
+            except RuntimeError:
+                self.readTemp=False
+                print("Temperature and power are no longer being read")
             time.sleep(0.5)
+        print(self.readTemp, "Stop power and temp reading")
 
 
 class startupWorker(QRunnable, PeltierSignalGenerator):

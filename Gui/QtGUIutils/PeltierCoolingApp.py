@@ -114,14 +114,12 @@ class Peltier(QWidget):
             try:
                 signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','1'])
                 self.pool.start(signalworker)
-                print("Turning on controller")
             except Exception as e:
                 print("Could not turn on controller due to error: ", e)
         elif self.powerStatusValue == 1:
             try:
                 signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
                 self.pool.start(signalworker)
-                print('Turning off controller')
             except Exception as e:
                 print("Could not turn off controller due to error: " , e)
         time.sleep(0.5) 
@@ -129,11 +127,9 @@ class Peltier(QWidget):
     def setPolarityStatus(self, polarity):
         if polarity[8] == '0':
             self.polarityValue = 'HEAT WP1+ and WP2-'
-            print("polarityValue: ", self.polarityValue)
             self.polarityButton.setText(self.polarityValue)
         elif polarity[8] == '1':
             self.polarityValue = 'HEAT WP2+ and WP1-'
-            print("polarityValue: ", self.polarityValue)
             self.polarityButton.setText(self.polarityValue)
         else:
             print("Unexpected value sent back from polarity change function")
@@ -148,7 +144,6 @@ class Peltier(QWidget):
         else:
             print('Unexpected value read for polarity')
             return
-        print("Sending Polarity Change")
         polaritySignal = signalWorker('Control Output Polarity Write', ['0','0','0','0','0','0','0', polarityCommand])
         self.pool.start(polaritySignal)
         self.polarityButton.setText(self.polarityValue)
@@ -157,13 +152,26 @@ class Peltier(QWidget):
 
     def setTemp(self):
         try:
-            messsage = self.pelt.setTemperature(self.setTempInput.value())
+            message = self.pelt.setTemperature(self.setTempInput.value())
             signalworker = signalWorker('Fixed Desired Control Setting Write', message)
             self.currentSetTemp.setText(f"Current Set Temperature: {self.setTempInput.value()}")
         except Exception as e:
-            print("Could not set Temperature")
+            print("Could not set Temperature: " , e)
             self.currentSetTemp.setText("N/a")
         # Send temperature reading to device
+
+# Shutdown the peltier if it is on and stop threads that are running
+    def shutdown(self):
+        try:
+            signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
+            self.pool.start(signalworker)
+        except Exception as e:
+            print("Could not turn off controller due to error: " , e)
+
+        try:
+            self.tempPower.readTemp = False
+        except AttributeError:
+            pass
 
 
 

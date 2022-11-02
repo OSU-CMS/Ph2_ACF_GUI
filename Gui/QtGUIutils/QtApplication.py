@@ -1121,13 +1121,20 @@ class QtApplication(QWidget):
 		#	QMessageBox.critical(self, 'Critical Message', 'There is running process, can not close!')
 		#	event.ignore()
 
-		reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to exit?',
+		reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to exit ?',
 			QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
 			print('Application terminated')
 			self.HVpowersupply.TurnOff()
 			self.LVpowersupply.TurnOff()
+
+			# If you didn't start the Peltier controller, tempPower won't be defined
+			try:
+				self.PeltierCooling.shutdown()
+			except AttributeError:
+				pass
+
 			os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
 			event.accept()
 		else:
