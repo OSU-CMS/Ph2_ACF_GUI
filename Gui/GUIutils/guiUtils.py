@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
 from itertools import islice
 from textwrap import dedent
-from PIL import ImageTk, Image
+#from PIL import ImageTk, Image
 from functools import partial
 #from tkinter import scrolledtext 
 
