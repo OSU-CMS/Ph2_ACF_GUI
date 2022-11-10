@@ -140,7 +140,7 @@ class QtApplication(QWidget):
 		if self.expertMode == False:
 			self.HostName = QComboBox()
 			#self.HostName.addItems(DBServerIP.keys())
-  			self.HostName.addItems(dblist)
+			self.HostName.addItems(dblist)
 			self.HostName.currentIndexChanged.connect(self.changeDBList)
 			HostLabel.setBuddy(self.HostName)
 		else:
