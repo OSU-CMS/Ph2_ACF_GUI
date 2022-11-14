@@ -705,7 +705,7 @@ class TestHandler(QObject):
 
 		# manually validate the result
 
-		#print(self.figurelist)
+		print(self.figurelist)
 
 		notAccept = False
 		if status == False:
@@ -806,7 +806,7 @@ class TestHandler(QObject):
 		pass
 
 	def forceContinue(self):
-		reply = QMessageBox.question(self, 'Abort following tests', 'Failed component detected, continue to following test?',
+		reply = QMessageBox.question(None, 'Abort following tests', 'Failed component detected, continue to following test?',
 				QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
