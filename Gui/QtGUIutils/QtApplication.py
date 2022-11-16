@@ -864,7 +864,7 @@ class QtApplication(QWidget):
 		#FwModule = []
 		#for fw in self.FwUnderUsed:
 		#	FwModule.append(self.FwDict[fw])
-		self.StartNewTest = QtStartWindow(self,FwModule)
+		self.StartNewTest = QtStartWindow(self , FwModule)
 		self.NewTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
 		self.ExitButton.setDisabled(True)

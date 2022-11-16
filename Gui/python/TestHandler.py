@@ -46,6 +46,7 @@ class TestHandler(QObject):
 	historyRefresh = pyqtSignal(object)
 	updateResult = pyqtSignal(object)
 	updateValidation = pyqtSignal(object,object)
+	powerSignal = pyqtSignal()
 
 	def __init__(self,runwindow,master,info,firmware):
 		super(TestHandler,self).__init__()
@@ -261,6 +262,7 @@ class TestHandler(QObject):
 			QMessageBox.information(None, "Warning", "Not a valid test", QMessageBox.Ok)
 			return
 
+	# This loops over all the tests by using the on_finish pyqt decorator defined below
 	def runCompositeTest(self,testName):
 		if self.halt:
 			return
@@ -687,11 +689,15 @@ class TestHandler(QObject):
 		self.saveConfigs()
 
 		EnableReRun = False
+
+		# Will send signal to turn off power supply after composite or single tests are run
 		if isCompositeTest(self.info[1]):
 			if self.testIndexTracker == len(CompositeList[self.info[1]]):
+				self.powerSignal.emit()
 				EnableReRun = True
 		elif isSingleTest(self.info[1]):
 			EnableReRun = True
+			self.powerSignal.emit()
 
 		self.stepFinished.emit(EnableReRun)
 

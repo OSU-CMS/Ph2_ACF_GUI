@@ -280,13 +280,8 @@ class QtStartWindow(QWidget):
 			if reply == QMessageBox.Yes:
 				event.accept()
 				self.release()
-				#self.master.powersupply.TurnOff()
+				# This line was previosly commented
+				self.master.powersupply.TurnOff()
 				print('Window closed')
 			else:
 				event.ignore()
-
-
-		
-
-
-		
