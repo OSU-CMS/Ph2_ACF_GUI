@@ -184,9 +184,17 @@ class PeltierController():
         if passed:
             message = message[1:9]
             message = "".join(message) # Converts the list of digits to single string
-            a, b = self.sendCommand(self.createCommand('Control Type Read', ['0','0','0','0','0','0','0','0']))
-            print(a)
-            return int(message,16)/100
+        #    a, b = self.sendCommand(self.createCommand('Control Type Read', ['0','0','0','0','0','0','0','0']))
+        #    print(a)
+
+        #    Peltier will return two's compliment of negative numbers.
+        #    Hopefully, 500C is a temperature that is never encountered in the lab, therefore if  the temp is greater than 500
+        #    take the twos compliment
+            message = int(message,16)/100
+            if message > 1000:
+                return -1 * self.twosCompliment(message)
+            else:
+                return message
         else:
             print("Couldn't read temperature")
             return
