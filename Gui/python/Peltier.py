@@ -90,11 +90,9 @@ class PeltierSignalGenerator():
         return command
 
     def sendCommand(self, command):
-        print("SEND: " , command)
         for bit in command:
             self.ser.write(bit.encode())
         message, passed = self.recieveMessage()
-        print("REC: " , message)
         return message, passed
 
     # Will recieve message but will only check if the command gave an error, will not decode the message
@@ -148,9 +146,7 @@ class tempPowerReading(QRunnable, PeltierSignalGenerator):
                 self.signal.tempSignal.emit(temp)
             except RuntimeError:
                 self.readTemp=False
-                print("Temperature and power are no longer being read")
             time.sleep(0.5)
-        print(self.readTemp, "Stop power and temp reading")
 
 
 class startupWorker(QRunnable, PeltierSignalGenerator):
@@ -159,7 +155,6 @@ class startupWorker(QRunnable, PeltierSignalGenerator):
         self.signal = Signals()
 
     def run(self):
-        print("Running thread")
         self.sendCommand(self.createCommand('Set Type Define Write', ['0','0','0','0','0','0','0','1']))
         self.sendCommand(self.createCommand('Power On/Off Write' ,['0','0','0','0','0','0','0','0']))
         self.signal.finishedSignal.emit()
@@ -310,14 +305,12 @@ class PeltierController():
         ss = self.checksum(aa + cc + dd)
         etx = ['\r']
         command = stx + aa + cc + dd + ss + etx
-        print("CMD:",command)
         return command
     
     def sendCommand(self, command):
         for bit in command:
             self.ser.write(bit.encode())
         message, passed = self.recieveMessage()
-        print("REC:",message)
         return message, passed
 
     # Will recieve message but will only check if the command gave an error, will not decode the message
@@ -342,7 +335,6 @@ class PeltierController():
         while self.serial.canReadLine():
             try:
                 text = self.serial.readLine().data().decode("utf-8","ignore")
-                print(text)
 
             except Exception as err:
                 logger.error("{0}".format(err))

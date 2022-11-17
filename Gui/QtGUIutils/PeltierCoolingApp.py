@@ -20,8 +20,6 @@ class Peltier(QWidget):
     def __init__(self, dimension):
         super(Peltier, self).__init__()
         self.pool = QThreadPool.globalInstance()
-        print("Number of threads being used", self.pool.activeThreadCount())
-        print("Max Number of Threads", self.pool.maxThreadCount())
         self.Ph2ACFDirectory = os.getenv("GUI_dir")
         self.setupUi()
         self.show()
@@ -44,6 +42,7 @@ class Peltier(QWidget):
         self.setTempButton.setEnabled(False)
         self.gridLayout.addWidget(self.setTempButton, 1, 1, 1, 1)
         self.setTempInput = QtWidgets.QDoubleSpinBox(self)
+        self.setTempInput.setRange(-50,50)
         self.gridLayout.addWidget(self.setTempInput, 1, 0, 1, 1)
         self.currentTempLabel = QtWidgets.QLabel(self)
         self.gridLayout.addWidget(self.currentTempLabel, 2, 0, 1, 1)
