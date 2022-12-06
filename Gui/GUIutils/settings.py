@@ -67,7 +67,7 @@ ModuleLaneMap = {
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
-	"Yellow Module (Purdue)" : {"0":"6","1":"5","2":"7","3":"0"}
+	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"}
 }
 
 BoxSize = {
