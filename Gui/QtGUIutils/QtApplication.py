@@ -30,6 +30,8 @@ from Gui.python.ArduinoWidget import *
 from Gui.QtGUIutils.QtRunWindow import *
 from Gui.python.SimplifiedMainWidget import *
 
+
+# Main Widget that is called by the Ph2_ACF_GUI
 class QtApplication(QWidget):
 	globalStop = pyqtSignal()
 	def __init__(self, dimension):
@@ -40,7 +42,6 @@ class QtApplication(QWidget):
 		self.expertMode = False
 		self.FwUnderUsed = ''
 
-		# self.FwUnderUsed = []
 
 		self.FwDict = {}
 		self.FwStatusVerboseDict = {}
@@ -56,15 +57,12 @@ class QtApplication(QWidget):
 		self.initLog()
 		self.createLogin()
 
+#Setting up dark theme for login page
 	def setLoginUI(self):
 		self.setGeometry(300, 300, 400, 500)  
 		self.setWindowTitle('Phase2 Pixel Module Test GUI')
-
-		if False and sys.platform.startswith("darwin"):
-			QApplication.setStyle(QStyleFactory.create('macintosh'))
-			QApplication.setPalette(QApplication.style().standardPalette())
 	
-		elif sys.platform.startswith("linux") or sys.platform.startswith("win") or sys.platform.startswith("darwin"):
+		if sys.platform.startswith("linux") or sys.platform.startswith("win") or sys.platform.startswith("darwin"):
 			darkPalette = QPalette()
 			darkPalette.setColor(QPalette.Window, QColor(53,53,53))
 			darkPalette.setColor(QPalette.WindowText, Qt.white)

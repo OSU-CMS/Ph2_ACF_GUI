@@ -11,6 +11,3 @@ args = parser.parse_args()
 
 os.system('rm -r {0}/test/Results/*'.format(os.environ.get("Ph2_ACF_AREA")))
 os.system('cd {0}/test && CMSITminiDAQ -f {1} -c {2}'.format(os.environ.get("Ph2_ACF_AREA"), args.file, calibration[args.calib]))
-
-
-
