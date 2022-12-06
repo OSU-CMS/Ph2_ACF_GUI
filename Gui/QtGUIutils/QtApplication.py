@@ -16,6 +16,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.GPIBInterface import PowerSupply
+from Gui.QtGUIutils.PeltierCoolingApp import *
 from Gui.QtGUIutils.QtFwCheckWindow  import *
 from Gui.QtGUIutils.QtFwStatusWindow import *
 from Gui.QtGUIutils.QtSummaryWindow import *
@@ -693,6 +694,12 @@ class QtApplication(QWidget):
 		self.ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
 		self.ReviewModuleEdit.setPlaceholderText('Enter Module ID')
 
+		self.PeltierCooling = Peltier(100)
+		self.PeltierBox = QGroupBox("Peltier Controller",self)
+		self.PeltierLayout = QGridLayout()
+		self.PeltierLayout.addWidget(self.PeltierCooling)
+		self.PeltierBox.setLayout(self.PeltierLayout)
+
 		layout = QGridLayout()
 		layout.addWidget(self.NewTestButton,0, 0, 1, 1)
 		layout.addWidget(NewTestLabel, 0, 1, 1, 2)
@@ -704,7 +711,6 @@ class QtApplication(QWidget):
 		layout.addWidget(ReviewLabel,  3, 1, 1, 2)
 		layout.addWidget(self.ReviewModuleButton,4, 0, 1, 1)
 		layout.addWidget(self.ReviewModuleEdit,  4, 1, 1, 2)
-
 
 		####################################################
 		# Functions for expert mode
@@ -773,16 +779,17 @@ class QtApplication(QWidget):
 		self.AppLayout.addWidget(self.ExitButton)
 		self.AppOption.setLayout(self.AppLayout)
 
-		self.mainLayout.addWidget(self.FirmwareStatus)
-		self.mainLayout.addWidget(self.UseDefaultGroup)
-		self.mainLayout.addWidget(self.HVPowerGroup)
-		self.mainLayout.addWidget(self.HVPowerRemoteControl)
-		self.mainLayout.addWidget(self.LVPowerGroup)
-		self.mainLayout.addWidget(self.LVPowerRemoteControl)
-		self.mainLayout.addWidget(self.ArduinoGroup)
-		self.mainLayout.addWidget(self.ArduinoControl)
-		self.mainLayout.addWidget(self.MainOption)
-		self.mainLayout.addWidget(self.AppOption)
+		self.mainLayout.addWidget(self.FirmwareStatus, 0,0,1,2)
+		self.mainLayout.addWidget(self.UseDefaultGroup, 1,0,1,2)
+		self.mainLayout.addWidget(self.HVPowerGroup, 2,0,1,2)
+		self.mainLayout.addWidget(self.HVPowerRemoteControl, 3, 0,1,2)
+		self.mainLayout.addWidget(self.LVPowerGroup, 4, 0,1,2)
+		self.mainLayout.addWidget(self.LVPowerRemoteControl, 5, 0,1,2)
+		self.mainLayout.addWidget(self.ArduinoGroup, 6, 0,1,2)
+		self.mainLayout.addWidget(self.ArduinoControl, 7, 0,1,2)
+		self.mainLayout.addWidget(self.MainOption,8, 0,1,1)
+		self.mainLayout.addWidget(self.PeltierBox, 8,1,1,1)
+		self.mainLayout.addWidget(self.AppOption, 9, 0,1,2)
 
 		self.setDefault()
 	
@@ -1117,13 +1124,20 @@ class QtApplication(QWidget):
 		#	QMessageBox.critical(self, 'Critical Message', 'There is running process, can not close!')
 		#	event.ignore()
 
-		reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to exit?',
+		reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to exit ?',
 			QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
 			print('Application terminated')
 			self.HVpowersupply.TurnOff()
 			self.LVpowersupply.TurnOff()
+
+			# If you didn't start the Peltier controller, tempPower won't be defined
+			try:
+				self.PeltierCooling.shutdown()
+			except AttributeError:
+				pass
+
 			os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
 			event.accept()
 		else:

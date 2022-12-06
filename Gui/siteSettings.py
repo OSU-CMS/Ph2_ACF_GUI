@@ -21,11 +21,13 @@ defaultUSBPortLV = ["ASRL/dev/ttyUSBLV::INSTR"]
 defaultLVModel = ["KeySight E3633 (RS232)"]
 # default model for LV power supply
 defaultLVModel = ["KeySight E3633 (RS232)"]
+# default setting for module ( "SingleSCC","TFPX Quad","TEPX Quad","TBPX Quad","Yellow Module (Purdue)"):
+defaultModuleType = "SingleSCC"
 # default mode for LV powering (Direct,SLDO,etc)
 defaultPowerMode = "Direct"
 defaultVoltageMap = {
     "Direct" : 1.28,
-    "SLDO"   : 1.85
+    "SLDO"   : 1.90
 }
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 115200
@@ -39,3 +41,10 @@ defaultDBName = 'SampleDB'
 #default settings for SLDO scan.
 defaultSLDOscanVoltage = 0.0
 defaultSLDOscanMaxCurrent = 0.0
+
+
+### Setting for Peltier Controller
+defaultPeltierPort = '/dev/ttyUSB0'
+defaultPeltierBaud = 9600
+defaultPeltierSetTemp = 20
+defaultPeltierWarningTemp = 40
