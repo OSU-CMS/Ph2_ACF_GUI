@@ -262,8 +262,9 @@ class SimpleModuleBox(QWidget):
 		self.setLayout(self.mainLayout)
 
 	def createRow(self):
-		prefix = defaultModuleType if type(defaultModuleType) ==  str else ""
-		SerialLabel = QLabel("{} SerialNumber:".format(prefix))
+		SerialLabel = QLabel("SerialNumber:")
+		#prefix = defaultModuleType if type(defaultModuleType) ==  str else ""
+		#SerialLabel = QLabel("{} SerialNumber:".format(prefix))
 		self.SerialEdit = QLineEdit()
 		self.SerialEdit.returnPressed.connect(self.on_textChange)
 		#self.SerialEdit.setMinimumWidth(120)
