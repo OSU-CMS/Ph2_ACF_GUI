@@ -1,4 +1,6 @@
 import serial
+import os
+import signal
 from Gui.siteSettings import *
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
@@ -9,6 +11,7 @@ import logging
 
 # Class used to send and read commands from the Peltier controller
 class Signals(QtCore.QObject):
+    startedSignal = pyqtSignal()
     finishedSignal = pyqtSignal()
     passedSignal = pyqtSignal(bool)
     messageSignal = pyqtSignal(list)
@@ -93,6 +96,7 @@ class PeltierSignalGenerator():
         for bit in command:
             self.ser.write(bit.encode())
         message, passed = self.recieveMessage()
+        self.passed = True
         return message, passed
 
     # Will recieve message but will only check if the command gave an error, will not decode the message
@@ -108,6 +112,7 @@ class PeltierSignalGenerator():
             time.sleep(0.1)
             return buff, connection
 
+
 # Worker that will be used to send commands to the Peltier
 class signalWorker(QRunnable, PeltierSignalGenerator):
     def __init__(self, command, message):
@@ -118,11 +123,8 @@ class signalWorker(QRunnable, PeltierSignalGenerator):
 
     def run(self):
         recievedMessage, passed = self.sendCommand(self.createCommand(self.command, self.message))
-        try:
-            self.signal.messageSignal.emit(recievedMessage)
-            self.signal.finishedSignal.emit()
-        except RuntimeError:
-            pass
+        self.signal.messageSignal.emit(recievedMessage)
+        self.signal.finishedSignal.emit()
 
 
 
@@ -149,16 +151,28 @@ class tempPowerReading(QRunnable, PeltierSignalGenerator):
             time.sleep(0.5)
 
 
-class startupWorker(QRunnable, PeltierSignalGenerator):
+class startupWorker(PeltierSignalGenerator):
     def __init__(self):
         super().__init__()
         self.signal = Signals()
+        self.finishedSetup = False
+
+    def handler(self, signum, frame):
+        signame = signal.Signals(signum).name
+        raise OSError("Couldn't Communicate with Peltier Controller!")
 
     def run(self):
+        # Set the signal handler and a 5-second alarm
+        signal.signal(signal.SIGALRM, self.handler)
+        signal.alarm(5)
+
         self.sendCommand(self.createCommand('Set Type Define Write', ['0','0','0','0','0','0','0','1']))
         self.sendCommand(self.createCommand('Power On/Off Write' ,['0','0','0','0','0','0','0','0']))
+        signal.alarm(0) # Disable Alarm
+
         self.signal.finishedSignal.emit()
         message, passed = self.sendCommand(self.createCommand('Control Output Polarity Read', ['0','0','0','0','0','0','0','0']))
+        self.finishedSetup = True
         self.signal.messageSignal.emit(message)
 
 
@@ -306,7 +320,7 @@ class PeltierController():
         etx = ['\r']
         command = stx + aa + cc + dd + ss + etx
         return command
-    
+
     def sendCommand(self, command):
         for bit in command:
             self.ser.write(bit.encode())
@@ -338,7 +352,6 @@ class PeltierController():
 
             except Exception as err:
                 logger.error("{0}".format(err))
-
 
 
 

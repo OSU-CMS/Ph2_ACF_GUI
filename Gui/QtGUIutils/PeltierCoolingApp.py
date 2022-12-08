@@ -15,11 +15,13 @@ from PyQt5.QtCore import *
 from Gui.python.Peltier import *
 import time
 import os
+from Gui.siteSettings import *
 
 class Peltier(QWidget):
     def __init__(self, dimension):
         super(Peltier, self).__init__()
         self.pool = QThreadPool.globalInstance()
+        self.peltierInUse = False
         self.Ph2ACFDirectory = os.getenv("GUI_dir")
         self.setupUi()
         self.show()
@@ -34,6 +36,8 @@ class Peltier(QWidget):
         self.currentSetTemp = QtWidgets.QLabel("Current Set Temperature: ", self)
         self.gridLayout.addWidget(self.currentSetTemp, 3,2,1,1)
         self.startButton = QtWidgets.QPushButton("Start Peltier Controller", self)
+        if not usePeltier:
+           self.startButton.setEnabled(False)
         self.startButton.clicked.connect(self.setup)
         self.gridLayout.addWidget(self.startButton, 0,0,1,1)
         self.currentTempDisplay = QtWidgets.QLCDNumber(self)
@@ -79,7 +83,7 @@ class Peltier(QWidget):
             self.setupWorker = startupWorker()
             self.setupWorker.signal.finishedSignal.connect(self.enableButtons)
             self.setupWorker.signal.messageSignal.connect(lambda polarity: self.setPolarityStatus(polarity))
-            self.pool.start(self.setupWorker)
+            self.setupWorker.run()
             time.sleep(1) # Needed to avoid collision with temperature and power reading
 
             #Start temperature and power monitoring
@@ -95,9 +99,10 @@ class Peltier(QWidget):
 
 
     def enableButtons(self):
-        self.powerButton.setEnabled(True)
-        self.polarityButton.setEnabled(True)
-        self.setTempButton.setEnabled(True)
+        if usePeltier == True:
+            self.powerButton.setEnabled(True)
+            self.polarityButton.setEnabled(True)
+            self.setTempButton.setEnabled(True)
 
 
     def setPowerStatus(self, power):
@@ -161,15 +166,18 @@ class Peltier(QWidget):
 
 # Shutdown the peltier if it is on and stop threads that are running
     def shutdown(self):
-        try:
-            signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
-            self.pool.start(signalworker)
-        except Exception as e:
-            print("Could not turn off controller due to error: " , e)
+        if self.setupWorker.finishedSetup:
+            try:
+                signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
+                self.pool.start(signalworker)
+            except Exception as e:
+                print("Could not turn off controller due to error: " , e)
 
-        try:
-            self.tempPower.readTemp = False
-        except AttributeError:
+            try:
+                self.tempPower.readTemp = False
+            except AttributeError:
+                pass
+        else:
             pass
 
 
