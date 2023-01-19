@@ -20,8 +20,8 @@ from Gui.siteSettings import *
 class Peltier(QWidget):
     def __init__(self, dimension):
         super(Peltier, self).__init__()
-        self.pool = QThreadPool.globalInstance()
         self.peltierInUse = False
+        self.timer = QTimer()
         self.Ph2ACFDirectory = os.getenv("GUI_dir")
         self.setupUi()
         self.show()
@@ -81,16 +81,17 @@ class Peltier(QWidget):
 
             # Setup controller to be controlled by computer and turn off Peltier if on
             self.setupWorker = startupWorker()
-            self.setupWorker.signal.finishedSignal.connect(self.enableButtons)
             self.setupWorker.signal.messageSignal.connect(lambda polarity: self.setPolarityStatus(polarity))
-            self.setupWorker.run()
-            time.sleep(1) # Needed to avoid collision with temperature and power reading
+            self.usePeltier = True
+            self.enableButtons()
+            #time.sleep(0.04) # Needed to avoid collision with temperature and power reading
 
             #Start temperature and power monitoring
             self.tempPower = tempPowerReading()
+            self.timer.timeout.connect(self.tempPower.run)
             self.tempPower.signal.tempSignal.connect(lambda temp: self.currentTempDisplay.display(temp))
             self.tempPower.signal.powerSignal.connect(lambda power : self.setPowerStatus(power))
-            self.pool.start(self.tempPower)
+            self.timer.start(500)
 
             # Getting Polarity
 
@@ -116,14 +117,14 @@ class Peltier(QWidget):
     def powerToggle(self):
         if self.powerStatusValue == 0:
             try:
+                print("Current Power Status", self.powerStatusValue)
                 signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','1'])
-                self.pool.start(signalworker)
             except Exception as e:
                 print("Could not turn on controller due to error: ", e)
         elif self.powerStatusValue == 1:
             try:
+                print("Current Power Status", self.powerStatusValue)
                 signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
-                self.pool.start(signalworker)
             except Exception as e:
                 print("Could not turn off controller due to error: " , e)
         time.sleep(0.5) 
@@ -149,7 +150,7 @@ class Peltier(QWidget):
             print('Unexpected value read for polarity')
             return
         polaritySignal = signalWorker('Control Output Polarity Write', ['0','0','0','0','0','0','0', polarityCommand])
-        self.pool.start(polaritySignal)
+# WTH did I use pool.start
         self.polarityButton.setText(self.polarityValue)
 
 
@@ -158,7 +159,10 @@ class Peltier(QWidget):
         try:
             message = self.pelt.setTemperature(self.setTempInput.value())
             signalworker = signalWorker('Fixed Desired Control Setting Write', message)
-            self.currentSetTemp.setText(f"Current Set Temperature: {self.setTempInput.value()}")
+            time.sleep(0.04)
+#FIXME Should read in temperature from Controller not from input
+            self.currentSetTempValue = self.pelt.readSetTemperature()
+            self.currentSetTemp.setText(f"Current Set Temperature: {self.currentSetTempValue}")
         except Exception as e:
             print("Could not set Temperature: " , e)
             self.currentSetTemp.setText("N/a")
@@ -169,7 +173,6 @@ class Peltier(QWidget):
         if self.setupWorker.finishedSetup:
             try:
                 signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
-                self.pool.start(signalworker)
             except Exception as e:
                 print("Could not turn off controller due to error: " , e)
 
@@ -196,7 +199,12 @@ class Peltier(QWidget):
         except Exception as e:
             self.timer.stop()
             print("Could not read temperature due to error: ", e)
-
+    def showSetTemp(self, setTemp):
+        try:
+            self.currentSetTemp.setText(f"Current Set Temperature: {setTemp}")
+        except:
+            #FIXME add better debugging implementation here
+            print("Could not read set Temperature")
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

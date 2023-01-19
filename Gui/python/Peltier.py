@@ -93,18 +93,21 @@ class PeltierSignalGenerator():
         return command
 
     def sendCommand(self, command):
+        print("SEND: ", command)
         for bit in command:
             self.ser.write(bit.encode())
         message, passed = self.recieveMessage()
         self.passed = True
-        return message, passed
+        print("REC: " , message)
+        return message, passed 
+# Will recieve message but will only check if the command gave an error, will not decode the message
 
-    # Will recieve message but will only check if the command gave an error, will not decode the message
     def recieveMessage(self):
         connection = True
         buff = self.buffer.copy()
         for i in range(len(buff)):
             buff[i] = self.ser.read(1).decode('utf-8')
+        print("REC: ", buff)
         if buff == self.checksumError:
             connection = False
             return buff, connection
@@ -114,21 +117,23 @@ class PeltierSignalGenerator():
 
 
 # Worker that will be used to send commands to the Peltier
-class signalWorker(QRunnable, PeltierSignalGenerator):
+class signalWorker(PeltierSignalGenerator):
     def __init__(self, command, message):
         super().__init__()
         self.signal = Signals()
         self.command = command
         self.message = message
+        self.run()
 
     def run(self):
         recievedMessage, passed = self.sendCommand(self.createCommand(self.command, self.message))
-        self.signal.messageSignal.emit(recievedMessage)
+        self.signal.messageSignal.emit(recievedMessage) # Connect signal worker to whichever function you want to connect to.
         self.signal.finishedSignal.emit()
 
 
 
 #Used to read power and temperature constantly
+# This does not use run at the end of init because I don't want the frontend making an instance of the whole class over and over again
 class tempPowerReading(QRunnable, PeltierSignalGenerator):
     def __init__(self):
         super().__init__()
@@ -136,18 +141,17 @@ class tempPowerReading(QRunnable, PeltierSignalGenerator):
         self.signal = Signals()
 
     def run(self):
-        while self.readTemp:
+        try:
             temperature, passTemp = self.sendCommand(self.createCommand('Input1', ['0','0','0','0','0','0','0','0']))
             power, passPower = self.sendCommand(self.createCommand('Power On/Off Read' ,['0','0','0','0','0','0','0','0']))
             temp = "".join(temperature[1:9])
             temp = int(temp,16)/100
             power = int(power[8])
 
-            try:
-                self.signal.powerSignal.emit(power)
-                self.signal.tempSignal.emit(temp)
-            except RuntimeError:
-                self.readTemp=False
+            self.signal.powerSignal.emit(power)
+            self.signal.tempSignal.emit(temp)
+        except RuntimeError:
+            self.readTemp=False
             time.sleep(0.5)
 
 
@@ -156,6 +160,7 @@ class startupWorker(PeltierSignalGenerator):
         super().__init__()
         self.signal = Signals()
         self.finishedSetup = False
+        self.run()
 
     def handler(self, signum, frame):
         signame = signal.Signals(signum).name
@@ -167,16 +172,20 @@ class startupWorker(PeltierSignalGenerator):
         signal.alarm(5)
 
         self.sendCommand(self.createCommand('Set Type Define Write', ['0','0','0','0','0','0','0','1']))
+        time.sleep(0.04)
         self.sendCommand(self.createCommand('Power On/Off Write' ,['0','0','0','0','0','0','0','0']))
+        time.sleep(0.04)
+        self.sendCommand(self.createCommand('Control Type Write', ['0','0','0','0','0','0','0','1']))
+        time.sleep(0.04)
+        self.sendCommand(self.createCommand('Proportional Bandwidth Write', ['0','0','0','0','0','0','c', '8']))
         signal.alarm(0) # Disable Alarm
 
         self.signal.finishedSignal.emit()
         message, passed = self.sendCommand(self.createCommand('Control Output Polarity Read', ['0','0','0','0','0','0','0','0']))
-        self.finishedSetup = True
         self.signal.messageSignal.emit(message)
 
 
-class PeltierController():
+class PeltierController(PeltierSignalGenerator):
     def __init__(self, timeout=1):
         super().__init__()
         self.error = False
@@ -248,8 +257,6 @@ class PeltierController():
             for i, _ in enumerate(temp):
                 value[-(i+1)] = temp[-(i+1)]
             return value
-            #command = self.createCommand('Fixed Desired Control Setting Write', value)
-            #_,_ = self.sendCommand(command)
         except Exception as e:
             print("Exception while trying to set temperature: " ,e)
             self.error = True
@@ -358,9 +365,13 @@ class PeltierController():
 
 if __name__ == "__main__":
     # If your port and/or baud rate are different change these parameters
-    pelt = PeltierController('/dev/ttyUSB0', 9600)
+    pelt = PeltierController()
+    print(pelt.checksum(['0','0','2','d','0','0','0','0','0','0','0','1']))
+
     pelt.setTemperature(defaultPeltierSetTemp)
+    pelt.powerController(1)
     while True:
         time.sleep(1)
-        print(pelt.readTemperature())
-        print(pelt.readSetTemperature())
+        print("Current Temperature: ",pelt.readTemperature())
+        print("Set Temperature: ", pelt.readSetTemperature())
+        print("Current Power Status: ", pelt.checkPower())
