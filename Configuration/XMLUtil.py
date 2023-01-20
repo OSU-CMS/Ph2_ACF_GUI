@@ -5,6 +5,8 @@ from Configuration.Settings.FESettings import *
 from Configuration.Settings.HWSettings import *
 from Configuration.Settings.MonitoringSettings import *
 from Configuration.Settings.RegisterSettings import *
+from Gui.GUIutils.settings import *
+
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -251,10 +253,17 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
         Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,'Status':HyBridModule.Status,'Name':HyBridModule.Name})
+        #### This is where the RD53_Files is setup ####
+        ##FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
+        HyBridModule.SetHyBridType(BoardtypeMap[os.environ.get('Ph2_ACF_VERSION')])
+        print("This is the Hybrid Type: ", HyBridModule.HyBridType)
         Node_FEPath = ET.SubElement(Node_HyBrid, HyBridModule.HyBridType+'_Files')
         Node_FEPath = SetNodeAttribute(Node_FEPath,{'file':HyBridModule.File_Path})
         FEList = HyBridModule.FEList
+        ### This is where the RD53 block is being made ###
         for FE in FEList:
+          BeBoard.boardType = BoardtypeMap[os.environ.get('Ph2_ACF_VERSION')] #FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
+          print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
           Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configfile':FE.configfile})
           Node_FESetting = ET.SubElement(Node_FE,"Settings")

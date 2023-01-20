@@ -453,7 +453,7 @@ def GradeGainOptimization(canvasList):
 			passModule[Module_ID] = {0 : False}
 	return grade, passModule, figureList
 
-def GradeThrAdjustment(canvasList):
+def GradeThresholdAdjustment(canvasList):
 	grade = {}
 	passModule = {}
 	factorPerModule = {}
@@ -509,7 +509,7 @@ def GradeThrAdjustment(canvasList):
 			passModule[Module_ID] = {0 : False}
 	return grade, passModule, figureList
 
-def GradeThrEqualization(canvasList):
+def GradeThresholdEqualization(canvasList):
 	grade = {}
 	passModule = {}
 	factorPerModule = {}
