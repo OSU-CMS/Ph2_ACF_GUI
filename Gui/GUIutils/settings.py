@@ -30,7 +30,8 @@ else:
 	'fc7.board.1'			 :  '192.168.1.80',
 	'fc7.board.2'			 :  '127.0.0.1',#'192.168.1.81',
 	}
-
+	
+'''
 DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
 	'local'					 :  '127.0.0.1',
@@ -47,6 +48,26 @@ DBNames = {
 	'OSU-remote'			 :  ['SampleDB','phase2pixel_test'],
 	'Purdue-remote'			 :  ['cmsfpix_phase2'],
 }
+'''
+
+# Note: First element of list will be shown as default value
+# Note: The varibale name is same as hostname
+dblist = []
+class DBServerIP:
+	All = "All"
+	All_list = ['phase2pixel_test', 'DBName2', 'DBName3']
+	def __init__(self,DBhostname,DBIP,DBName):
+		self.DBhostname = DBhostname
+		self.DBIP = DBIP
+		self.DBName = DBName
+Central_remote= DBServerIP('Central_remote','0.0.0.0',['phase2pixel_test', 'DBName2', 'DBName3'])
+dblist.append(Central_remote.DBhostname)
+local = DBServerIP('local','127.0.0.1',['SampleDB','phase2pixel_test'])
+dblist.append(local.DBhostname)
+OSU_remote = DBServerIP('OSU_remote','128.146.38.1',['SampleDB','phase2pixel_test'])
+dblist.append(OSU_remote.DBhostname)
+Purdue_remote = DBServerIP('Purdue_remote','cmsfpixdb.physics.purdue.edu',['cmsfpix_phase2']) 
+dblist.append(Purdue_remote.DBhostname)
 
 # Set the IT_uTDC_firmware for test
 FPGAConfigList =  {
@@ -60,6 +81,15 @@ ModuleType = {
 	3	:	"TEPX Quad",
 	4	:	"TBPX Quad",
 	5   : 	"Yellow Module (Purdue)"
+}
+
+firmware_image = {
+	"SingleSCC" : {"v4-06":"SCC_ELE_RD53A_v4-5.bit","v4-02":"SCC_ELE_RD53A_v4-2.bit"},
+	"Yellow Module (Purdue)" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TFPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TEPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TBPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+#	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
 }
 
 ModuleLaneMap = {
@@ -186,4 +216,7 @@ updatedXMLValues = defaultdict(dict)
 
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
 
-
+BoardtypeMap = {
+	'v4-06': 'RD53A',
+	'v4-02': 'RD53'
+}

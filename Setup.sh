@@ -1,4 +1,4 @@
-export Ph2_ACF_AREA=/home/RD53A/workspace/v4.0.2/Ph2_ACF
+export Ph2_ACF_AREA=/home/RD53A/workspace/v4.0.6/Ph2_ACF
 export DATA_dir=/home/RD53A/data/TestResults
 export GUI_dir=$PWD
 
@@ -35,6 +35,7 @@ chmod 755 $PWD/Gui/GUIutils/*.sh
 
 cd $Ph2_ACF_AREA
 source setup.sh
+export Ph2_ACF_VERSION=$(git describe --tags --abbrev=0)
 
 if [ "$UsePowerSupplyLib" = true ]
 then

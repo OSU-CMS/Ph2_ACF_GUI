@@ -140,7 +140,8 @@ class QtApplication(QWidget):
 
 		if self.expertMode == False:
 			self.HostName = QComboBox()
-			self.HostName.addItems(DBServerIP.keys())
+			#self.HostName.addItems(DBServerIP.keys())
+			self.HostName.addItems(dblist)
 			self.HostName.currentIndexChanged.connect(self.changeDBList)
 			HostLabel.setBuddy(self.HostName)
 		else:
@@ -154,7 +155,8 @@ class QtApplication(QWidget):
 		DatabaseLabel = QLabel("Database:")
 		if self.expertMode == False:	
 			self.DatabaseCombo = QComboBox()
-			self.DBNames = DBNames['All']
+			#self.DBNames = DBNames['All']
+			self.DBNames = eval(self.HostName.currentText()+'.All_list')
 			self.DatabaseCombo.addItems(self.DBNames)
 			self.DatabaseCombo.setCurrentIndex(0)
 		else:
@@ -240,7 +242,8 @@ class QtApplication(QWidget):
 
 	def changeDBList(self):
 		try:
-			self.DBNames = DBNames[str(self.HostName.currentText())]
+			#self.DBNames = DBNames[str(self.HostName.currentText())]
+			self.DBNames = eval(self.HostName.currentText()+'.DBName')
 			self.DatabaseCombo.clear()
 			self.DatabaseCombo.addItems(self.DBNames)
 			self.DatabaseCombo.setCurrentIndex(0)
@@ -548,7 +551,7 @@ class QtApplication(QWidget):
 
 		self.UseDefaultGroup = QGroupBox()
 		self.DefaultLayout = QHBoxLayout()
-		self.DefaultButton = QPushButton("&Connet all devices")
+		self.DefaultButton = QPushButton("&Connect all devices")
 		self.DefaultButton.clicked.connect(self.useDefault)
 		self.DefaultLabel = QLabel()
 		self.DefaultLabel.setText("Connecting to all default devices...")

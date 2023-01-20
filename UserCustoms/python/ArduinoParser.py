@@ -18,7 +18,7 @@ ProbeMapOSU = {
 ThresholdMapOSU = {
     'DHT11': [0,60],
     'MAX31850': [-20,50],
-    'MAX31865': [-20,23],
+    'MAX31865': [-20,23]
 }
 def ArduinoParserCustomOSU(text):
     StopSignal = False
