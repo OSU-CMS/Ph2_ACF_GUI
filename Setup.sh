@@ -28,7 +28,7 @@ then
 else
     unset PowerSupplyArea
 fi
-export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
+export PYTHONPATH=/usr/lib64/root:${GUI_dir}
 
 #export DATA_dir=/Users/czkaiweb/Research/data/
 chmod 755 $PWD/Gui/GUIutils/*.sh
