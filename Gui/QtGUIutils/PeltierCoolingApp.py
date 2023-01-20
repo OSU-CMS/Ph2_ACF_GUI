@@ -82,6 +82,7 @@ class Peltier(QWidget):
             # Setup controller to be controlled by computer and turn off Peltier if on
             self.setupWorker = startupWorker()
             self.setupWorker.signal.messageSignal.connect(lambda polarity: self.setPolarityStatus(polarity))
+            self.setupWorker.run()                
             self.usePeltier = True
             self.enableButtons()
             #time.sleep(0.04) # Needed to avoid collision with temperature and power reading
@@ -119,25 +120,31 @@ class Peltier(QWidget):
             try:
                 print("Current Power Status", self.powerStatusValue)
                 signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','1'])
+                signalworker.run()
             except Exception as e:
                 print("Could not turn on controller due to error: ", e)
         elif self.powerStatusValue == 1:
             try:
                 print("Current Power Status", self.powerStatusValue)
                 signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
+                signalworker.run()
             except Exception as e:
                 print("Could not turn off controller due to error: " , e)
         time.sleep(0.5) 
 
     def setPolarityStatus(self, polarity):
-        if polarity[8] == '0':
-            self.polarityValue = 'HEAT WP1+ and WP2-'
-            self.polarityButton.setText(self.polarityValue)
-        elif polarity[8] == '1':
-            self.polarityValue = 'HEAT WP2+ and WP1-'
-            self.polarityButton.setText(self.polarityValue)
-        else:
-            print("Unexpected value sent back from polarity change function")
+        print("Inside setPolarityStatus")
+        try:
+            if polarity[8] == '0':
+                self.polarityValue = 'HEAT WP1+ and WP2-'
+                self.polarityButton.setText(self.polarityValue)
+            elif polarity[8] == '1':
+                self.polarityValue = 'HEAT WP2+ and WP1-'
+                self.polarityButton.setText(self.polarityValue)
+            else:
+                print("Unexpected value sent back from polarity change function")
+        except Exception as e:
+            print(f"Couldn't set polarity status: {e}")
 
     def polarityToggle(self):
         if self.polarityValue == 'HEAT WP1+ and WP2-':
@@ -150,7 +157,7 @@ class Peltier(QWidget):
             print('Unexpected value read for polarity')
             return
         polaritySignal = signalWorker('Control Output Polarity Write', ['0','0','0','0','0','0','0', polarityCommand])
-# WTH did I use pool.start
+        polaritySignal.run()
         self.polarityButton.setText(self.polarityValue)
 
 
@@ -159,6 +166,7 @@ class Peltier(QWidget):
         try:
             message = self.pelt.setTemperature(self.setTempInput.value())
             signalworker = signalWorker('Fixed Desired Control Setting Write', message)
+            signalworker.run()
             time.sleep(0.04)
 #FIXME Should read in temperature from Controller not from input
             self.currentSetTempValue = self.pelt.readSetTemperature()
@@ -173,6 +181,7 @@ class Peltier(QWidget):
         if self.setupWorker.finishedSetup:
             try:
                 signalworker = signalWorker('Power On/Off Write', ['0','0','0','0','0','0','0','0'])
+                signalworker.run()
             except Exception as e:
                 print("Could not turn off controller due to error: " , e)
 
@@ -199,12 +208,7 @@ class Peltier(QWidget):
         except Exception as e:
             self.timer.stop()
             print("Could not read temperature due to error: ", e)
-    def showSetTemp(self, setTemp):
-        try:
-            self.currentSetTemp.setText(f"Current Set Temperature: {setTemp}")
-        except:
-            #FIXME add better debugging implementation here
-            print("Could not read set Temperature")
+
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)

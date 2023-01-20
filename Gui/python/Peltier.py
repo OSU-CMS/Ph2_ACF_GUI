@@ -123,7 +123,6 @@ class signalWorker(PeltierSignalGenerator):
         self.signal = Signals()
         self.command = command
         self.message = message
-        self.run()
 
     def run(self):
         recievedMessage, passed = self.sendCommand(self.createCommand(self.command, self.message))
@@ -160,7 +159,6 @@ class startupWorker(PeltierSignalGenerator):
         super().__init__()
         self.signal = Signals()
         self.finishedSetup = False
-        self.run()
 
     def handler(self, signum, frame):
         signame = signal.Signals(signum).name
@@ -182,7 +180,9 @@ class startupWorker(PeltierSignalGenerator):
 
         self.signal.finishedSignal.emit()
         message, passed = self.sendCommand(self.createCommand('Control Output Polarity Read', ['0','0','0','0','0','0','0','0']))
+        print("Polarity Message: ", message)
         self.signal.messageSignal.emit(message)
+        print("Sent Message")
 
 
 class PeltierController(PeltierSignalGenerator):
@@ -268,8 +268,11 @@ class PeltierController(PeltierSignalGenerator):
         message = message[-11:-3]
         message = "".join(message) # Converts the list of digits to single string
         message = int(message,16)/100
+        if message > 1000:
+            return -1 * self.twosCompliment(message)
+        else:
+            return message
         
-        return message
 
     # Finds the twos compliment necessary for negative temperatures
     def twosCompliment(self, num):
