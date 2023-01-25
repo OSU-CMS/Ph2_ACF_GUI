@@ -20,7 +20,7 @@ class Signals(QtCore.QObject):
 
 
 class PeltierSignalGenerator():
-    def __init__(self):
+    def __init__(self, debug=False):
         self.ser = serial.Serial(defaultPeltierPort, defaultPeltierBaud)
         self.commandDict = {'Input1':['0','1'],
                             'Desired Control Value':['0','3'],
@@ -46,6 +46,7 @@ class PeltierSignalGenerator():
                             }
         self.checksumError = ['*','X','X','X','X','X','X','X','X','c','0','^']
         self.buffer = [0,0,0,0,0,0,0,0,0,0,0,0]
+        self.debug = debug
 
     def twosCompliment(self, num):
         return pow(2,32) - abs(num)
@@ -93,12 +94,14 @@ class PeltierSignalGenerator():
         return command
 
     def sendCommand(self, command):
-        print("SEND: ", command)
+        if self.debug:
+            print("SEND: ", command)
         for bit in command:
             self.ser.write(bit.encode())
         message, passed = self.recieveMessage()
         self.passed = True
-        print("REC: " , message)
+        if self.debug:
+            print("REC: " , message)
         return message, passed 
 # Will recieve message but will only check if the command gave an error, will not decode the message
 
@@ -107,7 +110,8 @@ class PeltierSignalGenerator():
         buff = self.buffer.copy()
         for i in range(len(buff)):
             buff[i] = self.ser.read(1).decode('utf-8')
-        print("REC: ", buff)
+        if self.debug:
+            print("REC: ", buff)
         if buff == self.checksumError:
             connection = False
             return buff, connection
@@ -155,8 +159,8 @@ class tempPowerReading(QRunnable, PeltierSignalGenerator):
 
 
 class startupWorker(PeltierSignalGenerator):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, debug=False):
+        super().__init__(debug)
         self.signal = Signals()
         self.finishedSetup = False
 
@@ -180,14 +184,16 @@ class startupWorker(PeltierSignalGenerator):
 
         self.signal.finishedSignal.emit()
         message, passed = self.sendCommand(self.createCommand('Control Output Polarity Read', ['0','0','0','0','0','0','0','0']))
-        print("Polarity Message: ", message)
+        if self.debug:
+            print("Polarity Message: ", message)
         self.signal.messageSignal.emit(message)
-        print("Sent Message")
+        if self.debug:
+            print("Sent Message")
 
 
 class PeltierController(PeltierSignalGenerator):
-    def __init__(self, timeout=1):
-        super().__init__()
+    def __init__(self, debug=False, timeout=1):
+        super().__init__(debug)
         self.error = False
 
     def checkPower(self):
@@ -209,6 +215,9 @@ class PeltierController(PeltierSignalGenerator):
         #    Hopefully, 500C is a temperature that is never encountered in the lab, therefore if  the temp is greater than 500
         #    take the twos compliment
             message = int(message,16)/100
+
+            if self.debug:
+                print(message)
             if message > 1000:
                 return -1 * self.twosCompliment(message)
             else:
