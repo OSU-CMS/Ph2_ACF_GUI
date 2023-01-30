@@ -128,8 +128,15 @@ class signalWorker(PeltierSignalGenerator):
         self.command = command
         self.message = message
 
+    def handler(self, signum, frame):
+        signame=signal.Signals(signum).name
+        raise OSError("Couldn't Communicate with Peltier Controller")
+
     def run(self):
+        signal.signal(signal.SIGALRM, self.handler)
+        signal.alarm(5)
         recievedMessage, passed = self.sendCommand(self.createCommand(self.command, self.message))
+        signal.alarm(0)
         self.signal.messageSignal.emit(recievedMessage) # Connect signal worker to whichever function you want to connect to.
         self.signal.finishedSignal.emit()
 
