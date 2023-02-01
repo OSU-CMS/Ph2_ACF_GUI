@@ -425,6 +425,26 @@ class PowerSupply():
 			cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
 			self.hwInterface.executeCommand(cmd)
 
+	def TurnOffHV(self):
+		if not self.isHV():
+			logging.info("Try to turn off non-HV as high voltage")
+			return
+
+		if self.UsingPythonInterface == True:
+			try:
+				currentVoltage = self.hwInterface.ReadVoltage(self.Instrument)
+				for voltage in range(int(currentVoltage),0,3):
+					self.hwInterface.SetVoltage(self.Instrument, voltage)
+					time.sleep(0.5)
+				self.hwInterface.SetVoltage(self.Instrument)
+				self.hwInterface.TurnOff(self.Instrument)
+			except Exception as err:
+				logging.error("Failed to turn off the sourceMeter:{}".format(err))
+				return None
+		else:
+			cmd = "TurnOff,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
+			self.hwInterface.executeCommand(cmd)
+
 	def SetHVRange(self, voltRange):
 		if not self.isHV():
 			logging.info("Try to setVoltage for non-HV power supply")
