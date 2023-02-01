@@ -1137,7 +1137,8 @@ class QtApplication(QWidget):
 				self.PeltierCooling.shutdown()
 				time.sleep(2)
 				self.pool.clear()
-			except AttributeError:
+			except Exception as e:
+				print("Could not shutdown Peltier: " , e)
 				pass
 
 			os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
