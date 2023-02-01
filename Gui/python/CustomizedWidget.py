@@ -39,7 +39,7 @@ class ModuleBox(QWidget):
 		#self.FMCEdit.setMinimumWidth(120)
 		#self.FMCEdit.setMaximumWidth(200)
 
-		IDLabel = QLabel("ID:")
+		IDLabel = QLabel("FMC port:")
 		self.IDEdit = QLineEdit()
 		#self.IDEdit.setMinimumWidth(120)
 		#self.IDEdit.setMaximumWidth(200)
@@ -263,6 +263,8 @@ class SimpleModuleBox(QWidget):
 
 	def createRow(self):
 		SerialLabel = QLabel("SerialNumber:")
+		#prefix = defaultModuleType if type(defaultModuleType) ==  str else ""
+		#SerialLabel = QLabel("{} SerialNumber:".format(prefix))
 		self.SerialEdit = QLineEdit()
 		self.SerialEdit.returnPressed.connect(self.on_textChange)
 		#self.SerialEdit.setMinimumWidth(120)
@@ -282,7 +284,7 @@ class SimpleModuleBox(QWidget):
 		self.CableIDEdit.setReadOnly(True)
 
 		TypeLabel = QLabel("Type:")
-		self.Type = "None"
+		self.Type = defaultModuleType
 
 		self.mainLayout.addWidget(SerialLabel,0,0,1,1)
 		self.mainLayout.addWidget(self.SerialEdit,0,1,1,1)
@@ -307,7 +309,11 @@ class SimpleModuleBox(QWidget):
 	def setType(self, typeStr):
 		self.Type = typeStr
 
-	def getType(self):
+	def getType(self, SerialNumber):
+		if 'ZH' in SerialNumber:
+			self.Type = "TFPX Quad"
+		elif 'SCC' in SerialNumber:
+			self.Type = "SingleSCC"
 		return self.Type
 
 	@QtCore.pyqtSlot()
@@ -459,7 +465,7 @@ class SimpleBeBoardBox(QWidget):
 			FwModule.setFMCID(module.getFMCID())
 			FwModule.setModuleName(module.getSerialNumber())
 			#FwModule.setOpticalGroupID(module.getID())
-			FwModule.setModuleType(module.getType())
+			FwModule.setModuleType(module.getType(module.getSerialNumber()))
 			#for chip in module
 			self.firmware.addModule(index,FwModule)
 		return self.firmware

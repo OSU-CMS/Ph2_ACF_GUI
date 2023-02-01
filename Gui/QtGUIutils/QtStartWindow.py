@@ -78,14 +78,27 @@ class SummaryBox(QWidget):
 			current = float(current)
 			voltage = self.master.LVpowersupply.ReadVoltage()
 			voltage = float(voltage)
-			if current < 0.6 and current > 0.3: 
-				self.result = True
-				self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
-				self.CheckLabel.setStyleSheet("color:green")
-			else:
-				self.result = False
-				self.CheckLabel.setText("Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
-				self.CheckLabel.setStyleSheet("color:red")
+			print(self.PowerModeCombo.currentText())
+			if 'SLDO' in self.PowerModeCombo.currentText():
+				print('this is sldo check')
+				if current < 4.6 and current > 3.3: 
+					self.result = True
+					self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
+					self.CheckLabel.setStyleSheet("color:green")
+				else:
+					self.result = False
+					self.CheckLabel.setText("Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
+					self.CheckLabel.setStyleSheet("color:red")
+			elif 'Direct' in self.PowerModeCombo.currentText():
+				print('this is direct mode')
+				if current < 0.9 and current > 0.1: 
+					self.result = True
+					self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
+					self.CheckLabel.setStyleSheet("color:green")
+				else:
+					self.result = False
+					self.CheckLabel.setText("Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
+					self.CheckLabel.setStyleSheet("color:red")
 			return self.result
 		except Exception as err:
 			self.result = False

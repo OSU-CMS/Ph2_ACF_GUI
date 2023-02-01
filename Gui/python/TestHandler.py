@@ -57,6 +57,8 @@ class TestHandler(QObject):
 		#self.LVpowersupply.InitialDevice()
 		#self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
 		#self.LVpowersupply.TurnOn()
+		self.FWisPresent = False
+		self.FWisLoaded = False
 		self.master.globalStop.connect(self.urgentStop)
 		self.runwindow = runwindow
 		self.firmware = firmware
@@ -121,8 +123,7 @@ class TestHandler(QObject):
 		self.updateValidation.connect(self.runwindow.updateValidation)
 
 		self.initializeRD53Dict()
-		self.FWisPresent = False
-		self.FWisLoaded = False
+		
 
 	def  initializeRD53Dict(self):
 		self.rd53_file = {}
@@ -265,6 +266,7 @@ class TestHandler(QObject):
 	# This loops over all the tests by using the on_finish pyqt decorator defined below
 	def runCompositeTest(self,testName):
 		if self.halt:
+			#self.LVpowersupply.TurnOff()
 			return
 		if self.testIndexTracker == len(CompositeList[self.info[1]]):
 			self.testIndexTracker = 0
@@ -708,6 +710,7 @@ class TestHandler(QObject):
 		status = self.validateTest()
 
 		# manually validate the result
+
 		print(self.figurelist)
 
 		notAccept = False
@@ -809,7 +812,7 @@ class TestHandler(QObject):
 		pass
 
 	def forceContinue(self):
-		reply = QMessageBox.question(self, 'Abort following tests', 'Failed component detected, continue to following test?',
+		reply = QMessageBox.question(None, 'Abort following tests', 'Failed component detected, continue to following test?',
 				QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:

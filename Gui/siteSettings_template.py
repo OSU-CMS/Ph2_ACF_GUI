@@ -12,22 +12,22 @@ defaultFPGAConfig = 'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
 # default FMC board number
 defaultFMC = '0'
 # default USB port for HV power supply
-defaultUSBPortHV = ["ASRL/dev/ttyUSBHV::INSTR"]
+#defaultUSBPortHV = ["ASRL/dev/ttyUSBHV::INSTR"]
+defaultUSBPortHV = ["ASRL/dev/ttyUSB0::INSTR"]
 # default model for HV power supply
 defaultHVModel = ["Keithley 2410 (RS232)"]
 # default USB port for LV power supply
-defaultUSBPortLV = ["ASRL/dev/ttyUSBLV::INSTR"]
+#defaultUSBPortLV = ["ASRL/dev/ttyUSBLV::INSTR"]
+defaultUSBPortLV = ["ASRL/dev/ttyUSB1::INSTR"]
 # default model for LV power supply
 defaultLVModel = ["KeySight E3633 (RS232)"]
 # default model for LV power supply
 defaultLVModel = ["KeySight E3633 (RS232)"]
-# default setting for module ( "SingleSCC","TFPX Quad","TEPX Quad","TBPX Quad","Yellow Module (Purdue)"):
-defaultModuleType = "SingleSCC"
 # default mode for LV powering (Direct,SLDO,etc)
-defaultPowerMode = "Direct"
+defaultPowerMode = "SLDO"
 defaultVoltageMap = {
     "Direct" : 1.28,
-    "SLDO"   : 1.90
+    "SLDO"   : 1.789
 }
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 115200
@@ -41,11 +41,3 @@ defaultDBName = 'SampleDB'
 #default settings for SLDO scan.
 defaultSLDOscanVoltage = 0.0
 defaultSLDOscanMaxCurrent = 0.0
-
-
-### Setting for Peltier Controller
-usePeltier = True
-defaultPeltierPort = '/dev/ttyUSBPeltier'
-defaultPeltierBaud = 9600
-defaultPeltierSetTemp = 20
-defaultPeltierWarningTemp = 40
