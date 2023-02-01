@@ -305,8 +305,8 @@ class QtStartWindow(QWidget):
 				self.release()
 				# This line was previosly commented
 				try:
-					self.master.LVpowersupply.TurnOff()
 					self.master.HVpowersupply.TurnOffHV()
+					self.master.LVpowersupply.TurnOff()
 					print('Window closed')
 				except:
 					print("Waring: Incident detected while trying to turn of power supply, please check power status")
