@@ -431,9 +431,13 @@ class PowerSupply():
 		if self.UsingPythonInterface == True:
 			try:
 				currentVoltage = self.hwInterface.ReadVoltage(self.Instrument)
-				for voltage in range(int(currentVoltage),0,3):
+				stepLength = 3
+				if 0 < currentVoltage:
+					stepLength = -3
+		
+				for voltage in range(int(currentVoltage),0,stepLength):
 					self.hwInterface.SetVoltage(self.Instrument, voltage)
-					time.sleep(0.5)
+					time.sleep(0.3)
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOff(self.Instrument)
 			except Exception as err:
@@ -491,9 +495,12 @@ class PowerSupply():
 		
 
 
-	def RampingUp(self, hvTarget = 0.0, stepLength = 1.0):
+	def RampingUp(self, hvTarget = 0.0, stepLength = 0.0):
 		try:
 			if self.isHV():
+				self.hwInterface.InitialDevice(self.Instrument)
+				self.hwInterface.SetVoltage(self.Instrument)
+				self.hwInterface.TurnOn(self.Instrument)
 				self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
 			else:
 				logging.info("Not a HV power supply, abort")

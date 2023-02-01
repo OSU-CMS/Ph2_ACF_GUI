@@ -514,7 +514,7 @@ class QtRunWindow(QWidget):
 
 			if reply == QMessageBox.Yes:
 				self.release()
-				self.master.HVpowersupply.TurnOff()
+				self.master.HVpowersupply.TurnOffHV()
 				self.master.LVpowersupply.TurnOff()
 				event.accept()
 			else:

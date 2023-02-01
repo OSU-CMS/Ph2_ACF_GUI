@@ -80,6 +80,12 @@ class SummaryBox(QWidget):
 			voltage = self.master.LVpowersupply.ReadVoltage()
 			voltage = float(voltage)
 			print(self.PowerModeCombo.currentText())
+
+			leakageCurrent = 0.0
+			if self.master.PowerRemoteControl["HV"]:
+				self.master.HVpowersupply.RampingUp(-60,-3)
+				leakageCurrent = self.master.HVpowersupply.ReadCurrent()
+				print(leakageCurrent)
 			if 'SLDO' in self.PowerModeCombo.currentText():
 				print('this is sldo check')
 				properCurrent = ModuleCurrentMap[self.module.getType()]
@@ -107,7 +113,8 @@ class SummaryBox(QWidget):
 			self.result = False
 			self.CheckLabel.setText("No measurement")
 			self.CheckLabel.setStyleSheet("color:red")
-			#logging.Error("Failed to check current")
+			#logging.error("Failed to check current")
+			logging.error(err)
 			return False
 
 	def getDetails(self):
@@ -299,7 +306,7 @@ class QtStartWindow(QWidget):
 				# This line was previosly commented
 				try:
 					self.master.LVpowersupply.TurnOff()
-					self.master.HVpowersupply.TurnOff()
+					self.master.HVpowersupply.TurnOffHV()
 					print('Window closed')
 				except:
 					print("Waring: Incident detected while trying to turn of power supply, please check power status")

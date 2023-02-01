@@ -351,6 +351,7 @@ class SimplifiedMainWidget(QWidget):
 		#self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
 		self.LVpowersupply.setModuleType(defaultModuleType)
 		self.LVpowersupply.TurnOn()
+		#self.HVpowersupply.RampingUp(-60,-3)
 		current = self.LVpowersupply.ReadCurrent()
 		current = float(current) if current else 0.0
 		voltage = self.LVpowersupply.ReadVoltage()
