@@ -16,7 +16,7 @@ class IVCurveThread(QThread):
         self.startVal = 0
         self.target = 0
         self.stopVal = -60
-        self.stepLength = -5
+        self.stepLength = -2
         self.stepNum = 0
         self.stepTotal = (self.stopVal-self.startVal)/self.stepLength+1
         self.turnOn()
