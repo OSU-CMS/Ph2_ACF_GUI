@@ -874,7 +874,7 @@ class QtApplication(QWidget):
 		#FwModule = []
 		#for fw in self.FwUnderUsed:
 		#	FwModule.append(self.FwDict[fw])
-		self.StartNewTest = QtStartWindow(self,FwModule)
+		self.StartNewTest = QtStartWindow(self , FwModule)
 		self.NewTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
 		self.ExitButton.setDisabled(True)
@@ -924,7 +924,7 @@ class QtApplication(QWidget):
 			self.HVPowerStatusValue.setText("No valid device")
 
 	def releaseHVPowerPanel(self):
-		self.HVpowersupply.TurnOff()
+		self.HVpowersupply.TurnOffHV()
 		try:
 			self.HVPowerCombo.setDisabled(False)
 			self.HVPowerStatusValue.setText("")
@@ -1107,7 +1107,7 @@ class QtApplication(QWidget):
 	def GlobalStop(self):
 		print("Critical status detected: Emitting Global Stop signal")
 		self.globalStop.emit()
-		self.HVpowersupply.TurnOff()
+		self.HVpowersupply.TurnOffHV()
 		self.LVpowersupply.TurnOff()
 		if self.expertMode == True:
 			self.releaseHVPowerPanel()
@@ -1129,7 +1129,7 @@ class QtApplication(QWidget):
 
 		if reply == QMessageBox.Yes:
 			print('Application terminated')
-			self.HVpowersupply.TurnOff()
+			self.HVpowersupply.TurnOffHV()
 			self.LVpowersupply.TurnOff()
 
 			# If you didn't start the Peltier controller, tempPower won't be defined

@@ -72,16 +72,24 @@ class SummaryBox(QWidget):
 		try:
 			if self.master.PowerRemoteControl["LV"]:
 				self.master.LVpowersupply.setPoweringMode(self.PowerModeCombo.currentText())
-				self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+				#self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+				self.master.LVpowersupply.setModuleType(self.module.getType())
 				self.master.LVpowersupply.TurnOn()
 			current = self.master.LVpowersupply.ReadCurrent()
 			current = float(current)
 			voltage = self.master.LVpowersupply.ReadVoltage()
 			voltage = float(voltage)
 			print(self.PowerModeCombo.currentText())
+
+			leakageCurrent = 0.0
+			if self.master.PowerRemoteControl["HV"]:
+				self.master.HVpowersupply.RampingUp(-60,-3)
+				leakageCurrent = self.master.HVpowersupply.ReadCurrent()
+				print(leakageCurrent)
 			if 'SLDO' in self.PowerModeCombo.currentText():
 				print('this is sldo check')
-				if current < 4.6 and current > 3.3: 
+				properCurrent = ModuleCurrentMap[self.module.getType()]
+				if current < properCurrent+0.1 and current > properCurrent-0.1: 
 					self.result = True
 					self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
 					self.CheckLabel.setStyleSheet("color:green")
@@ -91,7 +99,8 @@ class SummaryBox(QWidget):
 					self.CheckLabel.setStyleSheet("color:red")
 			elif 'Direct' in self.PowerModeCombo.currentText():
 				print('this is direct mode')
-				if current < 0.9 and current > 0.1: 
+				properCurrent = ModuleCurrentMap[self.module.getType()]
+				if current < properCurrent+0.1 and current > properCurrent-0.1: 
 					self.result = True
 					self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
 					self.CheckLabel.setStyleSheet("color:green")
@@ -104,7 +113,8 @@ class SummaryBox(QWidget):
 			self.result = False
 			self.CheckLabel.setText("No measurement")
 			self.CheckLabel.setStyleSheet("color:red")
-			#logging.Error("Failed to check current")
+			#logging.error("Failed to check current")
+			logging.error(err)
 			return False
 
 	def getDetails(self):
@@ -293,13 +303,12 @@ class QtStartWindow(QWidget):
 			if reply == QMessageBox.Yes:
 				event.accept()
 				self.release()
-				#self.master.powersupply.TurnOff()
-				print('Window closed')
+				# This line was previosly commented
+				try:
+					self.master.HVpowersupply.TurnOffHV()
+					self.master.LVpowersupply.TurnOff()
+					print('Window closed')
+				except:
+					print("Waring: Incident detected while trying to turn of power supply, please check power status")
 			else:
 				event.ignore()
-
-
-		
-
-
-		

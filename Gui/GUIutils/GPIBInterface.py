@@ -19,6 +19,7 @@ class PowerSupply():
 		self.Instrument = None
 		self.PowerType = powertype
 		self.PoweringMode = None
+		self.ModuleType = None
 		self.CompCurrent = 0.0
 		self.UsingPythonInterface = False
 		self.XMLConfig = None
@@ -63,6 +64,9 @@ class PowerSupply():
 
 	def setCompCurrent(self, compcurrent = 1.05):
 		self.CompCurrent = compcurrent
+	
+	def setModuleType(self, moduletype = None):
+		self.ModuleType = moduletype
 	
 	def setResourceManager(self):
 		self.ResourcesManager = visa.ResourceManager('@py')
@@ -204,24 +208,18 @@ class PowerSupply():
 		pass
 
 	def TurnOn(self):
-		self.setCompCurrent()
 		if self.UsingPythonInterface == True:
 			try:
 				self.hwInterface.InitialDevice(self.Instrument)
 				Voltage = 0.0
-				VoltProtection = 1.0
-				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
-					Voltage = defaultVoltageMap[self.PoweringMode]
-					VoltProtection = 1.3
-				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
-					Voltage = defaultVoltageMap[self.PoweringMode]
-					VoltProtection = 1.85
-				if self.PowerType == "LV":
-					logging.info("Setting LV to {}".format(Voltage))
-					#self.Instrument.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
-					#self.Instrument.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(Voltage))
-				#self.hwInterface.SetCurrent(self.Instrument, 10)
-				self.hwInterface.SetVoltage(self.Instrument, voltage = Voltage, VoltProtection = VoltProtection)
+				Current = 0.0
+				if self.PowerType ==  "LV" and self.PoweringMode == "SLDO":
+					Voltage = ModuleVoltageMapSLDO[self.ModuleType]
+					Current = ModuleCurrentMap[self.ModuleType]
+				elif self.PowerType ==  "LV" and self.PoweringMode == "Direct":
+					Voltage = ModuleVoltageMap[self.ModuleType]
+					Current = ModuleCurrentMap[self.ModuleType]
+				self.hwInterface.ApplyCurrent(self.Instrument, voltage = Voltage, current = Current)
 				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.TurnOn(self.Instrument)
 			except Exception as err:
@@ -433,9 +431,13 @@ class PowerSupply():
 		if self.UsingPythonInterface == True:
 			try:
 				currentVoltage = self.hwInterface.ReadVoltage(self.Instrument)
-				for voltage in range(int(currentVoltage),0,3):
+				stepLength = 3
+				if 0 < currentVoltage:
+					stepLength = -3
+		
+				for voltage in range(int(currentVoltage),0,stepLength):
 					self.hwInterface.SetVoltage(self.Instrument, voltage)
-					time.sleep(0.5)
+					time.sleep(0.3)
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOff(self.Instrument)
 			except Exception as err:
@@ -493,9 +495,12 @@ class PowerSupply():
 		
 
 
-	def RampingUp(self, hvTarget = 0.0, stepLength = 1.0):
+	def RampingUp(self, hvTarget = 0.0, stepLength = 0.0):
 		try:
 			if self.isHV():
+				self.hwInterface.InitialDevice(self.Instrument)
+				self.hwInterface.SetVoltage(self.Instrument)
+				self.hwInterface.TurnOn(self.Instrument)
 				self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
 			else:
 				logging.info("Not a HV power supply, abort")

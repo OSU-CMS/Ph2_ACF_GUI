@@ -37,6 +37,13 @@ def TurnOff(device):
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
 
+def ApplyCurrent(device, voltage=0.0, current=0.0):
+	try:
+		device.write("VOLT {}".format(voltage))
+		device.write("CURR {}".format(current))
+	except Exception as err:
+		logger.error("Error occured while apply V = {0} V, I = {1} Amp".format(voltage,current))
+
 def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 	# Set Voltage range 2V and output to 1.78V
 	try:

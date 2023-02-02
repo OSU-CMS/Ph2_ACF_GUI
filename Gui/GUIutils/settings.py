@@ -127,6 +127,27 @@ PowerSupplyModel_XML_Termination = {
 }
 
 
+ModuleCurrentMap = {
+	"SingleSCC" : 1.05,
+	"TFPX Quad"	: 4.5,
+	"TEPX Quad" : 4.5,
+	"TBPX Quad"	: 6,
+	"Yellow Module (Purdue)": 4.5,
+}
+
+ModuleVoltageMapSLDO = {
+	"SingleSCC" : 1.8,
+	"TFPX Quad"	: 2.2,
+	"TEPX Quad" : 2.2,
+	"TBPX Quad"	: 2.0,
+	"Yellow Module (Purdue)": 2.2,
+}
+
+ModuleVoltageMap = {
+	"SingleSCC" : 1.3,
+}
+
+
 ConfigFiles = {
 	'Latency'                :  '/Configuration/Defaults/CMSIT.xml',
 	'PixelAlive'             :  '/Configuration/Defaults/CMSIT.xml',
