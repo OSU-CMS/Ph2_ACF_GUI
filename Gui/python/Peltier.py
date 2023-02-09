@@ -90,10 +90,13 @@ class PeltierSignalGenerator():
         return command
 
     def sendCommand(self, command):
-        for bit in command:
-            self.ser.write(bit.encode())
-        message, passed = self.recieveMessage()
-        return message, passed
+        try:
+            for bit in command:
+                self.ser.write(bit.encode())
+            message, passed = self.recieveMessage()
+            return message, passed
+        except:
+            return None,False
 
     # Will recieve message but will only check if the command gave an error, will not decode the message
     def recieveMessage(self):
@@ -121,8 +124,8 @@ class signalWorker(QRunnable, PeltierSignalGenerator):
         try:
             self.signal.messageSignal.emit(recievedMessage)
             self.signal.finishedSignal.emit()
-        except RuntimeError:
-            pass
+        except:
+            logging.error("Fialed to run the Peltier worker")
 
 
 

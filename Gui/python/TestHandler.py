@@ -337,6 +337,7 @@ class TestHandler(QObject):
 				except:
 					print("unable to save {0} to FC7 SD card".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage))
 
+		self.FWisLoaded = True
 		if not self.FWisLoaded:
 			self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-i", "{}".format(self.firmwareImage)])
 			self.fw_process.waitForFinished()
@@ -588,7 +589,12 @@ class TestHandler(QObject):
 						self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.ProgressValue)										
 					except:
 						pass
-					
+				elif "TEMPSENS_" in textStr:
+					try:
+						# Chip status monitoring to be added
+						print(textStr)
+					except:
+						pass
 				continue
 			#	if ("Global threshold for" in textStr):
 

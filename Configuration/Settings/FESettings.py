@@ -1,3 +1,7 @@
+import os
+import copy
+Ph2_ACF_VERSION = os.environ.get("Ph2_ACF_VERSION")
+
 FESettings = {
 'PA_IN_BIAS_LIN'        :  "350",
 'FC_BIAS_LIN'           :   "20",
@@ -68,3 +72,19 @@ FESettings_Dict = {
     'ClockDelay'                :    FESettings,
     'Physics'                   :    FESettings,
 }
+
+FESettings_v48 = copy.deepcopy(FESettings)
+
+FESettings_v48.pop("CML_TAP0_BIAS")
+FESettings_v48.pop("CML_TAP1_BIAS")
+FESettings_v48.pop("CML_TAP2_BIAS")
+
+
+FESettings_v48["DAC_CML_BIAS_0"] = "500"
+FESettings_v48["DAC_CML_BIAS_1"] = "0"
+FESettings_v48["DAC_CML_BIAS_2"] = "0"
+
+
+if "v4-08" in Ph2_ACF_VERSION:
+    for key in FESettings_Dict.keys():
+      FESettings_Dict[key] = FESettings_v48 

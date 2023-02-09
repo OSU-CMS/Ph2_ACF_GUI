@@ -15,7 +15,7 @@ class IVCurveThread(QThread):
 
         self.startVal = 0
         self.target = 0
-        self.stopVal = -60
+        self.stopVal = -80
         self.stepLength = -2
         self.stepNum = 0
         self.stepTotal = (self.stopVal-self.startVal)/self.stepLength+1
@@ -36,6 +36,7 @@ class IVCurveThread(QThread):
                 self.powersupply.SetHVVoltage(self.target)
                 time.sleep(0.5)
                 voltage = self.powersupply.ReadVoltage()
+                time.sleep(0.5)
                 current = self.powersupply.ReadCurrent()
                 #MAX_TRIES = 10
                 #N_TRIES = 1

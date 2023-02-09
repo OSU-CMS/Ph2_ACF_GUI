@@ -76,19 +76,34 @@ FPGAConfigList =  {
 }
 
 ModuleType = {
-	1	:	"SingleSCC",
-	2	:	"TFPX Quad",
-	3	:	"TEPX Quad",
-	4	:	"TBPX Quad",
-	5   : 	"Yellow Module (Purdue)"
+	1 :	"SingleSCC",
+	2 :	"TFPX Quad",
+	3 :	"TEPX Quad",
+	4 :	"TBPX Quad",
+	5 :	"Yellow Module (Purdue)"
 }
 
 firmware_image = {
-	"SingleSCC" : {"v4-06":"SCC_ELE_RD53A_v4-5.bit","v4-02":"SCC_ELE_RD53A_v4-2.bit"},
-	"Yellow Module (Purdue)" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
-	"TFPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
-	"TEPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
-	"TBPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"SingleSCC" : 
+            {"v4-08":"SCC_ELE_RD53A_v4-5.bit",
+             "v4-06":"SCC_ELE_RD53A_v4-5.bit",
+             "v4-02":"SCC_ELE_RD53A_v4-2.bit"},
+	"Yellow Module (Purdue)" : 
+             {"v4-08":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TFPX Quad" : 
+             {"v4-08":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TEPX Quad" : 
+             {"v4-08":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TBPX Quad" : 
+             {"v4-08":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 #	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
 }
 
@@ -102,9 +117,9 @@ ModuleLaneMap = {
 
 BoxSize = {
 	"SingleSCC" : 1,
-	"TFPX Quad"	: 4,
+	"TFPX Quad" : 4,
 	"TEPX Quad" : 4,
-	"TBPX Quad"	: 4,
+	"TBPX Quad" : 4,
 	"Yellow Module (Purdue)": 3,
 }
 
@@ -129,18 +144,18 @@ PowerSupplyModel_XML_Termination = {
 
 ModuleCurrentMap = {
 	"SingleSCC" : 1.05,
-	"TFPX Quad"	: 4.5,
-	"TEPX Quad" : 4.5,
-	"TBPX Quad"	: 6,
-	"Yellow Module (Purdue)": 4.5,
+	"TFPX Quad" : 6.0,
+	"TEPX Quad" : 6,
+	"TBPX Quad" : 6,
+	"Yellow Module (Purdue)": 6.0,
 }
 
 ModuleVoltageMapSLDO = {
 	"SingleSCC" : 1.8,
-	"TFPX Quad"	: 2.2,
-	"TEPX Quad" : 2.2,
-	"TBPX Quad"	: 2.0,
-	"Yellow Module (Purdue)": 2.2,
+	"TFPX Quad" : 2.8,
+	"TEPX Quad" : 2.0,
+	"TBPX Quad" : 2.8,
+	"Yellow Module (Purdue)": 2.0,
 }
 
 ModuleVoltageMap = {
@@ -238,6 +253,7 @@ updatedXMLValues = defaultdict(dict)
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
 
 BoardtypeMap = {
+	'v4-08': 'RD53A',
 	'v4-06': 'RD53A',
 	'v4-02': 'RD53'
 }

@@ -1,4 +1,5 @@
 import lxml.etree as ET
+import os
 from xml.dom import minidom
 from Configuration.Settings.GlobalSettings import *
 from Configuration.Settings.FESettings import *
@@ -11,6 +12,8 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+Ph2_ACF_VERSION = os.environ.get("Ph2_ACF_VERSION")
 
 def prettify(elem):
     """Return a pretty-printed XML string for the Element.
@@ -167,7 +170,7 @@ class FE():
 class MonitoringModule():
   def __init__(self):
     self.Type="RD53"
-    self.Enable="0"
+    self.Enable="1"
     self.SleepTime=1000
     self.MonitoringList = {}
   def SetType(self, Type):
@@ -223,8 +226,9 @@ def SetMonitoring(Node, MonitoringItem):
   Node_Monitoring = SetNodeAttribute(Node_Monitoring,{'type':MonitoringItem.Type,'enable':MonitoringItem.Enable})
   Node_SleepTime  = ET.SubElement(Node_Monitoring, 'MonitoringSleepTime')
   Node_SleepTime.text = str(MonitoringItem.SleepTime)
-  Node_MonitoringElements = ET.SubElement(Node_Monitoring, 'MonitoringElements')
-  Node_MonitoringElements = SetNodeAttribute(Node_MonitoringElements,MonitoringItem.MonitoringList)
+  for element in MonitoringItem.MonitoringList.keys():
+      Node_MonitoringElements = ET.SubElement(Node_Monitoring, 'MonitoringElement')
+      Node_MonitoringElements = SetNodeAttribute(Node_MonitoringElements,{'device':"RD53",'register':element,'enable':MonitoringItem.MonitoringList[element]})
   return Node
 
 def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
@@ -252,7 +256,10 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
 
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
-        Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,'Status':HyBridModule.Status,'Name':HyBridModule.Name})
+        StatusStr = 'Status'
+        if "v4-08" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,StatusStr:HyBridModule.Status,'Name':HyBridModule.Name})
         #### This is where the RD53_Files is setup ####
         ##FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
         HyBridModule.SetHyBridType(BoardtypeMap[os.environ.get('Ph2_ACF_VERSION')])
@@ -280,8 +287,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
   Node_MonitoringSettings = ET.SubElement(Node_HWInterface, 'MonitoringSettings')
   MonitoringList = HWDescription.MonitoringList
   for MonitoringItem in MonitoringList:
-    Node_Monitoring = ET.SubElement(Node_MonitoringSettings, 'Monitoring')
-    Node_Monitoring = SetMonitoring(Node_Monitoring, MonitoringItem)
+    Node_Monitoring = SetMonitoring(Node_MonitoringSettings, MonitoringItem)
     
   xmlstr = prettify(Node_HWInterface)
   with open(outputFile, "w") as f:
