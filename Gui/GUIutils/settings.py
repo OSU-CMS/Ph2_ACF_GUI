@@ -80,30 +80,40 @@ ModuleType = {
 	2 :	"TFPX Quad",
 	3 :	"TEPX Quad",
 	4 :	"TBPX Quad",
-	5 :	"Yellow Module (Purdue)"
+	5 :	"Yellow Module (Purdue)",
+	6 : "CROC 1x2",
 }
 
 firmware_image = {
 	"SingleSCC" : 
-            {"v4-08":"SCC_ELE_RD53A_v4-5.bit",
+            {"v4-09":"SCC_ELE_RD53A_v4-5.bit",
+			 "v4-10":"SCC_ELE_RD53A_v4-5.bit",
              "v4-06":"SCC_ELE_RD53A_v4-5.bit",
              "v4-02":"SCC_ELE_RD53A_v4-2.bit"},
 	"Yellow Module (Purdue)" : 
-             {"v4-08":"QUAD_ELE_RD53A_v4-5.bit",
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 	"TFPX Quad" : 
-             {"v4-08":"QUAD_ELE_RD53A_v4-5.bit",
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 	"TEPX Quad" : 
-             {"v4-08":"QUAD_ELE_RD53A_v4-5.bit",
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 	"TBPX Quad" : 
-             {"v4-08":"QUAD_ELE_RD53A_v4-5.bit",
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"CROC 1x2"  :
+			{"v4-09":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-10":"QUAD_ELE_CROC_v4-5.bit",
+			},
 #	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
 }
 
@@ -112,7 +122,8 @@ ModuleLaneMap = {
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
-	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"}
+	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"},
+	"CROC 1x2" : {"0":"12","2":"13"}
 }
 
 BoxSize = {
@@ -121,6 +132,7 @@ BoxSize = {
 	"TEPX Quad" : 4,
 	"TBPX Quad" : 4,
 	"Yellow Module (Purdue)": 3,
+	"CROC 1x2"  : 2,
 }
 
 HVPowerSupplyModel = {
@@ -144,18 +156,20 @@ PowerSupplyModel_XML_Termination = {
 
 ModuleCurrentMap = {
 	"SingleSCC" : 1.05,
-	"TFPX Quad" : 6.0,
+	"TFPX Quad" : 6.5,
 	"TEPX Quad" : 6,
-	"TBPX Quad" : 6,
-	"Yellow Module (Purdue)": 6.0,
+	"TBPX Quad" : 6.5,
+	"Yellow Module (Purdue)": 6.5,
+	"CROC 1x2"  : 4.0,
 }
 
 ModuleVoltageMapSLDO = {
 	"SingleSCC" : 1.8,
-	"TFPX Quad" : 2.8,
+	"TFPX Quad" : 2.98,
 	"TEPX Quad" : 2.0,
 	"TBPX Quad" : 2.8,
-	"Yellow Module (Purdue)": 2.0,
+	"Yellow Module (Purdue)": 2.8,
+	"CROC 1x2"  : 2.2,
 }
 
 ModuleVoltageMap = {
@@ -234,9 +248,8 @@ SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 
 CompositeTest = ['AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
-	'AllScan': ['NoiseScan','PixelAlive','ThresholdAdjustment',
-				'ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment',
-				'SCurveScan','GainScan','GainOptimization',
+	'AllScan': ['PixelAlive','NoiseScan','ThresholdAdjustment',
+				'ThresholdEqualization','SCurveScan', 'NoiseScan','GainScan','GainOptimization',
 				'InjectionDelay','SCurveScan'],
 	'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
 	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
@@ -251,9 +264,11 @@ firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 updatedXMLValues = defaultdict(dict)
 
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
-
+'''
 BoardtypeMap = {
+	'v4-09': 'RD53A',
 	'v4-08': 'RD53A',
 	'v4-06': 'RD53A',
 	'v4-02': 'RD53'
 }
+'''

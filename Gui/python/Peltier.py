@@ -138,13 +138,14 @@ class tempPowerReading(QRunnable, PeltierSignalGenerator):
 
     def run(self):
         while self.readTemp:
-            temperature, passTemp = self.sendCommand(self.createCommand('Input1', ['0','0','0','0','0','0','0','0']))
-            power, passPower = self.sendCommand(self.createCommand('Power On/Off Read' ,['0','0','0','0','0','0','0','0']))
-            temp = "".join(temperature[1:9])
-            temp = int(temp,16)/100
-            power = int(power[8])
-
             try:
+                temperature, passTemp = self.sendCommand(self.createCommand('Input1', ['0','0','0','0','0','0','0','0']))
+                power, passPower = self.sendCommand(self.createCommand('Power On/Off Read' ,['0','0','0','0','0','0','0','0']))
+                temp = "".join(temperature[1:9])
+                temp = int(temp,16)/100
+                power = int(power[8])
+
+
                 self.signal.powerSignal.emit(power)
                 self.signal.tempSignal.emit(temp)
             except RuntimeError:

@@ -67,6 +67,10 @@ class TestHandler(QObject):
 		self.firmwareName = self.firmware.getBoardName()
 		self.ModuleMap = dict()
 		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+		if 'CROC' in self.ModuleType: 
+			self.boardType = 'RD53B'
+		else:
+			self.boartType = 'RD53A'
 		self.Ph2_ACF_ver = os.environ.get('Ph2_ACF_VERSION')
 		print('Using version {0} of Ph2_ACF'.format(self.Ph2_ACF_ver))
 		self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
@@ -168,9 +172,11 @@ class TestHandler(QObject):
 
 		# The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
 		# FIXME Fix rd53_file[key] so that it reads the correct txt file depending on what module is connected. -> Done!
+
 		for key in self.rd53_file.keys():
 			if self.rd53_file[key] == None:
-				self.rd53_file[key] = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_{0}.txt".format(BoardtypeMap[os.environ.get('Ph2_ACF_VERSION')])
+				self.rd53_file[key] = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_{0}.txt".format(self.boardType)
+				print('Gettings config file {0}'.format(self.rd53_file[key]))
 		if self.input_dir == "":
 			# Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
 			SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)
@@ -190,6 +196,7 @@ class TestHandler(QObject):
 						logger.warning("Failed to create "+tmpDir)
 				# Create the xml file from the text file
 				config_file = GenerateXMLConfig(self.firmware,self.currentTest,tmpDir)
+				
 				#config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
 				if config_file:
 					SetupXMLConfigfromFile(config_file,self.output_dir,self.firmwareName,self.rd53_file)
@@ -279,7 +286,7 @@ class TestHandler(QObject):
 		print("Executing Single Step test...")
 		if testName == "IVCurve":
 			self.IVCurveData = []
-			self.IVCurveResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)")
+			self.IVCurveResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)", invert = True)
 			self.IVCurveHandler = IVCurveHandler(self,self.HVpowersupply)
 			self.IVCurveHandler.finished.connect(self.IVCurveFinished)
 			self.IVCurveHandler.IVCurve()
@@ -319,7 +326,12 @@ class TestHandler(QObject):
 
 		self.fw_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
 		self.fw_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
+		
 		print("made it to the firmware check")
+		
+		
+		self.FWisPresent = True
+		'''
 		if not self.FWisPresent:
 			print("checking if firmware is on the SD card")
 			fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/test/CMSIT.xml',"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
@@ -327,15 +339,15 @@ class TestHandler(QObject):
 			print("firmwareImage is {0}".format(self.firmwareImage))
 			if self.firmwareImage in fwlist.stdout.decode('UTF-8'):
 				self.FWisPresent = True
-				print("firmware saved")
+				print("firmware is on SD card")
 			else:
 				try:
-					self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
-					print()
-					self.fw_process.waitForFinished()
+					fwsave = subprocess.run(["fpgaconfig","-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + firmwareImage),"i","{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+					#self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
+					print(fwsave.stdout.decode('UTF-8'))
 					self.FWisPresent = True
 				except:
-					print("unable to save {0} to FC7 SD card".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage))
+					print("unable to save {0} to FC7 SD card".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + firmwareImage))
 
 		self.FWisLoaded = True
 		if not self.FWisLoaded:
@@ -345,7 +357,7 @@ class TestHandler(QObject):
 			self.fw_process.waitForFinished()
 			self.FWisLoaded = True
 			print('Firmware image is now loaded')
-		
+		'''
 		#self.run_process.start("python", ["signal_generator.py"])
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
 		#self.run_process.start("./SignalGenerator")
@@ -592,7 +604,8 @@ class TestHandler(QObject):
 				elif "TEMPSENS_" in textStr:
 					try:
 						# Chip status monitoring to be added
-						print(textStr)
+						sensorMeasure = re.sub(r'.*->','',textStr)
+						print(sensorMeasure)
 					except:
 						pass
 				continue
@@ -648,15 +661,25 @@ class TestHandler(QObject):
 
 	def updateNeeded(self,textStr):
 		currentTest = Test[self.currentTest]
+		#print('board type in update section is {0}'.format(self.ModuleType))
 		if  currentTest in ["thradj","thrmin"] and "Global threshold for" in textStr:
-			return True,"Vthreshold_LIN",-1
+			if 'CROC' in self.ModuleType:
+				return True,"DAC_GDAC_M_LIN",-1 #FIXME need to make this also update DAC_GDAC_L_LIN and DAC_GDAC_R_LIN
+			else:
+				return True,"Vthreshold_LIN",-1
 		elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
-			return True,"KRUM_CURR_LIN",-1
+			if 'CROC' in self.ModuleType:
+				return True,"DAC_KRUM_CURR_LIN",-1
+			else:
+				return True,"KRUM_CURR_LIN",-1
 		elif currentTest in ["injdelay"]:
 			if "New latency dac" in textStr:
-				return True,"LATENCY_CONFIG",-2
+				if 'CROC' in self.ModuleType:
+					return True,"TriggerConfig",-2
+				else:
+					return True,"LATENCY_CONFIG",-2
 			elif "New injection delay" in textStr:
-				return True,"INJECTION_SELECT",-2
+				return True,"CAL_EDGE_FINE_DELAY",-2
 			else:
 				return (False, None, 0)
 		else:

@@ -2,7 +2,7 @@ import os
 import copy
 Ph2_ACF_VERSION = os.environ.get("Ph2_ACF_VERSION")
 
-globalSettings = {
+globalSettingsA = {
 'EN_CORE_COL_SYNC'       :     "0",
 'EN_CORE_COL_LIN_1'      : "65535",
 'EN_CORE_COL_LIN_2'      :     "1",
@@ -61,60 +61,135 @@ globalSettings = {
 
 }
 
-globalSettings_Dict = {
-    'Latency'                    :    globalSettings,
-    'PixelAlive'                 :    globalSettings,
-    'NoiseScan'                  :    globalSettings,
-    'GainScan'                   :    globalSettings,
-    'SCurveScan'                 :    globalSettings,
-    'ThresholdEqualization'      :    globalSettings,
-    'GainOptimization'           :    globalSettings,
-    'ThresholdMinimization'      :    globalSettings,
-    'ThresholdAdjustment'        :    globalSettings,
-    'InjectionDelay'             :    globalSettings,
-    'ClockDelay'                 :    globalSettings,
-    'BitErrorRate'               :    globalSettings,
-    'DataRBOptimization'         :    globalSettings,
-    'ChipIntVoltageTuning'       :    globalSettings,
-    'GenericDAC-DAC'             :    globalSettings,
-    'Physics'                    :    globalSettings,
+globalSettingsB = {
+    "EN_CORE_COL_0"       :      "65535",
+    "EN_CORE_COL_1"       :     "65535",
+    "EN_CORE_COL_2"       :     "65535",
+    "EN_CORE_COL_3"       :         "63",
+
+    "EN_CORE_COL_CAL_0"    :     "65535",
+    "EN_CORE_COL_CAL_1"    :     "65535",
+    "EN_CORE_COL_CAL_2"    :     "65535",
+    "EN_CORE_COL_CAL_3"    :        "63",
+
+    "HITOR_MASK_0"          :    "65535",
+    "HITOR_MASK_1"          :    "65535",
+    "HITOR_MASK_2"          :    "65535",
+    "HITOR_MASK_3"          :       "63",
+
+    "PrecisionToTEnable_0"   :       "0",
+    "PrecisionToTEnable_1"   :       "0",
+    "PrecisionToTEnable_2"   :       "0",
+    "PrecisionToTEnable_3"   :       "0",
+
+    "EnHitsRemoval_0"         :      "0",
+    "EnHitsRemoval_1"         :      "0",
+    "EnHitsRemoval_2"         :      "0",
+    "EnHitsRemoval_3"         :      "0",
+
+    "EnIsolatedHitRemoval_0"   :     "0",
+    "EnIsolatedHitRemoval_1"   :     "0",
+    "EnIsolatedHitRemoval_2"   :     "0",
+    "EnIsolatedHitRemoval_3"   :     "0",
+
+    "HIT_SAMPLE_MODE"          :    "1",
+    "EN_SEU_COUNT"             :    "0",
+    "CDR_CONFIG_SEL_PD"        :    "0",
+
+    "LOCKLOSS_CNT"             :     "0",
+    "BITFLIP_WNG_CNT"          :     "0",
+    "BITFLIP_ERR_CNT"          :     "0",
+    "CMDERR_CNT"               :     "0",
+    "SKIPPED_TRIGGER_CNT"      :     "0",
+    "HITOR_0_CNT"              :     "0",
+    "HITOR_1_CNT"              :     "0",
+    "HITOR_2_CNT"              :     "0",
+    "HITOR_3_CNT"              :     "0",
 }
 
-globalSettings_v48 = copy.deepcopy(globalSettings)
-globalSettings_v48.pop('EN_MACRO_COL_CAL_LIN_1')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_LIN_2')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_LIN_3')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_LIN_4')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_LIN_5')
+globalSettings_DictA = {
+    'Latency'                    :    globalSettingsA,
+    'PixelAlive'                 :    globalSettingsA,
+    'NoiseScan'                  :    globalSettingsA,
+    'GainScan'                   :    globalSettingsA,
+    'SCurveScan'                 :    globalSettingsA,
+    'ThresholdEqualization'      :    globalSettingsA,
+    'GainOptimization'           :    globalSettingsA,
+    'ThresholdMinimization'      :    globalSettingsA,
+    'ThresholdAdjustment'        :    globalSettingsA,
+    'InjectionDelay'             :    globalSettingsA,
+    'ClockDelay'                 :    globalSettingsA,
+    'BitErrorRate'               :    globalSettingsA,
+    'DataRBOptimization'         :    globalSettingsA,
+    'ChipIntVoltageTuning'       :    globalSettingsA,
+    'GenericDAC-DAC'             :    globalSettingsA,
+    'Physics'                    :    globalSettingsA,
+}
 
-globalSettings_v48.pop('EN_MACRO_COL_CAL_SYNC_1')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_SYNC_2')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_SYNC_3')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_SYNC_4')
+globalSettings_DictB = {
+    'Latency'                    :    globalSettingsB,
+    'PixelAlive'                 :    globalSettingsB,
+    'NoiseScan'                  :    globalSettingsB,
+    'GainScan'                   :    globalSettingsB,
+    'SCurveScan'                 :    globalSettingsB,
+    'ThresholdEqualization'      :    globalSettingsB,
+    'GainOptimization'           :    globalSettingsB,
+    'ThresholdMinimization'      :    globalSettingsB,
+    'ThresholdAdjustment'        :    globalSettingsB,
+    'InjectionDelay'             :    globalSettingsB,
+    'ClockDelay'                 :    globalSettingsB,
+    'BitErrorRate'               :    globalSettingsB,
+    'DataRBOptimization'         :    globalSettingsB,
+    'ChipIntVoltageTuning'       :    globalSettingsB,
+    'GenericDAC-DAC'             :    globalSettingsB,
+    'Physics'                    :    globalSettingsB,
+}
+globalSettingsA_v48 = copy.deepcopy(globalSettingsA)
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_1')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_2')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_3')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_4')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_5')
 
-globalSettings_v48.pop('EN_MACRO_COL_CAL_DIFF_1')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_DIFF_2')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_DIFF_3')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_DIFF_4')
-globalSettings_v48.pop('EN_MACRO_COL_CAL_DIFF_5')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_SYNC_1')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_SYNC_2')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_SYNC_3')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_SYNC_4')
 
-globalSettings_v48['EN_CORE_COL_CAL_LIN_1'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_LIN_2'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_LIN_3'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_LIN_4'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_LIN_5'] =    "15"
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_1')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_2')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_3')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_4')
+globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_5')
 
-globalSettings_v48['EN_CORE_COL_CAL_SYNC_1'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_SYNC_2'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_SYNC_3'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_SYNC_4'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_LIN_1'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_LIN_2'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_LIN_3'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_LIN_4'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_LIN_5'] =    "15"
 
-globalSettings_v48['EN_CORE_COL_CAL_DIFF_1'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_DIFF_2'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_DIFF_3'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_DIFF_4'] = "65535"
-globalSettings_v48['EN_CORE_COL_CAL_DIFF_5'] =    "15"
+globalSettingsA_v48['EN_CORE_COL_CAL_SYNC_1'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_SYNC_2'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_SYNC_3'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_SYNC_4'] = "65535"
+
+globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_1'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_2'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_3'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_4'] = "65535"
+globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_5'] =    "15"
+
+globalSettingsA_v49 = copy.deepcopy(globalSettingsA_v48)
+
 
 if "v4-08" in Ph2_ACF_VERSION:
-    for key in globalSettings_Dict.keys():
-      globalSettings_Dict[key] = globalSettings_v48
+    for key in globalSettings_DictA.keys():
+      globalSettings_DictA[key] = globalSettingsA_v48
+
+if "v4-09" in Ph2_ACF_VERSION:
+    for key in globalSettings_DictA.keys():
+        globalSettings_DictA[key] = globalSettingsA_v49
+
+if "v4-10" in Ph2_ACF_VERSION:
+    for key in globalSettings_DictA.keys():
+        globalSettings_DictA[key] = globalSettingsA_v49

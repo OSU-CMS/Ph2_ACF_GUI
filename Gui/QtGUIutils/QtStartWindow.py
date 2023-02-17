@@ -8,6 +8,8 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 import sys
 import os
 import math
+import subprocess
+import time
 
 from Gui.QtGUIutils.QtRunWindow import *
 from Gui.QtGUIutils.QtFwCheckDetails import *
@@ -70,6 +72,46 @@ class SummaryBox(QWidget):
 	def checkFwPar(self):
 		# To be finished
 		try:
+			FWisPresent = False
+			print('module type in start window is {0}'.format(self.module.getType()))
+			if 'CROC' in self.module.getType():
+				boardtype = 'RD53B'
+			else:
+				boardtype = 'RD53A'
+			firmwareImage = firmware_image[self.module.getType()][os.environ.get('Ph2_ACF_VERSION')]
+			print("checking if firmware is on the SD card for {}".format(firmwareImage))
+			fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('GUI_dir')+'/Gui/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+
+			#fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/test/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+			print("firmwarelist is {0}".format(fwlist.stdout.decode('UTF-8')))
+			print("firmwareImage is {0}".format(firmwareImage))
+			if firmwareImage in fwlist.stdout.decode('UTF-8'):
+				FWisPresent = True
+				print("firmware found")
+			else:
+				try:
+					print("Saving fw image to SD card")
+					fwsave = subprocess.run(["fpgaconfig","-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + firmwareImage),"i","{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+					#self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
+					print(fwsave.stdout.decode('UTF-8'))
+					FWisPresent = True
+				except:
+					print("unable to save {0} to FC7 SD card".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage))
+
+			if FWisPresent:
+				print('Loading FW image')
+				fwload = subprocess.run(["fpgaconfig","-c","CMSIT_{}.xml".format(boardtype),"-i", "{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+				print(fwload.stdout.decode('UTF-8'))
+			#self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-i", "{}".format(self.firmwareImage)])
+			#self.fw_process.waitForFinished()
+				print('resetting beboard')
+				fwreset = subprocess.run(["CMSITminiDAQ","-f","CMSIT_{}.xml".format(boardtype),"-r"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+				print(fwreset.stdout.decode('UTF-8'))
+				print(fwreset.stderr.decode('UTF-8'))
+			#self.fw_process.start("CMSITminiDAQ",["-f","CMSIT.xml","-r"])
+			#self.fw_process.waitForFinished()
+
+				print('Firmware image is now loaded')
 			if self.master.PowerRemoteControl["LV"]:
 				self.master.LVpowersupply.setPoweringMode(self.PowerModeCombo.currentText())
 				#self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip

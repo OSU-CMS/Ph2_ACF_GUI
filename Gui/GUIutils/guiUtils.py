@@ -172,7 +172,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 
 			for Node in root.findall(".//Settings"):
 				print("Found Settings Node!")
-				if 'Vthreshold_LIN' in Node.attrib:
+				if 'VCAL_HIGH' in Node.attrib:
 					RD53Node = Node.getparent()
 					HyBridNode = RD53Node.getparent()
 					## Potential Change: please check if it is [HyBrid ID/RD53 ID] or [HyBrid ID/RD53 Lane]
@@ -241,7 +241,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 		HWDescription0 = HWDescription()
 		BeBoardModule0 = BeBoardModule()
 		AllModules = firmwareList.getAllModules().values()
-
+		boardtype = 'RD53A'
 		# Setup all optical groups for the modules
 		for module in AllModules:
 			AllOG = {}
@@ -254,6 +254,19 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 			HyBridModule0 = HyBridModule()
 			HyBridModule0.SetHyBridModule(module.getModuleID(),"1")
 			HyBridModule0.SetHyBridName(module.getModuleName())
+			
+			if 'CROC' in module.getModuleType(): 
+				FESettings_Dict = FESettings_DictB
+				globalSettings_Dict = globalSettings_DictB
+				HWSettings_Dict = HWSettings_DictB
+				boardtype = 'RD53B'
+			else: 
+				FESettings_Dict = FESettings_DictA
+				globalSettings_Dict = globalSettings_DictA
+				HWSettings_Dict = HWSettings_DictA
+				boardtype = 'RD53A'
+			
+
 			# Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
 			for chip in module.getChips().values():
 				FEChip = FE()
@@ -272,7 +285,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 		MonitoringModule0 = MonitoringModule()
 		MonitoringModule0.SetMonitoringList(MonitoringList)
 		HWDescription0.AddMonitoring(MonitoringModule0)
-		GenerateHWDescriptionXML(HWDescription0,outputFile)
+		GenerateHWDescriptionXML(HWDescription0,outputFile,boardtype)
 	#except:
 	#	logger.warning("Unexpcted issue generating {}. Please check the file".format(outputFile))
 	#	outputFile = None
