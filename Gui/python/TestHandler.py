@@ -70,7 +70,7 @@ class TestHandler(QObject):
 		if 'CROC' in self.ModuleType: 
 			self.boardType = 'RD53B'
 		else:
-			self.boartType = 'RD53A'
+			self.boardType = 'RD53A'
 		self.Ph2_ACF_ver = os.environ.get('Ph2_ACF_VERSION')
 		print('Using version {0} of Ph2_ACF'.format(self.Ph2_ACF_ver))
 		self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
@@ -667,6 +667,8 @@ class TestHandler(QObject):
 				return True,"DAC_GDAC_M_LIN",-1 #FIXME need to make this also update DAC_GDAC_L_LIN and DAC_GDAC_R_LIN
 			else:
 				return True,"Vthreshold_LIN",-1
+		elif currentTest in ["threq"] and "Best VCAL_HIGH" in textStr:
+			return True,"VCAL_HIGH",-1
 		elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
 			if 'CROC' in self.ModuleType:
 				return True,"DAC_KRUM_CURR_LIN",-1
