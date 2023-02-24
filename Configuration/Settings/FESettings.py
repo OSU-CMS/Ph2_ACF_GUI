@@ -45,9 +45,9 @@ FESettings = {
 
 'CML_CONFIG_SER_EN_TAP' : "0b00",
 'CML_CONFIG_SER_INV_TAP': "0b00",
-'CML_TAP0_BIAS'         :  "500",
-'CML_TAP1_BIAS'         :    "0",
-'CML_TAP2_BIAS'         :    "0",
+#'CML_TAP0_BIAS'         :  "500",
+#'CML_TAP1_BIAS'         :    "0",
+#'CML_TAP2_BIAS'         :    "0",
 
 'MONITOR_CONFIG_ADC'    :    "5",
 'MONITOR_CONFIG_BG'     :   "12",
@@ -138,9 +138,9 @@ FESettings_DictB = {
 
 FESettings_A_v48 = copy.deepcopy(FESettings)
 
-FESettings_A_v48.pop("CML_TAP0_BIAS")
-FESettings_A_v48.pop("CML_TAP1_BIAS")
-FESettings_A_v48.pop("CML_TAP2_BIAS")
+#FESettings_A_v48.pop("CML_TAP0_BIAS")
+#FESettings_A_v48.pop("CML_TAP1_BIAS")
+#FESettings_A_v48.pop("CML_TAP2_BIAS")
 
 FESettings_A_v48["DAC_CML_BIAS_0"] = "500"
 FESettings_A_v48["DAC_CML_BIAS_1"] = "0"
@@ -158,5 +158,9 @@ if "v4-08" in Ph2_ACF_VERSION:
         
 
 if "v4-09" in Ph2_ACF_VERSION:
+    for key in FESettings_DictA.keys():
+        FESettings_DictA[key] = FESettings_A_49
+
+if "v4-10" in Ph2_ACF_VERSION:
     for key in FESettings_DictA.keys():
         FESettings_DictA[key] = FESettings_A_49
