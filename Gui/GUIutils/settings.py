@@ -88,31 +88,37 @@ firmware_image = {
 	"SingleSCC" : 
             {"v4-09":"SCC_ELE_RD53A_v4-5.bit",
 			 "v4-10":"SCC_ELE_RD53A_v4-5.bit",
+			 "v4-11":"SCC_ELE_RD53A_v4-5.bit",
              "v4-06":"SCC_ELE_RD53A_v4-5.bit",
              "v4-02":"SCC_ELE_RD53A_v4-2.bit"},
 	"Yellow Module (Purdue)" : 
              {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 	"TFPX Quad" : 
              {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 	"TEPX Quad" : 
              {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 	"TBPX Quad" : 
              {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 	"CROC 1x2"  :
 			{"v4-09":"QUAD_ELE_CROC_v4-5.bit",
 			 "v4-10":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-11":"QUAD_ELE_CROC_v4-5.bit",
 			},
 #	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
 }
@@ -198,8 +204,10 @@ ConfigFiles = {
 }
 
 Test = {
+	'AllScan_Tuning'         :  'noise',
 	'AllScan'                :  'noise',
 	'QuickTest'              :  'noise',
+	'IVCurve'                :  'ivcurve',
 	'StandardStep1'          :  'noise',
 	'StandardStep2'          :  'threqu',
 	'StandardStep3'          :  'scurve',
@@ -226,6 +234,7 @@ Test = {
 TestName2File = {
 	'Latency'                :  'Latency',
 	'PixelAlive'             :  'PixelAlive',
+	'IVCurve'                :  'IVCurve',
 	'NoiseScan'              :  'NoiseScan',
 	'SCurveScan'             :  'SCurve',
 	'GainScan'               :  'Gain',
@@ -242,13 +251,13 @@ TestName2File = {
 	'Physics'                :  'Physics',
 }
 
-SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
+SingleTest = ['IVCurve','Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 	'ThresholdEqualization','GainOptimization','ThresholdMinimization',
 	'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
-CompositeTest = ['AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+CompositeTest = ['AllScan_Tuning','AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
-	'AllScan': ['PixelAlive','NoiseScan','ThresholdAdjustment',
+	'AllScan': ['IVCurve','PixelAlive','NoiseScan','ThresholdAdjustment',
 				'ThresholdEqualization','SCurveScan', 'NoiseScan','GainScan','GainOptimization',
 				'InjectionDelay','SCurveScan'],
 	'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
@@ -256,19 +265,18 @@ CompositeList = {
 	'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
 	'StandardStep4': ['InjectionDelay'],
 	'StandardStep5': ['SCurveScan'],
-	'QuickTest': ['IVCurve','NoiseScan','PixelAlive']
+	'QuickTest': ['IVCurve','PixelAlive','NoiseScan']
 }
 firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
+
+pretuningList = ['IVCurve','PixelAlive','NoiseScan']
+tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan','NoiseScan']
+posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
 
 # Reserved for updated value for XML configuration
 updatedXMLValues = defaultdict(dict)
 
+updatedGlobalValue = defaultdict(lambda:None)
+stepWiseGlobalValue = defaultdict(dict) #key : index
+
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
-'''
-BoardtypeMap = {
-	'v4-09': 'RD53A',
-	'v4-08': 'RD53A',
-	'v4-06': 'RD53A',
-	'v4-02': 'RD53'
-}
-'''

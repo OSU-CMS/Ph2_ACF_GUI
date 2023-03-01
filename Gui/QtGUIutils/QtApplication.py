@@ -673,6 +673,7 @@ class QtApplication(QWidget):
 		self.NewProductionTestButton.setMaximumWidth(kMaximumWidth)
 		self.NewProductionTestButton.setMinimumHeight(kMinimumHeight)
 		self.NewProductionTestButton.setMaximumHeight(kMaximumHeight)
+		self.NewProductionTestButton.setDisabled(True)  #FIXME This is to temporarily disable the test until LV can be added.
 		self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
 		NewProductionTestLabel = QLabel("Open production test")
 

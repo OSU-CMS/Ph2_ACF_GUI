@@ -20,6 +20,7 @@ from Gui.GUIutils.guiUtils import *
 class ScanCanvas(FigureCanvas):
 	def __init__(self,parent,xlabel = "X", ylabel = "Y", sorted = True, invert = False):
 		self.parent = parent
+		self.foutname = 'testIVcurve'
 		self.sortX = sorted
 		self.invert = invert
 		self.fig = Figure(figsize=(5, 4), dpi=100)
@@ -37,6 +38,7 @@ class ScanCanvas(FigureCanvas):
 								   QSizePolicy.Expanding,
 								   QSizePolicy.Expanding)
 		FigureCanvas.updateGeometry(self)
+		
 
 	def compute_initial_figure(self):
 		self.axes.cla()

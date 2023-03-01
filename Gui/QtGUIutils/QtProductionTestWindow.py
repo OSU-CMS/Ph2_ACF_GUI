@@ -157,6 +157,7 @@ class QtProductionTestWindow(QWidget):
 		self.IVCurveAbortButtom.setDisabled(True)
 	
 	def IVCurveFinished(self):
+		self.IVCurveResult.saveToSVG('testsaveIVcurve.svg')
 		self.IVCurveButtom.setDisabled(False)
 		self.IVCurveAbortButtom.setDisabled(True)
 

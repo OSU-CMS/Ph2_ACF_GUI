@@ -165,13 +165,13 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 		print("Failed to set up the XML file, {}".format(error))
 
 	try:
-		print('lenth of XML dict is {0}'.format(len(updatedXMLValues)))
+		#print('lenth of XML dict is {0}'.format(len(updatedXMLValues)))
 		if len(updatedXMLValues) > 0:
 			changeMade = True
 			print(updatedXMLValues)
 
 			for Node in root.findall(".//Settings"):
-				print("Found Settings Node!")
+				#print("Found Settings Node!")
 				if 'VCAL_HIGH' in Node.attrib:
 					RD53Node = Node.getparent()
 					HyBridNode = RD53Node.getparent()
@@ -186,6 +186,19 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 	except Exception as error:
 		print("Failed to set up the XML file, {}".format(error))
 
+
+	try:
+		logger.info(updatedGlobalValue)
+		if len(updatedGlobalValue) > 0:
+			changeMade = True
+			print(updatedGlobalValue[1])
+			for Node in root.findall('.//Setting'):
+				if len(updatedGlobalValue[1])>0:
+					if Node.attrib['name']=='TargetThr':
+						Node.text = updatedGlobalValue[1]['TargetThr']
+						print('TargetThr value has been set to {0}'.format(updatedGlobalValue[1]['TargetThr']))
+	except Exception as error:
+		print('Failed to update the TargetThr value, {0}'.format(updatedGlobalValue[1]['TargetThr']))
 
 	try:
 		if changeMade:
@@ -282,8 +295,11 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		HWDescription0.AddBeBoard(BeBoardModule0)
 		HWDescription0.AddSettings(HWSettings_Dict[testName])
-		MonitoringModule0 = MonitoringModule()
-		MonitoringModule0.SetMonitoringList(MonitoringList)
+		MonitoringModule0 = MonitoringModule(boardtype)
+		if 'RD53A' in boardtype:
+			MonitoringModule0.SetMonitoringList(MonitoringListA)
+		else:
+			MonitoringModule0.SetMonitoringList(MonitoringListB)
 		HWDescription0.AddMonitoring(MonitoringModule0)
 		GenerateHWDescriptionXML(HWDescription0,outputFile,boardtype)
 	#except:

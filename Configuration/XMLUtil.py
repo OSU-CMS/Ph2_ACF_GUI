@@ -168,9 +168,9 @@ class FE():
     self.settingList = settingList
 
 class MonitoringModule():
-  def __init__(self):
-    self.Type="RD53" 
-    self.Enable="0" #disabled for 4.9 temporarily
+  def __init__(self,boardtype):
+    self.Type=boardtype 
+    self.Enable="1" 
     self.SleepTime=10000
     self.MonitoringList = {}
   def SetType(self, Type):
@@ -263,6 +263,8 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
             StatusStr = 'enable'
         if "v4-10" in Ph2_ACF_VERSION:
             StatusStr = 'enable'
+        if "v4-11" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
         Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,StatusStr:HyBridModule.Status,'Name':HyBridModule.Name})
         #### This is where the RD53_Files is setup ####
         ##FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
@@ -274,7 +276,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
         FEList = HyBridModule.FEList
         ### This is where the RD53 block is being made ###
         for FE in FEList:
-          BeBoard.boardType =  boardtype #FIXME Needs to be RD53A or B!
+          BeBoard.boardType =  boardtype 
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
           Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configfile':FE.configfile})

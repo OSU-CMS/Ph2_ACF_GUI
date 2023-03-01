@@ -13,11 +13,14 @@ import time
 
 from Gui.QtGUIutils.QtRunWindow import *
 from Gui.QtGUIutils.QtFwCheckDetails import *
+from Gui.QtGUIutils.QtApplication import *
 from Gui.python.CustomizedWidget import *
 from Gui.python.Firmware import *
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
+from Gui.siteSettings import *
+#from Gui.QtGUIutils.QtProductionTestWindow import *
 
 class SummaryBox(QWidget):
 	def __init__(self,master,module, index=0):
@@ -71,6 +74,7 @@ class SummaryBox(QWidget):
 
 	def checkFwPar(self):
 		# To be finished
+		
 		try:
 			FWisPresent = False
 			print('module type in start window is {0}'.format(self.module.getType()))
@@ -78,11 +82,12 @@ class SummaryBox(QWidget):
 				boardtype = 'RD53B'
 			else:
 				boardtype = 'RD53A'
+
 			firmwareImage = firmware_image[self.module.getType()][os.environ.get('Ph2_ACF_VERSION')]
 			print("checking if firmware is on the SD card for {}".format(firmwareImage))
 			fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('GUI_dir')+'/Gui/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
-			#fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/test/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+				#fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/test/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 			print("firmwarelist is {0}".format(fwlist.stdout.decode('UTF-8')))
 			print("firmwareImage is {0}".format(firmwareImage))
 			if firmwareImage in fwlist.stdout.decode('UTF-8'):
@@ -102,16 +107,13 @@ class SummaryBox(QWidget):
 				print('Loading FW image')
 				fwload = subprocess.run(["fpgaconfig","-c","CMSIT_{}.xml".format(boardtype),"-i", "{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 				print(fwload.stdout.decode('UTF-8'))
-			#self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-i", "{}".format(self.firmwareImage)])
-			#self.fw_process.waitForFinished()
 				print('resetting beboard')
 				fwreset = subprocess.run(["CMSITminiDAQ","-f","CMSIT_{}.xml".format(boardtype),"-r"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 				print(fwreset.stdout.decode('UTF-8'))
 				print(fwreset.stderr.decode('UTF-8'))
-			#self.fw_process.start("CMSITminiDAQ",["-f","CMSIT.xml","-r"])
-			#self.fw_process.waitForFinished()
 
 				print('Firmware image is now loaded')
+			print('made it to LV turn on')
 			if self.master.PowerRemoteControl["LV"]:
 				self.master.LVpowersupply.setPoweringMode(self.PowerModeCombo.currentText())
 				#self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
@@ -125,7 +127,7 @@ class SummaryBox(QWidget):
 
 			leakageCurrent = 0.0
 			if self.master.PowerRemoteControl["HV"]:
-				self.master.HVpowersupply.RampingUp(-60,-3)
+				self.master.HVpowersupply.RampingUp(defaultHVsetting,-3)
 				leakageCurrent = self.master.HVpowersupply.ReadCurrent()
 				print(leakageCurrent)
 			if 'SLDO' in self.PowerModeCombo.currentText():
@@ -320,7 +322,7 @@ class QtStartWindow(QWidget):
 			if module.getID() == "":
 				QMessageBox.information(None,"Error","No valid ID!", QMessageBox.Ok)
 				return
-
+		self.checkFwPar()
 		if self.passCheck == False:
 			reply = QMessageBox().question(None, "Error", "Front-End parameter check failed, forced to continue?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 			if reply == QMessageBox.No:

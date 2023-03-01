@@ -40,6 +40,7 @@ class ArduinoWidget(QWidget):
 		self.ArduinoBaudRateList = [ str(rate) for rate in [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200] ]
 		self.ArduinoBRCombo = QComboBox()
 		self.ArduinoBRCombo.addItems(self.ArduinoBaudRateList)
+		#self.ArduinoValues = QLabel()
 		self.UseArduino = QPushButton("&Use")
 		self.UseArduino.clicked.connect(self.frozeArduinoPanel)
 		self.ReleaseArduino = QPushButton("&Release")
@@ -50,6 +51,7 @@ class ArduinoWidget(QWidget):
 		self.ArduinoBox.addWidget(self.ArduinoCombo)
 		self.ArduinoBox.addWidget(self.ArduinoBaudRate)
 		self.ArduinoBox.addWidget(self.ArduinoBRCombo)
+		#self.ArduinoBox.addWidget(self.ArduinoValues)
 		self.ArduinoBox.addStretch(1)
 		self.ArduinoBox.addWidget(self.UseArduino)
 		self.ArduinoBox.addWidget(self.ReleaseArduino)
@@ -158,10 +160,9 @@ class ArduinoWidget(QWidget):
 			try:
 				text = self.serial.readLine().data().decode("utf-8","ignore")
 				text = text.rstrip('\r\n')
-				#print ('Arduino text is {0}'.format(text))
 				StopSignal,measureText = ArduinoParser(text)
-
-				self.ArduinoMeasureValue.setText(measureText)
+				self.ArduinoMeasureValue.setText(text)
+				#self.ArduinoMeasureValue.setText(measureText)
 				if StopSignal:
 					self.stopCount += 1
 					logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))

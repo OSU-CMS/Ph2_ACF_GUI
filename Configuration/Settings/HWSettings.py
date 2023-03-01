@@ -237,6 +237,7 @@ HWSettings_DictA = {
     'ChipIntVoltageTuning'       :    HWSettingsA_VoltageTuning,
     'GenericDAC-DAC'             :    HWSettingsA_GenDACDAC,
     'Physics'                    :    HWSettingsA_Physics,
+    'IVCurve'                    :    HWSettingsA_v49,
 }
 
 HWSettings_DictB = {
@@ -256,4 +257,5 @@ HWSettings_DictB = {
     'ChipIntVoltageTuning'       :    HWSettingsB_VoltageTuning,
     'GenericDAC-DAC'             :    HWSettingsB_GenDACDAC,
     'Physics'                    :    HWSettingsB_Physics,
+    'IVCurve'                    :    HWSettingsB_v49,
 }
