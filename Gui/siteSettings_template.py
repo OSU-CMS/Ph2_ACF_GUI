@@ -2,7 +2,7 @@
 # To be edited by expert as default setting for Hardware configuration
 ######################################################################
 # Ph2_ACF version being used
-defaultACFVersion = "4.0.10"
+defaultACFVersion = "4.0.11"
 # default FC7 boardName
 defaultFC7 = "fc7.board.1"
 # default IP address of IP address

@@ -35,46 +35,57 @@ mkdir -m777 test
 ## Set up the software environment:
 This software has not been designed to work in a conda environment.
 
-1. Update pip:
+1. Clone GUI repo
+```
+git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
+```
+or pull the latest changes
+```
+git pull --recurse-submodules
+```
+
+2. Update pip:
 ```
 python3 -m pip install --upgrade pip
 ```
 
-2. Install PyQt5:
+3. Install PyQt5:
 ```
 pip install PyQt5
 ```
 
-3. Install pyqt-darktheme:
+4. Install pyqt-darktheme:
 ```
 pip install pyqt-darktheme
 ```
 
-4. Install MySQL connector:
+5. Install MySQL connector:
 ```
 pip install mysql-connector-python
 ```
 
-5. Install NumPy:
+6. Install NumPy:
 ```
 pip install numpy
 ```
 
-6. Install Matplotlib:
+7. Install Matplotlib:
 ```
 pip install matplotlib
 ```
 
-7. Install lxml:
+8. Install lxml:
 ```
 pip install lxml
 ```
-8. Install pyvisa:
+
+9. Install pyvisa:
 ```
 pip install pyvisa
 pip install pyvisa-py
 ```
-9. Modify Setup_template.sh to include the paths to your Ph2_ACF working area and where you are locally storing test results.  Then copy this template to a site-specific name or just call it `Setup.sh`.
+
+10. Modify Setup_template.sh to include the paths to your Ph2_ACF working area and where you are locally storing test results.  Then copy this template to a site-specific name or just call it `Setup.sh`.
 ```
 cp Setup_template.sh Setup_<nameyouchose>.sh
 ```
@@ -82,11 +93,11 @@ If you are updating Ph2_ACF_GUI, then you can check the difference for any addit
 ```
 vim -d Setup_template.sh Setup.sh
 ```
-and then copy and paste whatever lines are needed to your `Gui/siteSettings.py` file.
+and then copy and paste whatever lines are needed to your `Setup.sh` file.
 
-10. Edit fc7_ip_address.txt so that the ip addresses for your fc7 boards are listed.
+11. Edit fc7_ip_address.txt so that the ip addresses for your fc7 boards are listed.
 
-11. Default settings are specified in the `Gui/siteSettings.py` file.  This is where you set the default configurations for your system.  This file does not exist on the repository, but instead there is a `Gui/siteSettings_template.py` file.  Copy this file:
+12. Default settings are specified in the `Gui/siteSettings.py` file.  This is where you set the default configurations for your system.  This file does not exist on the repository, but instead there is a `Gui/siteSettings_template.py` file.  Copy this file:
 ```
 cp Gui/siteSettings_template.py Gui/siteSettings.py
 ```
