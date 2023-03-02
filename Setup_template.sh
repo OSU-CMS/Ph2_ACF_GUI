@@ -1,4 +1,4 @@
-export Ph2_ACF_AREA=/home/RD53A/workspace/v4.0.10/Ph2_ACF
+export Ph2_ACF_AREA=/home/RD53A/workspace/v4.0.11/Ph2_ACF
 export DATA_dir=/home/RD53A/data/TestResults
 export GUI_dir=$PWD
 
@@ -13,7 +13,7 @@ if [ ! -d $DATA_dir ]; then
 fi;
 
 if [ ! -d $Ph2_ACF_AREA/test ]; then
-    mkdir -p $Ph2_ACF_AREA/test;
+    mkdir -p -m777 $Ph2_ACF_AREA/test;
 fi;
 
 if [ ! -d $Ph2_ACF_AREA/test ]; then

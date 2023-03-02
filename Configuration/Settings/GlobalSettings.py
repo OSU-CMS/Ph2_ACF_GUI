@@ -124,6 +124,7 @@ globalSettings_DictA = {
     'ChipIntVoltageTuning'       :    globalSettingsA,
     'GenericDAC-DAC'             :    globalSettingsA,
     'Physics'                    :    globalSettingsA,
+    'IVCurve'                    :    globalSettingsA,
 }
 
 globalSettings_DictB = {
@@ -143,6 +144,7 @@ globalSettings_DictB = {
     'ChipIntVoltageTuning'       :    globalSettingsB,
     'GenericDAC-DAC'             :    globalSettingsB,
     'Physics'                    :    globalSettingsB,
+    'IVCurve'                    :    globalSettingsB,
 }
 globalSettingsA_v48 = copy.deepcopy(globalSettingsA)
 globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_1')
@@ -193,3 +195,7 @@ if "v4-09" in Ph2_ACF_VERSION:
 if "v4-10" in Ph2_ACF_VERSION:
     for key in globalSettings_DictA.keys():
         globalSettings_DictA[key] = globalSettingsA_v49
+
+if "v4-11" in Ph2_ACF_VERSION:
+    for key in globalSettings_DictA.keys():
+        globalSettings_DictA[key] = globalSettingsA_v49    

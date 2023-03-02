@@ -117,6 +117,7 @@ FESettings_DictA = {
     'InjectionDelay'            :    FESettings,
     'ClockDelay'                :    FESettings,
     'Physics'                   :    FESettings,
+    'IVCurve'                   :    FESettings,
 }
 
 FESettings_DictA = copy.deepcopy(FESettings_DictA)
@@ -134,6 +135,7 @@ FESettings_DictB = {
     'InjectionDelay'            :    FESettingsB,
     'ClockDelay'                :    FESettingsB,
     'Physics'                   :    FESettingsB,
+    'IVCurve'                   :    FESettingsB,
 }
 
 FESettings_A_v48 = copy.deepcopy(FESettings)
@@ -153,8 +155,7 @@ FESettings_A_49["VREF_ADC"] = "900"
 
 if "v4-08" in Ph2_ACF_VERSION:
     for key in FESettings_DictA.keys():
-        FESettings_DictA[key] = FESettings_A_v48
-        
+        FESettings_DictA[key] = FESettings_A_v48       
         
 
 if "v4-09" in Ph2_ACF_VERSION:
@@ -162,5 +163,9 @@ if "v4-09" in Ph2_ACF_VERSION:
         FESettings_DictA[key] = FESettings_A_49
 
 if "v4-10" in Ph2_ACF_VERSION:
+    for key in FESettings_DictA.keys():
+        FESettings_DictA[key] = FESettings_A_49
+
+if "v4-11" in Ph2_ACF_VERSION:
     for key in FESettings_DictA.keys():
         FESettings_DictA[key] = FESettings_A_49

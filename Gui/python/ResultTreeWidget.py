@@ -28,6 +28,7 @@ class ResultTreeWidget(QWidget):
 		self.DisplayW = width
 		self.DisplayH = height
 		self.FileList = []
+		self.IVFileList = []
 		self.info = info
 		self.ProgressBarList = []
 		self.ProgressBar = {}
@@ -154,6 +155,9 @@ class ResultTreeWidget(QWidget):
 		if item.text(0).endswith(";TCanvas"):
 			canvas = item.data(0,Qt.UserRole)
 			self.displayResult(canvas)
+		elif 'svg' in str(item.data(0,Qt.UserRole)):
+			canvas = item.data(0,Qt.UserRole)
+			self.displayResult(canvas)
 
 	def DirectoryVAL(self, QTreeNode, node):
 		if node.getDaugthers() != []:
@@ -171,12 +175,14 @@ class ResultTreeWidget(QWidget):
 
 	def getResult(self, QTreeNode, sourceFile):
 		Nodes = GetDirectory(sourceFile)
+		
 		CurrentNode = QTreeWidgetItem()
 		for Node in Nodes:
 			CurrentNode = QTreeWidgetItem()
 			CurrentNode.setText(0,Node.getKeyName())
 			QTreeNode.addChild(CurrentNode)
 			self.DirectoryVAL(CurrentNode, Node)
+
 
 	def updateDisplayList(self, step ,resultDict):
 		toBeDisplayed = len(self.displayList)
@@ -217,17 +223,37 @@ class ResultTreeWidget(QWidget):
 	def updateResult(self, sourceFolder):
 		process = subprocess.run('find {0} -type f -name "*.root" '.format(sourceFolder), shell=True, stdout=subprocess.PIPE)
 		stepFiles = process.stdout.decode('utf-8').rstrip("\n").split("\n")
+
 		if stepFiles == [""]:
 			return
+		self.FileList = []
+		
 		self.FileList += stepFiles
 
-		for File in stepFiles:
+		for File in self.FileList:
 			CurrentNode = QTreeWidgetItem()
 			CurrentNode.setText(0,File.split("/")[-1])
 			CurrentNode.setData(0,Qt.UserRole,File)
 			self.TreeRoot.addChild(CurrentNode)
 			self.getResult(CurrentNode, File)
+
+	def updateIVResult(self, sourceFolder):
+		process2 = subprocess.run('find {0} -type f -name "*.svg" '.format(sourceFolder), shell=True, stdout=subprocess.PIPE)
+		stepFiles2 = process2.stdout.decode('utf-8').rstrip("\n").split("\n")
+
+		if stepFiles2 == [""]:
+			return
+		
+		self.IVFileList += stepFiles2
 			
+
+		for File in self.IVFileList:
+			CurrentNode = QTreeWidgetItem()
+			CurrentNode.setText(0,File.split("/")[-1])
+			CurrentNode.setData(0,Qt.UserRole,File)
+			self.TreeRoot.addChild(CurrentNode)
+			
+
 	def displayResult(self, canvas):
 		tmpDir = os.environ.get('GUI_dir')+"/Gui/.tmp"
 		if not os.path.isdir(tmpDir)  and os.environ.get('GUI_dir'):
@@ -236,7 +262,11 @@ class ResultTreeWidget(QWidget):
 				logger.info("Creating "+tmpDir)
 			except:
 				logger.warning("Failed to create "+tmpDir)
-		svgFile = TCanvas2SVG(tmpDir, canvas)
+		
+		if 'svg' in str(canvas):
+			svgFile = str(canvas)
+		else:
+			svgFile = TCanvas2SVG(tmpDir, canvas)
 		self.displayingImage = svgFile
 
 		try:

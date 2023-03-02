@@ -31,6 +31,7 @@ from Gui.python.ANSIColoringParser import *
 from Gui.python.IVCurveHandler import *
 from Gui.python.SLDOScanHandler import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
+from Gui.siteSettings import *
 
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -45,6 +46,7 @@ class TestHandler(QObject):
 	stepFinished = pyqtSignal(object)
 	historyRefresh = pyqtSignal(object)
 	updateResult = pyqtSignal(object)
+	updateIVResult = pyqtSignal(object)
 	updateValidation = pyqtSignal(object,object)
 	powerSignal = pyqtSignal()
 
@@ -76,6 +78,7 @@ class TestHandler(QObject):
 		self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
 		print('Firmware version is {0}'.format(self.firmwareImage))
 		self.RunNumber = "-1"
+
 		self.IVCurveHandler = None
 		self.SLDOScanHandler = None
 
@@ -124,6 +127,7 @@ class TestHandler(QObject):
 		self.stepFinished.connect(self.runwindow.finish)
 		self.historyRefresh.connect(self.runwindow.refreshHistory)
 		self.updateResult.connect(self.runwindow.updateResult)
+		self.updateIVResult.connect(self.runwindow.updateIVResult)
 		self.updateValidation.connect(self.runwindow.updateValidation)
 
 		self.initializeRD53Dict()
@@ -275,16 +279,23 @@ class TestHandler(QObject):
 		if self.halt:
 			#self.LVpowersupply.TurnOff()
 			return
+		runTestList = CompositeList[self.info[1]]
+
 		if self.testIndexTracker == len(CompositeList[self.info[1]]):
 			self.testIndexTracker = 0
 			return
-		testName = CompositeList[self.info[1]][self.testIndexTracker]
+		#testName = CompositeList[self.info[1]][self.testIndexTracker]
+		testName = runTestList[self.testIndexTracker]
+		if self.info[1] == 'AllScan_Tuning':
+			updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
 		self.runSingleTest(testName)
 
 
 	def runSingleTest(self,testName):
 		print("Executing Single Step test...")
 		if testName == "IVCurve":
+			self.currentTest = testName
+			self.configTest()
 			self.IVCurveData = []
 			self.IVCurveResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)", invert = True)
 			self.IVCurveHandler = IVCurveHandler(self,self.HVpowersupply)
@@ -327,7 +338,7 @@ class TestHandler(QObject):
 		self.fw_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
 		self.fw_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
 		
-		print("made it to the firmware check")
+		
 		
 		
 		self.FWisPresent = True
@@ -706,7 +717,6 @@ class TestHandler(QObject):
 	@QtCore.pyqtSlot()
 	def on_finish(self):
 		self.outputfile.close()
-
 		# While the process is killed:
 		if self.halt == True:
 			self.haltSignal.emit(True)
@@ -739,7 +749,8 @@ class TestHandler(QObject):
 
 		# validate the results
 		status = self.validateTest()
-
+		
+		
 		# manually validate the result
 
 		print(self.figurelist)
@@ -776,7 +787,7 @@ class TestHandler(QObject):
 			self.runTest()
 
 	def updateMeasurement(self, measureType, measure):
-		print(measure)
+		#print(measure)
 		if measureType == "IVCurve":
 			Voltage = measure["voltage"]
 			Current = measure["current"]
@@ -797,7 +808,7 @@ class TestHandler(QObject):
 			if not self.master.expertMode:
 				step = "IVCurve"
 				self.figurelist = {"-1":[output]}
-				self.updateResult.emit((step,self.figurelist))
+				self.updateIVResult.emit((step,self.figurelist))
 		
 		if measureType == "SLDOScan":
 			Voltage = measure["voltage"]
@@ -826,6 +837,28 @@ class TestHandler(QObject):
 
 
 	def IVCurveFinished(self):
+		for module in self.firmware.getAllModules().values(): #FIXME This is not the ideal way to do this... I think...
+			moduleName = module.getModuleName()
+		
+		filename = '{0}/IVCurve_Module_{1}.svg'.format(self.output_dir,moduleName)
+		self.IVCurveResult.saveToSVG(filename)
+		EnableReRun = False
+
+		# Will send signal to turn off power supply after composite or single tests are run
+		if isCompositeTest(self.info[1]):
+			self.master.HVpowersupply.RampingUp(defaultHVsetting,-3)
+			if self.testIndexTracker == len(CompositeList[self.info[1]]):
+				self.powerSignal.emit()
+				EnableReRun = True
+		elif isSingleTest(self.info[1]):
+			EnableReRun = True
+			self.powerSignal.emit()
+
+		self.stepFinished.emit(EnableReRun)
+
+		if self.master.expertMode:
+			self.updateIVResult.emit(self.output_dir)
+
 		self.testIndexTracker += 1
 		if isCompositeTest(self.info[1]):
 			self.runTest()

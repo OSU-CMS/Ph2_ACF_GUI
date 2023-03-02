@@ -2,7 +2,7 @@
 # To be edited by expert as default setting for Hardware configuration
 ######################################################################
 # Ph2_ACF version being used
-defaultACFVersion = "4.0.6"
+defaultACFVersion = "4.0.10"
 # default FC7 boardName
 defaultFC7 = "fc7.board.1"
 # default IP address of IP address
@@ -24,18 +24,20 @@ defaultLVModel = ["KeySight E3633 (RS232)"]
 # default setting for module ( "SingleSCC","TFPX Quad","TEPX Quad","TBPX Quad","Yellow Module (Purdue)"):
 defaultModuleType = "TFPX Quad"
 # default mode for LV powering (Direct,SLDO,etc)
-defaultPowerMode = "Direct"
+defaultPowerMode = "SLDO"
 defaultVoltageMap = {
     "Direct" : 1.28,
     "SLDO"   : 1.90
 }
+
+defaultHVsetting = -60
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 9600
 #default DBServerIP
 defaultDBServerIP = '127.0.0.1'
 #default DBName
 defaultDBName = 'SampleDB'
-
+defaultTargetThr = ['2500','1500']
 ##### The following settings are for SLDO scans developed for Purdue.#####
 ##### Do not modify these settings unless you know what you are doing.####
 #default settings for SLDO scan.
