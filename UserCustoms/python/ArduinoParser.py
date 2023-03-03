@@ -1,9 +1,9 @@
 import re
 
 def ArduinoParser(text):
-    print(text)
     try:
         StopSingal, ProbeReadsText = ArduinoParserCustomOSU(text)
+        print('Probe reads {0}'.format(ProbeReadsText))
         return StopSingal, ProbeReadsText
     except Exception as err:
         return False,""
