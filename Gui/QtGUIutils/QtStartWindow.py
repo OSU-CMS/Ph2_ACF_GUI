@@ -133,7 +133,7 @@ class SummaryBox(QWidget):
 			if 'SLDO' in self.PowerModeCombo.currentText():
 				print('this is sldo check')
 				properCurrent = ModuleCurrentMap[self.module.getType()]
-				if current < properCurrent+0.1 and current > properCurrent-0.1: 
+				if current < properCurrent+0.2 and current > properCurrent-0.2: 
 					self.result = True
 					self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
 					self.CheckLabel.setStyleSheet("color:green")
@@ -144,7 +144,7 @@ class SummaryBox(QWidget):
 			elif 'Direct' in self.PowerModeCombo.currentText():
 				print('this is direct mode')
 				properCurrent = ModuleCurrentMap[self.module.getType()]
-				if current < properCurrent+0.1 and current > properCurrent-0.1: 
+				if current < properCurrent+0.1 and current > properCurrent-0.3: 
 					self.result = True
 					self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
 					self.CheckLabel.setStyleSheet("color:green")

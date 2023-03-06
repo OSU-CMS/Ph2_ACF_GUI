@@ -219,6 +219,9 @@ class PowerSupply():
 				elif self.PowerType ==  "LV" and self.PoweringMode == "Direct":
 					Voltage = ModuleVoltageMap[self.ModuleType]
 					Current = ModuleCurrentMap[self.ModuleType]
+					self.setCompCurrent(0.7)
+					self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
+					#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.ApplyCurrent(self.Instrument, voltage = Voltage, current = Current)
 				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.TurnOn(self.Instrument)
@@ -233,11 +236,13 @@ class PowerSupply():
 				Voltage = 0.0
 				VoltProtection = 1.0
 				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
-					Voltage = 1.28
-					VoltProtection = 1.3
+					Voltage = ModuleVoltageMap[self.ModuleType]
+					Current = ModuleCurrentMap[self.ModuleType]
+					self.setCompCurrent(0.6)
 				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
-					Voltage = 1.8
-					VoltProtection = 1.85
+					Voltage = ModuleVoltageMapSLDO[self.ModuleType]
+					Current = ModuleCurrentMap[self.ModuleType]
+					self.CompCurrent = Current
 				# Setting Voltage
 				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(Voltage)
 				self.hwInterface.executeCommand(cmd)
@@ -303,6 +308,14 @@ class PowerSupply():
 				self.hwInterface.executeCommand(cmd)
 			except Exception as err:
 				logging.error("Failed to turn off the sourceMeter:{}".format(err))
+
+	def ReadOutputStatus(self):
+		if self.UsingPythonInterface == True:
+			try:
+				HVoutputstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				return HVoutputstatus
+			except Exception as err:
+				return None
 
 	def ReadVoltage(self):
 		if self.UsingPythonInterface == True:
@@ -427,9 +440,12 @@ class PowerSupply():
 		if not self.isHV():
 			logging.info("Try to turn off non-HV as high voltage")
 			return
-
+		
 		if self.UsingPythonInterface == True:
 			try:
+				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				if '0' in HVstatus:
+					return
 				currentVoltage = self.hwInterface.ReadVoltage(self.Instrument)
 				stepLength = 3
 				if 0 < currentVoltage:

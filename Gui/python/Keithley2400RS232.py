@@ -10,7 +10,7 @@ def InitialDevice(device):
 		logger.error("Error occured while restore defaults: {}".format(err))
 	# Select voltage source mode
 	try:
-		device.write(":SOURCE:FUCNCTION VOLT")
+		device.write(":SOURCE:FUNCTION VOLT")
 		device.write(":SOURCE:VOLTAGE:MODE FIX")
 	except Exception as err:
 		logger.error("Error occured while setting voltage source mode: {}".format(err))
@@ -31,7 +31,9 @@ def TurnOn(device):
 
 def TurnOff(device):
 	try:
-		device.write(":SOURCE:VOLTAGE:LEV 0")
+		status = device.query(":OUTPUT?")
+		print("HV status is {0}".format(status))
+		#device.write(":SOURCE:VOLTAGE:LEV 0")
 		device.write(":OUTPUT OFF")
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
@@ -54,6 +56,10 @@ def setComplianceLimit(device, compcurrent = 0.0):
 		device.write(":SENSE:CURR:PROT {0}".format(compcurrent))
 	except Exception as err:
 		logger.error("Error occured while setting compliance: {}".format(err))
+def ReadOutputStatus(device):
+	device.write(":OUTPUT?")
+	outputstatus = device.read()
+	return outputstatus
 
 def ReadVoltage(device):
 	try:

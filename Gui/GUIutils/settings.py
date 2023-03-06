@@ -161,7 +161,7 @@ PowerSupplyModel_XML_Termination = {
 
 
 ModuleCurrentMap = {
-	"SingleSCC" : 1.05,
+	"SingleSCC" : 0.6,
 	"TFPX Quad" : 6.5,
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
