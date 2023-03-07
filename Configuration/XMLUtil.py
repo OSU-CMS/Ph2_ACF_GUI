@@ -65,7 +65,8 @@ class BeBoardModule():
     self.boardType = "RD53"
     self.eventType = "VR"
     self.id = "cmsinnertracker.crate0.slot0" 
-    self.uri = "chtcp-2.0://localhost:10203?target=192.168.1.80:50001" 
+    self.uri = "chtcp-2.0://localhost:10203?target={0}:50001".format(ip_address)
+    #self.uri = "chtcp-2.0://localhost:10203?target=192.168.1.80:50001" 
     self.address_table = "file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml"
     self.FEModuleList = []
     self.RegisterSettings = {}
@@ -245,6 +246,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
     #Node_connection.Set('id',BeBoard.id)
     #Node_connection.Set('uri',BeBoard.uri)
     #Node_connection.Set('address_table',BeBoard.address_table)
+    print('beboard ip is {0}'.format(BeBoard.uri))
     Node_connection = SetNodeAttribute(Node_connection,{'id':BeBoard.id,'uri':BeBoard.uri,'address_table':BeBoard.address_table})
     OpticalGroupList = BeBoard.OpticalGroupList
 

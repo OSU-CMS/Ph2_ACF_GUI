@@ -5,11 +5,13 @@ logger = logging.getLogger(__name__)
 
 def InitialDevice(device):
 	try:
+		print("initializing device")
 		device.write("*RST")
 	except Exception as err:
 		logger.error("Error occured while restore defaults: {}".format(err))
 	# Select voltage source mode
 	try:
+		print("this was where the thing was fixed")
 		device.write(":SOURCE:FUNCTION VOLT")
 		device.write(":SOURCE:VOLTAGE:MODE FIX")
 	except Exception as err:

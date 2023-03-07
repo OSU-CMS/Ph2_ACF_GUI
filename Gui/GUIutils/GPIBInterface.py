@@ -219,8 +219,6 @@ class PowerSupply():
 				elif self.PowerType ==  "LV" and self.PoweringMode == "Direct":
 					Voltage = ModuleVoltageMap[self.ModuleType]
 					Current = ModuleCurrentMap[self.ModuleType]
-					self.setCompCurrent(0.7)
-					self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 					#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.ApplyCurrent(self.Instrument, voltage = Voltage, current = Current)
 				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
@@ -238,7 +236,7 @@ class PowerSupply():
 				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
 					Voltage = ModuleVoltageMap[self.ModuleType]
 					Current = ModuleCurrentMap[self.ModuleType]
-					self.setCompCurrent(0.6)
+					self.CompCurrent = Current
 				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
 					Voltage = ModuleVoltageMapSLDO[self.ModuleType]
 					Current = ModuleCurrentMap[self.ModuleType]

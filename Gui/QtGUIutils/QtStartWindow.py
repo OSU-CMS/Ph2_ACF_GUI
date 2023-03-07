@@ -82,6 +82,10 @@ class SummaryBox(QWidget):
 				boardtype = 'RD53B'
 			else:
 				boardtype = 'RD53A'
+			#updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
+			fc7_ip = FirmwareList[defaultFC7]
+			uricmd = "sed -i -e 's/192.168.1.80/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(fc7_ip, os.environ.get('GUI_dir'),boardtype)
+			updateuri = subprocess.call([uricmd], shell=True)
 
 			firmwareImage = firmware_image[self.module.getType()][os.environ.get('Ph2_ACF_VERSION')]
 			print("checking if firmware is on the SD card for {}".format(firmwareImage))
