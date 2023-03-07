@@ -102,10 +102,12 @@ class QtRunWindow(QWidget):
 
 		#added from Bowen
 		self.j = 0
-		for i in range(len(runTestList)):
-			if runTestList[i] == 'ThresholdAdjustment':
-				self.j += 1
-			stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j-1]
+		stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
+		if len(runTestList)>1:
+			for i in range(len(runTestList)):
+				if runTestList[i] == 'ThresholdAdjustment':
+					self.j += 1
+				stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j-1]
 		logger.info(stepWiseGlobalValue)
 
 
