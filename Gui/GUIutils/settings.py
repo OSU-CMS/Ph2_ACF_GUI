@@ -271,7 +271,7 @@ firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 
 pretuningList = ['IVCurve','PixelAlive','NoiseScan']
 tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan']
-posttuningList = ['Noise']
+posttuningList = ['NoiseScan']
 #posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
 
 # Reserved for updated value for XML configuration
