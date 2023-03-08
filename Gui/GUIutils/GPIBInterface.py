@@ -7,6 +7,7 @@ import logging
 from Gui.GUIutils.settings import *
 from Configuration.XMLUtil import *
 from Gui.python.TCP_Interface import *
+from Gui.siteSettings import *
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -425,6 +426,8 @@ class PowerSupply():
 		if self.UsingPythonInterface == True:
 			try:
 				self.hwInterface.InitialDevice(self.Instrument)
+				if '1' in self.hwInterface.ReadOutputStatus(self.Instrument):
+					self.TurnOffHV()
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
 			except Exception as err:
@@ -513,6 +516,9 @@ class PowerSupply():
 		try:
 			if self.isHV():
 				self.hwInterface.InitialDevice(self.Instrument)
+				if '1' in self.hwInterface.ReadOutputStatus(self.Instrument):
+					self.TurnOffHV()
+				self.SetHVComplianceLimit(defaultHVCurrentCompliance)
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
 				self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)

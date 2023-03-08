@@ -292,7 +292,7 @@ class QtStartWindow(QWidget):
 		self.master.NewTestButton.setDisabled(False)
 		self.master.LogoutButton.setDisabled(False)
 		self.master.ExitButton.setDisabled(False)
-
+'''
 	def setTestList(self):
 		self.TestCombo.setDisabled(True)
 		currentModule = self.ModuleIDEdit.text()
@@ -304,7 +304,7 @@ class QtStartWindow(QWidget):
 			self.TestCombo.clear()
 			self.TestCombo.addItems(self.TestList)
 		self.TestCombo.setDisabled(False)
-
+'''
 	def checkFwPar(self):
 		GlobalCheck = True
 		for item in self.ModuleList:

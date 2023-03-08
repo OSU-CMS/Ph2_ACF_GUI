@@ -911,6 +911,7 @@ class QtApplication(QWidget):
 		#self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
 		self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
 		self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
+		self.HVpowersupply.TurnOffHV()
 		#self.HVpowersupply.TurnOn()
 		# Block for GUI front-end
 		statusString = self.HVpowersupply.getInfo()

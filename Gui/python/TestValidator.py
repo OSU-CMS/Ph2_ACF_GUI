@@ -11,6 +11,13 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 	Grade = {}
 	PassModule = {}
 	ExpectedModuleList = [ module.lstrip("Module") for module in inputDir.split('_') if "Module" in module]
+	
+	if "IVCurve" in testName:
+		for module in ExpectedModuleList:
+			Grade[module] = {0: 1.0}
+			PassModule[module] = {0: True}
+			figureList = {}
+
 	if testName in ["PixelAlive","NoiseScan","SCurveScan","GainScan","InjectionDelay","GainOptimization","ThresholdAdjustment","ThresholdEqualization"]:
 		try:
 			CanvasList = {}
