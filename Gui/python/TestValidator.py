@@ -11,7 +11,7 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 	Grade = {}
 	PassModule = {}
 	ExpectedModuleList = [ module.lstrip("Module") for module in inputDir.split('_') if "Module" in module]
-	print('expected modulelist is {0}'.format(ExpectedModuleList))
+	
 	
 	
 
@@ -71,8 +71,8 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 		except Exception as err:
 			print("Failed to write Grading file: {}".format(repr(err)))
 
-	print(Grade)
-	print(PassModule)
+	#print(Grade)
+	#print(PassModule)
 	return Grade, PassModule, figureList
 
 def GetCanvasVAL(node,canvasList,ModuleMap):

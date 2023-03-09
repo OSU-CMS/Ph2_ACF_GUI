@@ -370,7 +370,6 @@ class QtRunWindow(QWidget):
 			for moduleKey in test.keys():
 				for chipKey in test[moduleKey].keys():
 					ChipID = "Module{}_Chip{}".format(moduleKey,chipKey)
-					print('chip id is {0}'.format(ChipID))
 					status = "Pass" if test[moduleKey][chipKey] == True else "Failed"
 					if  ChipID in self.header:
 						columnId = self.header.index(ChipID)
