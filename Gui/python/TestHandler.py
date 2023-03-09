@@ -842,6 +842,8 @@ class TestHandler(QObject):
 		
 		filename = '{0}/IVCurve_Module_{1}.svg'.format(self.output_dir,moduleName)
 		self.IVCurveResult.saveToSVG(filename)
+		#grade, passmodule, self.figurelist = ResultGrader(self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap)
+		#self.updateValidation.emit(grade, passmodule)
 		EnableReRun = False
 
 		# Will send signal to turn off power supply after composite or single tests are run
