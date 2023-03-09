@@ -32,7 +32,7 @@ defaultPowerMode = "SLDO"
 #}
 
 #setting default HV current compliance in mA
-defaultHVCurrentCompliance = 0.01
+defaultHVCurrentCompliance = 0.00001
 #setting default HV bias voltage in V
 defaultHVsetting = -60
 

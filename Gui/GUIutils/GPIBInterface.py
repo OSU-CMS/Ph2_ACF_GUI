@@ -426,7 +426,10 @@ class PowerSupply():
 		if self.UsingPythonInterface == True:
 			try:
 				self.hwInterface.InitialDevice(self.Instrument)
-				if '1' in self.hwInterface.ReadOutputStatus(self.Instrument):
+				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				print('HV status was {0}'.format(HVstatus))
+				if '1' in HVstatus:
+					print('found HV status {0}'.format(HVstatus))
 					self.TurnOffHV()
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
@@ -515,9 +518,10 @@ class PowerSupply():
 	def RampingUp(self, hvTarget = 0.0, stepLength = 0.0):
 		try:
 			if self.isHV():
-				self.hwInterface.InitialDevice(self.Instrument)
-				if '1' in self.hwInterface.ReadOutputStatus(self.Instrument):
+				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				if '1' in HVstatus:
 					self.TurnOffHV()
+				self.hwInterface.InitialDevice(self.Instrument)
 				self.SetHVComplianceLimit(defaultHVCurrentCompliance)
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
