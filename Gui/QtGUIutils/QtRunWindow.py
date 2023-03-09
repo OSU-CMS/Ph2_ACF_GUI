@@ -357,6 +357,7 @@ class QtRunWindow(QWidget):
 		#self.view.setModel(self.proxy)
 		#self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 		#self.view.update()
+		print('attempting to update status in history')
 		self.HistoryLayout.removeWidget(self.StatusTable)
 		self.StatusTable.setRowCount(0)
 		for index,test in enumerate(self.modulestatus):
@@ -369,6 +370,7 @@ class QtRunWindow(QWidget):
 			for moduleKey in test.keys():
 				for chipKey in test[moduleKey].keys():
 					ChipID = "Module{}_Chip{}".format(moduleKey,chipKey)
+					print('chip id is {0}'.format(ChipID))
 					status = "Pass" if test[moduleKey][chipKey] == True else "Failed"
 					if  ChipID in self.header:
 						columnId = self.header.index(ChipID)
@@ -484,6 +486,7 @@ class QtRunWindow(QWidget):
 
 	def updateValidation(self,grade,passmodule):
 		try:
+			print('update validation was called')
 			status = True
 			self.grades.append(grade)
 			self.modulestatus.append(passmodule)

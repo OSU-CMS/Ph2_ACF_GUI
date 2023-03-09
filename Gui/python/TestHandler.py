@@ -146,6 +146,7 @@ class TestHandler(QObject):
 				self.rd53_file["{0}_{1}_{2}".format(moduleName,moduleId,ModuleLaneMap[moduleType][i])] = None
 			fwPath = "{0}_{1}_{2}".format(beboardId,ogId,moduleId)
 			self.ModuleMap[fwPath] = moduleName
+			print('module map is {0}:{1}'.format(fwPath, self.ModuleMap[fwPath]))
 
 	def configTest(self):
 		# Gets the run number by reading from the RunNumber.txt file.
@@ -842,8 +843,8 @@ class TestHandler(QObject):
 		
 		filename = '{0}/IVCurve_Module_{1}.svg'.format(self.output_dir,moduleName)
 		self.IVCurveResult.saveToSVG(filename)
-		#grade, passmodule, self.figurelist = ResultGrader(self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap)
-		#self.updateValidation.emit(grade, passmodule)
+		grade, passmodule, self.figurelist = ResultGrader(self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap)
+		self.updateValidation.emit(grade, passmodule)
 		EnableReRun = False
 
 		# Will send signal to turn off power supply after composite or single tests are run
@@ -858,6 +859,7 @@ class TestHandler(QObject):
 
 		self.stepFinished.emit(EnableReRun)
 
+		self.historyRefresh.emit(self.modulestatus)
 		if self.master.expertMode:
 			self.updateIVResult.emit(self.output_dir)
 
