@@ -427,7 +427,6 @@ class PowerSupply():
 			try:
 				self.hwInterface.InitialDevice(self.Instrument)
 				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
-				print('HV status was {0}'.format(HVstatus))
 				if '1' in HVstatus:
 					print('found HV status {0}'.format(HVstatus))
 					self.TurnOffHV()
