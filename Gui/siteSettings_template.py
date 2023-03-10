@@ -1,6 +1,9 @@
 ######################################################################
 # To be edited by expert as default setting for Hardware configuration
 ######################################################################
+# Set gpib debug mode to True if you want to see SCPI commands sent to HV and LV devices:
+GPIB_DebugMode = False
+
 # Ph2_ACF version being used
 defaultACFVersion = "4.0.11"
 # default FC7 boardName
@@ -35,7 +38,6 @@ defaultPowerMode = "SLDO"
 defaultHVCurrentCompliance = 0.00001
 #setting default HV bias voltage in V
 defaultHVsetting = -60
-
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 9600
 #default DBServerIP

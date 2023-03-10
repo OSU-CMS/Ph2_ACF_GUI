@@ -11,7 +11,9 @@ from Gui.siteSettings import *
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-visa.log_to_screen()
+
+if GPIB_DebugMode:
+	visa.log_to_screen()
 
 class PowerSupply():
 	def __init__(self,model = "Keithley", boardnumber = 0, primaryaddress = 24, powertype = "HV",serverIndex = 0):
