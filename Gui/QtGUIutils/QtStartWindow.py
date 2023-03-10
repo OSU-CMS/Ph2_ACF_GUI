@@ -79,7 +79,7 @@ class SummaryBox(QWidget):
 			if not os.access(os.environ.get('GUI_dir'),os.W_OK):
 				QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
 				return
-			if not os.access(os.environ.get('GUI_dir'),os.W_OK):
+			if not os.access("{0}/test".format(os.environ.get('Ph2_ACF_AREA')),os.W_OK):
 				QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('Ph2_ACF_AREA'),os.W_OK)), QMessageBox.Ok)
 				return
 
@@ -318,10 +318,10 @@ class QtStartWindow(QWidget):
 
 
 	def openRunWindow(self):
-		if os.access(os.environ.get('GUI_dir'),os.W_OK):
+		if not os.access(os.environ.get('GUI_dir'),os.W_OK):
 			QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
 			return
-		if not os.access(os.environ.get('GUI_dir'),os.W_OK):
+		if not os.access("{0}/test".format(os.environ.get('Ph2_ACF_AREA')),os.W_OK):
 			QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('Ph2_ACF_AREA'),os.W_OK)), QMessageBox.Ok)
 			return
 		for module in self.BeBoardWidget.getModules():
