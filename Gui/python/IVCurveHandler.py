@@ -26,7 +26,7 @@ class IVCurveThread(QThread):
         self.powersupply.TurnOffHV()
         self.powersupply.TurnOnHV()
         self.powersupply.SetHVRange(200)
-        self.powersupply.SetHVComplianceLimit(0.1)
+        self.powersupply.SetHVComplianceLimit(0.01)
 
     def abortTest(self):
         print("Aborting test...")
@@ -50,7 +50,7 @@ class IVCurveThread(QThread):
                 #    print("voltage:",voltage, " current:",current)
                 self.stepNum += 1
                 measurementStr = {"voltage":voltage,"current":current,"percentage":self.stepNum/self.stepTotal}
-                print(measurementStr)
+                #print(measurementStr)
                 if voltage == None or current == None:
                     self.stepNum -= 1
                     self.target = self.startVal + self.stepLength * self.stepNum

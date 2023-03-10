@@ -102,10 +102,16 @@ class QtRunWindow(QWidget):
 
 		#added from Bowen
 		self.j = 0
+		#stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
+		#if len(runTestList)>1:
 		for i in range(len(runTestList)):
 			if runTestList[i] == 'ThresholdAdjustment':
 				self.j += 1
-			stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j-1]
+			if self.j == 0:
+				stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j]
+			else:
+				stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j-1]
+		 
 		logger.info(stepWiseGlobalValue)
 
 
@@ -351,6 +357,7 @@ class QtRunWindow(QWidget):
 		#self.view.setModel(self.proxy)
 		#self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 		#self.view.update()
+		print('attempting to update status in history')
 		self.HistoryLayout.removeWidget(self.StatusTable)
 		self.StatusTable.setRowCount(0)
 		for index,test in enumerate(self.modulestatus):
@@ -478,6 +485,7 @@ class QtRunWindow(QWidget):
 
 	def updateValidation(self,grade,passmodule):
 		try:
+			print('update validation was called')
 			status = True
 			self.grades.append(grade)
 			self.modulestatus.append(passmodule)

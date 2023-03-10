@@ -7,6 +7,7 @@ import logging
 from Gui.GUIutils.settings import *
 from Configuration.XMLUtil import *
 from Gui.python.TCP_Interface import *
+from Gui.siteSettings import *
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -219,8 +220,6 @@ class PowerSupply():
 				elif self.PowerType ==  "LV" and self.PoweringMode == "Direct":
 					Voltage = ModuleVoltageMap[self.ModuleType]
 					Current = ModuleCurrentMap[self.ModuleType]
-					self.setCompCurrent(0.7)
-					self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 					#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.ApplyCurrent(self.Instrument, voltage = Voltage, current = Current)
 				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
@@ -238,7 +237,7 @@ class PowerSupply():
 				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
 					Voltage = ModuleVoltageMap[self.ModuleType]
 					Current = ModuleCurrentMap[self.ModuleType]
-					self.setCompCurrent(0.6)
+					self.CompCurrent = Current
 				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
 					Voltage = ModuleVoltageMapSLDO[self.ModuleType]
 					Current = ModuleCurrentMap[self.ModuleType]
@@ -427,6 +426,10 @@ class PowerSupply():
 		if self.UsingPythonInterface == True:
 			try:
 				self.hwInterface.InitialDevice(self.Instrument)
+				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				if '1' in HVstatus:
+					print('found HV status {0}'.format(HVstatus))
+					self.TurnOffHV()
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
 			except Exception as err:
@@ -514,7 +517,11 @@ class PowerSupply():
 	def RampingUp(self, hvTarget = 0.0, stepLength = 0.0):
 		try:
 			if self.isHV():
+				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				if '1' in HVstatus:
+					self.TurnOffHV()
 				self.hwInterface.InitialDevice(self.Instrument)
+				self.SetHVComplianceLimit(defaultHVCurrentCompliance)
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
 				self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)

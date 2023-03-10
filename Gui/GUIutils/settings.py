@@ -173,7 +173,7 @@ ModuleVoltageMapSLDO = {
 	"SingleSCC" : 1.8,
 	"TFPX Quad" : 2.98,
 	"TEPX Quad" : 2.0,
-	"TBPX Quad" : 2.8,
+	"TBPX Quad" : 1.9,
 	"Yellow Module (Purdue)": 2.8,
 	"CROC 1x2"  : 2.2,
 }
@@ -208,11 +208,11 @@ Test = {
 	'AllScan'                :  'noise',
 	'QuickTest'              :  'noise',
 	'IVCurve'                :  'ivcurve',
-	'StandardStep1'          :  'noise',
-	'StandardStep2'          :  'threqu',
-	'StandardStep3'          :  'scurve',
-	'StandardStep4'          :  'injdelay',
-	'StandardStep5'          :  'scurve',
+	#'StandardStep1'          :  'noise',
+	#'StandardStep2'          :  'threqu',
+	#'StandardStep3'          :  'scurve',
+	#'StandardStep4'          :  'injdelay',
+	#'StandardStep5'          :  'scurve',
 	'Latency'                :  'latency',
 	'PixelAlive'             :  'pixelalive',
 	'NoiseScan'              :  'noise',
@@ -255,23 +255,25 @@ SingleTest = ['IVCurve','Latency','PixelAlive','NoiseScan','SCurveScan','GainSca
 	'ThresholdEqualization','GainOptimization','ThresholdMinimization',
 	'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
-CompositeTest = ['AllScan_Tuning','AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+CompositeTest = ['AllScan_Tuning','AllScan','QuickTest']
+#CompositeTest = ['AllScan_Tuning','AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
 	'AllScan': ['IVCurve','PixelAlive','NoiseScan','ThresholdAdjustment',
 				'ThresholdEqualization','SCurveScan', 'NoiseScan','GainScan','GainOptimization',
 				'InjectionDelay','SCurveScan'],
-	'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
-	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
-	'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
-	'StandardStep4': ['InjectionDelay'],
-	'StandardStep5': ['SCurveScan'],
+	#'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
+	#'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
+	#'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
+	#'StandardStep4': ['InjectionDelay'],
+	#'StandardStep5': ['SCurveScan'],
 	'QuickTest': ['IVCurve','PixelAlive','NoiseScan']
 }
-firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
+#firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 
 pretuningList = ['IVCurve','PixelAlive','NoiseScan']
-tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan','NoiseScan']
-posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
+tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan']
+posttuningList = ['NoiseScan']
+#posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
 
 # Reserved for updated value for XML configuration
 updatedXMLValues = defaultdict(dict)

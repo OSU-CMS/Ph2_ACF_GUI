@@ -31,8 +31,6 @@ def TurnOn(device):
 
 def TurnOff(device):
 	try:
-		status = device.query(":OUTPUT?")
-		print("HV status is {0}".format(status))
 		#device.write(":SOURCE:VOLTAGE:LEV 0")
 		device.write(":OUTPUT OFF")
 	except  Exception as err:

@@ -11,6 +11,10 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 	Grade = {}
 	PassModule = {}
 	ExpectedModuleList = [ module.lstrip("Module") for module in inputDir.split('_') if "Module" in module]
+	
+	
+	
+
 	if testName in ["PixelAlive","NoiseScan","SCurveScan","GainScan","InjectionDelay","GainOptimization","ThresholdAdjustment","ThresholdEqualization"]:
 		try:
 			CanvasList = {}
@@ -29,7 +33,15 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 					figureList = {}
 		except Exception as err:
 			print("Failed to get the score: {}".format(repr(err)))
-			
+	
+	elif testName in 'IVCurve':
+		for module in ExpectedModuleList:
+			Grade[module] = {0: 1.0}
+			PassModule[module] = {0: True}
+			figureList = {}
+			for i in range(1,18):
+				Grade[module][i] = 1.0
+				PassModule[module][i] = True	
 	else:
 		try:
 			CanvasList = {}
@@ -59,8 +71,8 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):
 		except Exception as err:
 			print("Failed to write Grading file: {}".format(repr(err)))
 
-	print(Grade)
-	print(PassModule)
+	#print(Grade)
+	#print(PassModule)
 	return Grade, PassModule, figureList
 
 def GetCanvasVAL(node,canvasList,ModuleMap):

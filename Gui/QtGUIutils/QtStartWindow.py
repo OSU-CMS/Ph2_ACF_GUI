@@ -76,12 +76,26 @@ class SummaryBox(QWidget):
 		# To be finished
 		
 		try:
+			if not os.access(os.environ.get('GUI_dir'),os.W_OK):
+				QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
+				return
+			if not os.access("{0}/test".format(os.environ.get('Ph2_ACF_AREA')),os.W_OK):
+				QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('Ph2_ACF_AREA'),os.W_OK)), QMessageBox.Ok)
+				return
+
 			FWisPresent = False
-			print('module type in start window is {0}'.format(self.module.getType()))
 			if 'CROC' in self.module.getType():
 				boardtype = 'RD53B'
 			else:
 				boardtype = 'RD53A'
+			#updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
+
+			print('write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)))
+			print('write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('Ph2_ACF_AREA'),os.W_OK)))
+
+			fc7_ip = FirmwareList[defaultFC7]
+			uricmd = "sed -i -e 's/192.168.1.80/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(fc7_ip, os.environ.get('GUI_dir'),boardtype)
+			updateuri = subprocess.call([uricmd], shell=True)
 
 			firmwareImage = firmware_image[self.module.getType()][os.environ.get('Ph2_ACF_VERSION')]
 			print("checking if firmware is on the SD card for {}".format(firmwareImage))
@@ -289,17 +303,6 @@ class QtStartWindow(QWidget):
 		self.master.LogoutButton.setDisabled(False)
 		self.master.ExitButton.setDisabled(False)
 
-	def setTestList(self):
-		self.TestCombo.setDisabled(True)
-		currentModule = self.ModuleIDEdit.text()
-		localTests = getLocalTests(currentModule)
-		if localTests == []:
-			self.TestCombo.clear()
-			self.TestCombo.addItems(firstTimeList) 
-		else:
-			self.TestCombo.clear()
-			self.TestCombo.addItems(self.TestList)
-		self.TestCombo.setDisabled(False)
 
 	def checkFwPar(self):
 		GlobalCheck = True
@@ -315,6 +318,12 @@ class QtStartWindow(QWidget):
 
 
 	def openRunWindow(self):
+		if not os.access(os.environ.get('GUI_dir'),os.W_OK):
+			QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
+			return
+		if not os.access("{0}/test".format(os.environ.get('Ph2_ACF_AREA')),os.W_OK):
+			QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('Ph2_ACF_AREA'),os.W_OK)), QMessageBox.Ok)
+			return
 		for module in self.BeBoardWidget.getModules():
 			if module.getSerialNumber() == "":
 				QMessageBox.information(None,"Error","No valid serial number!", QMessageBox.Ok)
