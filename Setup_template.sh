@@ -2,7 +2,7 @@ export Ph2_ACF_AREA=/home/RD53A/workspace/v4.0.11/Ph2_ACF
 export DATA_dir=/home/RD53A/data/TestResults
 export GUI_dir=$PWD
 
-UsePowerSupplyLib = false
+export UsePowerSupplyLib = false
 
 if [ ! -d $Ph2_ACF_AREA ]; then
     echo "Error: Ph2_ACF_AREA not found!"
