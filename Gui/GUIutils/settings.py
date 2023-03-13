@@ -272,7 +272,7 @@ CompositeList = {
 
 pretuningList = ['IVCurve','PixelAlive','NoiseScan']
 tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan']
-posttuningList = ['NoiseScan']
+posttuningList = ['NoiseScan','SCurveScan']
 #posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
 
 # Reserved for updated value for XML configuration

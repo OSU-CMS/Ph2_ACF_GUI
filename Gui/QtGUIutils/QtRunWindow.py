@@ -432,6 +432,7 @@ class QtRunWindow(QWidget):
 		self.testHandler.runTest(isReRun)
 
 	def abortTest(self):
+		self.j = 0
 		self.testHandler.abortTest()
 	
 	def urgentStop(self):
