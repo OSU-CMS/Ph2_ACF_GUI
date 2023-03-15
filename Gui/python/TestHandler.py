@@ -382,18 +382,11 @@ class TestHandler(QObject):
 			self.fc7Interface.runCalibration('../Ph2_ACF/test/CMSIT.xml',self.output_dir, self.RunNumber, Test[self.currentTest])
 			textline = result.getvalue()
 
-			for line in textline:
-				try: 
-					if self.starttime != None:
-						self.currentTime = time.time()
-						runningTime = self.currentTime - self.starttime
-						self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText('{0} s'.format(round(runningTime,1)))
-					else:
-						self.starttime = time.time()
-						self.currentTime = self.starttime
+			for textStr in textline:
+				self.outputString.emit(textStr)
+				
 			
-				except Exception as err:
-					logger.info("Error occures while parsing running time, {0}".format(err))
+			
 			#self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
 		else:
 			self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])

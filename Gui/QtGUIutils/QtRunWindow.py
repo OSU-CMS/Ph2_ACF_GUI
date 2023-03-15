@@ -39,6 +39,7 @@ class QtRunWindow(QWidget):
 		super(QtRunWindow,self).__init__()
 		self.master = master
 		self.master.globalStop.connect(self.urgentStop)
+		runTestList = []
 		runTestList = pretuningList
 		runTestList.extend(tuningList*len(defaultTargetThr))
 		runTestList.extend(posttuningList)

@@ -790,7 +790,8 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.ArduinoControl, 7, 0,1,2)
 		self.mainLayout.addWidget(self.MainOption,8, 0,1,1)
 		self.mainLayout.addWidget(self.PeltierBox, 8,1,1,1)
-		self.mainLayout.addWidget(self.AppOption, 9, 0,1,2)
+		self.mainLayout.addWidget(self.AppOption, 9, 1,1,1)
+		self.mainLayout.addWidget(self.LogoGroupBox, 9, 0, 1, 1)
 
 		self.setDefault()
 	
