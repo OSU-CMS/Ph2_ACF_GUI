@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 import sys
 import os
 import re
+from io import StringIO
 import subprocess
 import threading
 import time
@@ -32,6 +33,7 @@ from Gui.python.IVCurveHandler import *
 from Gui.python.SLDOScanHandler import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.siteSettings import *
+from Gui.python.Ph2_ACF_Interface import Ph2_ACF_Interface
 
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -81,6 +83,7 @@ class TestHandler(QObject):
 
 		self.IVCurveHandler = None
 		self.SLDOScanHandler = None
+		self.fc7Interface = Ph2_ACF_Interface()
 
 		self.processingFlag = False
 		self.ProgressBarList = []
@@ -373,9 +376,25 @@ class TestHandler(QObject):
 		#self.run_process.start("python", ["signal_generator.py"])
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
 		#self.run_process.start("./SignalGenerator")
-
+		textstuff = StringIO()
+		sys.stdout = textstuff
 		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin","scurve","gainopt","thradj","physics","gain"]:
-			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
+			self.fc7Interface.runCalibration('../Ph2_ACF/test/CMSIT.xml',self.output_dir, self.RunNumber, Test[self.currentTest])
+			textline = result.getvalue()
+
+			for line in textline:
+				try: 
+					if self.starttime != None:
+						self.currentTime = time.time()
+						runningTime = self.currentTime - self.starttime
+						self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText('{0} s'.format(round(runningTime,1)))
+					else:
+						self.starttime = time.time()
+						self.currentTime = self.starttime
+			
+				except Exception as err:
+					logger.info("Error occures while parsing running time, {0}".format(err))
+			#self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
 		else:
 			self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
 	

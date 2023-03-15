@@ -283,7 +283,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 			# Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
 			for chip in module.getChips().values():
 				FEChip = FE()
-				FEChip.SetFE(chip.getID(),chip.getLane(),"CMSIT_RD53_{0}_{1}_{2}.txt".format(module.getModuleName(),module.getModuleID(),chip.getID()))
+				FEChip.SetFE(chip.getID(),chip.getLane(),"../Ph2_ACF/test/CMSIT_RD53_{0}_{1}_{2}.txt".format(module.getModuleName(),module.getModuleID(),chip.getID()))
 				FEChip.ConfigureFE(FESettings_Dict[testName])
 				HyBridModule0.AddFE(FEChip)
 			HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])

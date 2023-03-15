@@ -20,6 +20,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
 from Gui.siteSettings import *
+from Gui.python.Ph2_ACF_Interface import Ph2_ACF_Interface
 #from Gui.QtGUIutils.QtProductionTestWindow import *
 
 class SummaryBox(QWidget):
@@ -99,32 +100,34 @@ class SummaryBox(QWidget):
 
 			firmwareImage = firmware_image[self.module.getType()][os.environ.get('Ph2_ACF_VERSION')]
 			print("checking if firmware is on the SD card for {}".format(firmwareImage))
-			fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('GUI_dir')+'/Gui/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-
-				#fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/test/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-			print("firmwarelist is {0}".format(fwlist.stdout.decode('UTF-8')))
-			print("firmwareImage is {0}".format(firmwareImage))
-			if firmwareImage in fwlist.stdout.decode('UTF-8'):
+			xml_file = os.environ.get('GUI_dir')+'/Gui/CMSIT_{0}.xml'.format(boardtype)
+			self.fc7Interface = Ph2_ACF_Interface()
+			fwlist = self.fc7Interface.listFirmware(xml_file, 0)
+			if firmwareImage in fwlist:
+				print('found fw')
 				FWisPresent = True
-				print("firmware found")
 			else:
 				try:
 					print("Saving fw image to SD card")
-					fwsave = subprocess.run(["fpgaconfig","-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + firmwareImage),"i","{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+					self.fc7Interface.uploadFirmware(xml_file, firmwareImage, 0)
+					#fwsave = subprocess.run(["fpgaconfig","-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + firmwareImage),"i","{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 					#self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
-					print(fwsave.stdout.decode('UTF-8'))
+					#print(fwsave.stdout.decode('UTF-8'))
+					print('Firmware {0} uploaded to SD card'.format(firmwareImage))
 					FWisPresent = True
 				except:
 					print("unable to save {0} to FC7 SD card".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage))
 
 			if FWisPresent:
 				print('Loading FW image')
-				fwload = subprocess.run(["fpgaconfig","-c","CMSIT_{}.xml".format(boardtype),"-i", "{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-				print(fwload.stdout.decode('UTF-8'))
-				print('resetting beboard')
-				fwreset = subprocess.run(["CMSITminiDAQ","-f","CMSIT_{}.xml".format(boardtype),"-r"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-				print(fwreset.stdout.decode('UTF-8'))
-				print(fwreset.stderr.decode('UTF-8'))
+				self.fc7Interface.loadFirmware(xml_file, firmwareImage, 0)
+				#fwload = subprocess.run(["fpgaconfig","-c","CMSIT_{}.xml".format(boardtype),"-i", "{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+				#print(fwload.stdout.decode('UTF-8'))
+				#print('resetting beboard')
+
+				#fwreset = subprocess.run(["CMSITminiDAQ","-f","CMSIT_{}.xml".format(boardtype),"-r"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+				#print(fwreset.stdout.decode('UTF-8'))
+				#print(fwreset.stderr.decode('UTF-8'))
 
 				print('Firmware image is now loaded')
 			print('made it to LV turn on')
