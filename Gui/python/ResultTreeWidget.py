@@ -153,8 +153,13 @@ class ResultTreeWidget(QWidget):
 	def onItemClicked(self, item, col):
 		self.OutputTree.resizeColumnToContents(0)
 		if item.text(0).endswith(";TCanvas"):
+			print('the test is {0}'.format(item.text(0)))
+			print('This item is a TCanvas')
 			canvas = item.data(0,Qt.UserRole)
-			self.displayResult(canvas)
+			canvasname = str(item.text(0))
+			canvasname = canvasname.split(';')[0]
+			print('The canvas is {0}'.format(canvas))
+			self.displayResult(canvas,canvasname)
 		elif 'svg' in str(item.data(0,Qt.UserRole)):
 			canvas = item.data(0,Qt.UserRole)
 			self.displayResult(canvas)
@@ -254,7 +259,8 @@ class ResultTreeWidget(QWidget):
 			self.TreeRoot.addChild(CurrentNode)
 			
 
-	def displayResult(self, canvas):
+	def displayResult(self, canvas, name = None):
+		print('the name passed was {0}'.format(name))
 		tmpDir = os.environ.get('GUI_dir')+"/Gui/.tmp"
 		if not os.path.isdir(tmpDir)  and os.environ.get('GUI_dir'):
 			try:
@@ -266,7 +272,7 @@ class ResultTreeWidget(QWidget):
 		if 'svg' in str(canvas):
 			svgFile = str(canvas)
 		else:
-			svgFile = TCanvas2SVG(tmpDir, canvas)
+			svgFile = TCanvas2SVG(tmpDir, canvas, name)
 		self.displayingImage = svgFile
 
 		try:
