@@ -38,7 +38,8 @@ class SummaryBox(QWidget):
 		self.measureFwPar()
 		#self.checkFwPar()
 		self.setLayout(self.mainLayout)
-	
+		
+
 	def initResult(self):
 		for i in ModuleLaneMap[self.module.getType()].keys():
 			self.verboseResult[i] = {}
@@ -207,7 +208,7 @@ class QtStartWindow(QWidget):
 		self.setLayout(self.mainLayout)
 		self.runFlag = False
 		self.passCheck = False
-
+		#self.LogoGroupBox2 = self.master.LogoGroupBox
 		self.setLoginUI()
 		self.createHead()
 		self.createMain()
@@ -289,7 +290,30 @@ class QtStartWindow(QWidget):
 		self.StartLayout.addWidget(self.NextButton)
 		self.AppOption.setLayout(self.StartLayout)
 
+		self.LogoGroupBox = QGroupBox("")
+		self.LogoGroupBox.setCheckable(False)
+		self.LogoGroupBox.setMaximumHeight(100)
+
+		self.LogoLayout = QHBoxLayout()
+		OSULogoLabel = QLabel()
+		OSUimage = QImage("icons/osuicon.jpg").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		OSUpixmap = QPixmap.fromImage(OSUimage)
+		OSULogoLabel.setPixmap(OSUpixmap)
+		CMSLogoLabel = QLabel()
+		CMSimage = QImage("icons/cmsicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		CMSpixmap = QPixmap.fromImage(CMSimage)
+		CMSLogoLabel.setPixmap(CMSpixmap)
+		self.LogoLayout.addWidget(OSULogoLabel)
+		self.LogoLayout.addStretch(1)
+		self.LogoLayout.addWidget(CMSLogoLabel)
+
+		self.LogoGroupBox.setLayout(self.LogoLayout)
+
+		#self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
+		#self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
+
 		self.mainLayout.addWidget(self.AppOption,3,0)
+		self.mainLayout.addWidget(self.LogoGroupBox,4,0)
 
 	def closeWindow(self):
 		self.close()
