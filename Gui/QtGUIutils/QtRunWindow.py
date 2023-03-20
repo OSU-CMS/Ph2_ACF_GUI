@@ -39,13 +39,20 @@ class QtRunWindow(QWidget):
 		super(QtRunWindow,self).__init__()
 		self.master = master
 		self.master.globalStop.connect(self.urgentStop)
-		runTestList = pretuningList
-		runTestList.extend(tuningList*len(defaultTargetThr))
-		runTestList.extend(posttuningList)
-		CompositeList.update({'AllScan_Tuning':runTestList})
+		
 		#self.LogoGroupBox = self.master.LogoGroupBox
 		self.firmware = firmware
 		self.info = info
+		if "AllScan_Tuning" in self.info[1]:
+			runTestList = pretuningList
+			runTestList.extend(tuningList*len(defaultTargetThr))
+			runTestList.extend(posttuningList)
+			CompositeList.update({'AllScan_Tuning':runTestList})
+
+		elif isCompositeTest(self.info[1]):
+			runTestList = CompositeList[self.info[1]]
+		else:
+			 runTestList = self.info[1]
 		self.connection = self.master.connection
 		self.firmwareName = self.firmware.getBoardName()
 		self.ModuleMap = dict()
@@ -102,6 +109,7 @@ class QtRunWindow(QWidget):
 		self.resized.connect(self.rescaleImage)
 
 		#added from Bowen
+		print('test list should be {0}'.format(self.info[1]))
 		self.j = 0
 		#stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
 		#if len(runTestList)>1:
