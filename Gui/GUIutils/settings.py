@@ -173,9 +173,9 @@ ModuleVoltageMapSLDO = {
 	"SingleSCC" : 1.8,
 	"TFPX Quad" : 2.98,
 	"TEPX Quad" : 2.0,
-	"TBPX Quad" : 1.9,
+	"TBPX Quad" : 2.98,
 	"Yellow Module (Purdue)": 2.8,
-	"CROC 1x2"  : 2.2,
+	"CROC 1x2"  : 2.5,
 }
 
 ModuleVoltageMap = {

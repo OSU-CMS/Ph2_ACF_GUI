@@ -19,8 +19,8 @@ MonitoringListB = {
   'Iref'            : "0",
   'POLY_TEMP_SENS_TOP' : "0",
   'POLY_TEMP_SENS_BOTTOM' : "0",
-  'TEMPSENS_ANA_SLDO' : "0",
-  'TEMPSENS_DIG_SLDO' : "0",
-  'TEMPSENS_CENTER' : "0",
+  'TEMPSENS_ANA_SLDO' : "1",
+  'TEMPSENS_DIG_SLDO' : "1",
+  'TEMPSENS_CENTER' : "1",
   'INTERNAL_NTC'    : "1",
 }
