@@ -26,7 +26,7 @@ class IVCurveThread(QThread):
         self.powersupply.TurnOffHV()
         self.powersupply.TurnOnHV()
         self.powersupply.SetHVRange(200)
-        self.powersupply.SetHVComplianceLimit(0.01)
+        self.powersupply.SetHVComplianceLimit(0.00001)
 
     def abortTest(self):
         print("Aborting test...")
@@ -37,9 +37,11 @@ class IVCurveThread(QThread):
             try:
                 self.powersupply.SetHVVoltage(self.target)
                 time.sleep(0.5)
-                voltage = self.powersupply.ReadVoltage()
+                #voltage = self.powersupply.ReadVoltage()
+                voltage = self.target
                 time.sleep(0.5)
                 current = self.powersupply.ReadCurrent()
+
                 #MAX_TRIES = 10
                 #N_TRIES = 1
                 #while abs(target-float(voltage))/abs(target+0.01) > 0.05 and  N_TRIES < MAX_TRIES:
