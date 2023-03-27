@@ -318,7 +318,13 @@ class PowerSupply():
 				return HVoutputstatus
 			except Exception as err:
 				return None
-
+		else:
+			try:
+				cmd = "GetStatus,PowerSupplyID:" + self.ID
+				HVoutputstatus = self.hwInterface.executeCommand(cmd)
+			except Exception as err:
+				return None
+	
 	def ReadVoltage(self):
 		if self.UsingPythonInterface == True:
 			try:
@@ -439,8 +445,17 @@ class PowerSupply():
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
 				return None
 		else:
+			cmd = "Initialize,PowerSupplyId:" + self.ID + ",PowerSupplyType:" +self.Model.split()[0]
+			self.hwInterface.executeCommand(cmd)
+			#cmd = "GetStatus,PowerSupplyID:" + self.ID
+			#HVoutputstatus = self.hwInterface.executeCommand(cmd)
+			#HVoutputstatus = self.ReadOutputStatus()
+			#if '1' in HVoutputstatus:
+			#	print('HV status was ON.  Turning OFF HV now.')
+			#	self.TurnOffHV()
 			cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
 			self.hwInterface.executeCommand(cmd)
+			
 
 	def TurnOffHV(self):
 		if not self.isHV():
@@ -496,6 +511,7 @@ class PowerSupply():
 				logging.error("Failed to set HV target the sourceMeter:{}".format(err))
 				return None
 		else:
+			#cmd = "rampToVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value" + str(voltage)
 			cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltage)
 			self.hwInterface.executeCommand(cmd)
 	
@@ -518,20 +534,36 @@ class PowerSupply():
 
 
 	def RampingUp(self, hvTarget = 0.0, stepLength = 0.0):
-		try:
-			if self.isHV():
-				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
-				if '1' in HVstatus:
-					self.TurnOffHV()
-				self.hwInterface.InitialDevice(self.Instrument)
-				self.SetHVComplianceLimit(defaultHVCurrentCompliance)
-				self.hwInterface.SetVoltage(self.Instrument)
-				self.hwInterface.TurnOn(self.Instrument)
-				self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
-			else:
+		if self.isHV():
+			try:
+				if self.UsingPythonInterface == True:
+					print('do not know why it is doing this')
+					HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+					if '1' in HVstatus:
+						self.TurnOffHV()
+					self.hwInterface.InitialDevice(self.Instrument)
+					self.SetHVComplianceLimit(defaultHVCurrentCompliance)
+					self.hwInterface.SetVoltage(self.Instrument)
+					self.hwInterface.TurnOn(self.Instrument)
+					self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
+
+				else:
+					print('made it to the tcp thing')
+					cmd = "Initialize,PowerSupplyId:" + self.ID + ",PowerSupplyType:" +self.Model.split()[0]
+					self.hwInterface.executeCommand(cmd)
+					cmd = "GetStatus,PowerSupplyID:" + self.ID
+					HVoutputstatus = self.hwInterface.executeCommand(cmd)
+					#HVoutputstatus = self.ReadOutputStatus()
+					if '1' in HVoutputstatus:
+						print('HV status was ON.  Turning OFF HV now.')
+						self.TurnOffHV()
+					cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltage)
+					self.hwInterface.executeCommand(cmd)
+			
+			except Exception as err:
+				logging.error("Failed to ramp the voltage to {0}:{1}".format(hvTarget,err))
+		else:
 				logging.info("Not a HV power supply, abort")
-		except Exception as err:
-			logging.error("Failed to ramp the voltage to {0}:{1}".format(hvTarget,err))
 
 	def customized(self,cmd):
 		if "Keith" in self.Model:
