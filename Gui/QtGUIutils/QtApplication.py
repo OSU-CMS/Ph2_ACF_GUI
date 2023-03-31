@@ -261,8 +261,8 @@ class QtApplication(QWidget):
 
 	def destroyLogin(self):
 		self.LoginGroupBox.deleteLater()
-		self.LogoGroupBox.deleteLater()
-		self.mainLayout.removeWidget(self.LoginGroupBox)
+		#self.LogoGroupBox.deleteLater()
+		#self.mainLayout.removeWidget(self.LoginGroupBox)
 	
 	def checkLogin(self):
 		msg = QMessageBox()
@@ -790,7 +790,8 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.ArduinoControl, 7, 0,1,2)
 		self.mainLayout.addWidget(self.MainOption,8, 0,1,1)
 		self.mainLayout.addWidget(self.PeltierBox, 8,1,1,1)
-		self.mainLayout.addWidget(self.AppOption, 9, 0,1,2)
+		self.mainLayout.addWidget(self.AppOption, 9, 1,1,1)
+		self.mainLayout.addWidget(self.LogoGroupBox,9,0,1,1)
 
 		self.setDefault()
 	
@@ -851,6 +852,7 @@ class QtApplication(QWidget):
 		self.ArduinoControl.deleteLater()
 		self.MainOption.deleteLater()
 		self.AppOption.deleteLater()
+		self.LogoGroupBox.deleteLater()
 		self.mainLayout.removeWidget(self.FirmwareStatus)
 		self.mainLayout.removeWidget(self.HVPowerGroup)
 		self.mainLayout.removeWidget(self.UseDefaultGroup)
@@ -861,6 +863,7 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.ArduinoControl)
 		self.mainLayout.removeWidget(self.MainOption)
 		self.mainLayout.removeWidget(self.AppOption)
+		self.mainLayout.removeWidget(self.LogoGroupBox)
 
 	def openNewProductionTest(self):
 		self.ProdTestPage = QtProductionTestWindow(self, HV= self.HVpowersupply, LV = self.LVpowersupply)

@@ -39,12 +39,20 @@ class QtRunWindow(QWidget):
 		super(QtRunWindow,self).__init__()
 		self.master = master
 		self.master.globalStop.connect(self.urgentStop)
-		runTestList = pretuningList
-		runTestList.extend(tuningList*len(defaultTargetThr))
-		runTestList.extend(posttuningList)
-		CompositeList.update({'AllScan_Tuning':runTestList})
+		
+		#self.LogoGroupBox = self.master.LogoGroupBox
 		self.firmware = firmware
 		self.info = info
+		if "AllScan_Tuning" in self.info[1]:
+			runTestList = pretuningList
+			runTestList.extend(tuningList*len(defaultTargetThr))
+			runTestList.extend(posttuningList)
+			CompositeList.update({'AllScan_Tuning':runTestList})
+
+		elif isCompositeTest(self.info[1]):
+			runTestList = CompositeList[self.info[1]]
+		else:
+			 runTestList = self.info[1]
 		self.connection = self.master.connection
 		self.firmwareName = self.firmware.getBoardName()
 		self.ModuleMap = dict()
@@ -101,6 +109,7 @@ class QtRunWindow(QWidget):
 		self.resized.connect(self.rescaleImage)
 
 		#added from Bowen
+		print('test list should be {0}'.format(self.info[1]))
 		self.j = 0
 		#stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
 		#if len(runTestList)>1:
@@ -323,7 +332,27 @@ class QtRunWindow(QWidget):
 		self.StartLayout.addWidget(self.FinishButton)
 		self.AppOption.setLayout(self.StartLayout)
 
+		self.LogoGroupBox = QGroupBox("")
+		self.LogoGroupBox.setCheckable(False)
+		self.LogoGroupBox.setMaximumHeight(100)
+
+		self.LogoLayout = QHBoxLayout()
+		OSULogoLabel = QLabel()
+		OSUimage = QImage("icons/osuicon.jpg").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		OSUpixmap = QPixmap.fromImage(OSUimage)
+		OSULogoLabel.setPixmap(OSUpixmap)
+		CMSLogoLabel = QLabel()
+		CMSimage = QImage("icons/cmsicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		CMSpixmap = QPixmap.fromImage(CMSimage)
+		CMSLogoLabel.setPixmap(CMSpixmap)
+		self.LogoLayout.addWidget(OSULogoLabel)
+		self.LogoLayout.addStretch(1)
+		self.LogoLayout.addWidget(CMSLogoLabel)
+
+		self.LogoGroupBox.setLayout(self.LogoLayout)
+
 		self.mainLayout.addWidget(self.AppOption, sum(self.GroupBoxSeg[0:2]), 0, self.GroupBoxSeg[2], 1)
+		self.mainLayout.addWidget(self.LogoGroupBox, sum(self.GroupBoxSeg[0:3]), 0, self.GroupBoxSeg[2], 1)
 
 	def destroyApp(self):
 		self.AppOption.deleteLater()
@@ -486,7 +515,6 @@ class QtRunWindow(QWidget):
 
 	def updateValidation(self,grade,passmodule):
 		try:
-			print('update validation was called')
 			status = True
 			self.grades.append(grade)
 			self.modulestatus.append(passmodule)

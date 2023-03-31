@@ -12,6 +12,7 @@ def InitialDevice(device):
 	try:
 		device.write(":SOURCE:FUNCTION VOLT")
 		device.write(":SOURCE:VOLTAGE:MODE FIX")
+		device.write(":SENS:CURR:RANG 10E-6")
 	except Exception as err:
 		logger.error("Error occured while setting voltage source mode: {}".format(err))
 
