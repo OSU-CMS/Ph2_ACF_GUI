@@ -169,3 +169,7 @@ if "v4-10" in Ph2_ACF_VERSION:
 if "v4-11" in Ph2_ACF_VERSION:
     for key in FESettings_DictA.keys():
         FESettings_DictA[key] = FESettings_A_49
+
+if "v4-12" in Ph2_ACF_VERSION:
+    for key in FESettings_DictA.keys():
+        FESettings_DictA[key] = FESettings_A_49
