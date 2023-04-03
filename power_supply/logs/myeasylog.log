@@ -1,4 +1,0 @@
-2020-11-23 05:34:15,478 INFO  [default] Init PS with /home/readout/gipht/settings/Devices/PowerSupply_DesktopHame.xml
-2020-11-23 05:34:15,479 INFO  [default] [1m[37mDesktopHame status of channel Module:[0m
-2020-11-23 05:34:17,189 FATAL [default] CRASH HANDLED; Application has crashed due to [SIGINT] signal
-2020-11-23 05:34:17,189 WARN  [default] Aborting application. Reason: Fatal log at [/home/readout/Ph2_ACF/src/../System/../HWDescription/../Utils/easylogging++.h:5687]

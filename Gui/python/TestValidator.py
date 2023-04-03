@@ -330,6 +330,8 @@ def GradeGainScan(canvasList):
 			if Chip_ID not in factorPerModule[key].keys():
 				factorPerModule[key][Chip_ID] = {}
 			
+			PlotName = CanvasName.split("_")[4]
+
 			if PlotName in ["Gain","Intercept1D","Slope1D","InterceptLowQ1D","SlopeLowQ1D","Chi2DoF1D","Intercept2D","Slope2D","InterceptLowQ2D","SlopeLowQ2D","Chi2DoF2D"]:
 				outputFileName = "{}_{}".format(key,CanvasName)
 				CanvasObj = CanvasPerModule[CanvasName]
