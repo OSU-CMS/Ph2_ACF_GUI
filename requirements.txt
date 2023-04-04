@@ -1,0 +1,9 @@
+PyQt5
+pyqt-darktheme
+mysql-connector-python==8.0.21
+numpy
+matplotlib
+lxml
+pyvisa
+pyvisa-py
+pyserial

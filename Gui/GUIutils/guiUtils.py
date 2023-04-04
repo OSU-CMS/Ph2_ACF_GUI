@@ -118,9 +118,9 @@ def SetupXMLConfig(Input_Dir, Output_Dir):
 	except OSError:
 		print("Can not copy the XML files to {0}".format(Output_Dir))
 	try:
-		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("PH2ACF_BASE_DIR")))
 	except OSError:
-		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("PH2ACF_BASE_DIR")))
 
 ##########################################################################
 ##########################################################################
@@ -214,9 +214,9 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 	except OSError:
 		print("Can not copy the XML files {0} to {1}".format(InputFile,Output_Dir))
 	try:
-		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("PH2ACF_BASE_DIR")))
 	except OSError:
-		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("PH2ACF_BASE_DIR")))
 
 ##########################################################################
 ##########################################################################
@@ -228,9 +228,9 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
 		except OSError:
 			print("Can not copy the RD53 configuration files to {0} for RD53 ID: {1}".format(Output_Dir, key))
 		try:
-			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 		except OSError:
-			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 
 ##########################################################################
 ##########################################################################
@@ -242,9 +242,9 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
 		except OSError:
 			print("Can not copy the XML files {0} to {1}".format(InputFileDict[key],Output_Dir))
 		try:
-			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 		except OSError:
-			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 
 
 def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):

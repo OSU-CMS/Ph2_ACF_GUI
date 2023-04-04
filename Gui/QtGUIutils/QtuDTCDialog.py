@@ -70,7 +70,7 @@ class QtuDTCDialog(QDialog):
 
 	def fetchFPGAConfigs(self):
 		try:
-			InputFile = os.environ.get('Ph2_ACF_AREA')+'/settings/CMSIT.xml'
+			InputFile = os.environ.get('PH2ACF_BASE_DIR')+'/settings/CMSIT.xml'
 			root,tree = LoadXML(InputFile)
 			fwIP = self.module.getIPAddress()
 			changeMade = False
@@ -122,7 +122,7 @@ class QtuDTCDialog(QDialog):
 	def configFwImage(self):
 		self.uDTCFile = self.ConfigCombo.currentText()
 		logger.info("Loading firmware image: {}".format(self.uDTCFile))
-		pipe = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/settings/CMSIT.xml.gui',"-i",self.uDTCFile], stdout=PIPE, stderr=PIPE)
+		pipe = subprocess.run(["fpgaconfig","-c",os.environ.get('PH2ACF_BASE_DIR')+'/settings/CMSIT.xml.gui',"-i",self.uDTCFile], stdout=PIPE, stderr=PIPE)
 		logger.info(pipe.stdout.decode('UTF-8'))
 		self.finish()
 

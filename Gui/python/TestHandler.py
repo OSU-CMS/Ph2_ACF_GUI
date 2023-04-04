@@ -151,7 +151,7 @@ class TestHandler(QObject):
 	def configTest(self):
 		# Gets the run number by reading from the RunNumber.txt file.
 		try:
-			RunNumberFileName = os.environ.get('Ph2_ACF_AREA')+"/test/RunNumber.txt"
+			RunNumberFileName = os.environ.get('PH2ACF_BASE_DIR')+"/test/RunNumber.txt"
 			if os.path.isfile(RunNumberFileName):
 				runNumberFile = open(RunNumberFileName,"r")
 				runNumberText = runNumberFile.readlines()
@@ -180,7 +180,7 @@ class TestHandler(QObject):
 
 		for key in self.rd53_file.keys():
 			if self.rd53_file[key] == None:
-				self.rd53_file[key] = os.environ.get('Ph2_ACF_AREA')+"/settings/RD53Files/CMSIT_{0}.txt".format(self.boardType)
+				self.rd53_file[key] = os.environ.get('PH2ACF_BASE_DIR')+"/settings/RD53Files/CMSIT_{0}.txt".format(self.boardType)
 				print('Gettings config file {0}'.format(self.rd53_file[key]))
 		if self.input_dir == "":
 			# Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
@@ -240,9 +240,9 @@ class TestHandler(QObject):
 	def saveConfigs(self):
 		for key in self.rd53_file.keys():
 			try:
-				os.system("cp {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(os.environ.get("Ph2_ACF_AREA"),key,self.output_dir))
+				os.system("cp {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(os.environ.get("PH2ACF_BASE_DIR"),key,self.output_dir))
 			except:
-				print("Failed to copy {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(os.environ.get("Ph2_ACF_AREA"),key,self.output_dir))
+				print("Failed to copy {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(os.environ.get("PH2ACF_BASE_DIR"),key,self.output_dir))
 
 	def resetConfigTest(self):
 		self.input_dir = ""
@@ -326,18 +326,18 @@ class TestHandler(QObject):
 		#self.ContinueButton.setDisabled(True)
 		#self.run_process.setProgram()
 		self.info_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-		self.info_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
+		self.info_process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR")+"/test/")
 		self.info_process.start("echo",["Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(Test[self.currentTest])])
 		self.info_process.waitForFinished()
 
 		self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-		self.run_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
+		self.run_process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR")+"/test/")
 		#self.run_process.setStandardOutputFile(self.outputFile)
 		#self.run_process.setStandardErrorFile(self.errorFile)
 
 
 		self.fw_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-		self.fw_process.setWorkingDirectory(os.environ.get("Ph2_ACF_AREA")+"/test/")
+		self.fw_process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR")+"/test/")
 		
 		
 		
@@ -346,7 +346,7 @@ class TestHandler(QObject):
 		'''
 		if not self.FWisPresent:
 			print("checking if firmware is on the SD card")
-			fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/test/CMSIT.xml',"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+			fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('PH2ACF_BASE_DIR')+'/test/CMSIT.xml',"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 			print("firmwarelist is {0}".format(fwlist.stdout.decode('UTF-8')))
 			print("firmwareImage is {0}".format(self.firmwareImage))
 			if self.firmwareImage in fwlist.stdout.decode('UTF-8'):
@@ -447,13 +447,13 @@ class TestHandler(QObject):
 
 		try:
 			if self.RunNumber == "-1":
-				os.system("cp {0}/test/Results/Run000000*.root {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
-				#os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
-				#os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("Ph2_ACF_AREA"),self.output_dir))
+				os.system("cp {0}/test/Results/Run000000*.root {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
+				#os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
+				#os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
 			else:
-				os.system("cp {0}/test/Results/Run{1}*.root {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
-				#os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
-				#os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("Ph2_ACF_AREA"),self.RunNumber,self.output_dir))
+				os.system("cp {0}/test/Results/Run{1}*.root {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
+				#os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
+				#os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
 		except:
 			print("Failed to copy file to output directory")
 
