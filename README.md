@@ -13,21 +13,23 @@ or pull the latest changes
 git pull --recurse-submodules
 ```
 
-2. Update submodules
+2. Go into Ph2_ACF_GUI directory and update submodules
 ```
 git submodule update --init --recursive
 ```
 
-3. Compile submodules
-``` 
-source compileSubModules.sh
-```
-
-4. Install python packages
+3. Install python packages
 ```
 python3 -m pip install --upgrade pip
 python3 -m pip install -r requirements.txt
 ```
+
+4. Compile submodules
+``` 
+source compileSubModules.sh
+```
+
+
 5. Default settings are specified in the `Gui/siteSettings.py` file.  This is where you set the default configurations for your system.  This file does not exist on the repository, but instead there is a `Gui/siteSettings_template.py` file.  Copy this file:
 ```
 cp Gui/siteSettings_template.py Gui/siteSettings.py
