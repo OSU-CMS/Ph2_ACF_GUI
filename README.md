@@ -1,37 +1,6 @@
 # Ph2_ACF_GUI
 Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 
-Uses the following python packages: PyQt5 (https://pypi.org/project/PyQt5/), pyqt-darktheme (https://pypi.org/project/pyqt-darktheme/)
-
-The following instructions assume that you already have Ph2_ACF set up and working.  
-## Installing the latest version of Ph2_ACF:
-1. It's a good idea to create a separate directory for each version of Ph2_ACF you are running.
-```
-mkdir -m777 <pathyouwant>/<Ph2_ACF version>
-```
-for example:
-```
-mkdir -m777 /home/RD53A/workspace/v4.11
-```
-The -m777 flag is useful if you have multiple user logins on your computer.  If everyone shares the same login, this option is not needed.
-
-2. cd into the directory that you just made for Ph2_ACF
-
-3. Clone and set up the latest Ph2_ACF version:
-```
-git clone --recurse-submodules https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF.git
-cd Ph2_ACF
-source setup.sh
-mkdir build
-cmake3 ..
-make -jN
-cd ..
-source setup.sh
-mkdir -m777 test
-```
-
-
-
 ## Set up the software environment:
 This software has not been designed to work in a conda environment.
 
@@ -44,60 +13,24 @@ or pull the latest changes
 git pull --recurse-submodules
 ```
 
-2. Update pip:
+2. Go into Ph2_ACF_GUI directory and update submodules
+```
+git submodule update --init --recursive
+```
+
+3. Install python packages
 ```
 python3 -m pip install --upgrade pip
+python3 -m pip install -r requirements.txt
 ```
 
-3. Install PyQt5:
-```
-pip install PyQt5
-```
-
-4. Install pyqt-darktheme:
-```
-pip install pyqt-darktheme
+4. Compile submodules
+``` 
+source compileSubModules.sh
 ```
 
-5. Install MySQL connector:
-```
-pip install mysql-connector-python
-```
 
-6. Install NumPy:
-```
-pip install numpy
-```
-
-7. Install Matplotlib:
-```
-pip install matplotlib
-```
-
-8. Install lxml:
-```
-pip install lxml
-```
-
-9. Install pyvisa:
-```
-pip install pyvisa
-pip install pyvisa-py
-```
-
-10. Modify Setup_template.sh to include the paths to your Ph2_ACF working area and where you are locally storing test results.  Then copy this template to a site-specific name or just call it `Setup.sh`.
-```
-cp Setup_template.sh Setup_<nameyouchose>.sh
-```
-If you are updating Ph2_ACF_GUI, then you can check the difference for any additions that are not site-specific:
-```
-vim -d Setup_template.sh Setup.sh
-```
-and then copy and paste whatever lines are needed to your `Setup.sh` file.
-
-11. Edit fc7_ip_address.txt so that the ip addresses for your fc7 boards are listed.
-
-12. Default settings are specified in the `Gui/siteSettings.py` file.  This is where you set the default configurations for your system.  This file does not exist on the repository, but instead there is a `Gui/siteSettings_template.py` file.  Copy this file:
+5. Default settings are specified in the `Gui/siteSettings.py` file.  This is where you set the default configurations for your system.  This file does not exist on the repository, but instead there is a `Gui/siteSettings_template.py` file.  Copy this file:
 ```
 cp Gui/siteSettings_template.py Gui/siteSettings.py
 ```
@@ -110,17 +43,15 @@ and then copy and paste whatever lines are needed to your `Gui/siteSettings.py` 
 
 ## Run the GUI
 ```
-source Setup.sh
 cd Gui
 python3 QtApplication.py
 ```
-
 On the login screen you can use either of the following usernames to log in locally (bypassing connection to the database).
 
 For non-expert mode:    username = `local`  
 For expert mode:        username = `localexpert`
 
-### Non-expert mode
+### Non-expert mode (In development)
 After logging in you will see status indicators for the database, HV, LV, FC7, Temp/Humidity.  If you are running locally, then the database indicator will be red.  If anything else is red you can click the "Refresh" button to attempt to reconnect all the devices.  If you are ready to test a module you should:
 1. Either manually (on a keyboard) enter an module id into the appropriate box and press "enter" on the keyboard or scan a QR code with your scanner (if you have one).
 2. (Optional) Choose "Quick Test" if you don't want to run the full suite of tests.

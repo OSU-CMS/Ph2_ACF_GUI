@@ -267,6 +267,8 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
             StatusStr = 'enable'
         if "v4-11" in Ph2_ACF_VERSION:
             StatusStr = 'enable'
+        if "v4-12" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
         Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,StatusStr:HyBridModule.Status,'Name':HyBridModule.Name})
         #### This is where the RD53_Files is setup ####
         ##FIXME Add in logic to change depending on version of Ph2_ACF -> Done!

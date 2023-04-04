@@ -80,8 +80,8 @@ class SummaryBox(QWidget):
 			if not os.access(os.environ.get('GUI_dir'),os.W_OK):
 				QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
 				return
-			if not os.access("{0}/test".format(os.environ.get('Ph2_ACF_AREA')),os.W_OK):
-				QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('Ph2_ACF_AREA'),os.W_OK)), QMessageBox.Ok)
+			if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
+				QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
 				return
 
 			FWisPresent = False
@@ -92,7 +92,7 @@ class SummaryBox(QWidget):
 			#updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
 
 			print('write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)))
-			print('write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('Ph2_ACF_AREA'),os.W_OK)))
+			print('write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)))
 
 			fc7_ip = FirmwareList[defaultFC7]
 			uricmd = "sed -i -e 's/192.168.1.80/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(fc7_ip, os.environ.get('GUI_dir'),boardtype)
@@ -102,7 +102,7 @@ class SummaryBox(QWidget):
 			print("checking if firmware is on the SD card for {}".format(firmwareImage))
 			fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('GUI_dir')+'/Gui/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
-				#fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('Ph2_ACF_AREA')+'/test/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+				#fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('PH2ACF_BASE_DIR')+'/test/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 			print("firmwarelist is {0}".format(fwlist.stdout.decode('UTF-8')))
 			print("firmwareImage is {0}".format(firmwareImage))
 			if firmwareImage in fwlist.stdout.decode('UTF-8'):
@@ -110,8 +110,8 @@ class SummaryBox(QWidget):
 				print("firmware found")
 			else:
 				try:
-					print("Saving fw image to SD card")
-					fwsave = subprocess.run(["fpgaconfig","-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + firmwareImage),"i","{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+					print("Saving fw image {0} to SD card".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + firmwareImage))
+					fwsave = subprocess.run(["fpgaconfig","-c","CMSIT_{}.xml".format(boardtype),"-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + firmwareImage),"-i","{}".format(firmwareImage)],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 					#self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
 					print(fwsave.stdout.decode('UTF-8'))
 					FWisPresent = True
@@ -345,8 +345,8 @@ class QtStartWindow(QWidget):
 		if not os.access(os.environ.get('GUI_dir'),os.W_OK):
 			QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
 			return
-		if not os.access("{0}/test".format(os.environ.get('Ph2_ACF_AREA')),os.W_OK):
-			QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('Ph2_ACF_AREA'),os.W_OK)), QMessageBox.Ok)
+		if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
+			QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
 			return
 		for module in self.BeBoardWidget.getModules():
 			if module.getSerialNumber() == "":
