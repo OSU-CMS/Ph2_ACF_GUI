@@ -14,7 +14,7 @@ MonitoringListB = {
   'VDDA'            : "0",
   'ANA_IN_CURR'     : "0",
   'VIND'            : "0",
-  'VDDD'            : "1",
+  'VDDD'            : "0",
   'DIG_IN_CURR'     : "0",
   'Iref'            : "0",
   'POLY_TEMP_SENS_TOP' : "0",

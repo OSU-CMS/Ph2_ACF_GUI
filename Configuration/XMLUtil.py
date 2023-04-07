@@ -171,8 +171,11 @@ class FE():
 class MonitoringModule():
   def __init__(self,boardtype):
     self.Type=boardtype 
-    self.Enable="1" 
-    self.SleepTime=10000
+    if 'RD53A' in boardtype:
+      self.Enable="1" 
+    else:
+      self.Enable="0"
+    self.SleepTime=50000
     self.MonitoringList = {}
   def SetType(self, Type):
     self.Type=Type

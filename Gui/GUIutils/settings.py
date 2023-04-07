@@ -172,7 +172,7 @@ ModuleCurrentMap = {
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
 	"Yellow Module (Purdue)": 6.5,
-	"CROC 1x2"  : 4.0,
+	"CROC 1x2"  : 4.5,
 }
 
 ModuleVoltageMapSLDO = {

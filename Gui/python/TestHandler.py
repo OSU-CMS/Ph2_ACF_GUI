@@ -643,6 +643,9 @@ class TestHandler(QObject):
 						print("chipID {0}".format(ChipIDKey))
 						updatedXMLValueKey = "{}/{}".format(HybridIDKey,ChipIDKey)
 						updatedXMLValues[updatedXMLValueKey][UpdatedFEKey] = UpdatedValue
+						if 'DAC_GDAC_M_LIN' in UpdatedFEKey:
+							updatedXMLValues[updatedXMLValueKey]['DAC_GDAC_L_LIN'] = UpdatedValue
+							updatedXMLValues[updatedXMLValueKey]['DAC_GDAC_R_LIN'] = UpdatedValue
 						
 					except Exception as err:
 						logger.error("Failed to update ")
