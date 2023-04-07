@@ -140,7 +140,7 @@ class tempPowerReading(QRunnable, PeltierSignalGenerator):
         while self.readTemp:
             try:
                 temperature, passTemp = self.sendCommand(self.createCommand('Input1', ['0','0','0','0','0','0','0','0']))
-                power, passPower = self.sendCommand(self.createCommand('Power On/Off Read' ,['0','0','0','0','0','0','0','0']))
+                power, passPower = self.sendCommand(self.createCommand('Power On/Off Read' ,['0','0','0','0','0','0','0','0'])) #FIXME: Sometimes it seems that this returns a None type and causes a crash.
                 temp = "".join(temperature[1:9])
                 temp = int(temp,16)/100
                 power = int(power[8])
