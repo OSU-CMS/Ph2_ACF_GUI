@@ -82,6 +82,7 @@ ModuleType = {
 	4 :	"TBPX Quad",
 	5 :	"Yellow Module (Purdue)",
 	6 : "CROC 1x2",
+	7 : "TFPX CROC Quad"
 }
 
 firmware_image = {
@@ -126,6 +127,12 @@ firmware_image = {
 			 "v4-11":"QUAD_ELE_CROC_v4-5.bit",
 			 "v4-12":"QUAD_ELE_CROC_v4-6.bit",
 			},
+	"TFPX CROC Quad"  :
+			{"v4-09":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-10":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-11":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-12":"QUAD_ELE_CROC_v4-6.bit",
+			},
 #	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
 }
 
@@ -135,7 +142,9 @@ ModuleLaneMap = {
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
 	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"},
-	"CROC 1x2" : {"0":"12","2":"13"}
+	"CROC 1x2" : {"2":"13"},
+	#"CROC 1x2" : {"0":"12","2":"13"},
+	"TFPX CROC Quad" : {"0":"12","1":"13","2":"14"},
 }
 
 BoxSize = {
@@ -144,7 +153,9 @@ BoxSize = {
 	"TEPX Quad" : 4,
 	"TBPX Quad" : 4,
 	"Yellow Module (Purdue)": 3,
-	"CROC 1x2"  : 2,
+	#"CROC 1x2"  : 2,
+	"CROC 1x2"  : 1,
+	"TFPX CROC Quad" : 3,
 }
 
 HVPowerSupplyModel = {
@@ -173,6 +184,7 @@ ModuleCurrentMap = {
 	"TBPX Quad" : 6.5,
 	"Yellow Module (Purdue)": 6.5,
 	"CROC 1x2"  : 4.5,
+	"TFPX CROC Quad" : 6.5,
 }
 
 ModuleVoltageMapSLDO = {
@@ -182,6 +194,7 @@ ModuleVoltageMapSLDO = {
 	"TBPX Quad" : 2.98,
 	"Yellow Module (Purdue)": 2.8,
 	"CROC 1x2"  : 2.5,
+	"TFPX CROC Quad" : 2.98,
 }
 
 ModuleVoltageMap = {
