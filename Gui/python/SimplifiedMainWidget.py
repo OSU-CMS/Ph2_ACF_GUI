@@ -23,6 +23,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
 from Gui.python.ArduinoWidget import *
+from Gui.python.Peltier import *
 
 class SimplifiedMainWidget(QWidget):
 	def __init__(self, master):
@@ -229,14 +230,33 @@ class SimplifiedMainWidget(QWidget):
 			self.ArduinoMonitorValue.setPixmap(self.greenledpixmap)
 		else:
 			self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
-
 		self.StatusList.append([self.ArduinoMonitorLabel,self.ArduinoMonitorValue])
-		self.StatusLayout = QGridLayout()
+		try:
+			self.Peltier = PeltierController(defaultPeltierPort, defaultPeltierBaud)
+			self.Peltier.setTemperature(defaultPeltierSetTemp)
+			#self.Peltier.powerController(1)
+			time.sleep(0.5)
+			self.PeltierPower = self.Peltier.checkPower()
+		except Exception as e:
+			print("Error while attempting to set Peltier", e)
+			self.PeltierPower = None
 
+
+		self.PeltierMonitorLabel = QLabel()
+		self.PeltierMonitorValue = QLabel()
+		self.PeltierMonitorValue.setText("Peltier Value")
+		self.PeltierMonitorLabel.setText("Peltier Cooling")
+		if int(self.PeltierPower) == 1:
+			self.PeltierMonitorValue.setPixmap(self.greenledpixmap)
+		else:
+			self.PeltierMonitorValue.setPixmap(self.redledpixmap)
+
+#self.StatusList.append([self.PeltierMonitorLabel, self.PeltierMonitorValue])
+
+		self.StatusLayout = QGridLayout()
 		#for index, items in enumerate(self.StatusList):
 		#	self.StatusLayout.addWidget(items[0], index, 1,  1, 1)
 		#	self.StatusLayout.addWidget(items[1], index, 2,  1, 2)
-
 		self.StatusLayout.addWidget(self.DBStatusLabel,0,1,1,1)
 		self.StatusLayout.addWidget(self.DBStatusValue,0,2,1,1)
 		self.StatusLayout.addWidget(self.HVPowerStatusLabel,0,3,1,1)
@@ -250,7 +270,9 @@ class SimplifiedMainWidget(QWidget):
 		self.StatusLayout.addWidget(self.ArduinoMonitorLabel,2,1,1,1)
 		self.StatusLayout.addWidget(self.ArduinoMonitorValue,2,2,1,1)
 		#self.StatusLayout.addWidget(self.ArduinoGroup.ArduinoMeasureValue)
-		self.StatusLayout.addWidget(self.RefreshButton,2 ,3, 1, 2)
+		self.StatusLayout.addWidget(self.PeltierMonitorLabel, 2, 3, 1, 1)
+		self.StatusLayout.addWidget(self.PeltierMonitorValue, 2, 4, 1, 1)
+		self.StatusLayout.addWidget(self.RefreshButton,3 ,5, 1, 2)
 		#self.StatusLayout.addWidget(self.RefreshButton,len(self.StatusList) ,1, 1, 1)
 
 
@@ -316,7 +338,7 @@ class SimplifiedMainWidget(QWidget):
 
 		self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
 		if self.FwModule.getModuleByIndex(0) == None:
-			QMessageBox.information(None,"Error","No valid Module found!", QMessageBox.Ok)
+			QMessageBox.information(None,"Error","No valid Module found!  If manually entering module number be sure to press 'Enter' on keyboard.", QMessageBox.Ok)
 			return
 		if self.ProductionButton.isChecked():
 			self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "AllScan"]
@@ -326,8 +348,10 @@ class SimplifiedMainWidget(QWidget):
 		self.runFlag = True
 		self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
 		self.LVpowersupply.setPoweringMode(defaultPowerMode)
-		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+		#self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+		self.LVpowersupply.setModuleType(defaultModuleType)
 		self.LVpowersupply.TurnOn()
+		#self.HVpowersupply.RampingUp(-60,-3)
 		current = self.LVpowersupply.ReadCurrent()
 		current = float(current) if current else 0.0
 		voltage = self.LVpowersupply.ReadVoltage()

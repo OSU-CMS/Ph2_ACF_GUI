@@ -53,7 +53,7 @@ class QtLoginDialog(QDialog):
 
 		if self.expertMode == False:
 			self.HostName = QComboBox()
-			self.HostName.addItems(DBServerIP.keys())
+			self.HostName.addItems(dblist)
 			self.HostName.currentIndexChanged.connect(self.changeDBList)
 			HostLabel.setBuddy(self.HostName)
 		else:
@@ -65,7 +65,7 @@ class QtLoginDialog(QDialog):
 		DatabaseLabel = QLabel("Database:")
 		if self.expertMode == False:	
 			self.DatabaseCombo = QComboBox()
-			self.DBNames = DBNames['All']
+			self.DBNames = eval(self.HostName.currentText()+'.All_list')
 			self.DatabaseCombo.addItems(self.DBNames)
 			self.DatabaseCombo.setCurrentIndex(0)
 		else:
@@ -74,7 +74,7 @@ class QtLoginDialog(QDialog):
 			self.DatabaseEdit.setMinimumWidth(150)
 			self.DatabaseEdit.setMaximumHeight(30)
 
-		self.expertCheckBox = QCheckBox("&Expert Mode")
+		self.expertCheckBox = QCheckBox("&Manual Entry")
 		self.expertCheckBox.setMaximumHeight(30)
 		self.expertCheckBox.setChecked(self.expertMode)
 		self.expertCheckBox.clicked.connect(self.switchMode)
@@ -122,14 +122,15 @@ class QtLoginDialog(QDialog):
 		if self.expertMode == True:
 			self.TryUsername = self.UsernameEdit.text()
 			self.TryPassword = self.PasswordEdit.text()
-			self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+			#self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+			self.TryHostAddress = eval(self.HostName.currentText()+'.DBIP')
 			self.TryDatabase = str(self.DatabaseCombo.currentText())
 #			self.TryHostAddress = self.HostEdit.text()
 #			self.TryDatabase = self.DatabaseEdit.text()
 		else:
 			self.TryUsername = self.UsernameEdit.text()
 			self.TryPassword = self.PasswordEdit.text()
-			self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
+			self.TryHostAddress = eval(self.HostName.currentText()+'.DBIP')
 			self.TryDatabase = str(self.DatabaseCombo.currentText())
 
 		self.connection = QtStartConnection(self.TryUsername, self.TryPassword, self.TryHostAddress, self.TryDatabase)
@@ -158,7 +159,7 @@ class QtLoginDialog(QDialog):
 		self.createLogin()
 
 	def changeDBList(self):
-		self.DBNames = DBNames[str(self.HostName.currentText())]
+		self.DBNames = eval(self.HostName.currentText()+'.DBName')
 		self.DatabaseCombo.clear()
 		self.DatabaseCombo.addItems(self.DBNames)
 		self.DatabaseCombo.setCurrentIndex(0)

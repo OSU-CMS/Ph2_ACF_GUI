@@ -2,37 +2,8 @@
 
 import os
 from collections import defaultdict
+from Gui.siteSettings import *
 
-
-######################################################################
-# To be edited by expert as default setting for Hardware configuration
-######################################################################
-# default FC7 boardName
-defaultFC7 = "fc7.board.1"
-# default IP address of IP address
-defaultFC7IP = '192.168.1.80'
-# default fpga config
-defaultFPGAConfig = 'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
-# default FMC board number
-defaultFMC = '0'
-# default USB port for HV power supply
-defaultUSBPortHV = ["ASRL/dev/ttyUSB1::INSTR"]
-# default model for HV power supply
-defaultHVModel = ["Keithley 2410 (RS232)"]
-# default USB port for LV power supply
-defaultUSBPortLV = ["ASRL/dev/ttyUSB0::INSTR"]
-# default model for LV power supply
-defaultLVModel = ["KeySight E3633 (RS232)"]
-# default model for LV power supply
-defaultLVModel = ["KeySight E3633 (RS232)"]
-# default mode for LV powering (Direct,SLDO,etc)
-defaultPowerMode = "Direct"
-#default BaudRate for Arduino sensor
-defaultSensorBaudRate = 115200
-#default DBServerIP
-defaultDBServerIP = '127.0.0.1'
-#default DBName
-defaultDBName = 'SampleDB'
 #List of expert users
 ExpertUserList = [
 	'mjoyce',
@@ -59,7 +30,8 @@ else:
 	'fc7.board.1'			 :  '192.168.1.80',
 	'fc7.board.2'			 :  '127.0.0.1',#'192.168.1.81',
 	}
-
+	
+'''
 DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
 	'local'					 :  '127.0.0.1',
@@ -76,6 +48,26 @@ DBNames = {
 	'OSU-remote'			 :  ['SampleDB','phase2pixel_test'],
 	'Purdue-remote'			 :  ['cmsfpix_phase2'],
 }
+'''
+
+# Note: First element of list will be shown as default value
+# Note: The varibale name is same as hostname
+dblist = []
+class DBServerIP:
+	All = "All"
+	All_list = ['phase2pixel_test', 'DBName2', 'DBName3']
+	def __init__(self,DBhostname,DBIP,DBName):
+		self.DBhostname = DBhostname
+		self.DBIP = DBIP
+		self.DBName = DBName
+Central_remote= DBServerIP('Central_remote','0.0.0.0',['phase2pixel_test', 'DBName2', 'DBName3'])
+dblist.append(Central_remote.DBhostname)
+local = DBServerIP('local','127.0.0.1',['SampleDB','phase2pixel_test'])
+dblist.append(local.DBhostname)
+OSU_remote = DBServerIP('OSU_remote','128.146.38.1',['SampleDB','phase2pixel_test'])
+dblist.append(OSU_remote.DBhostname)
+Purdue_remote = DBServerIP('Purdue_remote','cmsfpixdb.physics.purdue.edu',['cmsfpix_phase2']) 
+dblist.append(Purdue_remote.DBhostname)
 
 # Set the IT_uTDC_firmware for test
 FPGAConfigList =  {
@@ -84,10 +76,57 @@ FPGAConfigList =  {
 }
 
 ModuleType = {
-	1	:	"SingleSCC",
-	2	:	"TFPX Quad",
-	3	:	"TEPX Quad",
-	4	:	"TBPX Quad",
+	1 :	"SingleSCC",
+	2 :	"TFPX Quad",
+	3 :	"TEPX Quad",
+	4 :	"TBPX Quad",
+	5 :	"Yellow Module (Purdue)",
+	6 : "CROC 1x2",
+}
+
+firmware_image = {
+	"SingleSCC" : 
+            {"v4-09":"SCC_ELE_RD53A_v4-5.bit",
+			 "v4-10":"SCC_ELE_RD53A_v4-5.bit",
+			 "v4-11":"SCC_ELE_RD53A_v4-5.bit",
+			 "v4-12":"SCC_ELE_RD53A_v4-6.bit",
+             "v4-06":"SCC_ELE_RD53A_v4-5.bit",
+             "v4-02":"SCC_ELE_RD53A_v4-2.bit"},
+	"Yellow Module (Purdue)" : 
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TFPX Quad" : 
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TEPX Quad" : 
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TBPX Quad" : 
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"CROC 1x2"  :
+			{"v4-09":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-10":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-11":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-12":"QUAD_ELE_CROC_v4-6.bit",
+			},
+#	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
 }
 
 ModuleLaneMap = {
@@ -95,13 +134,17 @@ ModuleLaneMap = {
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
+	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"},
+	"CROC 1x2" : {"0":"12","2":"13"}
 }
 
 BoxSize = {
 	"SingleSCC" : 1,
-	"TFPX Quad"	: 4,
+	"TFPX Quad" : 4,
 	"TEPX Quad" : 4,
-	"TBPX Quad"	: 4,
+	"TBPX Quad" : 4,
+	"Yellow Module (Purdue)": 3,
+	"CROC 1x2"  : 2,
 }
 
 HVPowerSupplyModel = {
@@ -120,6 +163,29 @@ PowerSupplyModel_Termination = {
 PowerSupplyModel_XML_Termination = {
 	"Keithley 2410 (RS232)"    :  "CR",
 	"KeySight E3633 (RS232)"   :  "CRLF",
+}
+
+
+ModuleCurrentMap = {
+	"SingleSCC" : 0.6,
+	"TFPX Quad" : 6.5,
+	"TEPX Quad" : 6,
+	"TBPX Quad" : 6.5,
+	"Yellow Module (Purdue)": 6.5,
+	"CROC 1x2"  : 4.5,
+}
+
+ModuleVoltageMapSLDO = {
+	"SingleSCC" : 1.8,
+	"TFPX Quad" : 2.98,
+	"TEPX Quad" : 2.0,
+	"TBPX Quad" : 2.98,
+	"Yellow Module (Purdue)": 2.8,
+	"CROC 1x2"  : 2.5,
+}
+
+ModuleVoltageMap = {
+	"SingleSCC" : 1.3,
 }
 
 
@@ -144,13 +210,15 @@ ConfigFiles = {
 }
 
 Test = {
+	'AllScan_Tuning'         :  'noise',
 	'AllScan'                :  'noise',
 	'QuickTest'              :  'noise',
-	'StandardStep1'          :  'noise',
-	'StandardStep2'          :  'threqu',
-	'StandardStep3'          :  'scurve',
-	'StandardStep4'          :  'injdelay',
-	'StandardStep5'          :  'scurve',
+	'IVCurve'                :  'ivcurve',
+	#'StandardStep1'          :  'noise',
+	#'StandardStep2'          :  'threqu',
+	#'StandardStep3'          :  'scurve',
+	#'StandardStep4'          :  'injdelay',
+	#'StandardStep5'          :  'scurve',
 	'Latency'                :  'latency',
 	'PixelAlive'             :  'pixelalive',
 	'NoiseScan'              :  'noise',
@@ -172,6 +240,7 @@ Test = {
 TestName2File = {
 	'Latency'                :  'Latency',
 	'PixelAlive'             :  'PixelAlive',
+	'IVCurve'                :  'IVCurve',
 	'NoiseScan'              :  'NoiseScan',
 	'SCurveScan'             :  'SCurve',
 	'GainScan'               :  'Gain',
@@ -188,28 +257,34 @@ TestName2File = {
 	'Physics'                :  'Physics',
 }
 
-SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
+SingleTest = ['IVCurve','Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 	'ThresholdEqualization','GainOptimization','ThresholdMinimization',
 	'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
-CompositeTest = ['AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+CompositeTest = ['AllScan_Tuning','AllScan','QuickTest']
+#CompositeTest = ['AllScan_Tuning','AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
-	'AllScan': ['NoiseScan','PixelAlive','ThresholdAdjustment',
-				'ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment',
-				'SCurveScan','GainScan','GainOptimization',
+	'AllScan': ['IVCurve','PixelAlive','NoiseScan','ThresholdAdjustment',
+				'ThresholdEqualization','SCurveScan', 'NoiseScan','GainScan','GainOptimization',
 				'InjectionDelay','SCurveScan'],
-	'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
-	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
-	'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
-	'StandardStep4': ['InjectionDelay'],
-	'StandardStep5': ['SCurveScan'],
-	'QuickTest': ['IVCurve','NoiseScan','PixelAlive']
+	#'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
+	#'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
+	#'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
+	#'StandardStep4': ['InjectionDelay'],
+	#'StandardStep5': ['SCurveScan'],
+	'QuickTest': ['IVCurve','PixelAlive','NoiseScan']
 }
-firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
+#firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
+
+pretuningList = ['IVCurve','PixelAlive','NoiseScan']
+tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan']
+posttuningList = ['NoiseScan','SCurveScan']
+#posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
 
 # Reserved for updated value for XML configuration
 updatedXMLValues = defaultdict(dict)
 
+updatedGlobalValue = defaultdict(lambda:None)
+stepWiseGlobalValue = defaultdict(dict) #key : index
+
 header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
-
-

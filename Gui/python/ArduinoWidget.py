@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 from UserCustoms.python.ArduinoParser import *
 import pyvisa as visa
 import subprocess
-
+import numpy as np
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -40,6 +40,7 @@ class ArduinoWidget(QWidget):
 		self.ArduinoBaudRateList = [ str(rate) for rate in [1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200] ]
 		self.ArduinoBRCombo = QComboBox()
 		self.ArduinoBRCombo.addItems(self.ArduinoBaudRateList)
+		#self.ArduinoValues = QLabel()
 		self.UseArduino = QPushButton("&Use")
 		self.UseArduino.clicked.connect(self.frozeArduinoPanel)
 		self.ReleaseArduino = QPushButton("&Release")
@@ -50,6 +51,7 @@ class ArduinoWidget(QWidget):
 		self.ArduinoBox.addWidget(self.ArduinoCombo)
 		self.ArduinoBox.addWidget(self.ArduinoBaudRate)
 		self.ArduinoBox.addWidget(self.ArduinoBRCombo)
+		#self.ArduinoBox.addWidget(self.ArduinoValues)
 		self.ArduinoBox.addStretch(1)
 		self.ArduinoBox.addWidget(self.UseArduino)
 		self.ArduinoBox.addWidget(self.ReleaseArduino)
@@ -158,10 +160,19 @@ class ArduinoWidget(QWidget):
 			try:
 				text = self.serial.readLine().data().decode("utf-8","ignore")
 				text = text.rstrip('\r\n')
-				#print ('Arduino text is {0}'.format(text))
-				StopSignal,measureText = ArduinoParser(text)
+				T = float(text.split(' ')[4])
+				RH = float(text.split(' ')[1])
+				N = (np.log(RH/100)+17.27*T/(237.3+T))/17.27
+				Td = round(237.3*N/(1-N),2)
+				if T >= Td:
+					self.ArduinoMeasureValue.setStyleSheet("QLabel {color : green}")
+				else:
+					self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
 
-				self.ArduinoMeasureValue.setText(measureText)
+				climatetext = text + ", Dew Point Temperature: {0} Celsius".format(Td)
+				StopSignal,measureText = ArduinoParser(text)
+				self.ArduinoMeasureValue.setText(climatetext)
+				#self.ArduinoMeasureValue.setText(measureText)
 				if StopSignal:
 					self.stopCount += 1
 					logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))

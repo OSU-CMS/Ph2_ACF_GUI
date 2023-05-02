@@ -37,7 +37,7 @@ def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase, maste
 	try:
 		connection = mysql.connector.connect(user=str(TryUsername), password=str(TryPassword),host=str(TryHostAddress),database=str(TryDatabase))
 	except (ValueError,RuntimeError, TypeError, NameError,mysql.connector.Error):
-		ErrorWindow(master, "Error:Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address")
+		ErrorWindow(master, "Error:Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address.  Please consult README instructions for running GUI locally.")
 		return
 	return connection
 
@@ -56,7 +56,7 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 		connection = mysql.connector.connect(user=str(TryUsername), password=str(TryPassword),host=str(TryHostAddress),database=str(TryDatabase))
 	except (ValueError,RuntimeError, TypeError, NameError,mysql.connector.Error):
 		msg = QMessageBox()
-		msg.information(None,"Error","Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address", QMessageBox.Ok)
+		msg.information(None,"Error","Unable to establish connection to host:" + str(TryHostAddress) + ", please check the username/password and host address. .  Please consult README instructions for running GUI locally.", QMessageBox.Ok)
 		return "Offline"
 	return connection
 

@@ -1,3 +1,7 @@
+import os
+import copy
+Ph2_ACF_VERSION = os.environ.get("Ph2_ACF_VERSION")
+
 FESettings = {
 'PA_IN_BIAS_LIN'        :  "350",
 'FC_BIAS_LIN'           :   "20",
@@ -41,9 +45,9 @@ FESettings = {
 
 'CML_CONFIG_SER_EN_TAP' : "0b00",
 'CML_CONFIG_SER_INV_TAP': "0b00",
-'CML_TAP0_BIAS'         :  "500",
-'CML_TAP1_BIAS'         :    "0",
-'CML_TAP2_BIAS'         :    "0",
+#'CML_TAP0_BIAS'         :  "500",
+#'CML_TAP1_BIAS'         :    "0",
+#'CML_TAP2_BIAS'         :    "0",
 
 'MONITOR_CONFIG_ADC'    :    "5",
 'MONITOR_CONFIG_BG'     :   "12",
@@ -53,8 +57,54 @@ FESettings = {
 'TEMPSENS_IDEAL_FACTOR' : "1225",
 }
 
+FESettingsB = {
+    'DAC_PREAMP_L_LIN'       :   "300",
+    'DAC_PREAMP_R_LIN'       :   "300",
+    'DAC_PREAMP_TL_LIN'      :   "300",
+    'DAC_PREAMP_TR_LIN'      :   "300",
+    'DAC_PREAMP_T_LIN'       :   "300",
+    'DAC_PREAMP_M_LIN'       :   "300",
+    'DAC_FC_LIN'             :    "20",
+    'DAC_KRUM_CURR_LIN'      :    "70",
+    'DAC_REF_KRUM_LIN'       :   "360",
+    'DAC_COMP_LIN'           :   "110",
+    'DAC_COMP_TA_LIN'        :   "110",
+    'DAC_GDAC_L_LIN'       :   "450",
+    'DAC_GDAC_R_LIN'        :   "450",
+    'DAC_GDAC_M_LIN'         :   "450",
+    'DAC_LDAC_LIN'           :   "140",
 
-FESettings_Dict = {
+    'VCAL_HIGH'              :  "2000",
+    'VCAL_MED'               :   "100",
+
+    'GP_LVDS_ROUTE_0'        :  "1495",
+    'GP_LVDS_ROUTE_1'        :  "1495",
+    'TriggerConfig'          :   "136",
+    'CLK_DATA_DELAY'         :     "0",
+    'CAL_EDGE_FINE_DELAY'    :     "0",
+    'ANALOG_INJ_MODE'        :     "0",
+
+    'VOLTAGE_TRIM_DIG'       :     "8",
+    'VOLTAGE_TRIM_ANA'       :     "8",
+
+    'CML_CONFIG_SER_EN_TAP'  :  "0b00",
+    'CML_CONFIG_SER_INV_TAP' :  "0b00",
+    'DAC_CML_BIAS_0'         :   "500",
+    'DAC_CML_BIAS_1'         :     "0",
+    'DAC_CML_BIAS_2'         :     "0",
+
+    'MON_ADC_TRIM'           :     "5",
+
+    'ToT6to4Mapping'         :     "0",
+    'ToTDualEdgeCount'       :     "0",
+
+    'ADC_OFFSET_VOLT'        :    "63",
+    'ADC_MAXIMUM_VOLT'       :   "839",
+    'TEMPSENS_IDEAL_FACTOR'  :  "1225",
+    'VREF_ADC'               :   "800",
+}
+
+FESettings_DictA = {
     'Latency'                   :    FESettings,
     'PixelAlive'                :    FESettings,
     'NoiseScan'                 :    FESettings,
@@ -67,4 +117,59 @@ FESettings_Dict = {
     'InjectionDelay'            :    FESettings,
     'ClockDelay'                :    FESettings,
     'Physics'                   :    FESettings,
+    'IVCurve'                   :    FESettings,
 }
+
+FESettings_DictA = copy.deepcopy(FESettings_DictA)
+
+FESettings_DictB = {
+    'Latency'                   :    FESettingsB,
+    'PixelAlive'                :    FESettingsB,
+    'NoiseScan'                 :    FESettingsB,
+    'GainScan'                  :    FESettingsB,
+    'SCurveScan'                :    FESettingsB,
+    'ThresholdEqualization'     :    FESettingsB,
+    'GainOptimization'          :    FESettingsB,
+    'ThresholdMinimization'     :    FESettingsB,
+    'ThresholdAdjustment'       :    FESettingsB,
+    'InjectionDelay'            :    FESettingsB,
+    'ClockDelay'                :    FESettingsB,
+    'Physics'                   :    FESettingsB,
+    'IVCurve'                   :    FESettingsB,
+}
+
+FESettings_A_v48 = copy.deepcopy(FESettings)
+
+#FESettings_A_v48.pop("CML_TAP0_BIAS")
+#FESettings_A_v48.pop("CML_TAP1_BIAS")
+#FESettings_A_v48.pop("CML_TAP2_BIAS")
+
+FESettings_A_v48["DAC_CML_BIAS_0"] = "500"
+FESettings_A_v48["DAC_CML_BIAS_1"] = "0"
+FESettings_A_v48["DAC_CML_BIAS_2"] = "0"
+
+FESettings_A_49 = copy.deepcopy(FESettings_A_v48)
+
+FESettings_A_49["VREF_ADC"] = "900"
+
+
+if "v4-08" in Ph2_ACF_VERSION:
+    for key in FESettings_DictA.keys():
+        FESettings_DictA[key] = FESettings_A_v48       
+        
+
+if "v4-09" in Ph2_ACF_VERSION:
+    for key in FESettings_DictA.keys():
+        FESettings_DictA[key] = FESettings_A_49
+
+if "v4-10" in Ph2_ACF_VERSION:
+    for key in FESettings_DictA.keys():
+        FESettings_DictA[key] = FESettings_A_49
+
+if "v4-11" in Ph2_ACF_VERSION:
+    for key in FESettings_DictA.keys():
+        FESettings_DictA[key] = FESettings_A_49
+
+if "v4-12" in Ph2_ACF_VERSION:
+    for key in FESettings_DictA.keys():
+        FESettings_DictA[key] = FESettings_A_49

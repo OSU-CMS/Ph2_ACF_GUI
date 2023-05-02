@@ -3,6 +3,7 @@ import re
 def ArduinoParser(text):
     try:
         StopSingal, ProbeReadsText = ArduinoParserCustomOSU(text)
+        #print('Probe reads {0}'.format(ProbeReadsText))
         return StopSingal, ProbeReadsText
     except Exception as err:
         return False,""
@@ -17,7 +18,7 @@ ProbeMapOSU = {
 ThresholdMapOSU = {
     'DHT11': [0,60],
     'MAX31850': [-20,50],
-    'MAX31865': [-20,23],
+    'MAX31865': [-20,23]
 }
 def ArduinoParserCustomOSU(text):
     StopSignal = False

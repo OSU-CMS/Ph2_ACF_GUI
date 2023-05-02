@@ -1,4 +1,5 @@
 import logging
+import time
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
@@ -9,8 +10,9 @@ def InitialDevice(device):
 		logger.error("Error occured while restore defaults: {}".format(err))
 	# Select voltage source mode
 	try:
-		device.write(":SOURCE:FUCNCTION VOLT")
+		device.write(":SOURCE:FUNCTION VOLT")
 		device.write(":SOURCE:VOLTAGE:MODE FIX")
+		device.write(":SENS:CURR:RANG 10E-6")
 	except Exception as err:
 		logger.error("Error occured while setting voltage source mode: {}".format(err))
 
@@ -30,7 +32,7 @@ def TurnOn(device):
 
 def TurnOff(device):
 	try:
-		device.write(":SOURCE:VOLTAGE:LEV 0")
+		#device.write(":SOURCE:VOLTAGE:LEV 0")
 		device.write(":OUTPUT OFF")
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
@@ -53,6 +55,10 @@ def setComplianceLimit(device, compcurrent = 0.0):
 		device.write(":SENSE:CURR:PROT {0}".format(compcurrent))
 	except Exception as err:
 		logger.error("Error occured while setting compliance: {}".format(err))
+def ReadOutputStatus(device):
+	device.write(":OUTPUT?")
+	outputstatus = device.read()
+	return outputstatus
 
 def ReadVoltage(device):
 	try:
@@ -80,6 +86,19 @@ def ReadCurrent(device):
 
 def RampingUpVoltage(device, hvTarget, stepLength):
 	try:
-		device.write('')
+		device.write(":FORM:ELEM VOLT")
+		device.write(' :SENSE:FUNCTION "VOLT" ')
+		#device.read_termination = '\r'
+		device.write(':READ?')
+		Measure = device.read()
+		currentVoltage = float(Measure)
+
+		if hvTarget < currentVoltage:
+			stepLength = -abs(stepLength)
+		
+		for voltage in range(int(currentVoltage), int(hvTarget), int(stepLength)):
+			device.write(":SOURCE:VOLTAGE:LEV {0}".format(voltage))
+			time.sleep(0.3)
+		device.write(":SOURCE:VOLTAGE:LEV {0}".format(hvTarget))
 	except Exception as err:
 		logger.error("Error occured while ramping up the voltage to {0}, {1}".format(hvTarget,err))

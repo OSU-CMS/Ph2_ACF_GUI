@@ -37,6 +37,13 @@ def TurnOff(device):
 	except  Exception as err:
 		logger.error("Error occured while turning off the device: {}".format(err))
 
+def ApplyCurrent(device, voltage=0.0, current=0.0):
+	try:
+		device.write("VOLT {}".format(voltage))
+		device.write("CURR {}".format(current))
+	except Exception as err:
+		logger.error("Error occured while apply V = {0} V, I = {1} Amp".format(voltage,current))
+
 def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 	# Set Voltage range 2V and output to 1.78V
 	try:
@@ -50,6 +57,21 @@ def SetVoltage(device, voltage = 0.0, VoltProtection = 0.0):
 		#print(reply)
 		#time.sleep(0.05)
 		reply = device.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(voltage))
+	except Exception as err:
+		logger.error("Error occured while setting voltage level: {}".format(err))
+
+def SetCurrent(device, current, isMax = False):
+	try:
+		if isMax:
+			reply = device.write(":SOURCE:CURRENT:LEV:IMM 10")
+		else:
+			reply = device.write(":SOURCE:CURRENT:LEV:IMM {0}".format(current))
+	except Exception as err:
+		logger.error("Error occured while setting current level: {}".format(err))
+
+def SetVoltageProtection(device, voltRange = 0):
+	try:
+		reply = device.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(voltRange))
 	except Exception as err:
 		logger.error("Error occured while setting voltage level: {}".format(err))
 
@@ -68,7 +90,7 @@ def ReadVoltage(device):
 	try:
 		MeasureVolt = device.query("MEASURE:VOLTAGE?")
 		#MeasureVolt = float(Measure.split(',')[0])
-		return MeasureVolt
+		return float(MeasureVolt)
 	except Exception as err:
 		logger.error("Error occured while reading voltage value: {}".format(err))
 
@@ -76,6 +98,13 @@ def ReadCurrent(device):
 	try:
 		MeasureCurr = device.query("MEASURE:CURRENT?")
 		#MeasureCurr = float(Measure.split(',')[0])
-		return MeasureCurr
+		return float(MeasureCurr)
 	except Exception as err:
 		logger.error("Error occured while reading current value: {}".format(err))
+
+def Status(device):
+	try:
+		status = device.query("STAT:QUES:COND?")
+		return status
+	except Exception as err:
+		logger.error("Error occured while getting status: {}".format(err))

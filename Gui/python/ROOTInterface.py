@@ -5,6 +5,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
+ROOT.gStyle.SetPalette(57)
 
 class Node():
 	def __init__(self, keyname, obj, className):
@@ -80,6 +81,7 @@ def showDirectory(nodes):
 		DirectoryVLR(node,0)
 
 def TCanvas2JPG(outputDir, canvas, name = None):
+	ROOT.gStyle.SetPalette(57)
 	if not name:
 		seconds = time.time()
 		outputFile = outputDir+"/display{}.jpg".format(seconds)
@@ -96,6 +98,7 @@ def TCanvas2JPG(outputDir, canvas, name = None):
 	return outputFile
 
 def TCanvas2SVG(outputDir, canvas, name = None):
+	ROOT.gStyle.SetPalette(57)
 	if not name:
 		seconds = time.time()
 		outputFile = outputDir+"/display{}.svg".format(seconds)
@@ -104,6 +107,8 @@ def TCanvas2SVG(outputDir, canvas, name = None):
 	try:
 		canvas.SetBatch(ROOT.kTRUE)
 		canvas.Draw()
+		if 'SCurve' in name:
+			canvas.SetLogz()
 		canvas.Print(outputFile)
 		#canvas.Close()
 		logger.info(outputFile + " is saved")

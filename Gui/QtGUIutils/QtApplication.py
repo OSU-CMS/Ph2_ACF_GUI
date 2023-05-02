@@ -16,6 +16,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.GPIBInterface import PowerSupply
+from Gui.QtGUIutils.PeltierCoolingApp import *
 from Gui.QtGUIutils.QtFwCheckWindow  import *
 from Gui.QtGUIutils.QtFwStatusWindow import *
 from Gui.QtGUIutils.QtSummaryWindow import *
@@ -47,8 +48,8 @@ class QtApplication(QWidget):
 		self.LogList = {}
 		self.PYTHON_VERSION = str(sys.version).split(" ")[0]
 		self.dimension = dimension
-		self.HVpowersupply = PowerSupply(powertype = "HV",serverIndex = 0)
-		self.LVpowersupply = PowerSupply(powertype = "LV",serverIndex = 1)
+		self.HVpowersupply = PowerSupply(powertype = "HV",serverIndex = 1)
+		self.LVpowersupply = PowerSupply(powertype = "LV",serverIndex = 2)
 		self.PowerRemoteControl = {"HV":True, "LV": True}
 
 		self.setLoginUI()
@@ -139,7 +140,8 @@ class QtApplication(QWidget):
 
 		if self.expertMode == False:
 			self.HostName = QComboBox()
-			self.HostName.addItems(DBServerIP.keys())
+			#self.HostName.addItems(DBServerIP.keys())
+			self.HostName.addItems(dblist)
 			self.HostName.currentIndexChanged.connect(self.changeDBList)
 			HostLabel.setBuddy(self.HostName)
 		else:
@@ -153,7 +155,8 @@ class QtApplication(QWidget):
 		DatabaseLabel = QLabel("Database:")
 		if self.expertMode == False:	
 			self.DatabaseCombo = QComboBox()
-			self.DBNames = DBNames['All']
+			#self.DBNames = DBNames['All']
+			self.DBNames = eval(self.HostName.currentText()+'.All_list')
 			self.DatabaseCombo.addItems(self.DBNames)
 			self.DatabaseCombo.setCurrentIndex(0)
 		else:
@@ -239,7 +242,8 @@ class QtApplication(QWidget):
 
 	def changeDBList(self):
 		try:
-			self.DBNames = DBNames[str(self.HostName.currentText())]
+			#self.DBNames = DBNames[str(self.HostName.currentText())]
+			self.DBNames = eval(self.HostName.currentText()+'.DBName')
 			self.DatabaseCombo.clear()
 			self.DatabaseCombo.addItems(self.DBNames)
 			self.DatabaseCombo.setCurrentIndex(0)
@@ -257,8 +261,8 @@ class QtApplication(QWidget):
 
 	def destroyLogin(self):
 		self.LoginGroupBox.deleteLater()
-		self.LogoGroupBox.deleteLater()
-		self.mainLayout.removeWidget(self.LoginGroupBox)
+		#self.LogoGroupBox.deleteLater()
+		#self.mainLayout.removeWidget(self.LoginGroupBox)
 	
 	def checkLogin(self):
 		msg = QMessageBox()
@@ -547,7 +551,7 @@ class QtApplication(QWidget):
 
 		self.UseDefaultGroup = QGroupBox()
 		self.DefaultLayout = QHBoxLayout()
-		self.DefaultButton = QPushButton("&Connet all devices")
+		self.DefaultButton = QPushButton("&Connect all devices")
 		self.DefaultButton.clicked.connect(self.useDefault)
 		self.DefaultLabel = QLabel()
 		self.DefaultLabel.setText("Connecting to all default devices...")
@@ -669,6 +673,7 @@ class QtApplication(QWidget):
 		self.NewProductionTestButton.setMaximumWidth(kMaximumWidth)
 		self.NewProductionTestButton.setMinimumHeight(kMinimumHeight)
 		self.NewProductionTestButton.setMaximumHeight(kMaximumHeight)
+		self.NewProductionTestButton.setDisabled(True)  #FIXME This is to temporarily disable the test until LV can be added.
 		self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
 		NewProductionTestLabel = QLabel("Open production test")
 
@@ -690,6 +695,12 @@ class QtApplication(QWidget):
 		self.ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
 		self.ReviewModuleEdit.setPlaceholderText('Enter Module ID')
 
+		self.PeltierCooling = Peltier(100)
+		self.PeltierBox = QGroupBox("Peltier Controller",self)
+		self.PeltierLayout = QGridLayout()
+		self.PeltierLayout.addWidget(self.PeltierCooling)
+		self.PeltierBox.setLayout(self.PeltierLayout)
+
 		layout = QGridLayout()
 		layout.addWidget(self.NewTestButton,0, 0, 1, 1)
 		layout.addWidget(NewTestLabel, 0, 1, 1, 2)
@@ -701,7 +712,6 @@ class QtApplication(QWidget):
 		layout.addWidget(ReviewLabel,  3, 1, 1, 2)
 		layout.addWidget(self.ReviewModuleButton,4, 0, 1, 1)
 		layout.addWidget(self.ReviewModuleEdit,  4, 1, 1, 2)
-
 
 		####################################################
 		# Functions for expert mode
@@ -770,16 +780,18 @@ class QtApplication(QWidget):
 		self.AppLayout.addWidget(self.ExitButton)
 		self.AppOption.setLayout(self.AppLayout)
 
-		self.mainLayout.addWidget(self.FirmwareStatus)
-		self.mainLayout.addWidget(self.UseDefaultGroup)
-		self.mainLayout.addWidget(self.HVPowerGroup)
-		self.mainLayout.addWidget(self.HVPowerRemoteControl)
-		self.mainLayout.addWidget(self.LVPowerGroup)
-		self.mainLayout.addWidget(self.LVPowerRemoteControl)
-		self.mainLayout.addWidget(self.ArduinoGroup)
-		self.mainLayout.addWidget(self.ArduinoControl)
-		self.mainLayout.addWidget(self.MainOption)
-		self.mainLayout.addWidget(self.AppOption)
+		self.mainLayout.addWidget(self.FirmwareStatus, 0,0,1,2)
+		self.mainLayout.addWidget(self.UseDefaultGroup, 1,0,1,2)
+		self.mainLayout.addWidget(self.HVPowerGroup, 2,0,1,2)
+		self.mainLayout.addWidget(self.HVPowerRemoteControl, 3, 0,1,2)
+		self.mainLayout.addWidget(self.LVPowerGroup, 4, 0,1,2)
+		self.mainLayout.addWidget(self.LVPowerRemoteControl, 5, 0,1,2)
+		self.mainLayout.addWidget(self.ArduinoGroup, 6, 0,1,2)
+		self.mainLayout.addWidget(self.ArduinoControl, 7, 0,1,2)
+		self.mainLayout.addWidget(self.MainOption,8, 0,1,1)
+		self.mainLayout.addWidget(self.PeltierBox, 8,1,1,1)
+		self.mainLayout.addWidget(self.AppOption, 9, 1,1,1)
+		self.mainLayout.addWidget(self.LogoGroupBox,9,0,1,1)
 
 		self.setDefault()
 	
@@ -840,6 +852,7 @@ class QtApplication(QWidget):
 		self.ArduinoControl.deleteLater()
 		self.MainOption.deleteLater()
 		self.AppOption.deleteLater()
+		self.LogoGroupBox.deleteLater()
 		self.mainLayout.removeWidget(self.FirmwareStatus)
 		self.mainLayout.removeWidget(self.HVPowerGroup)
 		self.mainLayout.removeWidget(self.UseDefaultGroup)
@@ -850,9 +863,10 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.ArduinoControl)
 		self.mainLayout.removeWidget(self.MainOption)
 		self.mainLayout.removeWidget(self.AppOption)
+		self.mainLayout.removeWidget(self.LogoGroupBox)
 
 	def openNewProductionTest(self):
-		self.ProdTestPage = QtProductionTestWindow(self, self.HVpowersupply)
+		self.ProdTestPage = QtProductionTestWindow(self, HV= self.HVpowersupply, LV = self.LVpowersupply)
 		self.ProdTestPage.close.connect(self.releaseProdTestButton)
 		self.NewProductionTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
@@ -864,7 +878,7 @@ class QtApplication(QWidget):
 		#FwModule = []
 		#for fw in self.FwUnderUsed:
 		#	FwModule.append(self.FwDict[fw])
-		self.StartNewTest = QtStartWindow(self,FwModule)
+		self.StartNewTest = QtStartWindow(self , FwModule)
 		self.NewTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
 		self.ExitButton.setDisabled(True)
@@ -900,6 +914,7 @@ class QtApplication(QWidget):
 		#self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
 		self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
 		self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
+		self.HVpowersupply.TurnOffHV()
 		#self.HVpowersupply.TurnOn()
 		# Block for GUI front-end
 		statusString = self.HVpowersupply.getInfo()
@@ -914,7 +929,7 @@ class QtApplication(QWidget):
 			self.HVPowerStatusValue.setText("No valid device")
 
 	def releaseHVPowerPanel(self):
-		self.HVpowersupply.TurnOff()
+		self.HVpowersupply.TurnOffHV()
 		try:
 			self.HVPowerCombo.setDisabled(False)
 			self.HVPowerStatusValue.setText("")
@@ -1097,7 +1112,7 @@ class QtApplication(QWidget):
 	def GlobalStop(self):
 		print("Critical status detected: Emitting Global Stop signal")
 		self.globalStop.emit()
-		self.HVpowersupply.TurnOff()
+		self.HVpowersupply.TurnOffHV()
 		self.LVpowersupply.TurnOff()
 		if self.expertMode == True:
 			self.releaseHVPowerPanel()
@@ -1114,13 +1129,23 @@ class QtApplication(QWidget):
 		#	QMessageBox.critical(self, 'Critical Message', 'There is running process, can not close!')
 		#	event.ignore()
 
-		reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to exit?',
+		reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to exit ?',
 			QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 
 		if reply == QMessageBox.Yes:
 			print('Application terminated')
-			self.HVpowersupply.TurnOff()
+			self.HVpowersupply.TurnOffHV()
 			self.LVpowersupply.TurnOff()
+
+			# If you didn't start the Peltier controller, tempPower won't be defined
+			try:
+				self.PeltierCooling.shutdown()
+				time.sleep(2)
+				self.pool.clear()
+			except Exception as e:
+				print("Could not shutdown Peltier: " , e)
+				pass
+
 			os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
 			event.accept()
 		else:
