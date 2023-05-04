@@ -1,3 +1,10 @@
+"""
+consult with Matt about not to use arduinoparser
+
+
+"""
+
+
 from PyQt5 import QtCore
 from PyQt5 import QtSerialPort
 from PyQt5.QtCore import *
@@ -25,6 +32,7 @@ class ArduinoWidget(QWidget):
 		self.serial = None
 		self.stopCount  = 0
 		self.ArduinoGoodStatus = False
+
 
 
 	def createArduino(self):
@@ -166,13 +174,31 @@ class ArduinoWidget(QWidget):
 				Td = round(237.3*N/(1-N),2)
 				if T >= Td:
 					self.ArduinoMeasureValue.setStyleSheet("QLabel {color : green}")
+					self.ArduinoGoodStatus = True #add new code 
+					StopSignal = False
+					
+
+
 				else:
 					self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
+					self.ArduinoGoodStatus = False #new code
+					StopSignal = True #add new code 
+					
 
 				climatetext = text + ", Dew Point Temperature: {0} Celsius".format(Td)
-				StopSignal,measureText = ArduinoParser(text)
+
+				#since dew point check is sufficient for temperature and humidity check,
+				# I dicidide to comment out the following code.
+				#StopSignal,measureText = ArduinoParser(text)
+				#intially, stopSignal return True if the measured value is not in the specified range.
+				#measureText are just the information that output from the sensnor.(we dont need to display it 
+				# on simplified gui)
+
+
+
 				self.ArduinoMeasureValue.setText(climatetext)
 				#self.ArduinoMeasureValue.setText(measureText)
+
 				if StopSignal:
 					self.stopCount += 1
 					logging.warning("Anomalous value detected, stop signal will be emitted in {}".format(10-self.stopCount))
