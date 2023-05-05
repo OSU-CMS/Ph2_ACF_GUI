@@ -4,6 +4,10 @@ class QtChip():
 	def __init__(self):
 		self.__chipID = ""
 		self.__chipLane = ""
+		self.__chipVDDA = ""
+		self.__chipVDDD = ""
+		self.__chipStatus = True
+
 	
 	def setID(self, id):
 		self.__chipID = str(id)
@@ -14,6 +18,24 @@ class QtChip():
 	def setLane(self, lane):
 		self.__chipLane = str(lane)
 	
+	def setVDDA(self, pVDDAtrim):
+		self.__chipVDDA = str(pVDDAtrim)
+	
+	def setVDDD(self, pVDDDtrim):
+		self.__chipVDDD = str(pVDDDtrim)
+
+	def setStatus(self, pStatus):
+		self.__chipStatus = pStatus
+
+	def getVDDA(self):
+		return self.__chipVDDA
+	
+	def getVDDD(self):
+		return self.__chipVDDD
+	
+	def getStatus(self):
+		return self.__chipStatus
+
 	def getLane(self):
 		return self.__chipLane
 
@@ -27,13 +49,19 @@ class QtModule():
 		self.__FMCID = "0"
 		self.__OGID = "0"
 		self.__chipDict = {}
+		self.__VDDAMap = {}  #Format is {chipID : VDDA value}
+		self.__VDDDMap = {}  #Format is {chipID : VDDD value}
+		self.__ChipStatusMap = {}  #Format is {chipID : enable flag}
+
 		for key,value in kwargs.items():
 			if key == "id":
 				self.__moduleID = str(value)
 			if key == "type":
 				self.__moduleType = str(value)
 
-		self.setupChips()
+			
+		#FIXME: This need to pass along a dictionary of chipID : [VDDA,VDDD]
+		#self.setupChips()  #commented because I think it is redundant, but not 100% sure.
 	
 	def setModuleName(self, name):
 		self.__moduleName = name
@@ -69,20 +97,44 @@ class QtModule():
 	def getModuleType(self):
 		return self.__moduleType
 
+	def setChipVDDD(self, pChipID, pVDDDtrim):
+		self.__VDDDMap[pChipID] = pVDDDtrim
+		#self.setupChips()
+
+	def setChipVDDA(self, pChipID, pVDDAtrim):
+		self.__VDDAMap[pChipID] = pVDDAtrim
+
+	def setChipStatus(self, pChipID, pStatus):
+		self.__ChipStatusMap[pChipID] = pStatus
+
+	#FIXME: This function needs to accept a dictionary of chipID : [VDDA, VDDD].  
 	def setupChips(self, **kwargs):
 		self.__chipDict = {}
 		if "chips" in kwargs.keys():
 			pass
 			return
+		#for key,value in kwargs.items():
+		#	if key=='VDDA':
+
 		for i in ModuleLaneMap[self.__moduleType].keys():
+			
 			FEChip = QtChip()
 			#FEChip.setID(8)
 			LaneID = str(i)
+			chipNumber = ModuleLaneMap[self.__moduleType][LaneID]
 			FEChip.setID(ModuleLaneMap[self.__moduleType][LaneID])
 			FEChip.setLane(LaneID)
+			print('VDDA is {0}'.format(self.__VDDAMap[chipNumber]))
+			FEChip.setVDDA(self.__VDDAMap[chipNumber])
+			FEChip.setVDDD(self.__VDDDMap[chipNumber])
+			FEChip.setStatus(self.__ChipStatusMap[chipNumber])
+			
 			self.__chipDict[i] = FEChip
 	
 	def getChips(self):
+		print("chipdict is {0}".format(self.__chipDict.items()))
+		for key in self.__chipDict.keys():
+			print('VDDA for chip {0} is {1}'.format(self.__chipDict[key].getID(),self.__chipDict[key].getVDDA()))
 		return self.__chipDict
 
 class QtOpticalGroup():

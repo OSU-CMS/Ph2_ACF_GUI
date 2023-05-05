@@ -27,13 +27,16 @@ class ModuleBox(QWidget):
 		self.mainLayout = QGridLayout()
 		self.createRow()
 		self.setLayout(self.mainLayout)
+		self.VDDDmap = {}
+		self.VDDAmap = {}
 
 	def createRow(self):
 		SerialLabel = QLabel("SerialNumber:")
 		self.SerialEdit = QLineEdit()
 		#self.SerialEdit.setMinimumWidth(120)
 		#self.SerialEdit.setMaximumWidth(200)
-		
+		self.SerialEdit.textChanged.connect(self.on_TypeChanged)
+
 		FMCLabel = QLabel("FMC:")
 		self.FMCEdit = QLineEdit()
 		#self.FMCEdit.setMinimumWidth(120)
@@ -43,7 +46,6 @@ class ModuleBox(QWidget):
 		self.IDEdit = QLineEdit()
 		#self.IDEdit.setMinimumWidth(120)
 		#self.IDEdit.setMaximumWidth(200)
-		self.IDEdit.textChanged.connect(self.on_TypeChanged)
 
 		TypeLabel = QLabel("Type:")
 		self.TypeCombo = QComboBox()
@@ -51,6 +53,8 @@ class ModuleBox(QWidget):
 		self.TypeCombo.currentIndexChanged.connect(self.on_TypeChanged)
 		TypeLabel.setBuddy(self.TypeCombo)
 
+		#self.ChipBoxWidget = ChipBox(self.TypeCombo.currentText())
+		#self.ChipBoxWidget = ChipBox('SCC')
 		self.mainLayout.addWidget(SerialLabel,0,0,1,1)
 		self.mainLayout.addWidget(self.SerialEdit,0,1,1,1)
 		self.mainLayout.addWidget(FMCLabel,0,2,1,1)
@@ -59,6 +63,7 @@ class ModuleBox(QWidget):
 		self.mainLayout.addWidget(self.IDEdit,0,5,1,1)
 		self.mainLayout.addWidget(TypeLabel,0,6,1,1)
 		self.mainLayout.addWidget(self.TypeCombo,0,7,1,1)
+		#self.mainLayout.addWidget(self.ChipBoxWidget,1,0,1,7)
 
 	def getSerialNumber(self):
 		return self.SerialEdit.text()
@@ -72,10 +77,126 @@ class ModuleBox(QWidget):
 	def getType(self):
 		return self.TypeCombo.currentText()
 
+	#@pyqtSlot(int, int)
+	#def setVDDD(self, pChipID, pVDDD):
+	#	self.VDDD[pChipID] = pVDDD
+	
+	def getVDDD(self, pChipID):
+		return self.VDDD[pChipID]
+		
+	#def createChipLabels(self, pModuleType):
+		#Check keys in Module dictionary
+	#	nchips = len(ModuleLaneMap[pModuleType])
+
+
 	@QtCore.pyqtSlot()
 	def on_TypeChanged(self):
 		self.typechanged.emit()
-		
+
+class ChipBox(QWidget):
+	chipchanged = pyqtSignal(int, int)
+
+	def __init__(self,pChipType):
+		super(ChipBox, self).__init__()
+		self.chipType = pChipType
+		self.mainLayout = QHBoxLayout()
+		self.ChipList = []
+	#	self.initList()
+		self.createList()
+		self.VDDAMap = {}
+		self.VDDDMap = {}
+		self.ChipGroupBoxDict = {}
+
+		for chipid in self.ChipList:
+			self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+
+		self.makeChipGroupBox(self.ChipGroupBoxDict)
+		self.setLayout(self.mainLayout)
+
+	def initList(self):
+		self.module = ModuleBox()
+
+	# Makes a list of chips for a given module
+	def createList(self):
+		for lane in ModuleLaneMap[self.chipType]:
+			self.ChipList.append(ModuleLaneMap[self.chipType][lane])
+
+	def makeChipBox(self, pChipID):
+		self.ChipID = pChipID
+		self.ChipLabel = QCheckBox('Chip ID: {0}'.format(self.ChipID))
+		self.ChipLabel.setChecked(True)
+		self.ChipLabel.setObjectName('ChipStatus_{0}'.format(pChipID))
+		self.ChipVDDDLabel = QLabel('VDDD:')
+		self.ChipVDDDEdit = QLineEdit()
+		self.ChipVDDDEdit.setText('8')
+		self.ChipVDDDEdit.setObjectName('VDDDEdit_{0}'.format(pChipID))
+		self.ChipVDDALabel = QLabel('VDDA:')
+		self.ChipVDDAEdit = QLineEdit()
+		self.ChipVDDAEdit.setText('8')
+		self.ChipVDDAEdit.setObjectName('VDDAEdit_{0}'.format(pChipID))
+
+		self.VChipLayout = QGridLayout()
+		self.VChipLayout.addWidget(self.ChipLabel,0,0,1,2)
+		self.VChipLayout.addWidget(self.ChipVDDDLabel,1,0,1,1)
+		self.VChipLayout.addWidget(self.ChipVDDDEdit,1,1,1,1)
+		self.VChipLayout.addWidget(self.ChipVDDALabel,2,0,1,1)
+		self.VChipLayout.addWidget(self.ChipVDDAEdit,2,1,1,1)
+
+		return self.VChipLayout
+
+
+	#def createChipBox(self, pChipID):
+	#	self.ChipID = pChipID
+	#	self.ChipGroupBox = QGroupBox()
+	#	self.ChipLabel = QCheckBox('Chip ID: {0}'.format(self.ChipID))
+	#	self.ChipLabel.setChecked(True)
+	#	self.ChipVDDDLabel = QLabel('VDDD:')
+	#	self.ChipVDDDEdit = QLineEdit()
+	#	self.ChipVDDDEdit.setText('8')
+	#	self.ChipVDDALabel = QLabel('VDDA:')
+	#	self.ChipVDDAEdit = QLineEdit()
+	#	self.ChipVDDAEdit.setText('8')
+	#	#self.ChipVDDAEdit.textChanged.connect(self.chipchanged)
+	#	#self.ChipVDDDEdit.textChanged.connect(self.on_ChipChanged(pChipID,self.ChipVDDDEdit.text()))
+
+	#	self.VChipLayout = QGridLayout()
+	#	self.VChipLayout.addWidget(self.ChipLabel,0,0,1,2)
+	#	self.VChipLayout.addWidget(self.ChipVDDDLabel,1,0,1,1)
+	#	self.VChipLayout.addWidget(self.ChipVDDDEdit,1,1,1,1)
+	#	self.VChipLayout.addWidget(self.ChipVDDALabel,2,0,1,1)
+	#	self.VChipLayout.addWidget(self.ChipVDDAEdit,2,1,1,1)
+		#self.mainLayout.addLayout(self.VChipLayout)
+	
+
+	def makeChipGroupBox(self, pChipGroupBoxDict):
+		for key in pChipGroupBoxDict.keys():
+			self.mainLayout.addLayout(pChipGroupBoxDict[key])
+
+	def getVDDA(self, pChipID):
+		print('thing is a {0}'.format(type(self.ChipGroupBoxDict[pChipID])))
+		VDDAthing = self.findChild(QLineEdit, 'VDDAEdit_{0}'.format(pChipID))
+		print('returning {0}'.format(VDDAthing))
+		#print('returning {0}'.format(self.ChipGroupBoxDict[pChipID].ChipVDDAEdit.text()))
+		#return self.ChipGroupBoxDict[pChipID].ChipVDDAEdit.text()
+		return VDDAthing.text()
+
+	def getVDDD(self, pChipID):
+		VDDDthing = self.findChild(QLineEdit, 'VDDDEdit_{0}'.format(pChipID))
+		return VDDDthing.text()
+
+	def getChipStatus(self, pChipID):
+		ChipCheckBox = self.findChild(QCheckBox, 'ChipStatus_{0}'.format(pChipID))
+		ChipStatus = ChipCheckBox.isChecked()
+		return ChipStatus
+
+	#@Qt.pyqtSlot(int, int)
+	#def updateVDDAMap(self, pChipID, pVDDATrim):
+	#	self.VDDAMap[pChipID] = pVDDATrim
+	#	print('VDDA Map updated to {0}'.format(self.VDDAMap.items()))
+
+
+
+
 class BeBoardBox(QWidget):
 	changed = pyqtSignal()
 
@@ -83,6 +204,7 @@ class BeBoardBox(QWidget):
 		super(BeBoardBox,self).__init__()
 		self.firmware = firmware
 		self.ModuleList = []
+		self.ChipWidgetDict = {}  #maps module to the chipbox object
 		self.mainLayout = QGridLayout()
 
 		self.initList()
@@ -93,7 +215,7 @@ class BeBoardBox(QWidget):
 	def initList(self):
 		ModuleRow = ModuleBox()
 		self.ModuleList.append(ModuleRow)
-
+	
 	def createList(self):
 		self.ListBox = QGroupBox()
 
@@ -121,9 +243,11 @@ class BeBoardBox(QWidget):
 
 		for index, module in enumerate(self.ModuleList):
 			#module.setMaximumWidth(500)
+			self.ChipWidgetDict[module] = ChipBox(module.getType())
 			module.setMaximumHeight(50)
 			module.typechanged.connect(self.on_TypeChanged)
 			self.ListLayout.addWidget(module,index,0,1,1)
+			self.ListLayout.addWidget(self.ChipWidgetDict[module],index + 1, 0, 1, 1)
 			if index > 0:
 				RemoveButton = QPushButton("remove")
 				RemoveButton.setMaximumWidth(150)
@@ -172,15 +296,33 @@ class BeBoardBox(QWidget):
 			FwModule.setModuleID(module.getID())
 			FwModule.setFMCID(module.getFMCID())
 			FwModule.setModuleName(module.getSerialNumber())
+			for chip in ModuleLaneMap[module.getType()].values():
+				print('chip status for chip {0} is {1}'.format(chip, self.ChipWidgetDict[module].getChipStatus(chip)))
+				#if not self.ChipWidgetDict[module].getChipStatus(chip):
+				#	continue
+				FwModule.setChipStatus(chip, self.ChipWidgetDict[module].getChipStatus(chip))
+				FwModule.setChipVDDA(chip, self.ChipWidgetDict[module].getVDDA(chip))
+				print('setting VDDAMap as {0} for chip {1}'.format(self.ChipWidgetDict[module].getVDDA(chip),chip))
+				FwModule.setChipVDDD(chip, self.ChipWidgetDict[module].getVDDD(chip))
+
 			#FwModule.setOpticalGroupID(module.getID())
 			FwModule.setModuleType(module.getType())
+			
+			#FWModule.setVDDAMap()
 			#for chip in module
 			self.firmware.addModule(index,FwModule)
 		return self.firmware
+		
+	#def getVDDA(self, module):
+	#	VDDAdict = {}
+	#	for key in self.ChipWidgetDict.keys():
+	#		VDDAdict[key] = self.ChipWidgetDict[key].getVDDA()
+	#	return VDDAdict
 
 	@QtCore.pyqtSlot()
 	def on_TypeChanged(self):
 		self.changed.emit()
+		
 
 class StatusBox(QWidget):
 	def __init__(self,verbose,index = 0):
