@@ -16,6 +16,7 @@ import time
 from datetime import datetime
 import random
 from subprocess import Popen, PIPE
+import logging
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
@@ -29,14 +30,30 @@ from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
 from Gui.python.TestHandler import *
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 class QtRunWindow(QWidget):
 	resized = pyqtSignal()
 	def __init__(self,master,info,firmware):
 		super(QtRunWindow,self).__init__()
 		self.master = master
 		self.master.globalStop.connect(self.urgentStop)
+		
+		#self.LogoGroupBox = self.master.LogoGroupBox
 		self.firmware = firmware
 		self.info = info
+		if "AllScan_Tuning" in self.info[1]:
+			runTestList = pretuningList
+			runTestList.extend(tuningList*len(defaultTargetThr))
+			runTestList.extend(posttuningList)
+			CompositeList.update({'AllScan_Tuning':runTestList})
+
+		elif isCompositeTest(self.info[1]):
+			runTestList = CompositeList[self.info[1]]
+		else:
+			runTestList = self.info[1]
+			
 		self.connection = self.master.connection
 		self.firmwareName = self.firmware.getBoardName()
 		self.ModuleMap = dict()
@@ -45,7 +62,9 @@ class QtRunWindow(QWidget):
 
 		#Add TestProcedureHandler
 		self.testHandler = TestHandler(self,master,info,firmware)
-		
+		self.testHandler.powerSignal.connect(self.master.HVpowersupply.TurnOffHV)
+		self.testHandler.powerSignal.connect(self.master.LVpowersupply.TurnOff)
+
 		self.GroupBoxSeg = [1, 10,  1]
 		self.HorizontalSeg = [3, 5]
 		self.VerticalSegCol0 = [1,3]
@@ -89,6 +108,22 @@ class QtRunWindow(QWidget):
 		self.occupied()
 
 		self.resized.connect(self.rescaleImage)
+
+		#added from Bowen
+		print('test list should be {0}'.format(self.info[1]))
+		self.j = 0
+		#stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
+		#if len(runTestList)>1:
+		for i in range(len(runTestList)):
+			if runTestList[i] == 'ThresholdAdjustment':
+				self.j += 1
+			if self.j == 0:
+				stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j]
+			else:
+				stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j-1]
+		 
+		logger.info(stepWiseGlobalValue)
+
 
 	def setLoginUI(self):
 		X = self.master.dimension.width()/10
@@ -298,7 +333,27 @@ class QtRunWindow(QWidget):
 		self.StartLayout.addWidget(self.FinishButton)
 		self.AppOption.setLayout(self.StartLayout)
 
+		self.LogoGroupBox = QGroupBox("")
+		self.LogoGroupBox.setCheckable(False)
+		self.LogoGroupBox.setMaximumHeight(100)
+
+		self.LogoLayout = QHBoxLayout()
+		OSULogoLabel = QLabel()
+		OSUimage = QImage("icons/osuicon.jpg").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		OSUpixmap = QPixmap.fromImage(OSUimage)
+		OSULogoLabel.setPixmap(OSUpixmap)
+		CMSLogoLabel = QLabel()
+		CMSimage = QImage("icons/cmsicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+		CMSpixmap = QPixmap.fromImage(CMSimage)
+		CMSLogoLabel.setPixmap(CMSpixmap)
+		self.LogoLayout.addWidget(OSULogoLabel)
+		self.LogoLayout.addStretch(1)
+		self.LogoLayout.addWidget(CMSLogoLabel)
+
+		self.LogoGroupBox.setLayout(self.LogoLayout)
+
 		self.mainLayout.addWidget(self.AppOption, sum(self.GroupBoxSeg[0:2]), 0, self.GroupBoxSeg[2], 1)
+		self.mainLayout.addWidget(self.LogoGroupBox, sum(self.GroupBoxSeg[0:3]), 0, self.GroupBoxSeg[2], 1)
 
 	def destroyApp(self):
 		self.AppOption.deleteLater()
@@ -332,6 +387,7 @@ class QtRunWindow(QWidget):
 		#self.view.setModel(self.proxy)
 		#self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 		#self.view.update()
+		print('attempting to update status in history')
 		self.HistoryLayout.removeWidget(self.StatusTable)
 		self.StatusTable.setRowCount(0)
 		for index,test in enumerate(self.modulestatus):
@@ -406,6 +462,7 @@ class QtRunWindow(QWidget):
 		self.testHandler.runTest(isReRun)
 
 	def abortTest(self):
+		self.j = 0
 		self.testHandler.abortTest()
 	
 	def urgentStop(self):
@@ -445,6 +502,14 @@ class QtRunWindow(QWidget):
 		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
 		if self.master.expertMode:
 			self.ResultWidget.updateResult(newResult)
+		else:
+			step, displayDict = newResult
+			self.ResultWidget.updateDisplayList(step, displayDict)
+
+	def updateIVResult(self,newResult):
+		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
+		if self.master.expertMode:
+			self.ResultWidget.updateIVResult(newResult)
 		else:
 			step, displayDict = newResult
 			self.ResultWidget.updateDisplayList(step, displayDict)
@@ -512,7 +577,7 @@ class QtRunWindow(QWidget):
 
 			if reply == QMessageBox.Yes:
 				self.release()
-				self.master.HVpowersupply.TurnOff()
+				self.master.HVpowersupply.TurnOffHV()
 				self.master.LVpowersupply.TurnOff()
 				event.accept()
 			else:

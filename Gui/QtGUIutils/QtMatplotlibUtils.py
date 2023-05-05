@@ -18,9 +18,11 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import *
 
 class ScanCanvas(FigureCanvas):
-	def __init__(self,parent,xlabel = "X", ylabel = "Y", sorted = True):
+	def __init__(self,parent,xlabel = "X", ylabel = "Y", sorted = True, invert = False):
 		self.parent = parent
+		self.foutname = 'testIVcurve'
 		self.sortX = sorted
+		self.invert = invert
 		self.fig = Figure(figsize=(5, 4), dpi=100)
 		self.axes = self.fig.add_subplot(111)
 		self.xlabel = xlabel
@@ -36,12 +38,16 @@ class ScanCanvas(FigureCanvas):
 								   QSizePolicy.Expanding,
 								   QSizePolicy.Expanding)
 		FigureCanvas.updateGeometry(self)
+		
 
 	def compute_initial_figure(self):
 		self.axes.cla()
 		self.axes.set_xlabel(self.xlabel)
 		self.axes.set_ylabel(self.ylabel)
 		self.axes.plot(self.X, self.Y, color='green', linestyle='dashed',linewidth=3)
+		self.axes.invert_xaxis()
+		self.axes.invert_yaxis()
+
 
 	def updatePlots(self, points):
 		self.coordinates = points

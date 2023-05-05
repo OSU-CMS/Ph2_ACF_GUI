@@ -76,19 +76,63 @@ FPGAConfigList =  {
 }
 
 ModuleType = {
-	1	:	"SingleSCC",
-	2	:	"TFPX Quad",
-	3	:	"TEPX Quad",
-	4	:	"TBPX Quad",
-	5   : 	"Yellow Module (Purdue)"
+	1 :	"SingleSCC",
+	2 :	"TFPX Quad",
+	3 :	"TEPX Quad",
+	4 :	"TBPX Quad",
+	5 :	"Yellow Module (Purdue)",
+	6 : "CROC 1x2",
+	7 : "TFPX CROC Quad"
 }
 
 firmware_image = {
-	"SingleSCC" : {"v4-06":"SCC_ELE_RD53A_v4-5.bit","v4-02":"SCC_ELE_RD53A_v4-2.bit"},
-	"Yellow Module (Purdue)" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
-	"TFPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
-	"TEPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
-	"TBPX Quad" : {"v4-06":"QUAD_ELE_RD53A_v4-5.bit","v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"SingleSCC" : 
+            {"v4-09":"SCC_ELE_RD53A_v4-5.bit",
+			 "v4-10":"SCC_ELE_RD53A_v4-5.bit",
+			 "v4-11":"SCC_ELE_RD53A_v4-5.bit",
+			 "v4-12":"SCC_ELE_RD53A_v4-6.bit",
+             "v4-06":"SCC_ELE_RD53A_v4-5.bit",
+             "v4-02":"SCC_ELE_RD53A_v4-2.bit"},
+	"Yellow Module (Purdue)" : 
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TFPX Quad" : 
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TEPX Quad" : 
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"TBPX Quad" : 
+             {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"CROC 1x2"  :
+			{"v4-09":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-10":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-11":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-12":"QUAD_ELE_CROC_v4-6.bit",
+			},
+	"TFPX CROC Quad"  :
+			{"v4-09":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-10":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-11":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-12":"QUAD_ELE_CROC_v4-6.bit",
+			},
 #	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
 }
 
@@ -97,15 +141,21 @@ ModuleLaneMap = {
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
-	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"}
+	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"},
+	"CROC 1x2" : {"2":"13"},
+	#"CROC 1x2" : {"0":"12","2":"13"},
+	"TFPX CROC Quad" : {"0":"12","1":"13","2":"14"},
 }
 
 BoxSize = {
 	"SingleSCC" : 1,
-	"TFPX Quad"	: 4,
+	"TFPX Quad" : 4,
 	"TEPX Quad" : 4,
-	"TBPX Quad"	: 4,
+	"TBPX Quad" : 4,
 	"Yellow Module (Purdue)": 3,
+	#"CROC 1x2"  : 2,
+	"CROC 1x2"  : 1,
+	"TFPX CROC Quad" : 3,
 }
 
 HVPowerSupplyModel = {
@@ -124,6 +174,31 @@ PowerSupplyModel_Termination = {
 PowerSupplyModel_XML_Termination = {
 	"Keithley 2410 (RS232)"    :  "CR",
 	"KeySight E3633 (RS232)"   :  "CRLF",
+}
+
+
+ModuleCurrentMap = {
+	"SingleSCC" : 0.6,
+	"TFPX Quad" : 6.5,
+	"TEPX Quad" : 6,
+	"TBPX Quad" : 6.5,
+	"Yellow Module (Purdue)": 6.5,
+	"CROC 1x2"  : 4.5,
+	"TFPX CROC Quad" : 6.5,
+}
+
+ModuleVoltageMapSLDO = {
+	"SingleSCC" : 1.8,
+	"TFPX Quad" : 2.98,
+	"TEPX Quad" : 2.0,
+	"TBPX Quad" : 2.98,
+	"Yellow Module (Purdue)": 2.8,
+	"CROC 1x2"  : 2.5,
+	"TFPX CROC Quad" : 2.98,
+}
+
+ModuleVoltageMap = {
+	"SingleSCC" : 1.3,
 }
 
 
@@ -148,13 +223,15 @@ ConfigFiles = {
 }
 
 Test = {
+	'AllScan_Tuning'         :  'noise',
 	'AllScan'                :  'noise',
 	'QuickTest'              :  'noise',
-	'StandardStep1'          :  'noise',
-	'StandardStep2'          :  'threqu',
-	'StandardStep3'          :  'scurve',
-	'StandardStep4'          :  'injdelay',
-	'StandardStep5'          :  'scurve',
+	'IVCurve'                :  'ivcurve',
+	#'StandardStep1'          :  'noise',
+	#'StandardStep2'          :  'threqu',
+	#'StandardStep3'          :  'scurve',
+	#'StandardStep4'          :  'injdelay',
+	#'StandardStep5'          :  'scurve',
 	'Latency'                :  'latency',
 	'PixelAlive'             :  'pixelalive',
 	'NoiseScan'              :  'noise',
@@ -176,6 +253,7 @@ Test = {
 TestName2File = {
 	'Latency'                :  'Latency',
 	'PixelAlive'             :  'PixelAlive',
+	'IVCurve'                :  'IVCurve',
 	'NoiseScan'              :  'NoiseScan',
 	'SCurveScan'             :  'SCurve',
 	'GainScan'               :  'Gain',
@@ -192,31 +270,34 @@ TestName2File = {
 	'Physics'                :  'Physics',
 }
 
-SingleTest = ['Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
+SingleTest = ['IVCurve','Latency','PixelAlive','NoiseScan','SCurveScan','GainScan',
 	'ThresholdEqualization','GainOptimization','ThresholdMinimization',
 	'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
-CompositeTest = ['AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+CompositeTest = ['AllScan_Tuning','AllScan','QuickTest']
+#CompositeTest = ['AllScan_Tuning','AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
 CompositeList = {
-	'AllScan': ['NoiseScan','PixelAlive','ThresholdAdjustment',
-				'ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment',
-				'SCurveScan','GainScan','GainOptimization',
+	'AllScan': ['IVCurve','PixelAlive','NoiseScan','ThresholdAdjustment',
+				'ThresholdEqualization','SCurveScan', 'NoiseScan','GainScan','GainOptimization',
 				'InjectionDelay','SCurveScan'],
-	'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
-	'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
-	'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
-	'StandardStep4': ['InjectionDelay'],
-	'StandardStep5': ['SCurveScan'],
-	'QuickTest': ['IVCurve','NoiseScan','PixelAlive']
+	#'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
+	#'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
+	#'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
+	#'StandardStep4': ['InjectionDelay'],
+	#'StandardStep5': ['SCurveScan'],
+	'QuickTest': ['IVCurve','PixelAlive','NoiseScan']
 }
-firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
+#firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
+
+pretuningList = ['IVCurve','PixelAlive','NoiseScan']
+tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan']
+posttuningList = ['NoiseScan','SCurveScan']
+#posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
 
 # Reserved for updated value for XML configuration
 updatedXMLValues = defaultdict(dict)
 
-header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using
+updatedGlobalValue = defaultdict(lambda:None)
+stepWiseGlobalValue = defaultdict(dict) #key : index
 
-BoardtypeMap = {
-	'v4-06': 'RD53A',
-	'v4-02': 'RD53'
-}
+header = ['Source', 'Module_ID', 'User', 'Test', 'Time', 'Grade', 'DQMFile'] #Stop using

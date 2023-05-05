@@ -4,12 +4,17 @@ import importlib
 import subprocess
 import logging
 
+
 from Gui.GUIutils.settings import *
 from Configuration.XMLUtil import *
 from Gui.python.TCP_Interface import *
+from Gui.siteSettings import *
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+if GPIB_DebugMode:
+	visa.log_to_screen()
 
 class PowerSupply():
 	def __init__(self,model = "Keithley", boardnumber = 0, primaryaddress = 24, powertype = "HV",serverIndex = 0):
@@ -19,6 +24,7 @@ class PowerSupply():
 		self.Instrument = None
 		self.PowerType = powertype
 		self.PoweringMode = None
+		self.ModuleType = None
 		self.CompCurrent = 0.0
 		self.UsingPythonInterface = False
 		self.XMLConfig = None
@@ -63,6 +69,9 @@ class PowerSupply():
 
 	def setCompCurrent(self, compcurrent = 1.05):
 		self.CompCurrent = compcurrent
+	
+	def setModuleType(self, moduletype = None):
+		self.ModuleType = moduletype
 	
 	def setResourceManager(self):
 		self.ResourcesManager = visa.ResourceManager('@py')
@@ -204,24 +213,19 @@ class PowerSupply():
 		pass
 
 	def TurnOn(self):
-		self.setCompCurrent()
 		if self.UsingPythonInterface == True:
 			try:
 				self.hwInterface.InitialDevice(self.Instrument)
 				Voltage = 0.0
-				VoltProtection = 1.0
-				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
-					Voltage = defaultVoltageMap[self.PoweringMode]
-					VoltProtection = 1.3
-				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
-					Voltage = defaultVoltageMap[self.PoweringMode]
-					VoltProtection = 1.85
-				if self.PowerType == "LV":
-					logging.info("Setting LV to {}".format(Voltage))
-					#self.Instrument.write(":SOURCE:VOLTAGE:PROTECTION:LEV {0}".format(VoltProtection))
-					#self.Instrument.write(":SOURCE:VOLTAGE:LEV:IMM {0}".format(Voltage))
-				#self.hwInterface.SetCurrent(self.Instrument, 10)
-				self.hwInterface.SetVoltage(self.Instrument, voltage = Voltage, VoltProtection = VoltProtection)
+				Current = 0.0
+				if self.PowerType ==  "LV" and self.PoweringMode == "SLDO":
+					Voltage = ModuleVoltageMapSLDO[self.ModuleType]
+					Current = ModuleCurrentMap[self.ModuleType]
+				elif self.PowerType ==  "LV" and self.PoweringMode == "Direct":
+					Voltage = ModuleVoltageMap[self.ModuleType]
+					Current = ModuleCurrentMap[self.ModuleType]
+					#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
+				self.hwInterface.ApplyCurrent(self.Instrument, voltage = Voltage, current = Current)
 				#self.hwInterface.setComplianceLimit(self.Instrument,self.CompCurrent)
 				self.hwInterface.TurnOn(self.Instrument)
 			except Exception as err:
@@ -235,17 +239,20 @@ class PowerSupply():
 				Voltage = 0.0
 				VoltProtection = 1.0
 				if self.PowerType ==  "LV" and self.PoweringMode == "Direct":
-					Voltage = 1.28
-					VoltProtection = 1.3
+					Voltage = ModuleVoltageMap[self.ModuleType]
+					Current = ModuleCurrentMap[self.ModuleType]
+					self.CompCurrent = Current
 				if self.PowerType == "LV" and self.PoweringMode == "SLDO":
-					Voltage = 1.8
-					VoltProtection = 1.85
+					Voltage = ModuleVoltageMapSLDO[self.ModuleType]
+					Current = ModuleCurrentMap[self.ModuleType]
+					self.CompCurrent = Current
+				cmd = "SetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(Current)
 				# Setting Voltage
-				cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(Voltage)
+				cmd = "SetVoltageCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(Voltage)
 				self.hwInterface.executeCommand(cmd)
 				time.sleep(1)
 				# Setting current compliance
-				cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(self.CompCurrent)
+				#cmd = "SetCurrentCompliance,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(self.CompCurrent)
 				self.hwInterface.executeCommand(cmd)
 				time.sleep(1)
 				cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
@@ -306,6 +313,21 @@ class PowerSupply():
 			except Exception as err:
 				logging.error("Failed to turn off the sourceMeter:{}".format(err))
 
+	def ReadOutputStatus(self):
+		if self.UsingPythonInterface == True:
+			try:
+				HVoutputstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				return HVoutputstatus
+			except Exception as err:
+				return None
+		else:
+			try:
+				cmd = "GetStatus,PowerSupplyId:" + self.ID
+				HVoutputstatus = self.hwInterface.executeCommand(cmd)
+				return HVoutputstatus
+			except Exception as err:
+				return None
+	
 	def ReadVoltage(self):
 		if self.UsingPythonInterface == True:
 			try:
@@ -375,7 +397,7 @@ class PowerSupply():
 				logging.error("Failed to set {} current to {}".format(self.PowerType, current))
 		else:
 			try:
-				cmd = "SetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltage)
+				cmd = "SetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(current)
 				self.hwInterface.executeCommand(cmd)
 				readBack = self.ReadCurrent()
 				if abs(readBack - current) > 0.05:
@@ -416,28 +438,64 @@ class PowerSupply():
 		if self.UsingPythonInterface == True:
 			try:
 				self.hwInterface.InitialDevice(self.Instrument)
+				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				if '1' in HVstatus:
+					print('found HV status {0}'.format(HVstatus))
+					self.TurnOffHV()
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOn(self.Instrument)
 			except Exception as err:
 				logging.error("Failed to turn on the sourceMeter:{}".format(err))
 				return None
 		else:
+			#cmd = "Initialize,PowerSupplyId:" + self.ID + ",PowerSupplyType:" +self.Model.split()[0]
+			#self.hwInterface.executeCommand(cmd)
+			#self.InitialDevice()
+			#cmd = "GetStatus,PowerSupplyID:" + self.ID
+			#HVoutputstatus = self.hwInterface.executeCommand(cmd)
+			#HVoutputstatus = self.ReadOutputStatus()
+			#if '1' in HVoutputstatus:
+			#	print('HV status was ON.  Turning OFF HV now.')
+			#	self.TurnOffHV()
+			self.ReadVoltage()
 			cmd = "TurnOn,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
 			self.hwInterface.executeCommand(cmd)
+			
 
 	def TurnOffHV(self):
 		if not self.isHV():
-			logging.info("Try to turn on non-HV as high voltage")
+			logging.info("Try to turn off non-HV as high voltage")
 			return
-
+		
 		if self.UsingPythonInterface == True:
 			try:
+				HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+				if '0' in HVstatus:
+					return
+				currentVoltage = self.hwInterface.ReadVoltage(self.Instrument)
+				stepLength = 3
+				if 0 < currentVoltage:
+					stepLength = -3
+		
+				for voltage in range(int(currentVoltage),0,stepLength):
+					self.hwInterface.SetVoltage(self.Instrument, voltage)
+					time.sleep(0.3)
 				self.hwInterface.SetVoltage(self.Instrument)
 				self.hwInterface.TurnOff(self.Instrument)
 			except Exception as err:
-				logging.error("Failed to turn on the sourceMeter:{}".format(err))
+				logging.error("Failed to turn off the sourceMeter:{}".format(err))
 				return None
 		else:
+			#self.InitialDevice()
+			#self.ReadOutputStatus()
+			#currentvoltage = self.ReadVoltage()
+			#print('output voltage is {0}'.format(currentvoltage))
+			#stepLength = 3
+			#if currentvoltage != 0:
+			#	for voltage in range(currentvoltage, 0 - stepLength, -stepLength):
+			#		self.SetHVVoltage(voltage)
+			#		time.sleep(0.3)
+
 			cmd = "TurnOff,PowerSupplyId:" + self.ID + ",ChannelId:Front" 
 			self.hwInterface.executeCommand(cmd)
 
@@ -468,6 +526,7 @@ class PowerSupply():
 				logging.error("Failed to set HV target the sourceMeter:{}".format(err))
 				return None
 		else:
+			#cmd = "rampToVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value" + str(voltage)
 			cmd = "SetVoltage,PowerSupplyId:" + self.ID + ",ChannelId:Front,Value:"+ str(voltage)
 			self.hwInterface.executeCommand(cmd)
 	
@@ -489,14 +548,40 @@ class PowerSupply():
 		
 
 
-	def RampingUp(self, hvTarget = 0.0, stepLength = 1.0):
-		try:
-			if self.isHV():
-				self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
-			else:
+	def RampingUp(self, hvTarget = 0.0, stepLength = 0.0):
+		if self.isHV():
+			try:
+				if self.UsingPythonInterface == True:
+					HVstatus = self.hwInterface.ReadOutputStatus(self.Instrument)
+					if '1' in HVstatus:
+						self.TurnOffHV()
+					self.hwInterface.InitialDevice(self.Instrument)
+					self.SetHVComplianceLimit(defaultHVCurrentCompliance)
+					self.hwInterface.SetVoltage(self.Instrument)
+					self.hwInterface.TurnOn(self.Instrument)
+					self.hwInterface.RampingUpVoltage(self.Instrument,hvTarget,stepLength)
+
+				else:
+					self.InitialDevice()
+					self.SetHVComplianceLimit(defaultHVCurrentCompliance)
+					currentvoltage = self.ReadVoltage()
+					if currentvoltage != 0:
+						for voltage in range(currentvoltage, 0 - stepLength, -stepLength):
+							self.SetHVVoltage(voltage)
+							time.sleep(0.3)
+						self.TurnOffHV()
+					self.TurnOnHV()
+					for voltage in range(0, hvTarget + stepLength, stepLength):
+						self.SetHVVoltage(voltage)
+						time.sleep(0.3)
+						cmd = "GetCurrent,PowerSupplyId:" + self.ID + ",ChannelId:Front"
+						cmd = self.customized(cmd)
+						self.hwInterface.executeCommand(cmd)
+			
+			except Exception as err:
+				logging.error("Failed to ramp the voltage to {0}:{1}".format(hvTarget,err))
+		else:
 				logging.info("Not a HV power supply, abort")
-		except Exception as err:
-			logging.error("Failed to ramp the voltage to {0}:{1}".format(hvTarget,err))
 
 	def customized(self,cmd):
 		if "Keith" in self.Model:

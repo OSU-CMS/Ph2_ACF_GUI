@@ -1,4 +1,5 @@
 import lxml.etree as ET
+import os
 from xml.dom import minidom
 from Configuration.Settings.GlobalSettings import *
 from Configuration.Settings.FESettings import *
@@ -11,6 +12,8 @@ import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+Ph2_ACF_VERSION = os.environ.get("Ph2_ACF_VERSION")
 
 def prettify(elem):
     """Return a pretty-printed XML string for the Element.
@@ -62,7 +65,8 @@ class BeBoardModule():
     self.boardType = "RD53"
     self.eventType = "VR"
     self.id = "cmsinnertracker.crate0.slot0" 
-    self.uri = "chtcp-2.0://localhost:10203?target=192.168.1.80:50001" 
+    self.uri = "chtcp-2.0://localhost:10203?target={0}:50001".format(ip_address)
+    #self.uri = "chtcp-2.0://localhost:10203?target=192.168.1.80:50001" 
     self.address_table = "file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml"
     self.FEModuleList = []
     self.RegisterSettings = {}
@@ -165,10 +169,13 @@ class FE():
     self.settingList = settingList
 
 class MonitoringModule():
-  def __init__(self):
-    self.Type="RD53"
-    self.Enable="0"
-    self.SleepTime=1000
+  def __init__(self,boardtype):
+    self.Type=boardtype 
+    if 'RD53A' in boardtype:
+      self.Enable="1" 
+    else:
+      self.Enable="0"
+    self.SleepTime=50000
     self.MonitoringList = {}
   def SetType(self, Type):
     self.Type=Type
@@ -223,11 +230,12 @@ def SetMonitoring(Node, MonitoringItem):
   Node_Monitoring = SetNodeAttribute(Node_Monitoring,{'type':MonitoringItem.Type,'enable':MonitoringItem.Enable})
   Node_SleepTime  = ET.SubElement(Node_Monitoring, 'MonitoringSleepTime')
   Node_SleepTime.text = str(MonitoringItem.SleepTime)
-  Node_MonitoringElements = ET.SubElement(Node_Monitoring, 'MonitoringElements')
-  Node_MonitoringElements = SetNodeAttribute(Node_MonitoringElements,MonitoringItem.MonitoringList)
+  for element in MonitoringItem.MonitoringList.keys():
+      Node_MonitoringElements = ET.SubElement(Node_Monitoring, 'MonitoringElement')
+      Node_MonitoringElements = SetNodeAttribute(Node_MonitoringElements,{'device':"RD53",'register':element,'enable':MonitoringItem.MonitoringList[element]})
   return Node
 
-def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
+def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardtype = "RD53A"):
   Node_HWInterface = ET.Element('HwDescription')
   BeBoardList = HWDescription.BeBoardList
   for BeBoard in BeBoardList:
@@ -241,6 +249,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
     #Node_connection.Set('id',BeBoard.id)
     #Node_connection.Set('uri',BeBoard.uri)
     #Node_connection.Set('address_table',BeBoard.address_table)
+    print('beboard ip is {0}'.format(BeBoard.uri))
     Node_connection = SetNodeAttribute(Node_connection,{'id':BeBoard.id,'uri':BeBoard.uri,'address_table':BeBoard.address_table})
     OpticalGroupList = BeBoard.OpticalGroupList
 
@@ -252,20 +261,35 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
 
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
-        Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,'Status':HyBridModule.Status,'Name':HyBridModule.Name})
+        StatusStr = 'Status'
+        if "v4-08" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        if "v4-09" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        if "v4-10" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        if "v4-11" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        if "v4-12" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,StatusStr:HyBridModule.Status,'Name':HyBridModule.Name})
         #### This is where the RD53_Files is setup ####
         ##FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
-        HyBridModule.SetHyBridType(BoardtypeMap[os.environ.get('Ph2_ACF_VERSION')])
+        
+        HyBridModule.SetHyBridType('RD53')  #This part should stay as just RD53 (no A or B)
         print("This is the Hybrid Type: ", HyBridModule.HyBridType)
         Node_FEPath = ET.SubElement(Node_HyBrid, HyBridModule.HyBridType+'_Files')
         Node_FEPath = SetNodeAttribute(Node_FEPath,{'file':HyBridModule.File_Path})
         FEList = HyBridModule.FEList
         ### This is where the RD53 block is being made ###
         for FE in FEList:
-          BeBoard.boardType = BoardtypeMap[os.environ.get('Ph2_ACF_VERSION')] #FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
+          BeBoard.boardType =  boardtype 
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
           Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configfile':FE.configfile})
+          if 'RD53B' in boardtype:
+            Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
+            Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,{'primary':"1",'outputLanes':"0001",'singleChannelInputs':"0000",'dualChannelInput':"0000"})
           Node_FESetting = ET.SubElement(Node_FE,"Settings")
           Node_FESetting = SetNodeAttribute(Node_FESetting,FE.settingList)
         Node_FEGlobal = ET.SubElement(Node_HyBrid,"Global")
@@ -280,8 +304,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml"):
   Node_MonitoringSettings = ET.SubElement(Node_HWInterface, 'MonitoringSettings')
   MonitoringList = HWDescription.MonitoringList
   for MonitoringItem in MonitoringList:
-    Node_Monitoring = ET.SubElement(Node_MonitoringSettings, 'Monitoring')
-    Node_Monitoring = SetMonitoring(Node_Monitoring, MonitoringItem)
+    Node_Monitoring = SetMonitoring(Node_MonitoringSettings, MonitoringItem)
     
   xmlstr = prettify(Node_HWInterface)
   with open(outputFile, "w") as f:

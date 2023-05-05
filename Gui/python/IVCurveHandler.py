@@ -15,16 +15,18 @@ class IVCurveThread(QThread):
 
         self.startVal = 0
         self.target = 0
-        self.stopVal = -60
-        self.stepLength = -5
+        self.stopVal = -80  #FIXME set this back to -80 after testing
+        self.stepLength = -2
         self.stepNum = 0
         self.stepTotal = (self.stopVal-self.startVal)/self.stepLength+1
         self.turnOn()
+        
 
     def turnOn(self):
+        self.powersupply.TurnOffHV()
         self.powersupply.TurnOnHV()
         self.powersupply.SetHVRange(200)
-        self.powersupply.SetHVComplianceLimit(0.1)
+        self.powersupply.SetHVComplianceLimit(0.00001)
 
     def abortTest(self):
         print("Aborting test...")
@@ -35,8 +37,11 @@ class IVCurveThread(QThread):
             try:
                 self.powersupply.SetHVVoltage(self.target)
                 time.sleep(0.5)
-                voltage = self.powersupply.ReadVoltage()
+                #voltage = self.powersupply.ReadVoltage()
+                voltage = self.target
+                time.sleep(0.5)
                 current = self.powersupply.ReadCurrent()
+
                 #MAX_TRIES = 10
                 #N_TRIES = 1
                 #while abs(target-float(voltage))/abs(target+0.01) > 0.05 and  N_TRIES < MAX_TRIES:
@@ -47,7 +52,7 @@ class IVCurveThread(QThread):
                 #    print("voltage:",voltage, " current:",current)
                 self.stepNum += 1
                 measurementStr = {"voltage":voltage,"current":current,"percentage":self.stepNum/self.stepTotal}
-                print(measurementStr)
+                #print(measurementStr)
                 if voltage == None or current == None:
                     self.stepNum -= 1
                     self.target = self.startVal + self.stepLength * self.stepNum
@@ -96,6 +101,6 @@ class IVCurveHandler(QObject):
             self.test.abortTest()
             self.powersupply.TurnOffHV()
         except Exception as err:
-            print("Fialed to stop the IV test")
+            print("Failed to stop the IV test")
 
 

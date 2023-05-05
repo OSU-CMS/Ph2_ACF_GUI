@@ -118,9 +118,9 @@ def SetupXMLConfig(Input_Dir, Output_Dir):
 	except OSError:
 		print("Can not copy the XML files to {0}".format(Output_Dir))
 	try:
-		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("PH2ACF_BASE_DIR")))
 	except OSError:
-		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("PH2ACF_BASE_DIR")))
 
 ##########################################################################
 ##########################################################################
@@ -165,14 +165,14 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 		print("Failed to set up the XML file, {}".format(error))
 
 	try:
-		print('lenth of XML dict is {0}'.format(len(updatedXMLValues)))
+		#print('lenth of XML dict is {0}'.format(len(updatedXMLValues)))
 		if len(updatedXMLValues) > 0:
 			changeMade = True
 			print(updatedXMLValues)
 
 			for Node in root.findall(".//Settings"):
-				print("Found Settings Node!")
-				if 'Vthreshold_LIN' in Node.attrib:
+				#print("Found Settings Node!")
+				if 'VCAL_HIGH' in Node.attrib:
 					RD53Node = Node.getparent()
 					HyBridNode = RD53Node.getparent()
 					## Potential Change: please check if it is [HyBrid ID/RD53 ID] or [HyBrid ID/RD53 Lane]
@@ -188,6 +188,19 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 
 
 	try:
+		logger.info(updatedGlobalValue)
+		if len(updatedGlobalValue) > 0:
+			changeMade = True
+			print(updatedGlobalValue[1])
+			for Node in root.findall('.//Setting'):
+				if len(updatedGlobalValue[1])>0:
+					if Node.attrib['name']=='TargetThr':
+						Node.text = updatedGlobalValue[1]['TargetThr']
+						print('TargetThr value has been set to {0}'.format(updatedGlobalValue[1]['TargetThr']))
+	except Exception as error:
+		print('Failed to update the TargetThr value, {0}'.format(updatedGlobalValue[1]['TargetThr']))
+
+	try:
 		if changeMade:
 			ModifiedFile = InputFile+".changed"
 			tree.write(ModifiedFile)
@@ -201,9 +214,9 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 	except OSError:
 		print("Can not copy the XML files {0} to {1}".format(InputFile,Output_Dir))
 	try:
-		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+		os.system("cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("PH2ACF_BASE_DIR")))
 	except OSError:
-		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("Ph2_ACF_AREA")))
+		print("Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(Output_Dir,os.environ.get("PH2ACF_BASE_DIR")))
 
 ##########################################################################
 ##########################################################################
@@ -215,9 +228,9 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
 		except OSError:
 			print("Can not copy the RD53 configuration files to {0} for RD53 ID: {1}".format(Output_Dir, key))
 		try:
-			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 		except OSError:
-			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 
 ##########################################################################
 ##########################################################################
@@ -229,9 +242,9 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
 		except OSError:
 			print("Can not copy the XML files {0} to {1}".format(InputFileDict[key],Output_Dir))
 		try:
-			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 		except OSError:
-			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(Output_Dir,key,os.environ.get("Ph2_ACF_AREA")))
+			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 
 
 def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
@@ -241,7 +254,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 		HWDescription0 = HWDescription()
 		BeBoardModule0 = BeBoardModule()
 		AllModules = firmwareList.getAllModules().values()
-
+		boardtype = 'RD53A'
 		# Setup all optical groups for the modules
 		for module in AllModules:
 			AllOG = {}
@@ -254,6 +267,19 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 			HyBridModule0 = HyBridModule()
 			HyBridModule0.SetHyBridModule(module.getModuleID(),"1")
 			HyBridModule0.SetHyBridName(module.getModuleName())
+			
+			if 'CROC' in module.getModuleType(): 
+				FESettings_Dict = FESettings_DictB
+				globalSettings_Dict = globalSettings_DictB
+				HWSettings_Dict = HWSettings_DictB
+				boardtype = 'RD53B'
+			else: 
+				FESettings_Dict = FESettings_DictA
+				globalSettings_Dict = globalSettings_DictA
+				HWSettings_Dict = HWSettings_DictA
+				boardtype = 'RD53A'
+			
+
 			# Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
 			for chip in module.getChips().values():
 				FEChip = FE()
@@ -269,10 +295,13 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		HWDescription0.AddBeBoard(BeBoardModule0)
 		HWDescription0.AddSettings(HWSettings_Dict[testName])
-		MonitoringModule0 = MonitoringModule()
-		MonitoringModule0.SetMonitoringList(MonitoringList)
+		MonitoringModule0 = MonitoringModule(boardtype)
+		if 'RD53A' in boardtype:
+			MonitoringModule0.SetMonitoringList(MonitoringListA)
+		else:
+			MonitoringModule0.SetMonitoringList(MonitoringListB)
 		HWDescription0.AddMonitoring(MonitoringModule0)
-		GenerateHWDescriptionXML(HWDescription0,outputFile)
+		GenerateHWDescriptionXML(HWDescription0,outputFile,boardtype)
 	#except:
 	#	logger.warning("Unexpcted issue generating {}. Please check the file".format(outputFile))
 	#	outputFile = None

@@ -261,8 +261,8 @@ class QtApplication(QWidget):
 
 	def destroyLogin(self):
 		self.LoginGroupBox.deleteLater()
-		self.LogoGroupBox.deleteLater()
-		self.mainLayout.removeWidget(self.LoginGroupBox)
+		#self.LogoGroupBox.deleteLater()
+		#self.mainLayout.removeWidget(self.LoginGroupBox)
 	
 	def checkLogin(self):
 		msg = QMessageBox()
@@ -673,6 +673,7 @@ class QtApplication(QWidget):
 		self.NewProductionTestButton.setMaximumWidth(kMaximumWidth)
 		self.NewProductionTestButton.setMinimumHeight(kMinimumHeight)
 		self.NewProductionTestButton.setMaximumHeight(kMaximumHeight)
+		self.NewProductionTestButton.setDisabled(True)  #FIXME This is to temporarily disable the test until LV can be added.
 		self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
 		NewProductionTestLabel = QLabel("Open production test")
 
@@ -789,7 +790,8 @@ class QtApplication(QWidget):
 		self.mainLayout.addWidget(self.ArduinoControl, 7, 0,1,2)
 		self.mainLayout.addWidget(self.MainOption,8, 0,1,1)
 		self.mainLayout.addWidget(self.PeltierBox, 8,1,1,1)
-		self.mainLayout.addWidget(self.AppOption, 9, 0,1,2)
+		self.mainLayout.addWidget(self.AppOption, 9, 1,1,1)
+		self.mainLayout.addWidget(self.LogoGroupBox,9,0,1,1)
 
 		self.setDefault()
 	
@@ -850,6 +852,7 @@ class QtApplication(QWidget):
 		self.ArduinoControl.deleteLater()
 		self.MainOption.deleteLater()
 		self.AppOption.deleteLater()
+		self.LogoGroupBox.deleteLater()
 		self.mainLayout.removeWidget(self.FirmwareStatus)
 		self.mainLayout.removeWidget(self.HVPowerGroup)
 		self.mainLayout.removeWidget(self.UseDefaultGroup)
@@ -860,6 +863,7 @@ class QtApplication(QWidget):
 		self.mainLayout.removeWidget(self.ArduinoControl)
 		self.mainLayout.removeWidget(self.MainOption)
 		self.mainLayout.removeWidget(self.AppOption)
+		self.mainLayout.removeWidget(self.LogoGroupBox)
 
 	def openNewProductionTest(self):
 		self.ProdTestPage = QtProductionTestWindow(self, HV= self.HVpowersupply, LV = self.LVpowersupply)
@@ -874,7 +878,7 @@ class QtApplication(QWidget):
 		#FwModule = []
 		#for fw in self.FwUnderUsed:
 		#	FwModule.append(self.FwDict[fw])
-		self.StartNewTest = QtStartWindow(self,FwModule)
+		self.StartNewTest = QtStartWindow(self , FwModule)
 		self.NewTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
 		self.ExitButton.setDisabled(True)
@@ -910,6 +914,7 @@ class QtApplication(QWidget):
 		#self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
 		self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
 		self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
+		self.HVpowersupply.TurnOffHV()
 		#self.HVpowersupply.TurnOn()
 		# Block for GUI front-end
 		statusString = self.HVpowersupply.getInfo()
@@ -924,7 +929,7 @@ class QtApplication(QWidget):
 			self.HVPowerStatusValue.setText("No valid device")
 
 	def releaseHVPowerPanel(self):
-		self.HVpowersupply.TurnOff()
+		self.HVpowersupply.TurnOffHV()
 		try:
 			self.HVPowerCombo.setDisabled(False)
 			self.HVPowerStatusValue.setText("")
@@ -950,6 +955,7 @@ class QtApplication(QWidget):
 		#self.LVpowersupply.getInfo()
 		#self.LVpowersupply.TurnOn()
 		# Block for GUI front-end
+		self.LVpowersupply.TurnOff()
 		statusString = self.LVpowersupply.getInfo()
 		if statusString != "No valid device":
 			self.LVPowerStatusValue.setStyleSheet("color:green")
@@ -1107,7 +1113,7 @@ class QtApplication(QWidget):
 	def GlobalStop(self):
 		print("Critical status detected: Emitting Global Stop signal")
 		self.globalStop.emit()
-		self.HVpowersupply.TurnOff()
+		self.HVpowersupply.TurnOffHV()
 		self.LVpowersupply.TurnOff()
 		if self.expertMode == True:
 			self.releaseHVPowerPanel()
@@ -1129,12 +1135,14 @@ class QtApplication(QWidget):
 
 		if reply == QMessageBox.Yes:
 			print('Application terminated')
-			self.HVpowersupply.TurnOff()
+			self.HVpowersupply.TurnOffHV()
 			self.LVpowersupply.TurnOff()
 
 			# If you didn't start the Peltier controller, tempPower won't be defined
 			try:
 				self.PeltierCooling.shutdown()
+				time.sleep(2)
+				self.pool.clear()
 			except Exception as e:
 				print("Could not shutdown Peltier: " , e)
 				pass
