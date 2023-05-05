@@ -22,8 +22,6 @@ defaultHVModel = ["Keithley 2410 (RS232)"]
 defaultUSBPortLV = ["ASRL/dev/ttyUSBLV::INSTR"]
 # default model for LV power supply
 defaultLVModel = ["KeySight E3633 (RS232)"]
-# default model for LV power supply
-defaultLVModel = ["KeySight E3633 (RS232)"]
 # default setting for module ( "SingleSCC","TFPX Quad","TEPX Quad","TBPX Quad","Yellow Module (Purdue)"):
 defaultModuleType = "TFPX Quad"
 # default mode for LV powering (Direct,SLDO,etc)
@@ -44,7 +42,7 @@ defaultSensorBaudRate = 9600
 defaultDBServerIP = '127.0.0.1'
 #default DBName
 defaultDBName = 'SampleDB'
-defaultTargetThr = ['2500','1500']
+defaultTargetThr = ['2000','1500','1200','1000','800']
 ##### The following settings are for SLDO scans developed for Purdue.#####
 ##### Do not modify these settings unless you know what you are doing.####
 #default settings for SLDO scan.

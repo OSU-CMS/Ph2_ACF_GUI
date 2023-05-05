@@ -124,7 +124,6 @@ class QtModule():
 			chipNumber = ModuleLaneMap[self.__moduleType][LaneID]
 			FEChip.setID(ModuleLaneMap[self.__moduleType][LaneID])
 			FEChip.setLane(LaneID)
-			print('VDDA is {0}'.format(self.__VDDAMap[chipNumber]))
 			FEChip.setVDDA(self.__VDDAMap[chipNumber])
 			FEChip.setVDDD(self.__VDDDMap[chipNumber])
 			FEChip.setStatus(self.__ChipStatusMap[chipNumber])
@@ -132,9 +131,6 @@ class QtModule():
 			self.__chipDict[i] = FEChip
 	
 	def getChips(self):
-		print("chipdict is {0}".format(self.__chipDict.items()))
-		for key in self.__chipDict.keys():
-			print('VDDA for chip {0} is {1}'.format(self.__chipDict[key].getID(),self.__chipDict[key].getVDDA()))
 		return self.__chipDict
 
 class QtOpticalGroup():
