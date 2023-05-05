@@ -16,7 +16,7 @@ RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirements.txt
 
 
-RUN sh .complileSubModules.sh
+RUN sh ./compileSubModules.sh
 
 #The following would open the GUI when docker run is called.  Otherwise it will just give a terminal.
 #CMD ["./QtApplication.py"]
