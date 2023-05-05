@@ -166,6 +166,7 @@ HWSettingsB_Latency["LatencyStart"] = 110
 HWSettingsB_Latency["LatencyStop"] = 150
 
 HWSettingsB_PixelAlive = copy.deepcopy(HWSettingsB_v49)
+HWSettingsB_PixelAlive["DoDataIntegrity"] = 1
 
 HWSettingsB_NoiseScan = copy.deepcopy(HWSettingsB_v49)
 HWSettingsB_NoiseScan["nEvents"] = 1e7

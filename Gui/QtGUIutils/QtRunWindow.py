@@ -53,7 +53,7 @@ class QtRunWindow(QWidget):
 			runTestList = CompositeList[self.info[1]]
 		else:
 			runTestList = self.info[1]
-			
+
 		self.connection = self.master.connection
 		self.firmwareName = self.firmware.getBoardName()
 		self.ModuleMap = dict()

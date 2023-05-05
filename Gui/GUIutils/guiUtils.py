@@ -245,7 +245,24 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
 			os.system("cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
 		except OSError:
 			print("Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(Output_Dir,key,os.environ.get("PH2ACF_BASE_DIR")))
+##########################################################################
+##########################################################################
+def UpdateXMLValue(pFilename, pAttribute, pValue):
+	root,tree = LoadXML(pFilename)
+	for Node in root.findall('.//Setting'):
+		if Node.attrib['name']==pAttribute:
+			Node.text = pValue
+			print('{0} has been set to {1}.'.format(pAttribute,pValue))
+			tree.write(pFilename)
 
+def CheckXMLValue(pFilename, pAttribute):
+	root,tree = LoadXML(pFilename)
+	for Node in root.findall('.//Setting'):
+		if Node.attrib['name']==pAttribute:
+			print('{0} is set to {1}.'.format(pAttribute,Node.text))
+
+##########################################################################
+##########################################################################
 
 def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 	#try:
@@ -282,15 +299,24 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 
 			# Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
 			for chip in module.getChips().values():
+				print('chip {0} status is {1}'.format(chip.getID(),chip.getStatus()))
+				if not chip.getStatus():
+					continue
 				FEChip = FE()
 				FEChip.SetFE(chip.getID(),chip.getLane(),"CMSIT_RD53_{0}_{1}_{2}.txt".format(module.getModuleName(),module.getModuleID(),chip.getID()))
 				FEChip.ConfigureFE(FESettings_Dict[testName])
+				FEChip.VDDAtrim = chip.getVDDA()
+				FEChip.VDDDtrim = chip.getVDDD()
 				HyBridModule0.AddFE(FEChip)
 			HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
 			OpticalGroupModule0.AddHyBrid(HyBridModule0)
 
 		for OpticalGroupModule in AllOG.values():
 			BeBoardModule0.AddOGModule(OpticalGroupModule)
+			for hybrid in OpticalGroupModule.HyBridList:
+				for fe in hybrid.FEList:
+
+					print('OGmodule is {0}'.format(fe.settingList))
 
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		HWDescription0.AddBeBoard(BeBoardModule0)
@@ -307,6 +333,9 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 	#	outputFile = None
 
 		return outputFile
+
+
+
 
 ##########################################################################
 ##  Functions for setting up XML and RD53 configuration (END)

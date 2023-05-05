@@ -46,19 +46,25 @@ class SummaryBox(QWidget):
 			self.chipSwitches[i] = True
 
 	def createBody(self):
-		FEIDLabel = QLabel("ID: {}".format(self.module.getID()))
+		#FEIDLabel = QLabel("ID: {}".format(self.module.getID()))
+		FEIDLabel = QLabel("Module: {}".format(self.module.getSerialNumber()))
 		FEIDLabel.setStyleSheet("font-weight:bold")
 		PowerModeLabel = QLabel()
 		PowerModeLabel.setText("FE Power Mode:")
 		self.PowerModeCombo = QComboBox()
 		self.PowerModeCombo.addItems(FEPowerUpVD.keys())
 		#self.PowerModeCombo.currentTextChanged.connect(self.checkFwPar)
+		#self.ChipBoxWidget = ChipBox(self.module.getType())
+		
+
+		
 
 		self.CheckLabel = QLabel()
 		self.DetailsButton = QPushButton("Details")
 		self.DetailsButton.clicked.connect(self.showDetails)
 
 		self.mainLayout.addWidget(FEIDLabel,0,0,1,1)
+		#self.mainLayout.addWidget(self.ChipBoxWidget,0,1,1,1)
 		self.mainLayout.addWidget(PowerModeLabel,1,0,1,1)
 		self.mainLayout.addWidget(self.PowerModeCombo,1,1,1,1)
 		self.mainLayout.addWidget(self.CheckLabel,2,0,1,1)
@@ -241,6 +247,8 @@ class QtStartWindow(QWidget):
 		self.BeBoardWidget.changed.connect(self.destroyMain)
 		self.BeBoardWidget.changed.connect(self.createMain)
 
+		#self.ChipBoxWidget = ChipBox(self.firmware)
+
 		self.mainLayout.addWidget(self.TestBox,0,0)
 		self.mainLayout.addWidget(self.BeBoardWidget,1,0)
 
@@ -251,10 +259,11 @@ class QtStartWindow(QWidget):
         ## To be finished
 		self.ModuleList = []
 		for  i, module  in enumerate(self.BeBoardWidget.ModuleList):
+
 			ModuleSummaryBox = SummaryBox(master= self.master,module = module)
 			self.ModuleList.append(ModuleSummaryBox)
 			firmwarePar.addWidget(ModuleSummaryBox, math.floor(i/2), math.ceil( i%2 /2), 1, 1)
-
+		self.BeBoardWidget.updateList()  ############FIXME:  This may not work for multiple modules at a time. 
 		self.firmwareCheckBox.setLayout(firmwarePar)
 
 		self.mainLayout.addWidget(self.firmwareCheckBox,2,0)

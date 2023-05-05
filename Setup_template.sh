@@ -1,6 +1,6 @@
 export DATA_dir=$PWD/data/TestResults
 export GUI_dir=$PWD
-
+export PH2ACF_BASE_DIR=$PWD/Ph2_ACF
 export UsePowerSupplyLib=false
 
 if [ ! -d $PH2ACF_BASE_DIR ]; then
@@ -33,7 +33,7 @@ then
 else
     unset PowerSupplyArea
 fi
-export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
+
 
 #export DATA_dir=/Users/czkaiweb/Research/data/
 chmod 755 $PWD/Gui/GUIutils/*.sh
@@ -47,4 +47,6 @@ then
     cd $PowerSupplyArea
     source setup.sh
 fi
+export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
+
 cd $GUI_dir

@@ -84,8 +84,8 @@ FESettingsB = {
     'CAL_EDGE_FINE_DELAY'    :     "0",
     'ANALOG_INJ_MODE'        :     "0",
 
-    'VOLTAGE_TRIM_DIG'       :     "8",
-    'VOLTAGE_TRIM_ANA'       :     "8",
+    'VOLTAGE_TRIM_DIG'       :     "10", #FIXME: temp changed from 8 to 10 for RH0010
+    'VOLTAGE_TRIM_ANA'       :     "7", #FIXME: temp changed from 8 to 7 for RH0010
 
     'CML_CONFIG_SER_EN_TAP'  :  "0b00",
     'CML_CONFIG_SER_INV_TAP' :  "0b00",
