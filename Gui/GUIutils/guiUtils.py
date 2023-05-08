@@ -191,7 +191,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 		logger.info(updatedGlobalValue)
 		if len(updatedGlobalValue) > 0:
 			changeMade = True
-			print(updatedGlobalValue[1])
+			#print(updatedGlobalValue[1])
 			for Node in root.findall('.//Setting'):
 				if len(updatedGlobalValue[1])>0:
 					if Node.attrib['name']=='TargetThr':
@@ -313,10 +313,6 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 
 		for OpticalGroupModule in AllOG.values():
 			BeBoardModule0.AddOGModule(OpticalGroupModule)
-			for hybrid in OpticalGroupModule.HyBridList:
-				for fe in hybrid.FEList:
-
-					print('OGmodule is {0}'.format(fe.settingList))
 
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		HWDescription0.AddBeBoard(BeBoardModule0)

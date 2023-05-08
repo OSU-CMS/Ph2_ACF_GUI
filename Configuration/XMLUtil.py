@@ -267,8 +267,6 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
       
 
       for HyBridModule in HyBridList:
-        print('Hybrid module is {0} long'.format(len(HyBridModule.FEList)))
-        print('the hybrid module fe list is {0}'.format(HyBridModule.FEList))
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
         StatusStr = 'Status'
         if "v4-08" in Ph2_ACF_VERSION:
@@ -302,7 +300,6 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
           Node_FESetting = ET.SubElement(Node_FE,"Settings")
           FE.settingList['VOLTAGE_TRIM_ANA'] = FE.VDDAtrim
           FE.settingList['VOLTAGE_TRIM_DIG'] = FE.VDDDtrim
-          print('The setting list passed to Node setting is {0} for chip {1}'.format(FE.settingList.items(),FE.Id))
           Node_FESetting = SetNodeAttribute(Node_FESetting,FE.settingList)
         Node_FEGlobal = ET.SubElement(Node_HyBrid,"Global")
         Node_FEGlobal = SetNodeAttribute(Node_FEGlobal,HyBridModule.globalSetting)

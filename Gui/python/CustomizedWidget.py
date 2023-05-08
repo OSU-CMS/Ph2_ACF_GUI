@@ -173,11 +173,7 @@ class ChipBox(QWidget):
 			self.mainLayout.addLayout(pChipGroupBoxDict[key])
 
 	def getVDDA(self, pChipID):
-		print('thing is a {0}'.format(type(self.ChipGroupBoxDict[pChipID])))
 		VDDAthing = self.findChild(QLineEdit, 'VDDAEdit_{0}'.format(pChipID))
-		print('returning {0}'.format(VDDAthing))
-		#print('returning {0}'.format(self.ChipGroupBoxDict[pChipID].ChipVDDAEdit.text()))
-		#return self.ChipGroupBoxDict[pChipID].ChipVDDAEdit.text()
 		return VDDAthing.text()
 
 	def getVDDD(self, pChipID):
@@ -188,11 +184,6 @@ class ChipBox(QWidget):
 		ChipCheckBox = self.findChild(QCheckBox, 'ChipStatus_{0}'.format(pChipID))
 		ChipStatus = ChipCheckBox.isChecked()
 		return ChipStatus
-
-	#@Qt.pyqtSlot(int, int)
-	#def updateVDDAMap(self, pChipID, pVDDATrim):
-	#	self.VDDAMap[pChipID] = pVDDATrim
-	#	print('VDDA Map updated to {0}'.format(self.VDDAMap.items()))
 
 
 
@@ -297,19 +288,12 @@ class BeBoardBox(QWidget):
 			FwModule.setFMCID(module.getFMCID())
 			FwModule.setModuleName(module.getSerialNumber())
 			for chip in ModuleLaneMap[module.getType()].values():
-				print('chip status for chip {0} is {1}'.format(chip, self.ChipWidgetDict[module].getChipStatus(chip)))
-				#if not self.ChipWidgetDict[module].getChipStatus(chip):
-				#	continue
 				FwModule.setChipStatus(chip, self.ChipWidgetDict[module].getChipStatus(chip))
 				FwModule.setChipVDDA(chip, self.ChipWidgetDict[module].getVDDA(chip))
-				print('setting VDDAMap as {0} for chip {1}'.format(self.ChipWidgetDict[module].getVDDA(chip),chip))
 				FwModule.setChipVDDD(chip, self.ChipWidgetDict[module].getVDDD(chip))
 
 			#FwModule.setOpticalGroupID(module.getID())
 			FwModule.setModuleType(module.getType())
-			
-			#FWModule.setVDDAMap()
-			#for chip in module
 			self.firmware.addModule(index,FwModule)
 		return self.firmware
 		
