@@ -82,6 +82,8 @@ ModuleType = {
 	4 :	"TBPX Quad",
 	5 :	"Yellow Module (Purdue)",
 	6 : "CROC 1x2",
+	7 : "TFPX CROC Quad",
+	8 : "CROC SCC",
 }
 
 firmware_image = {
@@ -120,7 +122,19 @@ firmware_image = {
 			  "v4-12":"QUAD_ELE_RD53A_v4-6.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
+	"CROC SCC"  :
+			{"v4-09":"SCC_ELE_CROC_v4-5.bit",
+			 "v4-10":"SCC_ELE_CROC_v4-5.bit",
+			 "v4-11":"SCC_ELE_CROC_v4-5.bit",
+			 "v4-12":"SCC_ELE_CROC_v4-6.bit",
+			},  
 	"CROC 1x2"  :
+			{"v4-09":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-10":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-11":"QUAD_ELE_CROC_v4-5.bit",
+			 "v4-12":"QUAD_ELE_CROC_v4-6.bit",
+			},
+	"TFPX CROC Quad"  :
 			{"v4-09":"QUAD_ELE_CROC_v4-5.bit",
 			 "v4-10":"QUAD_ELE_CROC_v4-5.bit",
 			 "v4-11":"QUAD_ELE_CROC_v4-5.bit",
@@ -131,20 +145,28 @@ firmware_image = {
 
 ModuleLaneMap = {
 	"TFPX Quad": {"0":"4","1":"2","2":"7","3":"5"},
+	#"TFPX Quad": {"0":"4","2":"7","3":"5"},
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
 	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"},
-	"CROC 1x2" : {"0":"12","2":"13"}
+	"CROC SCC":  {"0":"15"},
+	#"CROC 1x2" : {"2":"13"},
+	"CROC 1x2" : {"0":"12","2":"13"},
+	"TFPX CROC Quad" : {"0":"12","1":"13","2":"14"},
 }
 
 BoxSize = {
 	"SingleSCC" : 1,
 	"TFPX Quad" : 4,
+	#"TFPX Quad" : 3,
 	"TEPX Quad" : 4,
 	"TBPX Quad" : 4,
 	"Yellow Module (Purdue)": 3,
+	"CROC SCC"  : 1,
 	"CROC 1x2"  : 2,
+	#"CROC 1x2"  : 1,
+	"TFPX CROC Quad" : 3,
 }
 
 HVPowerSupplyModel = {
@@ -172,7 +194,9 @@ ModuleCurrentMap = {
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
 	"Yellow Module (Purdue)": 6.5,
-	"CROC 1x2"  : 4.5,
+	"CROC 1x2"  : 4.8,
+	"TFPX CROC Quad" : 6.5,
+	"CROC SCC"  : 0.6,
 }
 
 ModuleVoltageMapSLDO = {
@@ -182,10 +206,13 @@ ModuleVoltageMapSLDO = {
 	"TBPX Quad" : 2.98,
 	"Yellow Module (Purdue)": 2.8,
 	"CROC 1x2"  : 2.5,
+	"TFPX CROC Quad" : 2.98,
+	"CROC SCC"  : 1.8,
 }
 
 ModuleVoltageMap = {
 	"SingleSCC" : 1.3,
+	"CROC SCC"  : 1.3,
 }
 
 
@@ -214,11 +241,6 @@ Test = {
 	'AllScan'                :  'noise',
 	'QuickTest'              :  'noise',
 	'IVCurve'                :  'ivcurve',
-	#'StandardStep1'          :  'noise',
-	#'StandardStep2'          :  'threqu',
-	#'StandardStep3'          :  'scurve',
-	#'StandardStep4'          :  'injdelay',
-	#'StandardStep5'          :  'scurve',
 	'Latency'                :  'latency',
 	'PixelAlive'             :  'pixelalive',
 	'NoiseScan'              :  'noise',
@@ -262,19 +284,13 @@ SingleTest = ['IVCurve','Latency','PixelAlive','NoiseScan','SCurveScan','GainSca
 	'ThresholdAdjustment','InjectionDelay','ClockDelay','BitErrorRate','DataRBOptimization','ChipIntVoltageTuning','GenericDAC-DAC','Physics']
 
 CompositeTest = ['AllScan_Tuning','AllScan','QuickTest']
-#CompositeTest = ['AllScan_Tuning','AllScan','QuickTest','StandardStep1','StandardStep2','StandardStep3','StandardStep4']
+
 CompositeList = {
 	'AllScan': ['IVCurve','PixelAlive','NoiseScan','ThresholdAdjustment',
 				'ThresholdEqualization','SCurveScan', 'NoiseScan','GainScan','GainOptimization',
 				'InjectionDelay','SCurveScan'],
-	#'StandardStep1': ['NoiseScan','PixelAlive','ThresholdAdjustment'],
-	#'StandardStep2': ['ThresholdEqualization','SCurveScan', 'NoiseScan','ThresholdAdjustment'],
-	#'StandardStep3': ['SCurveScan','GainScan','GainOptimization'],
-	#'StandardStep4': ['InjectionDelay'],
-	#'StandardStep5': ['SCurveScan'],
 	'QuickTest': ['IVCurve','PixelAlive','NoiseScan']
 }
-#firstTimeList = ['AllScan', 'StandardStep1', 'PixelAlive']
 
 pretuningList = ['IVCurve','PixelAlive','NoiseScan']
 tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan']

@@ -78,6 +78,7 @@ class TestHandler(QObject):
 		self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
 		print('Firmware version is {0}'.format(self.firmwareImage))
 		self.RunNumber = "-1"
+		self.isTDACtuned = False
 
 		self.IVCurveHandler = None
 		self.SLDOScanHandler = None
@@ -374,8 +375,15 @@ class TestHandler(QObject):
 		#self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
 		#self.run_process.start("./SignalGenerator")
 
+		if self.isTDACtuned:
+			UpdateXMLValue('{0}/test/CMSIT.xml'.format(os.environ.get("PH2ACF_BASE_DIR")),'DoNSteps','2')
+	
+		CheckXMLValue('{0}/test/CMSIT.xml'.format(os.environ.get("PH2ACF_BASE_DIR")),'DoNSteps')
+
 		if Test[self.currentTest] in ["pixelalive","noise","latency","injdelay","clockdelay","threqu","thrmin","scurve","gainopt","thradj","physics","gain"]:
 			self.run_process.start("CMSITminiDAQ", ["-f","CMSIT.xml", "-c", "{}".format(Test[self.currentTest])])
+			if Test[self.currentTest] == 'threqu':
+				self.isTDACtuned = True
 		else:
 			self.info_process.start("echo",["test {} not runnable, quitting...".format(Test[self.currentTest])])
 	

@@ -955,6 +955,7 @@ class QtApplication(QWidget):
 		#self.LVpowersupply.getInfo()
 		#self.LVpowersupply.TurnOn()
 		# Block for GUI front-end
+		self.LVpowersupply.TurnOff()
 		statusString = self.LVpowersupply.getInfo()
 		if statusString != "No valid device":
 			self.LVPowerStatusValue.setStyleSheet("color:green")

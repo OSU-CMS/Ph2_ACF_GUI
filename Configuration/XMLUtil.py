@@ -54,6 +54,7 @@ class HWDescription():
   def AddMonitoring(self, MonitoringModule):
     self.MonitoringList.append(MonitoringModule)
 
+
   def reset(self):
     self.BeBoardList = []
     self.Settings = {}
@@ -161,12 +162,17 @@ class FE():
     self.Lane="0" 
     self.configfile="CMSIT_RD53.txt"
     self.settingList = {}
+    self.VDDAtrim = "8"
+    self.VDDDtrim = "8"
+    
+
   def SetFE(self, Id, Lane, configfile = "CMSIT_RD53.txt"):
     self.Id = str(Id)
     self.Lane = str(Lane)
     self.configfile = configfile
   def ConfigureFE(self, settingList):
     self.settingList = settingList
+   
 
 class MonitoringModule():
   def __init__(self,boardtype):
@@ -175,7 +181,7 @@ class MonitoringModule():
       self.Enable="1" 
     else:
       self.Enable="0"
-    self.SleepTime=50000
+    self.SleepTime=5000
     self.MonitoringList = {}
   def SetType(self, Type):
     self.Type=Type
@@ -258,6 +264,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
       Node_OGModule = ET.SubElement(Node_BeBoard, 'OpticalGroup')
       Node_OGModule = SetNodeAttribute(Node_OGModule,{'Id':OGModule.Id,'FMCId':OGModule.FMCId})
       HyBridList = OGModule.HyBridList
+      
 
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
@@ -291,6 +298,8 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
             Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
             Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,{'primary':"1",'outputLanes':"0001",'singleChannelInputs':"0000",'dualChannelInput':"0000"})
           Node_FESetting = ET.SubElement(Node_FE,"Settings")
+          FE.settingList['VOLTAGE_TRIM_ANA'] = FE.VDDAtrim
+          FE.settingList['VOLTAGE_TRIM_DIG'] = FE.VDDDtrim
           Node_FESetting = SetNodeAttribute(Node_FESetting,FE.settingList)
         Node_FEGlobal = ET.SubElement(Node_HyBrid,"Global")
         Node_FEGlobal = SetNodeAttribute(Node_FEGlobal,HyBridModule.globalSetting)
