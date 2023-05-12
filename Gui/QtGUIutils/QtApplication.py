@@ -1141,13 +1141,18 @@ class QtApplication(QWidget):
 			# If you didn't start the Peltier controller, tempPower won't be defined
 			try:
 				self.PeltierCooling.shutdown()
-				time.sleep(2)
-				self.pool.clear()
+				#time.sleep(2)
+				#self.pool.clear()
 			except Exception as e:
 				print("Could not shutdown Peltier: " , e)
 				pass
 
-			os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
+			try:
+				os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
+			except Execption as e:
+				print("Error {0}".format(e)):
+				
+
 			event.accept()
 		else:
 			event.ignore()
