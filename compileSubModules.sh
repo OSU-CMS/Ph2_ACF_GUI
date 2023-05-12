@@ -3,7 +3,7 @@
 echo "-----Compiling Ph2_ACF-----"
 echo "---------------------------"
 
-export Ph2_ACF_VERSION="v4-12"
+export Ph2_ACF_VERSION="v4-13"
 
 mkdir Ph2_ACF/build/
 cd Ph2_ACF
