@@ -854,7 +854,10 @@ class TestHandler(QObject):
 			moduleName = module.getModuleName()
 		
 		filename = '{0}/IVCurve_Module_{1}.svg'.format(self.output_dir,moduleName)
+		filename2 = 'IVCurve_Module_{0}.svg'.format(moduleName)
 		self.IVCurveResult.saveToSVG(filename)
+		self.IVCurveResult.saveToSVG(filename2)
+		
 		grade, passmodule, self.figurelist = ResultGrader(self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap)
 		self.updateValidation.emit(grade, passmodule)
 		EnableReRun = False

@@ -1,6 +1,34 @@
 # Ph2_ACF_GUI
 Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 
+## Running in docker:
+Using docker is the easiest and most simple way to install and run this software.  A compiled version of Ph2_ACF is included.
+
+1. Clone GUI repo
+```
+git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
+```
+or pull the latest changes while inside the Ph2_ACF_GUI directory:
+```
+git pull --recurse-submodules
+```
+
+2. Get the latest docker image:
+```
+docker pull majoyce2/ph2_acf_gui:version4.13
+```
+
+3. Specify device ports:
+In run_Docker.sh you need to update the devices in the "docker run" line of the script.  Change any "--device=tty*" to reflect the ports you will be using.
+
+4. Start the docker container:
+```
+source run_Docker.sh
+```
+
+5. That's it!  At this point the GUI should be open and ready to use.
+
+# The following is only needed if you are NOT using Docker
 ## Set up the software environment:
 This software has not been designed to work in a conda environment.
 

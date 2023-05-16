@@ -5,7 +5,7 @@
 GPIB_DebugMode = False
 
 # Ph2_ACF version being used
-defaultACFVersion = "4.0.11"
+defaultACFVersion = "4.0.13"
 # default FC7 boardName
 defaultFC7 = "fc7.board.1"
 # default IP address of IP address
