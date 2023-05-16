@@ -200,6 +200,6 @@ if "v4-11" in Ph2_ACF_VERSION:
     for key in globalSettings_DictA.keys():
         globalSettings_DictA[key] = globalSettingsA_v49    
 
-if "v4-12" in Ph2_ACF_VERSION:
+if "v4-13" in Ph2_ACF_VERSION:
     for key in globalSettings_DictA.keys():
         globalSettings_DictA[key] = globalSettingsA_v49
