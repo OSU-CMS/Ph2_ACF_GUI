@@ -1149,8 +1149,8 @@ class QtApplication(QWidget):
 
 			try:
 				os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
-			except Execption as e:
-				print("Error {0}".format(e)):
+			except Exception as e:
+				print("Error {0}".format(e))
 				
 
 			event.accept()
