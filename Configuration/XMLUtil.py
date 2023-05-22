@@ -269,15 +269,11 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
         StatusStr = 'Status'
-        if "v4-08" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
-        if "v4-09" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
-        if "v4-10" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
         if "v4-11" in Ph2_ACF_VERSION:
             StatusStr = 'enable'
         if "v4-13" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        if "v4-14" in Ph2_ACF_VERSION:
             StatusStr = 'enable'
         Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,StatusStr:HyBridModule.Status,'Name':HyBridModule.Name})
         #### This is where the RD53_Files is setup ####

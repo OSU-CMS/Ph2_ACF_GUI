@@ -184,22 +184,14 @@ globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_5'] =    "15"
 globalSettingsA_v49 = copy.deepcopy(globalSettingsA_v48)
 
 
-if "v4-08" in Ph2_ACF_VERSION:
-    for key in globalSettings_DictA.keys():
-      globalSettings_DictA[key] = globalSettingsA_v48
-
-if "v4-09" in Ph2_ACF_VERSION:
-    for key in globalSettings_DictA.keys():
-        globalSettings_DictA[key] = globalSettingsA_v49
-
-if "v4-10" in Ph2_ACF_VERSION:
-    for key in globalSettings_DictA.keys():
-        globalSettings_DictA[key] = globalSettingsA_v49
-
 if "v4-11" in Ph2_ACF_VERSION:
     for key in globalSettings_DictA.keys():
         globalSettings_DictA[key] = globalSettingsA_v49    
 
 if "v4-13" in Ph2_ACF_VERSION:
+    for key in globalSettings_DictA.keys():
+        globalSettings_DictA[key] = globalSettingsA_v49
+
+if "v4-14" in Ph2_ACF_VERSION:
     for key in globalSettings_DictA.keys():
         globalSettings_DictA[key] = globalSettingsA_v49
