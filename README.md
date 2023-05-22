@@ -15,15 +15,15 @@ git pull --recurse-submodules
 
 2. Get the latest docker image:
 ```
-docker pull majoyce2/ph2_acf_gui:version4.13
+docker pull majoyce2/ph2_acf_gui:latest
 ```
 
 3. Specify device ports:
-In run_Docker.sh you need to update the devices in the "docker run" line of the script.  Change any "--device=tty*" to reflect the ports you will be using.
+In run_Docker.sh you need to update the devices in the "mydevicelist" to reflect the ports you will be using. 
 
 4. Start the docker container:
 ```
-source run_Docker.sh
+bash run_Docker.sh
 ```
 
 5. That's it!  At this point the GUI should be open and ready to use.
