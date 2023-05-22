@@ -2,7 +2,7 @@ ARG FROM_IMAGE=gitlab-registry.cern.ch/cms_tk_ph2/docker_exploration/cmstkph2_ud
 
 FROM $FROM_IMAGE AS base
 SHELL ["/bin/bash", "-c"]
-ENV Ph2_ACF_VERSION=v4-13
+ENV Ph2_ACF_VERSION=v4-14
 ENV GUI_dir=/home/cmsTkUser/Ph2_ACF_GUI
 ENV PH2ACF_BASE_DIR=${GUI_dir}/Ph2_ACF
 ENV DATA_dir=${GUI_dir}/data/TestResults
