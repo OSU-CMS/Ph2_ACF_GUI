@@ -127,18 +127,15 @@ firmware_image = {
 			 "v4-13":"QUAD_ELE_CROC_v4-6.bit",
 			 "v4-14":"QUAD_ELE_CROC_v4-6.bit",
 			},
-#	"RD53B" : {"v4.0.6":"IT_L12K4SCC_ELE_CROC.bit"}
 }
 
 ModuleLaneMap = {
 	"TFPX Quad": {"0":"4","1":"2","2":"7","3":"5"},
-	#"TFPX Quad": {"0":"4","2":"7","3":"5"},
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
 	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"},
 	"CROC SCC":  {"0":"15"},
-	#"CROC 1x2" : {"2":"13"},
 	"CROC 1x2" : {"0":"12","2":"13"},
 	"TFPX CROC Quad" : {"0":"12","1":"13","2":"14"},
 }
@@ -146,13 +143,11 @@ ModuleLaneMap = {
 BoxSize = {
 	"SingleSCC" : 1,
 	"TFPX Quad" : 4,
-	#"TFPX Quad" : 3,
 	"TEPX Quad" : 4,
 	"TBPX Quad" : 4,
 	"Yellow Module (Purdue)": 3,
 	"CROC SCC"  : 1,
 	"CROC 1x2"  : 2,
-	#"CROC 1x2"  : 1,
 	"TFPX CROC Quad" : 3,
 }
 
@@ -174,33 +169,6 @@ PowerSupplyModel_XML_Termination = {
 	"KeySight E3633 (RS232)"   :  "CRLF",
 }
 
-
-ModuleCurrentMap = {
-	"SingleSCC" : 0.6,
-	"TFPX Quad" : 6.5,
-	"TEPX Quad" : 6,
-	"TBPX Quad" : 6.5,
-	"Yellow Module (Purdue)": 6.5,
-	"CROC 1x2"  : 4.8,
-	"TFPX CROC Quad" : 6.5,
-	"CROC SCC"  : 0.6,
-}
-
-ModuleVoltageMapSLDO = {
-	"SingleSCC" : 1.8,
-	"TFPX Quad" : 2.98,
-	"TEPX Quad" : 2.0,
-	"TBPX Quad" : 2.98,
-	"Yellow Module (Purdue)": 2.8,
-	"CROC 1x2"  : 2.5,
-	"TFPX CROC Quad" : 2.98,
-	"CROC SCC"  : 1.8,
-}
-
-ModuleVoltageMap = {
-	"SingleSCC" : 1.3,
-	"CROC SCC"  : 1.3,
-}
 
 
 ConfigFiles = {
