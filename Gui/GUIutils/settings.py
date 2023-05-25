@@ -105,7 +105,7 @@ firmware_image = {
              {"v4-09":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-11":"QUAD_ELE_RD53A_v4-5.bit",
-			  "v4-13":"QUAD_ELE_RD53A_v4-6.bit",
+			  "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
               "v4-06":"QUAD_ELE_RD53A_v4-5.bit",
               "v4-02":"QUAD_ELE_RD53A_v4-2.bit"},
 	"TEPX Quad" : 
