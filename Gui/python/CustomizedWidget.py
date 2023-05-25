@@ -97,7 +97,7 @@ class ChipBox(QWidget):
 	chipchanged = pyqtSignal(int, int)
 
 	def __init__(self,pChipType):
-		super(ChipBox, self).__init__()
+		super().__init__()
 		self.chipType = pChipType
 		self.mainLayout = QHBoxLayout()
 		self.ChipList = []
@@ -128,11 +128,15 @@ class ChipBox(QWidget):
 		self.ChipLabel.setObjectName('ChipStatus_{0}'.format(pChipID))
 		self.ChipVDDDLabel = QLabel('VDDD:')
 		self.ChipVDDDEdit = QLineEdit()
-		self.ChipVDDDEdit.setText('8')
 		self.ChipVDDDEdit.setObjectName('VDDDEdit_{0}'.format(pChipID))
 		self.ChipVDDALabel = QLabel('VDDA:')
 		self.ChipVDDAEdit = QLineEdit()
-		self.ChipVDDAEdit.setText('8')
+		if 'CROC' in self.chipType:
+			self.ChipVDDDEdit.setText('8')
+			self.ChipVDDAEdit.setText('8')
+		else:
+			self.ChipVDDDEdit.setText('16')
+			self.ChipVDDAEdit.setText('16')
 		self.ChipVDDAEdit.setObjectName('VDDAEdit_{0}'.format(pChipID))
 
 		self.VChipLayout = QGridLayout()
