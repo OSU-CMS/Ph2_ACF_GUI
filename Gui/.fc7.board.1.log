@@ -1,9 +1,9 @@
 
-[06/06/2023 10:15:47]
+[06/06/2023 10:19:50]
 
 PING 192.168.1.80 (192.168.1.80) 56(84) bytes of data.
-64 bytes from 192.168.1.80: icmp_seq=1 ttl=64 time=0.113 ms
+64 bytes from 192.168.1.80: icmp_seq=1 ttl=64 time=0.117 ms
 
 --- 192.168.1.80 ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
-rtt min/avg/max/mdev = 0.113/0.113/0.113/0.000 ms
+rtt min/avg/max/mdev = 0.117/0.117/0.117/0.000 ms
