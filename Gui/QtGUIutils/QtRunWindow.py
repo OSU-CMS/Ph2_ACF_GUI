@@ -254,6 +254,16 @@ class QtRunWindow(QWidget):
 		ConsoleLayout.addWidget(self.ConsoleView)
 		TerminalBox.setLayout(ConsoleLayout)
 
+		TempBox = QGroupBox("&Chip Temperature")
+		TempBoxSP = TempBox.sizePolicy()
+		TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
+		TempBox.setSizePolicy(TempBoxSP)
+		TempBox.setMaximumWidth(400)
+		TempBox.setMaximumHeight(400)
+		
+	
+		
+
 		#Group Box for output display
 		OutputBox = QGroupBox("&Result")
 		OutputBoxSP = OutputBox.sizePolicy()
@@ -287,6 +297,7 @@ class QtRunWindow(QWidget):
 		
 		LeftColSplitter.addWidget(ControllerBox)
 		LeftColSplitter.addWidget(TerminalBox)
+		LeftColSplitter.addWidget(TempBox)
 		RightColSplitter.addWidget(OutputBox)
 		RightColSplitter.addWidget(self.HistoryBox)
 
@@ -316,11 +327,8 @@ class QtRunWindow(QWidget):
 		self.MainBodyBox.deleteLater()
 		self.mainLayout.removeWidget(self.MainBodyBox)
 	
-	def Chip_Temp(self):
-		self.TempBox = QGroupBox("&Chip Temperature")
-		self.temperature = QLabel("temp will be shown here")
-		self.mainLayout.addWidget(self.TempBox)
 
+		
 
 
 
