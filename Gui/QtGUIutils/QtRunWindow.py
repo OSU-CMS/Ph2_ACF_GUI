@@ -277,6 +277,17 @@ class QtRunWindow(QWidget):
 		self.StatusTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
 		self.HistoryLayout.addWidget(self.StatusTable)
 		self.HistoryBox.setLayout(self.HistoryLayout)
+		
+		self.TempBox = QGroupBox("&Chip Temperature")
+		TempBoxSP = self.TempBox.sizePolicy()
+		TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
+		self.TempBox.setSizePolicy(TempBoxSP)
+		self.TempLayout = QGridLayout()
+		self.Temp = QLabel("temp will go here")
+		self.TempLayout.addWidget(self.Temp)
+		#self.TempBox.setMaximumWidth(400)
+		#self.TempBox.setMaximumHeight(400)
+		LeftColSplitter.addWidget(self.TempBox)
 
 		
 		LeftColSplitter.addWidget(ControllerBox)
@@ -325,6 +336,8 @@ class QtRunWindow(QWidget):
 		self.FinishButton = QPushButton("&Finish")
 		self.FinishButton.setDefault(True)
 		self.FinishButton.clicked.connect(self.closeWindow)
+
+
 
 		self.StartLayout.addStretch(1)
 		if self.master.expertMode==True:

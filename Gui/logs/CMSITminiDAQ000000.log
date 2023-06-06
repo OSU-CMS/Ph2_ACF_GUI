@@ -1,0 +1,7 @@
+|00:16:12|I|[32mBootstrapping TCP Server...[0m
+|00:16:12|I|[32mTrying to connect to the Power Supply Server...[0m
+|00:16:12|I|[32mOperation completed[0m
+|00:16:12|I|[1m[35mResetting the backend board... it may take a while[0m
+|00:16:12|I|[33mWaiting for DDR3 calibration...[0m
+|00:16:13|I|[1m[34m	--> DDR3 calibration done[0m
+|00:16:13|I|[1m[35mNow you can start using the DAQ ... enjoy![0m
