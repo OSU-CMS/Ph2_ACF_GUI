@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPlainTextEdit,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QTreeWidget, QHBoxLayout,
-		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter)
+		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter, QLCDNumber)
 
 import sys
 import os
@@ -99,6 +99,10 @@ class QtRunWindow(QWidget):
 
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
+
+		## test to see if label will show up ##
+		test = QLabel("Hopefully this shows up lmao")
+		self.mainLayout.addWidget(test)
 
 		self.setLoginUI()
 		#self.initializeRD53Dict()
@@ -208,6 +212,7 @@ class QtRunWindow(QWidget):
 			self.testHandler.autoSave=False
 			self.saveCheckBox.setDisabled(True)
 		self.saveCheckBox.clicked.connect(self.setAutoSave)
+		
 ##### previous layout ##########
 		'''
 		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
@@ -221,6 +226,7 @@ class QtRunWindow(QWidget):
 			self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
 			self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
 			self.ControlLayout.addWidget(self.saveCheckBox,1,0,1,1)
+		
 
 		else:
 			pass
@@ -238,6 +244,8 @@ class QtRunWindow(QWidget):
 		TerminalBox.setSizePolicy(TerminalSP)
 		TerminalBox.setMinimumWidth(400)
 
+		
+
 		ConsoleLayout = QGridLayout()
 		
 		self.ConsoleView = QPlainTextEdit()
@@ -247,6 +255,16 @@ class QtRunWindow(QWidget):
 		
 		ConsoleLayout.addWidget(self.ConsoleView)
 		TerminalBox.setLayout(ConsoleLayout)
+
+		TempBox = QGroupBox("&Chip Temperature")
+		TempBoxSP = TempBox.sizePolicy()
+		TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
+		TempBox.setSizePolicy(TempBoxSP)
+		TempBox.setMaximumWidth(400)
+		TempBox.setMaximumHeight(400)
+		
+	
+		
 
 		#Group Box for output display
 		OutputBox = QGroupBox("&Result")
@@ -292,6 +310,7 @@ class QtRunWindow(QWidget):
 		
 		LeftColSplitter.addWidget(ControllerBox)
 		LeftColSplitter.addWidget(TerminalBox)
+		#LeftColSplitter.addWidget(TempBox)
 		LeftColSplitter.addWidget(self.TempBox)
 		RightColSplitter.addWidget(OutputBox)
 		RightColSplitter.addWidget(self.HistoryBox)
@@ -321,6 +340,11 @@ class QtRunWindow(QWidget):
 	def destroyMain(self):
 		self.MainBodyBox.deleteLater()
 		self.mainLayout.removeWidget(self.MainBodyBox)
+	
+
+		
+
+
 
 	def createApp(self):
 		self.AppOption = QGroupBox()
@@ -328,11 +352,13 @@ class QtRunWindow(QWidget):
 
 		self.ConnectButton = QPushButton("&Connect to DB")
 		self.ConnectButton.clicked.connect(self.connectDB)
-
+		
+		self.temp = QLabel("test")
 		self.BackButton = QPushButton("&Back")
 		self.BackButton.clicked.connect(self.sendBackSignal)
 		self.BackButton.clicked.connect(self.closeWindow)
 		self.BackButton.clicked.connect(self.creatStartWindow)
+		
 
 		self.FinishButton = QPushButton("&Finish")
 		self.FinishButton.setDefault(True)
@@ -345,6 +371,7 @@ class QtRunWindow(QWidget):
 			self.StartLayout.addWidget(self.ConnectButton)
 		self.StartLayout.addWidget(self.BackButton)
 		self.StartLayout.addWidget(self.FinishButton)
+		self.StartLayout.addWidget(self.temp,0,0,0,0)
 		self.AppOption.setLayout(self.StartLayout)
 
 		self.LogoGroupBox = QGroupBox("")
