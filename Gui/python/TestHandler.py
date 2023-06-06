@@ -625,8 +625,8 @@ class TestHandler(QObject):
 					try:
 						# Chip status monitoring to be added
 						sensorMeasure = re.sub(r'.*->','',textStr)
-						#print(sensorMeasure)
-						self.runwindow.createMain.Temp.SetText(sensorMeasure)
+						print(sensorMeasure)
+						self.runwindow.Temp.SetText(sensorMeasure)
 					except:
 						pass
 				continue
