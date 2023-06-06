@@ -323,12 +323,12 @@ class QtRunWindow(QWidget):
 		self.ConnectButton = QPushButton("&Connect to DB")
 		self.ConnectButton.clicked.connect(self.connectDB)
 		
-		self.temp = QLabel("test", 0, 0, 0, 0)
+		self.temp = QLabel("test")
 		self.BackButton = QPushButton("&Back")
 		self.BackButton.clicked.connect(self.sendBackSignal)
 		self.BackButton.clicked.connect(self.closeWindow)
 		self.BackButton.clicked.connect(self.creatStartWindow)
-		self.StartLayout.addWidget(self.temp)
+		
 
 		self.FinishButton = QPushButton("&Finish")
 		self.FinishButton.setDefault(True)
@@ -339,6 +339,7 @@ class QtRunWindow(QWidget):
 			self.StartLayout.addWidget(self.ConnectButton)
 		self.StartLayout.addWidget(self.BackButton)
 		self.StartLayout.addWidget(self.FinishButton)
+		self.StartLayout.addWidget(self.temp,0,0,0,0)
 		self.AppOption.setLayout(self.StartLayout)
 
 		self.LogoGroupBox = QGroupBox("")
