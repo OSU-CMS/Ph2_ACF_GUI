@@ -135,6 +135,8 @@ class SimplifiedMainWidget(QWidget):
 
 		self.RefreshButton = QPushButton("&Refresh")
 		self.RefreshButton.clicked.connect(self.checkDevices)
+		self.label = QLabel()
+		self.label.setText("Hopefully this shows up")
 
 
 		self.HVPowerStatusLabel = QLabel()

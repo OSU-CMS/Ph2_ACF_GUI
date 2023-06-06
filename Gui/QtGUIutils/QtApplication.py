@@ -559,6 +559,7 @@ class QtApplication(QWidget):
 		self.DefaultLayout.addWidget(self.DefaultLabel)
 		self.DefaultLayout.addStretch(1)
 		self.UseDefaultGroup.setLayout(self.DefaultLayout)
+		
 
 		self.HVPowerRemoteControl = QCheckBox("Use HV power remote control")
 		self.HVPowerRemoteControl.setChecked(True)

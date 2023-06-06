@@ -100,6 +100,10 @@ class QtRunWindow(QWidget):
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
 
+		## test to see if label will show up ##
+		test = QLabel("Hopefully this shows up lmao")
+		self.mainLayout.addWidget(test)
+
 		self.setLoginUI()
 		#self.initializeRD53Dict()
 		self.createHeadLine()
@@ -208,6 +212,7 @@ class QtRunWindow(QWidget):
 			self.testHandler.autoSave=False
 			self.saveCheckBox.setDisabled(True)
 		self.saveCheckBox.clicked.connect(self.setAutoSave)
+		
 ##### previous layout ##########
 		'''
 		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
@@ -221,6 +226,7 @@ class QtRunWindow(QWidget):
 			self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
 			self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
 			self.ControlLayout.addWidget(self.saveCheckBox,1,0,1,1)
+		
 
 		else:
 			pass
@@ -324,11 +330,13 @@ class QtRunWindow(QWidget):
 
 		self.ConnectButton = QPushButton("&Connect to DB")
 		self.ConnectButton.clicked.connect(self.connectDB)
-
+		
+		self.temp = QLabel("test")
 		self.BackButton = QPushButton("&Back")
 		self.BackButton.clicked.connect(self.sendBackSignal)
 		self.BackButton.clicked.connect(self.closeWindow)
 		self.BackButton.clicked.connect(self.creatStartWindow)
+		
 
 		self.FinishButton = QPushButton("&Finish")
 		self.FinishButton.setDefault(True)
@@ -339,6 +347,7 @@ class QtRunWindow(QWidget):
 			self.StartLayout.addWidget(self.ConnectButton)
 		self.StartLayout.addWidget(self.BackButton)
 		self.StartLayout.addWidget(self.FinishButton)
+		self.StartLayout.addWidget(self.temp,0,0,0,0)
 		self.AppOption.setLayout(self.StartLayout)
 
 		self.LogoGroupBox = QGroupBox("")
