@@ -299,7 +299,7 @@ class QtRunWindow(QWidget):
 		
 		LeftColSplitter.addWidget(ControllerBox)
 		LeftColSplitter.addWidget(TerminalBox)
-		LeftColSplitter.addWidget(TempBox)
+		#LeftColSplitter.addWidget(TempBox)
 		RightColSplitter.addWidget(OutputBox)
 		RightColSplitter.addWidget(self.HistoryBox)
 
