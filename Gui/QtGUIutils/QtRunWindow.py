@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboB
 		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPlainTextEdit,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QTreeWidget, QHBoxLayout,
-		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter)
+		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter, QLCDNumber)
 
 import sys
 import os
@@ -309,6 +309,14 @@ class QtRunWindow(QWidget):
 	def destroyMain(self):
 		self.MainBodyBox.deleteLater()
 		self.mainLayout.removeWidget(self.MainBodyBox)
+	
+	def Chip_Temp(self):
+		self.TempBox = QGroupBox("&Chip Temperature")
+		self.temperature = QLabel("temp will be shown here")
+		self.mainLayout.addWidget(self.TempBox)
+
+
+
 
 	def createApp(self):
 		self.AppOption = QGroupBox()
