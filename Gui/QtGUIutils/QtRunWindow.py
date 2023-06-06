@@ -283,11 +283,10 @@ class QtRunWindow(QWidget):
 		TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
 		self.TempBox.setSizePolicy(TempBoxSP)
 		self.TempLayout = QGridLayout()
-		self.Temp = QLabel("temp will go here")
+		self.Temp = QLabel()
 		self.TempLayout.addWidget(self.Temp)
 		self.TempBox.setLayout(self.TempLayout)
-		#self.TempBox.setMaximumWidth(400)
-		#self.TempBox.setMaximumHeight(400)
+		
 		
 
 		
