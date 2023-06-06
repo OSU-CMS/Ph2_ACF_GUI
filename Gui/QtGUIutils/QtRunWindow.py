@@ -285,13 +285,15 @@ class QtRunWindow(QWidget):
 		self.TempLayout = QGridLayout()
 		self.Temp = QLabel("temp will go here")
 		self.TempLayout.addWidget(self.Temp)
+		self.TempBox.setLayout(self.TempLayout)
 		#self.TempBox.setMaximumWidth(400)
 		#self.TempBox.setMaximumHeight(400)
-		LeftColSplitter.addWidget(self.TempBox)
+		
 
 		
 		LeftColSplitter.addWidget(ControllerBox)
 		LeftColSplitter.addWidget(TerminalBox)
+		LeftColSplitter.addWidget(self.TempBox)
 		RightColSplitter.addWidget(OutputBox)
 		RightColSplitter.addWidget(self.HistoryBox)
 
