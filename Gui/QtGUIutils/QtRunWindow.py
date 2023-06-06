@@ -244,6 +244,8 @@ class QtRunWindow(QWidget):
 		TerminalBox.setSizePolicy(TerminalSP)
 		TerminalBox.setMinimumWidth(400)
 
+		
+
 		ConsoleLayout = QGridLayout()
 		
 		self.ConsoleView = QPlainTextEdit()
