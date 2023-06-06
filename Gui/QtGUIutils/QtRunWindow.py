@@ -100,6 +100,10 @@ class QtRunWindow(QWidget):
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
 
+		## test to see if label will show up ##
+		test = QLabel("Hopefully this shows up lmao")
+		self.mainLayout.addWidget(test)
+
 		self.setLoginUI()
 		#self.initializeRD53Dict()
 		self.createHeadLine()
