@@ -1,0 +1,28 @@
+|10:10:43|I|[32mBootstrapping TCP Server...[0m
+|10:10:43|I|[32mTrying to connect to the Power Supply Server...[0m
+|10:10:43|I|[32mOperation completed[0m
+|10:10:43|I|[1m[35mResetting the backend board... it may take a while[0m
+|10:10:43|I|[33mWaiting for DDR3 calibration...[0m
+|10:10:43|I|[1m[34m	--> DDR3 calibration done[0m
+|10:10:44|I|[1m[35mNow you can start using the DAQ ... enjoy![0m
+|10:12:58|I|[32mBootstrapping TCP Server...[0m
+|10:12:58|I|[32mTrying to connect to the Power Supply Server...[0m
+|10:12:58|I|[32mOperation completed[0m
+|10:12:58|I|[1m[35mResetting the backend board... it may take a while[0m
+|10:12:59|I|[33mWaiting for DDR3 calibration...[0m
+|10:12:59|I|[1m[34m	--> DDR3 calibration done[0m
+|10:13:00|I|[1m[35mNow you can start using the DAQ ... enjoy![0m
+|10:16:10|I|[32mBootstrapping TCP Server...[0m
+|10:16:10|I|[32mTrying to connect to the Power Supply Server...[0m
+|10:16:10|I|[32mOperation completed[0m
+|10:16:10|I|[1m[35mResetting the backend board... it may take a while[0m
+|10:16:10|I|[33mWaiting for DDR3 calibration...[0m
+|10:16:11|I|[1m[34m	--> DDR3 calibration done[0m
+|10:16:11|I|[1m[35mNow you can start using the DAQ ... enjoy![0m
+|10:16:17|I|[32mBootstrapping TCP Server...[0m
+|10:16:17|I|[32mTrying to connect to the Power Supply Server...[0m
+|10:16:17|I|[32mOperation completed[0m
+|10:16:17|I|[1m[35mResetting the backend board... it may take a while[0m
+|10:16:18|I|[33mWaiting for DDR3 calibration...[0m
+|10:16:18|I|[1m[34m	--> DDR3 calibration done[0m
+|10:16:19|I|[1m[35mNow you can start using the DAQ ... enjoy![0m

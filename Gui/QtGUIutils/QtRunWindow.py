@@ -212,6 +212,7 @@ class QtRunWindow(QWidget):
 			self.testHandler.autoSave=False
 			self.saveCheckBox.setDisabled(True)
 		self.saveCheckBox.clicked.connect(self.setAutoSave)
+		self.temp = QLabel("test")
 ##### previous layout ##########
 		'''
 		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
@@ -225,6 +226,7 @@ class QtRunWindow(QWidget):
 			self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
 			self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
 			self.ControlLayout.addWidget(self.saveCheckBox,1,0,1,1)
+			self.ControlLayout.addWidget(self.temp)
 
 		else:
 			pass
