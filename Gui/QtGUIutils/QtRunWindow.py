@@ -328,6 +328,7 @@ class QtRunWindow(QWidget):
 		self.BackButton.clicked.connect(self.sendBackSignal)
 		self.BackButton.clicked.connect(self.closeWindow)
 		self.BackButton.clicked.connect(self.creatStartWindow)
+		self.StartLayout.addWidget(self.temp)
 
 		self.FinishButton = QPushButton("&Finish")
 		self.FinishButton.setDefault(True)
