@@ -338,6 +338,7 @@ class QtRunWindow(QWidget):
 			self.StartLayout.addWidget(self.ConnectButton)
 		self.StartLayout.addWidget(self.BackButton)
 		self.StartLayout.addWidget(self.FinishButton)
+		self.StartLayout.addWidget(self.test)
 		self.AppOption.setLayout(self.StartLayout)
 
 		self.LogoGroupBox = QGroupBox("")
