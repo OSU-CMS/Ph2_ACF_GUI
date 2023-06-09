@@ -323,7 +323,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 		else:
 			MonitoringModule0.SetMonitoringList(MonitoringListB)
 		HWDescription0.AddMonitoring(MonitoringModule0)
-		GenerateHWDescriptionXML(HWDescription0,outputFile,boardtype)
+		GenerateHWDescriptionXML(HWDescription0,outputFile,boardtype,useOpticalLink)
 	#except:
 	#	logger.warning("Unexpcted issue generating {}. Please check the file".format(outputFile))
 	#	outputFile = None

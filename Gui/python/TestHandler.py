@@ -182,7 +182,7 @@ class TestHandler(QObject):
 		for key in self.rd53_file.keys():
 			if self.rd53_file[key] == None:
 				self.rd53_file[key] = os.environ.get('PH2ACF_BASE_DIR')+"/settings/RD53Files/CMSIT_{0}.txt".format(self.boardType)
-				print('Gettings config file {0}'.format(self.rd53_file[key]))
+				print('Getting config file {0}'.format(self.rd53_file[key]))
 		if self.input_dir == "":
 			# Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
 			SetupRD53ConfigfromFile(self.rd53_file,self.output_dir)

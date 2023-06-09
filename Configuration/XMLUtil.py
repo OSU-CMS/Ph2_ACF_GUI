@@ -268,7 +268,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
       if isOpticalLink:
         #FIXME: Add additional stuff for optical link here.
         Node_OpFiles = ET.SubElement(Node_OGModule, 'lqGBT_Files')
-        Node_OpFiles = SetNodeAttribute(Node_OpFiles,{'path':"${PWD}/"})
+        Node_OpFiles = SetNodeAttribute(Node_OpFiles,{'path':"${PWD}/../settings/lpGBTFiles/"})
         Node_lqGBT = ET.SubElement(Node_OGModule, 'lqGBT')
         Node_lqGBT = SetNodeAttribute( Node_lqGBT, {'Id':'0','version':'1','configfile':'CMSIT_LqGBT-v1.txt','ChipAddress':'0x70','RxDataRate':'1280','RxHSLPolarity':'0','TxDataRate':'160','TxHSLPolarity':'1'})
         Node_lqGBTsettings = ET.SubElement(Node_lqGBT, 'Settings')

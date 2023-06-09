@@ -49,6 +49,7 @@ defaultTargetThr = ['2000','1500','1200','1000','800']
 defaultSLDOscanVoltage = 0.0
 defaultSLDOscanMaxCurrent = 0.0
 
+useOpticalLink = True
 
 ### Setting for Peltier Controller
 usePeltier = True
