@@ -689,7 +689,7 @@ class TestHandler(QObject):
 	def tempshutdown(self,sensorMeasure):
 		tempdata = sensorMeasure
 		thresholdlimit = tempdata.split()
-		if float(thresholdlimit[0]) >= 60:
+		if float(thresholdlimit[0]) >= 60 and float(thresholdlimit[0]) <120:
 			self.urgentStop()
 		
 
