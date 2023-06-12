@@ -100,9 +100,8 @@ class QtRunWindow(QWidget):
 		self.mainLayout = QGridLayout()
 		self.setLayout(self.mainLayout)
 
-		## test to see if label will show up ##
-		test = QLabel("Hopefully this shows up lmao")
-		self.mainLayout.addWidget(test)
+
+		
 
 		self.setLoginUI()
 		#self.initializeRD53Dict()
@@ -301,8 +300,19 @@ class QtRunWindow(QWidget):
 		TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
 		self.TempBox.setSizePolicy(TempBoxSP)
 		self.TempLayout = QGridLayout()
-		self.Temp = QLabel()
-		self.TempLayout.addWidget(self.Temp)
+		self.type = self.ModuleType
+		self.LabelList = []
+		self.TempLabelList = []
+		for key,value in ModuleLaneMap[self.type].items():
+			self.Label = QLabel()
+			self.Label.setText("Chip: " + str(value))
+			self.TempLabel = QLabel()
+			self.LabelList.append(self.Label)
+			self.TempLabelList.append(self.TempLabel)
+
+		for index in range(len(self.LabelList)):
+			self.TempLayout.addWidget(self.LabelList[index], index +1, 0, 1, 1)
+			self.TempLayout.addWidget(self.TempLabelList[index], index +1, 1, 1, 1)
 		self.TempBox.setLayout(self.TempLayout)
 		
 		
@@ -310,7 +320,6 @@ class QtRunWindow(QWidget):
 		
 		LeftColSplitter.addWidget(ControllerBox)
 		LeftColSplitter.addWidget(TerminalBox)
-		#LeftColSplitter.addWidget(TempBox)
 		LeftColSplitter.addWidget(self.TempBox)
 		RightColSplitter.addWidget(OutputBox)
 		RightColSplitter.addWidget(self.HistoryBox)
@@ -342,7 +351,9 @@ class QtRunWindow(QWidget):
 		self.mainLayout.removeWidget(self.MainBodyBox)
 	
 
-		
+	def updatetemp(self, index, sensorMeasure):
+		index = index % len(self.TempLabelList)
+		self.TempLabelList[index].setText(sensorMeasure)
 
 
 
@@ -353,7 +364,7 @@ class QtRunWindow(QWidget):
 		self.ConnectButton = QPushButton("&Connect to DB")
 		self.ConnectButton.clicked.connect(self.connectDB)
 		
-		self.temp = QLabel("test")
+		
 		self.BackButton = QPushButton("&Back")
 		self.BackButton.clicked.connect(self.sendBackSignal)
 		self.BackButton.clicked.connect(self.closeWindow)
@@ -371,7 +382,6 @@ class QtRunWindow(QWidget):
 			self.StartLayout.addWidget(self.ConnectButton)
 		self.StartLayout.addWidget(self.BackButton)
 		self.StartLayout.addWidget(self.FinishButton)
-		self.StartLayout.addWidget(self.temp,0,0,0,0)
 		self.AppOption.setLayout(self.StartLayout)
 
 		self.LogoGroupBox = QGroupBox("")

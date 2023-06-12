@@ -1,0 +1,839 @@
+|11:34:46|I|[1m[35m@@@ Initializing the Hardware @@@[0m
+|11:34:46|I|[32mBootstrapping TCP Server...[0m
+|11:34:46|I|[32mTrying to connect to the Power Supply Server...[0m
+|11:34:46|I|[32mOperation completed[0m
+[0m
+
+********************************************************************************
+                                   [1m[31mHW SUMMARY[0m
+********************************************************************************
+[1m[34m|----BeBoard --> Id: [1m[33m0[1m[34m, BoardType: [1m[33mRD53[1m[34m, EventType: [1m[33mVR[0m
+[1m[36m|       |----Board Id:      [1m[33mcmsinnertracker.crate0.slot0
+[1m[36m|       |----URI:           [1m[33mchtcp-2.0://localhost:10203?target=192.168.1.80:50001
+[1m[36m|       |----Address Table: [1m[33mfile:///home/RD53A/workspace/Lindseydirectory/Ph2_ACF_GUI/Ph2_ACF/settings/address_tables/CMSIT_address_table.xml
+[0m[32m|	|	|----user.ctrl_regs.fast_cmd_reg_2.trigger_source: [1m[33m2[0m
+[32m|	|	|----user.ctrl_regs.fast_cmd_reg_2.HitOr_enable_l12: [1m[33m0[0m
+[32m|	|	|----user.ctrl_regs.ext_tlu_reg1.dio5_ch1_thr: [1m[33m128[0m
+[32m|	|	|----user.ctrl_regs.ext_tlu_reg1.dio5_ch2_thr: [1m[33m128[0m
+[32m|	|	|----user.ctrl_regs.ext_tlu_reg2.dio5_ch3_thr: [1m[33m128[0m
+[32m|	|	|----user.ctrl_regs.ext_tlu_reg2.dio5_ch4_thr: [1m[33m128[0m
+[32m|	|	|----user.ctrl_regs.ext_tlu_reg2.dio5_ch5_thr: [1m[33m128[0m
+[32m|	|	|----user.ctrl_regs.ext_tlu_reg2.tlu_delay: [1m[33m0[0m
+[32m|	|	|----user.ctrl_regs.ext_tlu_reg2.ext_clk_en: [1m[33m0[0m
+[32m|	|	|----user.ctrl_regs.fast_cmd_reg_3.triggers_to_accept: [1m[33m10[0m
+[1m[34m|       |----Hybrid --> [1m[34mId: [1m[33m0[1m[34m, Enable: [1m[33m1[1m[34m[0m
+[1m[34m|	|	|----RD53A --> Id: [1m[33m4[1m[34m, Lane: [1m[33m0[1m[34m, File: [1m[33mCMSIT_RD53_test_0_4.txt[1m[34m, RxGroup: [1m[33m0[1m[34m, RxChannel: [1m[33m0[1m[34m, TxGroup: [1m[33m0[1m[34m, TxChannel: [1m[33m0[1m[34m, Comment: [1m[33m[0m
+[1m[36m|	|	|----FrontEndType: [1m[33mRD53A[0m
+[32m|	|	|	|----ADC_MAXIMUM_VOLT: [1m[33m0x347 (839)[0m
+[32m|	|	|	|----ADC_OFFSET_VOLT: [1m[33m0x3F (63)[0m
+[32m|	|	|	|----CLK_DATA_DELAY: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CML_CONFIG_SER_EN_TAP: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CML_CONFIG_SER_INV_TAP: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----COMP_DIFF: [1m[33m0x3FF (1023)[0m
+[32m|	|	|	|----COMP_LIN: [1m[33m0x6E (110)[0m
+[32m|	|	|	|----CONF_FE_DIFF: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CONF_FE_SYNC: [1m[33m0x2 (2)[0m
+[32m|	|	|	|----DAC_CML_BIAS_0: [1m[33m0x1F4 (500)[0m
+[32m|	|	|	|----DAC_CML_BIAS_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----DAC_CML_BIAS_2: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----FC_BIAS_LIN: [1m[33m0x14 (20)[0m
+[32m|	|	|	|----FOL_DIFF: [1m[33m0x21E (542)[0m
+[32m|	|	|	|----GP_LVDS_ROUTE: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----IBIASP1_SYNC: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----IBIASP2_SYNC: [1m[33m0x96 (150)[0m
+[32m|	|	|	|----IBIAS_DISC_SYNC: [1m[33m0x118 (280)[0m
+[32m|	|	|	|----IBIAS_KRUM_SYNC: [1m[33m0x37 (55)[0m
+[32m|	|	|	|----IBIAS_SF_SYNC: [1m[33m0x50 (80)[0m
+[32m|	|	|	|----ICTRL_SYNCT_SYNC: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----INJECTION_SELECT: [1m[33m0x9 (9)[0m
+[32m|	|	|	|----KRUM_CURR_LIN: [1m[33m0x1D (29)[0m
+[32m|	|	|	|----LATENCY_CONFIG: [1m[33m0x88 (136)[0m
+[32m|	|	|	|----LCC_DIFF: [1m[33m0x14 (20)[0m
+[32m|	|	|	|----LDAC_LIN: [1m[33m0x82 (130)[0m
+[32m|	|	|	|----MONITOR_CONFIG_ADC: [1m[33m0x5 (5)[0m
+[32m|	|	|	|----MONITOR_CONFIG_BG: [1m[33m0xC (12)[0m
+[32m|	|	|	|----PA_IN_BIAS_LIN: [1m[33m0x15E (350)[0m
+[32m|	|	|	|----PRECOMP_DIFF: [1m[33m0x200 (512)[0m
+[32m|	|	|	|----PRMP_DIFF: [1m[33m0x1FF (511)[0m
+[32m|	|	|	|----REF_KRUM_LIN: [1m[33m0x12C (300)[0m
+[32m|	|	|	|----TEMPSENS_IDEAL_FACTOR: [1m[33m0x4C9 (1225)[0m
+[32m|	|	|	|----VBL_SYNC: [1m[33m0x168 (360)[0m
+[32m|	|	|	|----VCAL_HIGH: [1m[33m0x258 (600)[0m
+[32m|	|	|	|----VCAL_MED: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----VFF_DIFF: [1m[33m0x28 (40)[0m
+[32m|	|	|	|----VOLTAGE_TRIM_ANA: [1m[33m0x10 (16)[0m
+[32m|	|	|	|----VOLTAGE_TRIM_DIG: [1m[33m0x10 (16)[0m
+[32m|	|	|	|----VREF_ADC: [1m[33m0x384 (900)[0m
+[32m|	|	|	|----VREF_KRUM_SYNC: [1m[33m0x1C2 (450)[0m
+[32m|	|	|	|----VTH1_DIFF: [1m[33m0x2BC (700)[0m
+[32m|	|	|	|----VTH2_DIFF: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----VTH_SYNC: [1m[33m0x96 (150)[0m
+[32m|	|	|	|----Vthreshold_LIN: [1m[33m0x190 (400)[0m
+[1m[34m|	|	|----RD53A --> Id: [1m[33m2[1m[34m, Lane: [1m[33m1[1m[34m, File: [1m[33mCMSIT_RD53_test_0_2.txt[1m[34m, RxGroup: [1m[33m0[1m[34m, RxChannel: [1m[33m0[1m[34m, TxGroup: [1m[33m0[1m[34m, TxChannel: [1m[33m0[1m[34m, Comment: [1m[33m[0m
+[1m[36m|	|	|----FrontEndType: [1m[33mRD53A[0m
+[32m|	|	|	|----ADC_MAXIMUM_VOLT: [1m[33m0x347 (839)[0m
+[32m|	|	|	|----ADC_OFFSET_VOLT: [1m[33m0x3F (63)[0m
+[32m|	|	|	|----CLK_DATA_DELAY: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CML_CONFIG_SER_EN_TAP: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CML_CONFIG_SER_INV_TAP: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----COMP_DIFF: [1m[33m0x3FF (1023)[0m
+[32m|	|	|	|----COMP_LIN: [1m[33m0x6E (110)[0m
+[32m|	|	|	|----CONF_FE_DIFF: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CONF_FE_SYNC: [1m[33m0x2 (2)[0m
+[32m|	|	|	|----DAC_CML_BIAS_0: [1m[33m0x1F4 (500)[0m
+[32m|	|	|	|----DAC_CML_BIAS_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----DAC_CML_BIAS_2: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----FC_BIAS_LIN: [1m[33m0x14 (20)[0m
+[32m|	|	|	|----FOL_DIFF: [1m[33m0x21E (542)[0m
+[32m|	|	|	|----GP_LVDS_ROUTE: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----IBIASP1_SYNC: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----IBIASP2_SYNC: [1m[33m0x96 (150)[0m
+[32m|	|	|	|----IBIAS_DISC_SYNC: [1m[33m0x118 (280)[0m
+[32m|	|	|	|----IBIAS_KRUM_SYNC: [1m[33m0x37 (55)[0m
+[32m|	|	|	|----IBIAS_SF_SYNC: [1m[33m0x50 (80)[0m
+[32m|	|	|	|----ICTRL_SYNCT_SYNC: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----INJECTION_SELECT: [1m[33m0x9 (9)[0m
+[32m|	|	|	|----KRUM_CURR_LIN: [1m[33m0x1D (29)[0m
+[32m|	|	|	|----LATENCY_CONFIG: [1m[33m0x88 (136)[0m
+[32m|	|	|	|----LCC_DIFF: [1m[33m0x14 (20)[0m
+[32m|	|	|	|----LDAC_LIN: [1m[33m0x82 (130)[0m
+[32m|	|	|	|----MONITOR_CONFIG_ADC: [1m[33m0x5 (5)[0m
+[32m|	|	|	|----MONITOR_CONFIG_BG: [1m[33m0xC (12)[0m
+[32m|	|	|	|----PA_IN_BIAS_LIN: [1m[33m0x15E (350)[0m
+[32m|	|	|	|----PRECOMP_DIFF: [1m[33m0x200 (512)[0m
+[32m|	|	|	|----PRMP_DIFF: [1m[33m0x1FF (511)[0m
+[32m|	|	|	|----REF_KRUM_LIN: [1m[33m0x12C (300)[0m
+[32m|	|	|	|----TEMPSENS_IDEAL_FACTOR: [1m[33m0x4C9 (1225)[0m
+[32m|	|	|	|----VBL_SYNC: [1m[33m0x168 (360)[0m
+[32m|	|	|	|----VCAL_HIGH: [1m[33m0x258 (600)[0m
+[32m|	|	|	|----VCAL_MED: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----VFF_DIFF: [1m[33m0x28 (40)[0m
+[32m|	|	|	|----VOLTAGE_TRIM_ANA: [1m[33m0x10 (16)[0m
+[32m|	|	|	|----VOLTAGE_TRIM_DIG: [1m[33m0x10 (16)[0m
+[32m|	|	|	|----VREF_ADC: [1m[33m0x384 (900)[0m
+[32m|	|	|	|----VREF_KRUM_SYNC: [1m[33m0x1C2 (450)[0m
+[32m|	|	|	|----VTH1_DIFF: [1m[33m0x2BC (700)[0m
+[32m|	|	|	|----VTH2_DIFF: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----VTH_SYNC: [1m[33m0x96 (150)[0m
+[32m|	|	|	|----Vthreshold_LIN: [1m[33m0x190 (400)[0m
+[1m[34m|	|	|----RD53A --> Id: [1m[33m7[1m[34m, Lane: [1m[33m2[1m[34m, File: [1m[33mCMSIT_RD53_test_0_7.txt[1m[34m, RxGroup: [1m[33m0[1m[34m, RxChannel: [1m[33m0[1m[34m, TxGroup: [1m[33m0[1m[34m, TxChannel: [1m[33m0[1m[34m, Comment: [1m[33m[0m
+[1m[36m|	|	|----FrontEndType: [1m[33mRD53A[0m
+[32m|	|	|	|----ADC_MAXIMUM_VOLT: [1m[33m0x347 (839)[0m
+[32m|	|	|	|----ADC_OFFSET_VOLT: [1m[33m0x3F (63)[0m
+[32m|	|	|	|----CLK_DATA_DELAY: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CML_CONFIG_SER_EN_TAP: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CML_CONFIG_SER_INV_TAP: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----COMP_DIFF: [1m[33m0x3FF (1023)[0m
+[32m|	|	|	|----COMP_LIN: [1m[33m0x6E (110)[0m
+[32m|	|	|	|----CONF_FE_DIFF: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CONF_FE_SYNC: [1m[33m0x2 (2)[0m
+[32m|	|	|	|----DAC_CML_BIAS_0: [1m[33m0x1F4 (500)[0m
+[32m|	|	|	|----DAC_CML_BIAS_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----DAC_CML_BIAS_2: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----FC_BIAS_LIN: [1m[33m0x14 (20)[0m
+[32m|	|	|	|----FOL_DIFF: [1m[33m0x21E (542)[0m
+[32m|	|	|	|----GP_LVDS_ROUTE: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----IBIASP1_SYNC: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----IBIASP2_SYNC: [1m[33m0x96 (150)[0m
+[32m|	|	|	|----IBIAS_DISC_SYNC: [1m[33m0x118 (280)[0m
+[32m|	|	|	|----IBIAS_KRUM_SYNC: [1m[33m0x37 (55)[0m
+[32m|	|	|	|----IBIAS_SF_SYNC: [1m[33m0x50 (80)[0m
+[32m|	|	|	|----ICTRL_SYNCT_SYNC: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----INJECTION_SELECT: [1m[33m0x9 (9)[0m
+[32m|	|	|	|----KRUM_CURR_LIN: [1m[33m0x1D (29)[0m
+[32m|	|	|	|----LATENCY_CONFIG: [1m[33m0x88 (136)[0m
+[32m|	|	|	|----LCC_DIFF: [1m[33m0x14 (20)[0m
+[32m|	|	|	|----LDAC_LIN: [1m[33m0x82 (130)[0m
+[32m|	|	|	|----MONITOR_CONFIG_ADC: [1m[33m0x5 (5)[0m
+[32m|	|	|	|----MONITOR_CONFIG_BG: [1m[33m0xC (12)[0m
+[32m|	|	|	|----PA_IN_BIAS_LIN: [1m[33m0x15E (350)[0m
+[32m|	|	|	|----PRECOMP_DIFF: [1m[33m0x200 (512)[0m
+[32m|	|	|	|----PRMP_DIFF: [1m[33m0x1FF (511)[0m
+[32m|	|	|	|----REF_KRUM_LIN: [1m[33m0x12C (300)[0m
+[32m|	|	|	|----TEMPSENS_IDEAL_FACTOR: [1m[33m0x4C9 (1225)[0m
+[32m|	|	|	|----VBL_SYNC: [1m[33m0x168 (360)[0m
+[32m|	|	|	|----VCAL_HIGH: [1m[33m0x258 (600)[0m
+[32m|	|	|	|----VCAL_MED: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----VFF_DIFF: [1m[33m0x28 (40)[0m
+[32m|	|	|	|----VOLTAGE_TRIM_ANA: [1m[33m0x10 (16)[0m
+[32m|	|	|	|----VOLTAGE_TRIM_DIG: [1m[33m0x10 (16)[0m
+[32m|	|	|	|----VREF_ADC: [1m[33m0x384 (900)[0m
+[32m|	|	|	|----VREF_KRUM_SYNC: [1m[33m0x1C2 (450)[0m
+[32m|	|	|	|----VTH1_DIFF: [1m[33m0x2BC (700)[0m
+[32m|	|	|	|----VTH2_DIFF: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----VTH_SYNC: [1m[33m0x96 (150)[0m
+[32m|	|	|	|----Vthreshold_LIN: [1m[33m0x190 (400)[0m
+[1m[34m|	|	|----RD53A --> Id: [1m[33m5[1m[34m, Lane: [1m[33m3[1m[34m, File: [1m[33mCMSIT_RD53_test_0_5.txt[1m[34m, RxGroup: [1m[33m0[1m[34m, RxChannel: [1m[33m0[1m[34m, TxGroup: [1m[33m0[1m[34m, TxChannel: [1m[33m0[1m[34m, Comment: [1m[33m[0m
+[1m[36m|	|	|----FrontEndType: [1m[33mRD53A[0m
+[32m|	|	|	|----ADC_MAXIMUM_VOLT: [1m[33m0x347 (839)[0m
+[32m|	|	|	|----ADC_OFFSET_VOLT: [1m[33m0x3F (63)[0m
+[32m|	|	|	|----CLK_DATA_DELAY: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CML_CONFIG_SER_EN_TAP: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CML_CONFIG_SER_INV_TAP: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----COMP_DIFF: [1m[33m0x3FF (1023)[0m
+[32m|	|	|	|----COMP_LIN: [1m[33m0x6E (110)[0m
+[32m|	|	|	|----CONF_FE_DIFF: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CONF_FE_SYNC: [1m[33m0x2 (2)[0m
+[32m|	|	|	|----DAC_CML_BIAS_0: [1m[33m0x1F4 (500)[0m
+[32m|	|	|	|----DAC_CML_BIAS_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----DAC_CML_BIAS_2: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----FC_BIAS_LIN: [1m[33m0x14 (20)[0m
+[32m|	|	|	|----FOL_DIFF: [1m[33m0x21E (542)[0m
+[32m|	|	|	|----GP_LVDS_ROUTE: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----IBIASP1_SYNC: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----IBIASP2_SYNC: [1m[33m0x96 (150)[0m
+[32m|	|	|	|----IBIAS_DISC_SYNC: [1m[33m0x118 (280)[0m
+[32m|	|	|	|----IBIAS_KRUM_SYNC: [1m[33m0x37 (55)[0m
+[32m|	|	|	|----IBIAS_SF_SYNC: [1m[33m0x50 (80)[0m
+[32m|	|	|	|----ICTRL_SYNCT_SYNC: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----INJECTION_SELECT: [1m[33m0x9 (9)[0m
+[32m|	|	|	|----KRUM_CURR_LIN: [1m[33m0x1D (29)[0m
+[32m|	|	|	|----LATENCY_CONFIG: [1m[33m0x88 (136)[0m
+[32m|	|	|	|----LCC_DIFF: [1m[33m0x14 (20)[0m
+[32m|	|	|	|----LDAC_LIN: [1m[33m0x82 (130)[0m
+[32m|	|	|	|----MONITOR_CONFIG_ADC: [1m[33m0x5 (5)[0m
+[32m|	|	|	|----MONITOR_CONFIG_BG: [1m[33m0xC (12)[0m
+[32m|	|	|	|----PA_IN_BIAS_LIN: [1m[33m0x15E (350)[0m
+[32m|	|	|	|----PRECOMP_DIFF: [1m[33m0x200 (512)[0m
+[32m|	|	|	|----PRMP_DIFF: [1m[33m0x1FF (511)[0m
+[32m|	|	|	|----REF_KRUM_LIN: [1m[33m0x12C (300)[0m
+[32m|	|	|	|----TEMPSENS_IDEAL_FACTOR: [1m[33m0x4C9 (1225)[0m
+[32m|	|	|	|----VBL_SYNC: [1m[33m0x168 (360)[0m
+[32m|	|	|	|----VCAL_HIGH: [1m[33m0x258 (600)[0m
+[32m|	|	|	|----VCAL_MED: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----VFF_DIFF: [1m[33m0x28 (40)[0m
+[32m|	|	|	|----VOLTAGE_TRIM_ANA: [1m[33m0x10 (16)[0m
+[32m|	|	|	|----VOLTAGE_TRIM_DIG: [1m[33m0x10 (16)[0m
+[32m|	|	|	|----VREF_ADC: [1m[33m0x384 (900)[0m
+[32m|	|	|	|----VREF_KRUM_SYNC: [1m[33m0x1C2 (450)[0m
+[32m|	|	|	|----VTH1_DIFF: [1m[33m0x2BC (700)[0m
+[32m|	|	|	|----VTH2_DIFF: [1m[33m0x64 (100)[0m
+[32m|	|	|	|----VTH_SYNC: [1m[33m0x96 (150)[0m
+[32m|	|	|	|----Vthreshold_LIN: [1m[33m0x190 (400)[0m
+[1m[36m|	|	|----Global RD53 Settings:[0m
+[32m|	|	|	|----BITFLIP_ERR_CNT: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----BITFLIP_WNG_CNT: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----CMDERR_CNT: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_DIFF_1: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_DIFF_2: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_DIFF_3: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_DIFF_4: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_DIFF_5: [1m[33m0xF (15)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_LIN_1: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_LIN_2: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_LIN_3: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_LIN_4: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_LIN_5: [1m[33m0xF (15)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_SYNC_1: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_SYNC_2: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_SYNC_3: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_CAL_SYNC_4: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_DIFF_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----EN_CORE_COL_DIFF_2: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----EN_CORE_COL_LIN_1: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----EN_CORE_COL_LIN_2: [1m[33m0x1 (1)[0m
+[32m|	|	|	|----EN_CORE_COL_SYNC: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_0_CNT: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_0_MASK_DIFF_0: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----HITOR_0_MASK_DIFF_1: [1m[33m0x1 (1)[0m
+[32m|	|	|	|----HITOR_0_MASK_LIN_0: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_0_MASK_LIN_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_0_MASK_SYNC: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----HITOR_1_CNT: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_1_MASK_DIFF_0: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----HITOR_1_MASK_DIFF_1: [1m[33m0x1 (1)[0m
+[32m|	|	|	|----HITOR_1_MASK_LIN_0: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_1_MASK_LIN_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_1_MASK_SYNC: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----HITOR_2_CNT: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_2_MASK_DIFF_0: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----HITOR_2_MASK_DIFF_1: [1m[33m0x1 (1)[0m
+[32m|	|	|	|----HITOR_2_MASK_LIN_0: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_2_MASK_LIN_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_2_MASK_SYNC: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----HITOR_3_CNT: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_3_MASK_DIFF_0: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----HITOR_3_MASK_DIFF_1: [1m[33m0x1 (1)[0m
+[32m|	|	|	|----HITOR_3_MASK_LIN_0: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_3_MASK_LIN_1: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----HITOR_3_MASK_SYNC: [1m[33m0xFFFF (65535)[0m
+[32m|	|	|	|----LOCKLOSS_CNT: [1m[33m0x0 (0)[0m
+[32m|	|	|	|----SKIPPED_TRIGGER_CNT: [1m[33m0x1 (1)[0m
+********************************************************************************
+                                [1m[31mEND OF HW SUMMARY[0m
+********************************************************************************
+
+[1m[31mMonitoring[0m -- [1m[36mRD53[0m:[1m[33mRegister TEMPSENS_4[0m
+
+[1m[31mSetting[0m -- [1m[36mnEvents[0m:[1m[33m1E+07[0m
+[1m[31mSetting[0m -- [1m[36mnEvtsBurst[0m:[1m[33m10000[0m
+[1m[31mSetting[0m -- [1m[36mVDDDTrimTarget[0m:[1m[33m1.3[0m
+[1m[31mSetting[0m -- [1m[36mVDDATrimTarget[0m:[1m[33m1.2[0m
+[1m[31mSetting[0m -- [1m[36mVDDDTrimTolerance[0m:[1m[33m0.01[0m
+[1m[31mSetting[0m -- [1m[36mVDDATrimTolerance[0m:[1m[33m0.01[0m
+[1m[31mSetting[0m -- [1m[36mnTRIGxEvent[0m:[1m[33m1[0m
+[1m[31mSetting[0m -- [1m[36mINJtype[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mResetMask[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mResetTDAC[0m:[1m[33m-1[0m
+[1m[31mSetting[0m -- [1m[36mROWstart[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mROWstop[0m:[1m[33m191[0m
+[1m[31mSetting[0m -- [1m[36mCOLstart[0m:[1m[33m128[0m
+[1m[31mSetting[0m -- [1m[36mCOLstop[0m:[1m[33m263[0m
+[1m[31mSetting[0m -- [1m[36mLatencyStart[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mLatencyStop[0m:[1m[33m511[0m
+[1m[31mSetting[0m -- [1m[36mVCalHstart[0m:[1m[33m100[0m
+[1m[31mSetting[0m -- [1m[36mVCalHstop[0m:[1m[33m600[0m
+[1m[31mSetting[0m -- [1m[36mVCalHnsteps[0m:[1m[33m50[0m
+[1m[31mSetting[0m -- [1m[36mVCalMED[0m:[1m[33m100[0m
+[1m[31mSetting[0m -- [1m[36mTargetCharge[0m:[1m[33m10000[0m
+[1m[31mSetting[0m -- [1m[36mKrumCurrStart[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mKrumCurrStop[0m:[1m[33m127[0m
+[1m[31mSetting[0m -- [1m[36mThrStart[0m:[1m[33m340[0m
+[1m[31mSetting[0m -- [1m[36mThrStop[0m:[1m[33m440[0m
+[1m[31mSetting[0m -- [1m[36mTargetThr[0m:[1m[33m2000[0m
+[1m[31mSetting[0m -- [1m[36mTargetOcc[0m:[1m[33m1E-06[0m
+[1m[31mSetting[0m -- [1m[36mUnstuckPixels[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mTAP0Start[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mTAP0Stop[0m:[1m[33m1023[0m
+[1m[31mSetting[0m -- [1m[36mTAP1Start[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mTAP1Stop[0m:[1m[33m511[0m
+[1m[31mSetting[0m -- [1m[36mTAP2Start[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mTAP2Stop[0m:[1m[33m511[0m
+[1m[31mSetting[0m -- [1m[36mInvTAP2[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mchain2Test[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mbyTime[0m:[1m[33m1[0m
+[1m[31mSetting[0m -- [1m[36mframesORtime[0m:[1m[33m10[0m
+[1m[31mSetting[0m -- [1m[36mRegNameDAC1[0m:[1m[33mVCAL_HIGH[0m
+[1m[31mSetting[0m -- [1m[36mStartValueDAC1[0m:[1m[33m250[0m
+[1m[31mSetting[0m -- [1m[36mStopValueDAC1[0m:[1m[33m600[0m
+[1m[31mSetting[0m -- [1m[36mStepDAC1[0m:[1m[33m50[0m
+[1m[31mSetting[0m -- [1m[36mRegNameDAC2[0m:[1m[33muser.ctrl_regs.fast_cmd_reg_5.delay_after_inject_pulse[0m
+[1m[31mSetting[0m -- [1m[36mStartValueDAC2[0m:[1m[33m28[0m
+[1m[31mSetting[0m -- [1m[36mStopValueDAC2[0m:[1m[33m50[0m
+[1m[31mSetting[0m -- [1m[36mStepDAC2[0m:[1m[33m1[0m
+[1m[31mSetting[0m -- [1m[36mDisplayHisto[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mUpdateChipCfg[0m:[1m[33m1[0m
+[1m[31mSetting[0m -- [1m[36mSaveBinaryData[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mnHITxCol[0m:[1m[33m1[0m
+[1m[31mSetting[0m -- [1m[36mInjLatency[0m:[1m[33m32[0m
+[1m[31mSetting[0m -- [1m[36mnClkDelays[0m:[1m[33m10[0m
+[1m[31mSetting[0m -- [1m[36mTDACGainStart[0m:[1m[33m130[0m
+[1m[31mSetting[0m -- [1m[36mTDACGainStop[0m:[1m[33m130[0m
+[1m[31mSetting[0m -- [1m[36mTDACGainNSteps[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mDoNSteps[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mOccPerPixel[0m:[1m[33m2E-05[0m
+[1m[31mSetting[0m -- [1m[36mMaxMaskedPixels[0m:[1m[33m1[0m
+[1m[31mSetting[0m -- [1m[36mDoOnlyNGroups[0m:[1m[33m0[0m
+[1m[31mSetting[0m -- [1m[36mDisableChannelsAtExit[0m:[1m[33m1[0m
+[1m[31mSetting[0m -- [1m[36mDataOutputDir[0m:[1m[33m[0m
+
+|11:34:46|I|[1m[35m@@@ Configuring HW parsed from xml file @@@[0m
+|11:34:46|I|[1m[34m	--> Found an Inner Tracker Readout-board[0m
+|11:34:46|I|[1m[34m	--> SW commit number : [1m[33m9e302c41f6fd71d96c0df643daa58e4f470a1c85[0m
+|11:34:46|I|[1m[34m	--> FW version : [1m[33m4.6[1m[34m -- Date (yy/mm/dd) : [1m[33m23/3/14[1m[34m -- Time (hour:minute:sec) : [1m[33m3:7:22[0m
+|11:34:46|I|[1m[34m	--> Link type : [1m[33melectrical[1m[34m -- Optical speed : [1m[33m10 Gbit/s[1m[34m -- Frontend type : [1m[33mRD53A[0m
+|11:34:46|I|[1m[34m	--> L12 FMC type : [1m[33m1[1m[34m -- L08 FMC type : [1m[33m1[1m[34m (1=KSU, 2=CERN, 3=DIO5, 4=OPTO, 5=FERMI, 7=NONE, 0=Unspecified)[0m
+|11:34:46|I|[32mInitializing DIO5:[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.ext_tlu_reg2.ext_clk_en: 0x[1m[33m0 (0)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.fast_cmd_reg_2.HitOr_enable_l12: 0x[1m[33m0 (0)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.fast_cmd_reg_2.trigger_source: 0x[1m[33m2 (2)[0m
+|11:34:46|I|[1m[34m	--> Done[0m
+|11:34:46|I|[32mReading clock generator (CDCE62005) configuration[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33mEB020320[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33mEB020321[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33mEB840302[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33mEB840303[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33mEB140334[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33m10000E75[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33m030E02E6[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33mBD800DF7[0m
+|11:34:46|I|[1m[34m	--> SPI register content: 0x[1m[33m20009D78[0m
+|11:34:46|W|[32mOptical link tx slow control status: [1m[31mnot ready[0m
+|11:34:46|W|[32mOptical link rx slow control status: [1m[31mnot ready[0m
+|11:34:46|I|[32mAurora speed set to: [1m[33m1.28 Gbit/s[0m
+|11:34:46|I|[32mInput clock frequency (could be either internal or external, should be ~40 MHz): [1m[33m40.078 MHz[0m
+|11:34:46|I|[32mGTX receiver clock frequency (~160 MHz (~320 MHz) for electrical (optical) readout): [1m[33m160.314 MHz[0m
+|11:34:46|I|[36m=== Configuring FSM fast command block ===[0m
+|11:34:46|I|[32mInternal trigger frequency (if enabled): [1m[33m200000 Hz[0m
+|11:34:46|I|[32mChecking firmware status:[0m
+|11:34:46|I|[1m[34m	--> Clock generator is [1m[33mlocked[0m
+|11:34:46|I|[1m[34m	--> I2C [1m[33minitialized[0m
+|11:34:46|I|[32mFast command block trigger source: [1m[33m2[0m[32m (1=IPBus, 2=Test-FSM, 3=TTC, 4=TLU, 5=External, 6=Hit-Or, 7=User-defined frequency)[0m
+|11:34:46|I|[32mFast command block trigger state: [1m[33m0[0m[32m (0=Idle, 2=Running)[0m
+|11:34:46|I|[32mFast command block check if configuraiton registers have been set: [1m[33mconfigured[0m
+|11:34:46|I|[32mFast command block error code (0=No error): [1m[33m0[0m
+|11:34:46|I|[32mTrigger counter: [1m[33m0[0m
+|11:34:46|I|[32mHybrid type: [1m[33m4[0m[32m (1=Single chip, 2=Double chip, 4=Quad chip)[0m
+|11:34:46|I|[32mNumber of hybrids which can be potentially readout: [1m[33m5[0m
+|11:34:46|I|[36m================== Done ==================[0m
+|11:34:46|I|[32mInitializing board's registers:[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.ext_tlu_reg1.dio5_ch1_thr: 0x[1m[33m80 (128)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.ext_tlu_reg1.dio5_ch2_thr: 0x[1m[33m80 (128)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.ext_tlu_reg2.dio5_ch3_thr: 0x[1m[33m80 (128)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.ext_tlu_reg2.dio5_ch4_thr: 0x[1m[33m80 (128)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.ext_tlu_reg2.dio5_ch5_thr: 0x[1m[33m80 (128)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.ext_tlu_reg2.tlu_delay: 0x[1m[33m0 (0)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.fast_cmd_reg_2.HitOr_enable_l12: 0x[1m[33m0 (0)[0m
+|11:34:46|I|[1m[34m	--> user.ctrl_regs.fast_cmd_reg_3.triggers_to_accept: 0x[1m[33mA (10)[0m
+|11:34:46|I|[1m[34m	--> Done[0m
+|11:34:46|I|[32mChecking status of the optical links:[0m
+|11:34:46|I|[1m[34m	--> Optical link n. active LpGBT chip tx:  [1m[33m0[1m[34m i.e.: [1m[33m00000000000000000000[0m
+|11:34:46|I|[1m[34m	--> Optical link n. active LpGBT chip rx:  [1m[33m0[1m[34m i.e.: [1m[33m00000000000000000000[0m
+|11:34:46|I|[1m[34m	--> Optical link n. active LpGBT chip mgt: [1m[33m0[1m[34m i.e.: [1m[33m00000000000000000000[0m
+|11:34:46|I|[36m=== Configuring frontend chip communication ===[0m
+|11:34:46|I|[32mDown-link phase initialization...[0m
+|11:34:46|I|[1m[34m	--> Done[0m
+|11:34:46|I|[32mInitializing chip communication of hybrid: [1m[33m0[0m
+|11:34:46|I|[32mInitializing communicationng to/from RD53: [1m[33m4[0m
+|11:34:46|I|[32mConfiguring up-link lanes and monitoring...[0m
+|11:34:46|I|[1m[34m	--> Done[0m
+|11:34:46|I|[32mInitializing communicationng to/from RD53: [1m[33m2[0m
+|11:34:46|I|[32mConfiguring up-link lanes and monitoring...[0m
+|11:34:47|I|[1m[34m	--> Done[0m
+|11:34:47|I|[32mInitializing communicationng to/from RD53: [1m[33m7[0m
+|11:34:47|I|[32mConfiguring up-link lanes and monitoring...[0m
+|11:34:47|I|[1m[34m	--> Done[0m
+|11:34:47|I|[32mInitializing communicationng to/from RD53: [1m[33m5[0m
+|11:34:47|I|[32mConfiguring up-link lanes and monitoring...[0m
+|11:34:47|I|[1m[34m	--> Done[0m
+|11:34:47|I|[36m==================== Done =====================[0m
+|11:34:47|I|[32mChecking status communication RD53 --> FW[0m
+|11:34:47|I|[1m[34m	--> Total number of [1m[33mrequired[1m[34m data lanes: [1m[33m4[1m[34m i.e. [1m[33m00000000000000001111[0m
+|11:34:47|I|[1m[34m	--> Total number of [1m[33mactive[1m[34m data lanes:   [1m[33m4[1m[34m i.e. [1m[33m00000000000000001111[0m
+|11:34:47|I|[1m[34m	--> All enabled data lanes are active[0m
+|11:34:47|I|[36m===== Configuring frontend chip registers =====[0m
+|11:34:47|I|[32mConfiguring chip of hybrid: [1m[33m0[0m
+|11:34:47|I|[32mConfiguring RD53: [1m[33m4[0m[32m (fused ID [1m[33m4[0m[32m)[0m
+|11:34:47|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mSKIPPED_TRIGGER_CNT[1m[31m: wrote = [1m[33m1[1m[31m, read = [1m[33m0[0m
+|11:34:47|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mCMDERR_CNT[1m[31m: wrote = [1m[33m0[1m[31m, read = [1m[33m11427[0m
+|11:34:48|I|[32mNumber of masked pixels: [1m[33m0[0m
+|11:34:48|I|[32mConfiguring RD53: [1m[33m2[0m[32m (fused ID [1m[33m2[0m[32m)[0m
+|11:34:48|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mSKIPPED_TRIGGER_CNT[1m[31m: wrote = [1m[33m1[1m[31m, read = [1m[33m0[0m
+|11:34:48|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mCMDERR_CNT[1m[31m: wrote = [1m[33m0[1m[31m, read = [1m[33m12799[0m
+|11:34:48|I|[32mNumber of masked pixels: [1m[33m0[0m
+|11:34:48|I|[32mConfiguring RD53: [1m[33m7[0m[32m (fused ID [1m[33m7[0m[32m)[0m
+|11:34:48|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mSKIPPED_TRIGGER_CNT[1m[31m: wrote = [1m[33m1[1m[31m, read = [1m[33m0[0m
+|11:34:48|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mCMDERR_CNT[1m[31m: wrote = [1m[33m0[1m[31m, read = [1m[33m11461[0m
+|11:34:49|I|[32mNumber of masked pixels: [1m[33m0[0m
+|11:34:49|I|[32mConfiguring RD53: [1m[33m5[0m[32m (fused ID [1m[33m5[0m[32m)[0m
+|11:34:49|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mSKIPPED_TRIGGER_CNT[1m[31m: wrote = [1m[33m1[1m[31m, read = [1m[33m0[0m
+|11:34:49|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mCMDERR_CNT[1m[31m: wrote = [1m[33m0[1m[31m, read = [1m[33m11482[0m
+|11:34:49|I|[32mNumber of masked pixels: [1m[33m0[0m
+|11:34:49|I|[36m==================== Done =====================[0m
+|11:34:49|I|[32mUsing [1m[33m4[0m[32m threads for data decoding during running time[0m
+|11:34:49|I|[32mStarting monitoring thread[0m
+|11:34:49|I|[1m[35m@@@ Hardware initialization done @@@[0m
+
+|11:34:49|I|[1m[35m@@@ Performing Noise scan @@@[0m
+|11:34:49|I|[32m[PixelAlive::localConfigure] Starting run: [1m[33m8[0m
+|11:34:49|I|[36m---------------------------[0m
+|11:34:49|I|[32m****** Reading  data ******[0m
+|11:34:49|I|[32mn. 32-bit words :    240000[0m
+|11:34:49|I|[1m[35m>>>> Progress :   0.1% <<<<[0m
+|11:34:49|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:49|I|[36m---------------------------[0m
+|11:34:49|I|[32m****** Reading  data ******[0m
+|11:34:49|I|[32mn. 32-bit words :    240000[0m
+|11:34:49|I|[1m[35m>>>> Progress :   0.2% <<<<[0m
+|11:34:49|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   0.3% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   0.4% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   0.5% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   0.6% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   0.7% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   0.8% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   0.9% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   1.0% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   1.1% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:50|I|[36m---------------------------[0m
+|11:34:50|I|[32m****** Reading  data ******[0m
+|11:34:50|I|[32mn. 32-bit words :    240000[0m
+|11:34:50|I|[1m[35m>>>> Progress :   1.2% <<<<[0m
+|11:34:50|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:51|I|[36m---------------------------[0m
+|11:34:51|I|[32m****** Reading  data ******[0m
+|11:34:51|I|[32mn. 32-bit words :    240000[0m
+|11:34:51|I|[1m[35m>>>> Progress :   1.3% <<<<[0m
+|11:34:51|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:51|I|[36m---------------------------[0m
+|11:34:51|I|[32m****** Reading  data ******[0m
+|11:34:51|I|[32mn. 32-bit words :    240000[0m
+|11:34:51|I|[1m[35m>>>> Progress :   1.4% <<<<[0m
+|11:34:51|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:51|I|[36m---------------------------[0m
+|11:34:51|I|[32m****** Reading  data ******[0m
+|11:34:51|I|[32mn. 32-bit words :    240000[0m
+|11:34:51|I|[1m[35m>>>> Progress :   1.5% <<<<[0m
+|11:34:51|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:51|I|[36m---------------------------[0m
+|11:34:51|I|[32m****** Reading  data ******[0m
+|11:34:51|I|[32mn. 32-bit words :    240000[0m
+|11:34:51|I|[1m[35m>>>> Progress :   1.6% <<<<[0m
+|11:34:51|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:51|I|[36m---------------------------[0m
+|11:34:51|I|[32m****** Reading  data ******[0m
+|11:34:51|I|[32mn. 32-bit words :    240000[0m
+|11:34:51|I|[1m[35m>>>> Progress :   1.7% <<<<[0m
+|11:34:51|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:51|I|[32mMonitor data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/4[0m[32m][0m
+|11:34:51|I|[36m---------------------------[0m
+|11:34:51|I|[32m****** Reading  data ******[0m
+|11:34:51|I|[32mn. 32-bit words :    240000[0m
+|11:34:51|I|[1m[35m>>>> Progress :   1.8% <<<<[0m
+|11:34:51|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:51|W|[1m[31m		--> Very low voltage: either floating VDD sense-line or FMC not powered (voltage = [1m[33m0.000[1m[31m)[0m
+|11:34:51|I|[1m[34m	--> [1m[33mHybrid[1m[34m voltage: [1m[33m0.000 +/- 0.000[1m[34m V[0m
+|11:34:52|I|[1m[34m	--> [1m[33mHybrid[1m[34m temperature: [1m[33m1.196 +/- 0.048[1m[34m C[0m
+|11:34:52|I|[32mMonitor data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/2[0m[32m][0m
+|11:34:52|W|[1m[31m		--> Very low voltage: either floating VDD sense-line or FMC not powered (voltage = [1m[33m0.000[1m[31m)[0m
+|11:34:52|I|[1m[34m	--> [1m[33mHybrid[1m[34m voltage: [1m[33m0.000 +/- 0.000[1m[34m V[0m
+|11:34:52|I|[1m[34m	--> [1m[33mHybrid[1m[34m temperature: [1m[33m1.196 +/- 0.048[1m[34m C[0m
+|11:34:52|I|[32mMonitor data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/7[0m[32m][0m
+|11:34:53|W|[1m[31m		--> Very low voltage: either floating VDD sense-line or FMC not powered (voltage = [1m[33m0.000[1m[31m)[0m
+|11:34:53|I|[1m[34m	--> [1m[33mHybrid[1m[34m voltage: [1m[33m0.000 +/- 0.000[1m[34m V[0m
+|11:34:53|I|[1m[34m	--> [1m[33mHybrid[1m[34m temperature: [1m[33m1.196 +/- 0.048[1m[34m C[0m
+|11:34:53|I|[32mMonitor data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/5[0m[32m][0m
+|11:34:53|W|[1m[31m		--> Very low voltage: either floating VDD sense-line or FMC not powered (voltage = [1m[33m0.000[1m[31m)[0m
+|11:34:53|I|[1m[34m	--> [1m[33mHybrid[1m[34m voltage: [1m[33m0.000 +/- 0.000[1m[34m V[0m
+|11:34:53|I|[1m[34m	--> [1m[33mHybrid[1m[34m temperature: [1m[33m1.196 +/- 0.048[1m[34m C[0m
+|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   1.9% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:54|E|[1m[31mError when reading back what was written into RD53 reg. [1m[33mSENSOR_CONFIG_0[1m[31m: wrote = [1m[33m3900[1m[31m, read = [1m[33m0[0m
+|11:34:54|I|[1m[34m	--> [1m[33mTEMPSENS_4[1m[34m: [1m[33m34.068 +/- 1.363[1m[34m C[0m
+|11:34:54|I|[32mReading monitored data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/4[0m[32m][0m
+|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   2.0% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:54|I|[1m[34m	--> [1m[33mTEMPSENS_4[1m[34m: [1m[33m31.935 +/- 1.277[1m[34m C[0m
+|11:34:54|I|[32mReading monitored data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/2[0m[32m][0m
+|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   2.1% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:54|I|[1m[34m	--> [1m[33mTEMPSENS_4[1m[34m: [1m[33m34.779 +/- 1.391[1m[34m C[0m
+|11:34:54|I|[32mReading monitored data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/7[0m[32m][0m
+|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   2.2% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:54|I|[1m[34m	--> [1m[33mTEMPSENS_4[1m[34m: [1m[33m24.112 +/- 0.964[1m[34m C[0m
+|11:34:54|I|[32mReading monitored data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/5[0m[32m][0m
+|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   2.3% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   2.4% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   2.5% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   2.6% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:54|I|[36m---------------------------[0m
+|11:34:54|I|[32m****** Reading  data ******[0m
+|11:34:54|I|[32mn. 32-bit words :    240000[0m
+|11:34:54|I|[1m[35m>>>> Progress :   2.7% <<<<[0m
+|11:34:54|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   2.8% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   2.9% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   3.0% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   3.1% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   3.2% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   3.3% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   3.4% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   3.5% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   3.6% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:55|I|[36m---------------------------[0m
+|11:34:55|I|[32m****** Reading  data ******[0m
+|11:34:55|I|[32mn. 32-bit words :    240000[0m
+|11:34:55|I|[1m[35m>>>> Progress :   3.7% <<<<[0m
+|11:34:55|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   3.8% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   3.9% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   4.0% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   4.1% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   4.2% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   4.3% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   4.4% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   4.5% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   4.6% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:56|I|[36m---------------------------[0m
+|11:34:56|I|[32m****** Reading  data ******[0m
+|11:34:56|I|[32mn. 32-bit words :    240000[0m
+|11:34:56|I|[1m[35m>>>> Progress :   4.7% <<<<[0m
+|11:34:56|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   4.8% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   4.9% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.0% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.1% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.2% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.3% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.4% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.5% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.6% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.7% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:57|I|[36m---------------------------[0m
+|11:34:57|I|[32m****** Reading  data ******[0m
+|11:34:57|I|[32mn. 32-bit words :    240000[0m
+|11:34:57|I|[1m[35m>>>> Progress :   5.8% <<<<[0m
+|11:34:57|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   5.9% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.0% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.1% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.2% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.3% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.4% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.5% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.6% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.7% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:58|I|[36m---------------------------[0m
+|11:34:58|I|[32m****** Reading  data ******[0m
+|11:34:58|I|[32mn. 32-bit words :    240000[0m
+|11:34:58|I|[1m[35m>>>> Progress :   6.8% <<<<[0m
+|11:34:58|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:59|I|[36m---------------------------[0m
+|11:34:59|I|[32m****** Reading  data ******[0m
+|11:34:59|I|[32mn. 32-bit words :    240000[0m
+|11:34:59|I|[1m[35m>>>> Progress :   6.9% <<<<[0m
+|11:34:59|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:59|I|[36m---------------------------[0m
+|11:34:59|I|[32m****** Reading  data ******[0m
+|11:34:59|I|[32mn. 32-bit words :    240000[0m
+|11:34:59|I|[1m[35m>>>> Progress :   7.0% <<<<[0m
+|11:34:59|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:59|I|[36m---------------------------[0m
+|11:34:59|I|[32m****** Reading  data ******[0m
+|11:34:59|I|[32mn. 32-bit words :    240000[0m
+|11:34:59|I|[1m[35m>>>> Progress :   7.1% <<<<[0m
+|11:34:59|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:59|I|[36m---------------------------[0m
+|11:34:59|I|[32m****** Reading  data ******[0m
+|11:34:59|I|[32mn. 32-bit words :    240000[0m
+|11:34:59|I|[1m[35m>>>> Progress :   7.2% <<<<[0m
+|11:34:59|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:59|I|[32mMonitor data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/4[0m[32m][0m
+|11:34:59|I|[36m---------------------------[0m
+|11:34:59|I|[32m****** Reading  data ******[0m
+|11:34:59|I|[32mn. 32-bit words :    240000[0m
+|11:34:59|I|[1m[35m>>>> Progress :   7.3% <<<<[0m
+|11:34:59|I|[36m---------------------------[0m
+[A[A[A[A[A|11:34:59|W|[1m[31m		--> Very low voltage: either floating VDD sense-line or FMC not powered (voltage = [1m[33m0.000[1m[31m)[0m
+|11:34:59|I|[1m[34m	--> [1m[33mHybrid[1m[34m voltage: [1m[33m0.000 +/- 0.000[1m[34m V[0m
+|11:35:00|I|[1m[34m	--> [1m[33mHybrid[1m[34m temperature: [1m[33m1.196 +/- 0.048[1m[34m C[0m
+|11:35:00|I|[32mMonitor data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/2[0m[32m][0m
+|11:35:00|I|[36m---------------------------[0m
+|11:35:00|I|[32m****** Reading  data ******[0m
+|11:35:00|I|[32mn. 32-bit words :    240000[0m
+|11:35:00|I|[1m[35m>>>> Progress :   7.4% <<<<[0m
+|11:35:00|I|[36m---------------------------[0m
+[A[A[A[A[A|11:35:00|W|[1m[31m		--> Very low voltage: either floating VDD sense-line or FMC not powered (voltage = [1m[33m0.000[1m[31m)[0m
+|11:35:00|I|[1m[34m	--> [1m[33mHybrid[1m[34m voltage: [1m[33m0.000 +/- 0.000[1m[34m V[0m
+|11:35:00|I|[1m[34m	--> [1m[33mHybrid[1m[34m temperature: [1m[33m1.196 +/- 0.048[1m[34m C[0m
+|11:35:00|I|[32mMonitor data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/7[0m[32m][0m
+|11:35:01|W|[1m[31m		--> Very low voltage: either floating VDD sense-line or FMC not powered (voltage = [1m[33m0.000[1m[31m)[0m
+|11:35:01|I|[1m[34m	--> [1m[33mHybrid[1m[34m voltage: [1m[33m0.000 +/- 0.000[1m[34m V[0m
+|11:35:01|I|[1m[34m	--> [1m[33mHybrid[1m[34m temperature: [1m[33m1.196 +/- 0.048[1m[34m C[0m
+|11:35:01|I|[32mMonitor data for [board/opticalGroup/hybrid/chip = [1m[33m0/0/0/5[0m[32m][0m
+|11:35:01|W|[1m[31m		--> Very low voltage: either floating VDD sense-line or FMC not powered (voltage = [1m[33m0.000[1m[31m)[0m
+|11:35:01|I|[1m[34m	--> [1m[33mHybrid[1m[34m voltage: [1m[33m0.000 +/- 0.000[1m[34m V[0m
+|11:35:02|I|[1m[34m	--> [1m[33mHybrid[1m[34m temperature: [1m[33m1.196 +/- 0.048[1m[34m C[0m
