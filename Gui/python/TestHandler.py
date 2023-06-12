@@ -685,6 +685,13 @@ class TestHandler(QObject):
 			#self.runwindow.ConsoleView.setTextCursor(textCursor)
 			#self.runwindow.ConsoleView.appendHtml(text.decode("utf-8"))
 		self.readingOutput = False
+	
+	def tempshutdown(self,sensorMeasure):
+		tempdata = sensorMeasure
+		thresholdlimit = tempdata.split()
+		if float(thresholdlimit[0]) >= 60:
+			self.urgentStop()
+		
 
 	def updateNeeded(self,textStr):
 		currentTest = Test[self.currentTest]
