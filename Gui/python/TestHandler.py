@@ -631,7 +631,18 @@ class TestHandler(QObject):
 							self.runwindow.updatetemp(self.tempindex, sensorMeasure)
 							self.tempindex += 1
 					except Exception as e:
-						print ("Failed due to" + e)
+						print ("Failed due to {0}".format(e))
+				elif "INTERNAL_NTC" in textStr:
+					try:
+						output = textStr.split("[")
+						sensor = output[8]
+						sensorMeasure = sensor[3:]
+						print(sensorMeasure)
+						if sensorMeasure != "":
+							self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+							self.tempindex += 1
+					except Exception as e:
+						print ("Failed due to {0}".format(e))
 				continue
 			#	if ("Global threshold for" in textStr):
 

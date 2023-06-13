@@ -1,0 +1,171 @@
+<HwDescription>
+  <BeBoard Id="0" boardType="RD53" eventType="VR">
+    <connection address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=192.168.1.80:50001"/>
+    <OpticalGroup FMCId="0" Id="0">
+      <Hybrid Id="0" Name="test" enable="1">
+        <RD53_Files file="./"/>
+        <RD53B Id="12" Lane="0" configfile="CMSIT_RD53_test_0_12.txt">
+          <LaneConfig dualChannelInput="0000" outputLanes="0001" primary="1" singleChannelInputs="0000"/>
+          <Settings ADC_MAXIMUM_VOLT="839" ADC_OFFSET_VOLT="63" ANALOG_INJ_MODE="0" CAL_EDGE_FINE_DELAY="0" CLK_DATA_DELAY="0" CML_CONFIG_SER_EN_TAP="0b00" CML_CONFIG_SER_INV_TAP="0b00" DAC_CML_BIAS_0="500" DAC_CML_BIAS_1="0" DAC_CML_BIAS_2="0" DAC_COMP_LIN="110" DAC_COMP_TA_LIN="110" DAC_FC_LIN="20" DAC_GDAC_L_LIN="450" DAC_GDAC_M_LIN="450" DAC_GDAC_R_LIN="450" DAC_KRUM_CURR_LIN="70" DAC_LDAC_LIN="140" DAC_PREAMP_L_LIN="300" DAC_PREAMP_M_LIN="300" DAC_PREAMP_R_LIN="300" DAC_PREAMP_TL_LIN="300" DAC_PREAMP_TR_LIN="300" DAC_PREAMP_T_LIN="300" DAC_REF_KRUM_LIN="360" GP_LVDS_ROUTE_0="1495" GP_LVDS_ROUTE_1="1495" MON_ADC_TRIM="5" TEMPSENS_IDEAL_FACTOR="1225" ToT6to4Mapping="0" ToTDualEdgeCount="0" TriggerConfig="136" VCAL_HIGH="2000" VCAL_MED="100" VOLTAGE_TRIM_ANA="8" VOLTAGE_TRIM_DIG="8" VREF_ADC="800"/>
+        </RD53B>
+        <RD53B Id="13" Lane="2" configfile="CMSIT_RD53_test_0_13.txt">
+          <LaneConfig dualChannelInput="0000" outputLanes="0001" primary="1" singleChannelInputs="0000"/>
+          <Settings ADC_MAXIMUM_VOLT="839" ADC_OFFSET_VOLT="63" ANALOG_INJ_MODE="0" CAL_EDGE_FINE_DELAY="0" CLK_DATA_DELAY="0" CML_CONFIG_SER_EN_TAP="0b00" CML_CONFIG_SER_INV_TAP="0b00" DAC_CML_BIAS_0="500" DAC_CML_BIAS_1="0" DAC_CML_BIAS_2="0" DAC_COMP_LIN="110" DAC_COMP_TA_LIN="110" DAC_FC_LIN="20" DAC_GDAC_L_LIN="450" DAC_GDAC_M_LIN="450" DAC_GDAC_R_LIN="450" DAC_KRUM_CURR_LIN="70" DAC_LDAC_LIN="140" DAC_PREAMP_L_LIN="300" DAC_PREAMP_M_LIN="300" DAC_PREAMP_R_LIN="300" DAC_PREAMP_TL_LIN="300" DAC_PREAMP_TR_LIN="300" DAC_PREAMP_T_LIN="300" DAC_REF_KRUM_LIN="360" GP_LVDS_ROUTE_0="1495" GP_LVDS_ROUTE_1="1495" MON_ADC_TRIM="5" TEMPSENS_IDEAL_FACTOR="1225" ToT6to4Mapping="0" ToTDualEdgeCount="0" TriggerConfig="136" VCAL_HIGH="2000" VCAL_MED="100" VOLTAGE_TRIM_ANA="8" VOLTAGE_TRIM_DIG="8" VREF_ADC="800"/>
+        </RD53B>
+        <Global BITFLIP_ERR_CNT="0" BITFLIP_WNG_CNT="0" CDR_CONFIG_SEL_PD="0" CMDERR_CNT="0" EN_CORE_COL_0="65535" EN_CORE_COL_1="65535" EN_CORE_COL_2="65535" EN_CORE_COL_3="63" EN_CORE_COL_CAL_0="65535" EN_CORE_COL_CAL_1="65535" EN_CORE_COL_CAL_2="65535" EN_CORE_COL_CAL_3="63" EN_SEU_COUNT="0" EnHitsRemoval_0="0" EnHitsRemoval_1="0" EnHitsRemoval_2="0" EnHitsRemoval_3="0" EnIsolatedHitRemoval_0="0" EnIsolatedHitRemoval_1="0" EnIsolatedHitRemoval_2="0" EnIsolatedHitRemoval_3="0" HITOR_0_CNT="0" HITOR_1_CNT="0" HITOR_2_CNT="0" HITOR_3_CNT="0" HITOR_MASK_0="65535" HITOR_MASK_1="65535" HITOR_MASK_2="65535" HITOR_MASK_3="63" HIT_SAMPLE_MODE="1" LOCKLOSS_CNT="0" PrecisionToTEnable_0="0" PrecisionToTEnable_1="0" PrecisionToTEnable_2="0" PrecisionToTEnable_3="0" SKIPPED_TRIGGER_CNT="0"/>
+      </Hybrid>
+    </OpticalGroup>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="fast_cmd_reg_2">
+          <Register name="trigger_source">2</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="fast_cmd_reg_2">
+          <Register name="HitOr_enable_l12">0</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg1">
+          <Register name="dio5_ch1_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg1">
+          <Register name="dio5_ch2_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="dio5_ch3_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="dio5_ch4_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="dio5_ch5_thr">128</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="tlu_delay">0</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="ext_tlu_reg2">
+          <Register name="ext_clk_en">0</Register>
+        </Register>
+      </Register>
+    </Register>
+    <Register name="user">
+      <Register name="ctrl_regs">
+        <Register name="fast_cmd_reg_3">
+          <Register name="triggers_to_accept">10</Register>
+        </Register>
+      </Register>
+    </Register>
+  </BeBoard>
+  <Settings>
+    <Setting name="nEvents">100</Setting>
+    <Setting name="nEvtsBurst">100</Setting>
+    <Setting name="VDDDTrimTarget">1.2</Setting>
+    <Setting name="VDDATrimTarget">1.2</Setting>
+    <Setting name="VDDDTrimTolerance">0.01</Setting>
+    <Setting name="VDDATrimTolerance">0.01</Setting>
+    <Setting name="nTRIGxEvent">10</Setting>
+    <Setting name="INJtype">1</Setting>
+    <Setting name="ResetMask">0</Setting>
+    <Setting name="ResetTDAC">-1</Setting>
+    <Setting name="ROWstart">0</Setting>
+    <Setting name="ROWstop">335</Setting>
+    <Setting name="COLstart">0</Setting>
+    <Setting name="COLstop">431</Setting>
+    <Setting name="LatencyStart">0</Setting>
+    <Setting name="LatencyStop">511</Setting>
+    <Setting name="VCalHstart">100</Setting>
+    <Setting name="VCalHstop">1100</Setting>
+    <Setting name="VCalHnsteps">50</Setting>
+    <Setting name="VCalMED">100</Setting>
+    <Setting name="TargetCharge">10000</Setting>
+    <Setting name="KrumCurrStart">0</Setting>
+    <Setting name="KrumCurrStop">210</Setting>
+    <Setting name="ThrStart">340</Setting>
+    <Setting name="ThrStop">440</Setting>
+    <Setting name="TargetThr">2000</Setting>
+    <Setting name="TargetOcc">1e-06</Setting>
+    <Setting name="UnstuckPixels">0</Setting>
+    <Setting name="TAP0Start">0</Setting>
+    <Setting name="TAP0Stop">1023</Setting>
+    <Setting name="TAP1Start">0</Setting>
+    <Setting name="TAP1Stop">511</Setting>
+    <Setting name="TAP2Start">0</Setting>
+    <Setting name="TAP2Stop">511</Setting>
+    <Setting name="InvTAP2">0</Setting>
+    <Setting name="chain2Test">0</Setting>
+    <Setting name="byTime">1</Setting>
+    <Setting name="framesORtime">10</Setting>
+    <Setting name="RegNameDAC1">user.ctrl_regs.fast_cmd_reg_5.delay_after_inject_pulse</Setting>
+    <Setting name="StartValueDAC1">28</Setting>
+    <Setting name="StopValueDAC1">50</Setting>
+    <Setting name="StepDAC1">1</Setting>
+    <Setting name="RegNameDAC2">VCAL_HIGH</Setting>
+    <Setting name="StartValueDAC2">300</Setting>
+    <Setting name="StopValueDAC2">1000</Setting>
+    <Setting name="StepDAC2">20</Setting>
+    <Setting name="DisplayHisto">0</Setting>
+    <Setting name="UpdateChipCfg">1</Setting>
+    <Setting name="SaveBinaryData">0</Setting>
+    <Setting name="nHITxCol">1</Setting>
+    <Setting name="InjLatency">32</Setting>
+    <Setting name="nClkDelays">1300</Setting>
+    <Setting name="TDACGainStart">140</Setting>
+    <Setting name="TDACGainStop">140</Setting>
+    <Setting name="TDACGainNSteps">0</Setting>
+    <Setting name="DoNSteps">0</Setting>
+    <Setting name="OccPerPixel">2e-05</Setting>
+    <Setting name="MaxMaskedPixels">1</Setting>
+    <Setting name="DoOnlyNGroups">0</Setting>
+    <Setting name="DisableChannelsAtExit">1</Setting>
+    <Setting name="DataOutputDir"/>
+    <Setting name="DoDataIntegrity">1</Setting>
+  </Settings>
+  <MonitoringSettings>
+    <Monitoring enable="1" type="RD53B">
+      <MonitoringSleepTime>5000</MonitoringSleepTime>
+      <MonitoringElement device="RD53" enable="0" register="VINA"/>
+      <MonitoringElement device="RD53" enable="0" register="VDDA"/>
+      <MonitoringElement device="RD53" enable="0" register="ANA_IN_CURR"/>
+      <MonitoringElement device="RD53" enable="0" register="VIND"/>
+      <MonitoringElement device="RD53" enable="0" register="VDDD"/>
+      <MonitoringElement device="RD53" enable="0" register="DIG_IN_CURR"/>
+      <MonitoringElement device="RD53" enable="0" register="Iref"/>
+      <MonitoringElement device="RD53" enable="0" register="POLY_TEMP_SENS_TOP"/>
+      <MonitoringElement device="RD53" enable="0" register="POLY_TEMP_SENS_BOTTOM"/>
+      <MonitoringElement device="RD53" enable="0" register="TEMPSENS_ANA_SLDO"/>
+      <MonitoringElement device="RD53" enable="0" register="TEMPSENS_DIG_SLDO"/>
+      <MonitoringElement device="RD53" enable="0" register="TEMPSENS_CENTER"/>
+      <MonitoringElement device="RD53" enable="1" register="INTERNAL_NTC"/>
+    </Monitoring>
+  </MonitoringSettings>
+</HwDescription>

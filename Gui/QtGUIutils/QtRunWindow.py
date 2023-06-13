@@ -353,6 +353,8 @@ class QtRunWindow(QWidget):
 
 	def updatetemp(self, index, sensorMeasure):
 		index = index % len(self.TempLabelList)
+		print('length of templist is {0}'.format(len(self.TempLabelList)))
+		print('the index is {0}'.format(index))
 		self.TempLabelList[index].setText(sensorMeasure)
 
 
