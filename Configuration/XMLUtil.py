@@ -180,7 +180,7 @@ class MonitoringModule():
     if 'RD53A' in boardtype:
       self.Enable="1" 
     else:
-      self.Enable="0"
+      self.Enable="1"
     self.SleepTime=5000
     self.MonitoringList = {}
   def SetType(self, Type):

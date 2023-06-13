@@ -278,12 +278,36 @@ class QtRunWindow(QWidget):
 		self.HistoryLayout.addWidget(self.StatusTable)
 		self.HistoryBox.setLayout(self.HistoryLayout)
 
+		self.TempBox = QGroupBox("&Chip Temperature")
+		TempBoxSP = self.TempBox.sizePolicy()
+		TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
+		self.TempBox.setSizePolicy(TempBoxSP)
+		self.TempLayout = QGridLayout()
+		self.type = self.ModuleType
+		self.LabelList = []
+		self.TempLabelList = []
+		for key,value in ModuleLaneMap[self.type].items():
+			self.Label = QLabel()
+			self.Label.setText("Chip: " + str(value))
+			self.TempLabel = QLabel()
+			self.LabelList.append(self.Label)
+			self.TempLabelList.append(self.TempLabel)
+
+		for index in range(len(self.LabelList)):
+			self.TempLayout.addWidget(self.LabelList[index], index +1, 0, 1, 1)
+			self.TempLayout.addWidget(self.TempLabelList[index], index +1, 1, 1, 1)
+		self.TempBox.setLayout(self.TempLayout)
+		
+		
+
 		
 		LeftColSplitter.addWidget(ControllerBox)
 		LeftColSplitter.addWidget(TerminalBox)
+		LeftColSplitter.addWidget(self.TempBox)
 		RightColSplitter.addWidget(OutputBox)
 		RightColSplitter.addWidget(self.HistoryBox)
 
+		
 
 		LeftColSplitterSP = LeftColSplitter.sizePolicy()
 		LeftColSplitterSP.setHorizontalStretch(self.HorizontalSeg[0])
@@ -305,6 +329,11 @@ class QtRunWindow(QWidget):
 
 		self.MainBodyBox.setLayout(mainbodylayout)
 		self.mainLayout.addWidget(self.MainBodyBox, sum(self.GroupBoxSeg[0:1]), 0, self.GroupBoxSeg[1], 1)
+
+
+	def updatetemp(self, index, sensorMeasure):
+		index = index % len(self.TempLabelList)
+		self.TempLabelList[index].setText(sensorMeasure)
 
 	def destroyMain(self):
 		self.MainBodyBox.deleteLater()
