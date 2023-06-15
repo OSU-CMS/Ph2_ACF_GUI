@@ -1,7 +1,7 @@
 [submodule "power_supply"]
 	path = power_supply
 	url = https://gitlab.cern.ch/cms_tk_ph2/power_supply.git
-	branch = main
+	branch = developer
 [submodule "Ph2_ACF"]
 	path = Ph2_ACF
 	url = https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF.git
