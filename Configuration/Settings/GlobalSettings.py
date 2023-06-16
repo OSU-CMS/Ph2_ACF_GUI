@@ -9,22 +9,22 @@ globalSettingsA = {
 'EN_CORE_COL_DIFF_1'     :     "0",
 'EN_CORE_COL_DIFF_2'     :     "0",
  
-'EN_MACRO_COL_CAL_LIN_1' : "65535",
-'EN_MACRO_COL_CAL_LIN_2' : "65535",
-'EN_MACRO_COL_CAL_LIN_3' : "65535",
-'EN_MACRO_COL_CAL_LIN_4' : "65535",
-'EN_MACRO_COL_CAL_LIN_5' :    "15",
+'EN_CORE_COL_CAL_LIN_1' : "65535",
+'EN_CORE_COL_CAL_LIN_2' : "65535",
+'EN_CORE_COL_CAL_LIN_3' : "65535",
+'EN_CORE_COL_CAL_LIN_4' : "65535",
+'EN_CORE_COL_CAL_LIN_5' :    "15",
 
-'EN_MACRO_COL_CAL_SYNC_1': "65535",
-'EN_MACRO_COL_CAL_SYNC_2': "65535",
-'EN_MACRO_COL_CAL_SYNC_3': "65535",
-'EN_MACRO_COL_CAL_SYNC_4': "65535",
+'EN_CORE_COL_CAL_SYNC_1': "65535",
+'EN_CORE_COL_CAL_SYNC_2': "65535",
+'EN_CORE_COL_CAL_SYNC_3': "65535",
+'EN_CORE_COL_CAL_SYNC_4': "65535",
 
-'EN_MACRO_COL_CAL_DIFF_1': "65535",
-'EN_MACRO_COL_CAL_DIFF_2': "65535",
-'EN_MACRO_COL_CAL_DIFF_3': "65535",
-'EN_MACRO_COL_CAL_DIFF_4': "65535",
-'EN_MACRO_COL_CAL_DIFF_5':    "15",
+'EN_CORE_COL_CAL_DIFF_1': "65535",
+'EN_CORE_COL_CAL_DIFF_2': "65535",
+'EN_CORE_COL_CAL_DIFF_3': "65535",
+'EN_CORE_COL_CAL_DIFF_4': "65535",
+'EN_CORE_COL_CAL_DIFF_5':    "15",
 
 'HITOR_0_MASK_LIN_0'     :     "0",
 'HITOR_0_MASK_LIN_1'     :     "0",
@@ -145,53 +145,6 @@ globalSettings_DictB = {
     'GenericDAC-DAC'             :    globalSettingsB,
     'Physics'                    :    globalSettingsB,
     'IVCurve'                    :    globalSettingsB,
+
 }
-globalSettingsA_v48 = copy.deepcopy(globalSettingsA)
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_1')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_2')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_3')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_4')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_LIN_5')
 
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_SYNC_1')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_SYNC_2')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_SYNC_3')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_SYNC_4')
-
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_1')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_2')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_3')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_4')
-globalSettingsA_v48.pop('EN_MACRO_COL_CAL_DIFF_5')
-
-globalSettingsA_v48['EN_CORE_COL_CAL_LIN_1'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_LIN_2'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_LIN_3'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_LIN_4'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_LIN_5'] =    "15"
-
-globalSettingsA_v48['EN_CORE_COL_CAL_SYNC_1'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_SYNC_2'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_SYNC_3'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_SYNC_4'] = "65535"
-
-globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_1'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_2'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_3'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_4'] = "65535"
-globalSettingsA_v48['EN_CORE_COL_CAL_DIFF_5'] =    "15"
-
-globalSettingsA_v49 = copy.deepcopy(globalSettingsA_v48)
-
-
-if "v4-11" in Ph2_ACF_VERSION:
-    for key in globalSettings_DictA.keys():
-        globalSettings_DictA[key] = globalSettingsA_v49    
-
-if "v4-13" in Ph2_ACF_VERSION:
-    for key in globalSettings_DictA.keys():
-        globalSettings_DictA[key] = globalSettingsA_v49
-
-if "v4-14" in Ph2_ACF_VERSION:
-    for key in globalSettings_DictA.keys():
-        globalSettings_DictA[key] = globalSettingsA_v49

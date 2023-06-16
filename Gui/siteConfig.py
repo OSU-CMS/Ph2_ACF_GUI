@@ -52,7 +52,9 @@ ModuleCurrentMap = {
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
 	"Yellow Module (Purdue)": 6.5,
-	"CROC 1x2"  : 4.0,
+
+	"CROC 1x2"  : 4.5,
+
 	"TFPX CROC Quad" : 6.5,
 	"CROC SCC"  : 2.0,
 }
@@ -64,7 +66,9 @@ ModuleVoltageMapSLDO = {
 	"TEPX Quad" : 2.0,
 	"TBPX Quad" : 2.98,
 	"Yellow Module (Purdue)": 2.8,
-	"CROC 1x2"  : 2.0,
+
+	"CROC 1x2"  : 2.2,
+
 	"TFPX CROC Quad" : 2.98,
 	"CROC SCC"  : 1.8,
 }

@@ -104,10 +104,12 @@ class OGModule():
   def __init__(self):
     self.Id="0" 
     self.FMCId="0"
+    self.isOpticalLink = False
     self.HyBridList = []
-  def SetOpticalGrp(self, Id, FMCId):
+  def SetOpticalGrp(self, Id, FMCId, isOptLink=False):
     self.Id=Id
     self.FMCId=FMCId
+    self.isOpticalLink = isOptLink
 
   def AddHyBrid(self, HybridModule):
     self.HyBridList.append(HybridModule)
@@ -241,7 +243,7 @@ def SetMonitoring(Node, MonitoringItem):
       Node_MonitoringElements = SetNodeAttribute(Node_MonitoringElements,{'device':"RD53",'register':element,'enable':MonitoringItem.MonitoringList[element]})
   return Node
 
-def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardtype = "RD53A"):
+def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardtype = "RD53A", isOpticalLink = False):
   Node_HWInterface = ET.Element('HwDescription')
   BeBoardList = HWDescription.BeBoardList
   for BeBoard in BeBoardList:
@@ -263,6 +265,14 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
     for OGModule in OpticalGroupList:
       Node_OGModule = ET.SubElement(Node_BeBoard, 'OpticalGroup')
       Node_OGModule = SetNodeAttribute(Node_OGModule,{'Id':OGModule.Id,'FMCId':OGModule.FMCId})
+      if isOpticalLink:
+        #FIXME: Add additional stuff for optical link here.
+        Node_OpFiles = ET.SubElement(Node_OGModule, 'lqGBT_Files')
+        Node_OpFiles = SetNodeAttribute(Node_OpFiles,{'path':"${PWD}/"})
+        Node_lqGBT = ET.SubElement(Node_OGModule, 'lqGBT')
+        Node_lqGBT = SetNodeAttribute( Node_lqGBT, {'Id':'0','version':'1','configfile':'CMSIT_LqGBT-v1.txt','ChipAddress':'0x70','RxDataRate':'1280','RxHSLPolarity':'0','TxDataRate':'160','TxHSLPolarity':'1'})
+        Node_lqGBTsettings = ET.SubElement(Node_lqGBT, 'Settings')
+        
       HyBridList = OGModule.HyBridList
       
 
@@ -275,6 +285,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
             StatusStr = 'enable'
         if "v4-14" in Ph2_ACF_VERSION:
             StatusStr = 'enable'
+
         Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,StatusStr:HyBridModule.Status,'Name':HyBridModule.Name})
         #### This is where the RD53_Files is setup ####
         ##FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
