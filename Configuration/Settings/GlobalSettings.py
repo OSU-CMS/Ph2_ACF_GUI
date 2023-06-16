@@ -145,4 +145,6 @@ globalSettings_DictB = {
     'GenericDAC-DAC'             :    globalSettingsB,
     'Physics'                    :    globalSettingsB,
     'IVCurve'                    :    globalSettingsB,
+
 }
+

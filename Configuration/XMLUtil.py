@@ -182,7 +182,7 @@ class MonitoringModule():
     if 'RD53A' in boardtype:
       self.Enable="1" 
     else:
-      self.Enable="0"
+      self.Enable="1"
     self.SleepTime=5000
     self.MonitoringList = {}
   def SetType(self, Type):
@@ -279,12 +279,6 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
         StatusStr = 'Status'
-        if "v4-08" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
-        if "v4-09" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
-        if "v4-10" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
         if "v4-11" in Ph2_ACF_VERSION:
             StatusStr = 'enable'
         if "v4-13" in Ph2_ACF_VERSION:

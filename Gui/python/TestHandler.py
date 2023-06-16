@@ -313,7 +313,7 @@ class TestHandler(QObject):
 			self.SLDOScanHandler.SLDOScan()
 			return
 			
-
+		self.tempindex = 0
 		self.starttime = None
 		self.ProgressingMode = "None"
 		self.currentTest = testName
@@ -623,14 +623,29 @@ class TestHandler(QObject):
 						pass
 				elif "TEMPSENS_" in textStr:
 					try:
-						# Chip status monitoring to be added
-						sensorMeasure = re.sub(r'.*->','',textStr)
+						output = textStr.split("[")
+						sensor = output[8]
+						sensorMeasure = sensor[3:]
 						print(sensorMeasure)
-						#self.runwindow.MonitorWidget.Temperature.SetValue(sensorMeasure)
-					except:
-						pass
+						if sensorMeasure != "":
+							self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+							self.tempindex += 1
+					except Exception as e:
+						print ("Failed due to {0}".format(e))
+				elif "INTERNAL_NTC" in textStr:
+					try:
+						output = textStr.split("[")
+						sensor = output[8]
+						sensorMeasure = sensor[3:]
+						print(sensorMeasure)
+						if sensorMeasure != "":
+							self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+							self.tempindex += 1
+					except Exception as e:
+						print ("Failed due to {0}".format(e))
 				continue
-			#	if ("Global threshold for" in textStr):
+
+
 
 			elif (self.ProgressingMode == "Summary"):
 				toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
