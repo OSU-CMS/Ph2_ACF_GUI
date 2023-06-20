@@ -183,7 +183,7 @@ class MonitoringModule():
       self.Enable="1" 
     else:
       self.Enable="1"
-    self.SleepTime=5000
+    self.SleepTime=10000
     self.MonitoringList = {}
   def SetType(self, Type):
     self.Type=Type
