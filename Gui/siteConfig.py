@@ -39,6 +39,11 @@ defaultSensorBaudRate = 9600
 #################################
 
 
+## Specify whether of not you want to monitor chip temperature during the tests ##
+## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
+Monitor_RD53A = "1"
+Monitor_CROC = "0"
+
 #setting default HV current compliance in mA
 defaultHVCurrentCompliance = 0.00001
 
