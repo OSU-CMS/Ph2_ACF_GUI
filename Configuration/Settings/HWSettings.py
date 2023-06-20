@@ -135,7 +135,7 @@ HWSettingsA_ThresMin = copy.deepcopy(HWSettingsA_v49)
 HWSettingsA_ThresMin["nEvents"] = 1e7
 HWSettingsA_ThresMin["nEvtsBurst"] = 1e4
 HWSettingsA_ThresMin["INJtype"] = 0
-HWSettingsA_ThresMin["nClkDelays"] = 10
+HWSettingsA_ThresMin["nClkDelays"] = 70
 HWSettingsA_ThresMin["ThrStart"] = 370
 HWSettingsA_ThresMin["nTRIGxEvent"] = 1
 
