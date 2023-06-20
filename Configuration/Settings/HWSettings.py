@@ -172,7 +172,7 @@ HWSettingsB_NoiseScan = copy.deepcopy(HWSettingsB_v49)
 HWSettingsB_NoiseScan["nEvents"] = 1e7
 HWSettingsB_NoiseScan["nEvtsBurst"] = 1e4
 HWSettingsB_NoiseScan["INJtype"] = 0
-HWSettingsB_NoiseScan["nClkDelays"] = 10
+HWSettingsB_NoiseScan["nClkDelays"] = 70
 HWSettingsB_NoiseScan["nTRIGxEvent"] = 1
 
 HWSettingsB_SCurve =  copy.deepcopy(HWSettingsB_v49)
@@ -193,13 +193,13 @@ HWSettingsB_ThresMin = copy.deepcopy(HWSettingsB_v49)
 HWSettingsB_ThresMin["nEvents"] = 1e7
 HWSettingsB_ThresMin["nEvtsBurst"] = 1e4
 HWSettingsB_ThresMin["INJtype"] = 0
-HWSettingsB_ThresMin["nClkDelays"] = 10
+HWSettingsB_ThresMin["nClkDelays"] = 70
 HWSettingsB_ThresMin["ThrStart"] = 370
 HWSettingsB_ThresMin["nTRIGxEvent"] = 1
 
 HWSettingsB_ThresAdj = copy.deepcopy(HWSettingsB_v49)
-HWSettingsB_ThresAdj["ThrStart"] = 405
-HWSettingsB_ThresAdj["ThrStop"] = 505
+HWSettingsB_ThresAdj["ThrStart"] = 380
+HWSettingsB_ThresAdj["ThrStop"] = 500
 
 HWSettingsB_InjDelay = copy.deepcopy(HWSettingsB_v49)
 HWSettingsB_InjDelay["LatencyStart"] = 110

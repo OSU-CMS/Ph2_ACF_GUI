@@ -10,7 +10,7 @@ ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}
 
 USER root
 
-LABEL Name=ph2acfgui Version=4.13.1
+LABEL Name=ph2acfgui Version=4.14.1
 WORKDIR /home/cmsTkUser/Ph2_ACF_GUI/
 ADD . /home/cmsTkUser/Ph2_ACF_GUI/
 RUN ls -lrt

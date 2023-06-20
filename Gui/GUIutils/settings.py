@@ -90,23 +90,27 @@ firmware_image = {
 	"SingleSCC" : 
             {"v4-11":"SCC_ELE_RD53A_v4-5.bit",
 			 "v4-13":"SCC_ELE_RD53A_v4-6.bit",
-			 "v4-14":"SCC_ELE_RD53A_v4-6.bit",
-			},
+
+             "v4-14":"SCC_ELE_RD53A_v4-6.bit",
+			 },
 	"Yellow Module (Purdue)" : 
              {"v4-11":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-13":"QUAD_ELE_RD53A_v4-6.bit",
-			  "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
-			 },
+              "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
+              "v4-02":"QUAD_ELE_RD53A_v4-2.bit",
+			  },
 	"TFPX Quad" : 
              {"v4-11":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-13":"QUAD_ELE_RD53A_v4-6.bit",
-			  "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
-			 },
+              "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
+			  },
 	"TEPX Quad" : 
              {"v4-11":"QUAD_ELE_RD53A_v4-5.bit",
+			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-13":"QUAD_ELE_RD53A_v4-6.bit",
-			  "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
-			 },
+              "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
+			  },
+
 	"TBPX Quad" : 
              {"v4-11":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-13":"QUAD_ELE_RD53A_v4-6.bit",

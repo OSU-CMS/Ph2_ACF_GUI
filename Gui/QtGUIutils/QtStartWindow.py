@@ -79,16 +79,16 @@ class SummaryBox(QWidget):
 				value[item] = 1.0
 			self.verboseResult[key] = value
 
-	def checkFwPar(self):
+	def checkFwPar(self, pfirmwareName):
 		# To be finished
 		
 		try:
-			if not os.access(os.environ.get('GUI_dir'),os.W_OK):
-				QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
-				return
-			if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
-				QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
-				return
+			#if not os.access(os.environ.get('GUI_dir'),os.W_OK):
+			#	QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
+			#	return
+			#if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
+			#	QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
+			#	return
 
 			FWisPresent = False
 			if 'CROC' in self.module.getType():
@@ -97,10 +97,13 @@ class SummaryBox(QWidget):
 				boardtype = 'RD53A'
 			#updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
 
-			print('write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)))
-			print('write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)))
+			#print('write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)))
+			#print('write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)))
 
-			fc7_ip = FirmwareList[defaultFC7]
+			###FIXME:  Here I need to modify the CMSIT
+
+			#fc7_ip = FirmwareList[defaultFC7]
+			fc7_ip = FirmwareList[pfirmwareName]
 			uricmd = "sed -i -e 's/192.168.1.80/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(fc7_ip, os.environ.get('GUI_dir'),boardtype)
 			updateuri = subprocess.call([uricmd], shell=True)
 
@@ -337,10 +340,10 @@ class QtStartWindow(QWidget):
 		self.master.ExitButton.setDisabled(False)
 
 
-	def checkFwPar(self):
+	def checkFwPar(self, pfirmwareName):
 		GlobalCheck = True
 		for item in self.ModuleList:
-			item.checkFwPar()
+			item.checkFwPar(pfirmwareName)
 			GlobalCheck = GlobalCheck and item.getResult()
 		self.passCheck = GlobalCheck
 		return GlobalCheck
@@ -351,12 +354,12 @@ class QtStartWindow(QWidget):
 
 
 	def openRunWindow(self):
-		if not os.access(os.environ.get('GUI_dir'),os.W_OK):
-			QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
-			return
-		if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
-			QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
-			return
+		#if not os.access(os.environ.get('GUI_dir'),os.W_OK):
+		#	QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
+		#	return
+		#if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
+		#	QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
+		#	return
 		for module in self.BeBoardWidget.getModules():
 			if module.getSerialNumber() == "":
 				QMessageBox.information(None,"Error","No valid serial number!", QMessageBox.Ok)
@@ -364,7 +367,7 @@ class QtStartWindow(QWidget):
 			if module.getID() == "":
 				QMessageBox.information(None,"Error","No valid ID!", QMessageBox.Ok)
 				return
-		self.checkFwPar()
+		self.checkFwPar(self.firmwareName)
 		if self.passCheck == False:
 			reply = QMessageBox().question(None, "Error", "Front-End parameter check failed, forced to continue?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
 			if reply == QMessageBox.No:
