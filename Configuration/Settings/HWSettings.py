@@ -198,8 +198,8 @@ HWSettingsB_ThresMin["ThrStart"] = 370
 HWSettingsB_ThresMin["nTRIGxEvent"] = 1
 
 HWSettingsB_ThresAdj = copy.deepcopy(HWSettingsB_v49)
-HWSettingsB_ThresAdj["ThrStart"] = 405
-HWSettingsB_ThresAdj["ThrStop"] = 505
+HWSettingsB_ThresAdj["ThrStart"] = 380
+HWSettingsB_ThresAdj["ThrStop"] = 500
 
 HWSettingsB_InjDelay = copy.deepcopy(HWSettingsB_v49)
 HWSettingsB_InjDelay["LatencyStart"] = 110
