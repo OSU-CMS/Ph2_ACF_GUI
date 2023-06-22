@@ -28,7 +28,6 @@ class PowerSupply():
         self.PoweringMode = None
         self.ModuleType = None
         self.CompCurrent = 0.0
-        self.UsingPythonInterface = True
         self.XMLConfig = None
         self.Port = None
         self.DeviceNode = None
