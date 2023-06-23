@@ -80,22 +80,14 @@ class PowerSupply():
             print(resourceName)
             self.setResourceManager()
             print(self.deviceMap.keys())
+
+            if "USBLV" in resourceName:
+                self.Instrument = KeysightE3633A(resourceName, reset_on_init=False, off_on_close=True)
+            elif "USBHV" in resourceName:
+                self.Instrument = Keithley2410(resourceName, reset_on_init=False, ramp_down_on_close=True)
+
             if resourceName in self.deviceMap.keys():
-                print("keys")
-                if "USBLV" in resourceName:
-                    self.Instrument = KeysightE3633A(resourceName, reset_on_init=False, off_on_close=True)
-                elif "USBHV" in resourceName:
-                    self.Instrument = Keithley2410(resourceName, reset_on_init=False, ramp_down_on_close=True)
                 self.Port = self.deviceMap[resourceName].lstrip("ASRL").rstrip("::INSTR")
-            elif resourceName in self.deviceMap.values():
-                print("values")
-                self.Instrument = self.ResourcesManager.open_resource("{}".format(resourceName))
-            else:
-                print("else")
-                if "USBLV" in resourceName:
-                    self.Instrument = KeysightE3633A(resourceName, reset_on_init=False, off_on_close=True)
-                elif "USBHV" in resourceName:
-                    self.Instrument = Keithley2410(resourceName, reset_on_init=False, ramp_down_on_close=True)
                 
             self.Instrument.__enter__()
 
@@ -135,25 +127,42 @@ class PowerSupply():
 
     def getInfo(self):
         try:
-            print(self.Instrument)
             info = self.Instrument.query("IDENTIFIER")
-            print(info)
             return info
         except Exception as err:
             logging.error("Failed to get instrument information:{}".format(err))
             return "No valid device"
 
+    def startRemoteCtl(self):
+        pass   
+
+    def InitialDevice(self):
+        if self.PowerType == "LV":
+            pass
+        if self.PowerType == "HV":
+            self.Instrument.reset()
+            self.Instrument.set('SOURCE', 'VOLT')
+            self.Instrument.set('VOLTAGE_MODE', 'FIX')
+            self.Instrument.set('SENSE_CURRENT_RANGE', 10e-6)
+
     def TurnOn(self):
         try:
+            self.InitialDevice()
+            Voltage = 0.0
+            Current = 0.0
+
             if self.PowerType ==  "LV" and self.PoweringMode == "SLDO":
                 Voltage = ModuleVoltageMapSLDO[self.ModuleType]
                 Current = ModuleCurrentMap[self.ModuleType]
             elif self.PowerType ==  "LV" and self.PoweringMode == "Direct":
                 Voltage = ModuleVoltageMap[self.ModuleType]
                 Current = ModuleCurrentMap[self.ModuleType]
+
             if self.PowerType == "LV":
-                self.Instrument.set('OCP1', self.CompCurrent)
+                self.Instrument.set('VOLTAGE1', Voltage)
+                self.Instrument.set('CURRENT1', Current)
                 self.Instrument.on(1)
+
             if self.PowerType == "HV":
                 try:
                     HVstatus = self.Instrument.status() 
@@ -165,6 +174,7 @@ class PowerSupply():
                     self.Instrument.on() 
                 except Exception as err:
                     logging.error("Failed to turn on the sourceMeter:{}".format(err))
+
         except Exception as err:
             logging.error("Failed to turn on the sourceMeter:{}".format(err))
 
@@ -179,9 +189,9 @@ class PowerSupply():
     def TurnOff(self):
         try:
             if self.PowerType == "LV":
-                self.Instrument.off()
+                self.Instrument.off(1)
             elif self.PowerType == "HV":
-                self.TurnOffHV()
+                self.Instrument.off()
 
         except Exception as err:
             logging.error("Failed to turn off the sourceMeter:{}".format(err))
@@ -233,17 +243,14 @@ class PowerSupply():
 
     def ReadCurrent(self):
         try:
-            print("Power type", self.PowerType)
             if self.PowerType == "LV":
                 current = self.Instrument.query('CURRENT1')
                 return current
             elif self.PowerType == "HV": 
-                print("HV in use")
-                self.Instrument.reset()
+                #self.Instrument.reset()
                 self.Instrument.set("SOURCE", 'VOLT')
                 self.Instrument.set("VOLTAGE_MODE", 'FIX')
                 #self.Instrument.set("SENSE_FUNCTION", 'CURR')
-                print( "SENSE_FUNCTION: " , self.Instrument.query("SENSE_FUNCTION"))
                 self.Instrument.set("OUTPUT", 'ON')
 
                 # This returns a comma seperated string of 5 numbers, looking at the keithley, the second entry is the actual current
@@ -276,10 +283,22 @@ class PowerSupply():
                     logging.info("Try to turn off non-HV as high voltage")
                     return
             try:
-                self.Instrument.off()
+                HVstatus = self.ReadOutputStatus()
+                if '0' in HVstatus:
+                    return
+                currentVoltage = float(self.ReadVoltage())
+                stepLength = 3
+                if 0 < currentVoltage:
+                    stepLength = -3
+
+                for voltage in range(int(currentVoltage),0,stepLength):
+                    self.SetHVVoltage(voltage)
+                    time.sleep(0.3)
+                self.SetHVVoltage(0)
+                self.TurnOff()
             except Exception as err:
                 logging.error("Failed to turn off the sourceMeter:{}".format(err))
-                return None
+                return None           
 
     def SetHVRange(self, voltRange):
         if not self.isHV():
@@ -328,13 +347,10 @@ class PowerSupply():
                 self.TurnOn()
                 
                 currentVoltage = float(self.ReadVoltage())
-                print("CurrentVoltage", currentVoltage)
-                print("hvTarge", hvTarget)
                 if hvTarget < currentVoltage:
                     stepLength = -abs(stepLength)
                 
                 for voltage in range(int(currentVoltage), int(hvTarget), int(stepLength)):
-                    print("Voltage", voltage)
                     self.SetHVVoltage(voltage)
                     time.sleep(0.3)
                 self.SetHVVoltage(hvTarget)
@@ -372,12 +388,12 @@ class PowerSupply():
 
 if __name__ == "__main__":
     # This allows icicle to use the right pyvisa library without changing the code. 
-    HVpowersupply = PowerSupply(powertype = "HV")
+    LVpowersupply = PowerSupply(powertype = "LV")
+    LVpowersupply.setPoweringMode()
 
     #HVpowersupply.setPowerModel("ahhh")
-    HVpowersupply.setInstrument("ASRL/dev/ttyUSBHV::INSTR")
-    HVpowersupply.TurnOnHV()
+    LVpowersupply.setInstrument("ASRL/dev/ttyUSBLV::INSTR")
+    LVpowersupply.setCompCurrent()
+    LVpowersupply.TurnOn()
     time.sleep(2)
-    print(HVpowersupply.ReadCurrent())
-    time.sleep(2)
-    HVpowersupply.TurnOffHV()
+    LVpowersupply.TurnOff()

@@ -25,7 +25,7 @@ class IVCurveThread(QThread):
     def turnOn(self):
         self.powersupply.TurnOffHV()
         self.powersupply.TurnOnHV()
-        self.powersupply.SetHVRange(200)
+        self.powersupply.SetHVRange(1000)
         self.powersupply.SetHVComplianceLimit(0.00001)
 
     def abortTest(self):

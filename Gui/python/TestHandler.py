@@ -56,7 +56,6 @@ class TestHandler(QObject):
 		self.HVpowersupply = self.master.HVpowersupply
 		self.LVpowersupply = self.master.LVpowersupply
 		#self.LVpowersupply.Reset()
-		#self.LVpowersupply.InitialDevice()
 		#self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
 		#self.LVpowersupply.TurnOn()
 		self.FWisPresent = False
@@ -899,7 +898,7 @@ class TestHandler(QObject):
 
 	def SLDOScanFinished(self):
 		self.LVpowersupply.Reset()
-		self.LVpowersupply.InitialDevice()
+                self.LVpowersupply.InitialDevice()
 		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
 		self.LVpowersupply.TurnOn()
 		self.testIndexTracker += 1
