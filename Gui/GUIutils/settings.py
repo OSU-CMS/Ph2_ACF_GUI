@@ -8,7 +8,8 @@ from Gui.siteSettings import *
 ExpertUserList = [
 	'mjoyce',
 	'kwei',
-	'localexpert'
+	'localexpert',
+	'cmsfpix_phase2_user',
 ]
 
 FirmwareList = {}
