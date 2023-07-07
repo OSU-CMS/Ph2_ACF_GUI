@@ -7,13 +7,13 @@ from Gui.siteSettings import *
 #List of expert users
 ExpertUserList = [
 	'mjoyce',
-	'kwei',
-	'localexpert',
 	'cmsfpix_phase2_user',
+	'localexpert',
 ]
 
-FirmwareList = {}
+FirmwareList = FC7List
 
+'''
 if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
 	IPfile = open(os.environ.get('GUI_dir')+"/fc7_ip_address.txt")
 	iplines = IPfile.readlines()
@@ -31,7 +31,7 @@ else:
 	'fc7.board.1'			 :  '192.168.1.80',
 	'fc7.board.2'			 :  '127.0.0.1',#'192.168.1.81',
 	}
-	
+'''
 '''
 DBServerIP = {
 	'Central-remote'		 :  '0.0.0.0',
@@ -81,25 +81,17 @@ ModuleType = {
 	2 :	"TFPX Quad",
 	3 :	"TEPX Quad",
 	4 :	"TBPX Quad",
-	5 :	"Yellow Module (Purdue)",
-	6 : "CROC 1x2",
-	7 : "TFPX CROC Quad",
-	8 : "CROC SCC",
+	5 : "CROC 1x2",
+	6 : "TFPX CROC Quad",
+	7 : "CROC SCC",
 }
 
 firmware_image = {
 	"SingleSCC" : 
             {"v4-11":"SCC_ELE_RD53A_v4-5.bit",
 			 "v4-13":"SCC_ELE_RD53A_v4-6.bit",
-
              "v4-14":"SCC_ELE_RD53A_v4-6.bit",
 			 },
-	"Yellow Module (Purdue)" : 
-             {"v4-11":"QUAD_ELE_RD53A_v4-5.bit",
-			  "v4-13":"QUAD_ELE_RD53A_v4-6.bit",
-              "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
-              "v4-02":"QUAD_ELE_RD53A_v4-2.bit",
-			  },
 	"TFPX Quad" : 
              {"v4-11":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-13":"QUAD_ELE_RD53A_v4-6.bit",
@@ -107,7 +99,6 @@ firmware_image = {
 			  },
 	"TEPX Quad" : 
              {"v4-11":"QUAD_ELE_RD53A_v4-5.bit",
-			  "v4-10":"QUAD_ELE_RD53A_v4-5.bit",
 			  "v4-13":"QUAD_ELE_RD53A_v4-6.bit",
               "v4-14":"QUAD_ELE_RD53A_v4-6.bit",
 			  },
@@ -139,7 +130,6 @@ ModuleLaneMap = {
 	"TEPX Quad": {"0":"0","1":"1","2":"2","3":"3"},
 	"TBPX Quad": {"0":"4","1":"5","2":"6","3":"7"},
 	"SingleSCC": {"0":"0"},
-	"Yellow Module (Purdue)" : {"0":"6","1":"5","3":"7"},
 	"CROC SCC":  {"0":"15"},
 	"CROC 1x2" : {"0":"12","2":"13"},
 	"TFPX CROC Quad" : {"0":"12","1":"13","2":"14"},
@@ -150,7 +140,6 @@ BoxSize = {
 	"TFPX Quad" : 4,
 	"TEPX Quad" : 4,
 	"TBPX Quad" : 4,
-	"Yellow Module (Purdue)": 3,
 	"CROC SCC"  : 1,
 	"CROC 1x2"  : 2,
 	"TFPX CROC Quad" : 3,
@@ -252,7 +241,7 @@ CompositeList = {
 	'QuickTest': ['IVCurve','PixelAlive','NoiseScan']
 }
 
-pretuningList = ['IVCurve','PixelAlive','NoiseScan']
+pretuningList = ['IVCurve','InjectionDelay','PixelAlive','NoiseScan']
 tuningList = ['ThresholdAdjustment','ThresholdEqualization','SCurveScan']
 posttuningList = ['NoiseScan','SCurveScan']
 #posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
