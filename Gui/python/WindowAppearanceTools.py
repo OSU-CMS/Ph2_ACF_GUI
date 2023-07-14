@@ -1,9 +1,14 @@
-'''List of functions used to affect the appearance of windows
-in pyQt
+"""
+List of functions used to affect the appearance of windows in pyQT.
+
 Functions:
-dark_mode'''
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtCore import Qt
+apply_dark_mode
+create_logo_widget
+"""
+
+from PyQt5.QtGui import QPalette, QColor, QImage, QPixmap
+from PyQt5.QtWidgets import QGroupBox, QHBoxLayout, QLabel
+from PyQt5.QtCore import Qt, QSize
 
 
 def apply_dark_mode(palette: QPalette) -> QPalette:
@@ -39,3 +44,27 @@ def apply_dark_mode(palette: QPalette) -> QPalette:
     palette.setColor(QPalette.Disabled, QPalette.Highlight, Qt.lightGray)
     palette.setColor(QPalette.Disabled, QPalette.HighlightedText, Qt.gray)
     return palette
+
+
+def create_logo_widget(*image_paths: str) -> QGroupBox:
+    """Use to create widget to display logo."""
+    logo_groupbox = QGroupBox("")
+    logo_groupbox.setCheckable(False)
+    logo_groupbox.setMaximumHeight(100)
+    logo_layout = QHBoxLayout()
+    print("In create_logo_widget")
+    for i, path in enumerate(image_paths):
+        logo_label = QLabel()
+        image = QImage(path).scaled(QSize(200, 60),
+                                    Qt.KeepAspectRatio,
+                                    Qt.SmoothTransformation)
+        pixmap = QPixmap.fromImage(image)
+        logo_label.setPixmap(pixmap)
+        logo_layout.addWidget(logo_label)
+
+        # Only add spacers in between logos
+        if i != len(image_paths) - 1:
+            logo_layout.addStretch(1)
+
+    logo_groupbox.setLayout(logo_layout)
+    return logo_groupbox

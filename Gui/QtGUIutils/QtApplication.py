@@ -29,6 +29,7 @@ from Gui.python.Firmware import *
 from Gui.python.ArduinoWidget import *
 from Gui.QtGUIutils.QtRunWindow import *
 from Gui.python.SimplifiedMainWidget import *
+from Gui.python.WindowAppearanceTools import apply_dark_mode
 
 class QtApplication(QWidget):
 	globalStop = pyqtSignal()
@@ -60,41 +61,10 @@ class QtApplication(QWidget):
 		self.setGeometry(300, 300, 400, 500)  
 		self.setWindowTitle('Phase2 Pixel Module Test GUI')
 
-		if False and sys.platform.startswith("darwin"):
-			QApplication.setStyle(QStyleFactory.create('macintosh'))
-			QApplication.setPalette(QApplication.style().standardPalette())
-	
 		elif sys.platform.startswith("linux") or sys.platform.startswith("win") or sys.platform.startswith("darwin"):
 			darkPalette = QPalette()
-			darkPalette.setColor(QPalette.Window, QColor(53,53,53))
-			darkPalette.setColor(QPalette.WindowText, Qt.white)
-			darkPalette.setColor(QPalette.Base, QColor(25,25,25))
-			darkPalette.setColor(QPalette.AlternateBase, QColor(53,53,53))
-			darkPalette.setColor(QPalette.ToolTipBase, Qt.darkGray)
-			darkPalette.setColor(QPalette.ToolTipText, Qt.white)
-			darkPalette.setColor(QPalette.Text, Qt.white)
-			darkPalette.setColor(QPalette.Button, QColor(53,53,53))
-			darkPalette.setColor(QPalette.ButtonText, Qt.white)
-			darkPalette.setColor(QPalette.BrightText, Qt.red)
-			darkPalette.setColor(QPalette.Link, QColor(42, 130, 218))
-			darkPalette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-			darkPalette.setColor(QPalette.HighlightedText, Qt.black)
-
-			darkPalette.setColor(QPalette.Disabled, QPalette.Window, Qt.lightGray)
-			darkPalette.setColor(QPalette.Disabled, QPalette.WindowText, Qt.gray)
-			darkPalette.setColor(QPalette.Disabled, QPalette.Base, Qt.darkGray)
-			darkPalette.setColor(QPalette.Disabled, QPalette.ToolTipBase, Qt.darkGray)
-			darkPalette.setColor(QPalette.Disabled, QPalette.ToolTipText, Qt.white)
-			darkPalette.setColor(QPalette.Disabled, QPalette.Text, Qt.gray)
-			darkPalette.setColor(QPalette.Disabled, QPalette.Button, QColor(73,73,73))
-			darkPalette.setColor(QPalette.Disabled, QPalette.ButtonText, Qt.lightGray)
-			darkPalette.setColor(QPalette.Disabled, QPalette.BrightText, Qt.lightGray)
-			darkPalette.setColor(QPalette.Disabled, QPalette.Highlight, Qt.lightGray)
-			darkPalette.setColor(QPalette.Disabled, QPalette.HighlightedText, Qt.gray)
-
-
 			QApplication.setStyle(QStyleFactory.create('Fusion'))
-			QApplication.setPalette(darkPalette)
+			QApplication.setPalette(apply_dark_mode(darkPalette))
 		else:
 			print("This GUI supports Win/Linux/MacOS only")
 		self.show()
@@ -175,11 +145,6 @@ class QtApplication(QWidget):
 			self.disableCheckBox.toggled.connect(self.HostName.setDisabled)
 			self.disableCheckBox.toggled.connect(self.DatabaseCombo.setDisabled)
 
-		#self.expertCheckBox = QCheckBox("&Expert Mode")
-		#self.expertCheckBox.setMaximumHeight(30)
-		#self.expertCheckBox.setChecked(self.expertMode)
-		#self.expertCheckBox.clicked.connect(self.switchMode)
-
 		button_login = QPushButton("&Login")
 		button_login.setDefault(True)
 		button_login.clicked.connect(self.checkLogin)
@@ -191,23 +156,6 @@ class QtApplication(QWidget):
 		layout.addWidget(self.UsernameEdit,1,2,1,2)
 		layout.addWidget(PasswordLabel,2,1,1,1,Qt.AlignRight)
 		layout.addWidget(self.PasswordEdit,2,2,1,2)
-		#layout.addWidget(HostLabel,3,1,1,1,Qt.AlignRight)
-		#if self.expertMode:
-		#	layout.addWidget(self.HostEdit,3,2,1,2)
-		#else:
-		#	layout.addWidget(self.HostName,3,2,1,2)
-		#layout.addWidget(DatabaseLabel,4,1,1,1,Qt.AlignRight)
-		#if self.expertMode:
-		#	layout.addWidget(self.DatabaseEdit,4,2,1,2)
-		#else:
-		#	layout.addWidget(self.DatabaseCombo,4,2,1,2)
-
-		#######  uncomment for debugging (skips db connection) ####
-
-		#layout.addWidget(self.disableCheckBox,5,2,1,1,Qt.AlignLeft)
-
-		###########################################################
-		#layout.addWidget(self.expertCheckBox,5,3,1,1,Qt.AlignRight)
 		layout.addWidget(button_login,6,1,1,3)
 		layout.setRowMinimumHeight(6, 50)
 
@@ -218,46 +166,20 @@ class QtApplication(QWidget):
 		self.LoginGroupBox.setLayout(layout)
 
 
-		self.LogoGroupBox = QGroupBox("")
-		self.LogoGroupBox.setCheckable(False)
-		self.LogoGroupBox.setMaximumHeight(100)
-
-		self.LogoLayout = QHBoxLayout()
-		OSULogoLabel = QLabel()
-		OSUimage = QImage("icons/osuicon.jpg").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		OSUpixmap = QPixmap.fromImage(OSUimage)
-		OSULogoLabel.setPixmap(OSUpixmap)
-		CMSLogoLabel = QLabel()
-		CMSimage = QImage("icons/cmsicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		CMSpixmap = QPixmap.fromImage(CMSimage)
-		CMSLogoLabel.setPixmap(CMSpixmap)
-		self.LogoLayout.addWidget(OSULogoLabel)
-		self.LogoLayout.addStretch(1)
-		self.LogoLayout.addWidget(CMSLogoLabel)
-
-		self.LogoGroupBox.setLayout(self.LogoLayout)
+		self.LogoGroupBox = create_logo_widget("icons/osuicon.jpg", "icons/cmsicon.png")
 
 		self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
 		self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
 
 	def changeDBList(self):
 		try:
-			#self.DBNames = DBNames[str(self.HostName.currentText())]
-			self.DBNames = eval(self.HostName.currentText()+'.DBName')
+			self.DBNames = self.HostName.currentText()+'.DBName'
 			self.DatabaseCombo.clear()
 			self.DatabaseCombo.addItems(self.DBNames)
 			self.DatabaseCombo.setCurrentIndex(0)
 		except:
 			print("Unable to change database")
 
-	def switchMode(self):
-		if self.expertMode:
-			self.expertMode =  False
-		else:
-			self.expertMode = True
-		self.destroyLogin()
-		self.setLoginUI()
-		self.createLogin()
 
 	def destroyLogin(self):
 		self.LoginGroupBox.deleteLater()
