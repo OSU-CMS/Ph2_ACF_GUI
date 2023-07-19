@@ -4,6 +4,9 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
 		QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit, QHBoxLayout,
 		QVBoxLayout, QWidget, QMainWindow, QMessageBox)
+import time
+
+
 
 import sys
 import os
@@ -20,6 +23,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
 from Gui.siteSettings import *
+#from Configuration.XMLUtil import getChannel #??this should be deleted
 #from Gui.QtGUIutils.QtProductionTestWindow import *
 
 class SummaryBox(QWidget):
@@ -149,34 +153,61 @@ class SummaryBox(QWidget):
 			voltage = float(voltage)
 			print(self.PowerModeCombo.currentText())
 
-			leakageCurrent = 0.0
-			if self.master.PowerRemoteControl["HV"]:
-				self.master.HVpowersupply.RampingUp(defaultHVsetting,-3)
-				leakageCurrent = self.master.HVpowersupply.ReadCurrent()
-				print(leakageCurrent)
-			if 'SLDO' in self.PowerModeCombo.currentText():
-				print('this is sldo check')
-				properCurrent = ModuleCurrentMap[self.module.getType()]
-				if current < properCurrent+0.2 and current > properCurrent-0.2: 
-					self.result = True
-					self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
-					self.CheckLabel.setStyleSheet("color:green")
+			#solution one
+			#check LV power status,
+			#channel = 1
+			#value = self.master.LVpowersupply.Instrument.status(channel, no_lock=True)
+			#print("LVpowersupply.Instrument.status:" , str(value))
+			#soluation two
+			#check the current and voltage reading
+			Stopcount = 0
+			while Stopcount < 4:
+				current = self.master.LVpowersupply.ReadCurrent()
+				current = float(current) if current else 0.0
+				voltage = self.master.LVpowersupply.ReadVoltage()
+				voltage = float(voltage) if voltage else 0.0
+				if voltage != 0 and current != 0:
+					leakageCurrent = 0.0
+					if self.master.PowerRemoteControl["HV"]:
+						self.master.HVpowersupply.RampingUp(defaultHVsetting,-3)
+						leakageCurrent = self.master.HVpowersupply.ReadCurrent()
+						print(leakageCurrent)
+					if 'SLDO' in self.PowerModeCombo.currentText():
+						print('this is sldo check')
+						properCurrent = ModuleCurrentMap[self.module.getType()]
+						if current < properCurrent+0.2 and current > properCurrent-0.2: 
+							self.result = True
+							self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
+							self.CheckLabel.setStyleSheet("color:green")
+						else:
+							self.result = False
+							self.CheckLabel.setText("Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
+							self.CheckLabel.setStyleSheet("color:red")
+					elif 'Direct' in self.PowerModeCombo.currentText():
+						print('this is direct mode')
+						properCurrent = ModuleCurrentMap[self.module.getType()]
+						if current < properCurrent+0.1 and current > properCurrent-0.3: 
+							self.result = True
+							self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
+							self.CheckLabel.setStyleSheet("color:green")
+						else:
+							self.result = False
+							self.CheckLabel.setText("Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
+							self.CheckLabel.setStyleSheet("color:red")
+					Stopcount += 4 #quit the while loop
+					return self.result
+					
+					
+				
 				else:
+					Stopcount += 1
+					print("LV SP is off now")
 					self.result = False
 					self.CheckLabel.setText("Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
 					self.CheckLabel.setStyleSheet("color:red")
-			elif 'Direct' in self.PowerModeCombo.currentText():
-				print('this is direct mode')
-				properCurrent = ModuleCurrentMap[self.module.getType()]
-				if current < properCurrent+0.1 and current > properCurrent-0.3: 
-					self.result = True
-					self.CheckLabel.setText("OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
-					self.CheckLabel.setStyleSheet("color:green")
-				else:
-					self.result = False
-					self.CheckLabel.setText("Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(current,voltage))
-					self.CheckLabel.setStyleSheet("color:red")
-			return self.result
+
+					time.sleep(2)
+
 		except Exception as err:
 			self.result = False
 			self.CheckLabel.setText("No measurement")
