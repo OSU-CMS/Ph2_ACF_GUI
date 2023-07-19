@@ -153,15 +153,10 @@ class SummaryBox(QWidget):
 			voltage = float(voltage)
 			print(self.PowerModeCombo.currentText())
 
-			#solution one
-			#check LV power status,
-			channel = 1
-			LVStatusValue = self.master.LVpowersupply.Instrument.status(channel, no_lock=True)
-			#print("LVpowersupply.Instrument.status:" , str(value))
-			#soluation two
-			#check the current and voltage reading
 			Stopcount = 0
 			while Stopcount < 4:
+				channel = 1
+				LVStatusValue = self.master.LVpowersupply.Instrument.status(channel, no_lock=True) #return 1 if it is on, 0 if it is off
 				current = self.master.LVpowersupply.ReadCurrent()
 				Readcurrent = float(current) if current else 0.0
 				voltage = self.master.LVpowersupply.ReadVoltage()
