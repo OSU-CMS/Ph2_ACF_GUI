@@ -155,18 +155,31 @@ class SummaryBox(QWidget):
 
 			#solution one
 			#check LV power status,
-			#channel = 1
-			#value = self.master.LVpowersupply.Instrument.status(channel, no_lock=True)
+			channel = 1
+			LVStatusValue = self.master.LVpowersupply.Instrument.status(channel, no_lock=True)
 			#print("LVpowersupply.Instrument.status:" , str(value))
 			#soluation two
 			#check the current and voltage reading
 			Stopcount = 0
 			while Stopcount < 4:
 				current = self.master.LVpowersupply.ReadCurrent()
-				current = float(current) if current else 0.0
+				Readcurrent = float(current) if current else 0.0
 				voltage = self.master.LVpowersupply.ReadVoltage()
-				voltage = float(voltage) if voltage else 0.0
-				if voltage != 0 and current != 0:
+				Readvoltage = float(voltage) if voltage else 0.0
+				#find the set value
+				testModuleType = self.master.LVpowersupply.ModuleType
+				testPowerMode = self.master.LVpowersupply.PoweringMode
+				if testPowerMode == "SLDO":
+					TestVoltage = ModuleVoltageMapSLDO[testModuleType]
+					TestCurrent = ModuleCurrentMap[testModuleType]
+				elif testPowerMode == "Direct":
+					TestVoltage = ModuleVoltageMap[testModuleType]
+					TestCurrent = ModuleCurrentMap[testModuleType]
+
+				volDiff = abs(TestVoltage-Readvoltage)
+				ampDiff = abs(TestCurrent-Readcurrent)
+				
+				if volDiff >= 2 and ampDiff >= 2  and LVStatusValue:
 					leakageCurrent = 0.0
 					if self.master.PowerRemoteControl["HV"]:
 						self.master.HVpowersupply.RampingUp(defaultHVsetting,-3)
