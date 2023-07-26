@@ -12,6 +12,7 @@ class Peltier(QWidget):
     buttonEnable = pyqtSignal()
     polaritySignal = pyqtSignal(list)
     tempReading = pyqtSignal(float)
+    tempReading2 = pyqtSignal(float)
     powerReading = pyqtSignal(int)
     setTempSignal = pyqtSignal(float)
     def __init__(self, dimension):
@@ -33,6 +34,9 @@ class Peltier(QWidget):
 
         self.currentTempDisplay = QtWidgets.QLCDNumber(self)
         self.gridLayout.addWidget(self.currentTempDisplay, 3, 0, 1, 2)
+
+        self.currentTempDisplay2 = QtWidgets.QLCDNumber(self)
+        self.gridLayout.addWidget(self.currentTempDisplay2, 3, 2, 1, 2)
 
         self.setTempButton = QtWidgets.QPushButton("Set Temperature", self)
         self.setTempButton.setEnabled(False)
@@ -96,6 +100,7 @@ class Peltier(QWidget):
             self.timer = QTimer()
             self.timer.timeout.connect(self.controllerMonitoring)
             self.tempReading.connect(lambda temp: self.currentTempDisplay.display(temp))
+            self.tempReading2.connect(lambda temp: self.currentTempDisplay2.display(temp))
             self.powerReading.connect(lambda power: self.setPowerStatus(power))
             self.timer.start(500) # Perform monitoring functions every 500ms
 
@@ -225,6 +230,7 @@ class Peltier(QWidget):
             temp = "".join(message[1:9])
             temp = int(temp,16)/100
             self.tempReading.emit(temp)
+            self.tempLimit(temp)
 
             power, passed = self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Read' ,['0','0','0','0','0','0','0','0']))
             self.powerReading.emit(int(power[8]))
@@ -233,18 +239,27 @@ class Peltier(QWidget):
             print(f"Could not read power/temperature due to error: {e}")
             return
 
-
-
-
-
-# Takes in a list
-    def showTemp(self, message):
+    def controllerMonitoring2(self):
         try:
-            temp = self.pelt.readTemperature()
-            self.currentTempDisplay.display(temp)
+            message, passed = self.pelt.sendCommand(self.pelt.createCommand('Input2', ['0','0','0','0','0','0','0','0']))
+            temp = "".join(message[1:9])
+            temp = int(temp,16)/100
+            self.tempReading2.emit(temp)
+            self.tempLimit(temp)
+            
+            return
         except Exception as e:
-            self.timer.stop()
-            print("Could not read temperature due to error: ", e)
+            print(f"Could not read temperature2 due to error: {e}")
+            return
+
+    def tempLimit(self, temp):
+        try: 
+            temp >= 5
+                #self.closeEvent()   #Will change this to take effect if the code runs
+            print("Temperature too high")
+            return
+        except:
+            return
 
     def setBandwidth(self):
         signalworker = signalWorker('Proportional Bandwidth Write', message)
