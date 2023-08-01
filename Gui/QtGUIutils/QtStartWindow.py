@@ -187,7 +187,8 @@ class SummaryBox(QWidget):
 				volDiff = abs(TestVoltage-Readvoltage)
 				ampDiff = abs(TestCurrent-Readcurrent)
 				
-				if volDiff >= 0.5 and ampDiff >= 0.5  and LVStatusValue and (self.Stopcount < 3):
+				if volDiff >= 0.5 and ampDiff >= 0.5  and (LVStatusValue==1):
+					print("I am ramping up") #debug
 					leakageCurrent = 0.0
 					if self.master.PowerRemoteControl["HV"]:
 						self.master.HVpowersupply.RampingUp(defaultHVsetting,-3)

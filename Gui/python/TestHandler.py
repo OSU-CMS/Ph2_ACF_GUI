@@ -879,6 +879,7 @@ class TestHandler(QObject):
 		# Will send signal to turn off power supply after composite or single tests are run
 		if isCompositeTest(self.info[1]):
 			self.master.HVpowersupply.RampingUp(defaultHVsetting,-3)
+			print("calling ramping up in IVCurveFinished")
 			if self.testIndexTracker == len(CompositeList[self.info[1]]):
 				self.powerSignal.emit()
 				EnableReRun = True
@@ -898,7 +899,7 @@ class TestHandler(QObject):
 
 	def SLDOScanFinished(self):
 		self.LVpowersupply.Reset()
-                self.LVpowersupply.InitialDevice()
+		self.LVpowersupply.InitialDevice()
 		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
 		self.LVpowersupply.TurnOn()
 		self.testIndexTracker += 1
