@@ -4,6 +4,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import *
 from Gui.python.Peltier import *
+from Gui.siteSettings import *
+
 import time
 import os
 
@@ -15,11 +17,18 @@ class Peltier(QWidget):
     tempReading2 = pyqtSignal(float)
     powerReading = pyqtSignal(int)
     setTempSignal = pyqtSignal(float)
+    urgentSignal = pyqtSignal(bool)
+    
     def __init__(self, dimension):
         super(Peltier, self).__init__()
         self.Ph2ACFDirectory = os.getenv("GUI_dir")
+        self.t1 = 0.0
+        self.t2 = 0.0
+        self.emergencySwitch = False
+        self.powerStatusValue = 0
         self.setupUi()
         self.show()
+
 
     def setupUi(self):
         self.gridLayout = QtWidgets.QGridLayout(self)
@@ -36,7 +45,7 @@ class Peltier(QWidget):
         self.gridLayout.addWidget(self.currentTempDisplay, 3, 0, 1, 2)
 
         self.currentTempDisplay2 = QtWidgets.QLCDNumber(self)
-        self.gridLayout.addWidget(self.currentTempDisplay2, 3, 2, 1, 2)
+        self.gridLayout.addWidget(self.currentTempDisplay2, 4, 0, 1, 2)
 
         self.setTempButton = QtWidgets.QPushButton("Set Temperature", self)
         self.setTempButton.setEnabled(False)
@@ -49,6 +58,9 @@ class Peltier(QWidget):
 
         self.currentTempLabel = QtWidgets.QLabel(self)
         self.gridLayout.addWidget(self.currentTempLabel, 2, 0, 1, 1)
+
+        self.currentTempLabel2 = QtWidgets.QLabel(self)
+        self.gridLayout.addWidget(self.currentTempLabel2, 4, 1, 1, 1)
 
         self.polarityButton = QtWidgets.QPushButton("Change Polarity", self)
         self.polarityButton.setEnabled(False)
@@ -70,8 +82,6 @@ class Peltier(QWidget):
         self.greenledpixmap = QtGui.QPixmap.fromImage(greenledimage)
         self.powerStatus.setPixmap(self.redledpixmap) # The power status will initially always show that it's off, if it's actually on the status will be update in 0.5 seconds.
         self.gridLayout.addWidget(self.powerStatus, 1, 3, 1, 1)
-
-
 
 
         self.setLayout(self.gridLayout)
@@ -99,6 +109,7 @@ class Peltier(QWidget):
             # Create QTimer that will call functions
             self.timer = QTimer()
             self.timer.timeout.connect(self.controllerMonitoring)
+            self.timer.timeout.connect(self.controllerMonitoring2)
             self.tempReading.connect(lambda temp: self.currentTempDisplay.display(temp))
             self.tempReading2.connect(lambda temp: self.currentTempDisplay2.display(temp))
             self.powerReading.connect(lambda power: self.setPowerStatus(power))
@@ -128,16 +139,26 @@ class Peltier(QWidget):
 
     def powerToggle(self):
         if self.powerStatusValue == 0:
-            try:
-                self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Write', ['0','0','0','0','0','0','0','1']))
-            except Exception as e:
-                print("Could not turn on controller due to error: ", e)
+            if self.emergencySwitch == False:
+                try:
+                    self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Write', ['0','0','0','0','0','0','0','1']))
+                except Exception as e:
+                    print("Could not turn on controller due to error: ", e)
+            else:
+                reply = QMessageBox.question(None, "Warning", "The most recent test was aborted due to temperature.\nAre you sure you want to turn on?", 
+                                             QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
+                if reply == QMessageBox.Yes:
+                    self.emergencySwitch = False
+                    try:
+                        self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Write', ['0','0','0','0','0','0','0','1']))
+                    except Exception as e:
+                        print("Could not turn on controller due to error: ", e)
         elif self.powerStatusValue == 1:
             try:
                 self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Write', ['0','0','0','0','0','0','0','0']))
             except Exception as e:
                 print("Could not turn off controller due to error: " , e)
-
+                
     def setPolarityStatus(self, polarity):
         if polarity[8] == '0':
             self.polarityValue = 'HEAT WP1+ and WP2-'
@@ -160,8 +181,6 @@ class Peltier(QWidget):
             return
         self.pelt.sendCommand(self.pelt.createCommand('Control Output Polarity Write', ['0','0','0','0','0','0','0', polarityCommand]))
         self.polarityButton.setText(self.polarityValue) #FIXME Probably a better idea to read polarity from controller
-
-
 
     def setTemp(self)-> None:
         try:
@@ -203,27 +222,17 @@ class Peltier(QWidget):
 # Shutdown the peltier if it is on and stop threads that are running
 # Currently not implemented
     def shutdown(self):
-        try:
-            self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Write', ['0','0','0','0','0','0','0','0']))
-        except Exception as e:
-            print("Could not turn off controller due to error: " , e)
+        if self.powerStatusValue == 1:
+            try:
+                self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Write', ['0','0','0','0','0','0','0','0']))
+            except Exception as e:
+                print("Could not turn off controller due to error: " , e)
 
         try:
             self.tempPower.readTemp = False
         except AttributeError:
             pass
     
-
-
-    def getPower(self):
-        try:
-            self.power = self.pelt.checkPower()
-        except Exception as e:
-            self.powerTimer.stop()
-            print("Could not check power due to error: " , e)
-
-
-
     def controllerMonitoring(self):
         try:
             message, passed = self.pelt.sendCommand(self.pelt.createCommand('Input1', ['0','0','0','0','0','0','0','0']))
@@ -231,6 +240,8 @@ class Peltier(QWidget):
             temp = int(temp,16)/100
             self.tempReading.emit(temp)
             self.tempLimit(temp)
+
+            self.t1 = temp
 
             power, passed = self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Read' ,['0','0','0','0','0','0','0','0']))
             self.powerReading.emit(int(power[8]))
@@ -246,6 +257,9 @@ class Peltier(QWidget):
             temp = int(temp,16)/100
             self.tempReading2.emit(temp)
             self.tempLimit(temp)
+
+            self.t2 = temp
+            self.tempDiff()
             
             return
         except Exception as e:
@@ -253,17 +267,23 @@ class Peltier(QWidget):
             return
 
     def tempLimit(self, temp):
-        try: 
-            temp >= 5
-                #self.closeEvent()   #Will change this to take effect if the code runs
+        if temp >= defaultPeltierMaxTemp and self.emergencySwitch == False:
             print("Temperature too high")
-            return
-        except:
-            return
-
-    def setBandwidth(self):
-        signalworker = signalWorker('Proportional Bandwidth Write', message)
-
+            self.haltSig = True
+            self.urgentSignal.emit(self.haltSig)
+            self.emergencySwitch = True
+        else:
+            pass
+    
+    def tempDiff(self):
+        if abs(self.t2-self.t1) > defaultPeltierMaxTempDiff and self.emergencySwitch == False:
+            print("Temp difference too big")
+            self.haltSig = True
+            self.urgentSignal.emit(self.haltSig)
+            self.emergencySwitch = True
+        else:
+            pass
+        
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
