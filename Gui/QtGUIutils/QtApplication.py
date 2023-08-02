@@ -29,7 +29,7 @@ from Gui.python.Firmware import *
 from Gui.python.ArduinoWidget import *
 from Gui.QtGUIutils.QtRunWindow import *
 from Gui.python.SimplifiedMainWidget import *
-from Gui.python.WindowAppearanceTools import apply_dark_mode
+from Gui.python.WindowAppearanceTools import apply_dark_mode, create_logo_widget
 
 class QtApplication(QWidget):
 	globalStop = pyqtSignal()
@@ -61,7 +61,7 @@ class QtApplication(QWidget):
 		self.setGeometry(300, 300, 400, 500)  
 		self.setWindowTitle('Phase2 Pixel Module Test GUI')
 
-		elif sys.platform.startswith("linux") or sys.platform.startswith("win") or sys.platform.startswith("darwin"):
+		if sys.platform.startswith("linux") or sys.platform.startswith("win") or sys.platform.startswith("darwin"):
 			darkPalette = QPalette()
 			QApplication.setStyle(QStyleFactory.create('Fusion'))
 			QApplication.setPalette(apply_dark_mode(darkPalette))
