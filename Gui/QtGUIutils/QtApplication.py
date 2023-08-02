@@ -38,9 +38,9 @@ class QtApplication(QWidget):
 		self.setLayout(self.mainLayout)
 		self.ProcessingTest = False
 		self.expertMode = False
-		self.FwUnderUsed = ''
+		#self.FwUnderUsed = ''
 
-		# self.FwUnderUsed = []
+		self.FwUnderUsed = []
 
 		self.FwDict = {}
 		self.FwStatusVerboseDict = {}
@@ -55,7 +55,7 @@ class QtApplication(QWidget):
 		self.setLoginUI()
 		self.initLog()
 		self.createLogin()
-
+  
 	def setLoginUI(self):
 		self.setGeometry(300, 300, 400, 500)  
 		self.setWindowTitle('Phase2 Pixel Module Test GUI')
@@ -537,14 +537,14 @@ class QtApplication(QWidget):
 				LogButton.clicked.connect(lambda state, x="{0}".format(index-1) : self.showLogFw(x))
 				StatusLayout.addWidget(LogButton, index, 6, 1, 1)
 
-		if self.FwUnderUsed != '':
-			index = self.getIndex(self.FwUnderUsed,self.StatusList)
-			self.occupyFw("{0}".format(index))
+		# if self.FwUnderUsed != '':
+		# 	index = self.getIndex(self.FwUnderUsed,self.StatusList)
+		# 	self.occupyFw("{0}".format(index))
 
-		#if self.FwUnderUsed != []:
-		#	for fw in self.FwUnderUsed:
-		#		index = self.getIndex(fw,self.StatusList)
-		#		self.occupyFw("{0}".format(index))
+		if self.FwUnderUsed != []:
+			for fw in self.FwUnderUsed:
+				index = self.getIndex(fw,self.StatusList)
+				self.occupyFw("{0}".format(index))
 
 		self.FirmwareStatus.setLayout(StatusLayout)
 		self.FirmwareStatus.setDisabled(False)
@@ -659,11 +659,11 @@ class QtApplication(QWidget):
 		self.NewTestButton.setMaximumHeight(kMaximumHeight)
 		self.NewTestButton.clicked.connect(self.openNewTest)
 		self.NewTestButton.setDisabled(True)
-		if self.FwUnderUsed != '':
-			self.NewTestButton.setDisabled(False)
+		# if self.FwUnderUsed != '':
+		# 	self.NewTestButton.setDisabled(False)
 		# Vectorized fw
-		#if self.FwUnderUsed != '':
-		#	self.NewTestButton.setDisabled(False)
+		if self.FwUnderUsed != []:
+			self.NewTestButton.setDisabled(False)
 		if self.ProcessingTest == True:
 			self.NewTestButton.setDisabled(True)
 		NewTestLabel = QLabel("Open new test")
@@ -700,6 +700,8 @@ class QtApplication(QWidget):
 		self.PeltierLayout = QGridLayout()
 		self.PeltierLayout.addWidget(self.PeltierCooling)
 		self.PeltierBox.setLayout(self.PeltierLayout)
+		# self.PeltierCooling.urgentSignal.connect(self.GlobalStop)
+		self.PeltierCooling.powerReading.connect(self.peltPower)
 
 		layout = QGridLayout()
 		layout.addWidget(self.NewTestButton,0, 0, 1, 1)
@@ -873,11 +875,11 @@ class QtApplication(QWidget):
 		self.ExitButton.setDisabled(True)
 
 	def openNewTest(self):
-		FwModule = self.FwDict[self.FwUnderUsed]
+		# FwModule = self.FwDict[self.FwUnderUsed]
 		# Vectorized the firmware
-		#FwModule = []
-		#for fw in self.FwUnderUsed:
-		#	FwModule.append(self.FwDict[fw])
+		FwModule = []
+		for fw in self.FwUnderUsed:
+			FwModule.append(self.FwDict[fw])
 		self.StartNewTest = QtStartWindow(self , FwModule)
 		self.NewTestButton.setDisabled(True)
 		self.LogoutButton.setDisabled(True)
@@ -976,6 +978,7 @@ class QtApplication(QWidget):
 		self.LVPowerStatusValue.setText("")
 		self.UseLVPowerSupply.setDisabled(False)
 		self.ReleaseLVPowerSupply.setDisabled(True)
+		print('listResources is {0}'.format(self.LVpowersupply.listResources()))
 		self.LVPowerList = self.LVpowersupply.listResources()
 
 	def switchArduinoPanel(self):
@@ -996,29 +999,29 @@ class QtApplication(QWidget):
 			#This if was added for a test.  
 			if self.expertMode:
 				self.UseButtons[index].setDisabled(False)
-		if self.FwUnderUsed != '':
-			index = self.getIndex(self.FwUnderUsed,self.StatusList)
-			self.StatusList[index+1][1].setText("Connected")
-			self.StatusList[index+1][1].setStyleSheet("color: green")
-			self.occupyFw("{0}".format(index))
-		#if self.FwUnderUsed != []:
-		#	for fw in self.FwUnderUsed:
-		#		index = self.getIndex(fw,self.StatusList)
-		#		self.StatusList[index+1][1].setText("Connected")
-		#		self.StatusList[index+1][1].setStyleSheet("color: green")
-		#		self.occupyFw("{0}".format(index))
+		# if self.FwUnderUsed != '':
+		# 	index = self.getIndex(self.FwUnderUsed,self.StatusList)
+		# 	self.StatusList[index+1][1].setText("Connected")
+		# 	self.StatusList[index+1][1].setStyleSheet("color: green")
+		# 	self.occupyFw("{0}".format(index))
+		if self.FwUnderUsed != []:
+			for fw in self.FwUnderUsed:
+				index = self.getIndex(fw,self.StatusList)
+				self.StatusList[index+1][1].setText("Connected")
+				self.StatusList[index+1][1].setStyleSheet("color: green")
+				self.occupyFw("{0}".format(index))
 	
 	def refreshFirmware(self):
 		for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
 			self.UseButtons[index].setDisabled(False)
-		if self.FwUnderUsed != '':
-			index = self.getIndex(self.FwUnderUsed,self.StatusList)
-			self.occupyFw("{0}".format(index))
+		# if self.FwUnderUsed != '':
+		# 	index = self.getIndex(self.FwUnderUsed,self.StatusList)
+		# 	self.occupyFw("{0}".format(index))
 
-		#if self.FwUnderUsed != []:
-		#	for fw in self.FwUnderUsed:
-		#		index = self.getIndex(self.fw,self.StatusList)
-		#		self.occupyFw("{0}".format(index))
+		if self.FwUnderUsed != []:
+			for fw in self.FwUnderUsed:
+				index = self.getIndex(self.fw,self.StatusList)
+				self.occupyFw("{0}".format(index))
 
 
 	def getFwComment(self,firmwareName,fileName):
@@ -1047,18 +1050,19 @@ class QtApplication(QWidget):
 				button.setText("&In use")
 				button.setDisabled(False)
 				self.CheckButton.setDisabled(True)
-				self.FwUnderUsed = self.StatusList[i+1][0].text()
-				#self.FwUnderUsed.append(self.StatusList[i+1][0].text())
-			else:
-				button.setDisabled(True)
+				# self.FwUnderUsed = self.StatusList[i+1][0].text()
+				self.FwUnderUsed.append(self.StatusList[i+1][0].text())
+				print(self.FwUnderUsed)
+			# else:
+			# 	button.setDisabled(True)
 
 	def releaseFw(self, index):
 		for i ,button in enumerate(self.UseButtons):
 			if i == int(index):
-				self.FwUnderUsed = ''
+				# self.FwUnderUsed = ''
 				# vectorzied fw
-				#fwIndex = self.FwUnderUsed.index(self.StatusList[i+1][0].text())
-				#self.FwUnderUsed.pop(fwIndex)
+				fwIndex = self.FwUnderUsed.index(self.StatusList[i+1][0].text())
+				self.FwUnderUsed.pop(fwIndex)
 				button.setText("&Use")
 				button.setDown(False)
 				button.setDisabled(False)
@@ -1105,7 +1109,12 @@ class QtApplication(QWidget):
 		self.createMain()
 		self.checkFirmware()
 
-			
+	def peltPower(self, status):
+		if status == 0:
+			self.powerStatusValue = 0
+		else:
+			self.powerStatusValue = 1
+ 
 	###############################################################
 	##  Global stop signal
 	###############################################################
@@ -1113,6 +1122,9 @@ class QtApplication(QWidget):
 	def GlobalStop(self):
 		print("Critical status detected: Emitting Global Stop signal")
 		self.globalStop.emit()
+		if self.powerStatusValue == 1:
+			self.PeltierCooling.powerToggle()
+
 		self.HVpowersupply.TurnOffHV()
 		self.LVpowersupply.TurnOff()
 		if self.expertMode == True:

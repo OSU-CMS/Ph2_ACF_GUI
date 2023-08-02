@@ -265,11 +265,14 @@ def CheckXMLValue(pFilename, pAttribute):
 ##########################################################################
 
 def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
-	#try:
-		outputFile = outputDir + "/CMSIT_" + testName +".xml" 
+	
+		outputFile0 = outputDir + "/CMSIT_" + testName +"_david.xml" 
 		# Get Hardware discription and a list of the modules
 		HWDescription0 = HWDescription()
 		BeBoardModule0 = BeBoardModule()
+		BeBoardModule0.SetURI(FirmwareList['fc7.board.1'])
+		BeBoardModule1 = BeBoardModule()
+		BeBoardModule1.SetURI(FirmwareList['fc7.board.2'])
 		AllModules = firmwareList.getAllModules().values()
 		boardtype = 'RD53A'
 		# Setup all optical groups for the modules
@@ -313,22 +316,26 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 
 		for OpticalGroupModule in AllOG.values():
 			BeBoardModule0.AddOGModule(OpticalGroupModule)
+			BeBoardModule1.AddOGModule(OpticalGroupModule)
 
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
+		BeBoardModule1.SetRegisterValue(RegisterSettings)
+  
 		HWDescription0.AddBeBoard(BeBoardModule0)
 		HWDescription0.AddSettings(HWSettings_Dict[testName])
 		MonitoringModule0 = MonitoringModule(boardtype)
+  
+		HWDescription0.AddBeBoard(BeBoardModule1)
+		HWDescription0.AddSettings(HWSettings_Dict[testName])
+  
 		if 'RD53A' in boardtype:
 			MonitoringModule0.SetMonitoringList(MonitoringListA)
 		else:
 			MonitoringModule0.SetMonitoringList(MonitoringListB)
 		HWDescription0.AddMonitoring(MonitoringModule0)
-		GenerateHWDescriptionXML(HWDescription0,outputFile,boardtype)
-	#except:
-	#	logger.warning("Unexpcted issue generating {}. Please check the file".format(outputFile))
-	#	outputFile = None
-
-		return outputFile
+		GenerateHWDescriptionXML(HWDescription0,outputFile0,boardtype)
+	
+		return outputFile0
 
 
 

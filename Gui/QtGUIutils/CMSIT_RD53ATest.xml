@@ -1,0 +1,512 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<HwDescription>
+  <BeBoard Id="0" boardType="RD53" eventType="VR">
+    <connection id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=192.168.1.80:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />  #;192.168.1.81:50001
+    <!---
+        <connection id="cmsinnertracker.crate0.slot0" uri="ipbusudp-2.0://192.168.1.80:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
+    -->
+
+    <!-- Frontend chip configuration -->
+    <OpticalGroup Id="0" FMCId="0">
+      <!--
+      <lpGBT_Files path="${PWD}/" />
+      <lpGBT Id="0" version="0" configfile="CMSIT_LpGBT-v0.txt" ChipAddress="0x70" RxDataRate="1280" RxHSLPolarity="0" TxDataRate="160" TxHSLPolarity="1">
+        <Settings
+            EPRX60ChnCntr_phase = "6"
+            />
+      </lpGBT>
+      -->
+      <Hybrid Id="0" enable="1">
+        <RD53_Files path="${PWD}/" />
+
+        <!-- Available Comment fields are: 50x50, 25x100origR0C0, 25x100origR1C0, unknown, combined with RD53A, RD53B, dual, quad -->
+        <RD53A Id="0" Lane="0" configfile="CMSIT_RD53A.txt" RxGroups="6" RxChannels="0" TxGroups="3" TxChannels="0" Comment="RD53A 50x50">
+          <!-- Overwrite .txt configuration file settings -->
+          <Settings
+              PA_IN_BIAS_LIN         =   "350"
+              FC_BIAS_LIN            =    "20"
+              KRUM_CURR_LIN          =    "29"
+              LDAC_LIN               =   "130"
+              COMP_LIN               =   "110"
+              REF_KRUM_LIN           =   "300"
+              Vthreshold_LIN         =   "400"
+
+              IBIASP1_SYNC           =   "100"
+              IBIASP2_SYNC           =   "150"
+              IBIAS_SF_SYNC          =    "80"
+              IBIAS_KRUM_SYNC        =    "55"
+              IBIAS_DISC_SYNC        =   "280"
+              ICTRL_SYNCT_SYNC       =   "100"
+              VBL_SYNC               =   "360"
+              VTH_SYNC               =   "150"
+              VREF_KRUM_SYNC         =   "450"
+              CONF_FE_SYNC           =     "2"
+
+              PRMP_DIFF              =   "511"
+              FOL_DIFF               =   "542"
+              PRECOMP_DIFF           =   "512"
+              COMP_DIFF              =  "1023"
+              VFF_DIFF               =    "40"
+              VTH1_DIFF              =   "400"
+              VTH2_DIFF              =   "100"
+              LCC_DIFF               =    "20"
+              CONF_FE_DIFF           =     "0"
+
+              VCAL_HIGH              =   "600"
+              VCAL_MED               =   "100"
+
+              GP_LVDS_ROUTE          =     "0"
+              LATENCY_CONFIG         =   "136"
+              CLK_DATA_DELAY         =     "0"
+              CAL_EDGE_FINE_DELAY    =     "0"
+              ANALOG_INJ_MODE        =     "0"
+
+              VOLTAGE_TRIM_DIG       =    "16"
+              VOLTAGE_TRIM_ANA       =    "16"
+
+              CML_CONFIG_SER_EN_TAP  =  "0b00"
+              CML_CONFIG_SER_INV_TAP =  "0b00"
+              DAC_CML_BIAS_0         =   "500"
+              DAC_CML_BIAS_1         =     "0"
+              DAC_CML_BIAS_2         =     "0"
+
+              MONITOR_CONFIG_ADC     =     "5"
+              MONITOR_CONFIG_BG      =    "12"
+
+              ADC_OFFSET_VOLT        =    "63"
+              ADC_MAXIMUM_VOLT       =   "839"
+              TEMPSENS_IDEAL_FACTOR  =  "1225"
+              VREF_ADC               =   "900"
+              />
+        </RD53A>
+
+        <Global
+            EN_CORE_COL_SYNC         =     "0"
+            EN_CORE_COL_LIN_1        = "65535"
+            EN_CORE_COL_LIN_2        =     "1"
+            EN_CORE_COL_DIFF_1       =     "0"
+            EN_CORE_COL_DIFF_2       =     "0"
+
+            EN_CORE_COL_CAL_LIN_1    = "65535"
+            EN_CORE_COL_CAL_LIN_2    = "65535"
+            EN_CORE_COL_CAL_LIN_3    = "65535"
+            EN_CORE_COL_CAL_LIN_4    = "65535"
+            EN_CORE_COL_CAL_LIN_5    =    "15"
+
+            EN_CORE_COL_CAL_SYNC_1   = "65535"
+            EN_CORE_COL_CAL_SYNC_2   = "65535"
+            EN_CORE_COL_CAL_SYNC_3   = "65535"
+            EN_CORE_COL_CAL_SYNC_4   = "65535"
+
+            EN_CORE_COL_CAL_DIFF_1   = "65535"
+            EN_CORE_COL_CAL_DIFF_2   = "65535"
+            EN_CORE_COL_CAL_DIFF_3   = "65535"
+            EN_CORE_COL_CAL_DIFF_4   = "65535"
+            EN_CORE_COL_CAL_DIFF_5   =    "15"
+
+            HITOR_0_MASK_LIN_0       =     "0"
+            HITOR_0_MASK_LIN_1       =     "0"
+            HITOR_1_MASK_LIN_0       =     "0"
+            HITOR_1_MASK_LIN_1       =     "0"
+            HITOR_2_MASK_LIN_0       =     "0"
+            HITOR_2_MASK_LIN_1       =     "0"
+            HITOR_3_MASK_LIN_0       =     "0"
+            HITOR_3_MASK_LIN_1       =     "0"
+
+            HITOR_0_MASK_SYNC        = "65535"
+            HITOR_1_MASK_SYNC        = "65535"
+            HITOR_2_MASK_SYNC        = "65535"
+            HITOR_3_MASK_SYNC        = "65535"
+
+            HITOR_0_MASK_DIFF_0      = "65535"
+            HITOR_0_MASK_DIFF_1      =     "1"
+            HITOR_1_MASK_DIFF_0      = "65535"
+            HITOR_1_MASK_DIFF_1      =     "1"
+            HITOR_2_MASK_DIFF_0      = "65535"
+            HITOR_2_MASK_DIFF_1      =     "1"
+            HITOR_3_MASK_DIFF_0      = "65535"
+            HITOR_3_MASK_DIFF_1      =     "1"
+
+            LOCKLOSS_CNT             =     "0"
+            BITFLIP_WNG_CNT          =     "0"
+            BITFLIP_ERR_CNT          =     "0"
+            CMDERR_CNT               =     "0"
+            SKIPPED_TRIGGER_CNT      =     "0"
+            HITOR_0_CNT              =     "0"
+            HITOR_1_CNT              =     "0"
+            HITOR_2_CNT              =     "0"
+            HITOR_3_CNT              =     "0"
+
+            WNGFIFO_FULL_CNT_0       =     "0"
+            WNGFIFO_FULL_CNT_1       =     "0"
+            WNGFIFO_FULL_CNT_2       =     "0"
+            WNGFIFO_FULL_CNT_3       =     "0"
+            />
+      </Hybrid>
+    </OpticalGroup>
+
+    <!-- Configuration for backend readout board -->
+    <Register name="user">
+      <Register name="ctrl_regs">
+
+        <Register name="fast_cmd_reg_2">
+          <Register name="trigger_source"> 2 </Register>
+          <!-- 1=IPBus, 2=Test-FSM, 3=TTC, 4=TLU, 5=External, 6=Hit-Or, 7=User-defined frequency -->
+          <Register name="HitOr_enable_l12"> 0 </Register>
+          <!-- Enable HitOr port: set trigger_source to proper value then this register, 0b0001 enable HitOr from left-most connector, 0b1000 enable HitOr from right-most connector -->
+        </Register>
+
+        <Register name="ext_tlu_reg1">
+          <Register name="dio5_ch1_thr"> 128 </Register>
+          <Register name="dio5_ch2_thr">  40 </Register>
+        </Register>
+
+        <Register name="ext_tlu_reg2">
+          <Register name="dio5_ch3_thr"> 128 </Register>
+          <Register name="dio5_ch4_thr"> 128 </Register>
+          <Register name="dio5_ch5_thr"> 128 </Register>
+
+          <Register name="tlu_delay"> 0 </Register>
+          <!-- Delay for TLU trigger ID -->
+        </Register>
+
+        <Register name="reset_reg">
+          <Register name="ext_clk_en"> 0 </Register>
+        </Register>
+
+        <Register name="fast_cmd_reg_3">
+          <Register name="triggers_to_accept"> 10 </Register>
+        </Register>
+
+        <Register name="fast_cmd_reg_7">
+          <Register name="autozero_freq"> 1000 </Register>
+          <!-- In units of 10MHz clk cyles -->
+        </Register>
+
+      </Register>
+    </Register>
+
+  </BeBoard>
+
+  <BeBoard Id="1" boardType="RD53" eventType="VR">
+      <connection id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=192.168.1.81:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />  #;192.168.1.81:50001
+      <!---
+          <connection id="cmsinnertracker.crate0.slot0" uri="ipbusudp-2.0://192.168.1.80:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
+      -->
+
+      <!-- Frontend chip configuration -->
+      <OpticalGroup Id="0" FMCId="0">
+        <!--
+        <lpGBT_Files path="${PWD}/" />
+        <lpGBT Id="0" version="0" configfile="CMSIT_LpGBT-v0.txt" ChipAddress="0x70" RxDataRate="1280" RxHSLPolarity="0" TxDataRate="160" TxHSLPolarity="1">
+          <Settings
+              EPRX60ChnCntr_phase = "6"
+              />
+        </lpGBT>
+        -->
+        <Hybrid Id="0" enable="1">
+          <RD53_Files path="${PWD}/" />
+
+          <!-- Available Comment fields are: 50x50, 25x100origR0C0, 25x100origR1C0, unknown, combined with RD53A, RD53B, dual, quad -->
+          <RD53A Id="0" Lane="0" configfile="CMSIT_RD53A.txt" RxGroups="6" RxChannels="0" TxGroups="3" TxChannels="0" Comment="RD53A 50x50">
+            <!-- Overwrite .txt configuration file settings -->
+            <Settings
+                PA_IN_BIAS_LIN         =   "350"
+                FC_BIAS_LIN            =    "20"
+                KRUM_CURR_LIN          =    "29"
+                LDAC_LIN               =   "130"
+                COMP_LIN               =   "110"
+                REF_KRUM_LIN           =   "300"
+                Vthreshold_LIN         =   "400"
+
+                IBIASP1_SYNC           =   "100"
+                IBIASP2_SYNC           =   "150"
+                IBIAS_SF_SYNC          =    "80"
+                IBIAS_KRUM_SYNC        =    "55"
+                IBIAS_DISC_SYNC        =   "280"
+                ICTRL_SYNCT_SYNC       =   "100"
+                VBL_SYNC               =   "360"
+                VTH_SYNC               =   "150"
+                VREF_KRUM_SYNC         =   "450"
+                CONF_FE_SYNC           =     "2"
+
+                PRMP_DIFF              =   "511"
+                FOL_DIFF               =   "542"
+                PRECOMP_DIFF           =   "512"
+                COMP_DIFF              =  "1023"
+                VFF_DIFF               =    "40"
+                VTH1_DIFF              =   "400"
+                VTH2_DIFF              =   "100"
+                LCC_DIFF               =    "20"
+                CONF_FE_DIFF           =     "0"
+
+                VCAL_HIGH              =   "600"
+                VCAL_MED               =   "100"
+
+                GP_LVDS_ROUTE          =     "0"
+                LATENCY_CONFIG         =   "136"
+                CLK_DATA_DELAY         =     "0"
+                CAL_EDGE_FINE_DELAY    =     "0"
+                ANALOG_INJ_MODE        =     "0"
+
+                VOLTAGE_TRIM_DIG       =    "16"
+                VOLTAGE_TRIM_ANA       =    "16"
+
+                CML_CONFIG_SER_EN_TAP  =  "0b00"
+                CML_CONFIG_SER_INV_TAP =  "0b00"
+                DAC_CML_BIAS_0         =   "500"
+                DAC_CML_BIAS_1         =     "0"
+                DAC_CML_BIAS_2         =     "0"
+
+                MONITOR_CONFIG_ADC     =     "5"
+                MONITOR_CONFIG_BG      =    "12"
+
+                ADC_OFFSET_VOLT        =    "63"
+                ADC_MAXIMUM_VOLT       =   "839"
+                TEMPSENS_IDEAL_FACTOR  =  "1225"
+                VREF_ADC               =   "900"
+                />
+          </RD53A>
+
+          <Global
+              EN_CORE_COL_SYNC         =     "0"
+              EN_CORE_COL_LIN_1        = "65535"
+              EN_CORE_COL_LIN_2        =     "1"
+              EN_CORE_COL_DIFF_1       =     "0"
+              EN_CORE_COL_DIFF_2       =     "0"
+
+              EN_CORE_COL_CAL_LIN_1    = "65535"
+              EN_CORE_COL_CAL_LIN_2    = "65535"
+              EN_CORE_COL_CAL_LIN_3    = "65535"
+              EN_CORE_COL_CAL_LIN_4    = "65535"
+              EN_CORE_COL_CAL_LIN_5    =    "15"
+
+              EN_CORE_COL_CAL_SYNC_1   = "65535"
+              EN_CORE_COL_CAL_SYNC_2   = "65535"
+              EN_CORE_COL_CAL_SYNC_3   = "65535"
+              EN_CORE_COL_CAL_SYNC_4   = "65535"
+
+              EN_CORE_COL_CAL_DIFF_1   = "65535"
+              EN_CORE_COL_CAL_DIFF_2   = "65535"
+              EN_CORE_COL_CAL_DIFF_3   = "65535"
+              EN_CORE_COL_CAL_DIFF_4   = "65535"
+              EN_CORE_COL_CAL_DIFF_5   =    "15"
+
+              HITOR_0_MASK_LIN_0       =     "0"
+              HITOR_0_MASK_LIN_1       =     "0"
+              HITOR_1_MASK_LIN_0       =     "0"
+              HITOR_1_MASK_LIN_1       =     "0"
+              HITOR_2_MASK_LIN_0       =     "0"
+              HITOR_2_MASK_LIN_1       =     "0"
+              HITOR_3_MASK_LIN_0       =     "0"
+              HITOR_3_MASK_LIN_1       =     "0"
+
+              HITOR_0_MASK_SYNC        = "65535"
+              HITOR_1_MASK_SYNC        = "65535"
+              HITOR_2_MASK_SYNC        = "65535"
+              HITOR_3_MASK_SYNC        = "65535"
+
+              HITOR_0_MASK_DIFF_0      = "65535"
+              HITOR_0_MASK_DIFF_1      =     "1"
+              HITOR_1_MASK_DIFF_0      = "65535"
+              HITOR_1_MASK_DIFF_1      =     "1"
+              HITOR_2_MASK_DIFF_0      = "65535"
+              HITOR_2_MASK_DIFF_1      =     "1"
+              HITOR_3_MASK_DIFF_0      = "65535"
+              HITOR_3_MASK_DIFF_1      =     "1"
+
+              LOCKLOSS_CNT             =     "0"
+              BITFLIP_WNG_CNT          =     "0"
+              BITFLIP_ERR_CNT          =     "0"
+              CMDERR_CNT               =     "0"
+              SKIPPED_TRIGGER_CNT      =     "0"
+              HITOR_0_CNT              =     "0"
+              HITOR_1_CNT              =     "0"
+              HITOR_2_CNT              =     "0"
+              HITOR_3_CNT              =     "0"
+
+              WNGFIFO_FULL_CNT_0       =     "0"
+              WNGFIFO_FULL_CNT_1       =     "0"
+              WNGFIFO_FULL_CNT_2       =     "0"
+              WNGFIFO_FULL_CNT_3       =     "0"
+              />
+        </Hybrid>
+      </OpticalGroup>
+
+      <!-- Configuration for backend readout board -->
+      <Register name="user">
+        <Register name="ctrl_regs">
+
+          <Register name="fast_cmd_reg_2">
+            <Register name="trigger_source"> 2 </Register>
+            <!-- 1=IPBus, 2=Test-FSM, 3=TTC, 4=TLU, 5=External, 6=Hit-Or, 7=User-defined frequency -->
+            <Register name="HitOr_enable_l12"> 0 </Register>
+            <!-- Enable HitOr port: set trigger_source to proper value then this register, 0b0001 enable HitOr from left-most connector, 0b1000 enable HitOr from right-most connector -->
+          </Register>
+
+          <Register name="ext_tlu_reg1">
+            <Register name="dio5_ch1_thr"> 128 </Register>
+            <Register name="dio5_ch2_thr">  40 </Register>
+          </Register>
+
+          <Register name="ext_tlu_reg2">
+            <Register name="dio5_ch3_thr"> 128 </Register>
+            <Register name="dio5_ch4_thr"> 128 </Register>
+            <Register name="dio5_ch5_thr"> 128 </Register>
+
+            <Register name="tlu_delay"> 0 </Register>
+            <!-- Delay for TLU trigger ID -->
+          </Register>
+
+          <Register name="reset_reg">
+            <Register name="ext_clk_en"> 0 </Register>
+          </Register>
+
+          <Register name="fast_cmd_reg_3">
+            <Register name="triggers_to_accept"> 10 </Register>
+          </Register>
+
+          <Register name="fast_cmd_reg_7">
+            <Register name="autozero_freq"> 1000 </Register>
+            <!-- In units of 10MHz clk cyles -->
+          </Register>
+
+        </Register>
+      </Register>
+
+    </BeBoard>
+
+
+  <Settings>
+    <!-- === Calibration parameters ===
+         INJtype               = 0:  no injection;                       INJtype               = 1: analog;                                     INJtype = 2: digital
+         ResetMask             = 0:  do not enable masked pixels;        ResetMask             = 1: enable all pixels
+         ResetTDAC             = -1: do not reset TDAC;                  ResetTDAC             >=0: reset all TDACs to value
+         DoOnlyNGroups         = 0:  do not consider this option;        DoOnlyNGroups         = n: run only on the specified number of groups
+         DisplayHisto          = 0:  don't display;                      DisplayHisto          = 1: display
+         UpdateChipCfg         = 0:  don't update;                       UpdateChipCfg         = 1: update
+         DisableChannelsAtExit = 0:  don't disable all channels at exit  DisableChannelsAtExit = 1: disable all channels at exit
+
+         DoNSteps        (threqu):           if != 0 then run threqu with step of 1 for only DoNSteps times
+         TargetCharge    (thradj):           average charge (electrons) corresponding to ToT point = max value - 1
+         TargetOcc       (thrmin):           average pixel occupancy
+         MaxMaskedPixels (thrmin):           percentage of masked pixels
+         OccPerPixel     (pixelalive,noise): per pixel occupancy threshold below/above which pixels are masked
+         UnstuckPixels   (pixelalive) = 0: do not try to unstuck pixels; UnstuckPixels = 1: set TDAC to 0 to unstuck pixels
+         chain2Test      (bertest,datarbopt) = 0: BE-FE; chain2Test = 1: BE-LPGBT; chain2Test = 2: LPGBT-FE
+         byTime          (bertest,datarbopt) = 0: give n. frames; byTime = 1: give time in [s]
+         framesORtime    (bertest,datarbopt):time in [s] or number of frames
+    -->
+    <Setting name="nEvents">             100 </Setting>
+    <Setting name="nEvtsBurst">          100 </Setting>
+    <!-- For Noise and Threshold Minimization
+    <Setting name="nEvents">         1000000 </Setting>
+    <Setting name="nEvtsBurst">        10000 </Setting>
+    -->
+
+    <Setting name="nTRIGxEvent">          10 </Setting>
+    <Setting name="INJtype">               1 </Setting>
+    <Setting name="ResetMask">             0 </Setting>
+    <Setting name="ResetTDAC">            -1 </Setting>
+
+    <Setting name="ROWstart">              0 </Setting>
+    <Setting name="ROWstop">             191 </Setting>
+    <Setting name="COLstart">            128 </Setting>
+    <Setting name="COLstop">             263 </Setting>
+
+    <Setting name="LatencyStart">          0 </Setting>
+    <Setting name="LatencyStop">         511 </Setting>
+
+    <Setting name="VCalHstart">          100 </Setting>
+    <Setting name="VCalHstop">           600 </Setting>
+    <Setting name="VCalHnsteps">          50 </Setting>
+    <Setting name="VCalMED">             100 </Setting>
+
+    <Setting name="TargetCharge">      10000 </Setting>
+    <Setting name="KrumCurrStart">         0 </Setting>
+    <Setting name="KrumCurrStop">        127 </Setting>
+
+    <Setting name="TDACGainStart">       130 </Setting>
+    <Setting name="TDACGainStop">        130 </Setting>
+    <Setting name="TDACGainNSteps">        0 </Setting>
+    <Setting name="DoNSteps">              0 </Setting>
+
+    <Setting name="ThrStart">            340 </Setting>
+    <Setting name="ThrStop">             440 </Setting>
+    <Setting name="TargetThr">          2000 </Setting>
+    <Setting name="TargetOcc">          1e-6 </Setting>
+    <Setting name="OccPerPixel">        2e-5 </Setting>
+    <Setting name="MaxMaskedPixels">       1 </Setting>
+    <Setting name="UnstuckPixels">         0 </Setting>
+
+    <Setting name="VDDDTrimTarget">     1.30 </Setting>
+    <Setting name="VDDATrimTarget">     1.20 </Setting>
+    <Setting name="VDDDTrimTolerance">  0.02 </Setting>
+    <Setting name="VDDATrimTolerance">  0.02 </Setting>
+
+    <Setting name="TAP0Start">             0 </Setting>
+    <Setting name="TAP0Stop">           1023 </Setting>
+    <Setting name="TAP1Start">             0 </Setting>
+    <Setting name="TAP1Stop">            511 </Setting>
+    <Setting name="InvTAP1">               1 </Setting>
+    <Setting name="TAP2Start">             0 </Setting>
+    <Setting name="TAP2Stop">            511 </Setting>
+    <Setting name="InvTAP2">               0 </Setting>
+
+    <Setting name="chain2Test">            0 </Setting>
+    <Setting name="byTime">                1 </Setting>
+    <Setting name="framesORtime">         10 </Setting>
+
+    <Setting name="TargetBER">          1e-5 </Setting>
+
+    <Setting name="RegNameDAC1">   VCAL_HIGH </Setting>
+    <Setting name="StartValueDAC1">      250 </Setting>
+    <Setting name="StopValueDAC1">       600 </Setting>
+    <Setting name="StepDAC1">             50 </Setting>
+    <Setting name="RegNameDAC2"> user.ctrl_regs.fast_cmd_reg_5.delay_after_inject_pulse </Setting>
+    <Setting name="StartValueDAC2">       28 </Setting>
+    <Setting name="StopValueDAC2">        50 </Setting>
+    <Setting name="StepDAC2">              1 </Setting>
+
+    <Setting name="DoOnlyNGroups">         0 </Setting>
+    <Setting name="DisplayHisto">          0 </Setting>
+    <Setting name="UpdateChipCfg">         1 </Setting>
+    <Setting name="DisableChannelsAtExit"> 1 </Setting>
+
+    <!-- === Expert settings ===
+         DataOutputDir:   set the output directory for all data. If not specified files will be saved in ./Results/
+         SaveBinaryData = 0: do not save raw data in binary format; SaveBinaryData = 1: save raw data in binary format
+         nHITxCol:        number of simultaneously injected pixels per column (it must be a divider of chip rows)
+         InjLatency:      controls the latency of the injection in terms of 100ns period (up to 4095)
+         nClkDelays:      controls the delay between two consecutive injections in terms of 100ns period (up to 4095)
+    -->
+    <Setting name="DataOutputDir">           </Setting>
+    <Setting name="SaveBinaryData">        0 </Setting>
+    <Setting name="nHITxCol">              1 </Setting>
+    <Setting name="InjLatency">           32 </Setting>
+    <Setting name="nClkDelays">          280 </Setting>
+  </Settings>
+
+  <!-- === Monitoring parameters ===
+       MonitoringSleepTime: sleep for monitoring thread in milliseconds
+  -->
+  <MonitoringSettings>
+    <Monitoring type="RD53A" enable="0">
+      <MonitoringSleepTime> 1000 </MonitoringSleepTime>
+      <MonitoringElement device="RD53" register="VIN_ana_ShuLDO"  enable="1"/>
+      <MonitoringElement device="RD53" register="VOUT_ana_ShuLDO" enable="1"/>
+      <MonitoringElement device="RD53" register="VIN_dig_ShuLDO"  enable="1"/>
+      <MonitoringElement device="RD53" register="VOUT_dig_ShuLDO" enable="1"/>
+      <MonitoringElement device="RD53" register="ADCbandgap"      enable="1"/>
+      <MonitoringElement device="RD53" register="Iref"            enable="1"/>
+      <MonitoringElement device="RD53" register="TEMPSENS_1"      enable="1"/>
+      <MonitoringElement device="RD53" register="TEMPSENS_4"      enable="1"/>
+
+      <MonitoringElement device="LpGBT" register="TEMP"           enable="0"/>
+      <MonitoringElement device="LpGBT" register="VDD"            enable="0"/>
+      <MonitoringElement device="LpGBT" register="PUSMStatus"     enable="0"/>
+    </Monitoring>
+  </MonitoringSettings>
+
+</HwDescription>
