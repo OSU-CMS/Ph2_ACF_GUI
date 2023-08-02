@@ -299,10 +299,53 @@ class TestHandler(QObject):
 			self.configTest()
 			self.IVCurveData = []
 			self.IVCurveResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)", invert = True)
-			self.IVCurveHandler = IVCurveHandler(self,self.HVpowersupply)
-			self.IVCurveHandler.finished.connect(self.IVCurveFinished)
-			self.IVCurveHandler.IVCurve()
-			return
+			self.LVPS = self.LVpowersupply
+			channel = 1
+			#copy from QtStartWindow
+			#find the reading values
+			LVStatusValue = self.LVPS.Instrument.status(channel, no_lock=True) #return 1 if it is on, 0 if it is off
+			if LVStatusValue:   
+				LVStatusValue = 1
+			else:
+				LVStatusValue =0
+			current = self.LVPS.ReadCurrent()
+			Readcurrent = float(current) if current else 0.0
+			voltage = self.LVPS.ReadVoltage()
+			Readvoltage = float(voltage) if voltage else 0.0
+			#find the set values
+			testModuleType = self.master.LVpowersupply.ModuleType
+			testPowerMode = self.master.LVpowersupply.PoweringMode
+			if testPowerMode == "SLDO":
+				TestVoltage = ModuleVoltageMapSLDO[testModuleType]
+				TestCurrent = ModuleCurrentMap[testModuleType]
+			elif testPowerMode == "Direct":
+				TestVoltage = ModuleVoltageMap[testModuleType]
+				TestCurrent = ModuleCurrentMap[testModuleType]
+			
+			volDiff = abs(TestVoltage-Readvoltage)
+			ampDiff = abs(TestCurrent-Readcurrent)
+			
+			if volDiff <= 0.5 and ampDiff <= 0.5  and (LVStatusValue==1):
+				self.IVCurveHandler = IVCurveHandler(self,self.HVpowersupply)
+				self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+				self.IVCurveHandler.IVCurve()
+				return
+			else:
+				print("runSingleTest unable to start due to LVPS status")
+				print("Readvoltage:" + str(Readvoltage))
+				print("Readcurrent:" + str(Readcurrent))
+				print("LVStatusValue:"+str(LVStatusValue))
+				print("TestCurrent:" + str(TestCurrent))
+				print("TestVoltage:"+str(TestVoltage))
+				print("LVPS issue occurs, HVPS is turning off")
+				self.HVpowersupply.TurnOffHV()
+				reply = QMessageBox.question(None, "LVPS error", "LVPS error do you want to abort? yes for abort no for reset the test", QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
+				if reply == QMessageBox.Yes:
+					self.abortTest()
+				if reply == QMessageBox.No:
+					self.resetConfigTest()
+
+				return
 
 		if testName == "SLDOScan":
 			self.SLDOScanData = []

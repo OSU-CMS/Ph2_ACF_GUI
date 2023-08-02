@@ -187,8 +187,7 @@ class SummaryBox(QWidget):
 				volDiff = abs(TestVoltage-Readvoltage)
 				ampDiff = abs(TestCurrent-Readcurrent)
 				
-				if volDiff >= 0.5 and ampDiff >= 0.5  and (LVStatusValue==1):
-					print("I am ramping up") #debug
+				if volDiff <= 0.5 and ampDiff <= 0.5  and (LVStatusValue==1):
 					leakageCurrent = 0.0
 					if self.master.PowerRemoteControl["HV"]:
 						self.master.HVpowersupply.RampingUp(defaultHVsetting,-3)
@@ -225,7 +224,7 @@ class SummaryBox(QWidget):
 					print("LV PS is off now. HV PS can't be turn on")
 					print("attempt to turn on the LV PS again")
 					time.sleep(2)
-					
+			self.master.HVpowersupply.TurnOffHV()
 			return self.result
 		except Exception as err:
 			self.result = False
