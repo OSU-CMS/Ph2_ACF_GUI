@@ -43,7 +43,8 @@ class QtLoginDialog(QDialog):
         login_groupbox = QGroupBox("")
         login_groupbox.setCheckable(False)
 
-        title_label = QLabel('<font size="12"> Phase2 Pixel Module Test </font>')
+        title_label = QLabel('<font size="12">Phase2 Pixel Module\
+                                Test </font>')
         title_label.setFont(QFont("Courier"))
         title_label.setMaximumHeight(30)
 
@@ -92,7 +93,8 @@ class QtLoginDialog(QDialog):
         else:
             host_label.setText("HostIPAddr")
             self.disableCheckBox.toggled.connect(self.host_name.setDisabled)
-            self.disableCheckBox.toggled.connect(self.database_combo.setDisabled)
+            self.disableCheckBox.toggled.connect(self.database_combo
+                                                 .setDisabled)
 
         button_login = QPushButton("&Login")
         button_login.setDefault(True)

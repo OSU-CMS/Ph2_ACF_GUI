@@ -128,7 +128,7 @@ class QtApplication(QWidget):
     ###############################################################
 
     def createMain(self):
-        statusString, colorString = checkDBConnection(self.connection)
+        statusString, colorString = check_database_connection(self.connection)
         self.FirmwareStatus = QGroupBox("Hello,{}!".format(self.TryUsername))
         self.FirmwareStatus.setDisabled(True)
 

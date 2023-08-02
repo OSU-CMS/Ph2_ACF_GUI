@@ -41,7 +41,8 @@ def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase, maste
 		return
 	return connection
 
-def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
+
+def connect_to_database(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 	# For test, no connection to DB is made and output will not be registered
 	#if TryHostAddress == "0.0.0.0":
 	#	return "DummyDB"
@@ -60,7 +61,7 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
 		return "Offline"
 	return connection
 
-def checkDBConnection(dbconnection):
+def check_database_connection(dbconnection):
 	if dbconnection == "Offline":
 		statusString = "<---- offline Mode ---->"
 		colorString = "color:red"
@@ -99,8 +100,8 @@ def getAllTests(dbconnection):
 
 def retrieveAllTests(dbconnection):
 	if dbconnection.is_connected() == False:
-		return 
-	cur = dbconnection.cursor() 
+		return
+	cur = dbconnection.cursor()
 	cur.execute('SELECT * FROM calibrationlist')
 	return cur.fetchall()
 
@@ -121,7 +122,7 @@ def retrieveModuleTests(dbconnection, module_id):
 	return cur.fetchall()
 
 def retrieveModuleLastTest(dbconnection, module_id):
-	sql_query = ''' SELECT * FROM results_test T 
+	sql_query = ''' SELECT * FROM results_test T
 					INNER JOIN (
 						SELECT Module_ID, max(ExecutionTime) as MaxDate
 						from results_test T WHERE Module_ID = {0}
@@ -215,12 +216,12 @@ def getLocalRemoteTests(dbconnection, module_id = None, columns = []):
 				allTests.append(['Local']+localTest)
 			if localTest[timeIndex] in InterSet:
 				allTests.append(['Synced']+localTest)
-	
-	
+
+
 	else:
 		for localTest in localTests:
 			allTests.append(['']+localTest)
-	
+
 		for remoteTest in remoteTests:
 			allTests.append(['']+remoteTest + [""])
 
@@ -273,7 +274,7 @@ def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
 			sql_query = ''' SELECT  ''' +  ",".join(columnList) + ''' FROM {} WHERE {}'''.format(table," AND ".join(constraints))
 		else:
 			sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(table," AND ".join(constraints))
-		
+
 		cur = dbconnection.cursor()
 		cur.execute(sql_query,tuple(values))
 
@@ -292,7 +293,7 @@ def retrieveWithConstraintSyntax(dbconnection, table, syntax, **kwargs):
 				columnList = value
 		if len(columnList) > 0:
 			sql_query = ''' SELECT  ''' + ",".join(columnList) + ''' FROM  ''' + '''{}'''.format(table)
-		else:	
+		else:
 			sql_query = ''' SELECT  * FROM {}'''.format(table)
 
 		sql_query = ''' SELECT  * FROM {} WHERE {}'''.format(str(table),str(syntax))
@@ -314,7 +315,7 @@ def retrieveGenericTable(dbconnection, table, **kwargs):
 				columnList = value
 		if len(columnList) > 0:
 			sql_query = ''' SELECT  ''' + ",".join(columnList) + ''' FROM  ''' + '''{}'''.format(table)
-		else:	
+		else:
 			sql_query = ''' SELECT  * FROM {}'''.format(table)
 		cur = dbconnection.cursor()
 		cur.execute(sql_query)
@@ -324,7 +325,7 @@ def retrieveGenericTable(dbconnection, table, **kwargs):
 	except Exception as error:
 		print("Failed retrieving MySQL table:{}".format(error))
 		return []
-	
+
 def insertGenericTable(dbconnection, table, args, data):
 	try:
 		pre_query = '''INSERT INTO ''' + str(table) + ''' ('''+ ",".join(["{}"]*len(args))+''')
@@ -403,4 +404,3 @@ def getByColumnName(column_name, header, databody):
 ##########################################################################
 ##  Functions for column selection (END)
 ##########################################################################
-
