@@ -275,15 +275,17 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 		BeBoardModule1.SetURI(FirmwareList['fc7.board.2'])
 		AllModules = firmwareList.getAllModules().values()
 		boardtype = 'RD53A'
+		AllOG = {}
+  
 		# Setup all optical groups for the modules
 		for module in AllModules:
-			AllOG = {}
 			OpticalGroupModule = OGModule()
 			OpticalGroupModule.SetOpticalGrp(module.getOpticalGroupID(),module.getFMCID())
 			AllOG[module.getOpticalGroupID()] = OpticalGroupModule
 
 		for module in firmwareList.getAllModules().values():
-			OpticalGroupModule0 = AllOG[module.getOpticalGroupID()]
+			OpticalGroupModule0 = copy.deepcopy(AllOG[module.getOpticalGroupID()])
+			OpticalGroupModule1 = copy.deepcopy(AllOG[module.getOpticalGroupID()])
 			HyBridModule0 = HyBridModule()
 			HyBridModule0.SetHyBridModule(module.getModuleID(),"1")
 			HyBridModule0.SetHyBridName(module.getModuleName())
@@ -315,8 +317,10 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 			OpticalGroupModule0.AddHyBrid(HyBridModule0)
 
 		for OpticalGroupModule in AllOG.values():
-			BeBoardModule0.AddOGModule(OpticalGroupModule)
-			BeBoardModule1.AddOGModule(OpticalGroupModule)
+			OpticalGroupModule0 = copy.deepcopy(OpticalGroupModule)
+			OpticalGroupModule1 = copy.deepcopy(OpticalGroupModule)
+			BeBoardModule0.AddOGModule(OpticalGroupModule0)
+			BeBoardModule1.AddOGModule(OpticalGroupModule1)
 
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		BeBoardModule1.SetRegisterValue(RegisterSettings)
