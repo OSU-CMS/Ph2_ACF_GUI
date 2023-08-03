@@ -15,7 +15,7 @@ from itertools import compress
 
 from subprocess import Popen, PIPE
 from PyQt5.QtWidgets import QMessageBox
-from Gui.GUIutils.settings import *
+import Gui.Config.staticSettings as settings
 
 # from Gui.GUIutils.guiUtils import *
 

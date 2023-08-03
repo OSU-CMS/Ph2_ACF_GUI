@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
 )
 import sys
-import Gui.GUIutils.settings as settings
+import Gui.Config.staticSettings as settings
 
 
 class QtLoginDialog(QDialog):
@@ -43,8 +43,10 @@ class QtLoginDialog(QDialog):
         login_groupbox = QGroupBox("")
         login_groupbox.setCheckable(False)
 
-        title_label = QLabel('<font size="12">Phase2 Pixel Module\
-                                Test </font>')
+        title_label = QLabel(
+            '<font size="12">Phase2 Pixel Module\
+                                Test </font>'
+        )
         title_label.setFont(QFont("Courier"))
         title_label.setMaximumHeight(30)
 
@@ -93,8 +95,7 @@ class QtLoginDialog(QDialog):
         else:
             host_label.setText("HostIPAddr")
             self.disableCheckBox.toggled.connect(self.host_name.setDisabled)
-            self.disableCheckBox.toggled.connect(self.database_combo
-                                                 .setDisabled)
+            self.disableCheckBox.toggled.connect(self.database_combo.setDisabled)
 
         button_login = QPushButton("&Login")
         button_login.setDefault(True)
@@ -131,12 +132,13 @@ class QtLoginDialog(QDialog):
         if self.username_edit.text() in settings.ExpertUserList:
             self.expertMode = True
 
-        connection_parameters = {"username": self.username_edit.text(),
-                                 "password": self.password_edit.text(),
-                                 "address":
-                                 self.host_name.currentText() + ".DBIP",
-                                 "database": self.database_combo.currentText(),
-                                 "expert": self.expertMode}
+        connection_parameters = {
+            "username": self.username_edit.text(),
+            "password": self.password_edit.text(),
+            "address": self.host_name.currentText() + ".DBIP",
+            "database": self.database_combo.currentText(),
+            "expert": self.expertMode,
+        }
 
         self.login_signal.emit(connection_parameters)
 

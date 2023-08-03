@@ -1,4 +1,4 @@
-from Gui.GUIutils.settings import *
+import Gui.Config.staticSettings as settings
 
 
 class Chip:
