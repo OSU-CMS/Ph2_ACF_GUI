@@ -219,7 +219,7 @@ class SimplifiedMainWidget(QWidget):
 
         firmwareName, fwAddress = defaultFC7, defaultFC7IP
 
-        self.BeBoard = QtBeBoard()
+        self.BeBoard = FC7()
         self.BeBoard.setBoardName(firmwareName)
         self.BeBoard.setIPAddress(FirmwareList[firmwareName])
         self.BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])

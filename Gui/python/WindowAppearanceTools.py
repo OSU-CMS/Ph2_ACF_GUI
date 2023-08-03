@@ -55,9 +55,9 @@ def create_logo_widget(*image_paths: str) -> QGroupBox:
     print("In create_logo_widget")
     for i, path in enumerate(image_paths):
         logo_label = QLabel()
-        image = QImage(path).scaled(QSize(200, 60),
-                                    Qt.KeepAspectRatio,
-                                    Qt.SmoothTransformation)
+        image = QImage(path).scaled(
+            QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
         pixmap = QPixmap.fromImage(image)
         logo_label.setPixmap(pixmap)
         logo_layout.addWidget(logo_label)

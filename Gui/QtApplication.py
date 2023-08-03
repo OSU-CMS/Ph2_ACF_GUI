@@ -43,6 +43,6 @@ if __name__ == "__main__":
     dimension = app.screens()[0].size()
     login_window = QtLoginDialog()
 
-    login_window.login_singal.conect(lambda x: login_to_gui(x))
+    login_window.login_signal.conect(lambda x: login_to_gui(x))
 
     sys.exit(app.exec_())

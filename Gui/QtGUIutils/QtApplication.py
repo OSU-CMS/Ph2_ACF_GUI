@@ -65,6 +65,8 @@ class QtApplication(QWidget):
         self.setLayout(self.mainLayout)
         self.ProcessingTest = False
         self.expertMode = False
+        # NOTE: Make list
+        # NOTE: Change empty string check to empty list check
         self.FwUnderUsed = ""
 
         # self.FwUnderUsed = []
@@ -151,7 +153,7 @@ class QtApplication(QWidget):
                 # FwStatusValue.setStyleSheet(FwStatusColor)
                 self.StatusList.append([FwNameLabel, FwStatusValue])
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
-                BeBoard = QtBeBoard()
+                BeBoard = FC7()
                 BeBoard.setBoardName(firmwareName)
                 BeBoard.setIPAddress(FirmwareList[firmwareName])
                 BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
@@ -213,11 +215,6 @@ class QtApplication(QWidget):
         if self.FwUnderUsed != "":
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
-
-        # if self.FwUnderUsed != []:
-        # 	for fw in self.FwUnderUsed:
-        # 		index = self.getIndex(fw,self.StatusList)
-        # 		self.occupyFw("{0}".format(index))
 
         self.FirmwareStatus.setLayout(StatusLayout)
         self.FirmwareStatus.setDisabled(False)
@@ -724,8 +721,8 @@ class QtApplication(QWidget):
                 button.setText("&In use")
                 button.setDisabled(False)
                 self.CheckButton.setDisabled(True)
-                self.FwUnderUsed = self.StatusList[i + 1][0].text()
-                # self.FwUnderUsed.append(self.StatusList[i+1][0].text())
+                # self.FwUnderUsed = self.StatusList[i + 1][0].text()
+                self.FwUnderUsed.append(self.StatusList[i+1][0].text())
             else:
                 button.setDisabled(True)
 
