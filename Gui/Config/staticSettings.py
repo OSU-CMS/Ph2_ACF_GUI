@@ -3,7 +3,7 @@
 
 import os
 from collections import defaultdict
-from Gui.siteSettings import *
+from Gui.Config.siteSettings import *
 
 # List of expert users
 ExpertUserList = [

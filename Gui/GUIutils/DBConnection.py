@@ -60,8 +60,9 @@ def connect_to_database(TryUsername, TryPassword, TryHostAddress, TryDatabase):
     # For test, no connection to DB is made and output will not be registered
     # if TryHostAddress == "0.0.0.0":
     # 	return "DummyDB"
-
     # Try connecting to DB on localhost with unspecific host address
+    if TryUsername == "localexpert":
+        return "Offline"
     if not TryHostAddress:
         TryHostAddress = "127.0.0.1"
 

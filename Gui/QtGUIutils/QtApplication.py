@@ -674,12 +674,6 @@ class QtApplication(QWidget):
             self.StatusList[index + 1][1].setText("Connected")
             self.StatusList[index + 1][1].setStyleSheet("color: green")
             self.occupyFw("{0}".format(index))
-        # if self.FwUnderUsed != []:
-        # 	for fw in self.FwUnderUsed:
-        # 		index = self.getIndex(fw,self.StatusList)
-        # 		self.StatusList[index+1][1].setText("Connected")
-        # 		self.StatusList[index+1][1].setStyleSheet("color: green")
-        # 		self.occupyFw("{0}".format(index))
 
     def refreshFirmware(self):
         for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
@@ -705,24 +699,32 @@ class QtApplication(QWidget):
                 return index - 1
         return -1
 
-    def switchFw(self, index):
+    def switchFw(self, index: int) -> None:
+        """
+        Use when clicking Use button of fc7 to either connect to this Fc7 or to replace it with another.
+
+        The index of this function is 1 index ahead of status_list which
+        is why this function is called with index - 1
+        """
         if self.UseButtons[int(index)].isChecked():
             self.occupyFw(index)
         else:
             self.releaseFw(index)
             self.checkFirmware
 
-    def occupyFw(self, index):
-        if self.StatusList[int(index) + 1][1].text() == "Connected":
-            self.NewTestButton.setDisabled(False)
-        for i, button in enumerate(self.UseButtons):
-            if i == int(index):
-                button.setChecked(True)
-                button.setText("&In use")
-                button.setDisabled(False)
-                self.CheckButton.setDisabled(True)
-                # self.FwUnderUsed = self.StatusList[i + 1][0].text()
-                self.FwUnderUsed.append(self.StatusList[i+1][0].text())
+    def occupyFw(self, indexes: list[int]):
+        for fc7_index in indexes:
+            if self.StatusList[fc7_index + 1][1].text() == "Connected":
+                self.NewTestButton.setDisabled(False)
+        for i, button in enumerate(self.use_buttons):
+            for fc7_index in indexes:
+                if i == fc7_index:
+                    button.setChecked(True)
+                    button.setText("&In use")
+                    button.setDisabled(False)
+                    self.check_button.setDisabled(True)
+                    # self.FwUnderUsed = self.StatusList[i + 1][0].text()
+                    self.FwUnderUsed.append(self.StatusList[i + 1][0].text())
             else:
                 button.setDisabled(True)
 
