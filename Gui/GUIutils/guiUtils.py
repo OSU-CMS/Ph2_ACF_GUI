@@ -266,7 +266,7 @@ def CheckXMLValue(pFilename, pAttribute):
 
 def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 	
-		outputFile0 = outputDir + "/CMSIT_" + testName +"_david.xml" 
+		outputFile0 = outputDir + "/CMSIT_" + testName +".xml" 
 		# Get Hardware discription and a list of the modules
 		HWDescription0 = HWDescription()
 		BeBoardModule0 = BeBoardModule()
@@ -274,8 +274,10 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 		BeBoardModule1 = BeBoardModule()
 		BeBoardModule1.SetURI(FirmwareList['fc7.board.2'])
 		AllModules = firmwareList.getAllModules().values()
+		BeBoardModule1.SetBeBoard(1,boardType="RD53",eventType= "VR")
 		boardtype = 'RD53A'
 		AllOG = {}
+
   
 		# Setup all optical groups for the modules
 		for module in AllModules:
@@ -284,8 +286,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 			AllOG[module.getOpticalGroupID()] = OpticalGroupModule
 
 		for module in firmwareList.getAllModules().values():
-			OpticalGroupModule0 = copy.deepcopy(AllOG[module.getOpticalGroupID()])
-			OpticalGroupModule1 = copy.deepcopy(AllOG[module.getOpticalGroupID()])
+			OpticalGroupModule0 = AllOG[module.getOpticalGroupID()]
 			HyBridModule0 = HyBridModule()
 			HyBridModule0.SetHyBridModule(module.getModuleID(),"1")
 			HyBridModule0.SetHyBridName(module.getModuleName())
@@ -317,21 +318,19 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 			OpticalGroupModule0.AddHyBrid(HyBridModule0)
 
 		for OpticalGroupModule in AllOG.values():
-			OpticalGroupModule0 = copy.deepcopy(OpticalGroupModule)
-			OpticalGroupModule1 = copy.deepcopy(OpticalGroupModule)
-			BeBoardModule0.AddOGModule(OpticalGroupModule0)
-			BeBoardModule1.AddOGModule(OpticalGroupModule1)
+			BeBoardModule0.AddOGModule(OpticalGroupModule)
+			BeBoardModule1.AddOGModule(OpticalGroupModule)
 
 		BeBoardModule0.SetRegisterValue(RegisterSettings)
 		BeBoardModule1.SetRegisterValue(RegisterSettings)
   
 		HWDescription0.AddBeBoard(BeBoardModule0)
 		HWDescription0.AddSettings(HWSettings_Dict[testName])
-		MonitoringModule0 = MonitoringModule(boardtype)
-  
 		HWDescription0.AddBeBoard(BeBoardModule1)
 		HWDescription0.AddSettings(HWSettings_Dict[testName])
-  
+
+		MonitoringModule0 = MonitoringModule(boardtype)
+   
 		if 'RD53A' in boardtype:
 			MonitoringModule0.SetMonitoringList(MonitoringListA)
 		else:

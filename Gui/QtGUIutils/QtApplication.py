@@ -1052,7 +1052,6 @@ class QtApplication(QWidget):
 				self.CheckButton.setDisabled(True)
 				# self.FwUnderUsed = self.StatusList[i+1][0].text()
 				self.FwUnderUsed.append(self.StatusList[i+1][0].text())
-				print(self.FwUnderUsed)
 			# else:
 			# 	button.setDisabled(True)
 

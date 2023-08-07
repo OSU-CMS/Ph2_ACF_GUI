@@ -99,8 +99,7 @@ class SummaryBox(QWidget):
 
 			print('write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)))
 			print('write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)))
-
-			fc7_ip = FirmwareList[defaultFC7]
+			fc7_ip = FirmwareList[defaultFC7[0]]
 			uricmd = "sed -i -e 's/192.168.1.80/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(fc7_ip, os.environ.get('GUI_dir'),boardtype)
 			updateuri = subprocess.call([uricmd], shell=True)
 
@@ -208,8 +207,6 @@ class QtStartWindow(QWidget):
 		#self.master.LVpowersupply.TurnOn()
 		self.firmware = firmwarelist[0]
 		self.firmware2 = firmwarelist[1]
-		print(self.firmware)
-		print(self.firmware2)
 		# self.firmwareName = firmware.getBoardName()
 		self.connection = self.master.connection
 		self.mainLayout = QGridLayout()
