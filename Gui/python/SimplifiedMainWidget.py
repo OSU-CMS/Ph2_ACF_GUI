@@ -1,62 +1,48 @@
-from PyQt5 import QtCore
-from PyQt5 import QtSerialPort
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QIcon
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QFont, QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
-    QApplication,
-    QButtonGroup,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QFormLayout,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
     QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
-    QMainWindow,
     QMessageBox,
 )
-
-import pyvisa as visa
-import subprocess
-
+import time
 import logging
 
+# NOTE: This may not be used
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-from Gui.QtGUIutils.QtRunWindow import *
+# from Gui.QtGUIutils.QtRunWindow import *
 from Gui.QtGUIutils.QtFwCheckDetails import *
 from Gui.python.CustomizedWidget import *
 from Gui.python.Firmware import *
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
-from Gui.GUIutils.settings import *
+import Gui.Config.siteConfig as sc
+import Gui.Config.staticSettings as ss
 from Gui.python.ArduinoWidget import *
-from Gui.python.Peltier import *
+from Gui.python.Peltier import PeltierSignalGenerator
 
 
 class SimplifiedMainWidget(QWidget):
+    """
+    Use to create the Non-expert user window
+
+    Methods:
+    createLogin -- Used to place widgets on screen
+    setupMainUI -- Used to connect buttons and display buttons correctly
+    """
+
     def __init__(self, master):
         super(SimplifiedMainWidget, self).__init__()
         self.master = master
@@ -67,6 +53,7 @@ class SimplifiedMainWidget(QWidget):
         self.DisplayedPassword = self.master.DisplayedPassword
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
+
         redledimage = QImage("icons/led-red-on.png").scaled(
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
@@ -75,13 +62,13 @@ class SimplifiedMainWidget(QWidget):
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         self.greenledpixmap = QPixmap.fromImage(greenledimage)
+
         self.createLogin()
         self.setupMainUI()
-        # self.createLogin()
-
-        # self.SimpModBox = SimpleModuleBox()
 
     def createLogin(self):
+        """Create all of the widgets that will be placed in the window"""
+
         self.LoginGroupBox = QGroupBox("")
         self.LoginGroupBox.setCheckable(False)
 
@@ -115,8 +102,6 @@ class SimplifiedMainWidget(QWidget):
         layout.addWidget(PasswordLabel, 2, 1, 1, 1, Qt.AlignCenter)
         layout.addWidget(self.PasswordEdit, 2, 2, 1, 2)
 
-        # layout.setRowMinimumHeight(6, 50)
-
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(1, 1)
         layout.setColumnStretch(2, 2)
@@ -140,11 +125,9 @@ class SimplifiedMainWidget(QWidget):
         )
         CMSpixmap = QPixmap.fromImage(CMSimage)
         CMSLogoLabel.setPixmap(CMSpixmap)
-
         self.LogoLayout.addWidget(OSULogoLabel)
         self.LogoLayout.addStretch(1)
         self.LogoLayout.addWidget(CMSLogoLabel)
-
         self.LogoGroupBox.setLayout(self.LogoLayout)
 
         self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
@@ -185,8 +168,8 @@ class SimplifiedMainWidget(QWidget):
         self.CableEdit = QLineEdit()
 
         # Selecting default HV
-        self.HVpowersupply.setPowerModel(defaultHVModel[0])
-        self.HVpowersupply.setInstrument(defaultUSBPortHV[0])
+        self.HVpowersupply.setPowerModel(sc.defaultHVModel[0])
+        self.HVpowersupply.setInstrument(sc.defaultUSBPortHV[0])
         statusString = self.HVpowersupply.getInfo()
         self.HVPowerStatusLabel.setText("HV status")
 
@@ -199,8 +182,8 @@ class SimplifiedMainWidget(QWidget):
 
         time.sleep(0.5)
         # Selecting default LV
-        self.LVpowersupply.setPowerModel(defaultLVModel[0])
-        self.LVpowersupply.setInstrument(defaultUSBPortLV[0])
+        self.LVpowersupply.setPowerModel(sc.defaultLVModel[0])
+        self.LVpowersupply.setInstrument(sc.defaultUSBPortLV[0])
         statusString = self.LVpowersupply.getInfo()
         self.LVPowerStatusLabel.setText("LV status")
         if statusString != "No valid device" and statusString != None:
@@ -214,15 +197,15 @@ class SimplifiedMainWidget(QWidget):
         self.StatusList.append([self.LVPowerStatusLabel, self.LVPowerStatusValue])
 
         self.FC7NameLabel = QLabel()
-        self.FC7NameLabel.setText(defaultFC7)
+        self.FC7NameLabel.setText(sc.defaultFC7)
         self.FC7StatusValue = QLabel()
 
-        firmwareName, fwAddress = defaultFC7, defaultFC7IP
+        firmwareName, fwAddress = sc.defaultFC7, sc.defaultFC7IP
 
         self.BeBoard = FC7()
         self.BeBoard.setBoardName(firmwareName)
-        self.BeBoard.setIPAddress(FirmwareList[firmwareName])
-        self.BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
+        self.BeBoard.setIPAddress(sc.FC7List[firmwareName])
+        self.BeBoard.setFPGAConfig(ss.FPGAConfigList[firmwareName])
 
         self.master.FwDict[firmwareName] = self.BeBoard
         self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
@@ -268,13 +251,44 @@ class SimplifiedMainWidget(QWidget):
             self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
         self.StatusList.append([self.ArduinoMonitorLabel, self.ArduinoMonitorValue])
         try:
-            self.Peltier = PeltierController(defaultPeltierPort, defaultPeltierBaud)
-            self.Peltier.setTemperature(defaultPeltierSetTemp)
+            self.peltier = PeltierSignalGenerator()
+
+            # Sending commands to setup Peltier Controller
+            self.pelt.sendCommand(
+                self.pelt.createCommand(
+                    "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
+                )
+            )  # Allows set point to be set by computer software
+            self.pelt.sendCommand(
+                self.pelt.createCommand(
+                    "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
+                )
+            )  # Temperature should be PID controlled
+            self.pelt.sendCommand(
+                self.pelt.createCommand(
+                    "Proportional Bandwidth Write",
+                    ["0", "0", "0", "0", "0", "0", "c", "8"],
+                )
+            )  # Set proportional bandwidth
+
+            set_temp = self.pelt.convertSetTempValueToList(ss.defaultPeltierSetTemp)
+            self.pelt.sendCommand(
+                self.pelt.createCommand("Fixed Desired Control Setting Write", set_temp)
+            )
             # self.Peltier.powerController(1)
             time.sleep(0.5)
-            self.PeltierPower = self.Peltier.checkPower()
+
+            self.PeltierPower, _ = self.pelt.sendCommand(
+                self.pelt.createCommand(
+                    "Power On/Off Read", ["0", "0", "0", "0", "0", "0", "0", "0"]
+                )
+            )
+
+            # If the power is on the last value in the list will be 1, if off, 0
+            self.PeltierPower = self.PeltierPower[-1]
+
         except Exception as e:
-            print("Error while attempting to set Peltier", e)
+            print("Error while attempting to setup Peltier: ", e)
             self.PeltierPower = None
 
         self.PeltierMonitorLabel = QLabel()
