@@ -2,23 +2,36 @@
 """Use to create the main expert window of the GUI."""
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
+    QCheckBox,
     QGridLayout,
     QGroupBox,
     QLabel,
     QPushButton,
     QWidget,
     QComboBox,
+    QLineEdit,
 )
 from Gui.GUIutils.DBConnection import check_database_connection
 import Gui.Config.staticSettings as static_settings
 import Gui.Config.siteSettings as settings
 import Gui.Config.siteConfig as site_config
+from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.Firmware import FC7
 from Gui.GUIutils.FirmwareUtil import fwStatusParser
 from Gui.GUIutils.GPIBInterface import PowerSupply
+from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
+from Gui.QtGUIutils.QtStartWindow import QtStartWindow
+from Gui.QtGUIutils.QtProductionTestWindow import QtProductionTestWindow
+from Gui.QtGUIutils.QtModuleReviewWindow import QtModuleReviewWindow
 import os
 import sys
 import pyvisa as visa
+
+
+KMINIMUMWIDTH = 120
+KMAXIMUMWIDTH = 150
+KMINIMUMHEIGHT = 30
+KMAXIMUMHEIGHT = 100
 
 
 class QtExpertWindow(QWidget):
@@ -35,6 +48,7 @@ class QtExpertWindow(QWidget):
         self.database_connection = database_connection
         self.fc7_status_verbose_dict = {}
         self.fc7_dict = {}  # Dictionary of fc7 objects
+        self.remote_powersupplies = {"LV": True, "HV": True}
 
         self.create_main_window()
 
@@ -119,10 +133,21 @@ class QtExpertWindow(QWidget):
                 connect_devices_button = QPushButton("&Connect All Devices")
                 connect_devices_label = QLabel("")
 
+                self.connect_devices_groupbox.setLayout(connect_devices_layout)
+                connect_devices_button.clicked.connect(self.connect_to_default_devices)
+
                 connect_devices_layout.addWidget(connect_devices_button, 0, 0)
                 connect_devices_layout.addWidget(connect_devices_button, 0, 1)
 
-                hv_power_supply_groupbox = QGroupBox("HV Power Supply")
+                self.hv_remote_control_checkbox = QCheckBox(
+                    "Use HV Power Supply Remote Control"
+                )
+                self.hv_remote_control_checkbox.setChecked(True)
+                self.hv_remote_control_checkbox.toggled.connect(
+                    self.switch_hv_remote_mode
+                )
+
+                self.hv_power_supply_groupbox = QGroupBox("HV Power Supply")
                 hv_power_supply_layout = QGridLayout()
 
                 self.hv_port_combo = QComboBox()
@@ -146,9 +171,9 @@ class QtExpertWindow(QWidget):
                 hv_power_supply_layout.addWidget(self.hv_use_button, 0, 4)
                 hv_power_supply_layout.addWidget(self.hv_release_button, 0, 5)
 
-                hv_power_supply_groupbox.setLayout(hv_power_supply_layout)
+                self.hv_power_supply_groupbox.setLayout(hv_power_supply_layout)
 
-                lv_power_supply_groupbox = QGroupBox("LV Power Supply")
+                self.lv_power_supply_groupbox = QGroupBox("LV Power Supply")
                 lv_power_supply_layout = QGridLayout()
                 self.lv_port_combo = QComboBox()
                 self.lv_port_label = QLabel("Choose LV Port:")
@@ -164,6 +189,14 @@ class QtExpertWindow(QWidget):
                 self.lv_release_button = QPushButton("&Release")
                 self.lv_release_button.clicked.connect(self.release_lv_powersupply)
 
+                self.lv_remote_control_checkbox = QCheckBox(
+                    "Use LV power remote control"
+                )
+                self.lv_remote_control_checkbox.setChecked(True)
+                self.lv_remote_control_checkbox.toggled.connect(
+                    self.switch_lv_remote_mode
+                )
+
                 lv_power_supply_layout.addWidget(self.lv_port_label, 0, 0)
                 lv_power_supply_layout.addWidget(self.lv_port_combo, 0, 1)
                 lv_power_supply_layout.addWidget(self.lv_model_label, 0, 2)
@@ -171,12 +204,90 @@ class QtExpertWindow(QWidget):
                 lv_power_supply_layout.addWidget(self.lv_use_button, 0, 4)
                 lv_power_supply_layout.addWidget(self.lv_release_button, 0, 5)
 
-                lv_power_supply_groupbox.setLayout(lv_power_supply_layout)
-                self.connect_devices_groupbox.setLayout(connect_devices_layout)
-                self.main_layout.addWidget(hv_power_supply_groupbox, 1, 0)
-                self.main_layout.addWidget(lv_power_supply_groupbox, 2, 0)
+                self.lv_power_supply_groupbox.setLayout(lv_power_supply_layout)
 
-                connect_devices_button.clicked.connect(self.connect_to_default_devices)
+                self.arduino_widget = ArduinoWidget()
+                self.arduino_widget.stop.connect(self.GlobalStop)
+                self.arduino_checkbox = QCheckBox("Use arduino monitoring")
+                self.arduino_checkbox.setChecked(True)
+                self.arduino_checkbox.toggled.connect(self.switchArduinoPanel)
+
+                self.test_groupbox = QGroupBox("Main")
+                self.summary_button = QPushButton("&Status Summary")
+
+                self.summary_button.setMinimumWidth(KMINIMUMWIDTH)
+                self.summary_button.setMaximumWidth(KMAXIMUMWIDTH)
+                self.summary_button.setMinimumHeight(KMINIMUMHEIGHT)
+                self.summary_button.setMaximumHeight(KMAXIMUMHEIGHT)
+                self.summary_button.clicked.connect(self.openSummaryWindow)
+
+                summary_label = QLabel("Statistics of test status")
+
+                self.new_test_button = QPushButton("&New")
+                self.new_test_button.setDefault(True)
+                self.new_test_button.setMinimumWidth(KMINIMUMWIDTH)
+                self.new_test_button.setMaximumWidth(KMAXIMUMWIDTH)
+                self.new_test_button.setMinimumHeight(KMINIMUMHEIGHT)
+                self.new_test_button.setMaximumHeight(KMAXIMUMHEIGHT)
+                self.new_test_button.clicked.connect(self.openNewTest)
+                self.new_test_button.setDisabled(True)
+                if self.processing_test:
+                    self.new_test_button.setDisabled(True)
+                new_test_label = QLabel("Open New Test")
+
+                self.new_production_test_button = QPushButton("&Production Test")
+                self.new_production_test_button.setMinimumWidth(KMINIMUMWIDTH)
+                self.new_production_test_button.setMaximumWidth(KMAXIMUMWIDTH)
+                self.new_production_test_button.setMinimumHeight(KMINIMUMHEIGHT)
+                self.new_production_test_button.setMaximumHeight(KMAXIMUMHEIGHT)
+                self.new_production_test_button.setDisabled(
+                    True
+                )  # FIXME This is to temporarily disable the test until LV can be added.
+                self.new_production_test_button.clicked.connect(
+                    self.openNewProductionTest
+                )
+                new_production_test_label = QLabel("Open production test")
+
+                self.review_button = QPushButton("&Review")
+                self.review_button.setMinimumWidth(KMINIMUMWIDTH)
+                self.review_button.setMaximumWidth(KMAXIMUMWIDTH)
+                self.review_button.setMinimumHeight(KMINIMUMHEIGHT)
+                self.review_button.setMaximumHeight(KMAXIMUMHEIGHT)
+                self.review_button.clicked.connect(self.openReviewWindow)
+                review_label = QLabel("Review all results")
+
+                self.review_module_button = QPushButton("&Show Module")
+                self.review_module_button.setMinimumWidth(KMINIMUMWIDTH)
+                self.review_module_button.setMaximumWidth(KMAXIMUMWIDTH)
+                self.review_module_button.setMinimumHeight(KMINIMUMHEIGHT)
+                self.review_module_button.setMaximumHeight(KMAXIMUMHEIGHT)
+                self.review_module_button.clicked.connect(self.openModuleReviewWindow)
+                self.review_module_edit = QLineEdit("")
+                self.review_module_edit.setEchoMode(QLineEdit.Normal)
+                self.review_module_edit.setPlaceholderText("Enter Module ID")
+
+                self.peltier_cooling_widget = Peltier(100)
+                self.peltier_groupbox = QGroupBox("Peltier Controller", self)
+                self.peltier_layout = QGridLayout()
+                self.peltier_layout.addWidget(self.peltier_cooling_widget)
+                self.peltier_groupbox.setLayout(self.peltier_layout)
+
+                test_layout = QGridLayout()
+                test_layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
+
+                test_layout.addWidget(new_test_label, 0, 1, 1, 2)
+                test_layout.addWidget(self.new_production_test_button, 1, 0, 1, 1)
+                test_layout.addWidget(new_production_test_label, 1, 1, 1, 2)
+                test_layout.addWidget(self.summary_button, 2, 0, 1, 1)
+                test_layout.addWidget(summary_label, 2, 1, 1, 2)
+                test_layout.addWidget(self.ReviewButton, 3, 0, 1, 1)
+                test_layout.addWidget(review_label, 3, 1, 1, 2)
+                test_layout.addWidget(self.review_module_button, 4, 0, 1, 1)
+                test_layout.addWidget(self.review_module_edit, 4, 1, 1, 2)
+                self.test_groupbox.setLayout(test_layout)
+
+                self.main_layout.addWidget(self.hv_power_supply_groupbox, 1, 0)
+                self.main_layout.addWidget(lv_power_supply_groupbox, 2, 0)
 
     def connect_to_default_devices(self) -> None:
         """
@@ -331,3 +442,61 @@ class QtExpertWindow(QWidget):
         self.connected_devices[fc7_name][1].setText("Connected")
         self.connected_devices[fc7_name][1].setStyleSheet("color: green")
         self.useFc7(fc7_name)
+
+    def switch_lv_remote_mode(self):
+        if self.lv_remote_control_checkbox.isChecked():
+            self.lv_power_supply_groupbox.setDisabled(False)
+            self.remote_powersupplies["LV"] = True
+        else:
+            self.lv_power_supply_groupbox.setDisabled(True)
+
+            self.remote_powersupplies["LV"] = False
+
+    def switch_hv_remote_mode(self):
+        if self.hv_remote_control_checkbox.isChecked():
+            self.hv_power_supply_groupbox.setDisabled(False)
+            self.remote_powersupplies["HV"] = True
+        else:
+            self.hv_power_supply_groupbox.setDisabled(True)
+            self.remote_powersupplies["HV"] = False
+
+    def switchArduinoPanel(self):
+        if self.arduino_checkbox.isChecked():
+            self.arduino_widget.enable()
+        else:
+            self.arduino_widget.disable()
+
+    def openSummaryWindow(self):
+        self.SummaryViewer = QtSummaryWindow(self)
+        self.SummaryButton.setDisabled(True)
+
+        # TODO: Change QtStartWindow so that it will accep multiple fc7
+        # The start window should accpet a dictionary
+
+    def openNewTest(self):
+        fc7 = self.fc7_boards_in_use
+        self.StartNewTest = QtStartWindow(self, fc7)
+        self.new_test_button.setDisabled(True)
+        self.LogoutButton.setDisabled(True)
+        self.ExitButton.setDisabled(True)
+
+    def openNewProductionTest(self):
+        self.ProdTestPage = QtProductionTestWindow(
+            self, HV=self.HVpowersupply, LV=self.LVpowersupply
+        )
+        self.ProdTestPage.close.connect(self.releaseProdTestButton)
+        self.new_production_test_button.setDisabled(True)
+        self.LogoutButton.setDisabled(True)
+        self.ExitButton.setDisabled(True)
+
+    def openReviewWindow(self):
+        self.ReviewWindow = QtModuleReviewWindow(self)
+
+    def openModuleReviewWindow(self):
+        Module_ID = self.review_module_edit.text()
+        if Module_ID != "":
+            self.ModuleReviewWindow = QtModuleReviewWindow(self, Module_ID)
+        else:
+            QMessageBox.information(
+                None, "Error", "Please enter a valid module ID", QMessageBox.Ok
+            )

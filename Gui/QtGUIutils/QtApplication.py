@@ -584,7 +584,7 @@ class QtApplication(QWidget):
         # Block for HVPowerSupply operation
         # self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
         self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
-        self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
+        self.HVpowersupply.setPortAddress(self.HVPowerCombo.currentText())
         self.HVpowersupply.TurnOffHV()
         # self.HVpowersupply.TurnOn()
         # Block for GUI front-end
@@ -622,7 +622,7 @@ class QtApplication(QWidget):
     def frozeLVPowerPanel(self):
         # Block for LVPowerSupply operation
         self.LVpowersupply.setPowerModel(self.LVPowerModelCombo.currentText())
-        self.LVpowersupply.setInstrument(self.LVPowerCombo.currentText())
+        self.LVpowersupply.setPortAddress(self.LVPowerCombo.currentText())
         # self.LVpowersupply.getInfo()
         # self.LVpowersupply.TurnOn()
         # Block for GUI front-end

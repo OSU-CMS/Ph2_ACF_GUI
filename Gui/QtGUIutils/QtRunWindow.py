@@ -54,10 +54,8 @@ from Gui.GUIutils.guiUtils import *
 
 # from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtCustomizeWindow import *
-from Gui.QtGUIutils.QtTableWidget import *
-from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
-from Gui.python.ResultTreeWidget import *
+from Gui.QtGUIutils.QtResultTreeWidget import ResultTreeWidget
 from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
 from Gui.python.TestHandler import *
@@ -311,7 +309,6 @@ class QtRunWindow(QWidget):
         self.HistoryBox.setSizePolicy(HistoryBoxSP)
 
         self.HistoryLayout = QGridLayout()
-        # self.StatusCanvas = RunStatusCanvas(parent=self,width=5, height=4, dpi=100)
         self.StatusTable = QTableWidget()
         self.header = ["TestName"]
         for key in self.testHandler.rd53_file.keys():
