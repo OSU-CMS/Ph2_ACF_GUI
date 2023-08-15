@@ -39,7 +39,7 @@ KMAXIMUMHEIGHT = 100
 class QtExpertWindow(QWidget):
     globalStop = pyqtSignal()
 
-    def __init__(self, database_connection ):
+    def __init__(self, database_connection):
         """Use to intialize class."""
         super().__init__()
         self.main_layout = QGridLayout()
@@ -290,6 +290,8 @@ class QtExpertWindow(QWidget):
 
                 self.main_layout.addWidget(self.hv_power_supply_groupbox, 1, 0)
                 self.main_layout.addWidget(self.lv_power_supply_groupbox, 2, 0)
+                self.main_layout.addWidget(self.test_groupbox, 3, 0)
+                self.main_laout.addWidget(self.peltier_groupbox, 3, 1)
 
     def connect_to_default_devices(self) -> None:
         """
@@ -512,4 +514,3 @@ class QtExpertWindow(QWidget):
         if self.expertMode == True:
             self.releaseHVPowerPanel()
             self.releaseLVPowerPanel()
-
