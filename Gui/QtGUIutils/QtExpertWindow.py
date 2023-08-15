@@ -127,7 +127,7 @@ class QtExpertWindow(QWidget):
 
                 self.FirmwareStatus.setLayout(status_layout)
 
-                self.main_layout.addWidget(self.FirmwareStatus, 0, 0, 1, 1)
+                self.main_layout.addWidget(self.FirmwareStatus, 0, 0, 1, 2)
 
                 self.connect_devices_groupbox = QGroupBox()
                 connect_devices_layout = QGridLayout()
@@ -290,8 +290,9 @@ class QtExpertWindow(QWidget):
 
                 self.main_layout.addWidget(self.hv_power_supply_groupbox, 1, 0)
                 self.main_layout.addWidget(self.lv_power_supply_groupbox, 2, 0)
-                self.main_layout.addWidget(self.test_groupbox, 3, 0)
-                self.main_layout.addWidget(self.peltier_groupbox, 3, 1)
+                self.main_layout.addWidget(self.arduino_widget, 3, 0, 1, 2)
+                self.main_layout.addWidget(self.test_groupbox, 4, 0)
+                self.main_layout.addWidget(self.peltier_groupbox, 5, 1)
 
     def connect_to_default_devices(self) -> None:
         """
