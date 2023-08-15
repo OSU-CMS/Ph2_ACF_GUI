@@ -291,7 +291,7 @@ class QtExpertWindow(QWidget):
                 self.main_layout.addWidget(self.hv_power_supply_groupbox, 1, 0)
                 self.main_layout.addWidget(self.lv_power_supply_groupbox, 2, 0)
                 self.main_layout.addWidget(self.test_groupbox, 3, 0)
-                self.main_laout.addWidget(self.peltier_groupbox, 3, 1)
+                self.main_layout.addWidget(self.peltier_groupbox, 3, 1)
 
     def connect_to_default_devices(self) -> None:
         """
