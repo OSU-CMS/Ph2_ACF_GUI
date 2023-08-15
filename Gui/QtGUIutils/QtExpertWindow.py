@@ -402,6 +402,7 @@ class QtExpertWindow(QWidget):
                 self.fc7_status_verbose_dict[fc7_name] = fc7_status_verbose
 
             self.use_buttons_dict[index].setDisabled(False)
+            print("Index of button: ", index)
 
         for board in self.fc7_boards_in_use:
             self.connected_devices[board][1].setText("Connected")
