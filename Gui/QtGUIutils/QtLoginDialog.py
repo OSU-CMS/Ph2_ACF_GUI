@@ -33,10 +33,9 @@ class QtLoginDialog(QDialog):
         self.expertMode = False
 
         self.mainLayout = QGridLayout()
-
+        print("inside QtLoginDialog")
         self.createLogin()
         self.setLayout(self.mainLayout)
-        self.show()
 
     def createLogin(self):
         """Use to create window for login displayed when starting the GUI."""
@@ -121,6 +120,7 @@ class QtLoginDialog(QDialog):
         self.logo_groupbox = QGroupBox("")
 
         self.mainLayout.addWidget(login_groupbox, 0, 0)
+        print("Finshed Create QtLogin")
 
     def checkLogin(self):
         """

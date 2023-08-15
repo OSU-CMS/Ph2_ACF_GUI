@@ -39,15 +39,15 @@ KMAXIMUMHEIGHT = 100
 class QtExpertWindow(QWidget):
     globalStop = pyqtSignal()
 
-    def __init__(self, database_connection):
+    def __init__(self, master):
         """Use to intialize class."""
         super().__init__()
+        self.master = master
         self.main_layout = QGridLayout()
         self.setLayout(self.main_layout)
         self.connected_devices = {}
         self.fc7_boards_in_use = []
         self.processing_test = False
-        self.database_connection = database_connection
         self.fc7_status_verbose_dict = {}
         self.fc7_dict = {}  # Dictionary of fc7 objects
         self.remote_powersupplies = {"LV": True, "HV": True}
@@ -58,7 +58,9 @@ class QtExpertWindow(QWidget):
 
     def create_main_window(self):
         """Use to create qt window for expert GUI."""
-        statusString, colorString = check_database_connection(self.database_connection)
+        statusString, colorString = check_database_connection(
+            self.master.database_connection
+        )
 
         self.FirmwareStatus = QGroupBox("Hello, User!")
         self.FirmwareStatus.setDisabled(False)
@@ -94,12 +96,11 @@ class QtExpertWindow(QWidget):
         status_layout = QGridLayout()
 
         for index, key in enumerate(self.connected_devices):
-            print("key", key)
             if key == "Database":
                 self.check_button = QPushButton("&FC7 Check")
                 # NOTE see if this is named right
-                self.check_button.clicked.connect(self.checkFc7Status)
-                self.check_button.clicked.connect(lambda: self.connectFc7(key))
+                self.check_button.clicked.connect(self.checkFC7)
+                # self.check_button.clicked.connect(lambda: self.connectFc7(key))
                 status_layout.addWidget(self.check_button, index, 0, 1, 1)
                 status_layout.addWidget(self.connected_devices[key][0], index, 1, 1, 1)
                 status_layout.addWidget(self.connected_devices[key][1], index, 2, 1, 2)
@@ -110,190 +111,175 @@ class QtExpertWindow(QWidget):
                 use_button.toggle()
                 # You subtract one since the database is taking an extra spot in the dictionary
                 # but is not in the use_button list
-                use_button.clicked.connect(lambda x=key: self.switchFc7(x))
+                use_button.clicked.connect(lambda: self.toggleFc7(key))
 
                 if sys.version.startswith(("3.11", "3.6", "3.7", "3.9")):
                     use_button.clicked.connect(self.update)
-                # if self.PYTHON_VERSION.startswith("3.8"):
-                #     use_button.clicked.connect(self.destroyMain)
-                #     use_button.clicked.connect(self.createMain)
-                #     use_button.clicked.connect(self.checkFirmware)
                 use_button.setCheckable(True)
                 self.use_buttons_dict[key] = use_button
+
                 # Adds use button and fc7 strings to GUI
                 status_layout.addWidget(use_button, index, 0, 1, 1)
                 status_layout.addWidget(self.connected_devices[key][0], index, 1, 1, 1)
-                status_layout.addWidget(self.connected_devices[key][0], index, 1, 1, 1)
+                status_layout.addWidget(self.connected_devices[key][1], index, 2, 1, 1)
 
-                self.FirmwareStatus.setLayout(status_layout)
+            self.FirmwareStatus.setLayout(status_layout)
 
-                self.main_layout.addWidget(self.FirmwareStatus, 0, 0, 1, 2)
+            self.main_layout.addWidget(self.FirmwareStatus, 0, 0, 1, 2)
 
-                self.connect_devices_groupbox = QGroupBox()
-                connect_devices_layout = QGridLayout()
+            self.connect_devices_groupbox = QGroupBox()
+            connect_devices_layout = QGridLayout()
 
-                connect_devices_button = QPushButton("&Connect All Devices")
-                connect_devices_label = QLabel("")
+            connect_devices_button = QPushButton("&Connect All Devices")
+            connect_devices_label = QLabel("")
 
-                self.connect_devices_groupbox.setLayout(connect_devices_layout)
-                connect_devices_button.clicked.connect(self.connect_to_default_devices)
+            self.connect_devices_groupbox.setLayout(connect_devices_layout)
+            connect_devices_button.clicked.connect(self.connect_to_default_devices)
 
-                connect_devices_layout.addWidget(connect_devices_button, 0, 0)
-                connect_devices_layout.addWidget(connect_devices_button, 0, 1)
+            connect_devices_layout.addWidget(connect_devices_button, 0, 0)
+            connect_devices_layout.addWidget(connect_devices_button, 0, 1)
 
-                self.hv_remote_control_checkbox = QCheckBox(
-                    "Use HV Power Supply Remote Control"
-                )
-                self.hv_remote_control_checkbox.setChecked(True)
-                self.hv_remote_control_checkbox.toggled.connect(
-                    self.switch_hv_remote_mode
-                )
+            self.hv_remote_control_checkbox = QCheckBox(
+                "Use HV Power Supply Remote Control"
+            )
+            self.hv_remote_control_checkbox.setChecked(True)
+            self.hv_remote_control_checkbox.toggled.connect(self.switch_hv_remote_mode)
 
-                self.hv_power_supply_groupbox = QGroupBox("HV Power Supply")
-                hv_power_supply_layout = QGridLayout()
+            self.hv_power_supply_groupbox = QGroupBox("HV Power Supply")
+            hv_power_supply_layout = QGridLayout()
 
-                self.hv_port_combo = QComboBox()
-                self.hv_port_label = QLabel("Choose HV Port:")
-                self.hv_port_combo.addItems(
-                    visa.ResourceManager("@py").list_resources()
-                )
-                self.hv_model_label = QLabel("Choose HV Power Model: ")
-                self.hv_model_combo = QComboBox()
-                self.hv_model_combo.addItems(static_settings.HVPowerSupplyModel.keys())
-                self.hv_power_status_label = QLabel()
-                self.hv_use_button = QPushButton("&Use")
-                self.hv_use_button.clicked.connect(self.connect_to_hv_powersupply)
-                self.hv_release_button = QPushButton("&Release")
-                self.hv_release_button.clicked.connect(self.release_hv_powersupply)
+            self.hv_port_combo = QComboBox()
+            self.hv_port_label = QLabel("Choose HV Port:")
+            self.hv_port_combo.addItems(visa.ResourceManager("@py").list_resources())
+            self.hv_model_label = QLabel("Choose HV Power Model: ")
+            self.hv_model_combo = QComboBox()
+            self.hv_model_combo.addItems(static_settings.HVPowerSupplyModel.keys())
+            self.hv_power_status_label = QLabel()
+            self.hv_use_button = QPushButton("&Use")
+            self.hv_use_button.clicked.connect(self.connect_to_hv_powersupply)
+            self.hv_release_button = QPushButton("&Release")
+            self.hv_release_button.clicked.connect(self.release_hv_powersupply)
 
-                hv_power_supply_layout.addWidget(self.hv_port_label, 0, 0)
-                hv_power_supply_layout.addWidget(self.hv_port_combo, 0, 1)
-                hv_power_supply_layout.addWidget(self.hv_model_label, 0, 2)
-                hv_power_supply_layout.addWidget(self.hv_model_combo, 0, 3)
-                hv_power_supply_layout.addWidget(self.hv_use_button, 0, 4)
-                hv_power_supply_layout.addWidget(self.hv_release_button, 0, 5)
+            hv_power_supply_layout.addWidget(self.hv_port_label, 0, 0)
+            hv_power_supply_layout.addWidget(self.hv_port_combo, 0, 1)
+            hv_power_supply_layout.addWidget(self.hv_model_label, 0, 2)
+            hv_power_supply_layout.addWidget(self.hv_model_combo, 0, 3)
+            hv_power_supply_layout.addWidget(self.hv_use_button, 0, 4)
+            hv_power_supply_layout.addWidget(self.hv_release_button, 0, 5)
 
-                self.hv_power_supply_groupbox.setLayout(hv_power_supply_layout)
+            self.hv_power_supply_groupbox.setLayout(hv_power_supply_layout)
 
-                self.lv_power_supply_groupbox = QGroupBox("LV Power Supply")
-                lv_power_supply_layout = QGridLayout()
-                self.lv_port_combo = QComboBox()
-                self.lv_port_label = QLabel("Choose LV Port:")
-                self.lv_port_combo.addItems(
-                    visa.ResourceManager("@py").list_resources()
-                )
-                self.lv_model_label = QLabel("Choose LV Power Model: ")
-                self.lv_model_combo = QComboBox()
-                self.lv_model_combo.addItems(static_settings.LVPowerSupplyModel.keys())
-                self.lv_power_status_label = QLabel()
-                self.lv_use_button = QPushButton("&Use")
-                self.lv_use_button.clicked.connect(self.connect_to_lv_powersupply)
-                self.lv_release_button = QPushButton("&Release")
-                self.lv_release_button.clicked.connect(self.release_lv_powersupply)
+            self.lv_power_supply_groupbox = QGroupBox("LV Power Supply")
+            lv_power_supply_layout = QGridLayout()
+            self.lv_port_combo = QComboBox()
+            self.lv_port_label = QLabel("Choose LV Port:")
+            self.lv_port_combo.addItems(visa.ResourceManager("@py").list_resources())
+            self.lv_model_label = QLabel("Choose LV Power Model: ")
+            self.lv_model_combo = QComboBox()
+            self.lv_model_combo.addItems(static_settings.LVPowerSupplyModel.keys())
+            self.lv_power_status_label = QLabel()
+            self.lv_use_button = QPushButton("&Use")
+            self.lv_use_button.clicked.connect(self.connect_to_lv_powersupply)
+            self.lv_release_button = QPushButton("&Release")
+            self.lv_release_button.clicked.connect(self.release_lv_powersupply)
 
-                self.lv_remote_control_checkbox = QCheckBox(
-                    "Use LV power remote control"
-                )
-                self.lv_remote_control_checkbox.setChecked(True)
-                self.lv_remote_control_checkbox.toggled.connect(
-                    self.switch_lv_remote_mode
-                )
+            self.lv_remote_control_checkbox = QCheckBox("Use LV power remote control")
+            self.lv_remote_control_checkbox.setChecked(True)
+            self.lv_remote_control_checkbox.toggled.connect(self.switch_lv_remote_mode)
 
-                lv_power_supply_layout.addWidget(self.lv_port_label, 0, 0)
-                lv_power_supply_layout.addWidget(self.lv_port_combo, 0, 1)
-                lv_power_supply_layout.addWidget(self.lv_model_label, 0, 2)
-                lv_power_supply_layout.addWidget(self.lv_model_combo, 0, 3)
-                lv_power_supply_layout.addWidget(self.lv_use_button, 0, 4)
-                lv_power_supply_layout.addWidget(self.lv_release_button, 0, 5)
+            lv_power_supply_layout.addWidget(self.lv_port_label, 0, 0)
+            lv_power_supply_layout.addWidget(self.lv_port_combo, 0, 1)
+            lv_power_supply_layout.addWidget(self.lv_model_label, 0, 2)
+            lv_power_supply_layout.addWidget(self.lv_model_combo, 0, 3)
+            lv_power_supply_layout.addWidget(self.lv_use_button, 0, 4)
+            lv_power_supply_layout.addWidget(self.lv_release_button, 0, 5)
 
-                self.lv_power_supply_groupbox.setLayout(lv_power_supply_layout)
+            self.lv_power_supply_groupbox.setLayout(lv_power_supply_layout)
 
-                self.arduino_widget = ArduinoWidget()
-                self.arduino_widget.stop.connect(self.GlobalStop)
-                self.arduino_checkbox = QCheckBox("Use arduino monitoring")
-                self.arduino_checkbox.setChecked(True)
-                self.arduino_checkbox.toggled.connect(self.switchArduinoPanel)
+            self.arduino_widget = ArduinoWidget()
+            self.arduino_widget.stop.connect(self.master.GlobalStop)
+            self.arduino_checkbox = QCheckBox("Use arduino monitoring")
+            self.arduino_checkbox.setChecked(True)
+            self.arduino_checkbox.toggled.connect(self.switchArduinoPanel)
 
-                self.test_groupbox = QGroupBox("Main")
-                self.summary_button = QPushButton("&Status Summary")
+            self.test_groupbox = QGroupBox("Main")
+            self.summary_button = QPushButton("&Status Summary")
 
-                self.summary_button.setMinimumWidth(KMINIMUMWIDTH)
-                self.summary_button.setMaximumWidth(KMAXIMUMWIDTH)
-                self.summary_button.setMinimumHeight(KMINIMUMHEIGHT)
-                self.summary_button.setMaximumHeight(KMAXIMUMHEIGHT)
-                self.summary_button.clicked.connect(self.openSummaryWindow)
+            self.summary_button.setMinimumWidth(KMINIMUMWIDTH)
+            self.summary_button.setMaximumWidth(KMAXIMUMWIDTH)
+            self.summary_button.setMinimumHeight(KMINIMUMHEIGHT)
+            self.summary_button.setMaximumHeight(KMAXIMUMHEIGHT)
+            self.summary_button.clicked.connect(self.openSummaryWindow)
 
-                summary_label = QLabel("Statistics of test status")
+            summary_label = QLabel("Statistics of test status")
 
-                self.new_test_button = QPushButton("&New")
-                self.new_test_button.setDefault(True)
-                self.new_test_button.setMinimumWidth(KMINIMUMWIDTH)
-                self.new_test_button.setMaximumWidth(KMAXIMUMWIDTH)
-                self.new_test_button.setMinimumHeight(KMINIMUMHEIGHT)
-                self.new_test_button.setMaximumHeight(KMAXIMUMHEIGHT)
-                self.new_test_button.clicked.connect(self.openNewTest)
+            self.new_test_button = QPushButton("&New")
+            self.new_test_button.setDefault(True)
+            self.new_test_button.setMinimumWidth(KMINIMUMWIDTH)
+            self.new_test_button.setMaximumWidth(KMAXIMUMWIDTH)
+            self.new_test_button.setMinimumHeight(KMINIMUMHEIGHT)
+            self.new_test_button.setMaximumHeight(KMAXIMUMHEIGHT)
+            self.new_test_button.clicked.connect(self.openNewTest)
+            self.new_test_button.setDisabled(True)
+            if self.processing_test:
                 self.new_test_button.setDisabled(True)
-                if self.processing_test:
-                    self.new_test_button.setDisabled(True)
-                new_test_label = QLabel("Open New Test")
+            new_test_label = QLabel("Open New Test")
 
-                self.new_production_test_button = QPushButton("&Production Test")
-                self.new_production_test_button.setMinimumWidth(KMINIMUMWIDTH)
-                self.new_production_test_button.setMaximumWidth(KMAXIMUMWIDTH)
-                self.new_production_test_button.setMinimumHeight(KMINIMUMHEIGHT)
-                self.new_production_test_button.setMaximumHeight(KMAXIMUMHEIGHT)
-                self.new_production_test_button.setDisabled(
-                    True
-                )  # FIXME This is to temporarily disable the test until LV can be added.
-                self.new_production_test_button.clicked.connect(
-                    self.openNewProductionTest
-                )
-                new_production_test_label = QLabel("Open production test")
+            self.new_production_test_button = QPushButton("&Production Test")
+            self.new_production_test_button.setMinimumWidth(KMINIMUMWIDTH)
+            self.new_production_test_button.setMaximumWidth(KMAXIMUMWIDTH)
+            self.new_production_test_button.setMinimumHeight(KMINIMUMHEIGHT)
+            self.new_production_test_button.setMaximumHeight(KMAXIMUMHEIGHT)
+            self.new_production_test_button.setDisabled(
+                True
+            )  # FIXME This is to temporarily disable the test until LV can be added.
+            self.new_production_test_button.clicked.connect(self.openNewProductionTest)
+            new_production_test_label = QLabel("Open production test")
 
-                self.review_button = QPushButton("&Review")
-                self.review_button.setMinimumWidth(KMINIMUMWIDTH)
-                self.review_button.setMaximumWidth(KMAXIMUMWIDTH)
-                self.review_button.setMinimumHeight(KMINIMUMHEIGHT)
-                self.review_button.setMaximumHeight(KMAXIMUMHEIGHT)
-                self.review_button.clicked.connect(self.openReviewWindow)
-                review_label = QLabel("Review all results")
+            self.review_button = QPushButton("&Review")
+            self.review_button.setMinimumWidth(KMINIMUMWIDTH)
+            self.review_button.setMaximumWidth(KMAXIMUMWIDTH)
+            self.review_button.setMinimumHeight(KMINIMUMHEIGHT)
+            self.review_button.setMaximumHeight(KMAXIMUMHEIGHT)
+            self.review_button.clicked.connect(self.openReviewWindow)
+            review_label = QLabel("Review all results")
 
-                self.review_module_button = QPushButton("&Show Module")
-                self.review_module_button.setMinimumWidth(KMINIMUMWIDTH)
-                self.review_module_button.setMaximumWidth(KMAXIMUMWIDTH)
-                self.review_module_button.setMinimumHeight(KMINIMUMHEIGHT)
-                self.review_module_button.setMaximumHeight(KMAXIMUMHEIGHT)
-                self.review_module_button.clicked.connect(self.openModuleReviewWindow)
-                self.review_module_edit = QLineEdit("")
-                self.review_module_edit.setEchoMode(QLineEdit.Normal)
-                self.review_module_edit.setPlaceholderText("Enter Module ID")
+            self.review_module_button = QPushButton("&Show Module")
+            self.review_module_button.setMinimumWidth(KMINIMUMWIDTH)
+            self.review_module_button.setMaximumWidth(KMAXIMUMWIDTH)
+            self.review_module_button.setMinimumHeight(KMINIMUMHEIGHT)
+            self.review_module_button.setMaximumHeight(KMAXIMUMHEIGHT)
+            self.review_module_button.clicked.connect(self.openModuleReviewWindow)
+            self.review_module_edit = QLineEdit("")
+            self.review_module_edit.setEchoMode(QLineEdit.Normal)
+            self.review_module_edit.setPlaceholderText("Enter Module ID")
 
-                self.peltier_cooling_widget = Peltier(100)
-                self.peltier_groupbox = QGroupBox("Peltier Controller", self)
-                self.peltier_layout = QGridLayout()
-                self.peltier_layout.addWidget(self.peltier_cooling_widget)
-                self.peltier_groupbox.setLayout(self.peltier_layout)
+            self.peltier_cooling_widget = Peltier(100)
+            self.peltier_groupbox = QGroupBox("Peltier Controller", self)
+            self.peltier_layout = QGridLayout()
+            self.peltier_layout.addWidget(self.peltier_cooling_widget)
+            self.peltier_groupbox.setLayout(self.peltier_layout)
 
-                test_layout = QGridLayout()
-                test_layout.addWidget(self.new_test_button, 0, 0, 1, 1)
+            test_layout = QGridLayout()
+            test_layout.addWidget(self.new_test_button, 0, 0, 1, 1)
 
-                test_layout.addWidget(new_test_label, 0, 1, 1, 2)
-                test_layout.addWidget(self.new_production_test_button, 1, 0, 1, 1)
-                test_layout.addWidget(new_production_test_label, 1, 1, 1, 2)
-                test_layout.addWidget(self.summary_button, 2, 0, 1, 1)
-                test_layout.addWidget(summary_label, 2, 1, 1, 2)
-                test_layout.addWidget(self.review_button, 3, 0, 1, 1)
-                test_layout.addWidget(review_label, 3, 1, 1, 2)
-                test_layout.addWidget(self.review_module_button, 4, 0, 1, 1)
-                test_layout.addWidget(self.review_module_edit, 4, 1, 1, 2)
-                self.test_groupbox.setLayout(test_layout)
+            test_layout.addWidget(new_test_label, 0, 1, 1, 2)
+            test_layout.addWidget(self.new_production_test_button, 1, 0, 1, 1)
+            test_layout.addWidget(new_production_test_label, 1, 1, 1, 2)
+            test_layout.addWidget(self.summary_button, 2, 0, 1, 1)
+            test_layout.addWidget(summary_label, 2, 1, 1, 2)
+            test_layout.addWidget(self.review_button, 3, 0, 1, 1)
+            test_layout.addWidget(review_label, 3, 1, 1, 2)
+            test_layout.addWidget(self.review_module_button, 4, 0, 1, 1)
+            test_layout.addWidget(self.review_module_edit, 4, 1, 1, 2)
+            self.test_groupbox.setLayout(test_layout)
 
-                self.main_layout.addWidget(self.connect_devices_groupbox, 1, 0)
-                self.main_layout.addWidget(self.hv_power_supply_groupbox, 2, 0)
-                self.main_layout.addWidget(self.lv_power_supply_groupbox, 3, 0)
-                self.main_layout.addWidget(self.arduino_widget, 4, 0, 1, 2)
-                self.main_layout.addWidget(self.test_groupbox, 5, 0)
-                self.main_layout.addWidget(self.peltier_groupbox, 5, 1)
+            self.main_layout.addWidget(self.connect_devices_groupbox, 1, 0)
+            self.main_layout.addWidget(self.hv_power_supply_groupbox, 2, 0)
+            self.main_layout.addWidget(self.lv_power_supply_groupbox, 3, 0)
+            self.main_layout.addWidget(self.arduino_widget, 4, 0, 1, 2)
+            self.main_layout.addWidget(self.test_groupbox, 5, 0)
+            self.main_layout.addWidget(self.peltier_groupbox, 5, 1)
 
     def connect_to_default_devices(self) -> None:
         """
@@ -314,14 +300,18 @@ class QtExpertWindow(QWidget):
         self.connect_to_lv_powersupply()
 
     def connect_to_hv_powersupply(self):
-        self.hv_powersupply = PowerSupply()
+        self.master.master.hv_powersupply = PowerSupply()
 
         # Need to have just keithley or just keysight, not whole string
-        self.hv_powersupply.setPowerModel(self.hv_model_combo.currentText().split()[0])
-        self.hv_powersupply.setPortAddress(self.hv_port_combo.currentText())
-        self.hv_powersupply.TurnOffHV()
+        self.master.hv_powersupply.setPowerModel(
+            self.hv_model_combo.currentText().split()[0]
+        )
+        self.master.hv_powersupply.setPortAddress(self.hv_port_combo.currentText())
+        self.master.hv_powersupply.setPowerType("HV")
 
-        status_string = self.hv_powersupply.getInfo()
+        self.master.hv_powersupply.TurnOffHV()
+
+        status_string = self.master.hv_powersupply.getInfo()
         if status_string != "No valid device" and status_string != None:
             self.hv_power_status_label.setStyleSheet("color:green")
             self.hv_power_combo.setDisabled(True)
@@ -333,7 +323,7 @@ class QtExpertWindow(QWidget):
             self.hv_power_status_label.setText("No valid device")
 
     def release_hv_powersupply(self):
-        self.hv_powersupply.TurnOffHV()
+        self.master.hv_powersupply.TurnOffHV()
         try:
             self.hv_port_combo.setDisabled(False)
             self.hv_power_status_label.setText("")
@@ -343,7 +333,7 @@ class QtExpertWindow(QWidget):
             print(f"HV not released properly due to error: {e}")
 
     def release_lv_powersupply(self):
-        self.lv_powersupply.TurnOff()
+        self.master.master.lv_powersupply.TurnOff()
         try:
             self.lv_port_combo.setDisabled(False)
             self.lv_power_status_label.setText("")
@@ -353,11 +343,14 @@ class QtExpertWindow(QWidget):
             print(f"LV not released properly due to error: {e}")
 
     def connect_to_lv_powersupply(self):
-        self.lv_powersupply = PowerSupply()
-        self.lv_powersupply.setPowerModel(self.lv_model_combo.currentText().split()[0])
-        self.lv_powersupply.setPortAddress(self.lv_port_combo.currentText())
-        self.lv_powersupply.TurnOff()
-        status_string = self.lv_powersupply.getInfo()
+        self.master.lv_powersupply = PowerSupply()
+        self.master.lv_powersupply.setPowerType("LV")
+        self.master.lv_powersupply.setPowerModel(
+            self.lv_model_combo.currentText().split()[0]
+        )
+        self.master.lv_powersupply.setPortAddress(self.lv_port_combo.currentText())
+        self.master.lv_powersupply.TurnOff()
+        status_string = self.master.lv_powersupply.getInfo()
         if status_string != "No valid device":
             self.lv_power_status_label.setStyleSheet("color:green")
         else:
@@ -400,17 +393,15 @@ class QtExpertWindow(QWidget):
                 self.connected_devices[fc7_name][1].setText(fc7_status_comment)
                 self.connected_devices[fc7_name][1].setStyleSheet(fc7_status_color)
                 self.fc7_status_verbose_dict[fc7_name] = fc7_status_verbose
-
-            self.use_buttons_dict[index].setDisabled(False)
-            print("Index of button: ", index)
+                self.use_buttons_dict[fc7_name].setDisabled(False)
 
         for board in self.fc7_boards_in_use:
             self.connected_devices[board][1].setText("Connected")
             self.connected_devices[board][1].setStyleSheet("color: green")
             self.useFc7(board)
 
-    def switchFc7(self, key: str) -> None:
-        if self.use_buttons_dict[key].isChecked():
+    def toggleFc7(self, key: str) -> None:
+        if not self.use_buttons_dict[key].isChecked():
             self.useFc7(key)
         else:
             self.releaseFc7(key)
@@ -420,9 +411,12 @@ class QtExpertWindow(QWidget):
         if self.connected_devices[fc7_board_name][1].text() == "Connected":
             self.new_test_button.setDisabled(False)
             self.use_buttons_dict[fc7_board_name].setChecked(True)
-            self.use_buttons_dict[fc7_board_name].setText("&In use")
+            self.use_buttons_dict[fc7_board_name].setText("&In Use")
             self.use_buttons_dict[fc7_board_name].setDisabled(False)
             self.fc7_boards_in_use.append(fc7_board_name)
+        else:
+            print("Device not connected")
+            print(self.connected_devices[fc7_board_name][1].text())
 
     def releaseFc7(self, fc7_board_name: str) -> None:
         self.fc7_boards_in_use.remove(fc7_board_name)
@@ -431,18 +425,6 @@ class QtExpertWindow(QWidget):
         self.use_buttons_dict[fc7_board_name].setDisabled(False)
         self.check_button.setDisabled(False)
         self.new_test_button.setDisabled(True)
-
-    def checkFc7Status(self):
-        for fc7_name in site_config.FC7List.keys():
-            file_name = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), fc7_name)
-            if fc7_name not in self.fc7_boards_in_use:
-                (
-                    fc7_status_comment,
-                    fc7_status_color,
-                    _,
-                ) = self.get_fc7_comment(fc7_name, file_name)
-                self.connected_devices[fc7_name][1].setText(fc7_status_comment)
-                self.connected_devices[fc7_name][1].setStyleSheet(fc7_status_color)
 
     def connectFc7(self, fc7_name: str) -> None:
         print("connectfc7", fc7_name)
@@ -481,15 +463,16 @@ class QtExpertWindow(QWidget):
         # The start window should accpet a dictionary
 
     def openNewTest(self):
-        fc7 = self.fc7_boards_in_use
-        self.StartNewTest = QtStartWindow(self, fc7)
+        fc7_list = [self.fc7_dict[name] for name in self.fc7_boards_in_use]
+        print(self.master)
+        self.StartNewTest = QtStartWindow(self.master, fc7_list)
         self.new_test_button.setDisabled(True)
         self.LogoutButton.setDisabled(True)
         self.ExitButton.setDisabled(True)
 
     def openNewProductionTest(self):
         self.ProdTestPage = QtProductionTestWindow(
-            self, HV=self.HVpowersupply, LV=self.LVpowersupply
+            self, HV=self.master.HVpowersupply, LV=self.master.LVpowersupply
         )
         self.ProdTestPage.close.connect(self.releaseProdTestButton)
         self.new_production_test_button.setDisabled(True)
@@ -508,12 +491,6 @@ class QtExpertWindow(QWidget):
                 None, "Error", "Please enter a valid module ID", QMessageBox.Ok
             )
 
-    @QtCore.pyqtSlot()
-    def GlobalStop(self):
-        print("Critical status detected: Emitting Global Stop signal")
-        self.globalStop.emit()
-        self.HVpowersupply.TurnOffHV()
-        self.LVpowersupply.TurnOff()
-        if self.expertMode == True:
-            self.releaseHVPowerPanel()
-            self.releaseLVPowerPanel()
+
+if __name__ == "__main__":
+    expert_window = QtExpertWindow()

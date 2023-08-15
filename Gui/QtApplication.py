@@ -7,6 +7,7 @@ continue from these widgets.
 """
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QStyleFactory
 from PyQt5.QtGui import QPalette
+from Gui.QtGUIutils.QtApplication2 import QtApplication
 import sys
 import os
 from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
@@ -63,9 +64,6 @@ if __name__ == "__main__":
     QApplication.setStyle(QStyleFactory.create("Fusion"))
     QApplication.setPalette(apply_dark_mode(palette))
     app = QApplication([])
-    initLog()
-    login_window = QtLoginDialog()
-
-    login_window.login_signal.connect(lambda connection: login_to_gui(connection))
+    application = QtApplication()
 
     sys.exit(app.exec_())
