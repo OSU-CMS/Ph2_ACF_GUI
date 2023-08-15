@@ -306,9 +306,9 @@ class QtExpertWindow(QWidget):
         if hv_index != -1:
             self.hv_port_combo.setCurrentIndex(hv_index)
 
-        lv_index = self.lv_port_combobox.findText(site_config.defaultUSBPortLV[0])
+        lv_index = self.lv_port_combo.findText(site_config.defaultUSBPortLV[0])
         if lv_index != -1:
-            self.lv_port_combobox.setCurrentIndex(lv_index)
+            self.lv_port_combo.setCurrentIndex(lv_index)
 
         self.connect_to_hv_powersupply()
         self.connect_to_lv_powersupply()
@@ -438,7 +438,7 @@ class QtExpertWindow(QWidget):
                 (
                     fc7_status_comment,
                     fc7_status_color,
-                    fc7_status_verbose,
+                    _,
                 ) = self.get_fc7_comment(fc7_name, file_name)
                 self.connected_devices[fc7_name][1].setText(fc7_status_comment)
                 self.connected_devices[fc7_name][1].setStyleSheet(fc7_status_color)
