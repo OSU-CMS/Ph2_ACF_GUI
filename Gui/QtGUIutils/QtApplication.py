@@ -37,7 +37,7 @@ import os
 import time
 
 from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.settings import *
+from Gui.Config.siteSettings import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.GPIBInterface import PowerSupply
 from Gui.QtGUIutils.PeltierCoolingApp import *
@@ -712,7 +712,7 @@ class QtApplication(QWidget):
             self.releaseFw(index)
             self.checkFirmware
 
-    def occupyFw(self, indexes: list[int]):
+    def occupyFw(self, indexes: list):
         for fc7_index in indexes:
             if self.StatusList[fc7_index + 1][1].text() == "Connected":
                 self.NewTestButton.setDisabled(False)

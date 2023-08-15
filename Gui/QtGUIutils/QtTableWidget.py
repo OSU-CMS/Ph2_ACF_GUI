@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
-from Gui.GUIutils.settings import *
+from Gui.Config.staticSettings import *
 
 Color={
 	"Local"  : QColor(255,0,0),

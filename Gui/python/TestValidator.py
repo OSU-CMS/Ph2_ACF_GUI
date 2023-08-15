@@ -4,7 +4,7 @@ ROOT.gROOT.SetBatch(ROOT.kTRUE)
 import os
 import re
 from collections import defaultdict
-from  Gui.GUIutils.settings import *
+from  Gui.Config.staticSettings import *
 from  Gui.python.ROOTInterface import *
 
 def ResultGrader(inputDir, testName, runNumber, ModuleMap = {}):

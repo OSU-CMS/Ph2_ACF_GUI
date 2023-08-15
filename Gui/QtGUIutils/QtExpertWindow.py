@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Use to create the main expert window of the GUI."""
 from PyQt5.QtCore import pyqtSignal
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QCheckBox,
     QGridLayout,
@@ -23,6 +24,7 @@ from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
 from Gui.QtGUIutils.QtStartWindow import QtStartWindow
 from Gui.QtGUIutils.QtProductionTestWindow import QtProductionTestWindow
 from Gui.QtGUIutils.QtModuleReviewWindow import QtModuleReviewWindow
+from Gui.QtGUIutils.PeltierCoolingApp import Peltier
 import os
 import sys
 import pyvisa as visa
@@ -37,7 +39,7 @@ KMAXIMUMHEIGHT = 100
 class QtExpertWindow(QWidget):
     globalStop = pyqtSignal()
 
-    def __init__(self, database_connection):
+    def __init__(self, database_connection ):
         """Use to intialize class."""
         super().__init__()
         self.main_layout = QGridLayout()
@@ -273,21 +275,21 @@ class QtExpertWindow(QWidget):
                 self.peltier_groupbox.setLayout(self.peltier_layout)
 
                 test_layout = QGridLayout()
-                test_layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
+                test_layout.addWidget(self.new_test_button, 0, 0, 1, 1)
 
                 test_layout.addWidget(new_test_label, 0, 1, 1, 2)
                 test_layout.addWidget(self.new_production_test_button, 1, 0, 1, 1)
                 test_layout.addWidget(new_production_test_label, 1, 1, 1, 2)
                 test_layout.addWidget(self.summary_button, 2, 0, 1, 1)
                 test_layout.addWidget(summary_label, 2, 1, 1, 2)
-                test_layout.addWidget(self.ReviewButton, 3, 0, 1, 1)
+                test_layout.addWidget(self.review_button, 3, 0, 1, 1)
                 test_layout.addWidget(review_label, 3, 1, 1, 2)
                 test_layout.addWidget(self.review_module_button, 4, 0, 1, 1)
                 test_layout.addWidget(self.review_module_edit, 4, 1, 1, 2)
                 self.test_groupbox.setLayout(test_layout)
 
                 self.main_layout.addWidget(self.hv_power_supply_groupbox, 1, 0)
-                self.main_layout.addWidget(lv_power_supply_groupbox, 2, 0)
+                self.main_layout.addWidget(self.lv_power_supply_groupbox, 2, 0)
 
     def connect_to_default_devices(self) -> None:
         """
@@ -500,3 +502,14 @@ class QtExpertWindow(QWidget):
             QMessageBox.information(
                 None, "Error", "Please enter a valid module ID", QMessageBox.Ok
             )
+
+    @QtCore.pyqtSlot()
+    def GlobalStop(self):
+        print("Critical status detected: Emitting Global Stop signal")
+        self.globalStop.emit()
+        self.HVpowersupply.TurnOffHV()
+        self.LVpowersupply.TurnOff()
+        if self.expertMode == True:
+            self.releaseHVPowerPanel()
+            self.releaseLVPowerPanel()
+

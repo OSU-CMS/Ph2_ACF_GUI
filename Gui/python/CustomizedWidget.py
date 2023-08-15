@@ -37,7 +37,7 @@ import math
 import copy
 
 from Gui.python.Firmware import *
-from Gui.GUIutils.settings import *
+from Gui.Config.staticSettings import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.QtGUIutils.QtFwCheckDetails import *
 

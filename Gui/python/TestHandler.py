@@ -24,7 +24,7 @@ from Gui.QtGUIutils.QtCustomizeWindow import *
 from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
-from Gui.python.ResultTreeWidget import *
+from Gui.QtGUIutils.QtResultTreeWidget import *
 from Gui.python.TestValidator import *
 from Gui.python.QResultDialog import *
 from Gui.python.ANSIColoringParser import *

@@ -12,7 +12,7 @@ import math
 from Gui.python.CustomizedWidget import *
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
-from Gui.GUIutils.settings import *
+from Gui.Config.staticSettings import *
 
 
 class QtFwCheckDetails(QWidget):

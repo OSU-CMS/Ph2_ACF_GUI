@@ -121,7 +121,7 @@ class PeltierSignalGenerator:
             time.sleep(0.1)
             return buff, connection
 
-    def convertSetTempListToValue(self, temp: list[str]) -> float:
+    def convertSetTempListToValue(self, temp: list) -> float:
         """
         Use to convert the message returned when reading the
         temperature from the Peltier thermistor. The message will be a list

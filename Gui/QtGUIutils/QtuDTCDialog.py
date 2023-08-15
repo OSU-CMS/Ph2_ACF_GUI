@@ -16,7 +16,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-from Gui.GUIutils.settings import *
+from Gui.Config.staticSettings import *
 from Configuration.XMLUtil import *
 from Gui.python.Firmware import *
 

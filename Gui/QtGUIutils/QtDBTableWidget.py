@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
-from Gui.GUIutils.settings import *
+from Gui.Config.staticSettings import *
 
 class QtDBTableWidget(QSortFilterProxyModel):
 	def __init__(self, dataList, orderIndex = 0, withButton = False):

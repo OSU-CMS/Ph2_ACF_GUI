@@ -14,7 +14,7 @@ from matplotlib.figure import Figure
 import random
 import numpy
 
-from Gui.GUIutils.settings import *
+from Gui.Config.staticSettings import *
 from Gui.GUIutils.guiUtils import *
 
 class ScanCanvas(FigureCanvas):

@@ -21,7 +21,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.QtGUIutils.QtLoginDialog import *
-from Gui.python.ResultTreeWidget import *
+from Gui.QtGUIutils.QtResultTreeWidget import *
 from Gui.python.TestValidator import *
 from Gui.python.IVCurveHandler import *
 from Gui.python.SLDOScanHandler import *
