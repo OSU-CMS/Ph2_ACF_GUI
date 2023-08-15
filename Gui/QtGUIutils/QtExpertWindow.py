@@ -323,14 +323,14 @@ class QtExpertWindow(QWidget):
 
         status_string = self.hv_powersupply.getInfo()
         if status_string != "No valid device" and status_string != None:
-            self.hv_power_status_value.setStyleSheet("color:green")
+            self.hv_power_status_label.setStyleSheet("color:green")
             self.hv_power_combo.setDisabled(True)
-            self.hv_power_status_value.setText(status_string)
+            self.hv_power_status_label.setText(status_string)
             self.use_hv_button.setDisabled(True)
             self.release_hv_button.setDisabled(False)
         else:
-            self.hv_power_status_value.setStyleSheet("color:red")
-            self.hv_power_status_value.setText("No valid device")
+            self.hv_power_status_label.setStyleSheet("color:red")
+            self.hv_power_status_label.setText("No valid device")
 
     def release_hv_powersupply(self):
         self.hv_powersupply.TurnOffHV()
@@ -359,17 +359,17 @@ class QtExpertWindow(QWidget):
         self.lv_powersupply.TurnOff()
         status_string = self.lv_powersupply.getInfo()
         if status_string != "No valid device":
-            self.lv_power_status_value.setStyleSheet("color:green")
+            self.lv_power_status_label.setStyleSheet("color:green")
         else:
-            self.lv_power_status_value.setStyleSheet("color:red")
+            self.lv_power_status_label.setStyleSheet("color:red")
         if status_string:
             self.lv_port_combo.setDisabled(True)
-            self.lv_power_status_value.setText(statusString)
-            self.use_lv_button.setDisabled(True)
-            self.release_lv_button.setDisabled(False)
+            self.lv_power_status_label.setText(status_string)
+            self.lv_use_button.setDisabled(True)
+            self.lv_release_button.setDisabled(False)
         else:
-            self.lv_power_status_value.setStyleSheet("color:red")
-            self.lv_power_status_value.setText("No valid device")
+            self.lv_power_status_label.setStyleSheet("color:red")
+            self.lv_power_status_label.setText("No valid device")
 
     def switch_fc7(self, index: int) -> None:
         """Use to"""
