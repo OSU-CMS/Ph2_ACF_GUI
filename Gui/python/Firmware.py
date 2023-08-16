@@ -179,6 +179,9 @@ class FC7:
     def getBoardName(self):
         return self.__boardName
 
+    def setBoardName(self, name):
+        self.__boardName = name
+
     def setIPAddress(self, ipAddress):
         self.__ipAddress = ipAddress
 
