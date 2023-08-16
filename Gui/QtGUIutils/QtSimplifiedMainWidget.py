@@ -217,7 +217,7 @@ class QtSimplifiedMainWidget(QWidget):
             )
 
         fc7_status_comment, FwStatusColor, FwStatusVerbose = fwStatusParser(
-            fc7_name, LogFileName
+            self.BeBoard, LogFileName
         )
         if "Connected" in fc7_status_comment:
             self.FC7StatusValue.setPixmap(self.greenledpixmap)
