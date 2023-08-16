@@ -336,7 +336,7 @@ class QtStartWindow(QWidget):
         TestLabel = QLabel("Test:")
         self.TestCombo = QComboBox()
         print("DATABASE: ", self.connection)
-        self.TestList = getAllTests(self.connection)
+        self.TestList = list(Test.keys())
         self.TestCombo.addItems(self.TestList)
         TestLabel.setBuddy(self.TestCombo)
 
