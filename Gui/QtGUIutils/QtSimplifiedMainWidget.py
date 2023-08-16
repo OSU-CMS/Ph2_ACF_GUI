@@ -44,7 +44,7 @@ class QtSimplifiedMainWidget(QWidget):
     """
 
     def __init__(self, master):
-        super(SimplifiedMainWidget, self).__init__()
+        super().__init__()
         self.master = master
         self.connection = self.master.connection
         self.LVpowersupply = self.master.LVpowersupply
