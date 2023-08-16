@@ -65,6 +65,7 @@ class QtSimplifiedMainWidget(QWidget):
 
         self.createLogin()
         self.setupMainUI()
+        self.show()
 
     def createLogin(self):
         """Create login section of the Simplified GUI"""
