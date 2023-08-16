@@ -10,53 +10,25 @@ from PyQt5.QtGui import QPalette
 from Gui.QtGUIutils.QtApplication import QtApplication
 import sys
 import os
+import traceback
 from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
 from Gui.GUIutils.DBConnection import connect_to_database
 from Gui.QtGUIutils.QtExpertWindow import QtExpertWindow
 import Gui.Config.siteConfig as site_config
 from Gui.python.WindowAppearanceTools import apply_dark_mode
 
+
 # from Gui.QtGUIutils.QtSimplifiedWindow import QtSimplifiedWindow
+def custom_excepthook(type, value, traceback):
+    # Handle the exception here in a custom way
+    print("An error occurred:", value)
+    print(traceback)
+    sys.exit(1)
+    # Optionally, you can log the error or display a user-friendly message
 
 
-def login_to_gui(connection_parameters: dict) -> QWidget:
-    """
-    Control login to GUI.
-
-    Will attempt to connect to database if connection succeeds.
-    Will launch either the simplified GUI or the expert GUI
-    depending on the value of connection_parameters["expert"]
-    """
-    print("in login_to_gui")
-    connection = connect_to_database(
-        connection_parameters["username"],
-        connection_parameters["password"],
-        connection_parameters["address"],
-        connection_parameters["database"],
-    )
-    print(connection_parameters)
-    if connection_parameters["expert"]:
-        main_widget = QtExpertWindow(connection)
-    # elif not connection_parameters["expert"]:
-    #     main_widget = QtSimplifiedWindow(connection)
-    else:
-        print("Unexpected value set given to connection parameters")
-        raise Exception("Unexpected user state encountered")
-    return main_widget
-
-
-def initLog():
-    """Use to create log files for FC7s. Logs will be stored in $GUI_dir fc7_name."""
-
-    for index, fc7_name in enumerate(site_config.FC7List.keys()):
-        LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), fc7_name)
-        try:
-            logFile = open(LogFileName, "w")
-            logFile.close()
-        except:
-            QMessageBox(
-                None, "Error", "Can not create log files: {}".format(LogFileName)
-            )
+# Set the custom excepthook
+sys.excepthook = custom_excepthook
 
 
 if __name__ == "__main__":
