@@ -166,7 +166,7 @@ class QtSimplifiedMainWidget(QWidget):
 
         # Selecting default HV
         self.HVpowersupply.setPowerModel(sc.defaultHVModel[0])
-        self.HVpowersupply.setInstrument(sc.defaultUSBPortHV[0])
+        self.HVpowersupply.setPortAddress(sc.defaultUSBPortHV[0])
         statusString = self.HVpowersupply.getInfo()
         self.HVPowerStatusLabel.setText("HV status")
         if statusString != "No valid device" and statusString != None:
@@ -178,7 +178,7 @@ class QtSimplifiedMainWidget(QWidget):
 
         # Selecting default LV
         self.LVpowersupply.setPowerModel(sc.defaultLVModel[0])
-        self.LVpowersupply.setInstrument(sc.defaultUSBPortLV[0])
+        self.LVpowersupply.setPortAddress(sc.defaultUSBPortLV[0])
         statusString = self.LVpowersupply.getInfo()
         self.LVPowerStatusLabel.setText("LV status")
 
