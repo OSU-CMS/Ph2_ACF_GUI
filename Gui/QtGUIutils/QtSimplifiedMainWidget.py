@@ -243,7 +243,7 @@ class QtSimplifiedMainWidget(QWidget):
 
         ### Setup Peltier ###
         try:
-            self.peltier = PeltierSignalGenerator()
+            self.pelt = PeltierSignalGenerator()
             # Sending commands to setup Peltier Controller
             self.pelt.sendCommand(
                 self.pelt.createCommand(
