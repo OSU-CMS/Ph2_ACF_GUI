@@ -308,8 +308,9 @@ class QtStartWindow(QWidget):
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
+        self.firmware = firmware
         self.firmwares = firmware
-        self.firmwareNames = [board.getBoardName() for board in self.firmwares]
+        self.firmwareNames = firmware.getBoardName()
         self.connection = self.master.database_connection
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
