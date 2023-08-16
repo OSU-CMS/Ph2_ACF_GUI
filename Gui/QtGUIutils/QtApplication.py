@@ -15,12 +15,12 @@ class QtApplication(QWidget):
     def __init__(self):
         """Load all necessary objects into this function to improve communication between widgets"""
         super().__init__()
+        self.database_connection = None
         self.login = QtLoginDialog()
         self.login.login_signal.connect(self.gui_login)
         self.login.exec_()
         self.hv_powersupply = PowerSupply(powertype="HV")
         self.lv_powersupply = PowerSupply(powertype="LV")
-        self.database_connection = None
 
     def gui_login(self, connection_parameters):
         """Login to either expert or simplified gui depending on QtLoginDialog output"""
