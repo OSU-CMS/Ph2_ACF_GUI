@@ -23,7 +23,6 @@ defaultDBServerIP = "127.0.0.1"
 # default DBName
 defaultDBName = "SampleDB"
 ##################################
-defaultModuleType = "SingleSCC"
 
 ## The following block assigns ports to devices when the "connect all devices" button is clicked ##
 
