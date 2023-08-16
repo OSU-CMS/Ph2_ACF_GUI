@@ -286,8 +286,12 @@ class QtSimplifiedMainWidget(QWidget):
         self.PeltierMonitorValue = QLabel()
         self.PeltierMonitorValue.setText("Peltier Value")
         self.PeltierMonitorLabel.setText("Peltier Cooling")
-        if int(self.PeltierPower) == 1:
-            self.PeltierMonitorValue.setPixmap(self.greenledpixmap)
+
+        if self.PeltierPower:
+            if int(self.PeltierPower) == 1:
+                self.PeltierMonitorValue.setPixmap(self.greenledpixmap)
+            else:
+                self.PeltierMonitorLabel.setPixmap(self.redledpixmap)
         else:
             self.PeltierMonitorValue.setPixmap(self.redledpixmap)
 
