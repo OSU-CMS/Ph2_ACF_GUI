@@ -244,48 +244,47 @@ class QtSimplifiedMainWidget(QWidget):
         else:
             self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
         self.StatusList.append([self.ArduinoMonitorLabel, self.ArduinoMonitorValue])
-
         ### Setup Peltier ###
-        try:
-            self.pelt = PeltierSignalGenerator()
-            # Sending commands to setup Peltier Controller
-            self.pelt.sendCommand(
-                self.pelt.createCommand(
-                    "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
-                )
-            )  # Allows set point to be set by computer software
-            self.pelt.sendCommand(
-                self.pelt.createCommand(
-                    "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
-                )
-            )  # Temperature should be PID controlled
-            self.pelt.sendCommand(
-                self.pelt.createCommand(
-                    "Proportional Bandwidth Write",
-                    ["0", "0", "0", "0", "0", "0", "c", "8"],
-                )
-            )  # Set proportional bandwidth
+        # try:
+        #     self.pelt = PeltierSignalGenerator()
+        #     # Sending commands to setup Peltier Controller
+        #     self.pelt.sendCommand(
+        #         self.pelt.createCommand(
+        #             "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
+        #         )
+        #     )  # Allows set point to be set by computer software
+        #     self.pelt.sendCommand(
+        #         self.pelt.createCommand(
+        #             "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
+        #         )
+        #     )  # Temperature should be PID controlled
+        #     self.pelt.sendCommand(
+        #         self.pelt.createCommand(
+        #             "Proportional Bandwidth Write",
+        #             ["0", "0", "0", "0", "0", "0", "c", "8"],
+        #         )
+        #     )  # Set proportional bandwidth
 
-            set_temp = self.pelt.convertSetTempValueToList(ss.defaultPeltierSetTemp)
-            self.pelt.sendCommand(
-                self.pelt.createCommand("Fixed Desired Control Setting Write", set_temp)
-            )
-            # self.Peltier.powerController(1)
-            time.sleep(0.5)
+        #     set_temp = self.pelt.convertSetTempValueToList(ss.defaultPeltierSetTemp)
+        #     self.pelt.sendCommand(
+        #         self.pelt.createCommand("Fixed Desired Control Setting Write", set_temp)
+        #     )
+        #     # self.Peltier.powerController(1)
+        #     time.sleep(0.5)
 
-            self.PeltierPower, _ = self.pelt.sendCommand(
-                self.pelt.createCommand(
-                    "Power On/Off Read", ["0", "0", "0", "0", "0", "0", "0", "0"]
-                )
-            )
+        #     self.PeltierPower, _ = self.pelt.sendCommand(
+        #         self.pelt.createCommand(
+        #             "Power On/Off Read", ["0", "0", "0", "0", "0", "0", "0", "0"]
+        #         )
+        #     )
 
-            # If the power is on the last value in the list will be 1, if off, 0
-            self.PeltierPower = self.PeltierPower[-1]
+        #     # If the power is on the last value in the list will be 1, if off, 0
+        #     self.PeltierPower = self.PeltierPower[-1]
 
-        except Exception as e:
-            print("Error while attempting to setup Peltier: ", e)
-            self.PeltierPower = None
-
+        # except Exception as e:
+        #     print("Error while attempting to setup Peltier: ", e)
+        #     self.PeltierPower = None
+        self.PeltierPower = None
         self.PeltierMonitorLabel = QLabel()
         self.PeltierMonitorValue = QLabel()
         self.PeltierMonitorValue.setText("Peltier Value")
