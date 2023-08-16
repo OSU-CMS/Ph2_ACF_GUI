@@ -7,7 +7,7 @@ continue from these widgets.
 """
 from PyQt5.QtWidgets import QApplication, QWidget, QMessageBox, QStyleFactory
 from PyQt5.QtGui import QPalette
-from Gui.QtGUIutils.QtApplication2 import QtApplication
+from Gui.QtGUIutils.QtApplication import QtApplication
 import sys
 import os
 from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
