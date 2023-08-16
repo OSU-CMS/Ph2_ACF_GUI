@@ -111,26 +111,6 @@ def createCalibrationEntry(dbconnection, modeInfo):
     return cur.lastrowid
 
 
-def getAllTests(dbconnection):
-    if dbconnection == "Offline":
-        remoteList = []
-    elif dbconnection.is_connected():
-        # remoteList = retrieveAllTests(dbconnection)
-        remoteList = ()
-        remoteList = [list(i) for i in remoteList]
-    else:
-        QMessageBox().information(
-            None, "Warning", "Database connection broken", QMessageBox.Ok
-        )
-        remoteList = []
-    localList = list(Test.keys())
-    remoteList = [remoteList[i][0] for i in range(len(remoteList))]
-    for test in remoteList:
-        if not test in localList:
-            localList.append(test)
-    return sorted(set(localList), key=localList.index)
-
-
 def retrieveAllTests(dbconnection):
     if dbconnection.is_connected() == False:
         return
