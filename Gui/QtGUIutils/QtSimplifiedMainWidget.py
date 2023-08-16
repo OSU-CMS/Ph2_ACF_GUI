@@ -45,6 +45,7 @@ class QtSimplifiedMainWidget(QWidget):
 
     def __init__(self, master):
         super().__init__()
+        print("Inside Simplified Widget")
         self.master = master
         self.connection = self.master.database_connection
         self.LVpowersupply = self.master.lv_powersupply
@@ -70,6 +71,7 @@ class QtSimplifiedMainWidget(QWidget):
     def createLogin(self):
         """Create login section of the Simplified GUI"""
 
+        print("Inside createLogin()")
         self.LoginGroupBox = QGroupBox("")
         self.LoginGroupBox.setCheckable(False)
 
@@ -137,6 +139,7 @@ class QtSimplifiedMainWidget(QWidget):
         ##################################
         ##  Testing some things out #######
         ##################################
+        print("inside setupMainUI")
         self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.TryUsername))
 
         statusString, _ = check_database_connection(self.connection)
@@ -365,6 +368,7 @@ class QtSimplifiedMainWidget(QWidget):
         self.mainLayout.addWidget(self.ModuleEntryBox)
         self.mainLayout.addWidget(self.AppOption)
         self.mainLayout.addWidget(self.LogoGroupBox)
+        print("At end of setupMainUI()")
 
     def runNewTest(self):
         for module in self.BeBoardWidget.getModules():
