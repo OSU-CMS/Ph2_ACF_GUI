@@ -464,8 +464,8 @@ class QtExpertWindow(QWidget):
 
     def openNewTest(self):
         fc7_list = [self.fc7_dict[name] for name in self.fc7_boards_in_use]
-        print(self.master)
-        self.StartNewTest = QtStartWindow(self.master, fc7_list)
+        print("FC7_LIST", fc7_list)
+        self.StartNewTest = QtStartWindow(self.master, fc7_list[0])
         self.new_test_button.setDisabled(True)
         self.LogoutButton.setDisabled(True)
         self.ExitButton.setDisabled(True)
