@@ -22,12 +22,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# from Gui.QtGUIutils.QtRunWindow import *
+from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.QtGUIutils.QtFwCheckDetails import *
 from Gui.python.CustomizedWidget import *
 from Gui.python.Firmware import *
 from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.FirmwareUtil import *
+from Gui.GUIutils.FirmwareUtil import fwStatusParser
 import Gui.Config.siteConfig as sc
 import Gui.Config.staticSettings as ss
 from Gui.python.ArduinoWidget import *
@@ -47,10 +47,10 @@ class QtSimplifiedMainWidget(QWidget):
         super().__init__()
         self.master = master
         self.connection = self.master.database_connection
-        self.LVpowersupply = self.master.LVpowersupply
-        self.HVpowersupply = self.master.HVpowersupply
-        self.TryUsername = self.master.TryUsername
-        self.DisplayedPassword = self.master.DisplayedPassword
+        self.LVpowersupply = self.master.lv_powersupply
+        self.HVpowersupply = self.master.hv_powersupply
+        self.TryUsername = self.master.connection_parameters["username"]
+        self.DisplayedPassword = self.master.connection_parameters["password"]
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
 
@@ -204,7 +204,7 @@ class QtSimplifiedMainWidget(QWidget):
         self.BeBoard.setIPAddress(sc.FC7List[fc7_name])
         self.BeBoard.setFPGAConfig(ss.FPGAConfigList[fc7_name])
 
-        self.master.FwDict[fc7_name] = self.BeBoard
+        self.master.fc7_dict[fc7_name] = self.BeBoard
         self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
 
         LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), fc7_name)
@@ -216,14 +216,14 @@ class QtSimplifiedMainWidget(QWidget):
                 None, "Error", "Can not create log files: {}".format(LogFileName)
             )
 
-        fc7_status_comment, FwStatusColor, FwStatusVerbose = self.master.getFwComment(
+        fc7_status_comment, FwStatusColor, FwStatusVerbose = fwStatusParser(
             fc7_name, LogFileName
         )
         if "Connected" in fc7_status_comment:
             self.FC7StatusValue.setPixmap(self.greenledpixmap)
         else:
             self.FC7StatusValue.setPixmap(self.redledpixmap)
-        self.FwModule = self.master.FwDict[fc7_name]
+        self.FwModule = self.master.fc7_dict[fc7_name]
         self.StatusList.append([self.FC7NameLabel, self.FC7StatusValue])
 
         ### Setup Arduino ###
@@ -396,7 +396,7 @@ class QtSimplifiedMainWidget(QWidget):
         self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
         self.LVpowersupply.setPoweringMode(defaultPowerMode)
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
-        self.LVpowersupply.setModuleType(defaultModuleType)
+        # self.LVpowersupply.setModuleType(ss.defaultModuleType)
         self.LVpowersupply.TurnOn()
         # self.HVpowersupply.RampingUp(-60,-3)
         current = self.LVpowersupply.ReadCurrent()

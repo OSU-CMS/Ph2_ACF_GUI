@@ -21,9 +21,11 @@ class QtApplication(QWidget):
         self.login.exec_()
         self.hv_powersupply = PowerSupply(powertype="HV")
         self.lv_powersupply = PowerSupply(powertype="LV")
+        self.fc7_dict = {}
 
     def gui_login(self, connection_parameters):
         """Login to either expert or simplified gui depending on QtLoginDialog output"""
+        self.connection_parameters = connection_parameters
         print("IN gui_login")
         self.database_connection = connect_to_database(
             connection_parameters["username"],
@@ -59,3 +61,8 @@ class QtApplication(QWidget):
         if self.expertMode == True:
             self.releaseHVPowerPanel()
             self.releaseLVPowerPanel()
+
+
+def getFwComment(self, firmwareName, fileName):
+    comment, color, verboseInfo = fwStatusParser(self.FwDict[firmwareName], fileName)
+    return comment, color, verboseInfo
