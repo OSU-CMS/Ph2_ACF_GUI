@@ -43,9 +43,9 @@ from Gui.python.Firmware import *
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.Config.staticSettings import *
-from Gui.siteSettings import *
+from Gui.Config.siteSettings import *
 
-# from Gui.QtGUIutils.QtProductionTestWindow import *
+from Gui.QtGUIutils.QtProductionTestWindow import *
 
 
 class SummaryBox(QWidget):

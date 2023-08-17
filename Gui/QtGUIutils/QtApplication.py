@@ -16,6 +16,7 @@ class QtApplication(QWidget):
         """Load all necessary objects into this function to improve communication between widgets"""
         super().__init__()
         self.database_connection = None
+        self.ProcessingTest = False
         self.hv_powersupply = PowerSupply(powertype="HV")
         self.lv_powersupply = PowerSupply(powertype="LV")
         self.fc7_dict = {}

@@ -5,6 +5,7 @@ from PyQt5 import QtCore
 from PyQt5.QtWidgets import (
     QCheckBox,
     QGridLayout,
+    QHBoxLayout,
     QGroupBox,
     QLabel,
     QPushButton,
@@ -287,29 +288,16 @@ class QtExpertWindow(QWidget):
 
             self.app_options = QGroupBox()
             self.app_options_layout = QHBoxLayout()
-            self.refresh_button = QPushButton("&Refresh")
-
-            if self.PYTHON_VERSION.startswith("3.8"):
-                self.refresh_button.clicked.connect(self.disableBoxs)
-                self.refresh_button.clicked.connect(self.destroyMain)
-                self.refresh_button.clicked.connect(self.createMain)
-                self.refresh_button.clicked.connect(self.checkFirmware)
-                self.refresh_button.clicked.connect(self.setDefault)
-            elif self.PYTHON_VERSION.startswith(("3.7", "3.9")):
-                self.refresh_button.clicked.connect(self.disableBoxs)
-                self.refresh_button.clicked.connect(self.destroyMain)
-                self.refresh_button.clicked.connect(self.reCreateMain)
-                # self.refresh_button.clicked.connect(self.checkFirmware)
-                self.refresh_button.clicked.connect(self.enableBoxs)
-                self.refresh_button.clicked.connect(self.update)
-                self.refresh_button.clicked.connect(self.setDefault)
 
             self.logout_button = QPushButton("&Logout")
-            # TODO Kill widget and open Login again
-            # self.logout_button.clicked.connect()
+            self.logout_button.clicked.connect(self.reload_window)
 
-            # TODO Add Processing Test Button
             self.exit_button = QPushButton("&Exit")
+            self.exit_button.clicked.connect(self.exit)
+
+            self.app_options_layout.addWidget(self.logout_button)
+            self.app_options_layout.addWidget(self.exit_button)
+            self.app_options.setLayout(self.app_options_layout)
 
             self.main_layout.addWidget(self.connect_devices_groupbox, 1, 0)
             self.main_layout.addWidget(self.hv_power_supply_groupbox, 2, 0)
@@ -317,6 +305,22 @@ class QtExpertWindow(QWidget):
             self.main_layout.addWidget(self.arduino_widget, 4, 0, 1, 2)
             self.main_layout.addWidget(self.test_groupbox, 5, 0)
             self.main_layout.addWidget(self.peltier_groupbox, 5, 1)
+            self.main_layout.addWidget(self.app_options, 6, 1)
+
+    def reload_window(self) -> None:
+        """Use to reload the window and open back up the login dialog"""
+        if not self.master.ProcessingTest:
+            self.close()
+            self.deleteLater()
+            self.master.login.exec_()
+
+    def exit(self) -> None:
+        """Use to close the expert window"""
+        if not self.master.ProcessingTest:
+            self.close()
+            self.deleteLater()
+            self.master.close()
+            self.master.deleteLater()
 
     def connect_to_default_devices(self) -> None:
         """
