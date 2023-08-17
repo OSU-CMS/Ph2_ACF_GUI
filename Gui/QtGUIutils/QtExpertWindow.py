@@ -55,7 +55,8 @@ class QtExpertWindow(QWidget):
         self.fc7_status_verbose_dict = {}
         self.fc7_dict = {}  # Dictionary of fc7 objects
         self.remote_powersupplies = {"LV": True, "HV": True}
-
+        self.hv_powersupply = PowerSupply(powertype="HV")
+        self.lv_powersupply = PowerSupply(powertype="LV")
         self.create_main_window()
 
         self.show()
@@ -209,7 +210,7 @@ class QtExpertWindow(QWidget):
             self.lv_power_supply_groupbox.setLayout(lv_power_supply_layout)
 
             self.arduino_widget = ArduinoWidget()
-            self.arduino_widget.stop.connect(self.master.GlobalStop)
+            self.arduino_widget.stop.connect(self.GlobalStop)
             self.arduino_checkbox = QCheckBox("Use arduino monitoring")
             self.arduino_checkbox.setChecked(True)
             self.arduino_checkbox.toggled.connect(self.switchArduinoPanel)
@@ -309,14 +310,14 @@ class QtExpertWindow(QWidget):
 
     def reload_window(self) -> None:
         """Use to reload the window and open back up the login dialog"""
-        if not self.master.ProcessingTest:
+        if not self.master.processing_test:
             self.close()
             self.deleteLater()
             self.master.login.exec_()
 
     def exit(self) -> None:
         """Use to close the expert window"""
-        if not self.master.ProcessingTest:
+        if not self.processing_test:
             self.close()
             self.deleteLater()
             self.master.close()
@@ -341,18 +342,16 @@ class QtExpertWindow(QWidget):
         self.connect_to_lv_powersupply()
 
     def connect_to_hv_powersupply(self):
-        self.master.master.hv_powersupply = PowerSupply()
+        self.hv_powersupply = PowerSupply()
 
         # Need to have just keithley or just keysight, not whole string
-        self.master.hv_powersupply.setPowerModel(
-            self.hv_model_combo.currentText().split()[0]
-        )
-        self.master.hv_powersupply.setPortAddress(self.hv_port_combo.currentText())
-        self.master.hv_powersupply.setPowerType("HV")
+        self.hv_powersupply.setPowerModel(self.hv_model_combo.currentText().split()[0])
+        self.hv_powersupply.setPortAddress(self.hv_port_combo.currentText())
+        self.hv_powersupply.setPowerType("HV")
 
-        self.master.hv_powersupply.TurnOffHV()
+        self.hv_powersupply.TurnOffHV()
 
-        status_string = self.master.hv_powersupply.getInfo()
+        status_string = self.hv_powersupply.getInfo()
         if status_string != "No valid device" and status_string != None:
             self.hv_power_status_label.setStyleSheet("color:green")
             self.hv_power_combo.setDisabled(True)
@@ -364,7 +363,7 @@ class QtExpertWindow(QWidget):
             self.hv_power_status_label.setText("No valid device")
 
     def release_hv_powersupply(self):
-        self.master.hv_powersupply.TurnOffHV()
+        self.hv_powersupply.TurnOffHV()
         try:
             self.hv_port_combo.setDisabled(False)
             self.hv_power_status_label.setText("")
@@ -374,7 +373,7 @@ class QtExpertWindow(QWidget):
             print(f"HV not released properly due to error: {e}")
 
     def release_lv_powersupply(self):
-        self.master.master.lv_powersupply.TurnOff()
+        self.lv_powersupply.TurnOff()
         try:
             self.lv_port_combo.setDisabled(False)
             self.lv_power_status_label.setText("")
@@ -384,14 +383,12 @@ class QtExpertWindow(QWidget):
             print(f"LV not released properly due to error: {e}")
 
     def connect_to_lv_powersupply(self):
-        self.master.lv_powersupply = PowerSupply()
-        self.master.lv_powersupply.setPowerType("LV")
-        self.master.lv_powersupply.setPowerModel(
-            self.lv_model_combo.currentText().split()[0]
-        )
-        self.master.lv_powersupply.setPortAddress(self.lv_port_combo.currentText())
-        self.master.lv_powersupply.TurnOff()
-        status_string = self.master.lv_powersupply.getInfo()
+        self.lv_powersupply = PowerSupply()
+        self.lv_powersupply.setPowerType("LV")
+        self.lv_powersupply.setPowerModel(self.lv_model_combo.currentText().split()[0])
+        self.lv_powersupply.setPortAddress(self.lv_port_combo.currentText())
+        self.lv_powersupply.TurnOff()
+        status_string = self.lv_powersupply.getInfo()
         if status_string != "No valid device":
             self.lv_power_status_label.setStyleSheet("color:green")
         else:
@@ -506,14 +503,14 @@ class QtExpertWindow(QWidget):
     def openNewTest(self):
         fc7_list = [self.fc7_dict[name] for name in self.fc7_boards_in_use]
         print("FC7_LIST", fc7_list)
-        self.StartNewTest = QtStartWindow(self.master, fc7_list[0])
+        self.StartNewTest = QtStartWindow(self, fc7_list[0])
         self.new_test_button.setDisabled(True)
         self.logout_button.setDisabled(True)
         self.exit_button.setDisabled(True)
 
     def openNewProductionTest(self):
         self.ProdTestPage = QtProductionTestWindow(
-            self, HV=self.master.HVpowersupply, LV=self.master.LVpowersupply
+            self, HV=self.hv_powersupply, LV=self.lv_powersupply
         )
         self.ProdTestPage.close.connect(self.releaseProdTestButton)
         self.new_production_test_button.setDisabled(True)
@@ -532,6 +529,33 @@ class QtExpertWindow(QWidget):
                 None, "Error", "Please enter a valid module ID", QMessageBox.Ok
             )
 
+    def releaseLVPowerPanel(self):
+        try:
+            self.lv_powersupply.TurnOff()
+            self.lv_port_combo.setDisabled(False)
+            self.lv_power_status_label.setText("")
+            self.lv_use_button.setDisabled(False)
+            self.lv_release_button.setDisabled(True)
+        except Exception as e:
+            print("LV power panel not release properly ")
+            print(e)
 
-if __name__ == "__main__":
-    expert_window = QtExpertWindow()
+    def releaseHVPowerPanel(self):
+        self.hv_powersupply.TurnOffHV()
+        try:
+            self.hv_port_combo.setDisabled(False)
+            self.hv_power_status_label.setText("")
+            self.hv_use_button.setDisabled(False)
+            self.hv_release_button.setDisabled(True)
+        except Exception as err:
+            print("HV PowerPanel not released properly")
+            print(err)
+
+    @QtCore.pyqtSlot()
+    def GlobalStop(self):
+        """Turn off power supplies"""
+        print("Critical status detected: Emitting Global Stop signal")
+
+        self.globalStop.emit()
+        self.releaseHVPowerPanel()
+        self.releaseLVPowerPanel()
