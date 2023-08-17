@@ -48,6 +48,7 @@ class QtExpertWindow(QWidget):
         super().__init__()
         self.master = master
         self.main_layout = QGridLayout()
+        self.database_connection = self.master.database_connection
         self.setLayout(self.main_layout)
         self.connected_devices = {}
         self.fc7_boards_in_use = []
