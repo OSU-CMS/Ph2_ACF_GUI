@@ -113,9 +113,7 @@ class QtApplication(QWidget):
         self.show()
 
     def initLog(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            settings.FirmwareList.items()
-        ):
+        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
             LogFileName = "{0}/Gui/.{1}.log".format(
                 os.environ.get("GUI_dir"), firmwareName
             )
