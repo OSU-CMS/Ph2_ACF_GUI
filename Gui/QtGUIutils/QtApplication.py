@@ -173,7 +173,7 @@ class QtApplication(QWidget):
         if self.expertMode == False:
             self.DatabaseCombo = QComboBox()
             # self.DBNames = DBNames['All']
-            self.DBNames = eval(self.HostName.currentText() + ".All_list")
+            self.DBNames = self.HostName.currentText() + ".All_list"
             self.DatabaseCombo.addItems(self.DBNames)
             self.DatabaseCombo.setCurrentIndex(0)
         else:
