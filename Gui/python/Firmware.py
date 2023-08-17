@@ -87,7 +87,7 @@ class Module:
         return self.__OGID
 
     def setModuleType(self, fwType):
-        if fwType in ModuleType.values():
+        if fwType in settings.ModuleType.values():
             self.__moduleType = fwType
         else:
             self.__moduleType = "SingleSCC"
@@ -114,13 +114,13 @@ class Module:
             return
         # for key,value in kwargs.items():
         # 	if key=='VDDA':
-
-        for i in ModuleLaneMap[self.__moduleType].keys():
+        print("VDDA MAP: ", self.__VDDAMap)
+        for i in settings.ModuleLaneMap[self.__moduleType].keys():
             FEChip = Chip()
             # FEChip.setID(8)
             LaneID = str(i)
-            chipNumber = ModuleLaneMap[self.__moduleType][LaneID]
-            FEChip.setID(ModuleLaneMap[self.__moduleType][LaneID])
+            chipNumber = settings.ModuleLaneMap[self.__moduleType][LaneID]
+            FEChip.setID(settings.ModuleLaneMap[self.__moduleType][LaneID])
             FEChip.setLane(LaneID)
             FEChip.setVDDA(self.__VDDAMap[chipNumber])
             FEChip.setVDDD(self.__VDDDMap[chipNumber])
@@ -155,7 +155,7 @@ class OpticalGroup:
         if "module" in kwargs.keys():
             pass
             return
-        for i in ModuleLaneMap[self.__moduleType].keys():
+        for i in settings.ModuleLaneMape[self.__moduleType].keys():
             FEChip = Chip()
             # FEChip.setID(8)
             FEChip.setID(i)

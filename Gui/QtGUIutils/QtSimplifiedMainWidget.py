@@ -16,10 +16,6 @@ from PyQt5.QtWidgets import (
 import time
 import logging
 
-# NOTE: This may not be used
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
 logger = logging.getLogger(__name__)
 
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
@@ -143,6 +139,7 @@ class QtSimplifiedMainWidget(QWidget):
         self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.TryUsername))
 
         statusString, _ = check_database_connection(self.connection)
+        logger.debug("The value of statusString: %s", statusString)
         self.DBStatusLabel = QLabel()
         self.DBStatusLabel.setText("Database connection:")
         self.DBStatusValue = QLabel()
@@ -206,6 +203,10 @@ class QtSimplifiedMainWidget(QWidget):
         self.BeBoard = FC7()
         self.BeBoard.setBoardName(fc7_name)
         self.BeBoard.setIPAddress(sc.FC7List[fc7_name])
+
+        print("FC7 LIST: ", sc.FC7List[fc7_name])
+        print("FPGA Config LIST: ", ss.FPGAConfigList[fc7_name])
+
         self.BeBoard.setFPGAConfig(ss.FPGAConfigList[fc7_name])
 
         self.master.fc7_dict[fc7_name] = self.BeBoard

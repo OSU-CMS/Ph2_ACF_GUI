@@ -280,7 +280,7 @@ class BeBoardBox(QWidget):
         NewButton.setMaximumWidth(150)
         NewButton.clicked.connect(self.addModule)
         self.ListLayout.addWidget(NewButton, len(self.ModuleList), 1, 1, 1)
-        self.update()
+        self.update()  # Updates the size of the widget
 
     def removeModule(self, index):
         self.ModuleList.pop(index)
@@ -309,6 +309,7 @@ class BeBoardBox(QWidget):
 
     def getFirmwareDescription(self, **kwargs):
         for index, module in enumerate(self.ModuleList):
+            print("MODULE LIST: ", self.ModuleList)
             FwModule = Module()
             FwModule.setModuleID(module.getID())
             FwModule.setFMCID(module.getFMCID())
@@ -522,6 +523,7 @@ class SimpleBeBoardBox(QWidget):
     def updateList(self):
         [columns, rows] = [self.ListLayout.columnCount(), self.ListLayout.rowCount()]
 
+        # Loop through the layout and remove all items within it
         for i in range(columns):
             for j in range(rows):
                 item = self.ListLayout.itemAtPosition(j, i)
@@ -613,6 +615,7 @@ class SimpleBeBoardBox(QWidget):
         return self.FilledModuleList
 
     def getFirmwareDescription(self, **kwargs):
+        print("FILLED MODULES", self.FilledModuleList)
         for index, module in enumerate(self.FilledModuleList):
             if module.getSerialNumber() == "":
                 continue

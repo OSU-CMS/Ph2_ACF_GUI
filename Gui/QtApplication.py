@@ -16,22 +16,14 @@ from Gui.GUIutils.DBConnection import connect_to_database
 from Gui.QtGUIutils.QtExpertWindow import QtExpertWindow
 import Gui.Config.siteConfig as site_config
 from Gui.python.WindowAppearanceTools import apply_dark_mode
-
-
-# from Gui.QtGUIutils.QtSimplifiedWindow import QtSimplifiedWindow
-def custom_excepthook(type, value, traceback):
-    # Handle the exception here in a custom way
-    print("An error occurred:", value)
-    print(traceback)
-    sys.exit(1)
-    # Optionally, you can log the error or display a user-friendly message
-
-
-# Set the custom excepthook
-sys.excepthook = custom_excepthook
-
+import logging
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        filename="Ph2_ACF_GUI_logfile.log",
+        level=logging.DEBUG,
+        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    )
     palette = QPalette()
     QApplication.setStyle(QStyleFactory.create("Fusion"))
     QApplication.setPalette(apply_dark_mode(palette))

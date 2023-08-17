@@ -29,6 +29,9 @@ import os
 import sys
 import pyvisa as visa
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 KMINIMUMWIDTH = 120
 KMAXIMUMWIDTH = 150
@@ -78,6 +81,11 @@ class QtExpertWindow(QWidget):
             for index, (fc7_name, fc7_address) in enumerate(
                 site_config.FC7List.items()
             ):
+                logger.debug(
+                    "Known FC7 as defined in site_config: %s, %s",
+                    str(fc7_name),
+                    str(fc7_address),
+                )
                 fc7_name_label = QLabel()
                 fc7_name_label.setText(fc7_name)
                 fc7_status_value = QLabel()
@@ -87,14 +95,17 @@ class QtExpertWindow(QWidget):
                 fc7.setName(fc7_name)
                 fc7.setIPAddress(fc7_address)
                 fc7.setFPGAConfig(static_settings.FPGAConfigList[fc7_name])
+                logger.debug("FPGAConfig: %s", static_settings.FPGAConfigList[fc7_name])
                 self.fc7_dict[fc7_name] = fc7
         except Exception as e:
             print("Problem checking firmware")
+            logger.error(e)
             print(e)
 
         self.use_buttons_dict = {}
         status_layout = QGridLayout()
 
+        logger.debug("Devices inside connected_devices: %s", self.connected_devices)
         for index, key in enumerate(self.connected_devices):
             if key == "Database":
                 self.check_button = QPushButton("&FC7 Check")
@@ -273,6 +284,32 @@ class QtExpertWindow(QWidget):
             test_layout.addWidget(self.review_module_button, 4, 0, 1, 1)
             test_layout.addWidget(self.review_module_edit, 4, 1, 1, 2)
             self.test_groupbox.setLayout(test_layout)
+
+            self.app_options = QGroupBox()
+            self.app_options_layout = QHBoxLayout()
+            self.refresh_button = QPushButton("&Refresh")
+
+            if self.PYTHON_VERSION.startswith("3.8"):
+                self.refresh_button.clicked.connect(self.disableBoxs)
+                self.refresh_button.clicked.connect(self.destroyMain)
+                self.refresh_button.clicked.connect(self.createMain)
+                self.refresh_button.clicked.connect(self.checkFirmware)
+                self.refresh_button.clicked.connect(self.setDefault)
+            elif self.PYTHON_VERSION.startswith(("3.7", "3.9")):
+                self.refresh_button.clicked.connect(self.disableBoxs)
+                self.refresh_button.clicked.connect(self.destroyMain)
+                self.refresh_button.clicked.connect(self.reCreateMain)
+                # self.refresh_button.clicked.connect(self.checkFirmware)
+                self.refresh_button.clicked.connect(self.enableBoxs)
+                self.refresh_button.clicked.connect(self.update)
+                self.refresh_button.clicked.connect(self.setDefault)
+
+            self.logout_button = QPushButton("&Logout")
+            # TODO Kill widget and open Login again
+            # self.logout_button.clicked.connect()
+
+            # TODO Add Processing Test Button
+            self.exit_button = QPushButton("&Exit")
 
             self.main_layout.addWidget(self.connect_devices_groupbox, 1, 0)
             self.main_layout.addWidget(self.hv_power_supply_groupbox, 2, 0)

@@ -5,7 +5,7 @@ import os
 from collections import defaultdict
 from Gui.Config.siteSettings import *
 
-defaultModuleType = "SingleSCC"
+defaultModuleType = "CROC 1x2"
 # List of expert users
 ExpertUserList = [
     "mjoyce",
