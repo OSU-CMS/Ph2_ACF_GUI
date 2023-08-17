@@ -113,7 +113,7 @@ class QtExpertWindow(QWidget):
             if key == "Database":
                 self.check_button = QPushButton("&FC7 Check")
                 # NOTE see if this is named right
-                self.check_button.clicked.connect(self.checkFC7)
+                self.check_button.clicked.connect(self.checkFc7)
                 # self.check_button.clicked.connect(lambda: self.connectFc7(key))
                 status_layout.addWidget(self.check_button, index, 0, 1, 1)
                 status_layout.addWidget(self.connected_devices[key][0], index, 1, 1, 1)
@@ -420,7 +420,7 @@ class QtExpertWindow(QWidget):
                 return index - 1
         return -1
 
-    def checkFC7(self):
+    def checkFc7(self):
         for index, fc7_name in enumerate(site_config.FC7List.keys()):
             file_name = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), fc7_name)
             if fc7_name not in self.fc7_boards_in_use:
@@ -444,7 +444,7 @@ class QtExpertWindow(QWidget):
             self.useFc7(key)
         else:
             self.releaseFc7(key)
-            self.checkFirmware()
+            self.checkFc7()
 
     def useFc7(self, fc7_board_name: str) -> None:
         if self.connected_devices[fc7_board_name][1].text() == "Connected":
