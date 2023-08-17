@@ -24,6 +24,7 @@ import os
 
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
+import Gui.siteConfig as site_config
 import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.GUIutils.guiUtils import isActive
@@ -427,7 +428,7 @@ class QtApplication(QWidget):
 
 		self.BeBoard = QtBeBoard()
 		self.BeBoard.setBoardName(firmwareName)
-		self.BeBoard.setIPAddress(FirmwareList[firmwareName])
+		self.BeBoard.setIPAddress(FC7List[firmwareName])
 		self.BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
 
 		self.FwDict[firmwareName] = self.BeBoard
@@ -509,7 +510,7 @@ class QtApplication(QWidget):
 
         try:
             for index, (firmwareName, fwAddress) in enumerate(
-                settings.FirmwareList.items()
+                site_config.FC7List.items()
             ):
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
@@ -521,7 +522,7 @@ class QtApplication(QWidget):
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
                 BeBoard = QtBeBoard()
                 BeBoard.setBoardName(firmwareName)
-                BeBoard.setIPAddress(settings.FirmwareList[firmwareName])
+                BeBoard.setIPAddress(site_config.FC7List[firmwareName])
                 BeBoard.setFPGAConfig(settings.FPGAConfigList[firmwareName])
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
@@ -1027,9 +1028,7 @@ class QtApplication(QWidget):
             self.ArduinoGroup.disable()
 
     def checkFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            settings.FirmwareList.items()
-        ):
+        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
             fileName = self.LogList[index]
             if firmwareName != self.FwUnderUsed:
                 # if firmwareName not in self.FwUnderUsed:
@@ -1055,9 +1054,7 @@ class QtApplication(QWidget):
         # 		self.occupyFw("{0}".format(index))
 
     def refreshFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            settings.FirmwareList.items()
-        ):
+        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
             self.UseButtons[index].setDisabled(False)
         if self.FwUnderUsed != "":
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
