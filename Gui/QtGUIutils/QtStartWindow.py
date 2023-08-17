@@ -53,7 +53,6 @@ class SummaryBox(QWidget):
         super(SummaryBox, self).__init__()
         self.module = module
         self.master = master
-        self.parent = parent
         self.index = index
         self.result = False
         self.verboseResult = {}
@@ -310,7 +309,6 @@ class QtStartWindow(QWidget):
         super(QtStartWindow, self).__init__()
         self.master = master
         self.firmware = firmware
-        self.parent = parent
         self.firmwares = firmware
         self.firmwareNames = firmware.getBoardName()
         self.connection = self.master.database_connection
