@@ -508,8 +508,8 @@ class QtExpertWindow(QWidget):
         print("FC7_LIST", fc7_list)
         self.StartNewTest = QtStartWindow(self.master, fc7_list[0])
         self.new_test_button.setDisabled(True)
-        self.LogoutButton.setDisabled(True)
-        self.ExitButton.setDisabled(True)
+        self.logout_button.setDisabled(True)
+        self.exit_button.setDisabled(True)
 
     def openNewProductionTest(self):
         self.ProdTestPage = QtProductionTestWindow(
@@ -517,8 +517,8 @@ class QtExpertWindow(QWidget):
         )
         self.ProdTestPage.close.connect(self.releaseProdTestButton)
         self.new_production_test_button.setDisabled(True)
-        self.LogoutButton.setDisabled(True)
-        self.ExitButton.setDisabled(True)
+        self.logout_button.setDisabled(True)
+        self.exit_button.setDisabled(True)
 
     def openReviewWindow(self):
         self.ReviewWindow = QtModuleReviewWindow(self)
