@@ -174,7 +174,7 @@ class QtApplication(QWidget):
             self.DatabaseCombo = QComboBox()
             # self.DBNames = DBNames['All']
             self.DBNames = self.HostName.currentText() + ".All_list"
-            self.DatabaseCombo.addItems(self.DBNames)
+            self.DatabaseCombo.addItem(self.DBNames)
             self.DatabaseCombo.setCurrentIndex(0)
         else:
             self.DatabaseEdit = QLineEdit("SampleDB")
