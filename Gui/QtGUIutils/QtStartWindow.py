@@ -220,23 +220,23 @@ class SummaryBox(QWidget):
 
                 print("Firmware image is now loaded")
             print("made it to LV turn on")
-            if self.master.PowerRemoteControl["LV"]:
-                self.master.LVpowersupply.setPoweringMode(
+            if self.master.remote_powersupplies["LV"]:
+                self.master.lv_powersupply.setPoweringMode(
                     self.PowerModeCombo.currentText()
                 )
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
-                self.master.LVpowersupply.setModuleType(self.module.getType())
-                self.master.LVpowersupply.TurnOn()
-            current = self.master.LVpowersupply.ReadCurrent()
+                self.master.lv_powersupply.setModuleType(self.module.getType())
+                self.master.lv_powersupply.TurnOn()
+            current = self.master.lv_powersupply.ReadCurrent()
             current = float(current)
-            voltage = self.master.LVpowersupply.ReadVoltage()
+            voltage = self.master.lv_powersupply.ReadVoltage()
             voltage = float(voltage)
             print(self.PowerModeCombo.currentText())
 
             leakageCurrent = 0.0
-            if self.master.PowerRemoteControl["HV"]:
-                self.master.HVpowersupply.RampingUp(defaultHVsetting, -3)
-                leakageCurrent = self.master.HVpowersupply.ReadCurrent()
+            if self.master.remote_powersupplies["HV"]:
+                self.master.hv_powersupply.RampingUp(defaultHVsetting, -3)
+                leakageCurrent = self.master.hv_powersupply.ReadCurrent()
                 print(leakageCurrent)
             if "SLDO" in self.PowerModeCombo.currentText():
                 print("this is sldo check")
@@ -439,9 +439,9 @@ class QtStartWindow(QWidget):
 
     def release(self):
         self.master.ProcessingTest = False
-        self.master.NewTestButton.setDisabled(False)
-        self.master.LogoutButton.setDisabled(False)
-        self.master.ExitButton.setDisabled(False)
+        self.master.new_test_button.setDisabled(False)
+        self.master.logout_button.setDisabled(False)
+        self.master.exit_button.setDisabled(False)
 
     def checkFwPar(self, pfirmwareName):
         GlobalCheck = True
@@ -451,10 +451,8 @@ class QtStartWindow(QWidget):
         self.passCheck = GlobalCheck
         return GlobalCheck
 
-    def setupBeBoard(self):
-        # Setup the BeBoard
-        pass
-
+    # NOTE: Would be surprised if this ever gets called, deleted two major functions
+    # that were previously commented out in another file
     def openRunWindow(self):
         # if not os.access(os.environ.get('GUI_dir'),os.W_OK):
         # 	QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
@@ -490,10 +488,6 @@ class QtStartWindow(QWidget):
             str(self.TestCombo.currentText()),
         ]
         self.runFlag = True
-        self.master.BeBoardWidget = self.BeBoardWidget
-        self.master.RunNewTest = QtRunWindow(
-            self.master, self.info, self.firmwareDescription
-        )
         self.close()
 
     def closeEvent(self, event):
@@ -514,8 +508,8 @@ class QtStartWindow(QWidget):
                 self.release()
                 # This line was previosly commented
                 try:
-                    self.master.HVpowersupply.TurnOffHV()
-                    self.master.LVpowersupply.TurnOff()
+                    self.master.hv_powersupply.TurnOffHV()
+                    self.master.lv_powersupply.TurnOff()
                     print("Window closed")
                 except:
                     print(
