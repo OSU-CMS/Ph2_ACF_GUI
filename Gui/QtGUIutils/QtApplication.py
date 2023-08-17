@@ -113,9 +113,7 @@ class QtApplication(QWidget):
         self.show()
 
     def initLog(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            settings.FirmwareList.items()
-        ):
+        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
             LogFileName = "{0}/Gui/.{1}.log".format(
                 os.environ.get("GUI_dir"), firmwareName
             )
@@ -175,8 +173,8 @@ class QtApplication(QWidget):
         if self.expertMode == False:
             self.DatabaseCombo = QComboBox()
             # self.DBNames = DBNames['All']
-            self.DBNames = eval(self.HostName.currentText() + ".All_list")
-            self.DatabaseCombo.addItems(self.DBNames)
+            self.DBNames = self.HostName.currentText() + ".All_list"
+            self.DatabaseCombo.addItem(self.DBNames)
             self.DatabaseCombo.setCurrentIndex(0)
         else:
             self.DatabaseEdit = QLineEdit("SampleDB")
