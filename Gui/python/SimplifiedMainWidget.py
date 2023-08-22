@@ -395,8 +395,7 @@ class SimplifiedMainWidget(QWidget):
         self.runFlag = True
         self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
         self.LVpowersupply.setPoweringMode(site_settings.defaultPowerMode)
-        # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
-        self.LVpowersupply.setModuleType(defaultModuleType)
+        self.LVpowersupply.setModuleType(site_settings.defaultModuleType)
         self.LVpowersupply.TurnOn()
         # self.HVpowersupply.RampingUp(-60,-3)
         current = self.LVpowersupply.ReadCurrent()
