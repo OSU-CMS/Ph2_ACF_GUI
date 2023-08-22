@@ -343,6 +343,7 @@ class QtApplication(QWidget):
                     self.createMain()
                     self.checkFirmware()
                 else:
+                    print("Right before creating simplified main")
                     self.createSimplifiedMain()
                 # self.checkFirmware()
 
