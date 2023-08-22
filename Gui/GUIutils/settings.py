@@ -11,6 +11,10 @@ ExpertUserList = [
     "localexpert",
 ]
 
+FirmwareList = {
+    "fc7.board.1": "192.168.1.80",
+    "fc7.board.2": "127.0.0.1",  #'192.168.1.81',
+}
 
 """
 if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
