@@ -38,20 +38,11 @@ defaultLVModel = ["KeySight E3633 (RS232)"]
 defaultSensorBaudRate = 9600
 #################################
 
-## Update this dictionary for the IP addreses of your FC7 devices ##
-
-FC7List =  {
-	'fc7.board.1'			 :  '192.168.1.80',
-	'fc7.board.2'			 :  '192.168.1.81',
-	}
-
-##############################################
-
 
 ## Specify whether of not you want to monitor chip temperature during the tests ##
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
-Monitor_CROC = "1"
+Monitor_CROC = "0"
 
 #setting default HV current compliance in mA
 defaultHVCurrentCompliance = 0.00001
@@ -65,7 +56,10 @@ ModuleCurrentMap = {
 	"TFPX Quad" : 6.5,
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
+	"Yellow Module (Purdue)": 6.5,
+
 	"CROC 1x2"  : 4.5,
+
 	"TFPX CROC Quad" : 6.5,
 	"CROC SCC"  : 2.0,
 }
@@ -76,7 +70,10 @@ ModuleVoltageMapSLDO = {
 	"TFPX Quad" : 2.98,
 	"TEPX Quad" : 2.0,
 	"TBPX Quad" : 2.98,
-	"CROC 1x2"  : 2.3,
+	"Yellow Module (Purdue)": 2.8,
+
+	"CROC 1x2"  : 2.2,
+
 	"TFPX CROC Quad" : 2.98,
 	"CROC SCC"  : 1.8,
 }

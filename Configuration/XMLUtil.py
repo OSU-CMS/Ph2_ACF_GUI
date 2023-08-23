@@ -65,9 +65,10 @@ class BeBoardModule():
     self.Id = str(0)
     self.boardType = "RD53"
     self.eventType = "VR"
+    self.ip_address = '0.0.0.0'
     self.id = "cmsinnertracker.crate0.slot0" 
-    self.uri = "chtcp-2.0://localhost:10203?target={0}:50001".format(ip_address)
-    #self.uri = "chtcp-2.0://localhost:10203?target=192.168.1.80:50001" 
+    self.uri = "chtcp-2.0://localhost:10203?target={0}:50001".format(self.ip_address)
+    #self.uri = "chtcp-2.0://localhost:10203?target=192.168.1.85:50001" 
     self.address_table = "file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml"
     self.FEModuleList = []
     self.RegisterSettings = {}
@@ -180,10 +181,10 @@ class MonitoringModule():
   def __init__(self,boardtype):
     self.Type=boardtype 
     if 'RD53A' in boardtype:
-      self.Enable="1" 
+      self.Enable=Monitor_RD53A
     else:
-      self.Enable="1"
-    self.SleepTime=5000
+      self.Enable=Monitor_CROC
+    self.SleepTime=10000
     self.MonitoringList = {}
   def SetType(self, Type):
     self.Type=Type
