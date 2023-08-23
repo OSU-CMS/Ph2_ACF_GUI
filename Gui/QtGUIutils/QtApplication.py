@@ -21,6 +21,8 @@ from PyQt5.QtWidgets import (
 
 import sys
 import os
+import logging
+
 
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
