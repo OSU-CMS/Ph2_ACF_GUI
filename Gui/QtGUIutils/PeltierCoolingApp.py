@@ -26,48 +26,25 @@ class Peltier(QWidget):
     def setupUi(self):
         self.gridLayout = QtWidgets.QGridLayout(self)
 
+        self.startButton = QtWidgets.QPushButton("Start Peltier Controller", self)
+        self.startButton.clicked.connect(self.setup)
+        self.gridLayout.addWidget(self.startButton, 0, 0, 1, 1)
+
         self.currentSetTemp = QtWidgets.QLabel("Current Set Temperature: ", self)
         self.setTempSignal.connect(
             lambda setTempValue: self.currentSetTemp.setText(
                 f"Current Set Temp: {str(setTempValue)}"
             )
         )
-        self.gridLayout.addWidget(self.currentSetTemp, 3, 2, 1, 1)
-
-        self.startButton = QtWidgets.QPushButton("Start Peltier Controller", self)
-        self.startButton.clicked.connect(self.setup)
-        self.gridLayout.addWidget(self.startButton, 0, 0, 1, 1)
-
-        self.currentTempDisplay = QtWidgets.QLCDNumber(self)
-        self.gridLayout.addWidget(self.currentTempDisplay, 3, 0, 1, 2)
-
-        self.currentTempDisplay2 = QtWidgets.QLCDNumber(self)
-        self.gridLayout.addWidget(self.currentTempDisplay2, 3, 2, 1, 2)
-
-        self.setTempButton = QtWidgets.QPushButton("Set Temperature", self)
-        self.setTempButton.setEnabled(False)
-        self.setTempButton.clicked.connect(self.setTemp)
-        self.gridLayout.addWidget(self.setTempButton, 1, 1, 1, 1)
-
-        self.setTempInput = QtWidgets.QDoubleSpinBox(self)
-        self.setTempInput.setRange(-50, 50)
-        self.gridLayout.addWidget(self.setTempInput, 1, 0, 1, 1)
-
+        self.gridLayout.addWidget(self.currentSetTemp, 1, 0, 1, 1)
         self.currentTempLabel = QtWidgets.QLabel(self)
-        self.gridLayout.addWidget(self.currentTempLabel, 2, 0, 1, 1)
-
-        self.polarityButton = QtWidgets.QPushButton("Change Polarity", self)
-        self.polarityButton.setEnabled(False)
-        self.polarityButton.clicked.connect(self.polarityToggle)
-        self.gridLayout.addWidget(self.polarityButton, 2, 1, 1, 1)
+        self.gridLayout.addWidget(self.currentTempLabel, 1, 1, 1, 1)
 
         self.powerStatus = QtWidgets.QLabel(self)
-        self.powerStatusLabel = QtWidgets.QLabel("Power Status of Peltier: ", self)
         self.powerButton = QtWidgets.QPushButton("Peltier Power On/Off")
         self.powerButton.setEnabled(False)
         self.powerButton.clicked.connect(self.powerToggle)
-        self.gridLayout.addWidget(self.powerButton, 0, 2, 1, 1)
-        self.gridLayout.addWidget(self.powerStatusLabel, 1, 2, 1, 1)
+        self.gridLayout.addWidget(self.powerButton, 0, 1, 1, 1)
 
         self.image = QtGui.QPixmap()
         redledimage = QtGui.QImage(
@@ -81,7 +58,27 @@ class Peltier(QWidget):
         self.powerStatus.setPixmap(
             self.redledpixmap
         )  # The power status will initially always show that it's off, if it's actually on the status will be update in 0.5 seconds.
-        self.gridLayout.addWidget(self.powerStatus, 1, 3, 1, 1)
+        self.gridLayout.addWidget(self.powerStatus, 1, 1, 1, 1)
+
+        self.currentTempDisplay = QtWidgets.QLCDNumber(self)
+        self.gridLayout.addWidget(self.currentTempDisplay, 4, 0, 1, 1)
+
+        self.currentTempDisplay2 = QtWidgets.QLCDNumber(self)
+        self.gridLayout.addWidget(self.currentTempDisplay2, 4, 1, 1, 1)
+
+        self.setTempButton = QtWidgets.QPushButton("Set Temperature", self)
+        self.setTempButton.setEnabled(False)
+        self.setTempButton.clicked.connect(self.setTemp)
+        self.gridLayout.addWidget(self.setTempButton, 2, 1, 1, 1)
+
+        self.setTempInput = QtWidgets.QDoubleSpinBox(self)
+        self.setTempInput.setRange(-50, 50)
+        self.gridLayout.addWidget(self.setTempInput, 2, 0, 1, 1)
+
+        self.polarityButton = QtWidgets.QPushButton("Change Polarity", self)
+        self.polarityButton.setEnabled(False)
+        self.polarityButton.clicked.connect(self.polarityToggle)
+        self.gridLayout.addWidget(self.polarityButton, 3, 1, 1, 1)
 
         self.setLayout(self.gridLayout)
 
