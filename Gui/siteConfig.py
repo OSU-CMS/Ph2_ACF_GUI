@@ -98,7 +98,7 @@ defaultSLDOscanMaxCurrent = 0.0
 
 
 ### Setting for Peltier Controller
-usePeltier = True
+usePeltier = False
 defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 20
