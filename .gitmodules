@@ -8,5 +8,5 @@
 	branch = Dev
 [submodule "icicle"]
 	path = icicle
-	url = ssh://git@gitlab.cern.ch:7999/escobarf/icicle.git
+	url = https://gitlab.cern.ch/escobarf/icicle.git
 	branch = dirigent
