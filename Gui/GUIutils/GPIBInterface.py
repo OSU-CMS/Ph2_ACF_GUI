@@ -168,7 +168,7 @@ class PowerSupply():
                     HVstatus = self.Instrument.status() 
                     print(HVstatus)
                     if '1' in str(HVstatus):
-                        print('found HV status {0}'.format(HVstatus))
+                        print('found HV status {0}'.format(HVstatus))#debug
                         self.Instrument.off()
                     self.Instrument.set("VOLTAGE", 0)
                     self.Instrument.on() 
@@ -262,6 +262,7 @@ class PowerSupply():
             pass
         
     def TurnOnHV(self):
+        print("TurnOnHV() starts")#debug
         if not self.isHV():
             logging.info("Try to turn on non-HV as high voltage")
             return
@@ -279,6 +280,7 @@ class PowerSupply():
             return None
 
     def TurnOffHV(self):
+            print("inside TurnOFFHV") #debug
             if not self.isHV():
                     logging.info("Try to turn off non-HV as high voltage")
                     return
@@ -286,7 +288,8 @@ class PowerSupply():
                 HVstatus = self.ReadOutputStatus()
                 if '0' in HVstatus:
                     return
-                currentVoltage = float(self.ReadVoltage())
+                currentVoltage = float(self.ReadVoltage()) #does issue is here?
+                print("current voltage in TurnoffHV() is: "+ str(currentVoltage))#debug
                 stepLength = 3
                 if 0 < currentVoltage:
                     stepLength = -3
@@ -317,7 +320,7 @@ class PowerSupply():
 
         try:
             print("Using python interface")
-            print(voltage)
+            print("set Voltage :"+str(voltage))
             self.Instrument.set("VOLTAGE", voltage)
         except Exception as err:
             logging.error("Failed to set HV target the sourceMeter:{}".format(err))
@@ -337,9 +340,11 @@ class PowerSupply():
     def RampingUp(self, hvTarget = 0.0, stepLength = 0.0):
         if self.isHV():
             try:
+                print("RampingUp")#debug
                 HVstatus = self.ReadOutputStatus()
                 if '1' in HVstatus:
                     self.TurnOffHV()
+                    print("doing turnOffHV in rampingUP") #debug
                 #self.Instrument.set('SENSE_CURRENT_RANGE', 10e-6)
                 #self.Instrument.set('VOLTAGE_MODE', 'FIX')
                 self.SetHVComplianceLimit(defaultHVCurrentCompliance)
@@ -352,6 +357,7 @@ class PowerSupply():
                 
                 for voltage in range(int(currentVoltage), int(hvTarget), int(stepLength)):
                     self.SetHVVoltage(voltage)
+                    print("doing SetHVVoltage")#debug
                     time.sleep(0.3)
                 self.SetHVVoltage(hvTarget)
                     
@@ -395,5 +401,5 @@ if __name__ == "__main__":
     LVpowersupply.setInstrument("ASRL/dev/ttyUSBLV::INSTR")
     LVpowersupply.setCompCurrent()
     LVpowersupply.TurnOn()
-    time.sleep(2)
+    time.sleep(10)
     LVpowersupply.TurnOff()
