@@ -231,25 +231,26 @@ class SimplifiedMainWidget(QWidget):
 		else:
 			self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
 		self.StatusList.append([self.ArduinoMonitorLabel,self.ArduinoMonitorValue])
-		try:
-			self.Peltier = PeltierController(defaultPeltierPort, defaultPeltierBaud)
-			self.Peltier.setTemperature(defaultPeltierSetTemp)
-			#self.Peltier.powerController(1)
-			time.sleep(0.5)
-			self.PeltierPower = self.Peltier.checkPower()
-		except Exception as e:
-			print("Error while attempting to set Peltier", e)
-			self.PeltierPower = None
+		if usePeltier:
+			try:
+				self.Peltier = PeltierController(defaultPeltierPort, defaultPeltierBaud)
+				self.Peltier.setTemperature(defaultPeltierSetTemp)
+				#self.Peltier.powerController(1)
+				time.sleep(0.5)
+				self.PeltierPower = self.Peltier.checkPower()
+			except Exception as e:
+				print("Error while attempting to set Peltier", e)
+				self.PeltierPower = None
 
 
-		self.PeltierMonitorLabel = QLabel()
-		self.PeltierMonitorValue = QLabel()
-		self.PeltierMonitorValue.setText("Peltier Value")
-		self.PeltierMonitorLabel.setText("Peltier Cooling")
-		if int(self.PeltierPower) == 1:
-			self.PeltierMonitorValue.setPixmap(self.greenledpixmap)
-		else:
-			self.PeltierMonitorValue.setPixmap(self.redledpixmap)
+			self.PeltierMonitorLabel = QLabel()
+			self.PeltierMonitorValue = QLabel()
+			self.PeltierMonitorValue.setText("Peltier Value")
+			self.PeltierMonitorLabel.setText("Peltier Cooling")
+			if int(self.PeltierPower) == 1:
+				self.PeltierMonitorValue.setPixmap(self.greenledpixmap)
+			else:
+				self.PeltierMonitorValue.setPixmap(self.redledpixmap)
 
 #self.StatusList.append([self.PeltierMonitorLabel, self.PeltierMonitorValue])
 
@@ -270,8 +271,9 @@ class SimplifiedMainWidget(QWidget):
 		self.StatusLayout.addWidget(self.ArduinoMonitorLabel,2,1,1,1)
 		self.StatusLayout.addWidget(self.ArduinoMonitorValue,2,2,1,1)
 		#self.StatusLayout.addWidget(self.ArduinoGroup.ArduinoMeasureValue)
-		self.StatusLayout.addWidget(self.PeltierMonitorLabel, 2, 3, 1, 1)
-		self.StatusLayout.addWidget(self.PeltierMonitorValue, 2, 4, 1, 1)
+		if usePeltier:
+			self.StatusLayout.addWidget(self.PeltierMonitorLabel, 2, 3, 1, 1)
+			self.StatusLayout.addWidget(self.PeltierMonitorValue, 2, 4, 1, 1)
 		self.StatusLayout.addWidget(self.RefreshButton,3 ,5, 1, 2)
 		#self.StatusLayout.addWidget(self.RefreshButton,len(self.StatusList) ,1, 1, 1)
 
