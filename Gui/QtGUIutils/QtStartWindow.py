@@ -28,7 +28,6 @@ from PyQt5.QtWidgets import (
     QMainWindow,
     QMessageBox,
 )
-import time
 
 
 import sys
@@ -228,7 +227,11 @@ class SummaryBox(QWidget):
                 )
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
                 self.master.LVpowersupply.setModuleType(self.module.getType())
+
+
                 self.master.LVpowersupply.TurnOn()
+                logging.info("Turned on LV power supply")
+
             current = self.master.LVpowersupply.ReadCurrent()
             current = float(current)
             voltage = self.master.LVpowersupply.ReadVoltage()
@@ -316,6 +319,7 @@ class SummaryBox(QWidget):
                             )
                             self.CheckLabel.setStyleSheet("color:red")
                     break
+
                 else:
                     self.result = False
                     self.CheckLabel.setText(
@@ -324,11 +328,13 @@ class SummaryBox(QWidget):
                         )
                     )
                     self.CheckLabel.setStyleSheet("color:red")
+
                     self.Stopcount += 1
                     print("LV PS is off now. HV PS can't be turn on")
                     print("attempt to turn on the LV PS again")
                     time.sleep(2)
             self.master.HVpowersupply.TurnOffHV()
+
             return self.result
         except Exception as err:
             self.result = False

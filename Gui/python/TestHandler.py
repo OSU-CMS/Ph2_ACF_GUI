@@ -92,10 +92,12 @@ class TestHandler(QObject):
         self.HVpowersupply = self.master.HVpowersupply
         self.LVpowersupply = self.master.LVpowersupply
         # self.LVpowersupply.Reset()
+
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
         # self.LVpowersupply.TurnOn()
         self.FWisPresent = False
         self.FWisLoaded = False
+
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
@@ -227,6 +229,7 @@ class TestHandler(QObject):
             self.connection,
         )
 
+
         # The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
         # FIXME Fix rd53_file[key] so that it reads the correct txt file depending on what module is connected. -> Done!
 
@@ -321,10 +324,7 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
 
     def runTest(self, reRun=False):
-        # self.ResetButton.setDisabled(True)
-        # self.ControlLayout.removeWidget(self.RunButton)
-        # self.RunButton.deleteLater()
-        # self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
+
         if reRun:
             self.halt = False
         testName = self.info[1]
@@ -370,6 +370,7 @@ class TestHandler(QObject):
             self.IVCurveResult = ScanCanvas(
                 self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
             )
+
             channel = 1
             # copy from QtStartWindow
             # find the reading values
@@ -425,6 +426,7 @@ class TestHandler(QObject):
 
                 return
 
+
         if testName == "SLDOScan":
             self.SLDOScanData = []
             self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
@@ -438,8 +440,20 @@ class TestHandler(QObject):
         self.ProgressingMode = "None"
         self.currentTest = testName
         self.configTest()
+
+        print(self.output_dir)
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
+
+        # Make sure that the GUI is not trying to write to the root directory
+        try:
+            assert self.output_dir != ""
+        except AssertionError:
+            logger.exception(
+                "Output directory was not formatted correctly, closing GUI to not write to root directory."
+            )
+            raise
+
         if os.path.exists(self.outputFile):
             self.outputfile = open(self.outputFile, "a")
         else:
@@ -570,7 +584,9 @@ class TestHandler(QObject):
         if reply == QMessageBox.Yes:
             self.halt = True
             self.run_process.kill()
-            # self.haltSignal.emit(self.halt)
+
+            self.haltSignal.emit(self.halt)
+
             self.starttime = None
             if self.IVCurveHandler:
                 self.IVCurveHandler.stop()
@@ -1156,7 +1172,9 @@ class TestHandler(QObject):
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
             self.master.HVpowersupply.RampingUp(defaultHVsetting, -3)
+
             print("calling ramping up in IVCurveFinished")
+
             if self.testIndexTracker == len(CompositeList[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
