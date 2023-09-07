@@ -48,5 +48,6 @@ then
     source setup.sh
 fi
 export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
+export PYTHONPATH=${PYTHONPATH}:${GUI_dir}/icicle/icicle
 
 cd $GUI_dir

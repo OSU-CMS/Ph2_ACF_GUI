@@ -29,6 +29,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
+
 import sys
 import os
 import math
@@ -227,31 +228,98 @@ class SummaryBox(QWidget):
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
                 self.master.LVpowersupply.setModuleType(self.module.getType())
 
+
                 self.master.LVpowersupply.TurnOn()
                 logging.info("Turned on LV power supply")
+
             current = self.master.LVpowersupply.ReadCurrent()
             current = float(current)
             voltage = self.master.LVpowersupply.ReadVoltage()
             voltage = float(voltage)
             print(self.PowerModeCombo.currentText())
-            logging.debug(f"Voltage output by LV: {voltage}")
-            logging.debug(f"Current output by LV: {current}")
-            leakageCurrent = 0.0
-            if self.master.PowerRemoteControl["HV"]:
-                self.master.HVpowersupply.RampingUp(defaultHVsetting, -3)
-                leakageCurrent = self.master.HVpowersupply.ReadCurrent()
-                print(leakageCurrent)
-            if "SLDO" in self.PowerModeCombo.currentText():
-                print("this is sldo check")
-                properCurrent = ModuleCurrentMap[self.module.getType()]
-                if current < properCurrent + 0.2 and current > properCurrent - 0.2:
-                    self.result = True
-                    self.CheckLabel.setText(
-                        "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                            current, voltage
-                        )
-                    )
-                    self.CheckLabel.setStyleSheet("color:green")
+
+            # Want to try and connect twice
+            self.Stopcount = 0
+            while self.Stopcount < 2:
+                channel = 1
+                LVStatusValue = self.master.LVpowersupply.Instrument.status(
+                    channel, no_lock=True
+                )  # return 1 if it is on, 0 if it is off
+                current = self.master.LVpowersupply.ReadCurrent()
+                Readcurrent = float(current) if current else 0.0
+                voltage = self.master.LVpowersupply.ReadVoltage()
+                Readvoltage = float(voltage) if voltage else 0.0
+                # find the set value
+                testModuleType = self.master.LVpowersupply.ModuleType
+                testPowerMode = self.master.LVpowersupply.PoweringMode
+                if testPowerMode == "SLDO":
+                    TestVoltage = ModuleVoltageMapSLDO[testModuleType]
+                    TestCurrent = ModuleCurrentMap[testModuleType]
+                elif testPowerMode == "Direct":
+                    TestVoltage = ModuleVoltageMap[testModuleType]
+                    TestCurrent = ModuleCurrentMap[testModuleType]
+                print("Readvoltage:" + str(Readvoltage))
+                print("Readcurrent:" + str(Readcurrent))
+                print("LVStatusValue:" + str(LVStatusValue))
+                print("TestCurrent" + str(TestCurrent))
+                print("TestVoltage" + str(TestVoltage))
+
+                # compare the difference between the Setup value vs the reading value
+                volDiff = abs(TestVoltage - Readvoltage)
+                ampDiff = abs(TestCurrent - Readcurrent)
+
+                if volDiff <= 0.5 and ampDiff <= 0.5 and (LVStatusValue):
+                    leakageCurrent = 0.0
+                    if self.master.PowerRemoteControl["HV"]:
+                        self.master.HVpowersupply.RampingUp(defaultHVsetting, -3)
+                        leakageCurrent = self.master.HVpowersupply.ReadCurrent()
+                        print(leakageCurrent)
+                    if "SLDO" in self.PowerModeCombo.currentText():
+                        print("this is sldo check")
+                        properCurrent = ModuleCurrentMap[self.module.getType()]
+                        if (
+                            current < properCurrent + 0.2
+                            and current > properCurrent - 0.2
+                        ):
+                            self.result = True
+                            self.CheckLabel.setText(
+                                "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+                                    current, voltage
+                                )
+                            )
+                            self.CheckLabel.setStyleSheet("color:green")
+                        else:
+                            self.result = False
+                            self.CheckLabel.setText(
+                                "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+                                    current, voltage
+                                )
+                            )
+                            self.CheckLabel.setStyleSheet("color:red")
+                    elif "Direct" in self.PowerModeCombo.currentText():
+                        print("this is direct mode")
+                        properCurrent = ModuleCurrentMap[self.module.getType()]
+                        if (
+                            current < properCurrent + 0.1
+                            and current > properCurrent - 0.3
+                        ):
+                            self.result = True
+                            self.CheckLabel.setText(
+                                "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+                                    current, voltage
+                                )
+                            )
+                            self.CheckLabel.setStyleSheet("color:green")
+                        else:
+                            self.result = False
+                            self.CheckLabel.setText(
+                                "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+                                    current, voltage
+                                )
+                            )
+                            self.CheckLabel.setStyleSheet("color:red")
+                    break
+
                 else:
                     self.result = False
                     self.CheckLabel.setText(
@@ -260,25 +328,13 @@ class SummaryBox(QWidget):
                         )
                     )
                     self.CheckLabel.setStyleSheet("color:red")
-            elif "Direct" in self.PowerModeCombo.currentText():
-                print("this is direct mode")
-                properCurrent = ModuleCurrentMap[self.module.getType()]
-                if current < properCurrent + 0.1 and current > properCurrent - 0.3:
-                    self.result = True
-                    self.CheckLabel.setText(
-                        "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                            current, voltage
-                        )
-                    )
-                    self.CheckLabel.setStyleSheet("color:green")
-                else:
-                    self.result = False
-                    self.CheckLabel.setText(
-                        "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                            current, voltage
-                        )
-                    )
-                    self.CheckLabel.setStyleSheet("color:red")
+
+                    self.Stopcount += 1
+                    print("LV PS is off now. HV PS can't be turn on")
+                    print("attempt to turn on the LV PS again")
+                    time.sleep(2)
+            self.master.HVpowersupply.TurnOffHV()
+
             return self.result
         except Exception as err:
             self.result = False

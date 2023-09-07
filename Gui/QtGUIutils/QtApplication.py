@@ -1,3 +1,4 @@
+
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QColor
@@ -17,6 +18,7 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMessageBox,
 )
+
 
 
 import sys
@@ -1203,3 +1205,4 @@ class QtApplication(QWidget):
             event.accept()
         else:
             event.ignore()
+
