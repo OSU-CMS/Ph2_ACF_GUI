@@ -244,7 +244,11 @@ def SetMonitoring(Node, MonitoringItem):
       Node_MonitoringElements = SetNodeAttribute(Node_MonitoringElements,{'device':"RD53",'register':element,'enable':MonitoringItem.MonitoringList[element]})
   return Node
 
-def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardtype = "RD53A", isOpticalLink = False):
+
+
+# GenerateHWDescriptionXML is outdated, we use the XMLgenerator in 
+"""
+def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardtype = "RD53", isOpticalLink = False):
   Node_HWInterface = ET.Element('HwDescription')
   BeBoardList = HWDescription.BeBoardList
   for BeBoard in BeBoardList:
@@ -327,7 +331,9 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
   with open(outputFile, "w") as f:
     f.write(str(xmlstr))
     #f.write(ET.tostring(Node_HWInterface, 'utf-8'))
-    f.close()  
+    f.close() 
+"""
+ 
 
 class Device():
   def __init__(self):
