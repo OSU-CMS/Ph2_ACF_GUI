@@ -10,3 +10,6 @@
 	path = icicle
 	url = ssh://git@gitlab.cern.ch:7999/escobarf/icicle.git
 	branch = dirigent
+[submodule "XMLgenerator"]
+	path = XMLgenerator
+	url = https://github.com/CollinKa/XMLgenerator.git
