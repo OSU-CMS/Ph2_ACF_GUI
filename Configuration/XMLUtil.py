@@ -246,7 +246,7 @@ def SetMonitoring(Node, MonitoringItem):
 
 
 
-# GenerateHWDescriptionXML is outdated, we use the XMLgenerator in 
+# GenerateHWDescriptionXML is outdated, we use the XMLgenerator sub module to create xml.
 """
 def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardtype = "RD53", isOpticalLink = False):
   Node_HWInterface = ET.Element('HwDescription')
