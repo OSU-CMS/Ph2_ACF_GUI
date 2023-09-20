@@ -6,6 +6,29 @@
 GPIB_DebugMode = False
 
 
+# Options for Low-Voltage supply in InstrumentCluster
+lv = "KeysightE3633A"
+lv_resource = "ASRL/dev/ttyUSBLV::INSTR"
+default_lv_channel = 1
+default_lv_voltage = 1.8
+default_lv_current = 3
+
+# Options for High-Voltage supply in InstrumentCluster
+hv = "Keithley2410"
+hv_resource = "ASRL/dev/ttyUSBHV::INSTR"
+default_hv_voltage = -80
+default_hv_compliance_current = 5e-6
+default_hv_delay = 2
+default_hv_step_size = 10
+
+# Options for Relay Board in InstrumentCluster
+relay_board = "RelayBoard"
+relay_board_resource = "ASRL/dev/ttyUSB4::INSTR"
+
+# Options for Multimeter in InstrumentCluster
+multimeter = "Keithley2000"
+multimeter_resource = "ASRL/dev/ttyUSB3::INSTR"
+
 ##  The following block sets defaults that are to be used in the simplified (non-expert) mode.  ##
 ##  This mode is currently under development, so these values don't currently do anything       ##
 

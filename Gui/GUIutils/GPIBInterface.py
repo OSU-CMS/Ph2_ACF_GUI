@@ -8,7 +8,9 @@ import os
 from Gui.GUIutils.settings import *
 from Configuration.XMLUtil import *
 from Gui.python.TCP_Interface import *
-from Gui.siteSettings import *
+#from Gui.siteSettings import *
+import Gui.siteSettings as site
+from instrument_cluster import InstrumentCluster
 from keysightE3633A import KeysightE3633A
 from keithley2410 import Keithley2410
 
@@ -20,6 +22,8 @@ logger = logging.getLogger(__name__)
 if GPIB_DebugMode:
     visa.log_to_screen()
 
+
+instruments = InstrumentCluster(lv = site.lv, hv = site.lv, relay_board = site.relay_board, multimeter = site.multimeter, lv_resource = site.lv_resource, hv_resource = site.hv_resource, relay_board_resource = site.relay_board_resource,multimeter_resource = site.multimeter_resource)
 
 class PowerSupply:
     def __init__(

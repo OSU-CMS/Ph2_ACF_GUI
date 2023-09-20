@@ -10,8 +10,8 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 import sys
 import os
 import io
-from PIL.ImageQt import ImageQt
-
+#from PIL.ImageQt import ImageQt
+from PIL import ImageQt
 
 class QtImageViewer(QWidget):
 	def __init__(self,master,data):

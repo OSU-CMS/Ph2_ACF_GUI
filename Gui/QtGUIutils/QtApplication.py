@@ -39,7 +39,8 @@ import time
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
-from Gui.GUIutils.GPIBInterface import PowerSupply
+import Gui.siteSettings as site
+from Gui.GUIutils.GPIBInterface import instruments
 from Gui.QtGUIutils.PeltierCoolingApp import *
 from Gui.QtGUIutils.QtFwCheckWindow import *
 from Gui.QtGUIutils.QtFwStatusWindow import *
@@ -74,8 +75,9 @@ class QtApplication(QWidget):
         self.LogList = {}
         self.PYTHON_VERSION = str(sys.version).split(" ")[0]
         self.dimension = dimension
-        self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
-        self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
+
+        #self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
+        #self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
         self.PowerRemoteControl = {"HV": True, "LV": True}
 
         self.setLoginUI()
@@ -622,18 +624,20 @@ class QtApplication(QWidget):
         self.HVPowerLayout = QHBoxLayout()
         self.HVPowerStatusLabel = QLabel()
         self.HVPowerStatusLabel.setText("Choose HV Power:")
-        self.HVPowerList = self.HVpowersupply.listResources()
+        self.HVPowerList = site.hv_resource
+        #self.HVPowerList = self.HVpowersupply.listResources()
         self.HVPowerCombo = QComboBox()
         self.HVPowerCombo.addItems(self.HVPowerList)
         self.HVPowerModelLabel = QLabel()
         self.HVPowerModelLabel.setText("HV Power Model:")
         self.HVPowerModelCombo = QComboBox()
-        self.HVPowerModelCombo.addItems(HVPowerSupplyModel.keys())
+        self.HVPowerModelCombo.addItems(site.hv)
+        #self.HVPowerModelCombo.addItems(HVPowerSupplyModel.keys())
         self.HVPowerStatusValue = QLabel()
         self.UseHVPowerSupply = QPushButton("&Use")
-        self.UseHVPowerSupply.clicked.connect(self.frozeHVPowerPanel)
+        self.UseHVPowerSupply.clicked.connect(self.frozeHVPowerPanel) #FIXME
         self.ReleaseHVPowerSupply = QPushButton("&Release")
-        self.ReleaseHVPowerSupply.clicked.connect(self.releaseHVPowerPanel)
+        self.ReleaseHVPowerSupply.clicked.connect(self.releaseHVPowerPanel) #FIXME
         self.ReleaseHVPowerSupply.setDisabled(True)
 
         self.HVPowerLayout.addWidget(self.HVPowerStatusLabel)
@@ -860,6 +864,8 @@ class QtApplication(QWidget):
 
     def useDefault(self):
         # self.HVPowerCombo.clear()
+        self.instruments = InstrumentCluster(lv = site.lv, hv = site.lv, relay_board = site.relay_board, multimeter = site.multimeter, lv_resource = site.lv_resource, hv_resource = site.hv_resource, relay_board_resource = site.relay_board_resource,multimeter_resource = site.multimeter_resource)
+
         HVIndex = self.HVPowerCombo.findText(defaultUSBPortHV[0])
         if HVIndex != -1:
             self.HVPowerCombo.setCurrentIndex(HVIndex)
@@ -966,13 +972,15 @@ class QtApplication(QWidget):
 
     def frozeHVPowerPanel(self):
         # Block for HVPowerSupply operation
-        self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
-        self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
-        print("HVPowerCOmbo", self.HVPowerCombo.currentText())
-        self.HVpowersupply.TurnOffHV()
-        print("AFter turn off")
+        #self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
+        #self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
+        print("HVPowerCombo", self.HVPowerCombo.currentText())
+        #self.HVpowersupply.TurnOffHV()
+        
+        print("After turn off")
         # self.HVpowersupply.TurnOn()
         # Block for GUI front-end
+        statusString = self.instruments._hv
         statusString = self.HVpowersupply.getInfo()
         print("statusString", statusString)
         if statusString != "No valid device" and statusString != None:
