@@ -257,6 +257,9 @@ class BeBoardBox(QWidget):
                 if item:
                     widget = item.widget()
                     self.ListLayout.removeWidget(widget)
+                    widget.setParent(
+                        None
+                    )  # Weird graphical glitches can occur without this
 
         for index, module in enumerate(self.ModuleList):
             # module.setMaximumWidth(500)
