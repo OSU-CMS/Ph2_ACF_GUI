@@ -101,20 +101,28 @@ class BeBoardModule():
   def SetRegisterValue(self, RegisterSettings):
     self.RegisterSettings = RegisterSettings
 
+
+
+#the newer version of code are being usd fcboardC.py in XMLgenerator
+"""
 class OGModule():
-  def __init__(self):
-    self.Id="0" 
-    self.FMCId="0"
-    self.isOpticalLink = False
-    self.HyBridList = []
-  def SetOpticalGrp(self, Id, FMCId, isOptLink=False):
-    self.Id=Id
-    self.FMCId=FMCId
-    self.isOpticalLink = isOptLink
+def __init__(self):
+  self.Id="0" 
+  self.FMCId="0"
+  self.isOpticalLink = False
+  self.HyBridList = []
+def SetOpticalGrp(self, Id, FMCId, isOptLink=False):
+  self.Id=Id
+  self.FMCId=FMCId
+  self.isOpticalLink = isOptLink
 
-  def AddHyBrid(self, HybridModule):
-    self.HyBridList.append(HybridModule)
+def AddHyBrid(self, HybridModule):
+  self.HyBridList.append(HybridModule)
 
+"""
+
+
+#FEModule this class are not being used by GUI
 class FEModule():
   def __init__(self):
     self.FeId="0" 
