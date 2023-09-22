@@ -304,10 +304,6 @@ class TestHandler(QObject):
 			#copy from QtStartWindow
 			#find the reading values
 			LVStatusValue = self.LVPS.Instrument.status(channel, no_lock=True) #return 1 if it is on, 0 if it is off
-			if LVStatusValue:   
-				LVStatusValue = 1
-			else:
-				LVStatusValue =0
 			current = self.LVPS.ReadCurrent()
 			Readcurrent = float(current) if current else 0.0
 			voltage = self.LVPS.ReadVoltage()
