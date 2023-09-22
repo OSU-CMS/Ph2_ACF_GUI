@@ -47,6 +47,9 @@ then
     cd $PowerSupplyArea
     source setup.sh
 fi
-export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
 
+export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
+export PYTHONPATH=${PYTHONPATH}:${GUI_dir}/icicle/icicle/
+
+export PYVISA_LIBRARY='@py'
 cd $GUI_dir

@@ -92,11 +92,18 @@ class TestHandler(QObject):
         self.HVpowersupply = self.master.HVpowersupply
         self.LVpowersupply = self.master.LVpowersupply
         # self.LVpowersupply.Reset()
+<<<<<<< HEAD
         # self.LVpowersupply.InitialDevice()
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
         # self.LVpowersupply.TurnOn()
         self.FWisPresent = False
         self.FWisoaded = False
+=======
+        # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+        # self.LVpowersupply.TurnOn()
+        self.FWisPresent = False
+        self.FWisLoaded = False
+>>>>>>> IcicleIntegration
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
@@ -227,7 +234,10 @@ class TestHandler(QObject):
             self.input_dir,
             self.connection,
         )
+<<<<<<< HEAD
         print("OUTPUT_DIR1: ", self.output_dir)
+=======
+>>>>>>> IcicleIntegration
 
         # The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
         # FIXME Fix rd53_file[key] so that it reads the correct txt file depending on what module is connected. -> Done!
@@ -323,6 +333,13 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
 
     def runTest(self, reRun=False):
+<<<<<<< HEAD
+=======
+        # self.ResetButton.setDisabled(True)
+        # self.ControlLayout.removeWidget(self.RunButton)
+        # self.RunButton.deleteLater()
+        # self.ControlLayout.addWidget(self.ContinueButton,1,0,1,1)
+>>>>>>> IcicleIntegration
         if reRun:
             self.halt = False
         testName = self.info[1]
@@ -368,10 +385,67 @@ class TestHandler(QObject):
             self.IVCurveResult = ScanCanvas(
                 self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
             )
+<<<<<<< HEAD
             self.IVCurveHandler = IVCurveHandler(self, self.HVpowersupply)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.IVCurve()
             return
+=======
+            channel = 1
+            # copy from QtStartWindow
+            # find the reading values
+            LVStatusValue = self.LVpowersupply.Instrument.status(
+                channel, no_lock=True
+            )  # return 1 if it is on, 0 if it is off
+            if LVStatusValue:
+                LVStatusValue = 1
+            else:
+                LVStatusValue = 0
+            current = self.LVpowersupply.ReadCurrent()
+            Readcurrent = float(current) if current else 0.0
+            voltage = self.LVpowersupply.ReadVoltage()
+            Readvoltage = float(voltage) if voltage else 0.0
+            # find the set values
+            testModuleType = self.master.LVpowersupply.ModuleType
+            testPowerMode = self.master.LVpowersupply.PoweringMode
+            if testPowerMode == "SLDO":
+                TestVoltage = ModuleVoltageMapSLDO[testModuleType]
+                TestCurrent = ModuleCurrentMap[testModuleType]
+            elif testPowerMode == "Direct":
+                TestVoltage = ModuleVoltageMap[testModuleType]
+                TestCurrent = ModuleCurrentMap[testModuleType]
+
+            volDiff = abs(TestVoltage - Readvoltage)
+            ampDiff = abs(TestCurrent - Readcurrent)
+
+            if volDiff <= 0.5 and ampDiff <= 0.5 and (LVStatusValue == 1):
+                self.IVCurveHandler = IVCurveHandler(self, self.HVpowersupply)
+                self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+                self.IVCurveHandler.IVCurve()
+                return
+            else:
+                print("runSingleTest unable to start due to LVpowersupply status")
+                print("Readvoltage:" + str(Readvoltage))
+                print("Readcurrent:" + str(Readcurrent))
+                print("LVStatusValue:" + str(LVStatusValue))
+                print("TestCurrent:" + str(TestCurrent))
+                print("TestVoltage:" + str(TestVoltage))
+                print("LVpowersupply issue occurs, HVPS is turning off")
+                self.HVpowersupply.TurnOffHV()
+                reply = QMessageBox.question(
+                    None,
+                    "LV power supply error",
+                    "LV power supply error do you want to abort? yes for abort no for reset the test",
+                    QMessageBox.No | QMessageBox.Yes,
+                    QMessageBox.No,
+                )
+                if reply == QMessageBox.Yes:
+                    self.abortTest()
+                if reply == QMessageBox.No:
+                    self.resetConfigTest()
+
+                return
+>>>>>>> IcicleIntegration
 
         if testName == "SLDOScan":
             self.SLDOScanData = []
@@ -386,6 +460,7 @@ class TestHandler(QObject):
         self.ProgressingMode = "None"
         self.currentTest = testName
         self.configTest()
+<<<<<<< HEAD
         print(self.output_dir)
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
@@ -398,6 +473,10 @@ class TestHandler(QObject):
                 "Output directory was not formatted correctly, closing GUI to not write to root directory."
             )
             raise
+=======
+        self.outputFile = self.output_dir + "/output.txt"
+        self.errorFile = self.output_dir + "/error.txt"
+>>>>>>> IcicleIntegration
         if os.path.exists(self.outputFile):
             self.outputfile = open(self.outputFile, "a")
         else:
@@ -528,7 +607,11 @@ class TestHandler(QObject):
         if reply == QMessageBox.Yes:
             self.halt = True
             self.run_process.kill()
+<<<<<<< HEAD
             self.haltSignal.emit(self.halt)
+=======
+            # self.haltSignal.emit(self.halt)
+>>>>>>> IcicleIntegration
             self.starttime = None
             if self.IVCurveHandler:
                 self.IVCurveHandler.stop()
@@ -1114,6 +1197,10 @@ class TestHandler(QObject):
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
             self.master.HVpowersupply.RampingUp(defaultHVsetting, -3)
+<<<<<<< HEAD
+=======
+            print("calling ramping up in IVCurveFinished")
+>>>>>>> IcicleIntegration
             if self.testIndexTracker == len(CompositeList[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True

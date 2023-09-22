@@ -3,10 +3,11 @@ from PyQt5.QtCore import *
 
 import time
 
+
 class IVCurveThread(QThread):
     measureSignal = pyqtSignal(object)
 
-    def __init__(self,parent,powersupply = None):
+    def __init__(self, parent, powersupply=None):
         super(IVCurveThread, self).__init__()
         self.powersupply = powersupply
         self.parent = parent
@@ -15,12 +16,11 @@ class IVCurveThread(QThread):
 
         self.startVal = 0
         self.target = 0
-        self.stopVal = -80  #FIXME set this back to -80 after testing
+        self.stopVal = -80  # FIXME set this back to -80 after testing
         self.stepLength = -2
         self.stepNum = 0
-        self.stepTotal = (self.stopVal-self.startVal)/self.stepLength+1
+        self.stepTotal = (self.stopVal - self.startVal) / self.stepLength + 1
         self.turnOn()
-        
 
     def turnOn(self):
         self.powersupply.TurnOffHV()
@@ -37,22 +37,17 @@ class IVCurveThread(QThread):
             try:
                 self.powersupply.SetHVVoltage(self.target)
                 time.sleep(0.5)
-                #voltage = self.powersupply.ReadVoltage()
+                # voltage = self.powersupply.ReadVoltage()
                 voltage = self.target
                 time.sleep(0.5)
                 current = self.powersupply.ReadCurrent()
 
-                #MAX_TRIES = 10
-                #N_TRIES = 1
-                #while abs(target-float(voltage))/abs(target+0.01) > 0.05 and  N_TRIES < MAX_TRIES:
-                #    N_TRIES += 1
-                #    time.sleep(0.5)
-                #    voltage = self.powersupply.ReadVoltage()
-                #    current = self.powersupply.ReadCurrent()
-                #    print("voltage:",voltage, " current:",current)
                 self.stepNum += 1
-                measurementStr = {"voltage":voltage,"current":current,"percentage":self.stepNum/self.stepTotal}
-                #print(measurementStr)
+                measurementStr = {
+                    "voltage": voltage,
+                    "current": current,
+                    "percentage": self.stepNum / self.stepTotal,
+                }
                 if voltage == None or current == None:
                     self.stepNum -= 1
                     self.target = self.startVal + self.stepLength * self.stepNum
@@ -61,24 +56,26 @@ class IVCurveThread(QThread):
                 self.target = self.startVal + self.stepLength * self.stepNum
             except Exception as err:
                 print("IV Curve scan failed with {}".format(err))
-            
-        #except Exception as err:
+
+        # except Exception as err:
         #    print("IV-Curve test failed")
 
+
 class IVCurveHandler(QObject):
-    measureSignal = pyqtSignal(str,object)
+    measureSignal = pyqtSignal(str, object)
     stopSignal = pyqtSignal(object)
     finished = pyqtSignal()
-    def __init__(self,window,powersupply):
-        super(IVCurveHandler,self).__init__()
+
+    def __init__(self, window, powersupply):
+        super(IVCurveHandler, self).__init__()
         self.powersupply = powersupply
         self.window = window
-        #self.stopSignal.connect(self.window.)
+        # self.stopSignal.connect(self.window.)
         self.measureSignal.connect(self.window.updateMeasurement)
 
-        self.test = IVCurveThread(self, powersupply= self.powersupply)
+        self.test = IVCurveThread(self, powersupply=self.powersupply)
         self.test.finished.connect(self.finish)
-    
+
     def isValid(self):
         return self.powersupply != None
 
@@ -88,12 +85,11 @@ class IVCurveHandler(QObject):
         self.test.start()
 
     def transitMeasurment(self, measure):
-        self.measureSignal.emit("IVCurve",measure)
+        self.measureSignal.emit("IVCurve", measure)
 
     def finish(self):
         self.powersupply.TurnOffHV()
         self.finished.emit()
-
 
     def stop(self):
         try:
@@ -102,5 +98,3 @@ class IVCurveHandler(QObject):
             self.powersupply.TurnOffHV()
         except Exception as err:
             print("Failed to stop the IV test")
-
-

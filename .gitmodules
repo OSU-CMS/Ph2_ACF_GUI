@@ -8,5 +8,9 @@
 	branch = Dev
 [submodule "icicle"]
 	path = icicle
+<<<<<<< HEAD
 	url =  https://gitlab.cern.ch/rdelossa/instrument-control-icicle-osu.git
+=======
+	url = https://gitlab.cern.ch/rdelossa/instrument-control-icicle-osu.git
+>>>>>>> IcicleIntegration
 	branch = master

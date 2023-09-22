@@ -1,16 +1,27 @@
+<<<<<<< HEAD
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QColor
+=======
+from PyQt5.QtCore import *
+from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage
+>>>>>>> IcicleIntegration
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+<<<<<<< HEAD
+=======
+    QDateTimeEdit,
+    QDial,
+>>>>>>> IcicleIntegration
     QDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+<<<<<<< HEAD
     QPushButton,
     QStyleFactory,
     QHBoxLayout,
@@ -18,6 +29,27 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
+=======
+    QProgressBar,
+    QPushButton,
+    QRadioButton,
+    QScrollBar,
+    QSizePolicy,
+    QSlider,
+    QSpinBox,
+    QStyleFactory,
+    QTableWidget,
+    QTabWidget,
+    QTextEdit,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QMainWindow,
+    QMessageBox,
+)
+
+# from guidarktheme.widget_template import DarkPalette
+>>>>>>> IcicleIntegration
 
 import sys
 import os
@@ -29,6 +61,7 @@ import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.GUIutils.guiUtils import isActive
 from Gui.GUIutils.GPIBInterface import PowerSupply
+<<<<<<< HEAD
 from Gui.QtGUIutils.PeltierCoolingApp import Peltier
 from Gui.QtGUIutils.QtFwCheckWindow import QtFwCheckWindow
 from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
@@ -41,6 +74,21 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
+=======
+from Gui.QtGUIutils.PeltierCoolingApp import *
+from Gui.QtGUIutils.QtFwCheckWindow import *
+from Gui.QtGUIutils.QtFwStatusWindow import *
+from Gui.QtGUIutils.QtSummaryWindow import *
+from Gui.QtGUIutils.QtStartWindow import *
+from Gui.QtGUIutils.QtProductionTestWindow import *
+from Gui.QtGUIutils.QtModuleReviewWindow import *
+from Gui.QtGUIutils.QtDBConsoleWindow import *
+from Gui.QtGUIutils.QtuDTCDialog import *
+from Gui.python.Firmware import *
+from Gui.python.ArduinoWidget import *
+from Gui.QtGUIutils.QtRunWindow import *
+from Gui.python.SimplifiedMainWidget import *
+>>>>>>> IcicleIntegration
 
 
 class QtApplication(QWidget):
@@ -74,7 +122,15 @@ class QtApplication(QWidget):
         self.setGeometry(300, 300, 400, 500)
         self.setWindowTitle("Phase2 Pixel Module Test GUI")
 
+<<<<<<< HEAD
         if (
+=======
+        if False and sys.platform.startswith("darwin"):
+            QApplication.setStyle(QStyleFactory.create("macintosh"))
+            QApplication.setPalette(QApplication.style().standardPalette())
+
+        elif (
+>>>>>>> IcicleIntegration
             sys.platform.startswith("linux")
             or sys.platform.startswith("win")
             or sys.platform.startswith("darwin")
@@ -113,7 +169,11 @@ class QtApplication(QWidget):
         self.show()
 
     def initLog(self):
+<<<<<<< HEAD
         for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+=======
+        for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
+>>>>>>> IcicleIntegration
             LogFileName = "{0}/Gui/.{1}.log".format(
                 os.environ.get("GUI_dir"), firmwareName
             )
@@ -158,7 +218,11 @@ class QtApplication(QWidget):
         if self.expertMode == False:
             self.HostName = QComboBox()
             # self.HostName.addItems(DBServerIP.keys())
+<<<<<<< HEAD
             self.HostName.addItems(settings.dblist)
+=======
+            self.HostName.addItems(dblist)
+>>>>>>> IcicleIntegration
             self.HostName.currentIndexChanged.connect(self.changeDBList)
             HostLabel.setBuddy(self.HostName)
         else:
@@ -173,8 +237,13 @@ class QtApplication(QWidget):
         if self.expertMode == False:
             self.DatabaseCombo = QComboBox()
             # self.DBNames = DBNames['All']
+<<<<<<< HEAD
             self.DBNames = self.HostName.currentText() + ".All_list"
             self.DatabaseCombo.addItem(self.DBNames)
+=======
+            self.DBNames = eval(self.HostName.currentText() + ".All_list")
+            self.DatabaseCombo.addItems(self.DBNames)
+>>>>>>> IcicleIntegration
             self.DatabaseCombo.setCurrentIndex(0)
         else:
             self.DatabaseEdit = QLineEdit("SampleDB")
@@ -210,6 +279,7 @@ class QtApplication(QWidget):
         layout.addWidget(self.PasswordEdit, 2, 2, 1, 2)
         # layout.addWidget(HostLabel,3,1,1,1,Qt.AlignRight)
         # if self.expertMode:
+<<<<<<< HEAD
         # 	layout.addWidget(self.HostEdit,3,2,1,2)
         # else:
         # 	layout.addWidget(self.HostName,3,2,1,2)
@@ -218,6 +288,16 @@ class QtApplication(QWidget):
         # 	layout.addWidget(self.DatabaseEdit,4,2,1,2)
         # else:
         # 	layout.addWidget(self.DatabaseCombo,4,2,1,2)
+=======
+        #       layout.addWidget(self.HostEdit,3,2,1,2)
+        # else:
+        #       layout.addWidget(self.HostName,3,2,1,2)
+        # layout.addWidget(DatabaseLabel,4,1,1,1,Qt.AlignRight)
+        # if self.expertMode:
+        #       layout.addWidget(self.DatabaseEdit,4,2,1,2)
+        # else:
+        #       layout.addWidget(self.DatabaseCombo,4,2,1,2)
+>>>>>>> IcicleIntegration
 
         #######  uncomment for debugging (skips db connection) ####
 
@@ -286,7 +366,11 @@ class QtApplication(QWidget):
 
     def checkLogin(self):
         msg = QMessageBox()
+<<<<<<< HEAD
         if self.UsernameEdit.text() in settings.ExpertUserList:
+=======
+        if self.UsernameEdit.text() in ExpertUserList:
+>>>>>>> IcicleIntegration
             self.expertMode = True
         try:
             if self.expertMode == True:
@@ -297,16 +381,26 @@ class QtApplication(QWidget):
                 # self.TryDatabase = self.DatabaseEdit.text()
                 # self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
                 # self.TryDatabase = str(self.DatabaseCombo.currentText())
+<<<<<<< HEAD
                 self.TryHostAddress = settings.defaultDBServerIP
                 self.TryDatabase = str(settings.defaultDBName)
+=======
+                self.TryHostAddress = defaultDBServerIP
+                self.TryDatabase = str(defaultDBName)
+>>>>>>> IcicleIntegration
             else:
                 self.TryUsername = self.UsernameEdit.text()
                 self.TryPassword = self.PasswordEdit.text()
                 self.DisplayedPassword = self.PasswordEdit.displayText()
                 # self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
                 # self.TryDatabase = str(self.DatabaseCombo.currentText())
+<<<<<<< HEAD
                 self.TryHostAddress = settings.defaultDBServerIP
                 self.TryDatabase = str(settings.defaultDBName)
+=======
+                self.TryHostAddress = defaultDBServerIP
+                self.TryDatabase = str(defaultDBName)
+>>>>>>> IcicleIntegration
         except:
             print("Unexpected content detected ")
 
@@ -362,6 +456,7 @@ class QtApplication(QWidget):
         self.SimpleMain = SimplifiedMainWidget(self)
         self.mainLayout.addWidget(self.SimpleMain)
         """
+<<<<<<< HEAD
 		##################################
 		##  Testing some things out #######
 		##################################
@@ -487,6 +582,133 @@ class QtApplication(QWidget):
 		## Testin some things out (end) #######
 		######################################
 	"""
+=======
+                ##################################
+                ##  Testing some things out #######
+                ##################################
+                self.simplifiedStatusBox = QGroupBox("Hello,{}!".format(self.TryUsername))
+                
+
+                statusString, colorString = checkDBConnection(self.connection)
+                DBStatusLabel = QLabel()
+                DBStatusLabel.setText("Database connection:")
+                DBStatusValue = QLabel()
+                DBStatusValue.setText(statusString)
+                DBStatusValue.setStyleSheet(colorString)
+
+                self.HVPowerStatusLabel = QLabel()
+                self.HVPowerStatusValue = QLabel()
+                self.LVPowerStatusLabel = QLabel()
+                self.LVPowerStatusValue = QLabel()
+                
+                self.ModuleEntryBox = QGroupBox("Please scan module QR code")
+                ModuleEntryLayout = QGridLayout()
+
+                SerialLabel = QLabel("SerialNumber:")
+                self.SerialEdit = QLineEdit()
+
+                CableLabel = QLabel("CableNumber")
+                self.CableEdit = QLineEdit()
+
+                #Selecting default HV
+                self.HVpowersupply.setPowerModel(defaultHVModel[0])
+                self.HVpowersupply.setInstrument(defaultUSBPortHV[0])
+                statusString = self.HVpowersupply.getInfo()
+                self.HVPowerStatusLabel.setText("HV status")
+                if statusString != "No valid device" and statusString != None:
+                        self.HVPowerStatusValue.setStyleSheet("color:green")
+                        self.HVPowerStatusValue.setText(statusString)
+                else:
+                        self.HVPowerStatusValue.setStyleSheet("color:red")
+                        self.HVPowerStatusValue.setText("No valid device")
+                time.sleep(0.5)
+                #Selecting default LV
+                self.LVpowersupply.setPowerModel(defaultLVModel[0])
+                self.LVpowersupply.setInstrument(defaultUSBPortLV[0])
+                statusString = self.LVpowersupply.getInfo()
+                self.LVPowerStatusLabel.setText("LV status")
+                if statusString != "No valid device" and statusString != None:
+                        self.LVPowerStatusValue.setStyleSheet("color:green")
+                        self.LVPowerStatusValue.setText(statusString)
+                else:
+                        self.LVPowerStatusValue.setStyleSheet("color:red")
+                        self.LVPowerStatusValue.setText("No valid device")
+
+                self.StatusList = []
+                self.StatusList.append([DBStatusLabel, DBStatusValue])
+                self.StatusList.append([self.HVPowerStatusLabel, self.HVPowerStatusValue])
+                self.StatusList.append([self.LVPowerStatusLabel, self.LVPowerStatusValue])
+
+                FC7NameLabel = QLabel()
+                FC7NameLabel.setText(defaultFC7)
+                FC7StatusValue = QLabel()
+
+                firmwareName, fwAddress = defaultFC7, defaultFC7IP
+
+                self.BeBoard = QtBeBoard()
+                self.BeBoard.setBoardName(firmwareName)
+                self.BeBoard.setIPAddress(FirmwareList[firmwareName])
+                self.BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
+
+                self.FwDict[firmwareName] = self.BeBoard
+                self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
+        
+                LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),firmwareName)
+                try:
+                        logFile  = open(LogFileName, "w")
+                        logFile.close()
+                except:
+                        QMessageBox(None,"Error","Can not create log files: {}".format(LogFileName))
+                
+                FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(firmwareName,LogFileName)
+                FC7StatusValue.setText(FwStatusComment)
+                FC7StatusValue.setStyleSheet(FwStatusColor)
+                self.FwModule = self.FwDict[firmwareName]
+                
+                self.StatusList.append([FC7NameLabel,FC7StatusValue])
+
+                StatusLayout = QGridLayout()
+
+
+                for index, items in enumerate(self.StatusList):
+                        StatusLayout.addWidget(items[0], index, 1,  1, 1)
+                        StatusLayout.addWidget(items[1], index, 2,  1, 2)
+
+
+                ModuleEntryLayout.addWidget(self.BeBoardWidget)
+                
+                self.AppOption = QGroupBox()
+                self.StartLayout = QHBoxLayout()
+                self.ExitButton = QPushButton("&Exit")
+                self.ExitButton.clicked.connect(self.close)
+                self.RunButton = QPushButton("&Run Tests")
+                self.RunButton.clicked.connect(self.runNewTest)
+                self.StartLayout.addStretch(1)
+                self.StartLayout.addWidget(self.ExitButton)
+                self.StartLayout.addWidget(self.RunButton)
+                self.AppOption.setLayout(self.StartLayout)
+
+                
+                self.simplifiedStatusBox.setLayout(StatusLayout)
+                self.ModuleEntryBox.setLayout(ModuleEntryLayout)
+                #self.mainLayout.addWidget(self.welcomebox)
+                self.mainLayout.addWidget(self.simplifiedStatusBox)
+                self.mainLayout.addWidget(self.ModuleEntryBox)
+                self.mainLayout.addWidget(self.AppOption)
+
+        def runNewTest(self):
+                self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
+                self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "AllScan"]
+                self.runFlag = True
+                self.RunTest = QtRunWindow(self, self.info, self.firmwareDescription)
+                self.LVpowersupply.setPoweringMode("Direct")
+                self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
+                self.LVpowersupply.TurnOn()
+                ######################################
+                ## Testin some things out (end) #######
+                ######################################
+        """
+>>>>>>> IcicleIntegration
 
     ###############################################################
     ##  Main page and related functions
@@ -507,9 +729,13 @@ class QtApplication(QWidget):
         self.StatusList.append([DBStatusLabel, DBStatusValue])
 
         try:
+<<<<<<< HEAD
             for index, (firmwareName, fwAddress) in enumerate(
                 site_config.FC7List.items()
             ):
+=======
+            for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
+>>>>>>> IcicleIntegration
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
                 FwStatusValue = QLabel()
@@ -520,8 +746,13 @@ class QtApplication(QWidget):
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
                 BeBoard = QtBeBoard()
                 BeBoard.setBoardName(firmwareName)
+<<<<<<< HEAD
                 BeBoard.setIPAddress(site_config.FC7List[firmwareName])
                 BeBoard.setFPGAConfig(settings.FPGAConfigList[firmwareName])
+=======
+                BeBoard.setIPAddress(FirmwareList[firmwareName])
+                BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
+>>>>>>> IcicleIntegration
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))
@@ -582,9 +813,15 @@ class QtApplication(QWidget):
             self.occupyFw("{0}".format(index))
 
         # if self.FwUnderUsed != []:
+<<<<<<< HEAD
         # 	for fw in self.FwUnderUsed:
         # 		index = self.getIndex(fw,self.StatusList)
         # 		self.occupyFw("{0}".format(index))
+=======
+        #       for fw in self.FwUnderUsed:
+        #               index = self.getIndex(fw,self.StatusList)
+        #               self.occupyFw("{0}".format(index))
+>>>>>>> IcicleIntegration
 
         self.FirmwareStatus.setLayout(StatusLayout)
         self.FirmwareStatus.setDisabled(False)
@@ -614,7 +851,11 @@ class QtApplication(QWidget):
         self.HVPowerModelLabel = QLabel()
         self.HVPowerModelLabel.setText("HV Power Model:")
         self.HVPowerModelCombo = QComboBox()
+<<<<<<< HEAD
         self.HVPowerModelCombo.addItems(settings.HVPowerSupplyModel.keys())
+=======
+        self.HVPowerModelCombo.addItems(HVPowerSupplyModel.keys())
+>>>>>>> IcicleIntegration
         self.HVPowerStatusValue = QLabel()
         self.UseHVPowerSupply = QPushButton("&Use")
         self.UseHVPowerSupply.clicked.connect(self.frozeHVPowerPanel)
@@ -647,7 +888,11 @@ class QtApplication(QWidget):
         self.LVPowerModelLabel = QLabel()
         self.LVPowerModelLabel.setText("LV Power Model:")
         self.LVPowerModelCombo = QComboBox()
+<<<<<<< HEAD
         self.LVPowerModelCombo.addItems(settings.LVPowerSupplyModel.keys())
+=======
+        self.LVPowerModelCombo.addItems(LVPowerSupplyModel.keys())
+>>>>>>> IcicleIntegration
         self.LVPowerStatusValue = QLabel()
         self.UseLVPowerSupply = QPushButton("&Use")
         self.UseLVPowerSupply.clicked.connect(self.frozeLVPowerPanel)
@@ -701,7 +946,11 @@ class QtApplication(QWidget):
             self.NewTestButton.setDisabled(False)
         # Vectorized fw
         # if self.FwUnderUsed != '':
+<<<<<<< HEAD
         # 	self.NewTestButton.setDisabled(False)
+=======
+        #       self.NewTestButton.setDisabled(False)
+>>>>>>> IcicleIntegration
         if self.ProcessingTest == True:
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
@@ -846,14 +1095,22 @@ class QtApplication(QWidget):
 
     def useDefault(self):
         # self.HVPowerCombo.clear()
+<<<<<<< HEAD
         HVIndex = self.HVPowerCombo.findText(site_settings.defaultUSBPortHV[0])
+=======
+        HVIndex = self.HVPowerCombo.findText(defaultUSBPortHV[0])
+>>>>>>> IcicleIntegration
         if HVIndex != -1:
             self.HVPowerCombo.setCurrentIndex(HVIndex)
         # self.HVPowerCombo.addItems(defaultUSBPortHV)
         # elf.HVPowerModelCombo.clear()
         # self.HVPowerModelCombo.addItems(defaultHVModel)
         # self.LVPowerCombo.clear()
+<<<<<<< HEAD
         LVIndex = self.LVPowerCombo.findText(site_settings.defaultUSBPortLV[0])
+=======
+        LVIndex = self.LVPowerCombo.findText(defaultUSBPortLV[0])
+>>>>>>> IcicleIntegration
         if LVIndex != -1:
             self.LVPowerCombo.setCurrentIndex(LVIndex)
         # self.LVPowerCombo.addItems(defaultUSBPortLV)
@@ -861,7 +1118,11 @@ class QtApplication(QWidget):
         # self.LVPowerModelCombo.addItems(defaultLVModel)
         self.frozeHVPowerPanel()
         self.frozeLVPowerPanel()
+<<<<<<< HEAD
         self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+=======
+        self.ArduinoGroup.setBaudRate(defaultSensorBaudRate)
+>>>>>>> IcicleIntegration
         self.ArduinoGroup.frozeArduinoPanel()
 
     def reCreateMain(self):
@@ -916,7 +1177,11 @@ class QtApplication(QWidget):
         # Vectorized the firmware
         # FwModule = []
         # for fw in self.FwUnderUsed:
+<<<<<<< HEAD
         # 	FwModule.append(self.FwDict[fw])
+=======
+        #       FwModule.append(self.FwDict[fw])
+>>>>>>> IcicleIntegration
         self.StartNewTest = QtStartWindow(self, FwModule)
         self.NewTestButton.setDisabled(True)
         self.LogoutButton.setDisabled(True)
@@ -952,6 +1217,7 @@ class QtApplication(QWidget):
 
     def frozeHVPowerPanel(self):
         # Block for HVPowerSupply operation
+<<<<<<< HEAD
         # self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
         self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
         self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
@@ -959,6 +1225,17 @@ class QtApplication(QWidget):
         # self.HVpowersupply.TurnOn()
         # Block for GUI front-end
         statusString = self.HVpowersupply.getInfo()
+=======
+        self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
+        self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
+        print("HVPowerCOmbo", self.HVPowerCombo.currentText())
+        self.HVpowersupply.TurnOffHV()
+        print("AFter turn off")
+        # self.HVpowersupply.TurnOn()
+        # Block for GUI front-end
+        statusString = self.HVpowersupply.getInfo()
+        print("statusString", statusString)
+>>>>>>> IcicleIntegration
         if statusString != "No valid device" and statusString != None:
             self.HVPowerStatusValue.setStyleSheet("color:green")
             self.HVPowerCombo.setDisabled(True)
@@ -1026,7 +1303,11 @@ class QtApplication(QWidget):
             self.ArduinoGroup.disable()
 
     def checkFirmware(self):
+<<<<<<< HEAD
         for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+=======
+        for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
+>>>>>>> IcicleIntegration
             fileName = self.LogList[index]
             if firmwareName != self.FwUnderUsed:
                 # if firmwareName not in self.FwUnderUsed:
@@ -1045,6 +1326,7 @@ class QtApplication(QWidget):
             self.StatusList[index + 1][1].setStyleSheet("color: green")
             self.occupyFw("{0}".format(index))
         # if self.FwUnderUsed != []:
+<<<<<<< HEAD
         # 	for fw in self.FwUnderUsed:
         # 		index = self.getIndex(fw,self.StatusList)
         # 		self.StatusList[index+1][1].setText("Connected")
@@ -1053,15 +1335,31 @@ class QtApplication(QWidget):
 
     def refreshFirmware(self):
         for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+=======
+        #       for fw in self.FwUnderUsed:
+        #               index = self.getIndex(fw,self.StatusList)
+        #               self.StatusList[index+1][1].setText("Connected")
+        #               self.StatusList[index+1][1].setStyleSheet("color: green")
+        #               self.occupyFw("{0}".format(index))
+
+    def refreshFirmware(self):
+        for index, (firmwareName, fwAddress) in enumerate(FirmwareList.items()):
+>>>>>>> IcicleIntegration
             self.UseButtons[index].setDisabled(False)
         if self.FwUnderUsed != "":
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
 
         # if self.FwUnderUsed != []:
+<<<<<<< HEAD
         # 	for fw in self.FwUnderUsed:
         # 		index = self.getIndex(self.fw,self.StatusList)
         # 		self.occupyFw("{0}".format(index))
+=======
+        #       for fw in self.FwUnderUsed:
+        #               index = self.getIndex(self.fw,self.StatusList)
+        #               self.occupyFw("{0}".format(index))
+>>>>>>> IcicleIntegration
 
     def getFwComment(self, firmwareName, fileName):
         comment, color, verboseInfo = fwStatusParser(
@@ -1170,8 +1468,13 @@ class QtApplication(QWidget):
     def closeEvent(self, event):
         # Fixme: strict criterias for process checking  should be added here:
         # if self.ProcessingTest == True:
+<<<<<<< HEAD
         # 	QMessageBox.critical(self, 'Critical Message', 'There is running process, can not close!')
         # 	event.ignore()
+=======
+        #       QMessageBox.critical(self, 'Critical Message', 'There is running process, can not close!')
+        #       event.ignore()
+>>>>>>> IcicleIntegration
 
         reply = QMessageBox.question(
             self,
