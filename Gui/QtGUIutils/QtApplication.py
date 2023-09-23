@@ -43,6 +43,7 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
+from instrument_cluster import InstrumentCluster
 
 
 class QtApplication(QWidget):
@@ -64,8 +65,9 @@ class QtApplication(QWidget):
         self.LogList = {}
         self.PYTHON_VERSION = str(sys.version).split(" ")[0]
         self.dimension = dimension
-        self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
-        self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
+        self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
+        #self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
+        #self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
         self.PowerRemoteControl = {"HV": True, "LV": True}
 
         self.setLoginUI()
