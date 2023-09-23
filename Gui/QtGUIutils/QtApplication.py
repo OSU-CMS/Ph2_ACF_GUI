@@ -68,7 +68,7 @@ class QtApplication(QWidget):
         self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
         #self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
         #self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
-        self.PowerRemoteControl = {"HV": True, "LV": True}
+        #self.PowerRemoteControl = {"HV": True, "LV": True}
 
         self.setLoginUI()
         self.initLog()
@@ -365,132 +365,6 @@ class QtApplication(QWidget):
         # self.FirmwareStatus.setDisabled(True)
         self.SimpleMain = SimplifiedMainWidget(self)
         self.mainLayout.addWidget(self.SimpleMain)
-        """
-		##################################
-		##  Testing some things out #######
-		##################################
-		self.simplifiedStatusBox = QGroupBox("Hello,{}!".format(self.TryUsername))
-		
-
-		statusString, colorString = checkDBConnection(self.connection)
-		DBStatusLabel = QLabel()
-		DBStatusLabel.setText("Database connection:")
-		DBStatusValue = QLabel()
-		DBStatusValue.setText(statusString)
-		DBStatusValue.setStyleSheet(colorString)
-
-		self.HVPowerStatusLabel = QLabel()
-		self.HVPowerStatusValue = QLabel()
-		self.LVPowerStatusLabel = QLabel()
-		self.LVPowerStatusValue = QLabel()
-		
-		self.ModuleEntryBox = QGroupBox("Please scan module QR code")
-		ModuleEntryLayout = QGridLayout()
-
-		SerialLabel = QLabel("SerialNumber:")
-		self.SerialEdit = QLineEdit()
-
-		CableLabel = QLabel("CableNumber")
-		self.CableEdit = QLineEdit()
-
-		#Selecting default HV
-		self.HVpowersupply.setPowerModel(defaultHVModel[0])
-		self.HVpowersupply.setInstrument(defaultUSBPortHV[0])
-		statusString = self.HVpowersupply.getInfo()
-		self.HVPowerStatusLabel.setText("HV status")
-		if statusString != "No valid device" and statusString != None:
-			self.HVPowerStatusValue.setStyleSheet("color:green")
-			self.HVPowerStatusValue.setText(statusString)
-		else:
-			self.HVPowerStatusValue.setStyleSheet("color:red")
-			self.HVPowerStatusValue.setText("No valid device")
-		time.sleep(0.5)
-		#Selecting default LV
-		self.LVpowersupply.setPowerModel(defaultLVModel[0])
-		self.LVpowersupply.setInstrument(defaultUSBPortLV[0])
-		statusString = self.LVpowersupply.getInfo()
-		self.LVPowerStatusLabel.setText("LV status")
-		if statusString != "No valid device" and statusString != None:
-			self.LVPowerStatusValue.setStyleSheet("color:green")
-			self.LVPowerStatusValue.setText(statusString)
-		else:
-			self.LVPowerStatusValue.setStyleSheet("color:red")
-			self.LVPowerStatusValue.setText("No valid device")
-
-		self.StatusList = []
-		self.StatusList.append([DBStatusLabel, DBStatusValue])
-		self.StatusList.append([self.HVPowerStatusLabel, self.HVPowerStatusValue])
-		self.StatusList.append([self.LVPowerStatusLabel, self.LVPowerStatusValue])
-
-		FC7NameLabel = QLabel()
-		FC7NameLabel.setText(defaultFC7)
-		FC7StatusValue = QLabel()
-
-		firmwareName, fwAddress = defaultFC7, defaultFC7IP
-
-		self.BeBoard = QtBeBoard()
-		self.BeBoard.setBoardName(firmwareName)
-		self.BeBoard.setIPAddress(FC7List[firmwareName])
-		self.BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
-
-		self.FwDict[firmwareName] = self.BeBoard
-		self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
-	
-		LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),firmwareName)
-		try:
-			logFile  = open(LogFileName, "w")
-			logFile.close()
-		except:
-			QMessageBox(None,"Error","Can not create log files: {}".format(LogFileName))
-		
-		FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(firmwareName,LogFileName)
-		FC7StatusValue.setText(FwStatusComment)
-		FC7StatusValue.setStyleSheet(FwStatusColor)
-		self.FwModule = self.FwDict[firmwareName]
-		
-		self.StatusList.append([FC7NameLabel,FC7StatusValue])
-
-		StatusLayout = QGridLayout()
-
-
-		for index, items in enumerate(self.StatusList):
-			StatusLayout.addWidget(items[0], index, 1,  1, 1)
-			StatusLayout.addWidget(items[1], index, 2,  1, 2)
-
-
-		ModuleEntryLayout.addWidget(self.BeBoardWidget)
-		
-		self.AppOption = QGroupBox()
-		self.StartLayout = QHBoxLayout()
-		self.ExitButton = QPushButton("&Exit")
-		self.ExitButton.clicked.connect(self.close)
-		self.RunButton = QPushButton("&Run Tests")
-		self.RunButton.clicked.connect(self.runNewTest)
-		self.StartLayout.addStretch(1)
-		self.StartLayout.addWidget(self.ExitButton)
-		self.StartLayout.addWidget(self.RunButton)
-		self.AppOption.setLayout(self.StartLayout)
-
-		
-		self.simplifiedStatusBox.setLayout(StatusLayout)
-		self.ModuleEntryBox.setLayout(ModuleEntryLayout)
-		#self.mainLayout.addWidget(self.welcomebox)
-		self.mainLayout.addWidget(self.simplifiedStatusBox)
-		self.mainLayout.addWidget(self.ModuleEntryBox)
-		self.mainLayout.addWidget(self.AppOption)
-
-	def runNewTest(self):
-		self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
-		self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "AllScan"]
-		self.runFlag = True
-		self.RunTest = QtRunWindow(self, self.info, self.firmwareDescription)
-		self.LVpowersupply.setPoweringMode("Direct")
-		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
-		self.LVpowersupply.TurnOn()
-		######################################
-		## Testin some things out (end) #######
-		######################################
-	"""
 
     ###############################################################
     ##  Main page and related functions
@@ -517,9 +391,6 @@ class QtApplication(QWidget):
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
                 FwStatusValue = QLabel()
-                # FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress)
-                # FwStatusValue.setText(FwStatusComment)
-                # FwStatusValue.setStyleSheet(FwStatusColor)
                 self.StatusList.append([FwNameLabel, FwStatusValue])
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
                 BeBoard = QtBeBoard()
@@ -585,10 +456,6 @@ class QtApplication(QWidget):
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
 
-        # if self.FwUnderUsed != []:
-        # 	for fw in self.FwUnderUsed:
-        # 		index = self.getIndex(fw,self.StatusList)
-        # 		self.occupyFw("{0}".format(index))
 
         self.FirmwareStatus.setLayout(StatusLayout)
         self.FirmwareStatus.setDisabled(False)
@@ -703,9 +570,6 @@ class QtApplication(QWidget):
         self.NewTestButton.setDisabled(True)
         if self.FwUnderUsed != "":
             self.NewTestButton.setDisabled(False)
-        # Vectorized fw
-        # if self.FwUnderUsed != '':
-        # 	self.NewTestButton.setDisabled(False)
         if self.ProcessingTest == True:
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
@@ -849,20 +713,12 @@ class QtApplication(QWidget):
             self.ArduinoControl.setDisabled(True)
 
     def useDefault(self):
-        # self.HVPowerCombo.clear()
         HVIndex = self.HVPowerCombo.findText(site_settings.defaultUSBPortHV[0])
         if HVIndex != -1:
             self.HVPowerCombo.setCurrentIndex(HVIndex)
-        # self.HVPowerCombo.addItems(defaultUSBPortHV)
-        # elf.HVPowerModelCombo.clear()
-        # self.HVPowerModelCombo.addItems(defaultHVModel)
-        # self.LVPowerCombo.clear()
         LVIndex = self.LVPowerCombo.findText(site_settings.defaultUSBPortLV[0])
         if LVIndex != -1:
             self.LVPowerCombo.setCurrentIndex(LVIndex)
-        # self.LVPowerCombo.addItems(defaultUSBPortLV)
-        # self.LVPowerModelCombo.clear()
-        # self.LVPowerModelCombo.addItems(defaultLVModel)
         self.frozeHVPowerPanel()
         self.frozeLVPowerPanel()
         self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
@@ -917,10 +773,6 @@ class QtApplication(QWidget):
 
     def openNewTest(self):
         FwModule = self.FwDict[self.FwUnderUsed]
-        # Vectorized the firmware
-        # FwModule = []
-        # for fw in self.FwUnderUsed:
-        # 	FwModule.append(self.FwDict[fw])
         self.StartNewTest = QtStartWindow(self, FwModule)
         self.NewTestButton.setDisabled(True)
         self.LogoutButton.setDisabled(True)
@@ -956,11 +808,9 @@ class QtApplication(QWidget):
 
     def frozeHVPowerPanel(self):
         # Block for HVPowerSupply operation
-        # self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
         self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
         self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
         self.HVpowersupply.TurnOffHV()
-        # self.HVpowersupply.TurnOn()
         # Block for GUI front-end
         statusString = self.HVpowersupply.getInfo()
         if statusString != "No valid device" and statusString != None:
@@ -997,8 +847,7 @@ class QtApplication(QWidget):
         # Block for LVPowerSupply operation
         self.LVpowersupply.setPowerModel(self.LVPowerModelCombo.currentText())
         self.LVpowersupply.setInstrument(self.LVPowerCombo.currentText())
-        # self.LVpowersupply.getInfo()
-        # self.LVpowersupply.TurnOn()
+
         # Block for GUI front-end
         self.LVpowersupply.TurnOff()
         statusString = self.LVpowersupply.getInfo()
@@ -1033,7 +882,6 @@ class QtApplication(QWidget):
         for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
             fileName = self.LogList[index]
             if firmwareName != self.FwUnderUsed:
-                # if firmwareName not in self.FwUnderUsed:
                 FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(
                     firmwareName, fileName
                 )
@@ -1048,12 +896,6 @@ class QtApplication(QWidget):
             self.StatusList[index + 1][1].setText("Connected")
             self.StatusList[index + 1][1].setStyleSheet("color: green")
             self.occupyFw("{0}".format(index))
-        # if self.FwUnderUsed != []:
-        # 	for fw in self.FwUnderUsed:
-        # 		index = self.getIndex(fw,self.StatusList)
-        # 		self.StatusList[index+1][1].setText("Connected")
-        # 		self.StatusList[index+1][1].setStyleSheet("color: green")
-        # 		self.occupyFw("{0}".format(index))
 
     def refreshFirmware(self):
         for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
@@ -1062,10 +904,6 @@ class QtApplication(QWidget):
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
 
-        # if self.FwUnderUsed != []:
-        # 	for fw in self.FwUnderUsed:
-        # 		index = self.getIndex(self.fw,self.StatusList)
-        # 		self.occupyFw("{0}".format(index))
 
     def getFwComment(self, firmwareName, fileName):
         comment, color, verboseInfo = fwStatusParser(
@@ -1096,7 +934,6 @@ class QtApplication(QWidget):
                 button.setDisabled(False)
                 self.CheckButton.setDisabled(True)
                 self.FwUnderUsed = self.StatusList[i + 1][0].text()
-                # self.FwUnderUsed.append(self.StatusList[i+1][0].text())
             else:
                 button.setDisabled(True)
 
@@ -1104,9 +941,6 @@ class QtApplication(QWidget):
         for i, button in enumerate(self.UseButtons):
             if i == int(index):
                 self.FwUnderUsed = ""
-                # vectorzied fw
-                # fwIndex = self.FwUnderUsed.index(self.StatusList[i+1][0].text())
-                # self.FwUnderUsed.pop(fwIndex)
                 button.setText("&Use")
                 button.setDown(False)
                 button.setDisabled(False)
@@ -1122,7 +956,6 @@ class QtApplication(QWidget):
         verboseInfo = self.FwStatusVerboseDict[
             self.StatusList[int(index) + 1][0].text()
         ]
-        # QMessageBox.information(None, "Info", "{}".format(solution), QMessageBox.Ok)
         self.FwStatusWindow = QtFwStatusWindow(self, fwName, verboseInfo, solution)
 
     def showLogFw(self, index):
@@ -1172,11 +1005,6 @@ class QtApplication(QWidget):
     ###############################################################
 
     def closeEvent(self, event):
-        # Fixme: strict criterias for process checking  should be added here:
-        # if self.ProcessingTest == True:
-        # 	QMessageBox.critical(self, 'Critical Message', 'There is running process, can not close!')
-        # 	event.ignore()
-
         reply = QMessageBox.question(
             self,
             "Window Close",
@@ -1193,8 +1021,6 @@ class QtApplication(QWidget):
             # If you didn't start the Peltier controller, tempPower won't be defined
             try:
                 self.PeltierCooling.shutdown()
-                # time.sleep(2)
-                # self.pool.clear()
             except Exception as e:
                 print("Could not shutdown Peltier: ", e)
                 pass
