@@ -810,6 +810,7 @@ class QtApplication(QWidget):
     def connectHV(self):
         self.instruments.hv = self.HVPowerModelCombo.currentText()
         self.instruments.hv_resource = self.HVPowerCombo.currentText()
+        # REVIEW hv_off may cause issues as it requires lv to be on, looks like reset_on_init might do the same thing
         self.instruments.hv_off(delay=1, step_size=5)
         # FIXME Check if I can use this to check all instruments at once
         hv_status = self.instruments.status()["hv"]
@@ -825,7 +826,7 @@ class QtApplication(QWidget):
             self.HVPowerStatusValue.setText("No valid device")
 
     def releaseHVPowerPanel(self):
-        self.HVpowersupply.TurnOffHV()
+        self.instruments.hv_off()
         try:
             self.HVPowerCombo.setDisabled(False)
             self.HVPowerStatusValue.setText("")
