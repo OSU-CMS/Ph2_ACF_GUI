@@ -43,6 +43,7 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
+from icicle.icicle.instrument_cluster import BadStatusForOperationError
 from instrument_cluster import InstrumentCluster
 
 
@@ -488,7 +489,7 @@ class QtApplication(QWidget):
         self.HVPowerModelCombo.addItems(settings.HVPowerSupplyModel.keys())
         self.HVPowerStatusValue = QLabel()
         self.UseHVPowerSupply = QPushButton("&Use")
-        self.UseHVPowerSupply.clicked.connect(self.frozeHVPowerPanel)
+        self.UseHVPowerSupply.clicked.connect(self.connectHV)
         self.ReleaseHVPowerSupply = QPushButton("&Release")
         self.ReleaseHVPowerSupply.clicked.connect(self.releaseHVPowerPanel)
         self.ReleaseHVPowerSupply.setDisabled(True)
@@ -719,7 +720,7 @@ class QtApplication(QWidget):
         LVIndex = self.LVPowerCombo.findText(site_settings.defaultUSBPortLV[0])
         if LVIndex != -1:
             self.LVPowerCombo.setCurrentIndex(LVIndex)
-        self.frozeHVPowerPanel()
+        self.connectHV()
         self.frozeLVPowerPanel()
         self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
@@ -806,20 +807,20 @@ class QtApplication(QWidget):
             self.HVPowerGroup.setDisabled(True)
             self.PowerRemoteControl["HV"] = False
 
-    def frozeHVPowerPanel(self):
-        # Block for HVPowerSupply operation
-        self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
-        self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
-        self.HVpowersupply.TurnOffHV()
-        # Block for GUI front-end
-        statusString = self.HVpowersupply.getInfo()
-        if statusString != "No valid device" and statusString != None:
+    def connectHV(self):
+        self.instruments.hv = self.HVPowerModelCombo.currentText()
+        self.instruments.hv_resource = self.HVPowerCombo.currentText()
+        self.instruments.hv_off(delay=1, step_size=5)
+        # FIXME Check if I can use this to check all instruments at once
+        hv_status = self.instruments.status()["hv"]
+        try:
+            self.instruments.assert_status(hv_status, "valid", "HV not a valid device. Check connection")
             self.HVPowerStatusValue.setStyleSheet("color:green")
             self.HVPowerCombo.setDisabled(True)
-            self.HVPowerStatusValue.setText(statusString)
+            self.HVPowerStatusValue.setText(hv_status)
             self.UseHVPowerSupply.setDisabled(True)
             self.ReleaseHVPowerSupply.setDisabled(False)
-        else:
+        except BadStatusForOperationError:
             self.HVPowerStatusValue.setStyleSheet("color:red")
             self.HVPowerStatusValue.setText("No valid device")
 
