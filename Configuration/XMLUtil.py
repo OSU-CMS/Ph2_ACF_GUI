@@ -176,6 +176,161 @@ class board():
         self.connectionID = connectionID
         self.uri = uri
 
+class XMLGenerator:
+    
+    def loadingXML(self,board1,board2=None,isOpticalLink=False): 
+        test = board1.GetTest() #adding this method to board class(TBD)
+        xml = self.buildingRoot("HwDescription")
+        boardList = []
+        boardList.append(board1)
+
+        StatusStr = 'Status'
+        if "v4-11" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        if "v4-13" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+        if "v4-14" in Ph2_ACF_VERSION:
+            StatusStr = 'enable'
+
+        if board2 != None:
+            boardList.append(board2)
+        for i in range(len(boardList)):
+            #adding beboard subelement
+            beboardElement = self.add_node(xml,"BeBoard",{"Id" : boardList[i].boardID, "boardType" : boardList[i].boardType, "eventType" :"VR"})
+            #adding connection subelement
+            connectionElement = self.add_node(beboardElement,"connection",{"address_table" : boardList[i].address_table, "id" : "cmsinnertracker.crate0.slot0" , "uri" : boardList[i].uri})
+            
+            
+            specificBoard = boardList[i]
+            for OG in specificBoard.OGList.values():
+                #OGList is a dictionary where keys are OGIG and value is the corresponding OGmodule Class
+                connectionElement = self.add_node(beboardElement, "OpticalGroup",{"FMCId":OG.FMCId ,"Id":OG.Id})
+                #loop over modules that are conneting to a same fc board
+                for module in OG.moduleList:
+                    hybridElement = self.add_node(connectionElement,"Hybrid",{"Id" : module.moduleId, "Name" : module.serialNo, StatusStr:module.status})
+                    if isOpticalLink:
+                        Node_OpFiles = self.add_node(connectionElement, 'lqGBT_Files',{'path':"${PWD}/"})
+                        Node_lqGBT = self.add_node(connectionElement, 'lqGBT',{'Id':'0','version':'1','configfile':'CMSIT_LqGBT-v1.txt','ChipAddress':'0x70','RxDataRate':'1280','RxHSLPolarity':'0','TxDataRate':'160','TxHSLPolarity':'1'})
+                        Node_lqGBTsettings = self.add_node(Node_lqGBT, 'Settings')
+                    self.add_node(hybridElement, "RD53_Files" ,{"file" : module.Files})
+                    #loop over chips
+                    type = module.moduleType
+                    chiptype = module.chipType
+                    for chip in module.chipList:
+                        ChipElement = self.add_node(hybridElement,chiptype, {"Id" : chip[0], "Lane" : chip[1] , "configfile" : chip[2]})
+                        #adding FESetting/ one setting per chip
+                        VDDA = chip[3]
+                        VDDD = chip[4]
+                        print("adding FEsetttings debug")
+                        self.addFESetting(ChipElement,type,test,VDDA,VDDD)
+                
+                    #adding global setting/  one setting per module
+                    self.addGOSettings(hybridElement,chiptype,test) #Q: ask matt does muduole type is RD53 or CROC
+
+            #adding Register setting/ one setting per board
+            self.addRegisterSetting(beboardElement)
+
+        #adding HWSetting
+        #specificBoard.OGList.values()
+        self.addHWSetting(xml,chiptype,test)
+
+        #adding MonitorSetting
+        self.addMonitorSetting(xml,chiptype,"1","1000")
+
+        return xml
+
+
+    def buildingRoot(self, root_node): #used in usingXMLGen.py
+        spcialRoot = etree.Element(root_node)
+        return spcialRoot
+
+    def add_element(self, parent, element):
+        parent.append(element)
+
+
+    def add_node(self, parent, tag, attrib=None, nsmap=None, **extra):
+        element = etree.SubElement(parent, tag, attrib=attrib, nsmap=nsmap, **extra)
+        return element
+
+    #adding Setting parameters
+    #monitor setting
+    def addMonitorSetting(self,parent,boardtype,enable,sleeptime):
+        # Create the Monitoring element with attributes
+        monitoring_title = etree.SubElement(parent, "MonitoringSettings")
+        monitoring_elem = etree.SubElement(monitoring_title, "Monitoring", enable="1", type="RD53A")
+
+        # Create MonitoringSleepTime element
+        monitoring_sleep_time_elem = etree.SubElement(monitoring_elem, "MonitoringSleepTime")
+        monitoring_sleep_time_elem.text = sleeptime
+        self.innerMonitorSetting(monitoring_elem,boardtype)
+
+    def innerMonitorSetting(self,monitoring_elem,boardtype):
+        if boardtype == "RD53A":
+            MonDict = MonitoringListB
+        else:
+            MonDict = MonitoringListB
+        # Create MonitoringElement elements based on the MonitoringListA dictionary
+        for register, enable in MonDict.items():
+            etree.SubElement(monitoring_elem, "MonitoringElement", device="RD53", enable=enable, register=register)
+    
+    #HWSetting
+    def addInnerHWSetting(self,parent,chiptype,test):
+        
+        if chiptype == "RD53A":
+            HWDict = HWSettings_DictA[test]
+        else:
+            HWDict = HWSettings_DictB[test]
+
+        for name, value in HWDict.items():
+            setting_elem = etree.SubElement(parent, "Setting", name=name)
+            setting_elem.text = str(value)
+    
+    def addHWSetting(self,parent,boardtype,test):
+        self.setting_title = etree.SubElement(parent, "Settings")
+        self.addInnerHWSetting(self.setting_title,boardtype,test)
+
+        
+
+    #Register Setting
+    def create_subelements_Register(self,parent, path, value):
+        elements = path.split('.')
+        for elem in elements:
+            parent = etree.SubElement(parent, "Register", name=elem)
+        parent.text = str(value)
+
+    def addRegisterSetting(self,parent):
+        for path, value in RegisterSettings.items():
+            self.create_subelements_Register(parent, path, value)
+        
+    def addFESetting(self,parent,boardType,test,VDDAtrim=None,VDDDtrim=None):
+        if boardType == "RD53A":
+            FEDict = FESettings_DictA[test]
+        else:
+            FEDict = FESettings_DictB[test]
+        
+        if VDDAtrim == None:
+            pass
+        else:
+            FEDict['VOLTAGE_TRIM_ANA'] = VDDAtrim
+        
+        if VDDDtrim == None:
+            pass
+        else:
+            FEDict['VOLTAGE_TRIM_DIG'] = VDDDtrim
+
+
+        self.add_node(parent,"Settings",FEDict)
+
+    def addGOSettings(self,parent,chipType,test):
+        if chipType == "RD53A":
+            GODict = globalSettings_DictA[test]
+        else:
+            GODict = globalSettings_DictB[test]
+            
+        #calling add_node in the xml class
+        self.add_node(parent,"Global",GODict)
+
+
 class Device():
   def __init__(self):
     self.PowerSupply = None
