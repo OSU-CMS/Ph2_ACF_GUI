@@ -7,11 +7,6 @@
   Support:              email to wei.856@osu.edu
 """
 
-
-from XMLgenerator.fcBoardC import *
-from XMLgenerator.XMLGenerator import *
-
-
 import sys
 import os
 import re
@@ -366,7 +361,6 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
     #ignore the section of setting up OGModule
 
     #in the old code boardID is always zero, we might need to change it later when using multiple boards
-    #create the code for doing the summer first 
     boardID = "0"
     boardObject = board(boardID,testName)
     AllModules = firmwareList.getAllModules().values()
@@ -387,28 +381,19 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
         #boardObject.adding_module(ModuleObject,chipInfo) #old code need to be deleted
 
         OGDict[module.getOpticalGroupID()].adding_module(ModuleObject,chipInfo)#FIXME i need to remove the chipinfor argument later for method in OGmodule
-    print("OGDict:" + str(OGDict)) #debug: check if OG module is loaded
+    print("OGDict:" + str(OGDict)) 
 
     XMLGen = XMLGenerator()
     XMLFile=XMLGen.loadingXML(boardObject)
     #XMLGen.display_xml(XMLFile) #display xml in terminal
 
     print("outputDir:" + filePath)
-    #XMLGen.create_xmlFile(XMLFile,fileNanme,filePath) #this seems causing a bug
-    #filePath has issue, here is temporary dir
     xmlstr = prettify(XMLFile)
     with open(outputFile, "w") as f:
         f.write(str(xmlstr))
         #f.write(ET.tostring(Node_HWInterface, 'utf-8'))
         f.close() 
 
-    
-    """
-    with open(outputFile, "w") as f:
-        #f.write(str(XMLFile))
-        f.write(ET.tostring(XMLFile, 'utf-8'))
-        f.close() 
-    """
 
 
 
