@@ -1,6 +1,7 @@
 import lxml.etree as ET
 import os
 from xml.dom import minidom
+from lxml import etree
 from Configuration.Settings.GlobalSettings import *
 from Configuration.Settings.FESettings import *
 from Configuration.Settings.HWSettings import *
