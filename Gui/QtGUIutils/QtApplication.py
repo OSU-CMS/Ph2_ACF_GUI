@@ -68,8 +68,11 @@ class QtApplication(QWidget):
         self.dimension = dimension
         self.available_visa_resources = pyvisa.ResourceManager("@py").list_resources()
         self.desired_devices = {"hv": 1, "lv": 1, "relay": 0, "multimeter":0}
-        self.connected_device_information = {}
-        self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
+        self.connected_device_information = {"hv_resource": None, "hv": None,
+                                             "lv_resource":None, "lv":None,
+                                             "relay_board_resource": None, "relay_board": None,
+                                             "multimeter_resource": None, "multimeter": None}
+
         #self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
         #self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
         #self.PowerRemoteControl = {"HV": True, "LV": True}
@@ -467,7 +470,7 @@ class QtApplication(QWidget):
         self.UseDefaultGroup = QGroupBox()
         self.DefaultLayout = QHBoxLayout()
         self.DefaultButton = QPushButton("&Connect all devices")
-        self.DefaultButton.clicked.connect(self.useDefault)
+        self.DefaultButton.clicked.connect(self.connectDevices)
         self.default_checkbox = QCheckBox("Use Default Devices")
         self.default_checkbox.setChecked(True)
 
@@ -478,9 +481,11 @@ class QtApplication(QWidget):
 
         self.HVPowerRemoteControl = QCheckBox("Use HV")
         self.HVPowerRemoteControl.setChecked(True)
-        self.HVPowerRemoteControl.toggled.connect(lambda x: self.enableDevice("hv"))
+        self.HVPowerRemoteControl.toggled.connect(lambda : self.enableDevice("hv"))
+        self.HVPowerRemoteControl.toggled.connect(lambda: self.HVPowerGroup.setDisabled(False) if self.HVPowerGroup.isEnabled() else self.HVPowerGroup.setDisabled(True))
 
         self.HVPowerGroup = QGroupBox("HV Power")
+        self.HVPowerGroup.setDisabled(False)
         self.HVPowerLayout = QHBoxLayout()
         self.HVPortLabel = QLabel()
         self.HVPortLabel.setText("Choose HV Port:")
@@ -491,6 +496,8 @@ class QtApplication(QWidget):
         self.HVPowerModelCombo = QComboBox()
         self.HVPowerModelCombo.addItems(InstrumentCluster.package_map.values())
         self.HVPowerStatusValue = QLabel()
+        self.HVPowerCombo.activated.connect(lambda : self.update_instrument_info("hv_resource", self.HVPowerCombo.currentText()))
+        self.HVPowerModelCombo.activated.connect(lambda : self.update_instrument_info("hv", self.HVPowerModelCombo.currentText()))
 
         self.HVPowerLayout.addWidget(self.HVPortLabel)
         self.HVPowerLayout.addWidget(self.HVPowerCombo)
@@ -504,7 +511,7 @@ class QtApplication(QWidget):
 
         self.LVPowerRemoteControl = QCheckBox("Use LV")
         self.LVPowerRemoteControl.setChecked(True)
-        self.LVPowerRemoteControl.toggled.connect(lambda x: self.enableDevice("lv"))
+        self.LVPowerRemoteControl.toggled.connect(lambda:  self.enableDevice("lv"))
 
         self.LVPowerGroup = QGroupBox("LV Power")
         self.LVPowerLayout = QHBoxLayout()
@@ -517,6 +524,8 @@ class QtApplication(QWidget):
         self.LVPowerModelCombo = QComboBox()
         self.LVPowerModelCombo.addItems(InstrumentCluster.package_map.values())
         self.LVPowerStatusValue = QLabel()
+        self.LVPowerCombo.activated.connect(lambda : self.update_instrument_info("lv_resource", self.LVPowerCombo.currentText()))
+        self.LVPowerModelCombo.activated.connect(lambda : self.update_instrument_info("lv", self.LVPowerModelCombo.currentText()))
 
         self.LVPowerLayout.addWidget(self.LVPowerStatusLabel)
         self.LVPowerLayout.addWidget(self.LVPowerCombo)
@@ -541,7 +550,9 @@ class QtApplication(QWidget):
         self.relay_model_status = QLabel()
         self.relay_remote_control = QCheckBox("Use relay")
         self.relay_remote_control.setChecked(False)
-        self.relay_remote_control.toggled.connect(lambda x: self.enableDevice("relay"))
+        self.relay_remote_control.toggled.connect(lambda : self.enableDevice("relay"))
+        self.relay_port_combobox.activated.connect(lambda : self.update_instrument_info("relay_board_resource", self.relay_port_combobox.currentText()))
+        self.relay_model_combo.activated.connect(lambda : self.update_instrument_info("relay_board", self.relay_model_combo.currentText()))
 
         relay_layout.addWidget(relay_board_port_label)
         relay_layout.addWidget(self.relay_port_combobox)
@@ -565,7 +576,9 @@ class QtApplication(QWidget):
         self.multimeter_status = QLabel()
         self.multimeter_remote_control = QCheckBox("Use Multimeter")
         self.multimeter_remote_control.setChecked(False)
-        self.multimeter_remote_control.toggled.connect(lambda x: self.enableDevice("multimeter"))
+        self.multimeter_remote_control.toggled.connect(lambda : self.enableDevice("multimeter"))
+        self.multimeter_port_combobox.activated.connect(lambda : self.update_instrument_info("multimeter_resource", self.multimeter_port_combobox.currentText()))
+        self.multimeter_model_combo.activated.connect(lambda : self.update_instrument_info("multimeter", self.multimeter_model_combo.currentText()))
 
         multimeter_layout.addWidget(multimeter_port_label)
         multimeter_layout.addWidget(self.multimeter_port_combobox)
@@ -751,7 +764,19 @@ class QtApplication(QWidget):
             self.ArduinoGroup.disable()
             self.ArduinoControl.setDisabled(True)
 
-    def useDefault(self):
+    def update_instrument_info(self, key, info):
+        self.connected_device_information[key] = info
+
+    def connectDevices(self):
+        """
+        Use defaults set in siteConfig.py to setup instrument cluster.
+        If default_checkbox is not checked change this variable to reflect changes made it GUI
+        """
+        if not self.default_checkbox.isChecked():
+            for key, value in self.connected_device_information.items():
+                site_config.icicle_instrument_setup[key] = value
+        self.instruments = InstrumentCluster(**site_config.icicle_instrument_setup)
+
         HVIndex = self.HVPowerCombo.findText(site_settings.defaultUSBPortHV[0])
         if HVIndex != -1:
             self.HVPowerCombo.setCurrentIndex(HVIndex)
