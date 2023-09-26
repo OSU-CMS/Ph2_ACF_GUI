@@ -482,10 +482,9 @@ class QtApplication(QWidget):
         self.HVPowerRemoteControl = QCheckBox("Use HV")
         self.HVPowerRemoteControl.setChecked(True)
         self.HVPowerRemoteControl.toggled.connect(lambda : self.enableDevice("hv"))
-        self.HVPowerRemoteControl.toggled.connect(lambda: self.HVPowerGroup.setDisabled(False) if self.HVPowerGroup.isEnabled() else self.HVPowerGroup.setDisabled(True))
 
         self.HVPowerGroup = QGroupBox("HV Power")
-        self.HVPowerGroup.setDisabled(False)
+        self.HVPowerGroup.setDisabled(True)
         self.HVPowerLayout = QHBoxLayout()
         self.HVPortLabel = QLabel()
         self.HVPortLabel.setText("Choose HV Port:")
@@ -498,6 +497,7 @@ class QtApplication(QWidget):
         self.HVPowerStatusValue = QLabel()
         self.HVPowerCombo.activated.connect(lambda : self.update_instrument_info("hv_resource", self.HVPowerCombo.currentText()))
         self.HVPowerModelCombo.activated.connect(lambda : self.update_instrument_info("hv", self.HVPowerModelCombo.currentText()))
+        self.HVPowerRemoteControl.toggled.connect(lambda: self.HVPowerGroup.setDisabled(False) if self.HVPowerGroup.isEnabled() else self.HVPowerGroup.setDisabled(True))
 
         self.HVPowerLayout.addWidget(self.HVPortLabel)
         self.HVPowerLayout.addWidget(self.HVPowerCombo)
