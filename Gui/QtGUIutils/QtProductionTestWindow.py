@@ -29,11 +29,11 @@ from Gui.python.SLDOScanHandler import *
 class QtProductionTestWindow(QWidget):
 	resized = pyqtSignal()
 	close = pyqtSignal()
-	def __init__(self,master,HV = None, LV= None):
+	def __init__(self,master, instrumentCluster=None):
 		super(QtProductionTestWindow,self).__init__()
 		self.master = master
-		self.hvpowersupply = HV
-		self.lvpowersupply = LV
+		self.instruments = instrumentCluster
+
 		self.master.globalStop.connect(self.urgentStop)
 		self.connection = self.master.connection
 
@@ -146,7 +146,7 @@ class QtProductionTestWindow(QWidget):
 		self.IVCurveData = []
 		self.IVCurveResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)")
 		self.MainTabs.addTab(self.IVCurveResult,"I-V Curve")
-		self.IVCurveHandler = IVCurveHandler(self,self.hvpowersupply)
+		self.IVCurveHandler = IVCurveHandler(self,self.instruments)
 		self.IVCurveHandler.finished.connect(self.IVCurveFinished)
 		self.IVCurveHandler.IVCurve()
 
