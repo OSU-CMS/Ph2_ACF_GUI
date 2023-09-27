@@ -7,3 +7,5 @@ lxml
 pyvisa
 pyvisa-py
 pyserial
+click
+psutil
