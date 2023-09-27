@@ -471,11 +471,15 @@ class QtApplication(QWidget):
         self.DefaultLayout = QHBoxLayout()
         self.DefaultButton = QPushButton("&Connect all devices")
         self.DefaultButton.clicked.connect(self.connectDevices)
+
+        self.reset_devices = QPushButtons("&Reconnect all devices")
+        self.reset_devices.clicked.connect(self.reconnectDevices)
         self.default_checkbox = QCheckBox("Use Default Devices")
         self.default_checkbox.setChecked(True)
 
         self.DefaultLayout.addWidget(self.DefaultButton)
         self.DefaultLayout.addWidget(self.default_checkbox)
+        self.DefaultLayout.addWidget(self.reset_devices)
         self.DefaultLayout.addStretch(1)
         self.UseDefaultGroup.setLayout(self.DefaultLayout)
 
@@ -755,6 +759,15 @@ class QtApplication(QWidget):
 
         self.setDefault()
 
+        # create a dictionary to easily disable groupboxes later
+        self.groupbox_mapping = {
+            "hv" : self.HVPowerGroup,
+            "lv" : self.LVPowerGroup,
+            "relay": self.relay_group,
+            "multimeter": self.multimeter_group
+        }
+
+
     def setDefault(self):
         if self.expertMode is False:
             self.HVPowerGroup.setDisabled(True)
@@ -772,21 +785,55 @@ class QtApplication(QWidget):
         Use defaults set in siteConfig.py to setup instrument cluster.
         If default_checkbox is not checked change this variable to reflect changes made it GUI
         """
+        self.device_settings = site_config.icicle_instrument_setup
         if not self.default_checkbox.isChecked():
             for key, value in self.connected_device_information.items():
-                site_config.icicle_instrument_setup[key] = value
-        self.instruments = InstrumentCluster(**site_config.icicle_instrument_setup)
+                self.device_settings[key] = value
+        try:
+            self.instruments = InstrumentCluster(**self.device_settings)
+            self.instruments.off()
+            self.disable_instrument_widgets()
 
-        HVIndex = self.HVPowerCombo.findText(site_settings.defaultUSBPortHV[0])
-        if HVIndex != -1:
-            self.HVPowerCombo.setCurrentIndex(HVIndex)
-        LVIndex = self.LVPowerCombo.findText(site_settings.defaultUSBPortLV[0])
-        if LVIndex != -1:
-            self.LVPowerCombo.setCurrentIndex(LVIndex)
-        self.connectHV()
+        except Exception as e:
+            print(e)
+
+
+
         self.frozeLVPowerPanel()
         self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
+
+    def disable_instrument_widgets():
+        """
+        Use to disable the groupbox of LV, HV, relay board, and multimeter
+        This is to prevent people from thinking they are changing device settings
+        when they are really not.
+        """
+        self.HVPowerGroup.setDisabled(True)
+        self.LVPowerGroup.setDisabled(True)
+        self.relay_group.setDisabled(True)
+        self.multimeter_group.setDisabled(True)
+
+        self.HVPowerRemoteControl.setDisabled(True)
+        self.LVPowerRemoteControl.setDisabled(True)
+        self.relay_remote_control.setDisabled(True)
+        self.multimeter_remote_control.setDisabled(True)
+
+    def reconnectDevices():
+        self.device_settings = site_config.icicle_instrument_setup
+
+        # I believe that this should "free" the memory taken by the previous instance
+        # of InstrumentCluster(), however, it is at the will of the garbage collector
+        self.instruments = None
+
+        self.HVPowerRemoteControl.setDisabled(False)
+        self.LVPowerRemoteControl.setDisabled(False)
+        self.relay_remote_control.setDisabled(False)
+        self.multimeter_remote_control.setDisabled(False)
+
+        for instrument, useFlag in self.desired_devices.items():
+            if useFlag and instrument in self.groupbox_mapping:
+                self.groupbox_mapping[instrument].setDisabled(False)
 
     def reCreateMain(self):
         print("Refreshing the main page")
@@ -809,6 +856,10 @@ class QtApplication(QWidget):
         self.HVPowerRemoteControl.deleteLater()
         self.LVPowerGroup.deleteLater()
         self.LVPowerRemoteControl.deleteLater()
+        self.relay_group.deleteLater()
+        self.relay_remote_control.deleteLater()
+        self.multimeter_group.deleteLater()
+        self.multimeter_remote_control.deleteLater()
         self.ArduinoGroup.deleteLater()
         self.ArduinoControl.deleteLater()
         self.MainOption.deleteLater()
@@ -820,6 +871,10 @@ class QtApplication(QWidget):
         self.mainLayout.removeWidget(self.HVPowerRemoteControl)
         self.mainLayout.removeWidget(self.LVPowerGroup)
         self.mainLayout.removeWidget(self.LVPowerRemoteControl)
+        self.mainLayout.removeWidget(self.relay_group)
+        self.mainLayout.removeWidget(self.relay_remote_control)
+        self.mainLayout.removeWidget(self.multimeter_group)
+        self.mainLayout.removeWidget(self.multimeter_remote_control)
         self.mainLayout.removeWidget(self.ArduinoGroup)
         self.mainLayout.removeWidget(self.ArduinoControl)
         self.mainLayout.removeWidget(self.MainOption)
@@ -910,7 +965,6 @@ class QtApplication(QWidget):
     def enableDevice(self, device):
         """Keep track of whether a device wants to be used"""
         self.desired_devices[device] = 1 if (self.desired_devices[device]==0) else 0
-        print(self.desired_devices)
 
 
     def frozeLVPowerPanel(self):
