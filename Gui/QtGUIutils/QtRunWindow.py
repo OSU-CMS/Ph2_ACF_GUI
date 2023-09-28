@@ -62,7 +62,7 @@ class QtRunWindow(QWidget):
 
 		#Add TestProcedureHandler
 		self.testHandler = TestHandler(self,master,info,firmware)
-		self.testHandler.powerSignal.connect(self.master.instruments.turn_off(None))
+		self.testHandler.powerSignal.connect(self.master.instruments.off(None))
 
 		self.GroupBoxSeg = [1, 10,  1]
 		self.HorizontalSeg = [3, 5]
