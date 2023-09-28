@@ -27,7 +27,6 @@ import pyvisa
 
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
-import Gui.siteConfig as site_config
 import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.GUIutils.guiUtils import isActive
@@ -45,7 +44,6 @@ from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 from icicle.icicle.instrument_cluster import BadStatusForOperationError
 from instrument_cluster import InstrumentCluster
-from Gui.QtApplication import logger
 
 
 class QtApplication(QWidget):
@@ -125,7 +123,7 @@ class QtApplication(QWidget):
         self.show()
 
     def initLog(self):
-        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+        for index, (firmwareName, fwAddress) in enumerate(site_settings.FC7List.items()):
             LogFileName = "{0}/Gui/.{1}.log".format(
                 os.environ.get("GUI_dir"), firmwareName
             )
@@ -394,7 +392,7 @@ class QtApplication(QWidget):
 
         try:
             for index, (firmwareName, fwAddress) in enumerate(
-                site_config.FC7List.items()
+                site_settings.FC7List.items()
             ):
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
@@ -403,7 +401,7 @@ class QtApplication(QWidget):
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
                 BeBoard = QtBeBoard()
                 BeBoard.setBoardName(firmwareName)
-                BeBoard.setIPAddress(site_config.FC7List[firmwareName])
+                BeBoard.setIPAddress(site_settings.FC7List[firmwareName])
                 BeBoard.setFPGAConfig(settings.FPGAConfigList[firmwareName])
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
@@ -471,9 +469,9 @@ class QtApplication(QWidget):
         self.UseDefaultGroup = QGroupBox()
         self.DefaultLayout = QHBoxLayout()
         self.DefaultButton = QPushButton("&Connect all devices")
-        self.DefaultButton.clicked.connect(self.connectDevices)
+        self.DefaultButton.clicked.connect(self.connect_devices)
 
-        self.reset_devices = QPushButtons("&Reconnect all devices")
+        self.reset_devices = QPushButton("&Reconnect all devices")
         self.reset_devices.clicked.connect(self.reconnectDevices)
         self.default_checkbox = QCheckBox("Use Default Devices")
         self.default_checkbox.setChecked(True)
@@ -586,7 +584,7 @@ class QtApplication(QWidget):
         self.multimeter_remote_control.toggled.connect(lambda : self.enableDevice("multimeter"))
         self.multimeter_port_combobox.activated.connect(lambda : self.update_instrument_info("multimeter_resource", self.multimeter_port_combobox.currentText()))
         self.multimeter_model_combo.activated.connect(lambda : self.update_instrument_info("multimeter", self.multimeter_model_combo.currentText()))
-        self.multimeter_remote_control.toggled.connect(lambda: self.multimeter_group.setDisabled(False) if self.multimeter_remote_control.isChecked() else self.relay_group.setDisabled(True))
+        self.multimeter_remote_control.toggled.connect(lambda: self.multimeter_group.setDisabled(False) if self.multimeter_remote_control.isChecked() else self.multimeter_group.setDisabled(True))
 
         multimeter_layout.addWidget(multimeter_port_label)
         multimeter_layout.addWidget(self.multimeter_port_combobox)
@@ -792,21 +790,24 @@ class QtApplication(QWidget):
         Use defaults set in siteConfig.py to setup instrument cluster.
         If default_checkbox is not checked change this variable to reflect changes made it GUI
         """
-        self.device_settings = site_config.icicle_instrument_setup
+        self.device_settings = site_settings.icicle_instrument_setup
         if not self.default_checkbox.isChecked():
             for key, value in self.connected_device_information.items():
                 self.device_settings[key] = value
         try:
+            print(self.device_settings)
             self.instruments = InstrumentCluster(**self.device_settings)
+            self.instruments.open()
             self.instruments.off()
             self.disable_instrument_widgets()
 
         except Exception as e:
             print(e)
-            QMessageBox(self, "Error", "Please check instrument connections", QMessageBox.Ok)
+            QMessageBox.information(
+                None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
+            )
 
 
-        self.frozeLVPowerPanel()
         self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
 
@@ -827,8 +828,9 @@ class QtApplication(QWidget):
         self.multimeter_remote_control.setDisabled(True)
 
     def reconnectDevices(self):
-        self.device_settings = site_config.icicle_instrument_setup
+        self.device_settings = site_settings.icicle_instrument_setup
 
+        self.instruments.close()
         # I believe that this should "free" the memory taken by the previous instance
         # of InstrumentCluster(), however, it is at the will of the garbage collector
         self.instruments = None
@@ -968,7 +970,7 @@ class QtApplication(QWidget):
             self.ArduinoGroup.disable()
 
     def checkFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+        for index, (firmwareName, fwAddress) in enumerate(site_settings.FC7List.items()):
             fileName = self.LogList[index]
             if firmwareName != self.FwUnderUsed:
                 FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(
@@ -987,7 +989,7 @@ class QtApplication(QWidget):
             self.occupyFw("{0}".format(index))
 
     def refreshFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+        for index, (firmwareName, fwAddress) in enumerate(site_settings.FC7List.items()):
             self.UseButtons[index].setDisabled(False)
         if self.FwUnderUsed != "":
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
