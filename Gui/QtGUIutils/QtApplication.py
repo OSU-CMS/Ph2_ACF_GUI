@@ -1104,7 +1104,9 @@ class QtApplication(QWidget):
 
         if reply == QMessageBox.Yes:
             print("Application terminated")
-            self.instruments.off()
+            if self.instruments != None:
+                self.instruments.off()
+
 
             # If you didn't start the Peltier controller, tempPower won't be defined
             try:
