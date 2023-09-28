@@ -344,19 +344,18 @@ class TestHandler(QObject):
 
             # find the set values
             testModuleType = self.master.module_in_use
-            testPowerMode = self.master.powering_mode
 
             TestVoltage = None
             TestCurrent = None
-            if testPowerMode == "SLDO":
-                TestVoltage = ModuleVoltageMapSLDO[testModuleType]
-                TestCurrent = ModuleCurrentMap[testModuleType]
-            elif testPowerMode == "Direct":
-                TestVoltage = ModuleVoltageMap[testModuleType]
-                TestCurrent = ModuleCurrentMap[testModuleType]
+            TestVoltage = ModuleVoltageMapSLDO[testModuleType]
+            TestCurrent = ModuleCurrentMap[testModuleType]
 
-            volDiff = abs(TestVoltage - measurement[0])
-            ampDiff = abs(TestCurrent - measurement[1])
+            if TestVoltage != None:
+                volDiff = abs(TestVoltage - measurement[0])
+                ampDiff = abs(TestCurrent - measurement[1])
+            else:
+                print("ERROR: Could not read correct test voltage and current")
+                return
 
             if volDiff <= 0.5 and ampDiff <= 0.5 and (LVStatusValue == 1):
                 self.IVCurveHandler = IVCurveHandler(self, self.instruments)
