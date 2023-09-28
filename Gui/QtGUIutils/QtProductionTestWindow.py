@@ -194,7 +194,7 @@ class QtProductionTestWindow(QWidget):
 		if measureType == "IVCurve":
 			Voltage = measure["voltage"]
 			Current = measure["current"]
-			self.IVCurveData.append([Voltage,Current])
+			self.IVCurveData = measure
 			self.MainTabs.clear()
 			self.MainTabs.addTab(self.IVCurveResult,"I-V Curve")
 			self.MainTabs.setCurrentWidget(self.IVCurveResult)
