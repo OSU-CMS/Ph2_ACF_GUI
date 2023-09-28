@@ -190,13 +190,11 @@ class QtProductionTestWindow(QWidget):
 
 	def updateMeasurement(self, measureType, measure):
 		print(measureType,measure)
+		# TODO Update this function to fix instrumentCluster use
 		if measureType == "IVCurve":
 			Voltage = measure["voltage"]
 			Current = measure["current"]
 			self.IVCurveData.append([Voltage,Current])
-			self.IVCurveResult.updatePlots(self.IVCurveData)
-			self.IVCurveResult.update()
-			index = self.MainTabs.indexOf(self.IVCurveResult)
 			self.MainTabs.clear()
 			self.MainTabs.addTab(self.IVCurveResult,"I-V Curve")
 			self.MainTabs.setCurrentWidget(self.IVCurveResult)

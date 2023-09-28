@@ -5,7 +5,7 @@ import time
 
 
 class IVCurveThread(QThread):
-    measureSignal = pyqtSignal(object)
+    measureSignal = pyqtSignal(str, object)
 
     def __init__(self, parent, instrument_cluster=None):
         super(IVCurveThread, self).__init__()
@@ -13,6 +13,7 @@ class IVCurveThread(QThread):
         self.parent = parent
         self.measureSignal.connect(self.parent.transitMeasurment)
         self.exiting = False
+        self.setTerminationEnabled(True)
 
         self.startVal = 0
         self.target = 0
@@ -29,42 +30,18 @@ class IVCurveThread(QThread):
 
     def abortTest(self):
         print("Aborting test...")
-        self.exiting = True
+        self.terminate()
 
     def run(self):
         while not self.exiting:
             try:
-                final_value, measurements_= self.instruments.hv_on(lv_channel = 1, voltage = self.target, step_size=-2,measure=True)
+                _, measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.target, step_size=-2,measure=True)
+                measurements = ((value[1], value[3]) for value in measurements)
+                self.measureSignal.emit("IVCurve", measurements)
             except Exception as e:
                 print("IV Curve scan failed with {}".format(e))
 
-    def run(self):
-        while not self.exiting and abs(self.target) <= abs(self.stopVal):
-            try:
-                self.powersupply.SetHVVoltage(self.target)
-                time.sleep(0.5)
-                # voltage = self.powersupply.ReadVoltage()
-                voltage = self.target
-                time.sleep(0.5)
-                current = self.powersupply.ReadCurrent()
 
-                self.stepNum += 1
-                measurementStr = {
-                    "voltage": voltage,
-                    "current": current,
-                    "percentage": self.stepNum / self.stepTotal,
-                }
-                if voltage == None or current == None:
-                    self.stepNum -= 1
-                    self.target = self.startVal + self.stepLength * self.stepNum
-                    continue
-                self.measureSignal.emit(measurementStr)
-                self.target = self.startVal + self.stepLength * self.stepNum
-            except Exception as err:
-                print("IV Curve scan failed with {}".format(err))
-
-        # except Exception as err:
-        #    print("IV-Curve test failed")
 
 
 class IVCurveHandler(QObject):
@@ -76,10 +53,9 @@ class IVCurveHandler(QObject):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.window = window
-        # self.stopSignal.connect(self.window.)
-        self.measureSignal.connect(self.window.updateMeasurement)
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
+        self.test.measureSignal.connect(self.window.updateMeasurement)
         self.test.finished.connect(self.finish)
 
     def isValid(self):
