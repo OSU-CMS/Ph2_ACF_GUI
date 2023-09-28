@@ -222,109 +222,68 @@ class SummaryBox(QWidget):
                 print("Firmware image is now loaded")
             print("made it to LV turn on")
             if self.master.PowerRemoteControl["LV"]:
-                self.master.LVpowersupply.setPoweringMode(
-                    self.PowerModeCombo.currentText()
-                )
+                self.master.powering_mode = self.PowerModeCombo.currentText()
+
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
-                self.master.LVpowersupply.setModuleType(self.module.getType())
+                self.master.module_in_use = self.module.getType()
 
 
-                self.master.LVpowersupply.TurnOn()
+                self.master.instruments.lv_on(None, ModuleVoltageMapSLDO[self.master.module_in_use], ModuleCurrentMap[self.master.module_in_use])
+
                 logging.info("Turned on LV power supply")
 
-            current = self.master.LVpowersupply.ReadCurrent()
-            current = float(current)
-            voltage = self.master.LVpowersupply.ReadVoltage()
-            voltage = float(voltage)
+            current = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
             print(self.PowerModeCombo.currentText())
 
             # Want to try and connect twice
             self.Stopcount = 0
             while self.Stopcount < 2:
-                channel = 1
-                LVStatusValue = self.master.LVpowersupply.Instrument.status(
-                    channel, no_lock=True
-                )  # return 1 if it is on, 0 if it is off
-                current = self.master.LVpowersupply.ReadCurrent()
-                Readcurrent = float(current) if current else 0.0
-                voltage = self.master.LVpowersupply.ReadVoltage()
-                Readvoltage = float(voltage) if voltage else 0.0
+                measurements = self.master.instruments._lv.measure()
                 # find the set value
-                testModuleType = self.master.LVpowersupply.ModuleType
-                testPowerMode = self.master.LVpowersupply.PoweringMode
-                if testPowerMode == "SLDO":
-                    TestVoltage = ModuleVoltageMapSLDO[testModuleType]
-                    TestCurrent = ModuleCurrentMap[testModuleType]
-                elif testPowerMode == "Direct":
-                    TestVoltage = ModuleVoltageMap[testModuleType]
-                    TestCurrent = ModuleCurrentMap[testModuleType]
-                print("Readvoltage:" + str(Readvoltage))
-                print("Readcurrent:" + str(Readcurrent))
-                print("LVStatusValue:" + str(LVStatusValue))
+                TestVoltage = ModuleVoltageMapSLDO[self.master.module_in_use]
+                TestCurrent = ModuleCurrentMap[self.master.module_in_use]
+                print("Readvoltage:" + str(measurements[0]))
+                print("Readcurrent:" + str(measurements[1]))
                 print("TestCurrent" + str(TestCurrent))
                 print("TestVoltage" + str(TestVoltage))
 
                 # compare the difference between the Setup value vs the reading value
-                volDiff = abs(TestVoltage - Readvoltage)
-                ampDiff = abs(TestCurrent - Readcurrent)
+                volDiff = abs(TestVoltage - measurements[0])
+                ampDiff = abs(TestCurrent - measurements[1])
 
-                if volDiff <= 0.5 and ampDiff <= 0.5 and (LVStatusValue):
+                if volDiff <= 0.5 and ampDiff <= 0.5 and (self.master.instruments.status(None)["lv"]):
                     leakageCurrent = 0.0
-                    if self.master.PowerRemoteControl["HV"]:
-                        self.master.HVpowersupply.RampingUp(defaultHVsetting, -3)
-                        leakageCurrent = self.master.HVpowersupply.ReadCurrent()
-                        print(leakageCurrent)
-                    if "SLDO" in self.PowerModeCombo.currentText():
-                        print("this is sldo check")
-                        properCurrent = ModuleCurrentMap[self.module.getType()]
-                        if (
-                            current < properCurrent + 0.2
-                            and current > properCurrent - 0.2
-                        ):
-                            self.result = True
-                            self.CheckLabel.setText(
-                                "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                                    current, voltage
-                                )
+                    _, measurement = self.master.instruments.hv_on(None, voltage = defaultHVsetting, delay = 0.5, step_size = -3, measure = True)
+                    leakageCurrent = measurement[-1][3]
+
+                    print(leakageCurrent)
+                    print("this is sldo check")
+                    properCurrent = ModuleCurrentMap[self.module.getType()]
+                    if (
+                        current < properCurrent + 0.2
+                        and current > properCurrent - 0.2
+                    ):
+                        self.result = True
+                        self.CheckLabel.setText(
+                            "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+                                measurements[1], measurements[0]
                             )
-                            self.CheckLabel.setStyleSheet("color:green")
-                        else:
-                            self.result = False
-                            self.CheckLabel.setText(
-                                "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                                    current, voltage
-                                )
+                        )
+                        self.CheckLabel.setStyleSheet("color:green")
+                    else:
+                        self.result = False
+                        self.CheckLabel.setText(
+                            "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+                                measurements[1], measurements[0]
                             )
-                            self.CheckLabel.setStyleSheet("color:red")
-                    elif "Direct" in self.PowerModeCombo.currentText():
-                        print("this is direct mode")
-                        properCurrent = ModuleCurrentMap[self.module.getType()]
-                        if (
-                            current < properCurrent + 0.1
-                            and current > properCurrent - 0.3
-                        ):
-                            self.result = True
-                            self.CheckLabel.setText(
-                                "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                                    current, voltage
-                                )
-                            )
-                            self.CheckLabel.setStyleSheet("color:green")
-                        else:
-                            self.result = False
-                            self.CheckLabel.setText(
-                                "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                                    current, voltage
-                                )
-                            )
-                            self.CheckLabel.setStyleSheet("color:red")
-                    break
+                        )
+                        self.CheckLabel.setStyleSheet("color:red")
 
                 else:
                     self.result = False
                     self.CheckLabel.setText(
                         "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                            current, voltage
+                            measurements[1], measurements[0]
                         )
                     )
                     self.CheckLabel.setStyleSheet("color:red")
@@ -333,7 +292,7 @@ class SummaryBox(QWidget):
                     print("LV PS is off now. HV PS can't be turn on")
                     print("attempt to turn on the LV PS again")
                     time.sleep(2)
-            self.master.HVpowersupply.TurnOffHV()
+            self.master.instruments.hv_off(lv_channel=None, delay=0.5, step_size = 10)
 
             return self.result
         except Exception as err:
@@ -367,8 +326,6 @@ class QtStartWindow(QWidget):
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
-        # self.master.HVpowersupply.TurnOn()
-        # self.master.LVpowersupply.TurnOn()
         self.firmware = firmware
         self.firmwares = firmware
         self.firmwareName = firmware.getBoardName()
@@ -377,7 +334,6 @@ class QtStartWindow(QWidget):
         self.setLayout(self.mainLayout)
         self.runFlag = False
         self.passCheck = False
-        # self.LogoGroupBox2 = self.master.LogoGroupBox
         self.setLoginUI()
         self.createHead()
         self.createMain()
@@ -387,9 +343,6 @@ class QtStartWindow(QWidget):
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
         self.setWindowTitle("Start a new test")
-        # QApplication.setStyle(QStyleFactory.create('macintosh'))
-        # QApplication.setPalette(QApplication.style().standardPalette())
-        # QApplication.setPalette(QApplication.palette())
         self.show()
 
     def createHead(self):
@@ -574,8 +527,7 @@ class QtStartWindow(QWidget):
                 self.release()
                 # This line was previosly commented
                 try:
-                    self.master.HVpowersupply.TurnOffHV()
-                    self.master.LVpowersupply.TurnOff()
+                    self.master.instruments.off(lv_channel=None, hv_delay=0.5, hv_step_size=10)
                     print("Window closed")
                 except:
                     print(

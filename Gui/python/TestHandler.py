@@ -1,41 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap, QTextCursor, QColor
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QPlainTextEdit,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTableWidgetItem,
-    QTabWidget,
-    QTextEdit,
-    QTreeWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
     QMessageBox,
-    QSplitter,
 )
 
 import sys
@@ -45,8 +11,6 @@ import subprocess
 import threading
 import time
 from datetime import datetime
-import random
-from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
@@ -89,8 +53,7 @@ class TestHandler(QObject):
     def __init__(self, runwindow, master, info, firmware):
         super(TestHandler, self).__init__()
         self.master = master
-        self.HVpowersupply = self.master.HVpowersupply
-        self.LVpowersupply = self.master.LVpowersupply
+        self.instruments = self.master.instruments
         # self.LVpowersupply.Reset()
 
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
@@ -371,23 +334,20 @@ class TestHandler(QObject):
                 self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
             )
 
-            channel = 1
             # copy from QtStartWindow
             # find the reading values
-            LVStatusValue = self.LVpowersupply.Instrument.status(
-                channel, no_lock=True
-            )  # return 1 if it is on, 0 if it is off
-            if LVStatusValue:
-                LVStatusValue = 1
-            else:
-                LVStatusValue = 0
-            current = self.LVpowersupply.ReadCurrent()
-            Readcurrent = float(current) if current else 0.0
-            voltage = self.LVpowersupply.ReadVoltage()
-            Readvoltage = float(voltage) if voltage else 0.0
+
+            LVStatusValue = self.master.instruments.status()["lv"]
+
+            # Returns (Voltage, Current)
+            measurement = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
+
             # find the set values
-            testModuleType = self.master.LVpowersupply.ModuleType
-            testPowerMode = self.master.LVpowersupply.PoweringMode
+            testModuleType = self.master.module_in_use
+            testPowerMode = self.master.powering_mode
+
+            TestVoltage = None
+            TestCurrent = None
             if testPowerMode == "SLDO":
                 TestVoltage = ModuleVoltageMapSLDO[testModuleType]
                 TestCurrent = ModuleCurrentMap[testModuleType]
@@ -395,23 +355,23 @@ class TestHandler(QObject):
                 TestVoltage = ModuleVoltageMap[testModuleType]
                 TestCurrent = ModuleCurrentMap[testModuleType]
 
-            volDiff = abs(TestVoltage - Readvoltage)
-            ampDiff = abs(TestCurrent - Readcurrent)
+            volDiff = abs(TestVoltage - measurement[0])
+            ampDiff = abs(TestCurrent - measurement[1])
 
             if volDiff <= 0.5 and ampDiff <= 0.5 and (LVStatusValue == 1):
-                self.IVCurveHandler = IVCurveHandler(self, self.HVpowersupply)
+                self.IVCurveHandler = IVCurveHandler(self, self.instruments)
                 self.IVCurveHandler.finished.connect(self.IVCurveFinished)
                 self.IVCurveHandler.IVCurve()
                 return
             else:
                 print("runSingleTest unable to start due to LVpowersupply status")
-                print("Readvoltage:" + str(Readvoltage))
-                print("Readcurrent:" + str(Readcurrent))
+                print("Readvoltage:" + str(measurement[0]))
+                print("Readcurrent:" + str(measurement[1]))
                 print("LVStatusValue:" + str(LVStatusValue))
                 print("TestCurrent:" + str(TestCurrent))
                 print("TestVoltage:" + str(TestVoltage))
                 print("LVpowersupply issue occurs, HVPS is turning off")
-                self.HVpowersupply.TurnOffHV()
+                self.instruments.hv_off(lv_channel= None, delay=0.5, step_size= 10)
                 reply = QMessageBox.question(
                     None,
                     "LV power supply error",
