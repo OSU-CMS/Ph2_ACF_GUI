@@ -337,7 +337,7 @@ class TestHandler(QObject):
             # copy from QtStartWindow
             # find the reading values
 
-            LVStatusValue = self.master.instruments.status()["lv"]
+            LVStatusValue = self.master.instruments.status(lv_channel=None)["lv"]
 
             # Returns (Voltage, Current)
             measurement = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
