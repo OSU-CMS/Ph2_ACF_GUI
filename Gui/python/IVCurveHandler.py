@@ -36,9 +36,9 @@ class IVCurveThread(QThread):
         while not self.exiting:
             try:
                 print("About to measure")
-                _, measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.target, step_size=-2,measure=True)
+                measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.target, step_size=-2,measure=True)
                 print(measurements)
-                measurements = ((value[1], value[3]) for value in measurements)
+                #measurements = ((value[1], value[3]) for value in measurements)
                 self.measureSignal.emit("IVCurve", measurements)
             except Exception as e:
                 print("IV Curve scan failed with {}".format(e))
