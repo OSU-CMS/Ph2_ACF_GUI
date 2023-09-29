@@ -356,7 +356,9 @@ class TestHandler(QObject):
             else:
                 print("ERROR: Could not read correct test voltage and current")
                 return
-
+            print("Voltage difference: " , volDiff)
+            print("Current difference: ", ampDiff)
+            print("LV status: ", LVStatusValue)
             if volDiff <= 0.5 and ampDiff <= 0.5 and (LVStatusValue == 1):
                 self.IVCurveHandler = IVCurveHandler(self, self.instruments)
                 self.IVCurveHandler.finished.connect(self.IVCurveFinished)
@@ -364,11 +366,7 @@ class TestHandler(QObject):
                 return
             else:
                 print("runSingleTest unable to start due to LVpowersupply status")
-                print("Readvoltage:" + str(measurement[0]))
-                print("Readcurrent:" + str(measurement[1]))
-                print("LVStatusValue:" + str(LVStatusValue))
-                print("TestCurrent:" + str(TestCurrent))
-                print("TestVoltage:" + str(TestVoltage))
+                print("Current LV measurments: ", measurement)
                 print("LVpowersupply issue occurs, HVPS is turning off")
                 self.instruments.hv_off(lv_channel= None, delay=0.5, step_size= 10)
                 reply = QMessageBox.question(
