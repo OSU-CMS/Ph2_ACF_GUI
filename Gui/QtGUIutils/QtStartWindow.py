@@ -475,6 +475,11 @@ class QtStartWindow(QWidget):
         # if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
         # 	QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
         # 	return
+
+        # NOTE This is not the best way to do this, we should be emitting a signal to change
+        # the module type but ModuleBox is not publically accessible so we have to go through BeBoardWidget
+        self.master.module_in_use = self.BeBoardWidget.getModules()[0].getType()
+
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
                 QMessageBox.information(

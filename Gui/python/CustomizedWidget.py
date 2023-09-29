@@ -46,7 +46,6 @@ from Gui.QtGUIutils.QtFwCheckDetails import *
 
 class ModuleBox(QWidget):
     typechanged = pyqtSignal()
-    destroy = pyqtSignal()
 
     def __init__(self):
         super(ModuleBox, self).__init__()
@@ -77,6 +76,7 @@ class ModuleBox(QWidget):
         self.TypeCombo = QComboBox()
         self.TypeCombo.addItems(ModuleType.values())
         self.TypeCombo.currentIndexChanged.connect(self.on_TypeChanged)
+
         TypeLabel.setBuddy(self.TypeCombo)
 
         # self.ChipBoxWidget = ChipBox(self.TypeCombo.currentText())
