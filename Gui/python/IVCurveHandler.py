@@ -2,6 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import *
 
 import time
+import numpy
 
 
 class IVCurveThread(QThread):
@@ -36,7 +37,8 @@ class IVCurveThread(QThread):
         while not self.exiting:
             try:
                 print("About to measure")
-                measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.target, step_size=-2,measure=True)
+                _, measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.target, step_size=-2, measure=True)
+                measurements = numpy.array(measurements)
                 print(measurements)
                 #measurements = ((value[1], value[3]) for value in measurements)
                 self.measureSignal.emit("IVCurve", measurements)
