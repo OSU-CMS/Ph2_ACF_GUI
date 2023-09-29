@@ -1,59 +1,44 @@
-from Ph2_ACF_GUI.Gui import siteSettings as set
+from Ph2_ACF_GUI.parseVariables import variableParser
 import csv
 
 class csvImport:
     def __init__(self):
-        self.settingslist = {
-            'GPIB_DebugMode': set.GPIB_DebugMode,
-            'defaultACFVersion': set.defaultACFVersion,
-            'defaultFC7': set.defaultFC7,
-            'defaultFC7IP': set.defaultFC7IP,
-            'defaultFMC': set.defaultFMC,
-            'defaultUSBPortHV': set.defaultUSBPortHV,
-            'defaultHVModel': set.defaultHVModel,
-            'defaultUSBPortLV': set.defaultUSBPortLV,
-            'defaultLVModel': set.defaultLVModel,
-            'defaultModuleType': set.defaultModuleType,
-            'defaultPowerMode': set.defaultPowerMode,
-            'defaultHVCurrentCompliance': set.defaultHVCurrentCompliance,
-            'defaultHVsetting': set.defaultHVsetting,
-            'defaultSensorBaudRate': set.defaultSensorBaudRate,
-            'defaultDBServerIP': set.defaultDBServerIP,
-            'defaultDBName': set.defaultDBName,
-            'defaultTargetThr': set.defaultTargetThr,
-            'defaultSLDOscanVoltage': set.defaultSLDOscanVoltage,
-            'defaultSLDOscanMaxCurrent': set.defaultSLDOscanMaxCurrent,
-            'ModuleCurrentMap': set.ModuleCurrentMap,
-            'ModuleVoltageMapSLDO': set.ModuleVoltageMapSLDO,
-            'ModuleVoltageMap': set.ModuleVoltageMap,
-            'usePeltier': set.usePeltier,
-            'defaultPeltierPort': set.defaultPeltierPort,
-            'defaultPeltierBaud': set.defaultPeltierBaud,
-            'defaultPeltierSetTemp': set.defaultPeltierSetTemp,
-            'defaultPeltierMaxTemp': set.defaultPeltierMaxTemp,
-            'defaultPeltierMaxTempDiff': set.defaultPeltierMaxTempDiff
-        }
-
+        self.settingsfilepath = 'Gui/siteSettings.py'
         self.updated_settingslist = {}
+        self.parser = variableParser()
+        self.defaultSettings = self.parser.parse(self.settingsfilepath)
 
     def read_csv(self, readpath):
-        updated_settingslist = self.settingslist.copy()  # Create a copy to preserve defaults
+        updated_settings = self.defaultSettings.copy()  # Create a copy to preserve defaults
 
         try:
             with open(readpath, 'r', newline='') as csv_file:
                 reader = csv.DictReader(csv_file)
-                headers_in_csv = reader.fieldnames  # Get the headers from the CSV file
-
-                for row in reader:  # Iterate through the rows of the CSV file
-                    for header in headers_in_csv:
-                        if header in self.settingslist:
-                            updated_settingslist[header] = row[header]
-                        else:
-                            print(f'The settingslist does not contain the header "{header}".\n'
-                                  f'Either update the settingslist or check if "{header}" has any typos.')
+                
+                # Read the single row of headers
+                headers_in_csv = reader.fieldnames
+                # Read the single row of data
+                row = next(reader)
+                
+                noDefaultList = []
+                
+                if None in row:
+                    unusedData = row[None]
+                
+                for header in headers_in_csv:
+                    if header in self.defaultSettings:
+                        updated_settings[header] = row[header]
+                    else:
+                        noDefaultList.append(header)
+                        
+                if len(noDefaultList) != 0:
+                    print(f'The "siteSettings.py" does not have default values set for variables',noDefaultList)
+                
+                if len(headers_in_csv) < len(row):
+                    print(f'The following data {unusedData} were not used because there was not enough headers in the CSV file.')
 
             print(f"CSV file '{readpath}' read successfully.")
-            return updated_settingslist
+            return updated_settings
 
         except Exception as e:
             print(f"Error reading CSV file: {str(e)}")
@@ -65,11 +50,11 @@ class csvImport:
                 writer = csv.writer(csv_file)
 
                 # Write the headers (keys of the dictionary)
-                headers = self.settingslist.keys()
+                headers = self.defaultSettings.keys()
                 writer.writerow(headers)
 
                 # Write the corresponding values (associated with each header)
-                values = [self.settingslist[header] for header in headers]
+                values = [self.defaultSettings[header] for header in headers]
                 writer.writerow(values)
 
             print(f"CSV file '{writepath}' created successfully.")
@@ -79,6 +64,7 @@ class csvImport:
 
 if __name__ == "__main__":
     test = csvImport()
-    #test.create_csv('testcsv.csv')
+    #create = test.create_csv('testcsv.csv')
     result = test.read_csv('testcsv.csv')
+    result = test.parser.restoreOriginalType(result)
     print(result)
