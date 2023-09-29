@@ -334,56 +334,10 @@ class TestHandler(QObject):
                 self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
             )
 
-            testModuleType = self.master.module_in_use
-
-            TestVoltage = None
-            TestCurrent = None
-            TestVoltage = ModuleVoltageMapSLDO[testModuleType]
-            TestCurrent = ModuleCurrentMap[testModuleType]
-
-            LVStatusValue = self.master.instruments.status(lv_channel=None)["lv"]
-
-            if not LVStatusValue:
-               self.master.instruments.lv_on(lv_channel=None, voltage = TestVoltage, current = TestCurrent)
-
-            # Returns (Voltage, Current)
-            measurement = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
-
-            # find the set values
-
-
-            if TestVoltage != None:
-                volDiff = abs(TestVoltage - measurement[0])
-                ampDiff = abs(TestCurrent - measurement[1])
-            else:
-                print("ERROR: Could not read correct test voltage and current")
-                return
-            print("Voltage difference: " , volDiff)
-            print("Current difference: ", ampDiff)
-            print("LV status: ", LVStatusValue)
-            if volDiff <= 0.5 and ampDiff <= 0.5 and (LVStatusValue == 1):
-                self.IVCurveHandler = IVCurveHandler(self, self.instruments)
-                self.IVCurveHandler.finished.connect(self.IVCurveFinished)
-                self.IVCurveHandler.IVCurve()
-                return
-            else:
-                print("runSingleTest unable to start due to LVpowersupply status")
-                print("Current LV measurments: ", measurement)
-                print("LVpowersupply issue occurs, HVPS is turning off")
-                self.instruments.hv_off(lv_channel= None, delay=0.5, step_size= 10)
-                reply = QMessageBox.question(
-                    None,
-                    "LV power supply error",
-                    "LV power supply error do you want to abort? yes for abort no for reset the test",
-                    QMessageBox.No | QMessageBox.Yes,
-                    QMessageBox.No,
-                )
-                if reply == QMessageBox.Yes:
-                    self.abortTest()
-                if reply == QMessageBox.No:
-                    self.resetConfigTest()
-
-                return
+            self.IVCurveHandler = IVCurveHandler(self, self.instruments)
+            self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+            self.IVCurveHandler.IVCurve()
+            return
 
 
         if testName == "SLDOScan":
