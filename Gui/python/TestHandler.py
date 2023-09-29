@@ -334,21 +334,23 @@ class TestHandler(QObject):
                 self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
             )
 
-            # copy from QtStartWindow
-            # find the reading values
-
-            LVStatusValue = self.master.instruments.status(lv_channel=None)["lv"]
-
-            # Returns (Voltage, Current)
-            measurement = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
-
-            # find the set values
             testModuleType = self.master.module_in_use
 
             TestVoltage = None
             TestCurrent = None
             TestVoltage = ModuleVoltageMapSLDO[testModuleType]
             TestCurrent = ModuleCurrentMap[testModuleType]
+
+            LVStatusValue = self.master.instruments.status(lv_channel=None)["lv"]
+
+            if not LVStatusValue:
+               self.master.instruments.lv_on(lv_channel=None, voltage = TestVoltage, current = TestCurrent)
+
+            # Returns (Voltage, Current)
+            measurement = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
+
+            # find the set values
+
 
             if TestVoltage != None:
                 volDiff = abs(TestVoltage - measurement[0])
