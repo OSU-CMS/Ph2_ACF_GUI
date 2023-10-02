@@ -31,7 +31,9 @@ class IVCurveThread(QThread):
 
     # Used to break out of hv_on correctly
     def continueTest(self):
+        print("Continue Test")
         if self.exiting:
+            print("Breaking test")
             break
 
 
@@ -87,7 +89,7 @@ class IVCurveHandler(QObject):
         try:
             print("Terminating I-V Curve scanning...")
             self.test.abortTest()
-            print("")
+            print("After abort Test")
             self.instruments.hv_off(no_lock=True)
             print("After hv off")
         except Exception as err:
