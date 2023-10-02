@@ -40,8 +40,6 @@ class IVCurveThread(QThread):
     def abortTest(self):
         self.exiting = True
         print("Aborting test...")
-        self.terminate()
-        print("Abort successful")
 
     def run(self):
         try:
