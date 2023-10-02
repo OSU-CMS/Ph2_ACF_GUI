@@ -803,7 +803,7 @@ class QtApplication(QWidget):
             self.disable_instrument_widgets()
 
         except Exception as e:
-            print(e)
+            print("Error: ", e)
             QMessageBox.information(
                 None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
             )
