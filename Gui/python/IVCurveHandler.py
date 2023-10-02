@@ -36,8 +36,8 @@ class IVCurveThread(QThread):
     def run(self):
         try:
             print("About to measure")
-            measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.target, step_size=-2, measure=True)
-            print(measurements)
+            measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.stopVal, step_size=-2, measure=True)
+            print("measurement", measurements)
             #measurements = ((value[1], value[3]) for value in measurements)
             #self.measureSignal.emit("IVCurve", measurements)
         except Exception as e:

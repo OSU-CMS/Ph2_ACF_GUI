@@ -332,10 +332,11 @@ class TestHandler(QObject):
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
+            # NOTE what does ScanCanvas do?
             self.IVCurveResult = ScanCanvas(
                 self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
             )
-
+            print("Started IV Curve")
             self.IVCurveHandler = IVCurveHandler(self, self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.IVCurve()
@@ -1012,8 +1013,11 @@ class TestHandler(QObject):
 
         if isCompositeTest(self.info[1]):
             self.runTest()
-
     def updateMeasurement(self, measureType, measure):
+        """
+        Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
+        if in simplified gui add to figure list
+        """
         # print(measure)
         if measureType == "IVCurve":
             Voltage = measure["voltage"]
