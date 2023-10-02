@@ -44,7 +44,7 @@ class IVCurveThread(QThread):
     def run(self):
         try:
             measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.stopVal, step_size=-2, measure=True, break_monitoring=self.breakTest)
-            measurements = ((value[1], value[3]) for value in measurements)
+            measurements = [(value[1], value[3]) for value in measurements]
             self.measureSignal.emit("IVCurve", measurements)
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
