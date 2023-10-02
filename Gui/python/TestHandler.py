@@ -334,7 +334,7 @@ class TestHandler(QObject):
             self.IVCurveData = []
             # NOTE what does ScanCanvas do?
             self.IVCurveResult = ScanCanvas(
-                self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
+                self, xlabel="Voltage (V)", ylabel="I (A)", X =  , Y= , invert=True
             )
             print("Started IV Curve")
             self.IVCurveHandler = IVCurveHandler(self, self.instruments)
@@ -1020,14 +1020,13 @@ class TestHandler(QObject):
         """
         # print(measure)
         if measureType == "IVCurve":
-            Voltage = measure["voltage"]
-            Current = measure["current"]
-            Percentage = measure["percentage"]
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                Percentage * 100
-            )
-            self.IVCurveData.append([Voltage, Current])
-            self.IVCurveResult.updatePlots(self.IVCurveData)
+            voltages = measure["voltage"]
+            currents = measure["current"]
+            logger.debug(f"Voltages: {voltages}")
+            logger.debug(f"Currents: {currents}")
+            # self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+            #     Percentage * 100
+            # )
             tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
             if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
                 try:
@@ -1044,15 +1043,15 @@ class TestHandler(QObject):
                 self.updateIVResult.emit((step, self.figurelist))
 
         if measureType == "SLDOScan":
-            Voltage = measure["voltage"]
-            Current = measure["current"]
+            voltages = measure["voltage"]
+            currents = measure["current"]
             Percentage = measure["percentage"]
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
                 Percentage * 100
             )
-            if float(Voltage) < -0.1 and float(Current) < -0.1:
+            if float(voltages) < -0.1 and float(currents) < -0.1:
                 return
-            self.SLDOScanData.append([Voltage, Current])
+            self.SLDOScanData.append([voltages, currents])
             self.SLDOScanResult.updatePlots(self.SLDOScanData)
             tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
             if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):

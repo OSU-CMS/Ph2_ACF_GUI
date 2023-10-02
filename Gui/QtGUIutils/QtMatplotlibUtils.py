@@ -18,7 +18,7 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import *
 
 class ScanCanvas(FigureCanvas):
-	def __init__(self,parent,xlabel = "X", ylabel = "Y", sorted = True, invert = False):
+	def __init__(self,parent,xlabel = "X", ylabel = "Y", X= numpy.array([]), Y = numpy.array([]), sorted = True, invert = False):
 		self.parent = parent
 		self.foutname = 'testIVcurve'
 		self.sortX = sorted
@@ -27,8 +27,8 @@ class ScanCanvas(FigureCanvas):
 		self.axes = self.fig.add_subplot(111)
 		self.xlabel = xlabel
 		self.ylabel = ylabel
-		self.X = numpy.array([])
-		self.Y = numpy.array([])
+		self.X = X
+		self.Y = Y
 		self.compute_initial_figure()
 		FigureCanvas.__init__(self, self.fig)
 		self.setMinimumHeight(100)
@@ -166,4 +166,3 @@ class RunStatusCanvas(FigureCanvas):
 			self.xticks.append(Test[self.parent.info[1]])
 		self.grades = self.parent.grades
 		self.compute_initial_figure()
-		
