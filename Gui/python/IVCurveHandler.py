@@ -32,22 +32,20 @@ class IVCurveThread(QThread):
     # Used to break out of hv_on correctly
     def breakTest(self):
         if self.exiting:
-            print("Exiting")
+            #print("Exiting")
             return True
         return False
 
 
     def abortTest(self):
         self.exiting = True
-        print("Aborting test...")
+        #print("Aborting test...")
 
     def run(self):
         try:
-            print("About to measure")
             measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.stopVal, step_size=-2, measure=True, break_monitoring=self.breakTest)
-            print("measurement", measurements)
-            #measurements = ((value[1], value[3]) for value in measurements)
-            #self.measureSignal.emit("IVCurve", measurements)
+            measurements = ((value[1], value[3]) for value in measurements)
+            self.measureSignal.emit("IVCurve", measurements)
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
 
@@ -85,10 +83,8 @@ class IVCurveHandler(QObject):
 
     def stop(self):
         try:
-            print("Terminating I-V Curve scanning...")
             self.test.abortTest()
-            print("After abort Test")
             self.instruments.hv_off(no_lock=True)
-            print("After hv off")
+            self.test.terminate()
         except Exception as err:
             print(f"Failed to stop the IV test due to error {err}")
