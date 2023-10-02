@@ -32,6 +32,7 @@ class IVCurveThread(QThread):
     # Used to break out of hv_on correctly
     def breakTest(self):
         if self.exiting:
+            print("Exiting")
             return True
         return False
 
