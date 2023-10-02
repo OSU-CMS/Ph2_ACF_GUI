@@ -26,7 +26,7 @@ class IVCurveThread(QThread):
 
     def turnOn(self):
         self.instruments.hv_off()
-        self.instruments.hv_on(voltage=0, delay=0.5, step_size = 10, no_lock=True, break_monitoring=self.breakTest)
+        self.instruments.hv_on(voltage=0, delay=0.5, step_size = 10, no_lock=True)
         self.instruments.hv_compliance_current(0.00001)
 
     # Used to break out of hv_on correctly
@@ -45,7 +45,7 @@ class IVCurveThread(QThread):
     def run(self):
         try:
             print("About to measure")
-            measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.stopVal, step_size=-2, measure=True)
+            measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.stopVal, step_size=-2, measure=True, break_monitoring=self.breakTest)
             print("measurement", measurements)
             #measurements = ((value[1], value[3]) for value in measurements)
             #self.measureSignal.emit("IVCurve", measurements)
