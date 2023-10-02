@@ -26,7 +26,7 @@ class IVCurveThread(QThread):
 
     def turnOn(self):
         self.instruments.hv_off()
-        self.instruments.hv_on(voltage=0, delay=0.5, step_size = 10)
+        self.instruments.hv_on(voltage=0, delay=0.5, step_size = 10, no_lock=True)
         self.instruments.hv_compliance_current(0.00001)
 
     def abortTest(self):
@@ -81,7 +81,7 @@ class IVCurveHandler(QObject):
             print("Terminating I-V Curve scanning...")
             self.test.abortTest()
             print("")
-            self.instruments.hv_off()
+            self.instruments.hv_off(no_lock=True)
             print("After hv off")
         except Exception as err:
             print(f"Failed to stop the IV test due to error {err}")
