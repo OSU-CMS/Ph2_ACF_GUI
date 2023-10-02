@@ -31,7 +31,6 @@ class IVCurveThread(QThread):
 
     def abortTest(self):
         print("Aborting test...")
-        self.instruments.hv_off()
         self.terminate()
 
     def run(self):
@@ -80,5 +79,6 @@ class IVCurveHandler(QObject):
         try:
             print("Terminating I-V Curve scanning...")
             self.test.abortTest()
+            self.instruments.hv_off()
         except Exception as err:
             print(f"Failed to stop the IV test due to error {err}")
