@@ -799,7 +799,8 @@ class QtApplication(QWidget):
         try:
             self.instruments = InstrumentCluster(**self.device_settings)
             self.instruments.open()
-            self.instruments.off()
+            if self.instruments.status(lv_channel=None)["lv"] or self.instruments.status(lv_channel=None)["hv"]:
+                self.instruments.off()
             self.disable_instrument_widgets()
 
         except Exception as e:
