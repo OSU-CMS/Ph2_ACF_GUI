@@ -57,6 +57,7 @@ class QtApplication(QWidget):
         self.expertMode = False
         self.FwUnderUsed = ""
         self.module_in_use = None
+        self.instruments = None
 
         # self.FwUnderUsed = []
 
