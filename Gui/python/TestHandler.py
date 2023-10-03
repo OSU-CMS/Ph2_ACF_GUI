@@ -1067,7 +1067,7 @@ class TestHandler(QObject):
         for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
 
-            self.IVCurveResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)", X= measure['voltage'], Y= measure['current']  invert=True)
+            self.IVCurveResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)", X= measure['voltage'], Y= measure['current'],  invert=True)
         filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
         filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
         self.IVCurveResult.saveToSVG(filename)
