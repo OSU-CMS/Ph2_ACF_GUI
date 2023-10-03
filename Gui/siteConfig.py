@@ -38,6 +38,23 @@ defaultLVModel = ["KeySight E3633 (RS232)"]
 defaultSensorBaudRate = 9600
 #################################
 
+# Icicle variables
+icicle_instrument_setup = { "lv":"KeysightE3633A",
+                            "lv_resource" : "ASRL/dev/ttyUSBLV::INSTR",
+                            "default_lv_channel" : 1,
+                            "default_lv_voltage" : 1.8,
+                            "default_lv_current" : 3,
+                            "hv": "Keithley2410",
+                            "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
+                            "default_hv_voltage": -80,
+                            "default_hv_compliance_current": 5e-6,
+                            "default_hv_delay": 2,
+                            "default_hv_step_size": 10,
+                            "relay_board": None,
+                            "relay_board_resource":None,
+                            "multimeter": None,
+                            "multimeter_resource": None}
+
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 
 FC7List =  {

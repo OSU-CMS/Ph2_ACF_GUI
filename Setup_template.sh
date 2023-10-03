@@ -9,12 +9,12 @@ fi;
 
 if [ ! -d $DATA_dir ]; then
     echo "DATA_dir not found!  Making it now!"
-    mkdir -p -m777 $DATA_dir
+    mkdir -p -m 777 $DATA_dir
 fi;
 
-if [ ! -d $PH2ACF_BASE_DIR/test ]; then 
+if [ ! -d $PH2ACF_BASE_DIR/test ]; then
     echo "Test directory not found!  Making it now!"
-    mkdir -p -m777 $PH2ACF_BASE_DIR/test;
+    mkdir -p -m 777 $PH2ACF_BASE_DIR/test;
 fi;
 
 if [ ! -d $DATA_dir ]; then
@@ -27,15 +27,14 @@ fi;
 
 
 
-if [ "$UsePowerSupplyLib" = true ]
-then
+if [ "$UsePowerSupplyLib" = true ]; then
     export PowerSupplyArea=$PWD/power_supply
 else
     unset PowerSupplyArea
 fi
 
 
-#export DATA_dir=/Users/czkaiweb/Research/data/
+export DATA_dir=/Users/czkaiweb/Research/data/
 chmod 755 $PWD/Gui/GUIutils/*.sh
 
 cd $PH2ACF_BASE_DIR
@@ -47,6 +46,7 @@ then
     cd $PowerSupplyArea
     source setup.sh
 fi
-export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
 
-cd $GUI_dir
+export PYTHONPATH=${PYTHONPATH}:${PWD}
+export PYTHONPATH=${PYTHONPATH}:${PWD}/icicle/icicle
+

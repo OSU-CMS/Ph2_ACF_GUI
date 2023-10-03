@@ -2,85 +2,71 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import *
 
 import time
+import numpy
+
 
 class IVCurveThread(QThread):
-    measureSignal = pyqtSignal(object)
+    measureSignal = pyqtSignal(str, object)
 
-    def __init__(self,parent,powersupply = None):
+    def __init__(self, parent, instrument_cluster=None):
         super(IVCurveThread, self).__init__()
-        self.powersupply = powersupply
+        self.instruments = instrument_cluster
         self.parent = parent
         self.measureSignal.connect(self.parent.transitMeasurment)
         self.exiting = False
+        self.setTerminationEnabled(True)
 
         self.startVal = 0
         self.target = 0
-        self.stopVal = -80  #FIXME set this back to -80 after testing
+        self.stopVal = -80  # FIXME set this back to -80 after testing
         self.stepLength = -2
         self.stepNum = 0
-        self.stepTotal = (self.stopVal-self.startVal)/self.stepLength+1
+        self.stepTotal = (self.stopVal - self.startVal) / self.stepLength + 1
         self.turnOn()
-        
 
     def turnOn(self):
-        self.powersupply.TurnOffHV()
-        self.powersupply.TurnOnHV()
-        self.powersupply.SetHVRange(200)
-        self.powersupply.SetHVComplianceLimit(0.00001)
+        self.instruments.hv_off()
+        self.instruments.hv_on(voltage=0, delay=0.5, step_size = 10, no_lock=True)
+        self.instruments.hv_compliance_current(0.00001)
+
+    # Used to break out of hv_on correctly
+    def breakTest(self):
+        if self.exiting:
+            return True
+        return False
 
     def abortTest(self):
-        print("Aborting test...")
         self.exiting = True
 
     def run(self):
-        while not self.exiting and abs(self.target) <= abs(self.stopVal):
-            try:
-                self.powersupply.SetHVVoltage(self.target)
-                time.sleep(0.5)
-                #voltage = self.powersupply.ReadVoltage()
-                voltage = self.target
-                time.sleep(0.5)
-                current = self.powersupply.ReadCurrent()
+        try:
+            _, measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.stopVal, step_size=-2, measure=True, break_monitoring=self.breakTest)
+            measurementStr = {"voltage":[value[1] for value in measurements],"current": [value[2] for value in measurements]}
+            print("Voltages: ", measurementStr["voltage"])
+            print("Currents: ", measurementStr["current"])
+            self.measureSignal.emit("IVCurve", measurementStr)
+        except Exception as e:
+            print("IV Curve scan failed with {}".format(e))
 
-                #MAX_TRIES = 10
-                #N_TRIES = 1
-                #while abs(target-float(voltage))/abs(target+0.01) > 0.05 and  N_TRIES < MAX_TRIES:
-                #    N_TRIES += 1
-                #    time.sleep(0.5)
-                #    voltage = self.powersupply.ReadVoltage()
-                #    current = self.powersupply.ReadCurrent()
-                #    print("voltage:",voltage, " current:",current)
-                self.stepNum += 1
-                measurementStr = {"voltage":voltage,"current":current,"percentage":self.stepNum/self.stepTotal}
-                #print(measurementStr)
-                if voltage == None or current == None:
-                    self.stepNum -= 1
-                    self.target = self.startVal + self.stepLength * self.stepNum
-                    continue
-                self.measureSignal.emit(measurementStr)
-                self.target = self.startVal + self.stepLength * self.stepNum
-            except Exception as err:
-                print("IV Curve scan failed with {}".format(err))
-            
-        #except Exception as err:
-        #    print("IV-Curve test failed")
+
+
 
 class IVCurveHandler(QObject):
-    measureSignal = pyqtSignal(str,object)
+    measureSignal = pyqtSignal(str, object)
     stopSignal = pyqtSignal(object)
-    finished = pyqtSignal()
-    def __init__(self,window,powersupply):
-        super(IVCurveHandler,self).__init__()
-        self.powersupply = powersupply
-        self.window = window
-        #self.stopSignal.connect(self.window.)
-        self.measureSignal.connect(self.window.updateMeasurement)
+    finished = pyqtSignal(str, dict)
 
-        self.test = IVCurveThread(self, powersupply= self.powersupply)
-        self.test.finished.connect(self.finish)
-    
+    def __init__(self, window, instrument_cluster):
+        super(IVCurveHandler, self).__init__()
+        self.instruments = instrument_cluster
+        self.window = window
+
+        self.test = IVCurveThread(self, instrument_cluster=self.instruments)
+        #self.test.measureSignal.connect(self.window.updateMeasurement)
+        self.test.measureSignal.connect(self.finish)
+
     def isValid(self):
-        return self.powersupply != None
+        return self.instruments != None
 
     def IVCurve(self):
         if not self.isValid():
@@ -88,19 +74,16 @@ class IVCurveHandler(QObject):
         self.test.start()
 
     def transitMeasurment(self, measure):
-        self.measureSignal.emit("IVCurve",measure)
+        self.measureSignal.emit("IVCurve", measure)
 
-    def finish(self):
-        self.powersupply.TurnOffHV()
-        self.finished.emit()
-
+    def finish(self, test: str, measure: dict):
+        self.instruments.hv_off()
+        self.finished.emit(test, measure)
 
     def stop(self):
         try:
-            print("Terminating I-V Curve scanning...")
             self.test.abortTest()
-            self.powersupply.TurnOffHV()
+            self.instruments.hv_off(no_lock=True)
+            self.test.terminate()
         except Exception as err:
-            print("Failed to stop the IV test")
-
-
+            print(f"Failed to stop the IV test due to error {err}")

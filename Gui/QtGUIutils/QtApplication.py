@@ -1,3 +1,4 @@
+
 from PyQt5.QtCore import Qt, pyqtSignal, QSize
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QColor
@@ -19,16 +20,16 @@ from PyQt5.QtWidgets import (
 )
 
 
+
 import sys
 import os
+import pyvisa
 
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
-import Gui.siteConfig as site_config
 import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.GUIutils.guiUtils import isActive
-from Gui.GUIutils.GPIBInterface import PowerSupply
 from Gui.QtGUIutils.PeltierCoolingApp import Peltier
 from Gui.QtGUIutils.QtFwCheckWindow import QtFwCheckWindow
 from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
@@ -36,11 +37,13 @@ from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
 from Gui.QtGUIutils.QtStartWindow import QtStartWindow
 from Gui.QtGUIutils.QtProductionTestWindow import QtProductionTestWindow
 from Gui.QtGUIutils.QtModuleReviewWindow import QtModuleReviewWindow
-from Gui.QtGUIutils.QtDBConsoleWindow import QtDBConsoleWindow
+#from Gui.QtGUIutils.QtDBConsoleWindow import QtDBConsoleWindow
 from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
+from icicle.icicle.instrument_cluster import BadStatusForOperationError
+from instrument_cluster import InstrumentCluster
 
 
 class QtApplication(QWidget):
@@ -53,6 +56,8 @@ class QtApplication(QWidget):
         self.ProcessingTest = False
         self.expertMode = False
         self.FwUnderUsed = ""
+        self.module_in_use = None
+        self.instruments = None
 
         # self.FwUnderUsed = []
 
@@ -62,9 +67,16 @@ class QtApplication(QWidget):
         self.LogList = {}
         self.PYTHON_VERSION = str(sys.version).split(" ")[0]
         self.dimension = dimension
-        self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
-        self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
-        self.PowerRemoteControl = {"HV": True, "LV": True}
+        self.available_visa_resources = pyvisa.ResourceManager("@py").list_resources()
+        self.desired_devices = {"hv": 1, "lv": 1, "relay": 0, "multimeter":0}
+        self.connected_device_information = {"hv_resource": None, "hv": None,
+                                             "lv_resource":None, "lv":None,
+                                             "relay_board_resource": None, "relay_board": None,
+                                             "multimeter_resource": None, "multimeter": None}
+
+        #self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
+        #self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
+        #self.PowerRemoteControl = {"HV": True, "LV": True}
 
         self.setLoginUI()
         self.initLog()
@@ -113,7 +125,7 @@ class QtApplication(QWidget):
         self.show()
 
     def initLog(self):
-        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+        for index, (firmwareName, fwAddress) in enumerate(site_settings.FC7List.items()):
             LogFileName = "{0}/Gui/.{1}.log".format(
                 os.environ.get("GUI_dir"), firmwareName
             )
@@ -361,132 +373,6 @@ class QtApplication(QWidget):
         # self.FirmwareStatus.setDisabled(True)
         self.SimpleMain = SimplifiedMainWidget(self)
         self.mainLayout.addWidget(self.SimpleMain)
-        """
-		##################################
-		##  Testing some things out #######
-		##################################
-		self.simplifiedStatusBox = QGroupBox("Hello,{}!".format(self.TryUsername))
-		
-
-		statusString, colorString = checkDBConnection(self.connection)
-		DBStatusLabel = QLabel()
-		DBStatusLabel.setText("Database connection:")
-		DBStatusValue = QLabel()
-		DBStatusValue.setText(statusString)
-		DBStatusValue.setStyleSheet(colorString)
-
-		self.HVPowerStatusLabel = QLabel()
-		self.HVPowerStatusValue = QLabel()
-		self.LVPowerStatusLabel = QLabel()
-		self.LVPowerStatusValue = QLabel()
-		
-		self.ModuleEntryBox = QGroupBox("Please scan module QR code")
-		ModuleEntryLayout = QGridLayout()
-
-		SerialLabel = QLabel("SerialNumber:")
-		self.SerialEdit = QLineEdit()
-
-		CableLabel = QLabel("CableNumber")
-		self.CableEdit = QLineEdit()
-
-		#Selecting default HV
-		self.HVpowersupply.setPowerModel(defaultHVModel[0])
-		self.HVpowersupply.setInstrument(defaultUSBPortHV[0])
-		statusString = self.HVpowersupply.getInfo()
-		self.HVPowerStatusLabel.setText("HV status")
-		if statusString != "No valid device" and statusString != None:
-			self.HVPowerStatusValue.setStyleSheet("color:green")
-			self.HVPowerStatusValue.setText(statusString)
-		else:
-			self.HVPowerStatusValue.setStyleSheet("color:red")
-			self.HVPowerStatusValue.setText("No valid device")
-		time.sleep(0.5)
-		#Selecting default LV
-		self.LVpowersupply.setPowerModel(defaultLVModel[0])
-		self.LVpowersupply.setInstrument(defaultUSBPortLV[0])
-		statusString = self.LVpowersupply.getInfo()
-		self.LVPowerStatusLabel.setText("LV status")
-		if statusString != "No valid device" and statusString != None:
-			self.LVPowerStatusValue.setStyleSheet("color:green")
-			self.LVPowerStatusValue.setText(statusString)
-		else:
-			self.LVPowerStatusValue.setStyleSheet("color:red")
-			self.LVPowerStatusValue.setText("No valid device")
-
-		self.StatusList = []
-		self.StatusList.append([DBStatusLabel, DBStatusValue])
-		self.StatusList.append([self.HVPowerStatusLabel, self.HVPowerStatusValue])
-		self.StatusList.append([self.LVPowerStatusLabel, self.LVPowerStatusValue])
-
-		FC7NameLabel = QLabel()
-		FC7NameLabel.setText(defaultFC7)
-		FC7StatusValue = QLabel()
-
-		firmwareName, fwAddress = defaultFC7, defaultFC7IP
-
-		self.BeBoard = QtBeBoard()
-		self.BeBoard.setBoardName(firmwareName)
-		self.BeBoard.setIPAddress(FC7List[firmwareName])
-		self.BeBoard.setFPGAConfig(FPGAConfigList[firmwareName])
-
-		self.FwDict[firmwareName] = self.BeBoard
-		self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
-	
-		LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),firmwareName)
-		try:
-			logFile  = open(LogFileName, "w")
-			logFile.close()
-		except:
-			QMessageBox(None,"Error","Can not create log files: {}".format(LogFileName))
-		
-		FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(firmwareName,LogFileName)
-		FC7StatusValue.setText(FwStatusComment)
-		FC7StatusValue.setStyleSheet(FwStatusColor)
-		self.FwModule = self.FwDict[firmwareName]
-		
-		self.StatusList.append([FC7NameLabel,FC7StatusValue])
-
-		StatusLayout = QGridLayout()
-
-
-		for index, items in enumerate(self.StatusList):
-			StatusLayout.addWidget(items[0], index, 1,  1, 1)
-			StatusLayout.addWidget(items[1], index, 2,  1, 2)
-
-
-		ModuleEntryLayout.addWidget(self.BeBoardWidget)
-		
-		self.AppOption = QGroupBox()
-		self.StartLayout = QHBoxLayout()
-		self.ExitButton = QPushButton("&Exit")
-		self.ExitButton.clicked.connect(self.close)
-		self.RunButton = QPushButton("&Run Tests")
-		self.RunButton.clicked.connect(self.runNewTest)
-		self.StartLayout.addStretch(1)
-		self.StartLayout.addWidget(self.ExitButton)
-		self.StartLayout.addWidget(self.RunButton)
-		self.AppOption.setLayout(self.StartLayout)
-
-		
-		self.simplifiedStatusBox.setLayout(StatusLayout)
-		self.ModuleEntryBox.setLayout(ModuleEntryLayout)
-		#self.mainLayout.addWidget(self.welcomebox)
-		self.mainLayout.addWidget(self.simplifiedStatusBox)
-		self.mainLayout.addWidget(self.ModuleEntryBox)
-		self.mainLayout.addWidget(self.AppOption)
-
-	def runNewTest(self):
-		self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
-		self.info = [self.FwModule.getModuleByIndex(0).getOpticalGroupID(), "AllScan"]
-		self.runFlag = True
-		self.RunTest = QtRunWindow(self, self.info, self.firmwareDescription)
-		self.LVpowersupply.setPoweringMode("Direct")
-		self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
-		self.LVpowersupply.TurnOn()
-		######################################
-		## Testin some things out (end) #######
-		######################################
-	"""
 
     ###############################################################
     ##  Main page and related functions
@@ -508,19 +394,16 @@ class QtApplication(QWidget):
 
         try:
             for index, (firmwareName, fwAddress) in enumerate(
-                site_config.FC7List.items()
+                site_settings.FC7List.items()
             ):
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
                 FwStatusValue = QLabel()
-                # FwStatusComment, FwStatusColor = self.getFwComment(firmwareName,fwAddress)
-                # FwStatusValue.setText(FwStatusComment)
-                # FwStatusValue.setStyleSheet(FwStatusColor)
                 self.StatusList.append([FwNameLabel, FwStatusValue])
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
                 BeBoard = QtBeBoard()
                 BeBoard.setBoardName(firmwareName)
-                BeBoard.setIPAddress(site_config.FC7List[firmwareName])
+                BeBoard.setIPAddress(site_settings.FC7List[firmwareName])
                 BeBoard.setFPGAConfig(settings.FPGAConfigList[firmwareName])
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
@@ -581,10 +464,6 @@ class QtApplication(QWidget):
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
 
-        # if self.FwUnderUsed != []:
-        # 	for fw in self.FwUnderUsed:
-        # 		index = self.getIndex(fw,self.StatusList)
-        # 		self.occupyFw("{0}".format(index))
 
         self.FirmwareStatus.setLayout(StatusLayout)
         self.FirmwareStatus.setDisabled(False)
@@ -592,68 +471,67 @@ class QtApplication(QWidget):
         self.UseDefaultGroup = QGroupBox()
         self.DefaultLayout = QHBoxLayout()
         self.DefaultButton = QPushButton("&Connect all devices")
-        self.DefaultButton.clicked.connect(self.useDefault)
-        self.DefaultLabel = QLabel()
-        self.DefaultLabel.setText("Connecting to all default devices...")
+        self.DefaultButton.clicked.connect(self.connect_devices)
+
+        self.reset_devices = QPushButton("&Reconnect all devices")
+        self.reset_devices.clicked.connect(self.reconnectDevices)
+        self.default_checkbox = QCheckBox("Use Default Devices")
+        self.default_checkbox.setChecked(True)
+
         self.DefaultLayout.addWidget(self.DefaultButton)
-        self.DefaultLayout.addWidget(self.DefaultLabel)
+        self.DefaultLayout.addWidget(self.default_checkbox)
+        self.DefaultLayout.addWidget(self.reset_devices)
         self.DefaultLayout.addStretch(1)
         self.UseDefaultGroup.setLayout(self.DefaultLayout)
 
-        self.HVPowerRemoteControl = QCheckBox("Use HV power remote control")
+        self.HVPowerRemoteControl = QCheckBox("Use HV")
         self.HVPowerRemoteControl.setChecked(True)
-        self.HVPowerRemoteControl.toggled.connect(self.switchHVPowerPanel)
+        self.HVPowerRemoteControl.toggled.connect(lambda : self.enableDevice("hv"))
 
         self.HVPowerGroup = QGroupBox("HV Power")
+        self.HVPowerGroup.setDisabled(False)
         self.HVPowerLayout = QHBoxLayout()
-        self.HVPowerStatusLabel = QLabel()
-        self.HVPowerStatusLabel.setText("Choose HV Power:")
-        self.HVPowerList = self.HVpowersupply.listResources()
+        self.HVPortLabel = QLabel()
+        self.HVPortLabel.setText("Choose HV Port:")
         self.HVPowerCombo = QComboBox()
-        self.HVPowerCombo.addItems(self.HVPowerList)
+        self.HVPowerCombo.addItems(self.available_visa_resources)
         self.HVPowerModelLabel = QLabel()
         self.HVPowerModelLabel.setText("HV Power Model:")
         self.HVPowerModelCombo = QComboBox()
-        self.HVPowerModelCombo.addItems(settings.HVPowerSupplyModel.keys())
+        self.HVPowerModelCombo.addItems(InstrumentCluster.package_map.keys())
         self.HVPowerStatusValue = QLabel()
-        self.UseHVPowerSupply = QPushButton("&Use")
-        self.UseHVPowerSupply.clicked.connect(self.frozeHVPowerPanel)
-        self.ReleaseHVPowerSupply = QPushButton("&Release")
-        self.ReleaseHVPowerSupply.clicked.connect(self.releaseHVPowerPanel)
-        self.ReleaseHVPowerSupply.setDisabled(True)
+        self.HVPowerCombo.activated.connect(lambda : self.update_instrument_info("hv_resource", self.HVPowerCombo.currentText()))
+        self.HVPowerModelCombo.activated.connect(lambda : self.update_instrument_info("hv", self.HVPowerModelCombo.currentText()))
+        self.HVPowerRemoteControl.toggled.connect(lambda: self.HVPowerGroup.setDisabled(False) if self.HVPowerRemoteControl.isChecked() else self.HVPowerGroup.setDisabled(True))
 
-        self.HVPowerLayout.addWidget(self.HVPowerStatusLabel)
+        self.HVPowerLayout.addWidget(self.HVPortLabel)
         self.HVPowerLayout.addWidget(self.HVPowerCombo)
         self.HVPowerLayout.addWidget(self.HVPowerModelLabel)
         self.HVPowerLayout.addWidget(self.HVPowerModelCombo)
         self.HVPowerLayout.addWidget(self.HVPowerStatusValue)
         self.HVPowerLayout.addStretch(1)
-        self.HVPowerLayout.addWidget(self.UseHVPowerSupply)
-        self.HVPowerLayout.addWidget(self.ReleaseHVPowerSupply)
 
         self.HVPowerGroup.setLayout(self.HVPowerLayout)
 
-        self.LVPowerRemoteControl = QCheckBox("Use LV power remote control")
+        self.LVPowerRemoteControl = QCheckBox("Use LV")
         self.LVPowerRemoteControl.setChecked(True)
-        self.LVPowerRemoteControl.toggled.connect(self.switchLVPowerPanel)
+        self.LVPowerRemoteControl.toggled.connect(lambda:  self.enableDevice("lv"))
 
         self.LVPowerGroup = QGroupBox("LV Power")
+        self.LVPowerGroup.setDisabled(False)
         self.LVPowerLayout = QHBoxLayout()
         self.LVPowerStatusLabel = QLabel()
-        self.LVPowerStatusLabel.setText("Choose LV Power:")
-        self.LVPowerList = self.LVpowersupply.listResources()
+        self.LVPowerStatusLabel.setText("Choose LV Port:")
         self.LVPowerCombo = QComboBox()
-        self.LVPowerCombo.addItems(self.LVPowerList)
+        self.LVPowerCombo.addItems(self.available_visa_resources)
         self.LVPowerModelLabel = QLabel()
-        self.LVPowerModelLabel.setText("LV Power Model:")
+        self.LVPowerModelLabel.setText("LV Model:")
         self.LVPowerModelCombo = QComboBox()
-        self.LVPowerModelCombo.addItems(settings.LVPowerSupplyModel.keys())
+        self.LVPowerModelCombo.addItems(InstrumentCluster.package_map.keys())
         self.LVPowerStatusValue = QLabel()
-        self.UseLVPowerSupply = QPushButton("&Use")
-        self.UseLVPowerSupply.clicked.connect(self.frozeLVPowerPanel)
-        self.ReleaseLVPowerSupply = QPushButton("&Release")
-        self.ReleaseLVPowerSupply.clicked.connect(self.releaseLVPowerPanel)
-        self.ReleaseLVPowerSupply.setDisabled(True)
+        self.LVPowerCombo.activated.connect(lambda : self.update_instrument_info("lv_resource", self.LVPowerCombo.currentText()))
+        self.LVPowerModelCombo.activated.connect(lambda : self.update_instrument_info("lv", self.LVPowerModelCombo.currentText()))
+        self.LVPowerRemoteControl.toggled.connect(lambda: self.LVPowerGroup.setDisabled(False) if self.LVPowerRemoteControl.isChecked() else self.LVPowerGroup.setDisabled(True))
 
         self.LVPowerLayout.addWidget(self.LVPowerStatusLabel)
         self.LVPowerLayout.addWidget(self.LVPowerCombo)
@@ -661,10 +539,62 @@ class QtApplication(QWidget):
         self.LVPowerLayout.addWidget(self.LVPowerModelCombo)
         self.LVPowerLayout.addWidget(self.LVPowerStatusValue)
         self.LVPowerLayout.addStretch(1)
-        self.LVPowerLayout.addWidget(self.UseLVPowerSupply)
-        self.LVPowerLayout.addWidget(self.ReleaseLVPowerSupply)
 
         self.LVPowerGroup.setLayout(self.LVPowerLayout)
+
+        self.relay_group = QGroupBox("Relay Box")
+        self.relay_group.setDisabled(True)
+        relay_layout = QHBoxLayout()
+        relay_board_port_label = QLabel()
+        relay_board_port_label.setText("Choose Relay Port:")
+        self.relay_port_combobox = QComboBox()
+        self.relay_port_combobox.addItems(self.available_visa_resources)
+        self.relay_model_label = QLabel()
+        self.relay_model_label.setText("Relay Model:")
+        self.relay_model_combo = QComboBox()
+        self.relay_model_combo.addItems(InstrumentCluster.package_map.keys())
+        self.relay_model_status = QLabel()
+        self.relay_remote_control = QCheckBox("Use relay")
+        self.relay_remote_control.setChecked(False)
+        self.relay_remote_control.toggled.connect(lambda : self.enableDevice("relay"))
+        self.relay_port_combobox.activated.connect(lambda : self.update_instrument_info("relay_board_resource", self.relay_port_combobox.currentText()))
+        self.relay_model_combo.activated.connect(lambda : self.update_instrument_info("relay_board", self.relay_model_combo.currentText()))
+        self.relay_remote_control.toggled.connect(lambda: self.relay_group.setDisabled(False) if self.relay_remote_control.isChecked() else self.relay_group.setDisabled(True))
+
+        relay_layout.addWidget(relay_board_port_label)
+        relay_layout.addWidget(self.relay_port_combobox)
+        relay_layout.addWidget(self.relay_model_label)
+        relay_layout.addWidget(self.relay_model_combo)
+        relay_layout.addWidget(self.relay_model_status)
+        relay_layout.addStretch(1)
+        self.relay_group.setLayout(relay_layout)
+
+        self.multimeter_group = QGroupBox("Multimeter")
+        self.multimeter_group.setDisabled(True)
+        multimeter_layout = QHBoxLayout()
+        multimeter_port_label = QLabel()
+        multimeter_port_label.setText("Choose Multimeter Port")
+        self.multimeter_port_combobox = QComboBox()
+        self.multimeter_port_combobox.addItems(self.available_visa_resources)
+        self.multimeter_model_label = QLabel()
+        self.multimeter_model_label.setText("Multimeter Model:")
+        self.multimeter_model_combo = QComboBox()
+        self.multimeter_model_combo.addItems(InstrumentCluster.package_map.keys())
+        self.multimeter_status = QLabel()
+        self.multimeter_remote_control = QCheckBox("Use Multimeter")
+        self.multimeter_remote_control.setChecked(False)
+        self.multimeter_remote_control.toggled.connect(lambda : self.enableDevice("multimeter"))
+        self.multimeter_port_combobox.activated.connect(lambda : self.update_instrument_info("multimeter_resource", self.multimeter_port_combobox.currentText()))
+        self.multimeter_model_combo.activated.connect(lambda : self.update_instrument_info("multimeter", self.multimeter_model_combo.currentText()))
+        self.multimeter_remote_control.toggled.connect(lambda: self.multimeter_group.setDisabled(False) if self.multimeter_remote_control.isChecked() else self.multimeter_group.setDisabled(True))
+
+        multimeter_layout.addWidget(multimeter_port_label)
+        multimeter_layout.addWidget(self.multimeter_port_combobox)
+        multimeter_layout.addWidget(self.multimeter_model_label)
+        multimeter_layout.addWidget(self.multimeter_model_combo)
+        multimeter_layout.addWidget(self.multimeter_status)
+        multimeter_layout.addStretch(1)
+        self.multimeter_group.setLayout(multimeter_layout)
 
         self.ArduinoGroup = ArduinoWidget()
         self.ArduinoGroup.stop.connect(self.GlobalStop)
@@ -699,9 +629,6 @@ class QtApplication(QWidget):
         self.NewTestButton.setDisabled(True)
         if self.FwUnderUsed != "":
             self.NewTestButton.setDisabled(False)
-        # Vectorized fw
-        # if self.FwUnderUsed != '':
-        # 	self.NewTestButton.setDisabled(False)
         if self.ProcessingTest == True:
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
@@ -822,18 +749,31 @@ class QtApplication(QWidget):
 
         self.mainLayout.addWidget(self.FirmwareStatus, 0, 0, 1, 2)
         self.mainLayout.addWidget(self.UseDefaultGroup, 1, 0, 1, 2)
-        self.mainLayout.addWidget(self.HVPowerGroup, 2, 0, 1, 2)
-        self.mainLayout.addWidget(self.HVPowerRemoteControl, 3, 0, 1, 2)
-        self.mainLayout.addWidget(self.LVPowerGroup, 4, 0, 1, 2)
-        self.mainLayout.addWidget(self.LVPowerRemoteControl, 5, 0, 1, 2)
-        self.mainLayout.addWidget(self.ArduinoGroup, 6, 0, 1, 2)
-        self.mainLayout.addWidget(self.ArduinoControl, 7, 0, 1, 2)
-        self.mainLayout.addWidget(self.MainOption, 8, 0, 1, 1)
-        self.mainLayout.addWidget(self.PeltierBox, 8, 1, 1, 1)
-        self.mainLayout.addWidget(self.AppOption, 9, 1, 1, 1)
-        self.mainLayout.addWidget(self.LogoGroupBox, 9, 0, 1, 1)
+        self.mainLayout.addWidget(self.HVPowerRemoteControl, 2, 0, 1, 1)
+        self.mainLayout.addWidget(self.HVPowerGroup, 3, 0, 1, 2)
+        self.mainLayout.addWidget(self.LVPowerRemoteControl, 4, 0, 1, 1)
+        self.mainLayout.addWidget(self.LVPowerGroup, 5, 0, 1, 2)
+        self.mainLayout.addWidget(self.relay_remote_control, 6, 0, 1, 1)
+        self.mainLayout.addWidget(self.relay_group, 7, 0, 1, 2)
+        self.mainLayout.addWidget(self.multimeter_remote_control, 8, 0, 1, 1)
+        self.mainLayout.addWidget(self.multimeter_group, 9, 0, 1, 2)
+        self.mainLayout.addWidget(self.ArduinoGroup, 10, 0, 1, 2)
+        self.mainLayout.addWidget(self.ArduinoControl, 11, 0, 1, 2)
+        self.mainLayout.addWidget(self.MainOption, 12, 0, 1, 1)
+        self.mainLayout.addWidget(self.PeltierBox, 12, 1, 1, 1)
+        self.mainLayout.addWidget(self.AppOption, 13, 1, 1, 1)
+        self.mainLayout.addWidget(self.LogoGroupBox, 13, 0, 1, 1)
 
         self.setDefault()
+
+        # create a dictionary to easily disable groupboxes later
+        self.groupbox_mapping = {
+            "hv" : self.HVPowerGroup,
+            "lv" : self.LVPowerGroup,
+            "relay": self.relay_group,
+            "multimeter": self.multimeter_group
+        }
+
 
     def setDefault(self):
         if self.expertMode is False:
@@ -844,25 +784,67 @@ class QtApplication(QWidget):
             self.ArduinoGroup.disable()
             self.ArduinoControl.setDisabled(True)
 
-    def useDefault(self):
-        # self.HVPowerCombo.clear()
-        HVIndex = self.HVPowerCombo.findText(site_settings.defaultUSBPortHV[0])
-        if HVIndex != -1:
-            self.HVPowerCombo.setCurrentIndex(HVIndex)
-        # self.HVPowerCombo.addItems(defaultUSBPortHV)
-        # elf.HVPowerModelCombo.clear()
-        # self.HVPowerModelCombo.addItems(defaultHVModel)
-        # self.LVPowerCombo.clear()
-        LVIndex = self.LVPowerCombo.findText(site_settings.defaultUSBPortLV[0])
-        if LVIndex != -1:
-            self.LVPowerCombo.setCurrentIndex(LVIndex)
-        # self.LVPowerCombo.addItems(defaultUSBPortLV)
-        # self.LVPowerModelCombo.clear()
-        # self.LVPowerModelCombo.addItems(defaultLVModel)
-        self.frozeHVPowerPanel()
-        self.frozeLVPowerPanel()
+    def update_instrument_info(self, key, info):
+        self.connected_device_information[key] = info
+
+    def connect_devices(self):
+        """
+        Use defaults set in siteConfig.py to setup instrument cluster.
+        If default_checkbox is not checked change this variable to reflect changes made it GUI
+        """
+        self.device_settings = site_settings.icicle_instrument_setup
+        if not self.default_checkbox.isChecked():
+            for key, value in self.connected_device_information.items():
+                self.device_settings[key] = value
+        try:
+            self.instruments = InstrumentCluster(**self.device_settings)
+            self.instruments.open()
+            if self.instruments.status(lv_channel=None)["lv"] or self.instruments.status(lv_channel=None)["hv"]:
+                self.instruments.off()
+            self.disable_instrument_widgets()
+
+        except Exception as e:
+            print("Error: ", e)
+            QMessageBox.information(
+                None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
+            )
+
+
         self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
+
+    def disable_instrument_widgets(self):
+        """
+        Use to disable the groupbox of LV, HV, relay board, and multimeter
+        This is to prevent people from thinking they are changing device settings
+        when they are really not.
+        """
+        self.HVPowerGroup.setDisabled(True)
+        self.LVPowerGroup.setDisabled(True)
+        self.relay_group.setDisabled(True)
+        self.multimeter_group.setDisabled(True)
+
+        self.HVPowerRemoteControl.setDisabled(True)
+        self.LVPowerRemoteControl.setDisabled(True)
+        self.relay_remote_control.setDisabled(True)
+        self.multimeter_remote_control.setDisabled(True)
+
+    def reconnectDevices(self):
+        self.device_settings = site_settings.icicle_instrument_setup
+
+        self.instruments.close()
+        # I believe that this should "free" the memory taken by the previous instance
+        # of InstrumentCluster(), however, it is at the will of the garbage collector
+        self.instruments = None
+
+        self.HVPowerRemoteControl.setDisabled(False)
+        self.LVPowerRemoteControl.setDisabled(False)
+        self.relay_remote_control.setDisabled(False)
+        self.multimeter_remote_control.setDisabled(False)
+
+        for instrument, useFlag in self.desired_devices.items():
+            if useFlag and instrument in self.groupbox_mapping:
+                self.groupbox_mapping[instrument].setDisabled(False)
 
     def reCreateMain(self):
         print("Refreshing the main page")
@@ -885,6 +867,10 @@ class QtApplication(QWidget):
         self.HVPowerRemoteControl.deleteLater()
         self.LVPowerGroup.deleteLater()
         self.LVPowerRemoteControl.deleteLater()
+        self.relay_group.deleteLater()
+        self.relay_remote_control.deleteLater()
+        self.multimeter_group.deleteLater()
+        self.multimeter_remote_control.deleteLater()
         self.ArduinoGroup.deleteLater()
         self.ArduinoControl.deleteLater()
         self.MainOption.deleteLater()
@@ -896,6 +882,10 @@ class QtApplication(QWidget):
         self.mainLayout.removeWidget(self.HVPowerRemoteControl)
         self.mainLayout.removeWidget(self.LVPowerGroup)
         self.mainLayout.removeWidget(self.LVPowerRemoteControl)
+        self.mainLayout.removeWidget(self.relay_group)
+        self.mainLayout.removeWidget(self.relay_remote_control)
+        self.mainLayout.removeWidget(self.multimeter_group)
+        self.mainLayout.removeWidget(self.multimeter_remote_control)
         self.mainLayout.removeWidget(self.ArduinoGroup)
         self.mainLayout.removeWidget(self.ArduinoControl)
         self.mainLayout.removeWidget(self.MainOption)
@@ -904,7 +894,7 @@ class QtApplication(QWidget):
 
     def openNewProductionTest(self):
         self.ProdTestPage = QtProductionTestWindow(
-            self, HV=self.HVpowersupply, LV=self.LVpowersupply
+            self, instrumentCluster=self.instruments
         )
         self.ProdTestPage.close.connect(self.releaseProdTestButton)
         self.NewProductionTestButton.setDisabled(True)
@@ -913,10 +903,6 @@ class QtApplication(QWidget):
 
     def openNewTest(self):
         FwModule = self.FwDict[self.FwUnderUsed]
-        # Vectorized the firmware
-        # FwModule = []
-        # for fw in self.FwUnderUsed:
-        # 	FwModule.append(self.FwDict[fw])
         self.StartNewTest = QtStartWindow(self, FwModule)
         self.NewTestButton.setDisabled(True)
         self.LogoutButton.setDisabled(True)
@@ -945,38 +931,19 @@ class QtApplication(QWidget):
     def switchHVPowerPanel(self):
         if self.HVPowerRemoteControl.isChecked():
             self.HVPowerGroup.setDisabled(False)
-            self.PowerRemoteControl["HV"] = True
+            self.desired_devices["hv"] = 1
         else:
             self.HVPowerGroup.setDisabled(True)
-            self.PowerRemoteControl["HV"] = False
+            self.desired_devices["hv"] = 0
 
-    def frozeHVPowerPanel(self):
-        # Block for HVPowerSupply operation
-        # self.HVpowersupply.setPowerModel(HVPowerSupplyModel[self.HVPowerModelCombo.currentText()])
-        self.HVpowersupply.setPowerModel(self.HVPowerModelCombo.currentText())
-        self.HVpowersupply.setInstrument(self.HVPowerCombo.currentText())
-        self.HVpowersupply.TurnOffHV()
-        # self.HVpowersupply.TurnOn()
-        # Block for GUI front-end
-        statusString = self.HVpowersupply.getInfo()
-        if statusString != "No valid device" and statusString != None:
-            self.HVPowerStatusValue.setStyleSheet("color:green")
-            self.HVPowerCombo.setDisabled(True)
-            self.HVPowerStatusValue.setText(statusString)
-            self.UseHVPowerSupply.setDisabled(True)
-            self.ReleaseHVPowerSupply.setDisabled(False)
-        else:
-            self.HVPowerStatusValue.setStyleSheet("color:red")
-            self.HVPowerStatusValue.setText("No valid device")
 
     def releaseHVPowerPanel(self):
-        self.HVpowersupply.TurnOffHV()
+        self.instruments.hv_off()
         try:
             self.HVPowerCombo.setDisabled(False)
             self.HVPowerStatusValue.setText("")
             self.UseHVPowerSupply.setDisabled(False)
-            self.ReleaseHVPowerSupply.setDisabled(True)
-            self.HVPowerList = self.HVpowersupply.listResources()
+            #self.ReleaseHVPowerSupply.setDisabled(True)
         # with Exception as err:
         except Exception as err:
             print("HV PowerPanel not released properly")
@@ -984,40 +951,19 @@ class QtApplication(QWidget):
     def switchLVPowerPanel(self):
         if self.LVPowerRemoteControl.isChecked():
             self.LVPowerGroup.setDisabled(False)
-            self.PowerRemoteControl["LV"] = True
+            self.desired_devices["lv"] = 1
         else:
             self.LVPowerGroup.setDisabled(True)
-            self.PowerRemoteControl["LV"] = False
+            self.desired_devices["lv"] = 0
 
-    def frozeLVPowerPanel(self):
-        # Block for LVPowerSupply operation
-        self.LVpowersupply.setPowerModel(self.LVPowerModelCombo.currentText())
-        self.LVpowersupply.setInstrument(self.LVPowerCombo.currentText())
-        # self.LVpowersupply.getInfo()
-        # self.LVpowersupply.TurnOn()
-        # Block for GUI front-end
-        self.LVpowersupply.TurnOff()
-        statusString = self.LVpowersupply.getInfo()
-        if statusString != "No valid device":
-            self.LVPowerStatusValue.setStyleSheet("color:green")
-        else:
-            self.LVPowerStatusValue.setStyleSheet("color:red")
-        if statusString:
-            self.LVPowerCombo.setDisabled(True)
-            self.LVPowerStatusValue.setText(statusString)
-            self.UseLVPowerSupply.setDisabled(True)
-            self.ReleaseLVPowerSupply.setDisabled(False)
-        else:
-            self.LVPowerStatusValue.setStyleSheet("color:red")
-            self.LVPowerStatusValue.setText("No valid device")
+    def enableDevice(self, device):
+        """Keep track of whether a device wants to be used"""
+        self.desired_devices[device] = 1 if (self.desired_devices[device]==0) else 0
 
     def releaseLVPowerPanel(self):
-        self.LVpowersupply.TurnOff()
+        self.instruments.lv_off(1)
         self.LVPowerCombo.setDisabled(False)
         self.LVPowerStatusValue.setText("")
-        self.UseLVPowerSupply.setDisabled(False)
-        self.ReleaseLVPowerSupply.setDisabled(True)
-        self.LVPowerList = self.LVpowersupply.listResources()
 
     def switchArduinoPanel(self):
         if self.ArduinoControl.isChecked():
@@ -1026,10 +972,9 @@ class QtApplication(QWidget):
             self.ArduinoGroup.disable()
 
     def checkFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+        for index, (firmwareName, fwAddress) in enumerate(site_settings.FC7List.items()):
             fileName = self.LogList[index]
             if firmwareName != self.FwUnderUsed:
-                # if firmwareName not in self.FwUnderUsed:
                 FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(
                     firmwareName, fileName
                 )
@@ -1044,24 +989,14 @@ class QtApplication(QWidget):
             self.StatusList[index + 1][1].setText("Connected")
             self.StatusList[index + 1][1].setStyleSheet("color: green")
             self.occupyFw("{0}".format(index))
-        # if self.FwUnderUsed != []:
-        # 	for fw in self.FwUnderUsed:
-        # 		index = self.getIndex(fw,self.StatusList)
-        # 		self.StatusList[index+1][1].setText("Connected")
-        # 		self.StatusList[index+1][1].setStyleSheet("color: green")
-        # 		self.occupyFw("{0}".format(index))
 
     def refreshFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(site_config.FC7List.items()):
+        for index, (firmwareName, fwAddress) in enumerate(site_settings.FC7List.items()):
             self.UseButtons[index].setDisabled(False)
         if self.FwUnderUsed != "":
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
 
-        # if self.FwUnderUsed != []:
-        # 	for fw in self.FwUnderUsed:
-        # 		index = self.getIndex(self.fw,self.StatusList)
-        # 		self.occupyFw("{0}".format(index))
 
     def getFwComment(self, firmwareName, fileName):
         comment, color, verboseInfo = fwStatusParser(
@@ -1092,7 +1027,6 @@ class QtApplication(QWidget):
                 button.setDisabled(False)
                 self.CheckButton.setDisabled(True)
                 self.FwUnderUsed = self.StatusList[i + 1][0].text()
-                # self.FwUnderUsed.append(self.StatusList[i+1][0].text())
             else:
                 button.setDisabled(True)
 
@@ -1100,9 +1034,6 @@ class QtApplication(QWidget):
         for i, button in enumerate(self.UseButtons):
             if i == int(index):
                 self.FwUnderUsed = ""
-                # vectorzied fw
-                # fwIndex = self.FwUnderUsed.index(self.StatusList[i+1][0].text())
-                # self.FwUnderUsed.pop(fwIndex)
                 button.setText("&Use")
                 button.setDown(False)
                 button.setDisabled(False)
@@ -1118,7 +1049,6 @@ class QtApplication(QWidget):
         verboseInfo = self.FwStatusVerboseDict[
             self.StatusList[int(index) + 1][0].text()
         ]
-        # QMessageBox.information(None, "Info", "{}".format(solution), QMessageBox.Ok)
         self.FwStatusWindow = QtFwStatusWindow(self, fwName, verboseInfo, solution)
 
     def showLogFw(self, index):
@@ -1135,12 +1065,11 @@ class QtApplication(QWidget):
             firmware.setFPGAConfig(changeuDTCDialog.uDTCFile)
 
         self.checkFirmware()
-
     def releaseProdTestButton(self):
         self.NewProductionTestButton.setDisabled(False)
         self.LogoutButton.setDisabled(False)
         self.ExitButton.setDisabled(False)
-
+    
     def goExpert(self):
         self.expertMode = True
 
@@ -1157,8 +1086,7 @@ class QtApplication(QWidget):
     def GlobalStop(self):
         print("Critical status detected: Emitting Global Stop signal")
         self.globalStop.emit()
-        self.HVpowersupply.TurnOffHV()
-        self.LVpowersupply.TurnOff()
+        self.instruments.off()
         if self.expertMode == True:
             self.releaseHVPowerPanel()
             self.releaseLVPowerPanel()
@@ -1168,11 +1096,6 @@ class QtApplication(QWidget):
     ###############################################################
 
     def closeEvent(self, event):
-        # Fixme: strict criterias for process checking  should be added here:
-        # if self.ProcessingTest == True:
-        # 	QMessageBox.critical(self, 'Critical Message', 'There is running process, can not close!')
-        # 	event.ignore()
-
         reply = QMessageBox.question(
             self,
             "Window Close",
@@ -1183,14 +1106,13 @@ class QtApplication(QWidget):
 
         if reply == QMessageBox.Yes:
             print("Application terminated")
-            self.HVpowersupply.TurnOffHV()
-            self.LVpowersupply.TurnOff()
+            if self.instruments != None:
+                self.instruments.off()
+
 
             # If you didn't start the Peltier controller, tempPower won't be defined
             try:
                 self.PeltierCooling.shutdown()
-                # time.sleep(2)
-                # self.pool.clear()
             except Exception as e:
                 print("Could not shutdown Peltier: ", e)
                 pass
@@ -1203,3 +1125,4 @@ class QtApplication(QWidget):
             event.accept()
         else:
             event.ignore()
+

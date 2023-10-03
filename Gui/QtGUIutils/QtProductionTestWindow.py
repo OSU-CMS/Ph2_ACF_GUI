@@ -29,11 +29,11 @@ from Gui.python.SLDOScanHandler import *
 class QtProductionTestWindow(QWidget):
 	resized = pyqtSignal()
 	close = pyqtSignal()
-	def __init__(self,master,HV = None, LV= None):
+	def __init__(self,master, instrumentCluster=None):
 		super(QtProductionTestWindow,self).__init__()
 		self.master = master
-		self.hvpowersupply = HV
-		self.lvpowersupply = LV
+		self.instruments = instrumentCluster
+
 		self.master.globalStop.connect(self.urgentStop)
 		self.connection = self.master.connection
 
@@ -146,7 +146,7 @@ class QtProductionTestWindow(QWidget):
 		self.IVCurveData = []
 		self.IVCurveResult = ScanCanvas(self, xlabel = "Voltage (V)", ylabel = "I (A)")
 		self.MainTabs.addTab(self.IVCurveResult,"I-V Curve")
-		self.IVCurveHandler = IVCurveHandler(self,self.hvpowersupply)
+		self.IVCurveHandler = IVCurveHandler(self,self.instruments)
 		self.IVCurveHandler.finished.connect(self.IVCurveFinished)
 		self.IVCurveHandler.IVCurve()
 
@@ -190,13 +190,11 @@ class QtProductionTestWindow(QWidget):
 
 	def updateMeasurement(self, measureType, measure):
 		print(measureType,measure)
+		# TODO Update this function to fix instrumentCluster use
 		if measureType == "IVCurve":
 			Voltage = measure["voltage"]
 			Current = measure["current"]
-			self.IVCurveData.append([Voltage,Current])
-			self.IVCurveResult.updatePlots(self.IVCurveData)
-			self.IVCurveResult.update()
-			index = self.MainTabs.indexOf(self.IVCurveResult)
+			self.IVCurveData = measure
 			self.MainTabs.clear()
 			self.MainTabs.addTab(self.IVCurveResult,"I-V Curve")
 			self.MainTabs.setCurrentWidget(self.IVCurveResult)

@@ -62,8 +62,8 @@ class QtRunWindow(QWidget):
 
 		#Add TestProcedureHandler
 		self.testHandler = TestHandler(self,master,info,firmware)
-		self.testHandler.powerSignal.connect(self.master.HVpowersupply.TurnOffHV)
-		self.testHandler.powerSignal.connect(self.master.LVpowersupply.TurnOff)
+		self.testHandler.powerSignal.connect(lambda: self.master.instruments.off(lv_channel = None, hv_delay = 0.3, hv_step_size = 10, measure=False))
+
 
 		self.GroupBoxSeg = [1, 10,  1]
 		self.HorizontalSeg = [3, 5]
@@ -606,8 +606,7 @@ class QtRunWindow(QWidget):
 
 			if reply == QMessageBox.Yes:
 				self.release()
-				self.master.HVpowersupply.TurnOffHV()
-				self.master.LVpowersupply.TurnOff()
+				self.master.instruments.off(lv_channel=None, hv_delay=0.3, hv_step_size=10)
 				event.accept()
 			else:
 				self.backSignal = False
