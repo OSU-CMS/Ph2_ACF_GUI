@@ -931,10 +931,10 @@ class QtApplication(QWidget):
     def switchHVPowerPanel(self):
         if self.HVPowerRemoteControl.isChecked():
             self.HVPowerGroup.setDisabled(False)
-            self.PowerRemoteControl["HV"] = True
+            self.desired_devices["hv"] = 1
         else:
             self.HVPowerGroup.setDisabled(True)
-            self.PowerRemoteControl["HV"] = False
+            self.desired_devices["hv"] = 0
 
 
     def releaseHVPowerPanel(self):
@@ -951,10 +951,10 @@ class QtApplication(QWidget):
     def switchLVPowerPanel(self):
         if self.LVPowerRemoteControl.isChecked():
             self.LVPowerGroup.setDisabled(False)
-            self.PowerRemoteControl["LV"] = True
+            self.desired_devices["lv"] = 1
         else:
             self.LVPowerGroup.setDisabled(True)
-            self.PowerRemoteControl["LV"] = False
+            self.desired_devices["lv"] = 0
 
     def enableDevice(self, device):
         """Keep track of whether a device wants to be used"""

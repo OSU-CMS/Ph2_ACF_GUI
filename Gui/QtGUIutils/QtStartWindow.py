@@ -221,7 +221,7 @@ class SummaryBox(QWidget):
 
                 print("Firmware image is now loaded")
             print("made it to LV turn on")
-            if self.master.PowerRemoteControl["LV"]:
+            if self.master.desired_devices["LV"]:
                 self.master.powering_mode = self.PowerModeCombo.currentText()
 
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
