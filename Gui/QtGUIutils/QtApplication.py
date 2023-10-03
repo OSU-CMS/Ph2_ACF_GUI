@@ -498,7 +498,7 @@ class QtApplication(QWidget):
         self.HVPowerModelLabel = QLabel()
         self.HVPowerModelLabel.setText("HV Power Model:")
         self.HVPowerModelCombo = QComboBox()
-        self.HVPowerModelCombo.addItems(InstrumentCluster.package_map.values())
+        self.HVPowerModelCombo.addItems(InstrumentCluster.package_map.keys())
         self.HVPowerStatusValue = QLabel()
         self.HVPowerCombo.activated.connect(lambda : self.update_instrument_info("hv_resource", self.HVPowerCombo.currentText()))
         self.HVPowerModelCombo.activated.connect(lambda : self.update_instrument_info("hv", self.HVPowerModelCombo.currentText()))
@@ -527,7 +527,7 @@ class QtApplication(QWidget):
         self.LVPowerModelLabel = QLabel()
         self.LVPowerModelLabel.setText("LV Model:")
         self.LVPowerModelCombo = QComboBox()
-        self.LVPowerModelCombo.addItems(InstrumentCluster.package_map.values())
+        self.LVPowerModelCombo.addItems(InstrumentCluster.package_map.keys())
         self.LVPowerStatusValue = QLabel()
         self.LVPowerCombo.activated.connect(lambda : self.update_instrument_info("lv_resource", self.LVPowerCombo.currentText()))
         self.LVPowerModelCombo.activated.connect(lambda : self.update_instrument_info("lv", self.LVPowerModelCombo.currentText()))
@@ -552,7 +552,7 @@ class QtApplication(QWidget):
         self.relay_model_label = QLabel()
         self.relay_model_label.setText("Relay Model:")
         self.relay_model_combo = QComboBox()
-        self.relay_model_combo.addItems(InstrumentCluster.package_map.values())
+        self.relay_model_combo.addItems(InstrumentCluster.package_map.keys())
         self.relay_model_status = QLabel()
         self.relay_remote_control = QCheckBox("Use relay")
         self.relay_remote_control.setChecked(False)
@@ -579,7 +579,7 @@ class QtApplication(QWidget):
         self.multimeter_model_label = QLabel()
         self.multimeter_model_label.setText("Multimeter Model:")
         self.multimeter_model_combo = QComboBox()
-        self.multimeter_model_combo.addItems(InstrumentCluster.package_map.values())
+        self.multimeter_model_combo.addItems(InstrumentCluster.package_map.keys())
         self.multimeter_status = QLabel()
         self.multimeter_remote_control = QCheckBox("Use Multimeter")
         self.multimeter_remote_control.setChecked(False)
@@ -797,7 +797,6 @@ class QtApplication(QWidget):
             for key, value in self.connected_device_information.items():
                 self.device_settings[key] = value
         try:
-            print(self.device_settings)
             self.instruments = InstrumentCluster(**self.device_settings)
             self.instruments.open()
             self.instruments.off()
