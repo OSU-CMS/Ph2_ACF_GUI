@@ -237,7 +237,7 @@ class SummaryBox(QWidget):
             # Want to try and connect twice
             self.Stopcount = 0
             while self.Stopcount < 2:
-                measurements = self.master.instruments._lv.measure()
+                measurements = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
                 # find the set value
                 TestVoltage = ModuleVoltageMapSLDO[self.master.module_in_use]
                 TestCurrent = ModuleCurrentMap[self.master.module_in_use]
