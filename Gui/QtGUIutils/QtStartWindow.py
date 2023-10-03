@@ -232,65 +232,64 @@ class SummaryBox(QWidget):
 
                 logging.info("Turned on LV power supply")
 
-            current = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
 
-            # Want to try and connect twice
-            self.Stopcount = 0
-            while self.Stopcount < 2:
-                measurements = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
-                # find the set value
-                TestVoltage = ModuleVoltageMapSLDO[self.master.module_in_use]
-                TestCurrent = ModuleCurrentMap[self.master.module_in_use]
-                print("Readvoltage:" + str(measurements[0]))
-                print("Readcurrent:" + str(measurements[1]))
-                print("TestCurrent" + str(TestCurrent))
-                print("TestVoltage" + str(TestVoltage))
+            # # Want to try and connect twice
+            # self.Stopcount = 0
+            # while self.Stopcount < 2:
+            #     measurements = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
+            #     # find the set value
+            #     TestVoltage = ModuleVoltageMapSLDO[self.master.module_in_use]
+            #     TestCurrent = ModuleCurrentMap[self.master.module_in_use]
+            #     print("Readvoltage:" + str(measurements[0]))
+            #     print("Readcurrent:" + str(measurements[1]))
+            #     print("TestCurrent" + str(TestCurrent))
+            #     print("TestVoltage" + str(TestVoltage))
 
-                # compare the difference between the Setup value vs the reading value
-                volDiff = abs(TestVoltage - measurements[0])
-                ampDiff = abs(TestCurrent - measurements[1])
+            #     # compare the difference between the Setup value vs the reading value
+            #     volDiff = abs(TestVoltage - measurements[0])
+            #     ampDiff = abs(TestCurrent - measurements[1])
 
-                if volDiff <= 0.5 and ampDiff <= 0.5 and (self.master.instruments.status(None)["lv"]):
-                    leakageCurrent = 0.0
-                    _, measurement = self.master.instruments.hv_on(None, voltage = defaultHVsetting, delay = 0.5, step_size = -3, measure = True)
-                    leakageCurrent = measurement[-1][2]
+            #     if volDiff <= 0.5 and ampDiff <= 0.5 and (self.master.instruments.status(None)["lv"]):
+            #         leakageCurrent = 0.0
+            #         _, measurement = self.master.instruments.hv_on(None, voltage = defaultHVsetting, delay = 0.3, step_size = -3, measure = True)
+            #         leakageCurrent = measurement[-1][2]
 
-                    logger.debug(f"Leakage Current: {leakageCurrent}")
-                    properCurrent = ModuleCurrentMap[self.module.getType()]
-                    if (
-                        current < properCurrent + 0.2
-                        and current > properCurrent - 0.2
-                    ):
-                        self.result = True
-                        self.CheckLabel.setText(
-                            "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                                measurements[1], measurements[0]
-                            )
-                        )
-                        self.CheckLabel.setStyleSheet("color:green")
-                    else:
-                        self.result = False
-                        self.CheckLabel.setText(
-                            "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                                measurements[1], measurements[0]
-                            )
-                        )
-                        self.CheckLabel.setStyleSheet("color:red")
+            #         logger.debug(f"Leakage Current: {leakageCurrent}")
+            #         properCurrent = ModuleCurrentMap[self.module.getType()]
+            #         if (
+            #             current < properCurrent + 0.2
+            #             and current > properCurrent - 0.2
+            #         ):
+            #             self.result = True
+            #             self.CheckLabel.setText(
+            #                 "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+            #                     measurements[1], measurements[0]
+            #                 )
+            #             )
+            #             self.CheckLabel.setStyleSheet("color:green")
+            #         else:
+            #             self.result = False
+            #             self.CheckLabel.setText(
+            #                 "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+            #                     measurements[1], measurements[0]
+            #                 )
+            #             )
+            #             self.CheckLabel.setStyleSheet("color:red")
 
-                else:
-                    self.result = False
-                    self.CheckLabel.setText(
-                        "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-                            measurements[1], measurements[0]
-                        )
-                    )
-                    self.CheckLabel.setStyleSheet("color:red")
+            #     else:
+            #         self.result = False
+            #         self.CheckLabel.setText(
+            #             "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
+            #                 measurements[1], measurements[0]
+            #             )
+            #         )
+            #         self.CheckLabel.setStyleSheet("color:red")
 
-                    self.Stopcount += 1
-                    print("LV PS is off now. HV PS can't be turn on")
-                    print("attempt to turn on the LV PS again")
-                    time.sleep(2)
-            self.master.instruments.hv_off(lv_channel=None, delay=0.5, step_size = 10)
+            #         self.Stopcount += 1
+            #         print("LV PS is off now. HV PS can't be turn on")
+            #         print("attempt to turn on the LV PS again")
+            #         time.sleep(2)
+            self.master.instruments.hv_off(lv_channel=None, delay=0.3, step_size = 10)
 
             return self.result
         except Exception as err:

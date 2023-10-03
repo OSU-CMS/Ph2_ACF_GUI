@@ -326,8 +326,9 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
-        self.instruments.lv_on(lv_channel=None, voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
-                               current=ModuleCurrentMap[self.master.module_in_use])
+        if not self.instruments.status()["lv"]:
+            self.instruments.lv_on(lv_channel=None, voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
+                                current=ModuleCurrentMap[self.master.module_in_use])
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
