@@ -11,7 +11,6 @@ matplotlib.use('Qt5Agg')
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-import random
 import numpy
 
 from Gui.GUIutils.settings import *

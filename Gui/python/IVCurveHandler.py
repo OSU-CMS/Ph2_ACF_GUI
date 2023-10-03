@@ -52,7 +52,7 @@ class IVCurveThread(QThread):
 class IVCurveHandler(QObject):
     measureSignal = pyqtSignal(str, object)
     stopSignal = pyqtSignal(object)
-    finished = pyqtSignal()
+    finished = pyqtSignal(str, dict)
 
     def __init__(self, window, instrument_cluster):
         super(IVCurveHandler, self).__init__()
@@ -60,8 +60,8 @@ class IVCurveHandler(QObject):
         self.window = window
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
-        self.test.measureSignal.connect(self.window.updateMeasurement)
-        self.test.finished.connect(self.finish)
+        #self.test.measureSignal.connect(self.window.updateMeasurement)
+        self.test.measureSignal.connect(self.finish)
 
     def isValid(self):
         return self.instruments != None
@@ -74,9 +74,9 @@ class IVCurveHandler(QObject):
     def transitMeasurment(self, measure):
         self.measureSignal.emit("IVCurve", measure)
 
-    def finish(self):
+    def finish(self, test: str, measure: dict):
         self.instruments.hv_off()
-        self.finished.emit()
+        self.finished.emit(test, measure)
 
     def stop(self):
         try:
