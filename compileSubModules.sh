@@ -21,8 +21,8 @@ echo "                                "
 echo "-----Settings up GUI Environment-----"
 echo "-------------------------------------"
 
-export DATA_dir=$PWD/data/TestResults
-export GUI_dir=$PWD
+#export DATA_dir=$PWD/data/TestResults
+#export GUI_dir=$PWD
 
 if [ ! -d $PH2ACF_BASE_DIR ]; then
     echo "Error: PH2ACF_BASE_DIR not found!"
@@ -38,22 +38,6 @@ if [ ! -d $PH2ACF_BASE_DIR/test ]; then
     mkdir -p -m777 $PH2ACF_BASE_DIR/test;
 fi;
 
-if [ ! -d $DATA_dir ]; then
-    echo "Failed to create TestResults folder under DATA_dir, please check"
-fi;
-
-if [ ! -d $PH2ACF_BASE_DIR/test ]; then
-    echo "Failed to create test folder under PH2ACF_BASE_DIR, please check"
-fi;
-
-
-export PYTHONPATH=${PYTHONPATH}:${GUI_dir}
-
-#export DATA_dir=/Users/czkaiweb/Research/data/
-#chmod 755 ${GUI_dir}/Gui/GUIutils/*.sh
-
-#cd $PH2ACF_BASE_DIR
-#source setup.sh
 #export Ph2_ACF_VERSION=$(git describe --tags --abbrev=0)
 
 cd $GUI_dir

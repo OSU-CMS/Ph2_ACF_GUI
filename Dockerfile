@@ -26,7 +26,7 @@ RUN sh ./compileSubModules.sh
 RUN chmod +x prepare_Ph2ACF.sh
 
 #CMD ["prepare_Ph2ACF.sh"]
-ENTRYPOINT ["/bin/bash"]
+#ENTRYPOINT ["/bin/bash"]
 #The following would open the GUI when docker run is called.  Otherwise it will just give a terminal.
 #CMD ["./QtApplication.py"]
 #ENTRYPOINT ["python3"]
