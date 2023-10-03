@@ -233,7 +233,6 @@ class SummaryBox(QWidget):
                 logging.info("Turned on LV power supply")
 
             current = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
-            print(self.PowerModeCombo.currentText())
 
             # Want to try and connect twice
             self.Stopcount = 0
@@ -257,7 +256,6 @@ class SummaryBox(QWidget):
                     leakageCurrent = measurement[-1][3]
 
                     print(leakageCurrent)
-                    print("this is sldo check")
                     properCurrent = ModuleCurrentMap[self.module.getType()]
                     if (
                         current < properCurrent + 0.2
