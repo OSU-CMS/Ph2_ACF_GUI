@@ -289,7 +289,7 @@ class SummaryBox(QWidget):
             #         print("LV PS is off now. HV PS can't be turn on")
             #         print("attempt to turn on the LV PS again")
             #         time.sleep(2)
-            self.master.instruments.hv_off(lv_channel=None, delay=0.3, step_size = 10)
+            self.master.instruments.hv_on(lv_channel=None, voltage= defaultHVsetting, delay=0.3, step_size = 10)
 
             return self.result
         except Exception as err:
