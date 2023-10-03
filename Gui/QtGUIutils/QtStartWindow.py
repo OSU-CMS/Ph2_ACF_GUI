@@ -219,7 +219,7 @@ class SummaryBox(QWidget):
                 print(fwreset.stdout.decode("UTF-8"))
                 print(fwreset.stderr.decode("UTF-8"))
 
-                logging.info("Firmware image is now loaded")
+                print("Firmware image is now loaded")
             logging.debug("Made it to turn on LV")
             if self.master.desired_devices["lv"]:
                 self.master.powering_mode = self.PowerModeCombo.currentText()
@@ -253,9 +253,9 @@ class SummaryBox(QWidget):
                 if volDiff <= 0.5 and ampDiff <= 0.5 and (self.master.instruments.status(None)["lv"]):
                     leakageCurrent = 0.0
                     _, measurement = self.master.instruments.hv_on(None, voltage = defaultHVsetting, delay = 0.5, step_size = -3, measure = True)
-                    leakageCurrent = measurement[-1][3]
+                    leakageCurrent = measurement[-1][2]
 
-                    print(leakageCurrent)
+                    logger.debug(f"Leakage Current: {leakageCurrent}")
                     properCurrent = ModuleCurrentMap[self.module.getType()]
                     if (
                         current < properCurrent + 0.2
