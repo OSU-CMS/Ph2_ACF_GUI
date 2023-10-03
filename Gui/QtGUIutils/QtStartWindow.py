@@ -219,9 +219,9 @@ class SummaryBox(QWidget):
                 print(fwreset.stdout.decode("UTF-8"))
                 print(fwreset.stderr.decode("UTF-8"))
 
-                print("Firmware image is now loaded")
-            print("made it to LV turn on")
-            if self.master.desired_devices["LV"]:
+                logging.info("Firmware image is now loaded")
+            logging.debug("Made it to turn on LV")
+            if self.master.desired_devices["lv"]:
                 self.master.powering_mode = self.PowerModeCombo.currentText()
 
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
