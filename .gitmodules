@@ -8,6 +8,5 @@
 	branch = Dev
 [submodule "icicle"]
 	path = icicle
-
 	url = https://gitlab.cern.ch/rdelossa/instrument-control-icicle-osu.git
 	branch = master
