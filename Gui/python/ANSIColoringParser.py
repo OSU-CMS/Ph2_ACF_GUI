@@ -1,3 +1,16 @@
+
+import logging
+
+# Customize the logging configuration
+logging.basicConfig(
+   level=logging.INFO,
+   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+   filename='my_project.log',  # Specify a log file
+   filemode='w'  # 'w' for write, 'a' for append
+)
+
+logger = logging.getLogger(__name__)
+
 import re
 
 ConvertForSpan = {
