@@ -482,7 +482,6 @@ class SimpleModuleBox(QWidget):
     def on_textChange(self):
         self.SerialString = self.SerialEdit.text()
         ## Add Parser
-        self.textchanged.emit()
 
 
 class SimpleBeBoardBox(QWidget):
