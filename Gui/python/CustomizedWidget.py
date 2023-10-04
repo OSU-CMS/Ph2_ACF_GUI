@@ -424,7 +424,7 @@ class SimpleModuleBox(QWidget):
         # prefix = defaultModuleType if type(defaultModuleType) ==  str else ""
         # SerialLabel = QLabel("{} SerialNumber:".format(prefix))
         self.SerialEdit = QLineEdit()
-        self.SerialEdit.returnPressed.connect(self.on_textChange)
+        self.SerialEdit.editingFinished.connect(self.on_textChange)
         # self.SerialEdit.setMinimumWidth(120)
         # self.SerialEdit.setMaximumWidth(200)
 
