@@ -54,6 +54,8 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.QtGUIutils.QtFwCheckDetails import *
 
+from Gui.python.logging_config import logger
+
 ## for configuration
 
 
@@ -137,6 +139,7 @@ class ChipBox(QWidget):
 
     def __init__(self, pChipType):
         super().__init__()
+        logger.debug("Inside ChipBox")
         self.chipType = pChipType
         self.mainLayout = QHBoxLayout()
         self.ChipList = []
