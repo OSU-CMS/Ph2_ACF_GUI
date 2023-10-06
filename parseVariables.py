@@ -15,8 +15,7 @@ class variableParser:
                     if isinstance(target, ast.Name):
                         variable_name = target.id
                         variable_value = self.parse_constant(node.value)
-                        if variable_value is not None:
-                            variable_dict[variable_name] = variable_value
+                        variable_dict[variable_name] = variable_value
 
         return variable_dict
 
