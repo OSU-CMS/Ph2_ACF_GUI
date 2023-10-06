@@ -5,6 +5,8 @@ import logging
 logging.basicConfig(
     level=logging.DEBUG,  # Set the default log level as needed.
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    filename="../.Ph2_ACF_GUI.log",
+    filemode="w",
 )
 
 # Create a logger
