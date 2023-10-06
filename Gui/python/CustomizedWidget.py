@@ -200,7 +200,7 @@ class BeBoardBox(QWidget):
 
     def initList(self):
         ModuleRow = ModuleBox()
-        self.ModuleBox.TypeCombo.currentTextChanged.connect(self.updateList)
+        self.ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(ModuleRow)
 
     def createList(self):
@@ -268,7 +268,7 @@ class BeBoardBox(QWidget):
     def addModule(self):
         module = ModuleBox()
         module.TypeCombo.currentTextChanged.connect(self.updateList)
-        self.ModuleList.append(ModuleBox())
+        self.ModuleList.append(module)
         if str(sys.version).startswith("3.8"):
             self.deleteList()
             self.createList()
