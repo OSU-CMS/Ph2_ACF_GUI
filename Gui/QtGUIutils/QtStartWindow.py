@@ -84,7 +84,6 @@ class SummaryBox(QWidget):
             self.chipSwitches[i] = True
 
     def createBody(self):
-        # FEIDLabel = QLabel("ID: {}".format(self.module.getID()))
         FEIDLabel = QLabel("Module: {}".format(self.module.getSerialNumber()))
         FEIDLabel.setStyleSheet("font-weight:bold")
         PowerModeLabel = QLabel()
@@ -373,10 +372,6 @@ class QtStartWindow(QWidget):
 
         self.firmware.removeAllModule()
         self.BeBoardWidget = BeBoardBox(self.firmware)  # FLAG
-        self.BeBoardWidget.changed.connect(self.destroyMain)
-        self.BeBoardWidget.changed.connect(self.createMain)
-
-        # self.ChipBoxWidget = ChipBox(self.firmware)
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
         self.mainLayout.addWidget(self.BeBoardWidget, 1, 0)
