@@ -200,7 +200,7 @@ class BeBoardBox(QWidget):
 
     def initList(self):
         ModuleRow = ModuleBox()
-        self.ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
+        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(ModuleRow)
 
     def createList(self):
