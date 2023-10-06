@@ -1,23 +1,36 @@
-
-import logging
-
-# Customize the logging configuration
-logging.basicConfig(
-   level=logging.INFO,
-   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-   filename='my_project.log',  # Specify a log file
-   filemode='w'  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
-
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap 
-from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
-		QDial, QDialog, QFileDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit,
-		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
-		QSlider, QSpinBox, QStyleFactory, QTableWidget, QTabWidget, QTextEdit, QHBoxLayout,
-		QVBoxLayout, QWidget, QMainWindow, QMessageBox)
+from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtWidgets import (
+    QAbstractItemView,
+    QApplication,
+    QCheckBox,
+    QComboBox,
+    QDateTimeEdit,
+    QDial,
+    QDialog,
+    QFileDialog,
+    QGridLayout,
+    QGroupBox,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QProgressBar,
+    QPushButton,
+    QRadioButton,
+    QScrollBar,
+    QSizePolicy,
+    QSlider,
+    QSpinBox,
+    QStyleFactory,
+    QTableWidget,
+    QTabWidget,
+    QTextEdit,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QMainWindow,
+    QMessageBox,
+)
 
 import sys
 import os
@@ -25,7 +38,7 @@ import numpy
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
-
+from Gui.python.logging_config import logger
 
 
 class QtFileDialogPreview(QFileDialog):
@@ -57,10 +70,17 @@ class QtFileDialogPreview(QFileDialog):
     def onChange(self, path):
         pixmap = QPixmap(path)
 
-        if(pixmap.isNull()):
+        if pixmap.isNull():
             self.mpPreview.setText("Preview")
         else:
-            self.mpPreview.setPixmap(pixmap.scaled(self.mpPreview.width(), self.mpPreview.height(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            self.mpPreview.setPixmap(
+                pixmap.scaled(
+                    self.mpPreview.width(),
+                    self.mpPreview.height(),
+                    Qt.KeepAspectRatio,
+                    Qt.SmoothTransformation,
+                )
+            )
 
     def onFileSelected(self, file):
         self._fileSelected = file
@@ -73,5 +93,3 @@ class QtFileDialogPreview(QFileDialog):
 
     def getFilesSelected(self):
         return self._filesSelected
-
-

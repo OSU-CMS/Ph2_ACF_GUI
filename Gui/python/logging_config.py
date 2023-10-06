@@ -3,7 +3,7 @@ import logging
 
 # Customize the logging configuration
 logging.basicConfig(
-    level=logging.INFO,  # Set the default log level as needed.
+    level=logging.DEBUG,  # Set the default log level as needed.
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
 )
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 # Create a handler for writing logs to the console
 console_handler = logging.StreamHandler()
 console_handler.setLevel(
-    logging.DEBUG
+    logging.INFO
 )  # Set the minimum log level for the console handler
 
 # Create a formatter to customize the log message format (optional)

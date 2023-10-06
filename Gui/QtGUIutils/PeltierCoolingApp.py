@@ -1,24 +1,10 @@
-
-import logging
-
-# Customize the logging configuration
-logging.basicConfig(
-   level=logging.INFO,
-   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-   filename='my_project.log',  # Specify a log file
-   filemode='w'  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
-
-# Contains frontend code for the Peltier Controller GUI application in the Ph2_ACF_GUI
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import *
 from Gui.python.Peltier import *
 import time
 import os
+from Gui.python.logging_config import logger
 
 
 class Peltier(QWidget):

@@ -1,16 +1,3 @@
-
-import logging
-
-# Customize the logging configuration
-logging.basicConfig(
-   level=logging.INFO,
-   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-   filename='my_project.log',  # Specify a log file
-   filemode='w'  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
-
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import (
     QApplication,
@@ -58,6 +45,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
 from Gui.siteSettings import *
+from Gui.python.logging_config import logger
 
 # from Gui.QtGUIutils.QtProductionTestWindow import *
 
@@ -240,11 +228,13 @@ class SummaryBox(QWidget):
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
                 self.master.module_in_use = self.module.getType()
 
-
-                self.master.instruments.lv_on(None, ModuleVoltageMapSLDO[self.master.module_in_use], ModuleCurrentMap[self.master.module_in_use])
+                self.master.instruments.lv_on(
+                    None,
+                    ModuleVoltageMapSLDO[self.master.module_in_use],
+                    ModuleCurrentMap[self.master.module_in_use],
+                )
 
                 logging.info("Turned on LV power supply")
-
 
             # # Want to try and connect twice
             # self.Stopcount = 0
@@ -302,7 +292,9 @@ class SummaryBox(QWidget):
             #         print("LV PS is off now. HV PS can't be turn on")
             #         print("attempt to turn on the LV PS again")
             #         time.sleep(2)
-            self.master.instruments.hv_on(lv_channel=None, voltage= defaultHVsetting, delay=0.3, step_size = 10)
+            self.master.instruments.hv_on(
+                lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
+            )
 
             return self.result
         except Exception as err:
@@ -542,7 +534,9 @@ class QtStartWindow(QWidget):
                 self.release()
                 # This line was previosly commented
                 try:
-                    self.master.instruments.off(lv_channel=None, hv_delay=0.5, hv_step_size=10)
+                    self.master.instruments.off(
+                        lv_channel=None, hv_delay=0.5, hv_step_size=10
+                    )
                     print("Window closed")
                 except:
                     print(

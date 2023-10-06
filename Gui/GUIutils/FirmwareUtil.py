@@ -1,16 +1,3 @@
-
-import logging
-
-# Customize the logging configuration
-logging.basicConfig(
-   level=logging.INFO,
-   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-   filename='my_project.log',  # Specify a log file
-   filemode='w'  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
-
 """
   FirmwareUtil.py
   brief                 utility functions for firmware 
@@ -22,6 +9,7 @@ logger = logging.getLogger(__name__)
 import subprocess
 from subprocess import Popen, PIPE
 from datetime import datetime
+from Gui.python.logging_config import logger
 
 
 def firmwarePingCheck(firmware, fileName):
