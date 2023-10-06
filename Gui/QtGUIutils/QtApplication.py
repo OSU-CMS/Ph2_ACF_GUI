@@ -83,7 +83,6 @@ class QtApplication(QWidget):
         # self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
         # self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
         # self.PowerRemoteControl = {"HV": True, "LV": True}
-
         self.setLoginUI()
         self.initLog()
         self.createLogin()
