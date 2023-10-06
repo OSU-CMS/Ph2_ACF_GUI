@@ -200,7 +200,7 @@ class BeBoardBox(QWidget):
 
     def initList(self):
         ModuleRow = ModuleBox()
-        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
+        self.ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(ModuleRow)
 
     def createList(self):
@@ -236,7 +236,7 @@ class BeBoardBox(QWidget):
             self.ChipWidgetDict[module] = ChipBox(module.getType())
             module.setMaximumHeight(50)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
-            self.ListLayout.addWidget(self.ChipWidgetDict[module], index + 1, 0, 1, 1)
+            self.ListLayout.addWidget(self.ChipWidgetDict[module], index + 3, 0, 1, 1)
             if index > 0:
                 RemoveButton = QPushButton("remove")
                 RemoveButton.setMaximumWidth(150)
