@@ -12,7 +12,6 @@ ExpertUserList = [
 ]
 
 
-
 FirmwareList = {
     "fc7.board.1": "192.168.1.80",
     "fc7.board.2": "127.0.0.1",  #'192.168.1.81',

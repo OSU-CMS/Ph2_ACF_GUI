@@ -41,12 +41,13 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.QtGUIutils.QtFwCheckDetails import *
 
+from Gui.python.logging_config import logger
+
 ## for configuration
 
 
 class ModuleBox(QWidget):
     typechanged = pyqtSignal()
-    destroy = pyqtSignal()
 
     def __init__(self):
         super(ModuleBox, self).__init__()
@@ -77,6 +78,7 @@ class ModuleBox(QWidget):
         self.TypeCombo = QComboBox()
         self.TypeCombo.addItems(ModuleType.values())
         self.TypeCombo.currentIndexChanged.connect(self.on_TypeChanged)
+
         TypeLabel.setBuddy(self.TypeCombo)
 
         # self.ChipBoxWidget = ChipBox(self.TypeCombo.currentText())
@@ -124,6 +126,7 @@ class ChipBox(QWidget):
 
     def __init__(self, pChipType):
         super().__init__()
+        logger.debug("Inside ChipBox")
         self.chipType = pChipType
         self.mainLayout = QHBoxLayout()
         self.ChipList = []

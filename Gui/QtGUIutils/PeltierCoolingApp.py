@@ -1,11 +1,10 @@
-# Contains frontend code for the Peltier Controller GUI application in the Ph2_ACF_GUI
-
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QMessageBox
 from PyQt5.QtCore import *
 from Gui.python.Peltier import *
 import time
 import os
+from Gui.python.logging_config import logger
 
 
 class Peltier(QWidget):

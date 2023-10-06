@@ -1,41 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap, QTextCursor, QColor
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QPlainTextEdit,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTableWidgetItem,
-    QTabWidget,
-    QTextEdit,
-    QTreeWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
     QMessageBox,
-    QSplitter,
 )
 
 import sys
@@ -45,8 +11,6 @@ import subprocess
 import threading
 import time
 from datetime import datetime
-import random
-from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
@@ -64,6 +28,7 @@ from Gui.python.IVCurveHandler import *
 from Gui.python.SLDOScanHandler import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.siteSettings import *
+from Gui.python.logging_config import logger
 
 import logging
 
@@ -89,8 +54,7 @@ class TestHandler(QObject):
     def __init__(self, runwindow, master, info, firmware):
         super(TestHandler, self).__init__()
         self.master = master
-        self.HVpowersupply = self.master.HVpowersupply
-        self.LVpowersupply = self.master.LVpowersupply
+        self.instruments = self.master.instruments
         # self.LVpowersupply.Reset()
 
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
@@ -229,7 +193,6 @@ class TestHandler(QObject):
             self.connection,
         )
 
-
         # The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
         # FIXME Fix rd53_file[key] so that it reads the correct txt file depending on what module is connected. -> Done!
 
@@ -324,7 +287,6 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
 
     def runTest(self, reRun=False):
-
         if reRun:
             self.halt = False
         testName = self.info[1]
@@ -363,69 +325,20 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
+        if not self.instruments.status(lv_channel=None)["lv"]:
+            self.instruments.lv_on(
+                lv_channel=None,
+                voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
+                current=ModuleCurrentMap[self.master.module_in_use],
+            )
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
-            self.IVCurveResult = ScanCanvas(
-                self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
-            )
-
-            channel = 1
-            # copy from QtStartWindow
-            # find the reading values
-            LVStatusValue = self.LVpowersupply.Instrument.status(
-                channel, no_lock=True
-            )  # return 1 if it is on, 0 if it is off
-            if LVStatusValue:
-                LVStatusValue = 1
-            else:
-                LVStatusValue = 0
-            current = self.LVpowersupply.ReadCurrent()
-            Readcurrent = float(current) if current else 0.0
-            voltage = self.LVpowersupply.ReadVoltage()
-            Readvoltage = float(voltage) if voltage else 0.0
-            # find the set values
-            testModuleType = self.master.LVpowersupply.ModuleType
-            testPowerMode = self.master.LVpowersupply.PoweringMode
-            if testPowerMode == "SLDO":
-                TestVoltage = ModuleVoltageMapSLDO[testModuleType]
-                TestCurrent = ModuleCurrentMap[testModuleType]
-            elif testPowerMode == "Direct":
-                TestVoltage = ModuleVoltageMap[testModuleType]
-                TestCurrent = ModuleCurrentMap[testModuleType]
-
-            volDiff = abs(TestVoltage - Readvoltage)
-            ampDiff = abs(TestCurrent - Readcurrent)
-
-            if volDiff <= 0.5 and ampDiff <= 0.5 and (LVStatusValue == 1):
-                self.IVCurveHandler = IVCurveHandler(self, self.HVpowersupply)
-                self.IVCurveHandler.finished.connect(self.IVCurveFinished)
-                self.IVCurveHandler.IVCurve()
-                return
-            else:
-                print("runSingleTest unable to start due to LVpowersupply status")
-                print("Readvoltage:" + str(Readvoltage))
-                print("Readcurrent:" + str(Readcurrent))
-                print("LVStatusValue:" + str(LVStatusValue))
-                print("TestCurrent:" + str(TestCurrent))
-                print("TestVoltage:" + str(TestVoltage))
-                print("LVpowersupply issue occurs, HVPS is turning off")
-                self.HVpowersupply.TurnOffHV()
-                reply = QMessageBox.question(
-                    None,
-                    "LV power supply error",
-                    "LV power supply error do you want to abort? yes for abort no for reset the test",
-                    QMessageBox.No | QMessageBox.Yes,
-                    QMessageBox.No,
-                )
-                if reply == QMessageBox.Yes:
-                    self.abortTest()
-                if reply == QMessageBox.No:
-                    self.resetConfigTest()
-
-                return
-
+            self.IVCurveHandler = IVCurveHandler(self, self.instruments)
+            self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+            self.IVCurveHandler.IVCurve()
+            return
 
         if testName == "SLDOScan":
             self.SLDOScanData = []
@@ -1099,16 +1012,19 @@ class TestHandler(QObject):
             self.runTest()
 
     def updateMeasurement(self, measureType, measure):
+        """
+        Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
+        if in simplified gui add to figure list
+        """
         # print(measure)
         if measureType == "IVCurve":
-            Voltage = measure["voltage"]
-            Current = measure["current"]
-            Percentage = measure["percentage"]
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                Percentage * 100
-            )
-            self.IVCurveData.append([Voltage, Current])
-            self.IVCurveResult.updatePlots(self.IVCurveData)
+            voltages = measure["voltage"]
+            currents = measure["current"]
+            logger.debug(f"Voltages: {voltages}")
+            logger.debug(f"Currents: {currents}")
+            # self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+            #     Percentage * 100
+            # )
             tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
             if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
                 try:
@@ -1125,15 +1041,15 @@ class TestHandler(QObject):
                 self.updateIVResult.emit((step, self.figurelist))
 
         if measureType == "SLDOScan":
-            Voltage = measure["voltage"]
-            Current = measure["current"]
+            voltages = measure["voltage"]
+            currents = measure["current"]
             Percentage = measure["percentage"]
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
                 Percentage * 100
             )
-            if float(Voltage) < -0.1 and float(Current) < -0.1:
+            if float(voltages) < -0.1 and float(currents) < -0.1:
                 return
-            self.SLDOScanData.append([Voltage, Current])
+            self.SLDOScanData.append([voltages, currents])
             self.SLDOScanResult.updatePlots(self.SLDOScanData)
             tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
             if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
@@ -1150,7 +1066,7 @@ class TestHandler(QObject):
                 self.figurelist = {"-1": [output]}
                 self.updateResult.emit((step, self.figurelist))
 
-    def IVCurveFinished(self):
+    def IVCurveFinished(self, test: str, measure: dict):
         for (
             module
         ) in (
@@ -1158,6 +1074,14 @@ class TestHandler(QObject):
         ):  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
 
+            self.IVCurveResult = ScanCanvas(
+                self,
+                xlabel="Voltage (V)",
+                ylabel="I (A)",
+                X=measure["voltage"],
+                Y=measure["current"],
+                invert=True,
+            )
         filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
         filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
         self.IVCurveResult.saveToSVG(filename)
@@ -1171,9 +1095,13 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
-            self.master.HVpowersupply.RampingUp(defaultHVsetting, -3)
-
-            print("calling ramping up in IVCurveFinished")
+            self.master.instruments.hv_on(
+                lv_channel=None,
+                voltage=defaultHVsetting,
+                delay=0.3,
+                step_size=-3,
+                measure=False,
+            )
 
             if self.testIndexTracker == len(CompositeList[self.info[1]]):
                 self.powerSignal.emit()
