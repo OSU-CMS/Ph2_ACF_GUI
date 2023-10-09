@@ -3,6 +3,8 @@ from PyQt5.QtCore import *
 
 import time
 import numpy
+from Gui.python.logging_config import logger
+
 
 
 class IVCurveThread(QThread):
@@ -26,7 +28,7 @@ class IVCurveThread(QThread):
 
     def turnOn(self):
         self.instruments.hv_off()
-        self.instruments.hv_on(voltage=0, delay=0.5, step_size = 10, no_lock=True)
+        self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
         self.instruments.hv_compliance_current(0.00001)
 
     # Used to break out of hv_on correctly
@@ -40,15 +42,23 @@ class IVCurveThread(QThread):
 
     def run(self):
         try:
-            _, measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.stopVal, step_size=-2, measure=True, break_monitoring=self.breakTest)
-            measurementStr = {"voltage":[value[1] for value in measurements],"current": [value[2] for value in measurements]}
+            _, measurements = self.instruments.hv_on(
+                lv_channel=1,
+                voltage=self.stopVal,
+                step_size=-2,
+                measure=True,
+                break_monitoring=self.breakTest,
+            )
+            measurementStr = {
+                "voltage": [value[1] for value in measurements],
+                "current": [value[2] for value in measurements],
+            }
+
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
-
-
 
 
 class IVCurveHandler(QObject):
@@ -62,7 +72,8 @@ class IVCurveHandler(QObject):
         self.window = window
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
-        #self.test.measureSignal.connect(self.window.updateMeasurement)
+        # self.test.measureSignal.connect(self.window.updateMeasurement)
+
         self.test.measureSignal.connect(self.finish)
 
     def isValid(self):
