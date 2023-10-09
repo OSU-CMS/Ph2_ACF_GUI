@@ -331,6 +331,7 @@ class TestHandler(QObject):
                 voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
                 current=ModuleCurrentMap[self.master.module_in_use],
             )
+
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
@@ -1010,7 +1011,6 @@ class TestHandler(QObject):
 
         if isCompositeTest(self.info[1]):
             self.runTest()
-
     def updateMeasurement(self, measureType, measure):
         """
         Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
@@ -1082,6 +1082,7 @@ class TestHandler(QObject):
                 Y=measure["current"],
                 invert=True,
             )
+
         filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
         filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
         self.IVCurveResult.saveToSVG(filename)

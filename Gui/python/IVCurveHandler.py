@@ -6,6 +6,7 @@ import numpy
 from Gui.python.logging_config import logger
 
 
+
 class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
 
@@ -52,6 +53,7 @@ class IVCurveThread(QThread):
                 "voltage": [value[1] for value in measurements],
                 "current": [value[2] for value in measurements],
             }
+
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
@@ -71,6 +73,7 @@ class IVCurveHandler(QObject):
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
         # self.test.measureSignal.connect(self.window.updateMeasurement)
+
         self.test.measureSignal.connect(self.finish)
 
     def isValid(self):

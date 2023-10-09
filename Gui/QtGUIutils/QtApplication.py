@@ -36,14 +36,15 @@ from Gui.QtGUIutils.QtStartWindow import QtStartWindow
 from Gui.QtGUIutils.QtProductionTestWindow import QtProductionTestWindow
 from Gui.QtGUIutils.QtModuleReviewWindow import QtModuleReviewWindow
 
-# from Gui.QtGUIutils.QtDBConsoleWindow import QtDBConsoleWindow
 from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 from icicle.icicle.instrument_cluster import BadStatusForOperationError
 from instrument_cluster import InstrumentCluster
+
 from Gui.python.logging_config import logger
+
 
 
 class QtApplication(QWidget):
@@ -68,6 +69,7 @@ class QtApplication(QWidget):
         self.PYTHON_VERSION = str(sys.version).split(" ")[0]
         self.dimension = dimension
         self.available_visa_resources = pyvisa.ResourceManager("@py").list_resources()
+
         self.desired_devices = {"hv": 1, "lv": 1, "relay": 0, "multimeter": 0}
         self.connected_device_information = {
             "hv_resource": None,
@@ -83,6 +85,7 @@ class QtApplication(QWidget):
         # self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
         # self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
         # self.PowerRemoteControl = {"HV": True, "LV": True}
+
         self.setLoginUI()
         self.initLog()
         self.createLogin()
@@ -133,6 +136,7 @@ class QtApplication(QWidget):
         for index, (firmwareName, fwAddress) in enumerate(
             site_settings.FC7List.items()
         ):
+
             LogFileName = "{0}/Gui/.{1}.log".format(
                 os.environ.get("GUI_dir"), firmwareName
             )
@@ -471,6 +475,7 @@ class QtApplication(QWidget):
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
 
+
         self.FirmwareStatus.setLayout(StatusLayout)
         self.FirmwareStatus.setDisabled(False)
 
@@ -493,6 +498,7 @@ class QtApplication(QWidget):
         self.HVPowerRemoteControl = QCheckBox("Use HV")
         self.HVPowerRemoteControl.setChecked(True)
         self.HVPowerRemoteControl.toggled.connect(lambda: self.enableDevice("hv"))
+
 
         self.HVPowerGroup = QGroupBox("HV Power")
         self.HVPowerGroup.setDisabled(False)
@@ -522,6 +528,7 @@ class QtApplication(QWidget):
             else self.HVPowerGroup.setDisabled(True)
         )
 
+
         self.HVPowerLayout.addWidget(self.HVPortLabel)
         self.HVPowerLayout.addWidget(self.HVPowerCombo)
         self.HVPowerLayout.addWidget(self.HVPowerModelLabel)
@@ -535,6 +542,7 @@ class QtApplication(QWidget):
         self.LVPowerRemoteControl.setChecked(True)
         self.LVPowerRemoteControl.toggled.connect(lambda: self.enableDevice("lv"))
 
+
         self.LVPowerGroup = QGroupBox("LV Power")
         self.LVPowerGroup.setDisabled(False)
         self.LVPowerLayout = QHBoxLayout()
@@ -547,6 +555,7 @@ class QtApplication(QWidget):
         self.LVPowerModelCombo = QComboBox()
         self.LVPowerModelCombo.addItems(InstrumentCluster.package_map.keys())
         self.LVPowerStatusValue = QLabel()
+
         self.LVPowerCombo.activated.connect(
             lambda: self.update_instrument_info(
                 "lv_resource", self.LVPowerCombo.currentText()
@@ -854,6 +863,7 @@ class QtApplication(QWidget):
         try:
             self.instruments = InstrumentCluster(**self.device_settings)
             self.instruments.open()
+
             if (
                 self.instruments.status(lv_channel=None)["lv"]
                 or self.instruments.status(lv_channel=None)["hv"]
@@ -993,13 +1003,14 @@ class QtApplication(QWidget):
             self.HVPowerGroup.setDisabled(True)
             self.desired_devices["hv"] = 0
 
+
     def releaseHVPowerPanel(self):
         self.instruments.hv_off()
         try:
             self.HVPowerCombo.setDisabled(False)
             self.HVPowerStatusValue.setText("")
             self.UseHVPowerSupply.setDisabled(False)
-            # self.ReleaseHVPowerSupply.setDisabled(True)
+
         # with Exception as err:
         except Exception as err:
             print("HV PowerPanel not released properly")
@@ -1016,6 +1027,7 @@ class QtApplication(QWidget):
         """Keep track of whether a device wants to be used"""
         self.desired_devices[device] = 1 if (self.desired_devices[device] == 0) else 0
 
+
     def releaseLVPowerPanel(self):
         self.instruments.lv_off(1)
         self.LVPowerCombo.setDisabled(False)
@@ -1031,6 +1043,7 @@ class QtApplication(QWidget):
         for index, (firmwareName, fwAddress) in enumerate(
             site_settings.FC7List.items()
         ):
+
             fileName = self.LogList[index]
             if firmwareName != self.FwUnderUsed:
                 FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(
@@ -1124,12 +1137,11 @@ class QtApplication(QWidget):
             firmware.setFPGAConfig(changeuDTCDialog.uDTCFile)
 
         self.checkFirmware()
-
     def releaseProdTestButton(self):
         self.NewProductionTestButton.setDisabled(False)
         self.LogoutButton.setDisabled(False)
         self.ExitButton.setDisabled(False)
-
+    
     def goExpert(self):
         self.expertMode = True
 
