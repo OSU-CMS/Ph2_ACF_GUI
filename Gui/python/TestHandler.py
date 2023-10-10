@@ -120,6 +120,7 @@ class TestHandler(QObject):
         self.readingOutput = False
         self.ProgressingMode = "None"
         self.ProgressValue = 0
+        self.IVProgressValue = 0
         self.runtimeList = []
         self.info_process = QProcess(self)
         self.info_process.readyReadStandardOutput.connect(
@@ -331,12 +332,14 @@ class TestHandler(QObject):
                 voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
                 current=ModuleCurrentMap[self.master.module_in_use],
             )
+
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
             self.IVCurveHandler = IVCurveHandler(self, self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+            self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.IVCurve()
             return
 
@@ -1011,6 +1014,11 @@ class TestHandler(QObject):
         if isCompositeTest(self.info[1]):
             self.runTest()
 
+    def updateProgress(self, measurementType, stepSize):
+        if measurementType=='IVCurve':
+            self.IVProgressValue += stepSize/2.0
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
+
     def updateMeasurement(self, measureType, measure):
         """
         Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
@@ -1082,6 +1090,7 @@ class TestHandler(QObject):
                 Y=measure["current"],
                 invert=True,
             )
+
         filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
         filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
         self.IVCurveResult.saveToSVG(filename)

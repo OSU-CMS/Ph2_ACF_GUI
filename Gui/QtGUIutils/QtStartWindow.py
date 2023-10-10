@@ -306,6 +306,7 @@ class SummaryBox(QWidget):
                 lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
             )
 
+
             return self.result
         except Exception as err:
             self.result = False
@@ -543,6 +544,7 @@ class QtStartWindow(QWidget):
                     self.master.instruments.off(
                         lv_channel=None, hv_delay=0.5, hv_step_size=10
                     )
+
                     print("Window closed")
                 except:
                     print(

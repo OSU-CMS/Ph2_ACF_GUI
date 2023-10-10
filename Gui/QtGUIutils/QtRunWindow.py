@@ -250,6 +250,7 @@ class QtRunWindow(QWidget):
         self.saveCheckBox.clicked.connect(self.setAutoSave)
         ##### previous layout ##########
         """
+
 		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
 		self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
 		self.ControlLayout.addWidget(self.RunButton,1,0,1,1)
@@ -686,3 +687,4 @@ class QtRunWindow(QWidget):
             else:
                 self.backSignal = False
                 event.ignore()
+
