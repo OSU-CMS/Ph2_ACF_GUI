@@ -120,6 +120,7 @@ class TestHandler(QObject):
         self.readingOutput = False
         self.ProgressingMode = "None"
         self.ProgressValue = 0
+        self.IVProgressValue = 0
         self.runtimeList = []
         self.info_process = QProcess(self)
         self.info_process.readyReadStandardOutput.connect(
@@ -1015,9 +1016,8 @@ class TestHandler(QObject):
 
     def updateProgress(self, measurementType, stepSize):
         if measurementType=='IVCurve':
-            self.stepSize = stepSize
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue( 
-                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].value() + stepSize)
+            self.IVProgressValue += stepSize/2.0
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
 
     def updateMeasurement(self, measureType, measure):
         """

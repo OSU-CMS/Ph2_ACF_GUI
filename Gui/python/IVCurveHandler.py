@@ -9,7 +9,7 @@ from Gui.python.logging_config import logger
 
 class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
-    progressSignal = pyqtSignal(str, int)
+    progressSignal = pyqtSignal(str, float)
 
     def __init__(self, parent, instrument_cluster=None):
         super(IVCurveThread, self).__init__()
@@ -39,8 +39,8 @@ class IVCurveThread(QThread):
             return True
         return False
 
-    def transmitProgress(self):
-        self.percentStep = int(abs(100*self.stepLength/self.stopVal))
+    def getProgress(self):
+        self.percentStep = abs(100*self.stepLength/self.stopVal)
         self.progressSignal.emit("IVCurve", self.percentStep)
 
     def abortTest(self):
@@ -51,10 +51,11 @@ class IVCurveThread(QThread):
             _, measurements = self.instruments.hv_on(
                 lv_channel=1,
                 voltage=self.stopVal,
-                step_size=-2,
+                step_size=self.stepLength,
+                delay=0.2,
                 measure=True,
                 break_monitoring=self.breakTest,
-                execute_each_step=self.transmitProgress,
+                execute_each_step=self.getProgress,
             )
             measurementStr = {
                 "voltage": [value[1] for value in measurements],
@@ -72,12 +73,11 @@ class IVCurveHandler(QObject):
     measureSignal = pyqtSignal(str, object)
     stopSignal = pyqtSignal(object)
     finished = pyqtSignal(str, dict)
-    progressSignal = pyqtSignal(str, int)
+    progressSignal = pyqtSignal(str, float)
 
     def __init__(self, window, instrument_cluster):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
-        self.window = window
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
         # self.test.measureSignal.connect(self.window.updateMeasurement)
