@@ -9,12 +9,14 @@ from Gui.python.logging_config import logger
 
 class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
+    progressSignal = pyqtSignal(str, int)
 
     def __init__(self, parent, instrument_cluster=None):
         super(IVCurveThread, self).__init__()
         self.instruments = instrument_cluster
         self.parent = parent
         self.measureSignal.connect(self.parent.transitMeasurment)
+        self.progressSignal.connect(self.parent.transmitProgress) #FIXME add slot function
         self.exiting = False
         self.setTerminationEnabled(True)
 
@@ -37,6 +39,10 @@ class IVCurveThread(QThread):
             return True
         return False
 
+    def transmitProgress(self):
+        self.percentStep = int(abs(100*self.stepLength/self.stopVal))
+        self.progressSignal.emit("IVCurve", self.percentStep)
+
     def abortTest(self):
         self.exiting = True
 
@@ -48,6 +54,7 @@ class IVCurveThread(QThread):
                 step_size=-2,
                 measure=True,
                 break_monitoring=self.breakTest,
+                execute_each_step=self.transmitProgress,
             )
             measurementStr = {
                 "voltage": [value[1] for value in measurements],
@@ -65,6 +72,7 @@ class IVCurveHandler(QObject):
     measureSignal = pyqtSignal(str, object)
     stopSignal = pyqtSignal(object)
     finished = pyqtSignal(str, dict)
+    progressSignal = pyqtSignal(str, int)
 
     def __init__(self, window, instrument_cluster):
         super(IVCurveHandler, self).__init__()
@@ -73,7 +81,7 @@ class IVCurveHandler(QObject):
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
         # self.test.measureSignal.connect(self.window.updateMeasurement)
-
+        self.test.progressSignal.connect(self.transmitProgress)
         self.test.measureSignal.connect(self.finish)
 
     def isValid(self):
@@ -86,6 +94,9 @@ class IVCurveHandler(QObject):
 
     def transitMeasurment(self, measure):
         self.measureSignal.emit("IVCurve", measure)
+
+    def transmitProgress(self, measurementType, percentStep):
+        self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
         self.instruments.hv_off()

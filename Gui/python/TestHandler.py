@@ -338,6 +338,7 @@ class TestHandler(QObject):
             self.IVCurveData = []
             self.IVCurveHandler = IVCurveHandler(self, self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+            self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.IVCurve()
             return
 
@@ -1011,6 +1012,13 @@ class TestHandler(QObject):
 
         if isCompositeTest(self.info[1]):
             self.runTest()
+
+    def updateProgress(self, measurementType, stepSize):
+        if measurementType=='IVCurve':
+            self.stepSize = stepSize
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue( 
+                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].value() + stepSize)
+
     def updateMeasurement(self, measureType, measure):
         """
         Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
