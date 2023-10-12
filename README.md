@@ -77,9 +77,9 @@ python3 QtApplication
 
 7. Exit and kill container when done:
 ```
-Control + d
+exit
 ``` 
-will close and kill the container.  Other commands may only exit the container and keep it running in the background, so be sure to use this method of exiting.
+will close and kill the container.  Other commands may only exit the container and keep it running in the background, so be sure to use this method of exiting.  Another option is to hit ctrl-D.
 
 # The following is only needed if you are NOT using Docker
 ## Set up the software environment:
