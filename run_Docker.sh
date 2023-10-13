@@ -4,7 +4,17 @@ SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/
 
 ## Change the ports in 'mydevicelist' to those which you wish to use with the GUI#############
 mydevices=""
-mydevicelist=("/dev/ttyUSBLV" "/dev/ttyUSBHV" )
+target="tty"
+mydevicelist=()
+for sysdevpath in $(find /sys/bus/usb/devices/usb*/ -name dev); do
+    syspath="${sysdevpath%/dev}"
+    devname="$(udevadm info -q name -p $syspath)"
+    device="/dev/$devname"
+    if [[ $device =~ $target ]]; then
+        mydevicelist+=("$device")
+    fi 
+done
+echo "${mydevicelist[@]}"
 
 for mydevice in "${mydevicelist[@]}"; do
     mydevices+="--device=$mydevice "
