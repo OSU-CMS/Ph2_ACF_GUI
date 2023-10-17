@@ -1036,6 +1036,7 @@ class QtDBConsoleWindow(QMainWindow):
 
 			if isActive(self.connection):
 				self.connectedHeadLine()
+				GetTrimClass(self.connection)
 		except Exception as err:
 			print("Error in connecting to database, {}".format(repr(err)))
 

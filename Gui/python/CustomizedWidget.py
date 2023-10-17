@@ -1,4 +1,5 @@
 from PyQt5 import QtCore
+from Gui.GUIutils.DBConnection import GetTrimClass
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import (
     QApplication,
@@ -122,7 +123,7 @@ class ModuleBox(QWidget):
 class ChipBox(QWidget):
     chipchanged = pyqtSignal(int, int)
 
-    def __init__(self, pChipType):
+    def __init__(self, pChipType,serialNumber):
         super().__init__()
         self.chipType = pChipType
         self.mainLayout = QHBoxLayout()
@@ -132,9 +133,25 @@ class ChipBox(QWidget):
         self.VDDAMap = {}
         self.VDDDMap = {}
         self.ChipGroupBoxDict = {}
+        self.serialNumber=serialNumber
+        #get trim values from DB
+        GetTRimFromDB=GetTrimClass()
 
-        for chipid in self.ChipList:
-            self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+        if GetTRimFromDB.connection == "Offline":
+            print("offline") #debug
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+
+        
+        else:
+            sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)
+            i = 0
+            for chipid in self.ChipList:
+                VDDA = sorted_VDDAlist[i]
+                VDDD = sorted_VDDDlist[i]
+                self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
+                i += 1
+            
 
         self.makeChipGroupBox(self.ChipGroupBoxDict)
         self.setLayout(self.mainLayout)
@@ -147,7 +164,8 @@ class ChipBox(QWidget):
         for lane in ModuleLaneMap[self.chipType]:
             self.ChipList.append(ModuleLaneMap[self.chipType][lane])
 
-    def makeChipBox(self, pChipID):
+    #get trim values from DB
+    def makeChipBoxWithDB(self, pChipID,VDDA,VDDD):
         self.ChipID = pChipID
         self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
         self.ChipLabel.setChecked(True)
@@ -156,7 +174,32 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit = QLineEdit()
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         self.ChipVDDALabel = QLabel("VDDA:")
-        self.ChipVDDAEdit = QLineEdit()
+        self.ChipVDDAEdit = QLineEdit() 
+        self.ChipVDDDEdit.setText(VDDA)
+        self.ChipVDDAEdit.setText(VDDD)
+        self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
+
+        self.VChipLayout = QGridLayout()
+        self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
+        self.VChipLayout.addWidget(self.ChipVDDDLabel, 1, 0, 1, 1)
+        self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
+        self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
+        self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
+
+        return self.VChipLayout
+
+
+
+    def makeChipBox(self, pChipID):    
+        self.ChipID = pChipID
+        self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
+        self.ChipLabel.setChecked(True)
+        self.ChipLabel.setObjectName("ChipStatus_{0}".format(pChipID))
+        self.ChipVDDDLabel = QLabel("VDDD:")
+        self.ChipVDDDEdit = QLineEdit()
+        self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
+        self.ChipVDDALabel = QLabel("VDDA:")
+        self.ChipVDDAEdit = QLineEdit() 
         if "CROC" in self.chipType:
             self.ChipVDDDEdit.setText("8")
             self.ChipVDDAEdit.setText("8")
@@ -260,7 +303,7 @@ class BeBoardBox(QWidget):
 
         for index, module in enumerate(self.ModuleList):
             # module.setMaximumWidth(500)
-            self.ChipWidgetDict[module] = ChipBox(module.getType())
+            self.ChipWidgetDict[module] = ChipBox(module.getType(),module.getSerialNumber())
             module.setMaximumHeight(50)
             module.typechanged.connect(self.on_TypeChanged)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
