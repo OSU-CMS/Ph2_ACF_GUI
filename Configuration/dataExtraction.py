@@ -1,3 +1,10 @@
+"""
+10-23 
+what happen if the serial number is not being register on the database?
+the storing list will be empty
+"""
+
+
 import mysql.connector
 import getpass
 
@@ -8,6 +15,7 @@ def GetTrims(password,serialNumber,debug = False):
         host="cmsfpixdb.physics.purdue.edu",
         user="cmsfpix_phase2_user",
         password=password,
+
         database="cmsfpix_phase2"
     )
 
@@ -66,7 +74,7 @@ def GetTrims(password,serialNumber,debug = False):
 
 if __name__ == "__main__":
     password = getpass.getpass("Enter your password:")
-    serialNumber = "RH0010"
+    serialNumber = "RH0001"
     sorted_VDDAlist,sorted_VDDDlist=GetTrims(password,serialNumber)
     print("sorted_VDDAlist(in order site,trim value):" + str(sorted_VDDAlist))
     print("VDDD:" + str(sorted_VDDDlist))
