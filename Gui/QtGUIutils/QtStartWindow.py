@@ -316,7 +316,7 @@ class QtStartWindow(QWidget):
         self.firmware = firmware
         self.firmwares = firmware
         self.firmwareName = firmware.getBoardName()
-        self.connection = self.master.connection
+        
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
         self.runFlag = False
@@ -350,7 +350,7 @@ class QtStartWindow(QWidget):
         self.TestBox.setLayout(testlayout)
 
         self.firmware.removeAllModule()
-        self.BeBoardWidget = BeBoardBox(self.firmware)  # FLAG
+        self.BeBoardWidget = BeBoardBox(self.master,self.firmware)  # FLAG
         self.BeBoardWidget.changed.connect(self.destroyMain)
         self.BeBoardWidget.changed.connect(self.createMain)
 

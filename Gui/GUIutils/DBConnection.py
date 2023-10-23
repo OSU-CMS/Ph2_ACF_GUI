@@ -411,17 +411,22 @@ def getByColumnName(column_name, header, databody):
 ##  Functions for getting trim value (Begin)
 ##########################################################################
 class GetTrimClass():
-	def __init__(self,connection):
-		self.connection = connection
+	def __init__(self):
+		self.connection = []
+	def get_connection(self):
+		return self.connection
 	def GetTrim(self,serialNumber,debug = False):
 		connection = self.connection
-		if connection == "Offline":
+		if connection == "Offline" or connection == []:
 			print("DB is offline")
-			return None,None
-
+			return [],[]
+		connection.connect()
 		cursor = connection.cursor()
 		cursor.execute(f"select component.id from component where component.serial_number='{serialNumber}';")
 		results = cursor.fetchall()
+		#handle the error of can't find the data
+		if results == []:
+			return [],[]
 		if debug == True:
 			print("raw ID:"+str(result))# it should look like [(778,)]
 		parenetNum = results[0][0]

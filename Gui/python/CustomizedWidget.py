@@ -123,8 +123,10 @@ class ModuleBox(QWidget):
 class ChipBox(QWidget):
     chipchanged = pyqtSignal(int, int)
 
-    def __init__(self, pChipType,serialNumber):
+    def __init__(self, master,pChipType,serialNumber):
         super().__init__()
+        self.master = master
+        self.connection = self.master.connection
         self.chipType = pChipType
         self.mainLayout = QHBoxLayout()
         self.ChipList = []
@@ -136,21 +138,34 @@ class ChipBox(QWidget):
         self.serialNumber=serialNumber
         #get trim values from DB
         GetTRimFromDB=GetTrimClass()
-
-        if GetTRimFromDB.connection == "Offline":
-            print("offline") #debug
+        #adding a get connection method to get the real time changes?
+        GetTRimFromDB.connection=self.connection
+        if GetTRimFromDB.connection == "Offline" or GetTRimFromDB.connection == []:
+            print("serial numer : " + str(self.serialNumber))
+            print(GetTRimFromDB.connection)
             for chipid in self.ChipList:
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
 
         
         else:
-            sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)
-            i = 0
-            for chipid in self.ChipList:
-                VDDA = sorted_VDDAlist[i]
-                VDDD = sorted_VDDDlist[i]
-                self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
-                i += 1
+            if self.serialNumber != []:
+                #need to find way to haddle serial number iussue, it is not [] and None if the chip box is empty, so how we handdle it?
+                sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)
+            
+                if sorted_VDDAlist == [] or sorted_VDDDlist == []:
+                    #print("we can't find the trim values for the module with serial number " + str(self.serialNumber))
+                    #print(GetTRimFromDB.connection)
+                    for chipid in self.ChipList:
+                        self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+                
+                
+                else:
+                    i = 0
+                    for chipid in self.ChipList:
+                        VDDA = sorted_VDDAlist[i]
+                        VDDD = sorted_VDDDlist[i]
+                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
+                        i += 1
             
 
         self.makeChipGroupBox(self.ChipGroupBoxDict)
@@ -260,8 +275,9 @@ class ChipBox(QWidget):
 class BeBoardBox(QWidget):
     changed = pyqtSignal()
 
-    def __init__(self, firmware):
+    def __init__(self, master ,firmware):
         super(BeBoardBox, self).__init__()
+        self.master = master #pass DB connection variable to chipBox
         self.firmware = firmware
         self.ModuleList = []
         self.ChipWidgetDict = {}  # maps module to the chipbox object
@@ -303,7 +319,7 @@ class BeBoardBox(QWidget):
 
         for index, module in enumerate(self.ModuleList):
             # module.setMaximumWidth(500)
-            self.ChipWidgetDict[module] = ChipBox(module.getType(),module.getSerialNumber())
+            self.ChipWidgetDict[module] = ChipBox(self.master,module.getType(),module.getSerialNumber())
             module.setMaximumHeight(50)
             module.typechanged.connect(self.on_TypeChanged)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
@@ -464,7 +480,8 @@ class SimpleModuleBox(QWidget):
         # prefix = defaultModuleType if type(defaultModuleType) ==  str else ""
         # SerialLabel = QLabel("{} SerialNumber:".format(prefix))
         self.SerialEdit = QLineEdit()
-        self.SerialEdit.returnPressed.connect(self.on_textChange)
+        #self.SerialEdit.returnPressed.connect(self.on_textChange) #original code
+        self.SerialEdit.returnPressed.connect(self.on_editing_finished)
         # self.SerialEdit.setMinimumWidth(120)
         # self.SerialEdit.setMaximumWidth(200)
 
@@ -523,6 +540,13 @@ class SimpleModuleBox(QWidget):
         self.SerialString = self.SerialEdit.text()
         ## Add Parser
         self.textchanged.emit()
+    
+    @pyqtSlot()
+    def on_editing_finished(self):
+        self.SerialString = self.SerialEdit.text()
+        self.textchanged.emit()
+    
+
 
 
 class SimpleBeBoardBox(QWidget):
