@@ -8,7 +8,7 @@ if [ ! $GIT_REF ];
 fi;
 
 # clone Ph2ACF
-git clone --recurse-submodules --single-branch --branch $GIT_REF https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF.git Ph2_ACF
+#git clone --recurse-submodules --single-branch --branch $GIT_REF https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF.git Ph2_ACF
 
 #export Ph2_ACF_VERSION="v4-14"
 export Ph2_ACF_VERSION=$GIT_REF
