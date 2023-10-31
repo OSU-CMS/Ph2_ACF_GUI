@@ -3,7 +3,7 @@
 #  --build-arg GIT_REF=v4-14
 #If you don't use this option when building the image it will default to the Dev branch of Ph2_ACF.
 ARG GIT_REF=Dev
-ARG FROM_IMAGE=gitlab-registry.cern.ch/cms_tk_ph2/docker_exploration/cmstkph2_udaq_al9:${GIT_REF}
+ARG FROM_IMAGE=gitlab-registry.cern.ch/cms_tk_ph2/docker_exploration/cmstkph2_udaq_al9:latest
 FROM $FROM_IMAGE AS base
 
 SHELL ["/bin/bash", "-c"]
