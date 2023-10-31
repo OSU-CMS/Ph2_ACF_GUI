@@ -14,7 +14,8 @@ for sysdevpath in $(find /sys/bus/usb/devices/usb*/ -name dev); do
         mydevicelist+=("$device")
     fi 
 done
-echo "${mydevicelist[@]}"
+#echo "${mydevicelist[@]}"
+
 aliasout=$(ls -alF /dev/ttyUSB*)
 aliasprint=$(echo "$aliasout" | awk '{print $9}' | grep "$target")
 #echo $aliasprint
@@ -22,10 +23,11 @@ aliasarr=($aliasprint)
 for usbalias in "${aliasarr[@]}"; do
     mydevicelist+=("$usbalias")
 done
+
 for mydevice in "${mydevicelist[@]}"; do
     mydevices+="--device=$mydevice "
     mydevices+=" "
-    echo "device loaded $mydevices"
+    echo "device loaded $mydevice"
 done
 mydevices=$(echo $mydevices | xargs)
 echo $mydevices | xargs
