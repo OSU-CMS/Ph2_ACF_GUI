@@ -28,6 +28,7 @@ from Gui.python.IVCurveHandler import *
 from Gui.python.SLDOScanHandler import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.siteSettings import *
+from Gui.python.logging_config import logger
 
 import logging
 
@@ -119,6 +120,7 @@ class TestHandler(QObject):
         self.readingOutput = False
         self.ProgressingMode = "None"
         self.ProgressValue = 0
+        self.IVProgressValue = 0
         self.runtimeList = []
         self.info_process = QProcess(self)
         self.info_process.readyReadStandardOutput.connect(
@@ -191,7 +193,6 @@ class TestHandler(QObject):
             self.input_dir,
             self.connection,
         )
-
 
         # The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
         # FIXME Fix rd53_file[key] so that it reads the correct txt file depending on what module is connected. -> Done!
@@ -287,7 +288,6 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
 
     def runTest(self, reRun=False):
-
         if reRun:
             self.halt = False
         testName = self.info[1]
@@ -327,17 +327,21 @@ class TestHandler(QObject):
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
         if not self.instruments.status(lv_channel=None)["lv"]:
-            self.instruments.lv_on(lv_channel=None, voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
-                                current=ModuleCurrentMap[self.master.module_in_use])
+            self.instruments.lv_on(
+                lv_channel=None,
+                voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
+                current=ModuleCurrentMap[self.master.module_in_use],
+            )
+
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
             self.IVCurveHandler = IVCurveHandler(self, self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+            self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.IVCurve()
             return
-
 
         if testName == "SLDOScan":
             self.SLDOScanData = []
@@ -1009,6 +1013,12 @@ class TestHandler(QObject):
 
         if isCompositeTest(self.info[1]):
             self.runTest()
+
+    def updateProgress(self, measurementType, stepSize):
+        if measurementType=='IVCurve':
+            self.IVProgressValue += stepSize/2.0
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
+
     def updateMeasurement(self, measureType, measure):
         """
         Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
@@ -1065,10 +1075,22 @@ class TestHandler(QObject):
                 self.updateResult.emit((step, self.figurelist))
 
     def IVCurveFinished(self, test: str, measure: dict):
-        for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
+        for (
+            module
+        ) in (
+            self.firmware.getAllModules().values()
+        ):  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
 
-            self.IVCurveResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)", X= measure['voltage'], Y= measure['current'],  invert=True)
+            self.IVCurveResult = ScanCanvas(
+                self,
+                xlabel="Voltage (V)",
+                ylabel="I (A)",
+                X=measure["voltage"],
+                Y=measure["current"],
+                invert=True,
+            )
+
         filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
         filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
         self.IVCurveResult.saveToSVG(filename)
@@ -1082,7 +1104,13 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
-            self.master.instruments.hv_on(lv_channel=None, voltage = defaultHVsetting, delay=0.3, step_size=-3, measure=False)
+            self.master.instruments.hv_on(
+                lv_channel=None,
+                voltage=defaultHVsetting,
+                delay=0.3,
+                step_size=-3,
+                measure=False,
+            )
 
             if self.testIndexTracker == len(CompositeList[self.info[1]]):
                 self.powerSignal.emit()
