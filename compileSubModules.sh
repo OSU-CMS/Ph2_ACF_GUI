@@ -2,16 +2,8 @@
 
 echo "-----Compiling Ph2_ACF-----"
 echo "---------------------------"
-# Default to Dev unless otherwise specified.
-if [ ! $GIT_REF ];
-    then GIT_REF=Dev;
-fi;
 
-# clone Ph2ACF
-#git clone --recurse-submodules --single-branch --branch $GIT_REF https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF.git Ph2_ACF
-
-#export Ph2_ACF_VERSION="v4-14"
-export Ph2_ACF_VERSION=$GIT_REF
+export Ph2_ACF_VERSION="v4-14"
 
 mkdir Ph2_ACF/build/
 cd Ph2_ACF
