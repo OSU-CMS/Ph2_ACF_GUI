@@ -1,15 +1,3 @@
-import logging
-
-# Customize the logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    filename="my_project.log",  # Specify a log file
-    filemode="w",  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
-
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import (
     QApplication,
@@ -84,6 +72,7 @@ class SummaryBox(QWidget):
             self.chipSwitches[i] = True
 
     def createBody(self):
+        # FEIDLabel = QLabel("ID: {}".format(self.module.getID()))
         FEIDLabel = QLabel("Module: {}".format(self.module.getSerialNumber()))
         FEIDLabel.setStyleSheet("font-weight:bold")
         PowerModeLabel = QLabel()
@@ -238,13 +227,11 @@ class SummaryBox(QWidget):
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
                 self.master.module_in_use = self.module.getType()
 
-                self.master.instruments.lv_on(
-                    None,
-                    ModuleVoltageMapSLDO[self.master.module_in_use],
-                    ModuleCurrentMap[self.master.module_in_use],
-                )
+
+                self.master.instruments.lv_on(None, ModuleVoltageMapSLDO[self.master.module_in_use], ModuleCurrentMap[self.master.module_in_use])
 
                 logging.info("Turned on LV power supply")
+
 
             # # Want to try and connect twice
             # self.Stopcount = 0
@@ -302,10 +289,7 @@ class SummaryBox(QWidget):
             #         print("LV PS is off now. HV PS can't be turn on")
             #         print("attempt to turn on the LV PS again")
             #         time.sleep(2)
-            self.master.instruments.hv_on(
-                lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
-            )
-
+            self.master.instruments.hv_on(lv_channel=None, voltage= defaultHVsetting, delay=0.3, step_size = 10)
 
             return self.result
         except Exception as err:
@@ -373,6 +357,10 @@ class QtStartWindow(QWidget):
 
         self.firmware.removeAllModule()
         self.BeBoardWidget = BeBoardBox(self.firmware)  # FLAG
+        self.BeBoardWidget.changed.connect(self.destroyMain)
+        self.BeBoardWidget.changed.connect(self.createMain)
+
+        # self.ChipBoxWidget = ChipBox(self.firmware)
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
         self.mainLayout.addWidget(self.BeBoardWidget, 1, 0)
@@ -541,10 +529,7 @@ class QtStartWindow(QWidget):
                 self.release()
                 # This line was previosly commented
                 try:
-                    self.master.instruments.off(
-                        lv_channel=None, hv_delay=0.5, hv_step_size=10
-                    )
-
+                    self.master.instruments.off(lv_channel=None, hv_delay=0.5, hv_step_size=10)
                     print("Window closed")
                 except:
                     print(

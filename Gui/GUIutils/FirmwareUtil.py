@@ -9,7 +9,6 @@
 import subprocess
 from subprocess import Popen, PIPE
 from datetime import datetime
-from Gui.python.logging_config import logger
 
 
 def firmwarePingCheck(firmware, fileName):

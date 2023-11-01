@@ -2,88 +2,35 @@
 Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 
 ## Running in docker:
-Using docker is the easiest and most simple way to install and run this software.  A compiled version of the most current stable release of Ph2_ACF is included in the container. There are two containers available to meet the needs of both developers and users.
+Using docker is the easiest and most simple way to install and run this software.  A compiled version of Ph2_ACF is included.
 
-### Docker for users:
-This container is designed for users who are testing modules.  The following set of directions can be used for the initial setup:
-
-1. Clone GUI repo and checkout the DEV branch:
+1. Clone GUI repo
 ```
 git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
-git checkout DEV
 ```
 or pull the latest changes while inside the Ph2_ACF_GUI directory:
 ```
 git pull --recurse-submodules
 ```
 
-2. Set site-specific configurations:
+2. Get the latest docker image:
 ```
-cd Ph2_ACF_GUI/Gui
+docker pull majoyce2/ph2_acf_gui:latest
 ```
-Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can set the model of LV/HV devices, specify the USB ports, etc.  You should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
 
 3. Specify device ports:
-In run_Docker.sh you need to update the devices in the "mydevicelist" to reflect the ports you will be using. The plan for this to be automated, but for now you need to change it in this file.
+In run_Docker.sh you need to update the devices in the "mydevicelist" to reflect the ports you will be using. 
 
 4. Start the docker container:
 ```
-cd ..
 bash run_Docker.sh
 ```
 
 5. That's it!  At this point the GUI should be open and ready to use.
 
-
-### Docker for developers:
-This container is meant for developers or users who would like to customize some aspects of the GUI.  It sets up the environment for the GUI and Ph2_ACF to run and opens to a command line.  Local files are mounted to the container so that changes to the local files will be reflected inside the container.  This allows for code development without needing to build a new Docker image after each modification of the code.
-
-1. Clone GUI repo and checkout the DEV branch:
-```
-git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
-git checkout DEV
-```
-or pull the latest changes while inside the Ph2_ACF_GUI directory:
-```
-git pull --recurse-submodules
-```
-
-2. Set site-specific configurations:
-```
-cd Ph2_ACF_GUI/Gui
-```
-Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can set the model of LV/HV devices, specify the USB ports, etc.  You should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
-
-3. Specify device ports:
-In run_Docker.sh you need to update the devices in the "mydevicelist" to reflect the ports you will be using. The plan for this to be automated, but for now you need to change it in this file.
-
-4. Choose the developer Docker image:
-In run_Docker.sh you need to comment the line that runs the "user" Docker image and uncomment the line that runs the "dev" docker image.
-
-5. Start the docker container:
-```
-bash run_Docker.sh
-```
-
-6. Set up Ph2_ACF and open GUI:
-When you first open the container you should run
-```
-source prepare_Ph2_ACF
-```
-This will set up the Ph2_ACF environment variables in the container and open the GUI.  If you exit the GUI, it will take you back to the Gui directory.  If you want to open the GUI again while still inside the container, you can just run
-```
-python3 QtApplication
-```
-
-7. Exit and kill container when done:
-```
-exit
-``` 
-will close and kill the container.  Other commands may only exit the container and keep it running in the background, so be sure to use this method of exiting.  Another option is to hit ctrl-D.
-
 # The following is only needed if you are NOT using Docker
 ## Set up the software environment:
-This software will only work in Alma Linux 9 (RHEL 9).  It is highly recommended that everyone use the Docker containers rather than this method.  This software is only tested while running inside the Docker containers, so proceed at your own risk.
+This software has not been designed to work in a conda environment.
 
 1. Clone GUI repo
 ```

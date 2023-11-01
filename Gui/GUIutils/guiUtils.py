@@ -24,7 +24,13 @@ from functools import partial
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.DBConnection import *
 from Configuration.XMLUtil import *
-from Gui.python.logging_config import logger
+
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 ##########################################################################
 ##########################################################################
