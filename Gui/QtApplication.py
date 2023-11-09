@@ -7,10 +7,11 @@ from PyQt5.QtWidgets import (QApplication, QCheckBox, QComboBox, QDateTimeEdit,
 
 import sys
 import os
+import logging
 
 from Gui.QtGUIutils.QtApplication import *
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 	app = QApplication([])
 	dimension = app.screens()[0].size()
 	qtApp = QtApplication(dimension)

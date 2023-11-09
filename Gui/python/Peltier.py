@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-
-# This file contains the functions that help facilitate communication with the Peltier controller
-
 import serial
 from Gui.siteSettings import *
 from PyQt5 import QtCore
@@ -9,7 +6,7 @@ from PyQt5.QtCore import *
 from PyQt5 import QtSerialPort
 from PyQt5.QtWidgets import QMessageBox
 import time
-import logging
+from Gui.python.logging_config import logger
 
 
 class PeltierSignalGenerator:

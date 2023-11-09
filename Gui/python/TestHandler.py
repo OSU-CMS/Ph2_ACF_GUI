@@ -1,41 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap, QTextCursor, QColor
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QPlainTextEdit,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTableWidgetItem,
-    QTabWidget,
-    QTextEdit,
-    QTreeWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
     QMessageBox,
-    QSplitter,
 )
 
 import sys
@@ -45,8 +11,6 @@ import subprocess
 import threading
 import time
 from datetime import datetime
-import random
-from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
@@ -64,6 +28,7 @@ from Gui.python.IVCurveHandler import *
 from Gui.python.SLDOScanHandler import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.siteSettings import *
+from Gui.python.logging_config import logger
 
 import logging
 
@@ -89,14 +54,14 @@ class TestHandler(QObject):
     def __init__(self, runwindow, master, info, firmware):
         super(TestHandler, self).__init__()
         self.master = master
-        self.HVpowersupply = self.master.HVpowersupply
-        self.LVpowersupply = self.master.LVpowersupply
+        self.instruments = self.master.instruments
         # self.LVpowersupply.Reset()
-        # self.LVpowersupply.InitialDevice()
+
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
         # self.LVpowersupply.TurnOn()
         self.FWisPresent = False
-        self.FWisoaded = False
+        self.FWisLoaded = False
+
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
@@ -155,6 +120,7 @@ class TestHandler(QObject):
         self.readingOutput = False
         self.ProgressingMode = "None"
         self.ProgressValue = 0
+        self.IVProgressValue = 0
         self.runtimeList = []
         self.info_process = QProcess(self)
         self.info_process.readyReadStandardOutput.connect(
@@ -227,7 +193,6 @@ class TestHandler(QObject):
             self.input_dir,
             self.connection,
         )
-        print("OUTPUT_DIR1: ", self.output_dir)
 
         # The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
         # FIXME Fix rd53_file[key] so that it reads the correct txt file depending on what module is connected. -> Done!
@@ -361,15 +326,20 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
+        if not self.instruments.status(lv_channel=None)["lv"]:
+            self.instruments.lv_on(
+                lv_channel=None,
+                voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
+                current=ModuleCurrentMap[self.master.module_in_use],
+            )
+
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
-            self.IVCurveResult = ScanCanvas(
-                self, xlabel="Voltage (V)", ylabel="I (A)", invert=True
-            )
-            self.IVCurveHandler = IVCurveHandler(self, self.HVpowersupply)
+            self.IVCurveHandler = IVCurveHandler(self, self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
+            self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.IVCurve()
             return
 
@@ -386,6 +356,7 @@ class TestHandler(QObject):
         self.ProgressingMode = "None"
         self.currentTest = testName
         self.configTest()
+
         print(self.output_dir)
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
@@ -398,6 +369,7 @@ class TestHandler(QObject):
                 "Output directory was not formatted correctly, closing GUI to not write to root directory."
             )
             raise
+
         if os.path.exists(self.outputFile):
             self.outputfile = open(self.outputFile, "a")
         else:
@@ -528,7 +500,9 @@ class TestHandler(QObject):
         if reply == QMessageBox.Yes:
             self.halt = True
             self.run_process.kill()
+
             self.haltSignal.emit(self.halt)
+
             self.starttime = None
             if self.IVCurveHandler:
                 self.IVCurveHandler.stop()
@@ -1040,17 +1014,25 @@ class TestHandler(QObject):
         if isCompositeTest(self.info[1]):
             self.runTest()
 
+    def updateProgress(self, measurementType, stepSize):
+        if measurementType=='IVCurve':
+            self.IVProgressValue += stepSize/2.0
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
+
     def updateMeasurement(self, measureType, measure):
+        """
+        Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
+        if in simplified gui add to figure list
+        """
         # print(measure)
         if measureType == "IVCurve":
-            Voltage = measure["voltage"]
-            Current = measure["current"]
-            Percentage = measure["percentage"]
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                Percentage * 100
-            )
-            self.IVCurveData.append([Voltage, Current])
-            self.IVCurveResult.updatePlots(self.IVCurveData)
+            voltages = measure["voltage"]
+            currents = measure["current"]
+            logger.debug(f"Voltages: {voltages}")
+            logger.debug(f"Currents: {currents}")
+            # self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+            #     Percentage * 100
+            # )
             tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
             if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
                 try:
@@ -1067,15 +1049,15 @@ class TestHandler(QObject):
                 self.updateIVResult.emit((step, self.figurelist))
 
         if measureType == "SLDOScan":
-            Voltage = measure["voltage"]
-            Current = measure["current"]
+            voltages = measure["voltage"]
+            currents = measure["current"]
             Percentage = measure["percentage"]
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
                 Percentage * 100
             )
-            if float(Voltage) < -0.1 and float(Current) < -0.1:
+            if float(voltages) < -0.1 and float(currents) < -0.1:
                 return
-            self.SLDOScanData.append([Voltage, Current])
+            self.SLDOScanData.append([voltages, currents])
             self.SLDOScanResult.updatePlots(self.SLDOScanData)
             tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
             if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
@@ -1092,13 +1074,22 @@ class TestHandler(QObject):
                 self.figurelist = {"-1": [output]}
                 self.updateResult.emit((step, self.figurelist))
 
-    def IVCurveFinished(self):
+    def IVCurveFinished(self, test: str, measure: dict):
         for (
             module
         ) in (
             self.firmware.getAllModules().values()
         ):  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
+
+            self.IVCurveResult = ScanCanvas(
+                self,
+                xlabel="Voltage (V)",
+                ylabel="I (A)",
+                X=measure["voltage"],
+                Y=measure["current"],
+                invert=True,
+            )
 
         filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
         filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
@@ -1113,7 +1104,14 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
-            self.master.HVpowersupply.RampingUp(defaultHVsetting, -3)
+            self.master.instruments.hv_on(
+                lv_channel=None,
+                voltage=defaultHVsetting,
+                delay=0.3,
+                step_size=-3,
+                measure=False,
+            )
+
             if self.testIndexTracker == len(CompositeList[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
