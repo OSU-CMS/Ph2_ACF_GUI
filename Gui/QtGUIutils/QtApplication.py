@@ -342,7 +342,7 @@ class QtApplication(QWidget):
             if (
                 self.TryUsername not in ["local", "localexpert"]
                 and self.disableCheckBox.isChecked() == False
-            ):
+            ):                
                 print("Connect to database...")
                 self.connection = QtStartConnection(
                     self.TryUsername,
