@@ -181,6 +181,7 @@ Test = {
     "AllScan": "noise",
     "QuickTest": "noise",
     "IVCurve": "ivcurve",
+    "SLDOScan": "sldoscan",
     "Latency": "latency",
     "PixelAlive": "pixelalive",
     "NoiseScan": "noise",
@@ -203,6 +204,7 @@ TestName2File = {
     "Latency": "Latency",
     "PixelAlive": "PixelAlive",
     "IVCurve": "IVCurve",
+    "SLDOScan": "SLDOScan",
     "NoiseScan": "NoiseScan",
     "SCurveScan": "SCurve",
     "GainScan": "Gain",
@@ -221,6 +223,7 @@ TestName2File = {
 
 SingleTest = [
     "IVCurve",
+    "SLDOScan",
     "Latency",
     "PixelAlive",
     "NoiseScan",

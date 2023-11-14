@@ -337,16 +337,18 @@ class TestHandler(QObject):
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
-            self.IVCurveHandler = IVCurveHandler(self, self.instruments)
+            self.IVCurveHandler = IVCurveHandler(self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.IVCurve()
             return
 
         if testName == "SLDOScan":
+            self.currentTest = testName
+            #self.configTest()
             self.SLDOScanData = []
-            self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOScanHandler(self, self.LVpowersupply)
+            #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments)
             self.SLDOScanHandler.finished.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.SLDOScan()
             return
