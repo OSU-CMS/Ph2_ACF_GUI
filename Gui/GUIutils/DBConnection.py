@@ -26,33 +26,6 @@ DB_TestResult_Schema = [
 # mySQL databse server as test, may need to extend to other DB format
 
 
-def StartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase, master):
-    # For test, no connection to DB is made and output will not be registered
-    if TryHostAddress == "0.0.0.0":
-        return "DummyDB"
-
-    # Try connecting to DB on localhost with unspecific host address
-    if not TryHostAddress:
-        TryHostAddress = "127.0.0.1"
-
-    if not TryDatabase:
-        TryDatabase = "phase2pixel_test"
-    try:
-        connection = mysql.connector.connect(
-            user=str(TryUsername),
-            password=str(TryPassword),
-            host=str(TryHostAddress),
-            database=str(TryDatabase),
-        )
-    except (ValueError, RuntimeError, TypeError, NameError, mysql.connector.Error):
-        ErrorWindow(
-            master,
-            "Error:Unable to establish connection to host:"
-            + str(TryHostAddress)
-            + ", please check the username/password and host address.  Please consult README instructions for running GUI locally.",
-        )
-        return
-    return connection
 
 
 def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
@@ -72,6 +45,7 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
             password=str(TryPassword),
             host=str(TryHostAddress),
             database=str(TryDatabase),
+            ssl_disabled=True
         )
     except (ValueError, RuntimeError, TypeError, NameError, mysql.connector.Error):
         msg = QMessageBox()
