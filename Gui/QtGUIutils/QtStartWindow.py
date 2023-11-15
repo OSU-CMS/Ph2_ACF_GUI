@@ -373,7 +373,7 @@ class QtStartWindow(QWidget):
 
         self.firmware.removeAllModule()
 
-        self.BeBoardWidget = BeBoardBox(self.firmware)  # FLAG
+        self.BeBoardWidget = BeBoardBox(self.master,self.firmware)  # FLAG
 
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
