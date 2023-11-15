@@ -31,9 +31,11 @@ defaultFMC = '0'
 # default mode for LV powering (Direct,SLDO,etc)
 defaultPowerMode = "SLDO"
 #default DBServerIP
-defaultDBServerIP = '127.0.0.1'
+#defaultDBServerIP = '127.0.0.1'
+defaultDBServerIP = 'cmsfpixdb.physics.purdue.edu'
 #default DBName
-defaultDBName = 'SampleDB'
+#defaultDBName = 'SampleDB'
+defaultDBName = 'cmsfpix_phase2'
 ##################################
 
 
