@@ -127,6 +127,7 @@ class SLDOCurveWorker(QThread):
 
 class SLDOCurveHandler(QObject):
     finished = pyqtSignal(str, dict)
+    makeplotSignal = pyqtSignal(np.ndarray, str)
     #measureSignal = pyqtSignal(str, object)
 
     def __init__(self, instrument_cluster):
@@ -137,17 +138,19 @@ class SLDOCurveHandler(QObject):
 
     #This should take the list of results and make plots.  I think we should maybe move this to the TestHandler.
     def makePlots(self, total_result, pin):
-        total_result_stacked = np.vstack(total_result)
-        plt.figure()
-        plt.plot(total_result_stacked[:,2],total_result_stacked[:,1],'-x',label="module input voltage")
-        plt.plot(total_result_stacked[:,2],total_result_stacked[:,3],'-x',label=pin)
-        plt.grid(True)
-        plt.xlabel("Current (A)")
-        plt.ylabel("Voltage (V)")
-        plt.legend()
-        plt.savefig("SLDO_{0}.png".format(pin)) #FIXME need to add the path for the data directory here.
-        plt.show()
-        time.sleep(5)
+        self.makeplotSignal.emit(total_result, pin)
+        #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
+        #total_result_stacked = np.vstack(total_result)
+        #plt.figure()
+        #plt.plot(total_result_stacked[:,2],total_result_stacked[:,1],'-x',label="module input voltage")
+        #plt.plot(total_result_stacked[:,2],total_result_stacked[:,3],'-x',label=pin)
+        #plt.grid(True)
+        #plt.xlabel("Current (A)")
+        #plt.ylabel("Voltage (V)")
+        #plt.legend()
+        #plt.savefig("SLDO_{0}.png".format(pin)) #FIXME need to add the path for the data directory here.
+        #plt.show()
+        #time.sleep(5)
         #all_results = result_list[0][:,1]
         #for res in result_list:
         #    all_results = np.vstack([all_results, res[:,3]])

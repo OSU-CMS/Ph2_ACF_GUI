@@ -11,6 +11,7 @@ import subprocess
 import threading
 import time
 from datetime import datetime
+import numpy as np
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
@@ -138,6 +139,7 @@ class TestHandler(QObject):
         self.updateResult.connect(self.runwindow.updateResult)
         self.updateIVResult.connect(self.runwindow.updateIVResult)
         self.updateValidation.connect(self.runwindow.updateValidation)
+
 
         self.initializeRD53Dict()
 
@@ -349,7 +351,9 @@ class TestHandler(QObject):
             self.SLDOScanData = []
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
             self.SLDOScanHandler = SLDOCurveHandler(self.instruments)
+            self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finished.connect(self.SLDOScanFinished)
+            self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
             self.SLDOScanHandler.SLDOScan()
             return
 
@@ -1020,6 +1024,9 @@ class TestHandler(QObject):
         if measurementType=='IVCurve':
             self.IVProgressValue += stepSize/2.0
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
+        if 'SLDO' in measurementType:
+            self.SLDOProressValue += stepSize
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProressValue)
 
     def updateMeasurement(self, measureType, measure):
         """
@@ -1076,6 +1083,24 @@ class TestHandler(QObject):
                 self.figurelist = {"-1": [output]}
                 self.updateResult.emit((step, self.figurelist))
 
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
+        for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
+            moduleName = module.getModuleName()
+        filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, pin)
+        #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
+        total_result_stacked = np.vstack(total_result)
+        plt.figure()
+        plt.plot(total_result_stacked[:,2],total_result_stacked[:,1],'-x',label="module input voltage")
+        plt.plot(total_result_stacked[:,2],total_result_stacked[:,3],'-x',label=pin)
+        plt.grid(True)
+        plt.xlabel("Current (A)")
+        plt.ylabel("Voltage (V)")
+        plt.legend()
+        plt.savefig(filename)
+        plt.show()
+        time.sleep(5)
+
+
     def IVCurveFinished(self, test: str, measure: dict):
         for (
             module
@@ -1131,7 +1156,16 @@ class TestHandler(QObject):
         if isCompositeTest(self.info[1]):
             self.runTest()
 
-    def SLDOScanFinished(self):
+    def SLDOScanFinished(self, test: str, measure: dict):
+        for (
+            module
+        ) in (
+            self.firmware.getAllModules().values()
+        ):  # FIXME This is not the ideal way to do this... I think...
+            moduleName = module.getModuleName()
+
+
+    
         self.LVpowersupply.Reset()
         self.LVpowersupply.InitialDevice()
         self.LVpowersupply.setCompCurrent(compcurrent=1.05)  # Fixed for different chip
