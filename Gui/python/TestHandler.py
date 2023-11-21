@@ -49,6 +49,7 @@ class TestHandler(QObject):
     historyRefresh = pyqtSignal(object)
     updateResult = pyqtSignal(object)
     updateIVResult = pyqtSignal(object)
+    updateSLDOResult = pyqtSignal(object)
     updateValidation = pyqtSignal(object, object)
     powerSignal = pyqtSignal()
 
@@ -122,6 +123,7 @@ class TestHandler(QObject):
         self.ProgressingMode = "None"
         self.ProgressValue = 0
         self.IVProgressValue = 0
+        self.SLDOProgressValue = 0
         self.runtimeList = []
         self.info_process = QProcess(self)
         self.info_process.readyReadStandardOutput.connect(
@@ -138,6 +140,7 @@ class TestHandler(QObject):
         self.historyRefresh.connect(self.runwindow.refreshHistory)
         self.updateResult.connect(self.runwindow.updateResult)
         self.updateIVResult.connect(self.runwindow.updateIVResult)
+        self.updateSLDOResult.connect(self.runwindow.updateSLDOResult)
         self.updateValidation.connect(self.runwindow.updateValidation)
 
 
@@ -347,12 +350,12 @@ class TestHandler(QObject):
 
         if testName == "SLDOScan":
             self.currentTest = testName
-            #self.configTest()
+            self.configTest()
             self.SLDOScanData = []
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
             self.SLDOScanHandler = SLDOCurveHandler(self.instruments)
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
-            self.SLDOScanHandler.finished.connect(self.SLDOScanFinished)
+            self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
             self.SLDOScanHandler.SLDOScan()
             return
@@ -1025,8 +1028,8 @@ class TestHandler(QObject):
             self.IVProgressValue += stepSize/2.0
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
         if 'SLDO' in measurementType:
-            self.SLDOProressValue += stepSize
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProressValue)
+            self.SLDOProgressValue += stepSize
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
 
     def updateMeasurement(self, measureType, measure):
         """
@@ -1131,6 +1134,7 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
+            
             self.master.instruments.hv_on(
                 lv_channel=None,
                 voltage=defaultHVsetting,
@@ -1156,7 +1160,7 @@ class TestHandler(QObject):
         if isCompositeTest(self.info[1]):
             self.runTest()
 
-    def SLDOScanFinished(self, test: str, measure: dict):
+    def SLDOScanFinished(self):
         for (
             module
         ) in (
@@ -1164,12 +1168,34 @@ class TestHandler(QObject):
         ):  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
 
+        # Will send signal to turn off power supply after composite or single tests are run
+        if isCompositeTest(self.info[1]):
+            self.instruments.lv_on(
+                lv_channel=None,
+                voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
+                current=ModuleCurrentMap[self.master.module_in_use],
+            )
+            self.master.instruments.hv_on(
+                lv_channel=None,
+                voltage=defaultHVsetting,
+                delay=0.3,
+                step_size=-3,
+                measure=False,
+            )
 
-    
-        self.LVpowersupply.Reset()
-        self.LVpowersupply.InitialDevice()
-        self.LVpowersupply.setCompCurrent(compcurrent=1.05)  # Fixed for different chip
-        self.LVpowersupply.TurnOn()
+            if self.testIndexTracker == len(CompositeList[self.info[1]]):
+                self.powerSignal.emit()
+                EnableReRun = True
+        elif isSingleTest(self.info[1]):
+            EnableReRun = True
+            self.powerSignal.emit()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit(self.modulestatus)
+        if self.master.expertMode:
+            self.updateSLDOResult.emit(self.output_dir)
+
         self.testIndexTracker += 1
         if isCompositeTest(self.info[1]):
             self.runTest()

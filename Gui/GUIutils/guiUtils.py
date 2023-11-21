@@ -25,7 +25,6 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.DBConnection import *
 from Configuration.XMLUtil import *
 from Gui.python.logging_config import logger
-
 ##########################################################################
 ##########################################################################
 
@@ -391,7 +390,8 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                     module.getModuleName(), module.getModuleID(), chip.getID()
                 ),
             )
-            #print('the list of FESettings keys is {0}'.format(FESettings_Dict.keys()))
+            print('the list of FESettings keys is {0}'.format(FESettings_Dict.keys()))
+
             FEChip.ConfigureFE(FESettings_Dict[testName])
             FEChip.VDDAtrim = chip.getVDDA()
             FEChip.VDDDtrim = chip.getVDDD()

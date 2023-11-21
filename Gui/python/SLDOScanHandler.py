@@ -9,9 +9,10 @@ import matplotlib.pyplot as plt
 import time
 
 class SLDOCurveWorker(QThread):
-    #finished = pyqtSignal()
-    progress = pyqtSignal()
+    finishedSignal = pyqtSignal()
+    progressSignal = pyqtSignal(str, float)
     measure = pyqtSignal(np.ndarray, str)
+
 
     def __init__(
         self,
@@ -73,8 +74,7 @@ class SLDOCurveWorker(QThread):
                 measure_function=self.instruments.multimeter_measure,
                 measure_args={"measured_unit":"SLDO", "cycles": self.integration_cycles},
                 log_function=logger.info,
-                #execute_each_step=self.updateProgress,
-                #execute_each_step=self.progress.emit,
+                #execute_each_step=self.getProgress,
                 break_monitoring=self.breakTest
             )
 
@@ -90,8 +90,7 @@ class SLDOCurveWorker(QThread):
                 measure_function=self.instruments.multimeter_measure,
                 measure_args={"measured_unit":"SLDO", "cycles": self.integration_cycles},
                 log_function=logger.info,
-                #execute_each_step=self.updateProgress,
-                #execute_each_step=self.progress.emit,
+                #execute_each_step=self.getProgress,
                 break_monitoring= self.breakTest
             )
             result_down = np.array(result_)
@@ -99,14 +98,16 @@ class SLDOCurveWorker(QThread):
             print('total result is {0}'.format(total_result))
             self.instruments.lv_off(1)
             
-           # self.SLDO_measurements["Voltage"] = total_result_stacked[:,1]
-           # self.SLDO_measurements["Current"] = total_result_stacked[:,2]
-           # self.SLDO_measurements["{0}_voltage".format(pin)] = total_result_stacked[:,3]
-           # print("sldo measurement is {0}".format(self.SLDO_measurements))
-            # At this point in the loop, we have the results for one of the pins. 
-            # Should maybe make a plot here and store it in a list of plots?
-        # Emit a signal that passees the list of results to the SLDOCurveHandler.    
+        # Emit a signal that passees the list of results to the SLDOCurveHandler.  
+            self.getProgress()  
             self.measure.emit(total_result, pin)
+        #All pins have been scanned so we emit the finished signal
+        self.finishedSignal.emit()
+
+    def getProgress(self):
+        self.percentStep = abs(100/len(self.pin_list))
+        #self.percentStep = abs(100*self.step_size/(2*len(self.pin_list)*self.target_current)) #This assumes that the starting_current is zero.
+        self.progressSignal.emit("SLDOScan", self.percentStep)
 
     def updateProgress(self):
         #lv_voltage_measurement, lv_current_measurement = self.instruments._lv.measure()
@@ -126,8 +127,9 @@ class SLDOCurveWorker(QThread):
         self.exiting = True
 
 class SLDOCurveHandler(QObject):
-    finished = pyqtSignal(str, dict)
+    finishedSignal = pyqtSignal()
     makeplotSignal = pyqtSignal(np.ndarray, str)
+    progressSignal = pyqtSignal(str, float)
     #measureSignal = pyqtSignal(str, object)
 
     def __init__(self, instrument_cluster):
@@ -135,38 +137,26 @@ class SLDOCurveHandler(QObject):
         self.instruments = instrument_cluster
         self.test = SLDOCurveWorker(self.instruments)
         self.test.measure.connect(self.makePlots)
+        self.test.progressSignal.connect(self.transmitProgress)
+        self.test.finishedSignal.connect(self.finish)
 
     #This should take the list of results and make plots.  I think we should maybe move this to the TestHandler.
     def makePlots(self, total_result, pin):
         self.makeplotSignal.emit(total_result, pin)
-        #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
-        #total_result_stacked = np.vstack(total_result)
-        #plt.figure()
-        #plt.plot(total_result_stacked[:,2],total_result_stacked[:,1],'-x',label="module input voltage")
-        #plt.plot(total_result_stacked[:,2],total_result_stacked[:,3],'-x',label=pin)
-        #plt.grid(True)
-        #plt.xlabel("Current (A)")
-        #plt.ylabel("Voltage (V)")
-        #plt.legend()
-        #plt.savefig("SLDO_{0}.png".format(pin)) #FIXME need to add the path for the data directory here.
-        #plt.show()
-        #time.sleep(5)
-        #all_results = result_list[0][:,1]
-        #for res in result_list:
-        #    all_results = np.vstack([all_results, res[:,3]])
-        
 
-        pass
 
     def SLDOScan(self):
         if not self.instruments:
             return
         self.test.start()
 
+    def transmitProgress(self, measurementType, percentStep):
+        self.progressSignal.emit(measurementType, percentStep)
+
     def finish(self):
         self.instruments.hv_off()
         self.instruments.lv_off()
-        self.finished.emit(test, measure)
+        self.finishedSignal.emit()
 
     def stop(self):
         try:
