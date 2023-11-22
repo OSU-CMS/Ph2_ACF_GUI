@@ -18,10 +18,11 @@ class SLDOCurveWorker(QThread):
         self,
         instrument_cluster=None,
         target_current=10,
-        step_size=5,
+        step_size=0.5,
         delay=1,
         integration_cycles=1,
         starting_current=1,
+        max_voltage=1.8,
         pin_list=[],
     ):
         super().__init__()
@@ -31,6 +32,7 @@ class SLDOCurveWorker(QThread):
         self.step_size = step_size
         self.integration_cycles = integration_cycles
         self.starting_current = starting_current
+        self.max_voltage = max_voltage
         self.pin_list = pin_list
         self.SLDO_measurements = {}
         self.exiting = False
@@ -49,7 +51,7 @@ class SLDOCurveWorker(QThread):
         self.labels = []
         # Turn off instruments
         self.instruments.hv_off()
-        self.instruments.lv_off(1)
+        self.instruments.lv_off()
         self.instruments._multimeter.set("SYSTEM_MODE","REM")
         logger.info('turned off the lv and hv')
         for key in self.instruments._relay_board.PIN_MAP.keys():
@@ -63,7 +65,7 @@ class SLDOCurveWorker(QThread):
             logger.info('made it inside the pin loop')
             self.instruments.relay_pin(pin)
             # ramp up LV
-            self.instruments.lv_on(1)
+            self.instruments.lv_on(current=self.starting_current, voltage=self.max_voltage)
             _, result_ = self.instruments._lv.sweep(
                 "CURRENT",
                 self.instruments._default_lv_channel,
@@ -96,7 +98,7 @@ class SLDOCurveWorker(QThread):
             result_down = np.array(result_)
             total_result = np.concatenate((result_up, result_down), axis=0)
             print('total result is {0}'.format(total_result))
-            self.instruments.lv_off(1)
+            self.instruments.lv_off()
             
         # Emit a signal that passees the list of results to the SLDOCurveHandler.  
             self.getProgress()  
@@ -132,10 +134,12 @@ class SLDOCurveHandler(QObject):
     progressSignal = pyqtSignal(str, float)
     #measureSignal = pyqtSignal(str, object)
 
-    def __init__(self, instrument_cluster):
+    def __init__(self, instrument_cluster, end_current, voltage_limit):
         super(SLDOCurveHandler, self).__init__()
         self.instruments = instrument_cluster
-        self.test = SLDOCurveWorker(self.instruments)
+        self.end_current = end_current
+        self.voltage_limit = voltage_limit
+        self.test = SLDOCurveWorker(self.instruments, target_current=self.end_current, max_voltage=self.voltage_limit)
         self.test.measure.connect(self.makePlots)
         self.test.progressSignal.connect(self.transmitProgress)
         self.test.finishedSignal.connect(self.finish)

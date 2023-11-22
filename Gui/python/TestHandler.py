@@ -353,7 +353,7 @@ class TestHandler(QObject):
             self.configTest()
             self.SLDOScanData = []
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOCurveHandler(self.instruments)
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, end_current=ModuleCurrentMap[self.master.module_in_use], voltage_limit=ModuleVoltageMapSLDO[self.master.module_in_use])
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
@@ -1100,8 +1100,6 @@ class TestHandler(QObject):
         plt.ylabel("Voltage (V)")
         plt.legend()
         plt.savefig(filename)
-        plt.show()
-        time.sleep(5)
 
 
     def IVCurveFinished(self, test: str, measure: dict):
