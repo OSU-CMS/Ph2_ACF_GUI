@@ -169,21 +169,28 @@ class ArduinoWidget(QWidget):
         try:
 
             #run bash script
-            subprocess.run(
-        "/home/RD53A/workspace/collin/bin/arduino-cli compile --fqbn arduino:avr:uno /home/RD53A/workspace/collin/relay_box_firmware/",
+            
+            compileResult=subprocess.run(
+        "../../bin/arduino-cli compile --fqbn arduino:avr:uno /home/RD53A/workspace/collin/relay_box_firmware/",
         shell=True,
         stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, 
+        text = True
     )
-            subprocess.run(
-        f"/home/RD53A/workspace/collin/bin/arduino-cli upload -p {self.deviceMap[self.ArduinoCombo.currentText()]} --fqbn arduino:avr:uno /home/RD53A/workspace/collin/relay_box_firmware/",
+            uploadResult=subprocess.run(
+        f"../../bin/arduino-cli upload -p {self.deviceMap[self.ArduinoCombo.currentText()]} --fqbn arduino:avr:uno /home/RD53A/workspace/collin/relay_box_firmware/",
         shell=True,
         stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE, 
+        text = True
     ) 
             
         
         
-        except Exception as err:
+        except subprocess.CalledProcessError as err:
             logger.error("Unable to upload script to Arduino")
+            logger.error(compileResult.stderr)
+            logger.error(uploadResult.stderr)
             self.ArduinoGoodStatus = False
 
         try:
