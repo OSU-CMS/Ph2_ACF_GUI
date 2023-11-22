@@ -39,6 +39,7 @@ import numpy as np
 from Gui.python.logging_config import logger
 
 
+
 class ArduinoWidget(QWidget):
     stop = pyqtSignal()
 
@@ -165,6 +166,26 @@ class ArduinoWidget(QWidget):
 
     def frozeArduinoPanel(self):
         # Block for ArduinoSupply operation
+        try:
+
+            #run bash script
+            subprocess.run(
+        "/home/RD53A/workspace/collin/bin/arduino-cli compile --fqbn arduino:avr:uno /home/RD53A/workspace/collin/relay_box_firmware/",
+        shell=True,
+        stdout=subprocess.PIPE,
+    )
+            subprocess.run(
+        f"/home/RD53A/workspace/collin/bin/arduino-cli upload -p {self.deviceMap[self.ArduinoCombo.currentText()]} --fqbn arduino:avr:uno /home/RD53A/workspace/collin/relay_box_firmware/",
+        shell=True,
+        stdout=subprocess.PIPE,
+    ) 
+            
+        
+        
+        except Exception as err:
+            logger.error("Unable to upload script to Arduino")
+            self.ArduinoGoodStatus = False
+
         try:
             self.setSerial(
                 self.deviceMap[self.ArduinoCombo.currentText()],
