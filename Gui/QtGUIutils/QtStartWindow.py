@@ -243,7 +243,6 @@ class SummaryBox(QWidget):
                     ModuleVoltageMapSLDO[self.master.module_in_use],
                     ModuleCurrentMap[self.master.module_in_use],
                 )
-                print('turned on lv power')
                 logging.info("Turned on LV power supply")
 
             # # Want to try and connect twice
