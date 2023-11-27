@@ -166,32 +166,29 @@ class ArduinoWidget(QWidget):
 
     def frozeArduinoPanel(self):
         # Block for ArduinoSupply operation
-        try:
-
-            #run bash script
-            
+        
+        try:            
             compileResult=subprocess.run(
-        "$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, 
-        text = True
-    )
+            "$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, 
+            text = True
+            )
             uploadResult=subprocess.run(
-        f"$GUI_dir/bin/arduino-cli upload -p {self.deviceMap[self.ArduinoCombo.currentText()]} --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE, 
-        text = True
-    ) 
-            
-        
-        
+            f"$GUI_dir/bin/arduino-cli upload -p {self.deviceMap[self.ArduinoCombo.currentText()].lstrip("ASRL").rstrip("::INSTR")} --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE, 
+            text = True
+            ) 
+                 
         except subprocess.CalledProcessError as err:
             logger.error("Unable to upload script to Arduino")
             logger.error(compileResult.stderr)
             logger.error(uploadResult.stderr)
             self.ArduinoGoodStatus = False
+        
 
         try:
             self.setSerial(
