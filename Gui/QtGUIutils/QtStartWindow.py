@@ -128,7 +128,7 @@ class SummaryBox(QWidget):
             # if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
             # 	QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
             # 	return
-
+            self.result = True
             FWisPresent = False
             if "CROC" in self.module.getType():
                 boardtype = "RD53B"
@@ -243,7 +243,7 @@ class SummaryBox(QWidget):
                     ModuleVoltageMapSLDO[self.master.module_in_use],
                     ModuleCurrentMap[self.master.module_in_use],
                 )
-
+                print('turned on lv power')
                 logging.info("Turned on LV power supply")
 
             # # Want to try and connect twice
@@ -302,10 +302,18 @@ class SummaryBox(QWidget):
             #         print("LV PS is off now. HV PS can't be turn on")
             #         print("attempt to turn on the LV PS again")
             #         time.sleep(2)
-            if not 'SLDO' in self.TestCombo.currentText():
-                self.master.instruments.hv_on(
-                    lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
-                )
+
+            #if self.master.desired_devices["hv"]:
+            #    self.master.instruments.hv_on(
+            #        lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
+            #    )
+
+            #    logging.info("Turned on HV power supply")
+            ##if not 'SLDO' in self.TestCombo.currentText():
+             #   print('this should turn on hv')
+            #    self.master.instruments.hv_on(
+             #       lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
+             #   )
 
 
             return self.result
