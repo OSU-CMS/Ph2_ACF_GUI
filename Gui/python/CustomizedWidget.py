@@ -39,8 +39,9 @@ from Gui.python.logging_config import logger
 class ModuleBox(QWidget):
     typechanged = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self,connection):
         super(ModuleBox, self).__init__()
+        self.connection=connection
         self.mainLayout = QGridLayout()
         self.createRow()
         self.setLayout(self.mainLayout)
@@ -57,11 +58,17 @@ class ModuleBox(QWidget):
         IDLabel = QLabel("FMC port:")
         self.IDEdit = QLineEdit()
 
-        TypeLabel = QLabel("Type:")
-        self.TypeCombo = QComboBox()
-        self.TypeCombo.addItems(ModuleType.values())
-
-        TypeLabel.setBuddy(self.TypeCombo)
+        if self.connection == "Offline":
+            TypeLabel = QLabel("Type:")
+            self.TypeCombo = QComboBox()
+            self.TypeCombo.addItems(ModuleType.values())
+            TypeLabel.setBuddy(self.TypeCombo)
+            self.mainLayout.addWidget(TypeLabel, 0, 6, 1, 1)
+            self.mainLayout.addWidget(self.TypeCombo, 0, 7, 1, 1)
+        
+        else:
+            self.OnlineButton = QPushButton("confirm")
+            self.mainLayout.addWidget(self.OnlineButton, 0, 7, 1, 1)
 
         self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
@@ -69,10 +76,12 @@ class ModuleBox(QWidget):
         self.mainLayout.addWidget(self.FMCEdit, 0, 3, 1, 1)
         self.mainLayout.addWidget(IDLabel, 0, 4, 1, 1)
         self.mainLayout.addWidget(self.IDEdit, 0, 5, 1, 1)
-        self.mainLayout.addWidget(TypeLabel, 0, 6, 1, 1)
-        self.mainLayout.addWidget(self.TypeCombo, 0, 7, 1, 1)
+        
+
+            
 
     def getSerialNumber(self):
+        print("debug :" + str(self.SerialEdit.text()))
         return self.SerialEdit.text()
 
     def getFMCID(self):
@@ -109,17 +118,25 @@ class ChipBox(QWidget):
         GetTRimFromDB=GetTrimClass()
         #adding a get connection method to get the real time changes?
         GetTRimFromDB.connection=self.connection
+
+        #debug
         if GetTRimFromDB.connection == "Offline" or GetTRimFromDB.connection == []:
             print("serial numer : " + str(self.serialNumber))
             print(GetTRimFromDB.connection)
             for chipid in self.ChipList:
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+        #debug
 
         
         else:
             if self.serialNumber != []:
                 #need to find way to haddle serial number iussue, it is not [] and None if the chip box is empty, so how we handdle it?
+                
                 sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)
+                print("OL serial numer : " + str(self.serialNumber))#debug
+                #sorted_VDDAlistTest,sorted_VDDDlist=GetTRimFromDB.GetTrim("RH0006") #working
+                #print("check getTrim VDDD: " +  str(sorted_VDDDlist))
+                #print("check getTrim VDDA: " +  str(sorted_VDDAlistTest))
             
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
                     #print("we can't find the trim values for the module with serial number " + str(self.serialNumber))
@@ -129,6 +146,7 @@ class ChipBox(QWidget):
                 
                 
                 else:
+                    print(str(sorted_VDDAlist))
                     i = 0
                     for chipid in self.ChipList:
                         VDDA = sorted_VDDAlist[i]
@@ -141,7 +159,7 @@ class ChipBox(QWidget):
         self.setLayout(self.mainLayout)
 
     def initList(self):
-        self.module = ModuleBox()
+        self.module = ModuleBox(self.connection)
 
     # Makes a list of chips for a given module
     def createList(self):
@@ -258,8 +276,12 @@ class BeBoardBox(QWidget):
         self.setLayout(self.mainLayout)
 
     def initList(self):
-        ModuleRow = ModuleBox()
-        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
+        ModuleRow = ModuleBox(self.master.connection)
+        if self.master.connection == "Offline":
+            ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
+        else:
+            ModuleRow.OnlineButton.clicked.connect(self.updateList)
+
         self.ModuleList.append(ModuleRow)
 
     def createList(self):
