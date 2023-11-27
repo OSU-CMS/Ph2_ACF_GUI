@@ -75,12 +75,11 @@ class IVCurveHandler(QObject):
     finished = pyqtSignal(str, dict)
     progressSignal = pyqtSignal(str, float)
 
-    def __init__(self, window, instrument_cluster):
+    def __init__(self, instrument_cluster):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
-        # self.test.measureSignal.connect(self.window.updateMeasurement)
         self.test.progressSignal.connect(self.transmitProgress)
         self.test.measureSignal.connect(self.finish)
 
