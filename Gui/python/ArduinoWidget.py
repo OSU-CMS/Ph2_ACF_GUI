@@ -171,14 +171,14 @@ class ArduinoWidget(QWidget):
             #run bash script
             
             compileResult=subprocess.run(
-        "../../bin/arduino-cli compile --fqbn arduino:avr:uno /home/RD53A/workspace/collin/relay_box_firmware/",
+        "$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, 
         text = True
     )
             uploadResult=subprocess.run(
-        f"../../bin/arduino-cli upload -p {self.deviceMap[self.ArduinoCombo.currentText()]} --fqbn arduino:avr:uno /home/RD53A/workspace/collin/relay_box_firmware/",
+        f"$GUI_dir/bin/arduino-cli upload -p {self.deviceMap[self.ArduinoCombo.currentText()]} --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
         shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, 
