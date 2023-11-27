@@ -1090,8 +1090,10 @@ class TestHandler(QObject):
         for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
         filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, pin)
+        csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, pin)
         #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
         total_result_stacked = np.vstack(total_result)
+        np.savetxt(csvfilename, total_result_stacked, delimiter=',')
         plt.figure()
         plt.plot(total_result_stacked[:,2],total_result_stacked[:,1],'-x',label="module input voltage")
         plt.plot(total_result_stacked[:,2],total_result_stacked[:,3],'-x',label=pin)

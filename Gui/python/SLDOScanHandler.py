@@ -18,7 +18,7 @@ class SLDOCurveWorker(QThread):
         self,
         instrument_cluster=None,
         target_current=10,
-        step_size=0.5,
+        step_size=1.0,
         delay=1,
         integration_cycles=1,
         starting_current=1,
