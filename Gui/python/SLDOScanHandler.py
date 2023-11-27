@@ -19,7 +19,7 @@ class SLDOCurveWorker(QThread):
         instrument_cluster=None,
         target_current=10,
         step_size=1.0,
-        delay=1,
+        delay=0.2,
         integration_cycles=1,
         starting_current=1,
         max_voltage=1.8,
