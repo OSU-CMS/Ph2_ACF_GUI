@@ -360,6 +360,11 @@ class TestHandler(QObject):
             self.SLDOScanHandler.SLDOScan()
             return
 
+        #If the HV is not already on, turn it on.
+        if not self.instruments.status(lv_channel=None)["hv"]:
+            self.instruments.hv_on(
+                lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
+            )
         self.tempindex = 0
         self.starttime = None
         self.ProgressingMode = "None"
