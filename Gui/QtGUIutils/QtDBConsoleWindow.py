@@ -18,6 +18,7 @@ from Gui.QtGUIutils.QtDBTableWidget import *
 from Gui.QtGUIutils.QtViewTableTab  import *
 from Gui.QtGUIutils.QtImageInsertionTab import *
 from Gui.QtGUIutils.QtImageViewerTab import *
+from Gui.python.logging_config import logger
 
 class QtDBConsoleWindow(QMainWindow):
 	def __init__(self,master):

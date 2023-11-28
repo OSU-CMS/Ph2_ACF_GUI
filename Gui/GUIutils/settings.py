@@ -150,6 +150,19 @@ ModuleLaneMap = {
     "TFPX CROC Quad": {"0": "12", "1": "13", "2": "14"},
 }
 
+ChipMap = {
+    "CROC 1x2": {
+        'VDDD_B': 	'13',
+        'VDDA_B': 	'13',
+        'VDDA_A': 	'12',
+        'VDDD_A': 	'12',
+        'VMUX_B': 	'13',
+        'IMUX_B': 	'13',
+        'VMUX_A': 	'12',
+        'IMUX_A': 	'12',
+        'GND_A':	'12'},
+    }
+
 BoxSize = {
     "SingleSCC": 1,
     "TFPX Quad": 4,
@@ -204,6 +217,7 @@ Test = {
     "AllScan": "noise",
     "QuickTest": "noise",
     "IVCurve": "ivcurve",
+    "SLDOScan": "sldoscan",
     "Latency": "latency",
     "PixelAlive": "pixelalive",
     "NoiseScan": "noise",
@@ -226,6 +240,7 @@ TestName2File = {
     "Latency": "Latency",
     "PixelAlive": "PixelAlive",
     "IVCurve": "IVCurve",
+    "SLDOScan": "SLDOScan",
     "NoiseScan": "NoiseScan",
     "SCurveScan": "SCurve",
     "GainScan": "Gain",
@@ -244,6 +259,7 @@ TestName2File = {
 
 SingleTest = [
     "IVCurve",
+    "SLDOScan",
     "Latency",
     "PixelAlive",
     "NoiseScan",

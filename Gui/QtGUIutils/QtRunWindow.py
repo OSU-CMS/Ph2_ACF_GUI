@@ -215,333 +215,366 @@ class QtRunWindow(QWidget):
 		self.ControlLayout.addWidget(self.RunButton,1,0,1,1)
 		self.ControlLayout.addWidget(self.AbortButton,1,1,1,1)
 		self.ControlLayout.addWidget(self.saveCheckBox,1,2,1,1)
-		'''
-		if self.master.expertMode == True:
-			self.ControlLayout.addWidget(self.RunButton,0,0,1,1)
-			self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
-			self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
-			self.ControlLayout.addWidget(self.saveCheckBox,1,0,1,1)
+		"""
+        if self.master.expertMode == True:
+            self.ControlLayout.addWidget(self.RunButton, 0, 0, 1, 1)
+            self.ControlLayout.addWidget(self.AbortButton, 0, 1, 1, 1)
+            self.ControlLayout.addWidget(self.ResetButton, 0, 2, 1, 1)
+            self.ControlLayout.addWidget(self.saveCheckBox, 1, 0, 1, 1)
 
-		else:
-			pass
-		#	self.ControlLayout.addWidget(self.RunButton,0,0,1,1)
-		#	self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
-		#	self.saveCheckBox.setDisabled(True)
-		#	self.ControlLayout.addWidget(self.saveCheckBox,0,2,1,1)
+        else:
+            pass
+        # 	self.ControlLayout.addWidget(self.RunButton,0,0,1,1)
+        # 	self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
+        # 	self.saveCheckBox.setDisabled(True)
+        # 	self.ControlLayout.addWidget(self.saveCheckBox,0,2,1,1)
 
-		ControllerBox.setLayout(self.ControlLayout)
+        ControllerBox.setLayout(self.ControlLayout)
 
-		#Group Box for ternimal display
-		TerminalBox = QGroupBox("&Terminal")
-		TerminalSP = TerminalBox.sizePolicy()
-		TerminalSP.setVerticalStretch(self.VerticalSegCol0[1])
-		TerminalBox.setSizePolicy(TerminalSP)
-		TerminalBox.setMinimumWidth(400)
+        # Group Box for ternimal display
+        TerminalBox = QGroupBox("&Terminal")
+        TerminalSP = TerminalBox.sizePolicy()
+        TerminalSP.setVerticalStretch(self.VerticalSegCol0[1])
+        TerminalBox.setSizePolicy(TerminalSP)
+        TerminalBox.setMinimumWidth(400)
 
-		ConsoleLayout = QGridLayout()
-		
-		self.ConsoleView = QPlainTextEdit()
-		self.ConsoleView.setStyleSheet("QTextEdit { background-color: rgb(10, 10, 10); color : white; }")
-		#self.ConsoleView.setCenterOnScroll(True)
-		self.ConsoleView.ensureCursorVisible()
-		
-		ConsoleLayout.addWidget(self.ConsoleView)
-		TerminalBox.setLayout(ConsoleLayout)
+        ConsoleLayout = QGridLayout()
 
-		#Group Box for output display
-		OutputBox = QGroupBox("&Result")
-		OutputBoxSP = OutputBox.sizePolicy()
-		OutputBoxSP.setVerticalStretch(self.VerticalSegCol1[0])
-		OutputBox.setSizePolicy(OutputBoxSP)
+        self.ConsoleView = QPlainTextEdit()
+        self.ConsoleView.setStyleSheet(
+            "QTextEdit { background-color: rgb(10, 10, 10); color : white; }"
+        )
+        # self.ConsoleView.setCenterOnScroll(True)
+        self.ConsoleView.ensureCursorVisible()
 
-		OutputLayout = QGridLayout()
-		self.ResultWidget = ResultTreeWidget(self.info,self.DisplayW,self.DisplayH,self.master)
-		OutputLayout.addWidget(self.ResultWidget,0,0,1,1)
-		OutputBox.setLayout(OutputLayout)
+        ConsoleLayout.addWidget(self.ConsoleView)
+        TerminalBox.setLayout(ConsoleLayout)
 
-		#Group Box for history
-		self.HistoryBox = QGroupBox("&History")
-		HistoryBoxSP = self.HistoryBox.sizePolicy()
-		HistoryBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
-		self.HistoryBox.setSizePolicy(HistoryBoxSP)
+        # Group Box for output display
+        OutputBox = QGroupBox("&Result")
+        OutputBoxSP = OutputBox.sizePolicy()
+        OutputBoxSP.setVerticalStretch(self.VerticalSegCol1[0])
+        OutputBox.setSizePolicy(OutputBoxSP)
 
-		self.HistoryLayout = QGridLayout()
-		#self.StatusCanvas = RunStatusCanvas(parent=self,width=5, height=4, dpi=100)
-		self.StatusTable = QTableWidget()
-		self.header = ["TestName"]
-		for key in self.testHandler.rd53_file.keys():
-			ChipName = key.split("_")
-			self.header.append("Module{}_Chip{}".format(ChipName[0],ChipName[2]))
-		self.StatusTable.setColumnCount(len(self.header))
-		self.StatusTable.setHorizontalHeaderLabels(self.header)
-		self.StatusTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
-		self.HistoryLayout.addWidget(self.StatusTable)
-		self.HistoryBox.setLayout(self.HistoryLayout)
+        OutputLayout = QGridLayout()
+        self.ResultWidget = ResultTreeWidget(
+            self.info, self.DisplayW, self.DisplayH, self.master
+        )
+        OutputLayout.addWidget(self.ResultWidget, 0, 0, 1, 1)
+        OutputBox.setLayout(OutputLayout)
 
-		self.TempBox = QGroupBox("&Chip Temperature")
-		TempBoxSP = self.TempBox.sizePolicy()
-		TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
-		self.TempBox.setSizePolicy(TempBoxSP)
-		self.TempLayout = QGridLayout()
-		self.type = self.ModuleType
-		self.LabelList = []
-		self.TempLabelList = []
-		for key,value in ModuleLaneMap[self.type].items():
-			self.Label = QLabel()
-			self.Label.setText("Chip: " + str(value))
-			self.TempLabel = QLabel()
-			self.LabelList.append(self.Label)
-			self.TempLabelList.append(self.TempLabel)
+        # Group Box for history
+        self.HistoryBox = QGroupBox("&History")
+        HistoryBoxSP = self.HistoryBox.sizePolicy()
+        HistoryBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
+        self.HistoryBox.setSizePolicy(HistoryBoxSP)
 
-		for index in range(len(self.LabelList)):
-			self.TempLayout.addWidget(self.LabelList[index], index +1, 0, 1, 1)
-			self.TempLayout.addWidget(self.TempLabelList[index], index +1, 1, 1, 1)
-		self.TempBox.setLayout(self.TempLayout)
-		
-		
+        self.HistoryLayout = QGridLayout()
+        # self.StatusCanvas = RunStatusCanvas(parent=self,width=5, height=4, dpi=100)
+        self.StatusTable = QTableWidget()
+        self.header = ["TestName"]
+        for key in self.testHandler.rd53_file.keys():
+            ChipName = key.split("_")
+            self.header.append("Module{}_Chip{}".format(ChipName[0], ChipName[2]))
+        self.StatusTable.setColumnCount(len(self.header))
+        self.StatusTable.setHorizontalHeaderLabels(self.header)
+        self.StatusTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.HistoryLayout.addWidget(self.StatusTable)
+        self.HistoryBox.setLayout(self.HistoryLayout)
 
-		
-		LeftColSplitter.addWidget(ControllerBox)
-		LeftColSplitter.addWidget(TerminalBox)
-		LeftColSplitter.addWidget(self.TempBox)
-		RightColSplitter.addWidget(OutputBox)
-		RightColSplitter.addWidget(self.HistoryBox)
+        self.TempBox = QGroupBox("&Chip Temperature")
+        TempBoxSP = self.TempBox.sizePolicy()
+        TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
+        self.TempBox.setSizePolicy(TempBoxSP)
+        self.TempLayout = QGridLayout()
+        self.type = self.ModuleType
+        self.LabelList = []
+        self.TempLabelList = []
+        for key, value in ModuleLaneMap[self.type].items():
+            self.Label = QLabel()
+            self.Label.setText("Chip: " + str(value))
+            self.TempLabel = QLabel()
+            self.LabelList.append(self.Label)
+            self.TempLabelList.append(self.TempLabel)
 
-		
+        for index in range(len(self.LabelList)):
+            self.TempLayout.addWidget(self.LabelList[index], index + 1, 0, 1, 1)
+            self.TempLayout.addWidget(self.TempLabelList[index], index + 1, 1, 1, 1)
+        self.TempBox.setLayout(self.TempLayout)
 
-		LeftColSplitterSP = LeftColSplitter.sizePolicy()
-		LeftColSplitterSP.setHorizontalStretch(self.HorizontalSeg[0])
-		LeftColSplitter.setSizePolicy(LeftColSplitterSP)
+        LeftColSplitter.addWidget(ControllerBox)
+        LeftColSplitter.addWidget(TerminalBox)
+        LeftColSplitter.addWidget(self.TempBox)
+        RightColSplitter.addWidget(OutputBox)
+        RightColSplitter.addWidget(self.HistoryBox)
 
-		RightColSplitterSP = RightColSplitter.sizePolicy()
-		RightColSplitterSP.setHorizontalStretch(self.HorizontalSeg[1])
-		RightColSplitter.setSizePolicy(RightColSplitterSP)
+        LeftColSplitterSP = LeftColSplitter.sizePolicy()
+        LeftColSplitterSP.setHorizontalStretch(self.HorizontalSeg[0])
+        LeftColSplitter.setSizePolicy(LeftColSplitterSP)
 
-		MainSplitter.addWidget(LeftColSplitter)
-		MainSplitter.addWidget(RightColSplitter)
+        RightColSplitterSP = RightColSplitter.sizePolicy()
+        RightColSplitterSP.setHorizontalStretch(self.HorizontalSeg[1])
+        RightColSplitter.setSizePolicy(RightColSplitterSP)
 
-		mainbodylayout.addWidget(MainSplitter)
-		#mainbodylayout.addWidget(ControllerBox, sum(self.VerticalSegCol0[:0]), sum(self.HorizontalSeg[:0]), self.VerticalSegCol0[0], self.HorizontalSeg[0])
-		#mainbodylayout.addWidget(TerminalBox, sum(self.VerticalSegCol0[:1]), sum(self.HorizontalSeg[:0]), self.VerticalSegCol0[1], self.HorizontalSeg[0])
-		#mainbodylayout.addWidget(OutputBox, sum(self.VerticalSegCol1[:0]), sum(self.HorizontalSeg[:1]), self.VerticalSegCol1[0], self.HorizontalSeg[1])
-		#mainbodylayout.addWidget(HistoryBox, sum(self.VerticalSegCol1[:1]), sum(self.HorizontalSeg[:1]), self.VerticalSegCol1[1], self.HorizontalSeg[1])
+        MainSplitter.addWidget(LeftColSplitter)
+        MainSplitter.addWidget(RightColSplitter)
 
+        mainbodylayout.addWidget(MainSplitter)
+        # mainbodylayout.addWidget(ControllerBox, sum(self.VerticalSegCol0[:0]), sum(self.HorizontalSeg[:0]), self.VerticalSegCol0[0], self.HorizontalSeg[0])
+        # mainbodylayout.addWidget(TerminalBox, sum(self.VerticalSegCol0[:1]), sum(self.HorizontalSeg[:0]), self.VerticalSegCol0[1], self.HorizontalSeg[0])
+        # mainbodylayout.addWidget(OutputBox, sum(self.VerticalSegCol1[:0]), sum(self.HorizontalSeg[:1]), self.VerticalSegCol1[0], self.HorizontalSeg[1])
+        # mainbodylayout.addWidget(HistoryBox, sum(self.VerticalSegCol1[:1]), sum(self.HorizontalSeg[:1]), self.VerticalSegCol1[1], self.HorizontalSeg[1])
 
-		self.MainBodyBox.setLayout(mainbodylayout)
-		self.mainLayout.addWidget(self.MainBodyBox, sum(self.GroupBoxSeg[0:1]), 0, self.GroupBoxSeg[1], 1)
+        self.MainBodyBox.setLayout(mainbodylayout)
+        self.mainLayout.addWidget(
+            self.MainBodyBox, sum(self.GroupBoxSeg[0:1]), 0, self.GroupBoxSeg[1], 1
+        )
 
+    def updatetemp(self, index, sensorMeasure):
+        index = index % len(self.TempLabelList)
+        self.TempLabelList[index].setText(sensorMeasure)
 
-	def updatetemp(self, index, sensorMeasure):
-		index = index % len(self.TempLabelList)
-		self.TempLabelList[index].setText(sensorMeasure)
+    def destroyMain(self):
+        self.MainBodyBox.deleteLater()
+        self.mainLayout.removeWidget(self.MainBodyBox)
 
-	def destroyMain(self):
-		self.MainBodyBox.deleteLater()
-		self.mainLayout.removeWidget(self.MainBodyBox)
+    def createApp(self):
+        self.AppOption = QGroupBox()
+        self.StartLayout = QHBoxLayout()
 
-	def createApp(self):
-		self.AppOption = QGroupBox()
-		self.StartLayout = QHBoxLayout()
+        self.ConnectButton = QPushButton("&Connect to DB")
+        self.ConnectButton.clicked.connect(self.connectDB)
 
-		self.ConnectButton = QPushButton("&Connect to DB")
-		self.ConnectButton.clicked.connect(self.connectDB)
+        self.BackButton = QPushButton("&Back")
+        self.BackButton.clicked.connect(self.sendBackSignal)
+        self.BackButton.clicked.connect(self.closeWindow)
+        self.BackButton.clicked.connect(self.creatStartWindow)
 
-		self.BackButton = QPushButton("&Back")
-		self.BackButton.clicked.connect(self.sendBackSignal)
-		self.BackButton.clicked.connect(self.closeWindow)
-		self.BackButton.clicked.connect(self.creatStartWindow)
+        self.FinishButton = QPushButton("&Finish")
+        self.FinishButton.setDefault(True)
+        self.FinishButton.clicked.connect(self.closeWindow)
 
-		self.FinishButton = QPushButton("&Finish")
-		self.FinishButton.setDefault(True)
-		self.FinishButton.clicked.connect(self.closeWindow)
+        self.StartLayout.addStretch(1)
+        if self.master.expertMode == True:
+            self.StartLayout.addWidget(self.ConnectButton)
+        self.StartLayout.addWidget(self.BackButton)
+        self.StartLayout.addWidget(self.FinishButton)
+        self.AppOption.setLayout(self.StartLayout)
 
-		self.StartLayout.addStretch(1)
-		if self.master.expertMode==True:
-			self.StartLayout.addWidget(self.ConnectButton)
-		self.StartLayout.addWidget(self.BackButton)
-		self.StartLayout.addWidget(self.FinishButton)
-		self.AppOption.setLayout(self.StartLayout)
+        self.LogoGroupBox = QGroupBox("")
+        self.LogoGroupBox.setCheckable(False)
+        self.LogoGroupBox.setMaximumHeight(100)
 
-		self.LogoGroupBox = QGroupBox("")
-		self.LogoGroupBox.setCheckable(False)
-		self.LogoGroupBox.setMaximumHeight(100)
+        self.LogoLayout = QHBoxLayout()
+        OSULogoLabel = QLabel()
+        OSUimage = QImage("icons/osuicon.jpg").scaled(
+            QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        OSUpixmap = QPixmap.fromImage(OSUimage)
+        OSULogoLabel.setPixmap(OSUpixmap)
+        CMSLogoLabel = QLabel()
+        CMSimage = QImage("icons/cmsicon.png").scaled(
+            QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        CMSpixmap = QPixmap.fromImage(CMSimage)
+        CMSLogoLabel.setPixmap(CMSpixmap)
+        self.LogoLayout.addWidget(OSULogoLabel)
+        self.LogoLayout.addStretch(1)
+        self.LogoLayout.addWidget(CMSLogoLabel)
 
-		self.LogoLayout = QHBoxLayout()
-		OSULogoLabel = QLabel()
-		OSUimage = QImage("icons/osuicon.jpg").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		OSUpixmap = QPixmap.fromImage(OSUimage)
-		OSULogoLabel.setPixmap(OSUpixmap)
-		CMSLogoLabel = QLabel()
-		CMSimage = QImage("icons/cmsicon.png").scaled(QSize(200,60), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-		CMSpixmap = QPixmap.fromImage(CMSimage)
-		CMSLogoLabel.setPixmap(CMSpixmap)
-		self.LogoLayout.addWidget(OSULogoLabel)
-		self.LogoLayout.addStretch(1)
-		self.LogoLayout.addWidget(CMSLogoLabel)
+        self.LogoGroupBox.setLayout(self.LogoLayout)
 
-		self.LogoGroupBox.setLayout(self.LogoLayout)
+        self.mainLayout.addWidget(
+            self.AppOption, sum(self.GroupBoxSeg[0:2]), 0, self.GroupBoxSeg[2], 1
+        )
+        self.mainLayout.addWidget(
+            self.LogoGroupBox, sum(self.GroupBoxSeg[0:3]), 0, self.GroupBoxSeg[2], 1
+        )
 
-		self.mainLayout.addWidget(self.AppOption, sum(self.GroupBoxSeg[0:2]), 0, self.GroupBoxSeg[2], 1)
-		self.mainLayout.addWidget(self.LogoGroupBox, sum(self.GroupBoxSeg[0:3]), 0, self.GroupBoxSeg[2], 1)
+    def destroyApp(self):
+        self.AppOption.deleteLater()
+        self.mainLayout.removeWidget(self.AppOption)
 
-	def destroyApp(self):
-		self.AppOption.deleteLater()
-		self.mainLayout.removeWidget(self.AppOption)
+    def closeWindow(self):
+        self.close()
 
-	def closeWindow(self):
-		self.close()
+    def creatStartWindow(self):
+        if self.backSignal == True and self.master.expertMode == True:
+            self.master.openNewTest()
 
-	def creatStartWindow(self):
-		if self.backSignal == True and self.master.expertMode == True:
-			self.master.openNewTest()
+    def occupied(self):
+        self.master.ProcessingTest = True
 
-	def occupied(self):
-		self.master.ProcessingTest = True
+    def release(self):
+        self.abortTest()
+        self.master.ProcessingTest = False
+        if self.master.expertMode == True:
+            self.master.NewTestButton.setDisabled(False)
+            self.master.LogoutButton.setDisabled(False)
+            self.master.ExitButton.setDisabled(False)
+        else:
+            self.master.SimpleMain.RunButton.setDisabled(False)
+            self.master.SimpleMain.StopButton.setDisabled(True)
 
-	def release(self):
-		self.abortTest()
-		self.master.ProcessingTest = False
-		if self.master.expertMode == True:
-			self.master.NewTestButton.setDisabled(False)
-			self.master.LogoutButton.setDisabled(False)
-			self.master.ExitButton.setDisabled(False)
-		else:
-			self.master.SimpleMain.RunButton.setDisabled(False)
-			self.master.SimpleMain.StopButton.setDisabled(True)
+    def refreshHistory(self, result):
+        # self.dataList = getLocalRemoteTests(self.connection, self.info[0])
+        # self.proxy = QtTableWidget(self.dataList)
+        # self.view.setModel(self.proxy)
+        # self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        # self.view.update()
+        print("attempting to update status in history")
+        self.HistoryLayout.removeWidget(self.StatusTable)
+        self.StatusTable.setRowCount(0)
+        for index, test in enumerate(self.modulestatus):
+            row = self.StatusTable.rowCount()
+            self.StatusTable.setRowCount(row + 1)
+            if isCompositeTest(self.info[1]):
+                self.StatusTable.setItem(
+                    row, 0, QTableWidgetItem(CompositeList[self.info[1]][index])
+                )
+            else:
+                self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
+            for moduleKey in test.keys():
+                for chipKey in test[moduleKey].keys():
+                    ChipID = "Module{}_Chip{}".format(moduleKey, chipKey)
+                    status = "Pass" if test[moduleKey][chipKey] == True else "Failed"
+                    if ChipID in self.header:
+                        columnId = self.header.index(ChipID)
+                        self.StatusTable.setItem(
+                            row, columnId, QTableWidgetItem(status)
+                        )
+                        if status == "Pass":
+                            self.StatusTable.item(row, columnId).setBackground(
+                                QColor(Qt.green)
+                            )
+                        elif status == "Failed":
+                            self.StatusTable.item(row, columnId).setBackground(
+                                QColor(Qt.red)
+                            )
 
+        self.HistoryLayout.addWidget(self.StatusTable)
 
-	def refreshHistory(self,result):
-		#self.dataList = getLocalRemoteTests(self.connection, self.info[0])
-		#self.proxy = QtTableWidget(self.dataList)
-		#self.view.setModel(self.proxy)
-		#self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
-		#self.view.update()
-		print('attempting to update status in history')
-		self.HistoryLayout.removeWidget(self.StatusTable)
-		self.StatusTable.setRowCount(0)
-		for index,test in enumerate(self.modulestatus):
-			row = self.StatusTable.rowCount()
-			self.StatusTable.setRowCount(row + 1)
-			if isCompositeTest(self.info[1]):
-				self.StatusTable.setItem(row,0,QTableWidgetItem(CompositeList[self.info[1]][index]))
-			else:
-				self.StatusTable.setItem(row,0,QTableWidgetItem(self.info[1]))
-			for moduleKey in test.keys():
-				for chipKey in test[moduleKey].keys():
-					ChipID = "Module{}_Chip{}".format(moduleKey,chipKey)
-					status = "Pass" if test[moduleKey][chipKey] == True else "Failed"
-					if  ChipID in self.header:
-						columnId = self.header.index(ChipID)
-						self.StatusTable.setItem(row,columnId,QTableWidgetItem(status))
-						if status == "Pass":
-							self.StatusTable.item(row,columnId).setBackground(QColor(Qt.green))
-						elif status == "Failed":
-							self.StatusTable.item(row,columnId).setBackground(QColor(Qt.red))
+    def sendBackSignal(self):
+        self.backSignal = True
 
-		self.HistoryLayout.addWidget(self.StatusTable)
-		
-		
+    def sendProceedSignal(self):
+        self.testHandler.proceedSignal = True
+        # self.runNext.set()
 
-	def sendBackSignal(self):
-		self.backSignal = True
+    def connectDB(self):
+        if isActive(self.master.connection):
+            self.connection = self.master.connection
+            self.refresh()
+            self.saveCheckBox.setDisabled(False)
+            return
 
-	def sendProceedSignal(self):
-		self.testHandler.proceedSignal = True
-		#self.runNext.set()
+        LoginDialog = QtLoginDialog(self.master)
+        response = LoginDialog.exec_()
+        if response == QDialog.Accepted:
+            self.connectDB()
+        else:
+            return
 
-	def connectDB(self):
-		if isActive(self.master.connection):
-			self.connection  = self.master.connection
-			self.refresh()
-			self.saveCheckBox.setDisabled(False)
-			return
+    def customizeTest(self):
+        print("Customize configuration")
+        self.CustomizedButton.setDisabled(True)
+        self.ResetButton.setDisabled(True)
+        self.RunButton.setDisabled(True)
+        self.CustomizedWindow = QtCustomizeWindow(self, self.testHandler.rd53_file)
+        self.CustomizedButton.setDisabled(False)
+        self.ResetButton.setDisabled(False)
+        self.RunButton.setDisabled(False)
 
-		LoginDialog = QtLoginDialog(self.master)
-		response = LoginDialog.exec_()
-		if response == QDialog.Accepted:
-			self.connectDB()
-		else:
-			return
+    def resetConfigTest(self):
+        self.testHandler.resetConfigTest()
 
+    def initialTest(self):
+        isReRun = False
+        if "Re" in self.RunButton.text():
+            isReRun = True
+            self.grades = []
+            if isCompositeTest(self.info[1]):
+                for index in range(len(CompositeList[self.info[1]])):
+                    self.ResultWidget.ProgressBar[index].setValue(0)
+            else:
+                self.ResultWidget.ProgressBar[0].setValue(0)
+        self.ResetButton.setDisabled(True)
+        self.testHandler.runTest(isReRun)
 
-	def customizeTest(self):
-		print("Customize configuration")
-		self.CustomizedButton.setDisabled(True)
-		self.ResetButton.setDisabled(True)
-		self.RunButton.setDisabled(True)
-		self.CustomizedWindow = QtCustomizeWindow(self, self.testHandler.rd53_file)
-		self.CustomizedButton.setDisabled(False)
-		self.ResetButton.setDisabled(False)
-		self.RunButton.setDisabled(False)
-		
-	def resetConfigTest(self):
-		self.testHandler.resetConfigTest()
+    def abortTest(self):
+        self.j = 0
+        self.testHandler.abortTest()
 
-	def initialTest(self):
-		isReRun = False
-		if "Re" in self.RunButton.text():
-			isReRun = True
-			self.grades = []
-			if isCompositeTest(self.info[1]):
-				for index in range(len(CompositeList[self.info[1]])):
-					self.ResultWidget.ProgressBar[index].setValue(0)
-			else:
-				self.ResultWidget.ProgressBar[0].setValue(0)
-		self.ResetButton.setDisabled(True)
-		self.testHandler.runTest(isReRun)
+    def urgentStop(self):
+        self.testHandler.urgentStop()
 
-	def abortTest(self):
-		self.j = 0
-		self.testHandler.abortTest()
-	
-	def urgentStop(self):
-		self.testHandler.urgentStop()
+    #######################################################################
+    ##  For result display
+    #######################################################################
+    def clickedOutputItem(self, qmodelindex):
+        # Fixme: Extract the info from ROOT file
+        item = self.ListWidget.currentItem()
+        referName = item.text().split("_")[0]
+        if referName in [
+            "GainScan",
+            "Latency",
+            "NoiseScan",
+            "PixelAlive",
+            "SCurveScan",
+            "ThresholdEqualization",
+            "GainOptimization",
+            "ThresholdMinimization",
+            "InjectionDelay",
+        ]:
+            self.ReferView = QPixmap(
+                os.environ.get("GUI_dir") + "/Gui/test_plots/{0}.png".format(referName)
+            ).scaled(
+                QSize(self.DisplayW, self.DisplayH),
+                Qt.KeepAspectRatio,
+                Qt.SmoothTransformation,
+            )
+            self.ReferLabel.setPixmap(self.ReferView)
 
-	#######################################################################
-	##  For result display
-	#######################################################################
-	def clickedOutputItem(self, qmodelindex):
-		#Fixme: Extract the info from ROOT file
-		item = self.ListWidget.currentItem()
-		referName = item.text().split("_")[0]
-		if referName in ["GainScan","Latency","NoiseScan","PixelAlive","SCurveScan","ThresholdEqualization","GainOptimization","ThresholdMinimization","InjectionDelay"]:
-			self.ReferView = QPixmap(os.environ.get('GUI_dir')+'/Gui/test_plots/{0}.png'.format(referName)).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-			self.ReferLabel.setPixmap(self.ReferView)
+    #######################################################################
+    ##  For real-time terminal display
+    #######################################################################
 
-	#######################################################################
-	##  For real-time terminal display
-	#######################################################################
+    def updateConsoleInfo(self, text):
+        textCursor = self.ConsoleView.textCursor()
+        self.ConsoleView.setTextCursor(textCursor)
+        self.ConsoleView.appendHtml(text)
 
-	def updateConsoleInfo(self,text):
-		textCursor = self.ConsoleView.textCursor()
-		self.ConsoleView.setTextCursor(textCursor)
-		self.ConsoleView.appendHtml(text)
-		
-	def finish(self,EnableReRun):
-		self.RunButton.setDisabled(True)
-		self.RunButton.setText("&Continue")
-		self.finishSingal = True
+    def finish(self, EnableReRun):
+        self.RunButton.setDisabled(True)
+        self.RunButton.setText("&Continue")
+        self.finishSingal = True
 
-		if EnableReRun:
-				self.RunButton.setText("&Re-run")
-				self.RunButton.setDisabled(False)
+        if EnableReRun:
+            self.RunButton.setText("&Re-run")
+            self.RunButton.setDisabled(False)
 
+    def updateResult(self, newResult):
+        # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
+        if self.master.expertMode:
+            self.ResultWidget.updateResult(newResult)
+        else:
+            step, displayDict = newResult
+            self.ResultWidget.updateDisplayList(step, displayDict)
 
-	def updateResult(self,newResult):
-		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
-		if self.master.expertMode:
-			self.ResultWidget.updateResult(newResult)
-		else:
-			step, displayDict = newResult
-			self.ResultWidget.updateDisplayList(step, displayDict)
+    def updateIVResult(self, newResult):
+        # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
+        if self.master.expertMode:
+            self.ResultWidget.updateIVResult(newResult)
+        else:
+            step, displayDict = newResult
+            self.ResultWidget.updateDisplayList(step, displayDict)
 
-	def updateIVResult(self,newResult):
-		# self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
-		if self.master.expertMode:
-			self.ResultWidget.updateIVResult(newResult)
-		else:
-			step, displayDict = newResult
-			self.ResultWidget.updateDisplayList(step, displayDict)
+    def updateSLDOResult(self, newResult):
+        if self.master.expertMode:
+            self.ResultWidget.updateSLDOResult(newResult)
+        else:
+            step, displayDict = newResult
+            self.ResultWidget.updateDisplayList(step, displayDict)
 
 	def updateValidation(self,grade,passmodule):
 		try:
@@ -558,62 +591,61 @@ class QtRunWindow(QWidget):
 					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: red")
 		
 
-			time.sleep(0.5)
-			return status
-		#self.StatusCanvas.renew()
-		#self.StatusCanvas.update()
-		#self.HistoryLayout.removeWidget(self.StatusCanvas)
-		#self.HistoryLayout.addWidget(self.StatusCanvas)
-		except Exception as err:
-			logger.error(err)
+            time.sleep(0.5)
+            return status
+        # self.StatusCanvas.renew()
+        # self.StatusCanvas.update()
+        # self.HistoryLayout.removeWidget(self.StatusCanvas)
+        # self.HistoryLayout.addWidget(self.StatusCanvas)
+        except Exception as err:
+            logger.error(err)
 
+    #######################################################################
+    ##  For real-time terminal display
+    #######################################################################
 
-	#######################################################################
-	##  For real-time terminal display
-	#######################################################################
+    def refresh(self):
+        self.destroyHeadLine()
+        self.createHeadLine()
+        self.destroyApp()
+        self.createApp()
 
-	def refresh(self):
-		self.destroyHeadLine()
-		self.createHeadLine()
-		self.destroyApp()
-		self.createApp()
+    def resizeEvent(self, event):
+        self.resized.emit()
+        return super(QtRunWindow, self).resizeEvent(event)
 
-	def resizeEvent(self, event):
-		self.resized.emit()
-		return super(QtRunWindow, self).resizeEvent(event)
+    def rescaleImage(self):
+        self.DisplayH = self.height() * 3.0 / 7
+        self.DisplayW = self.width() * 3.0 / 7
+        self.ResultWidget.resizeImage(self.DisplayW, self.DisplayH)
 
-	def rescaleImage(self):
-		self.DisplayH = self.height()*3./7
-		self.DisplayW = self.width()*3./7
-		self.ResultWidget.resizeImage(self.DisplayW,self.DisplayH)
+    def setAutoSave(self):
+        if self.testHandler.autoSave:
+            self.testHandler.autoSave = False
+        else:
+            self.testHandler.autoSave = True
+        self.saveCheckBox.setChecked(self.testHandler.autoSave)
 
+    def closeEvent(self, event):
+        if self.processingFlag == True:
+            event.ignore()
 
-	def setAutoSave(self):
-		if self.testHandler.autoSave:
-			self.testHandler.autoSave =  False
-		else:
-			self.testHandler.autoSave = True
-		self.saveCheckBox.setChecked(self.testHandler.autoSave)
-	
+        else:
+            reply = QMessageBox.question(
+                self,
+                "Window Close",
+                "Are you sure you want to quit the test?",
+                QMessageBox.No | QMessageBox.Yes,
+                QMessageBox.No,
+            )
 
-	def closeEvent(self, event):
-		if self.processingFlag == True:
-			event.ignore()
-		
-		else:
-			reply = QMessageBox.question(self, 'Window Close', 'Are you sure you want to quit the test?',
-				QMessageBox.No | QMessageBox.Yes, QMessageBox.No)
+            if reply == QMessageBox.Yes:
+                self.release()
+                self.master.instruments.off(
+                    lv_channel=None, hv_delay=0.3, hv_step_size=10
+                )
+                event.accept()
+            else:
+                self.backSignal = False
+                event.ignore()
 
-			if reply == QMessageBox.Yes:
-				self.release()
-				self.master.instruments.off(lv_channel=None, hv_delay=0.3, hv_step_size=10)
-				event.accept()
-			else:
-				self.backSignal = False
-				event.ignore()
-
-
-		
-
-
-		

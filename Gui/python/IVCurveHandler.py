@@ -56,13 +56,13 @@ class IVCurveHandler(QObject):
     stopSignal = pyqtSignal(object)
     finished = pyqtSignal(str, dict)
 
-    def __init__(self, window, instrument_cluster):
+    def __init__(self, instrument_cluster):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.window = window
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
-        #self.test.measureSignal.connect(self.window.updateMeasurement)
+        self.test.progressSignal.connect(self.transmitProgress)
         self.test.measureSignal.connect(self.finish)
 
     def isValid(self):

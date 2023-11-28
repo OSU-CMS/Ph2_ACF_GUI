@@ -117,7 +117,7 @@ class SummaryBox(QWidget):
             # if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
             # 	QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
             # 	return
-
+            self.result = True
             FWisPresent = False
             if "CROC" in self.module.getType():
                 boardtype = "RD53B"
@@ -227,9 +227,11 @@ class SummaryBox(QWidget):
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
                 self.master.module_in_use = self.module.getType()
 
-
-                self.master.instruments.lv_on(None, ModuleVoltageMapSLDO[self.master.module_in_use], ModuleCurrentMap[self.master.module_in_use])
-
+                self.master.instruments.lv_on(
+                    None,
+                    ModuleVoltageMapSLDO[self.master.module_in_use],
+                    ModuleCurrentMap[self.master.module_in_use],
+                )
                 logging.info("Turned on LV power supply")
 
 
@@ -289,7 +291,19 @@ class SummaryBox(QWidget):
             #         print("LV PS is off now. HV PS can't be turn on")
             #         print("attempt to turn on the LV PS again")
             #         time.sleep(2)
-            self.master.instruments.hv_on(lv_channel=None, voltage= defaultHVsetting, delay=0.3, step_size = 10)
+
+            #if self.master.desired_devices["hv"]:
+            #    self.master.instruments.hv_on(
+            #        lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
+            #    )
+
+            #    logging.info("Turned on HV power supply")
+            ##if not 'SLDO' in self.TestCombo.currentText():
+             #   print('this should turn on hv')
+            #    self.master.instruments.hv_on(
+             #       lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
+             #   )
+
 
             return self.result
         except Exception as err:
@@ -356,11 +370,9 @@ class QtStartWindow(QWidget):
         self.TestBox.setLayout(testlayout)
 
         self.firmware.removeAllModule()
-        self.BeBoardWidget = BeBoardBox(self.firmware)  # FLAG
-        self.BeBoardWidget.changed.connect(self.destroyMain)
-        self.BeBoardWidget.changed.connect(self.createMain)
 
-        # self.ChipBoxWidget = ChipBox(self.firmware)
+        self.BeBoardWidget = BeBoardBox(self, self.firmware)  # FLAG
+
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
         self.mainLayout.addWidget(self.BeBoardWidget, 1, 0)
