@@ -1,8 +1,6 @@
 #!/bin/bash
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
-git pull --recurse-submodules
-
 mode=$1
 echo "the mode is $mode"
 ## Change the ports in 'mydevicelist' to those which you wish to use with the GUI#############
