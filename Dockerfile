@@ -16,8 +16,10 @@ WORKDIR /home/cmsTkUser/Ph2_ACF_GUI/
 ADD . /home/cmsTkUser/Ph2_ACF_GUI/
 RUN ls -lrt
 
-RUN yum -y install libxkbcommon-x11-devel mesa-libGL-devel xcb-util-wm xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm PyQt5
-RUN yum -y install dbus-x11 gcc gcc-c++ kernel-devel make qtcreator usbutils udev
+#Installing all needed packages in the container.
+RUN dnf -y install libxkbcommon-x11-devel mesa-libGL-devel xcb-util-wm xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm 
+RUN dnf -y install dbus-x11 gcc gcc-c++ kernel-devel make usbutils udev mysql
+
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirements.txt
 
@@ -25,7 +27,10 @@ RUN python3 -m pip install -r requirements.txt
 RUN sh ./compileSubModules.sh
 RUN chmod +x prepare_Ph2ACF.sh
 
+#Comment the following line if you want to build the developer container.  The following line makes docker open the GUI when the container started.
 #CMD ["prepare_Ph2ACF.sh"]
+
+
 #ENTRYPOINT ["/bin/bash"]
 #The following would open the GUI when docker run is called.  Otherwise it will just give a terminal.
 #CMD ["./QtApplication.py"]
