@@ -36,6 +36,7 @@ from UserCustoms.python.ArduinoParser import *
 import pyvisa as visa
 import subprocess
 import numpy as np
+import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 
 
@@ -78,7 +79,6 @@ class ArduinoWidget(QWidget):
         self.ArduinoBox.addWidget(self.ArduinoCombo)
         self.ArduinoBox.addWidget(self.ArduinoBaudRate)
         self.ArduinoBox.addWidget(self.ArduinoBRCombo)
-        # self.ArduinoBox.addWidget(self.ArduinoValues)
         self.ArduinoBox.addStretch(1)
         self.ArduinoBox.addWidget(self.UseArduino)
         self.ArduinoBox.addWidget(self.ReleaseArduino)
@@ -87,115 +87,65 @@ class ArduinoWidget(QWidget):
 
         self.ArduinoMeasureValue = QLabel()
         self.mainLayout.addWidget(self.ArduinoMeasureValue, 1, 0)
+    
 
     def listResources(self):
-        self.ResourcesManager = visa.ResourceManager("@py")
-        try:
-            self.ResourcesList = self.ResourcesManager.list_resources()
-            print(self.ResourcesList)
-            self.getDeviceName()
-            return list(self.deviceMap.keys())
-        except Exception as err:
-            logger.error("Failed to list all resources: {}".format(err))
-            self.ResourcesList = ()
-            return self.ResourcesList
-
-    def getDeviceName(self):
-        self.deviceMap = {}
-        for device in self.ResourcesList:
-            try:
-                pipe = subprocess.Popen(
-                    [
-                        "udevadm",
-                        "info",
-                        " --query",
-                        "all",
-                        "--name",
-                        device.lstrip("ASRL").rstrip("::INSTR"),
-                        "--attribute-walk",
-                    ],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                )
-                raw_output = pipe.communicate()[0]
-                vendor_list = [
-                    info
-                    for info in raw_output.splitlines()
-                    if b"ATTRS{idVendor}" in info or b"ATTRS{vendor}" in info
-                ]
-                product_list = [
-                    info
-                    for info in raw_output.splitlines()
-                    if b"ATTRS{idProduct}" in info or b"ATTRS{product}" in info
-                ]
-                idvendor = (
-                    vendor_list[0]
-                    .decode("UTF-8")
-                    .split("==")[1]
-                    .lstrip('"')
-                    .rstrip('"')
-                    .replace("0x", "")
-                )
-                idproduct = (
-                    product_list[0]
-                    .decode("UTF-8")
-                    .split("==")[1]
-                    .lstrip('"')
-                    .rstrip('"')
-                    .replace("0x", "")
-                )
-                deviceId = "{}:{}".format(idvendor, idproduct)
-                pipeUSB = subprocess.Popen(
-                    ["lsusb", "-d", deviceId],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                )
-                usbInfo = pipeUSB.communicate()[0]
-                deviceName = usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(" ")
-
-                if deviceName == None:
-                    logger.warning("No device name found for {}:".format(device))
-                    # self.deviceMap[device] = device
-                elif "Arduino" in deviceName:
-                    self.deviceMap[deviceName] = device
-                else:
-                    pass
-            except Exception as err:
-                logger.error("Error found:{}".format(err))
-                # self.deviceMap[device] = device
-
+        self.ResourcesList = []
+        self.ResourcesList.append(site_settings.TemArduinoPort)
+        return self.ResourcesList
+ 
     def frozeArduinoPanel(self):
         # Block for ArduinoSupply operation
         
-        try:            
-            compileResult=subprocess.run(
-            "$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+        #if you want to enable the temperature monitor IDE code upload, just uncomment the following script and change the folder name for INO script.
+        """
+        try:
+            subprocess.run(
+            #"$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+            "/home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/bin/arduino-cli core install arduino:avr",
             shell=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, 
-            text = True
+            stderr=subprocess.PIPE
             )
-            uploadResult=subprocess.run(
-            f"$GUI_dir/bin/arduino-cli upload -p {self.deviceMap[self.ArduinoCombo.currentText()].lstrip("ASRL").rstrip("::INSTR")} --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+
+
+            compileResult=subprocess.run(
+            #"$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+            "/home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/bin/arduino-cli compile --fqbn arduino:avr:uno /home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/FirmwareImages/relay_box_firmware/",
             shell=True,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE, 
-            text = True
-            ) 
+            stderr=subprocess.PIPE
+            )
+            #deviceName = self.ArduinoCombo.currentText()
+            deviceName = 'ASRL/dev/ttyACM0::INSTR'
+            portName = deviceName.lstrip("ASRL").rstrip("::INSTR")
+            uploadResult=subprocess.run(
+            #f"/home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/bin/arduino-cli upload -p {portName} --fqbn arduino:avr:uno /home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/FirmwareImages/relay_box_firmware/",
+            "/home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/bin/arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno /home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/FirmwareImages/relay_box_firmware/",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+            )
+            #print(compileResult.stdout)
+            #print(uploadResult.stdout)
+            #print(compileResult.stderr)
+            #print(uploadResult.stderr)
                  
         except subprocess.CalledProcessError as err:
+            print("Unable to upload script to Arduino")
+            
             logger.error("Unable to upload script to Arduino")
             logger.error(compileResult.stderr)
             logger.error(uploadResult.stderr)
-            self.ArduinoGoodStatus = False
+            #self.ArduinoGoodStatus = False
+        """
         
-
         try:
+                        
             self.setSerial(
-                self.deviceMap[self.ArduinoCombo.currentText()],
+                self.ArduinoCombo.currentText(),
                 self.ArduinoBRCombo.currentText(),
             )
-            print(self.deviceMap[self.ArduinoCombo.currentText()])
             self.ArduinoCombo.setDisabled(True)
             self.ArduinoBRCombo.setDisabled(True)
             self.UseArduino.setDisabled(True)
@@ -203,7 +153,7 @@ class ArduinoWidget(QWidget):
         except Exception as err:
             logger.error("Unable to use Arduino")
             self.ArduinoGoodStatus = False
-
+        
     def releaseArduinoPanel(self):
         self.serial.close()
         self.ArduinoCombo.setDisabled(False)
