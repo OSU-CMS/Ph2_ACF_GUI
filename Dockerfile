@@ -2,6 +2,7 @@
 #You can set the version of Ph2_ACF by adding the following line to your git build command:
 #  --build-arg GIT_REF=v4-14
 #If you don't use this option when building the image it will default to the Dev branch of Ph2_ACF.
+
 ARG GIT_REF=Dev
 ARG FROM_IMAGE=gitlab-registry.cern.ch/cms_tk_ph2/docker_exploration/cmstkph2_udaq_al9:latest
 FROM $FROM_IMAGE AS base
@@ -10,6 +11,7 @@ SHELL ["/bin/bash", "-c"]
 
 #Setting up all of the environment variables that the GUI will use.
 #An ARG is only in the scope of the build that immediately follows, so you have to re-do this for each usage.
+
 ARG GIT_REF=Dev
 ENV Ph2_ACF_VERSION=${GIT_REF}
 ENV GUI_dir=/home/cmsTkUser/Ph2_ACF_GUI
