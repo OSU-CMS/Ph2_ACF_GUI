@@ -1,11 +1,11 @@
 import lxml.etree as ET
 import os
 from xml.dom import minidom
-from InnerTrackerTests.GlobalSettings import *
-from InnerTrackerTests.FESettings import *
-from InnerTrackerTests.HWSettings import *
-from InnerTrackerTests.MonitoringSettings import *
-from InnerTrackerTests.RegisterSettings import *
+from Configuration.Settings.GlobalSettings import *
+from Configuration.Settings.FESettings import *
+from Configuration.Settings.HWSettings import *
+from Configuration.Settings.MonitoringSettings import *
+from Configuration.Settings.RegisterSettings import *
 from Gui.GUIutils.settings import *
 
 import logging

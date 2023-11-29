@@ -11,7 +11,12 @@ ExpertUserList = [
     "localexpert",
 ]
 
-FirmwareList = FC7List
+
+
+FirmwareList = {
+    "fc7.board.1": "192.168.1.80",
+    "fc7.board.2": "127.0.0.1",  #'192.168.1.81',
+}
 
 """
 if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
@@ -166,6 +171,24 @@ BoxSize = {
     "CROC SCC": 1,
     "CROC 1x2": 2,
     "TFPX CROC Quad": 3,
+}
+
+HVPowerSupplyModel = {
+    "Keithley 2410 (RS232)": "Gui.python.Keithley2400RS232",
+}
+
+LVPowerSupplyModel = {
+    "KeySight E3633 (RS232)": "Gui.python.KeySightE3633RS232",
+}
+
+PowerSupplyModel_Termination = {
+    "Keithley 2410 (RS232)": "\r",
+    "KeySight E3633 (RS232)": "\r\n",
+}
+
+PowerSupplyModel_XML_Termination = {
+    "Keithley 2410 (RS232)": "CR",
+    "KeySight E3633 (RS232)": "CRLF",
 }
 
 

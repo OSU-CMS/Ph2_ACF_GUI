@@ -170,3 +170,4 @@ class SLDOCurveHandler(QObject):
             self.test.terminate()
         except Exception as err:
             logger.error(f"Failed to stop the SLDO test due to error {err}")
+
