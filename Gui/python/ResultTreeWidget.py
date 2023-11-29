@@ -1,38 +1,10 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtGui import QPixmap
-from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QScrollArea,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QTreeWidget,
-    QTreeWidgetItem,
-    QWidget,
-    QMainWindow,
-)
+from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
+		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, 
+		QProgressBar, QPushButton, QRadioButton, QScrollBar, QScrollArea, QSizePolicy,
+		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTabWidget, QTextEdit, QTreeWidget, QTreeWidgetItem, QWidget, QMainWindow)
 from PyQt5 import QtSvg
 
 import sys
@@ -45,8 +17,9 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import *
 from Gui.python.ROOTInterface import *
 from Gui.QtGUIutils.QtTCanvasWidget import *
-from Gui.python.logging_config import logger
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class ResultTreeWidget(QWidget):
     def __init__(self, info, width, height, master):

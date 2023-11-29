@@ -1,15 +1,3 @@
-import logging
-
-# Customize the logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    filename="my_project.log",  # Specify a log file
-    filemode="w",  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
-
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import (
     QApplication,
@@ -84,6 +72,7 @@ class SummaryBox(QWidget):
             self.chipSwitches[i] = True
 
     def createBody(self):
+        # FEIDLabel = QLabel("ID: {}".format(self.module.getID()))
         FEIDLabel = QLabel("Module: {}".format(self.module.getSerialNumber()))
         FEIDLabel.setStyleSheet("font-weight:bold")
         PowerModeLabel = QLabel()
@@ -244,6 +233,7 @@ class SummaryBox(QWidget):
                     ModuleCurrentMap[self.master.module_in_use],
                 )
                 logging.info("Turned on LV power supply")
+
 
             # # Want to try and connect twice
             # self.Stopcount = 0
@@ -551,10 +541,7 @@ class QtStartWindow(QWidget):
                 self.release()
                 # This line was previosly commented
                 try:
-                    self.master.instruments.off(
-                        lv_channel=None, hv_delay=0.5, hv_step_size=10
-                    )
-
+                    self.master.instruments.off(lv_channel=None, hv_delay=0.5, hv_step_size=10)
                     print("Window closed")
                 except:
                     print(

@@ -1,42 +1,11 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap, QTextCursor, QColor
-from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QListWidget,
-    QPlainTextEdit,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTableWidgetItem,
-    QTabWidget,
-    QTextEdit,
-    QTreeWidget,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
-    QMessageBox,
-    QSplitter,
-)
+from PyQt5.QtGui import (QPixmap, QTextCursor, QColor)
+from PyQt5.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox, QDateTimeEdit,
+		QDial, QDialog, QGridLayout, QGroupBox, QHBoxLayout, QLabel, QLineEdit, QListWidget, QPlainTextEdit,
+		QProgressBar, QPushButton, QRadioButton, QScrollBar, QSizePolicy,
+		QSlider, QSpinBox, QStyleFactory, QTableView, QTableWidget, QTableWidgetItem, QTabWidget, QTextEdit, QTreeWidget, QHBoxLayout,
+		QVBoxLayout, QWidget, QMainWindow, QMessageBox, QSplitter)
 
 import sys
 import os
@@ -51,8 +20,7 @@ import logging
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
-
-# from Gui.QtGUIutils.QtStartWindow import *
+#from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtCustomizeWindow import *
 from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
@@ -61,196 +29,187 @@ from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
 from Gui.python.TestHandler import *
-from Gui.python.logging_config import logger
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 class QtRunWindow(QWidget):
-    resized = pyqtSignal()
+	resized = pyqtSignal()
+	def __init__(self,master,info,firmware):
+		super(QtRunWindow,self).__init__()
+		self.master = master
+		self.master.globalStop.connect(self.urgentStop)
+		
+		#self.LogoGroupBox = self.master.LogoGroupBox
+		self.firmware = firmware
+		self.info = info
+		if "AllScan_Tuning" in self.info[1]:
+			runTestList = pretuningList
+			runTestList.extend(tuningList*len(defaultTargetThr))
+			runTestList.extend(posttuningList)
+			CompositeList.update({'AllScan_Tuning':runTestList})
 
-    def __init__(self, master, info, firmware):
-        super(QtRunWindow, self).__init__()
-        self.master = master
-        self.master.globalStop.connect(self.urgentStop)
+		elif isCompositeTest(self.info[1]):
+			runTestList = CompositeList[self.info[1]]
+		else:
+			runTestList = self.info[1]
 
-        # self.LogoGroupBox = self.master.LogoGroupBox
-        self.firmware = firmware
-        self.info = info
-        if "AllScan_Tuning" in self.info[1]:
-            runTestList = pretuningList
-            runTestList.extend(tuningList * len(defaultTargetThr))
-            runTestList.extend(posttuningList)
-            CompositeList.update({"AllScan_Tuning": runTestList})
+		self.connection = self.master.connection
+		self.firmwareName = self.firmware.getBoardName()
+		self.ModuleMap = dict()
+		self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+		self.RunNumber = "-1"
 
-        elif isCompositeTest(self.info[1]):
-            runTestList = CompositeList[self.info[1]]
-        else:
-            runTestList = self.info[1]
+		#Add TestProcedureHandler
+		self.testHandler = TestHandler(self,master,info,firmware)
+		self.testHandler.powerSignal.connect(lambda: self.master.instruments.off(lv_channel = None, hv_delay = 0.3, hv_step_size = 10, measure=False))
 
-        self.connection = self.master.connection
-        self.firmwareName = self.firmware.getBoardName()
-        self.ModuleMap = dict()
-        self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
-        self.RunNumber = "-1"
 
-        # Add TestProcedureHandler
-        self.testHandler = TestHandler(self, master, info, firmware)
-        self.testHandler.powerSignal.connect(
-            lambda: self.master.instruments.off(
-                lv_channel=None, hv_delay=0.3, hv_step_size=10, measure=False
-            )
-        )
+		self.GroupBoxSeg = [1, 10,  1]
+		self.HorizontalSeg = [3, 5]
+		self.VerticalSegCol0 = [1,3]
+		self.VerticalSegCol1 = [2,2]
+		self.DisplayH = self.height()*3./7
+		self.DisplayW = self.width()*3./7
 
-        self.GroupBoxSeg = [1, 10, 1]
-        self.HorizontalSeg = [3, 5]
-        self.VerticalSegCol0 = [1, 3]
-        self.VerticalSegCol1 = [2, 2]
-        self.DisplayH = self.height() * 3.0 / 7
-        self.DisplayW = self.width() * 3.0 / 7
+		self.processingFlag = False
+		self.ProgressBarList = []
+		self.input_dir = ''
+		self.output_dir = ''
+		self.config_file = '' #os.environ.get('GUI_dir')+ConfigFiles.get(self.calibration, "None")
+		self.rd53_file  = {}
+		self.grade = -1
+		self.currentTest = ""
+		self.outputFile = ""
+		self.errorFile = ""
 
-        self.processingFlag = False
-        self.ProgressBarList = []
-        self.input_dir = ""
-        self.output_dir = ""
-        self.config_file = (
-            ""  # os.environ.get('GUI_dir')+ConfigFiles.get(self.calibration, "None")
-        )
-        self.rd53_file = {}
-        self.grade = -1
-        self.currentTest = ""
-        self.outputFile = ""
-        self.errorFile = ""
+		self.backSignal = False
+		self.haltSignal = False
+		self.finishSingal = False
+		self.proceedSignal = False
 
-        self.backSignal = False
-        self.haltSignal = False
-        self.finishSingal = False
-        self.proceedSignal = False
+		self.runNext = threading.Event()
+		self.testIndexTracker = -1
+		self.listWidgetIndex = 0
+		self.outputDirQueue = []
+		#Fixme: QTimer to be added to update the page automatically
+		self.grades = []
+		self.modulestatus = []
+		self.autoSave = False
 
-        self.runNext = threading.Event()
-        self.testIndexTracker = -1
-        self.listWidgetIndex = 0
-        self.outputDirQueue = []
-        # Fixme: QTimer to be added to update the page automatically
-        self.grades = []
-        self.modulestatus = []
-        self.autoSave = False
+		self.mainLayout = QGridLayout()
+		self.setLayout(self.mainLayout)
 
-        self.mainLayout = QGridLayout()
-        self.setLayout(self.mainLayout)
+		self.setLoginUI()
+		#self.initializeRD53Dict()
+		self.createHeadLine()
+		self.createMain()
+		self.createApp()
+		self.occupied()
 
-        self.setLoginUI()
-        # self.initializeRD53Dict()
-        self.createHeadLine()
-        self.createMain()
-        self.createApp()
-        self.occupied()
+		self.resized.connect(self.rescaleImage)
 
-        self.resized.connect(self.rescaleImage)
+		#added from Bowen
+		print('test list should be {0}'.format(self.info[1]))
+		self.j = 0
+		#stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
+		#if len(runTestList)>1:
+		for i in range(len(runTestList)):
+			if runTestList[i] == 'ThresholdAdjustment':
+				self.j += 1
+			if self.j == 0:
+				stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j]
+			else:
+				stepWiseGlobalValue[i]['TargetThr'] = defaultTargetThr[self.j-1]
+		 
+		logger.info(stepWiseGlobalValue)
 
-        # added from Bowen
-        print("test list should be {0}".format(self.info[1]))
-        self.j = 0
-        # stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
-        # if len(runTestList)>1:
-        for i in range(len(runTestList)):
-            if runTestList[i] == "ThresholdAdjustment":
-                self.j += 1
-            if self.j == 0:
-                stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j]
-            else:
-                stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j - 1]
 
-        logger.info(stepWiseGlobalValue)
+	def setLoginUI(self):
+		X = self.master.dimension.width()/10
+		Y = self.master.dimension.height()/10
+		Width = self.master.dimension.width()*8./10
+		Height = self.master.dimension.height()*8./10
+		self.setGeometry(X, Y, Width, Height)  
+		self.setWindowTitle('Run Control Page') 
+		self.DisplayH = self.height()*3./7
+		self.DisplayW = self.width()*3./7 
+		self.show()
 
-    def setLoginUI(self):
-        X = self.master.dimension.width() / 10
-        Y = self.master.dimension.height() / 10
-        Width = self.master.dimension.width() * 8.0 / 10
-        Height = self.master.dimension.height() * 8.0 / 10
-        self.setGeometry(X, Y, Width, Height)
-        self.setWindowTitle("Run Control Page")
-        self.DisplayH = self.height() * 3.0 / 7
-        self.DisplayW = self.width() * 3.0 / 7
-        self.show()
+	def createHeadLine(self):
+		self.HeadBox = QGroupBox()
 
-    def createHeadLine(self):
-        self.HeadBox = QGroupBox()
+		self.HeadLayout = QHBoxLayout()
 
-        self.HeadLayout = QHBoxLayout()
+		HeadLabel = QLabel('<font size="4"> Module: {0}  Test: {1} </font>'.format(self.info[0], self.info[1]))
+		HeadLabel.setMaximumHeight(30)
 
-        HeadLabel = QLabel(
-            '<font size="4"> Module: {0}  Test: {1} </font>'.format(
-                self.info[0], self.info[1]
-            )
-        )
-        HeadLabel.setMaximumHeight(30)
+		statusString, colorString = checkDBConnection(self.connection)
+		StatusLabel = QLabel()
+		StatusLabel.setText(statusString)
+		StatusLabel.setStyleSheet(colorString)
 
-        statusString, colorString = checkDBConnection(self.connection)
-        StatusLabel = QLabel()
-        StatusLabel.setText(statusString)
-        StatusLabel.setStyleSheet(colorString)
+		self.HeadLayout.addWidget(HeadLabel)
+		self.HeadLayout.addStretch(1)
+		self.HeadLayout.addWidget(StatusLabel)
 
-        self.HeadLayout.addWidget(HeadLabel)
-        self.HeadLayout.addStretch(1)
-        self.HeadLayout.addWidget(StatusLabel)
+		self.HeadBox.setLayout(self.HeadLayout)
 
-        self.HeadBox.setLayout(self.HeadLayout)
+		self.mainLayout.addWidget(self.HeadBox, 0, 0, self.GroupBoxSeg[0], 1)
 
-        self.mainLayout.addWidget(self.HeadBox, 0, 0, self.GroupBoxSeg[0], 1)
+	def destroyHeadLine(self):
+		self.HeadBox.deleteLater()
+		self.mainLayout.removeWidget(self.HeadBox)
+	
+	def createMain(self):
+		self.testIndexTracker = 0
+		self.MainBodyBox = QGroupBox()
 
-    def destroyHeadLine(self):
-        self.HeadBox.deleteLater()
-        self.mainLayout.removeWidget(self.HeadBox)
+		mainbodylayout = QHBoxLayout()
 
-    def createMain(self):
-        self.testIndexTracker = 0
-        self.MainBodyBox = QGroupBox()
+		kMinimumWidth = 120
+		kMaximumWidth = 150
+		kMinimumHeight = 30
+		kMaximumHeight = 80
 
-        mainbodylayout = QHBoxLayout()
+		# Splitters
+		MainSplitter = QSplitter(Qt.Horizontal)
+		LeftColSplitter = QSplitter(Qt.Vertical)
+		RightColSplitter = QSplitter(Qt.Vertical)
 
-        kMinimumWidth = 120
-        kMaximumWidth = 150
-        kMinimumHeight = 30
-        kMaximumHeight = 80
+		#Group Box for controller
+		ControllerBox = QGroupBox()
+		ControllerSP = ControllerBox.sizePolicy()
+		ControllerSP.setVerticalStretch(self.VerticalSegCol0[0])
+		ControllerBox.setSizePolicy(ControllerSP)
 
-        # Splitters
-        MainSplitter = QSplitter(Qt.Horizontal)
-        LeftColSplitter = QSplitter(Qt.Vertical)
-        RightColSplitter = QSplitter(Qt.Vertical)
+		self.ControlLayout = QGridLayout()
 
-        # Group Box for controller
-        ControllerBox = QGroupBox()
-        ControllerSP = ControllerBox.sizePolicy()
-        ControllerSP.setVerticalStretch(self.VerticalSegCol0[0])
-        ControllerBox.setSizePolicy(ControllerSP)
-
-        self.ControlLayout = QGridLayout()
-
-        self.CustomizedButton = QPushButton("&Customize...")
-        self.CustomizedButton.clicked.connect(self.customizeTest)
-        self.ResetButton = QPushButton("&Reset")
-        self.ResetButton.clicked.connect(self.resetConfigTest)
-        self.RunButton = QPushButton("&Run")
-        self.RunButton.setDefault(True)
-        self.RunButton.clicked.connect(self.resetConfigTest)
-        self.RunButton.clicked.connect(self.initialTest)
-        # self.RunButton.clicked.connect(self.runTest)
-        # self.ContinueButton = QPushButton("&Continue")
-        # self.ContinueButton.clicked.connect(self.sendProceedSignal)
-        self.AbortButton = QPushButton("&Abort")
-        self.AbortButton.clicked.connect(self.abortTest)
-        # self.SaveButton = QPushButton("&Save")
-        # self.SaveButton.clicked.connect(self.saveTest)
-        self.saveCheckBox = QCheckBox("&auto-save to DB")
-        self.saveCheckBox.setMaximumHeight(30)
-        self.saveCheckBox.setChecked(self.testHandler.autoSave)
-        if not isActive(self.connection):
-            self.saveCheckBox.setChecked(False)
-            self.testHandler.autoSave = False
-            self.saveCheckBox.setDisabled(True)
-        self.saveCheckBox.clicked.connect(self.setAutoSave)
-        ##### previous layout ##########
-        """
-
+		self.CustomizedButton = QPushButton("&Customize...")
+		self.CustomizedButton.clicked.connect(self.customizeTest)
+		self.ResetButton = QPushButton("&Reset")
+		self.ResetButton.clicked.connect(self.resetConfigTest)
+		self.RunButton = QPushButton("&Run")
+		self.RunButton.setDefault(True)
+		self.RunButton.clicked.connect(self.resetConfigTest)
+		self.RunButton.clicked.connect(self.initialTest)
+		#self.RunButton.clicked.connect(self.runTest)
+		#self.ContinueButton = QPushButton("&Continue")
+		#self.ContinueButton.clicked.connect(self.sendProceedSignal)
+		self.AbortButton = QPushButton("&Abort")
+		self.AbortButton.clicked.connect(self.abortTest)
+		#self.SaveButton = QPushButton("&Save")
+		#self.SaveButton.clicked.connect(self.saveTest)
+		self.saveCheckBox = QCheckBox("&auto-save to DB")
+		self.saveCheckBox.setMaximumHeight(30)
+		self.saveCheckBox.setChecked(self.testHandler.autoSave)
+		if not isActive(self.connection):
+			self.saveCheckBox.setChecked(False)
+			self.testHandler.autoSave=False
+			self.saveCheckBox.setDisabled(True)
+		self.saveCheckBox.clicked.connect(self.setAutoSave)
+##### previous layout ##########
+		'''
 		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
 		self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
 		self.ControlLayout.addWidget(self.RunButton,1,0,1,1)
@@ -617,25 +576,20 @@ class QtRunWindow(QWidget):
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
 
-    def updateValidation(self, grade, passmodule):
-        try:
-            status = True
-            self.grades.append(grade)
-            self.modulestatus.append(passmodule)
-
-            self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
-            self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet(
-                "color: green"
-            )
-            for module in passmodule.values():
-                if False in module.values():
-                    status = False
-                    self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText(
-                        "Failed"
-                    )
-                    self.ResultWidget.StatusLabel[
-                        self.testIndexTracker - 1
-                    ].setStyleSheet("color: red")
+	def updateValidation(self,grade,passmodule):
+		try:
+			status = True
+			self.grades.append(grade)
+			self.modulestatus.append(passmodule)
+		
+			self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Pass")
+			self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: green")
+			for module in passmodule.values():
+				if False in module.values():
+					status = False
+					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setText("Failed")
+					self.ResultWidget.StatusLabel[self.testIndexTracker-1].setStyleSheet("color: red")
+		
 
             time.sleep(0.5)
             return status
