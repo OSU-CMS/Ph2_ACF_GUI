@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from Gui.python.Peltier import *
 import time
 import os
+from Gui.python.logging_config import logger
 
 
 class Peltier(QWidget):
@@ -318,9 +319,9 @@ class Peltier(QWidget):
 
     def tempLimit(self, temp):
         try:
-            temp >= 5
-            # self.closeEvent()   #Will change this to take effect if the code runs
-            print("Temperature too high")
+             if temp >= 35:
+                # self.closeEvent()   #Will change this to take effect if the code runs
+                print("Temperature too high")
             return
         except:
             return

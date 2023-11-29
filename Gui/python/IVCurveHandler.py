@@ -3,16 +3,18 @@ from PyQt5.QtCore import *
 
 import time
 import numpy
-
+from Gui.python.logging_config import logger
 
 class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
+    progressSignal = pyqtSignal(str, float)
 
     def __init__(self, parent, instrument_cluster=None):
         super(IVCurveThread, self).__init__()
         self.instruments = instrument_cluster
         self.parent = parent
         self.measureSignal.connect(self.parent.transitMeasurment)
+        self.progressSignal.connect(self.parent.transmitProgress) #FIXME add slot function
         self.exiting = False
         self.setTerminationEnabled(True)
 
@@ -28,6 +30,10 @@ class IVCurveThread(QThread):
         self.instruments.hv_off()
         self.instruments.hv_on(voltage=0, delay=0.5, step_size = 10, no_lock=True)
         self.instruments.hv_compliance_current(0.00001)
+
+     def getProgress(self):
+        self.percentStep = abs(100*self.stepLength/self.stopVal)
+        self.progressSignal.emit("IVCurve", self.percentStep)
 
     # Used to break out of hv_on correctly
     def breakTest(self):
@@ -55,6 +61,7 @@ class IVCurveHandler(QObject):
     measureSignal = pyqtSignal(str, object)
     stopSignal = pyqtSignal(object)
     finished = pyqtSignal(str, dict)
+    progressSignal = pyqtSignal(str, float)
 
     def __init__(self, instrument_cluster):
         super(IVCurveHandler, self).__init__()
@@ -75,6 +82,9 @@ class IVCurveHandler(QObject):
 
     def transitMeasurment(self, measure):
         self.measureSignal.emit("IVCurve", measure)
+
+    def transmitProgress(self, measurementType, percentStep):
+        self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
         self.instruments.hv_off()

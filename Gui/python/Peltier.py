@@ -9,8 +9,7 @@ from PyQt5.QtCore import *
 from PyQt5 import QtSerialPort
 from PyQt5.QtWidgets import QMessageBox
 import time
-import logging
-
+from Gui.python.logging_config import logger
 
 class PeltierSignalGenerator:
     def __init__(self):

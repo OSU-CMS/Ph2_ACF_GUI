@@ -11,9 +11,8 @@ from Gui.python.TCP_Interface import *
 from Gui.siteSettings import *
 from keysightE3633A import KeysightE3633A
 from keithley2410 import  Keithley2410
+from Gui.python.logging_config import logger
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
 
 if GPIB_DebugMode:
     visa.log_to_screen()

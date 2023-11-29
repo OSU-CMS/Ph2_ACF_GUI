@@ -1,5 +1,5 @@
 from Gui.GUIutils.settings import *
-
+from Gui.python.logging_config import logger
 
 class QtChip:
     def __init__(self):

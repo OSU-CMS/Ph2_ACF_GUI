@@ -18,8 +18,7 @@ from Gui.GUIutils.guiUtils import *
 from Gui.python.ROOTInterface import *
 from Gui.QtGUIutils.QtTCanvasWidget import *
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+from Gui.python.logging_config import logger
 
 class ResultTreeWidget(QWidget):
     def __init__(self, info, width, height, master):

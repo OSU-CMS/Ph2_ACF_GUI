@@ -2,46 +2,26 @@ from PyQt5 import QtCore
 from Gui.GUIutils.DBConnection import GetTrimClass
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import (
-    QApplication,
     QCheckBox,
     QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QFormLayout,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
 )
 
 import sys
-import os
-import math
-import copy
 
 from Gui.python.Firmware import *
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.QtGUIutils.QtFwCheckDetails import *
 
+from Gui.python.logging_config import logger
 ## for configuration
 
 
@@ -59,29 +39,20 @@ class ModuleBox(QWidget):
     def createRow(self):
         SerialLabel = QLabel("SerialNumber:")
         self.SerialEdit = QLineEdit()
-        # self.SerialEdit.setMinimumWidth(120)
-        # self.SerialEdit.setMaximumWidth(200)
-        self.SerialEdit.textChanged.connect(self.on_TypeChanged)
+
 
         FMCLabel = QLabel("FMC:")
         self.FMCEdit = QLineEdit()
-        # self.FMCEdit.setMinimumWidth(120)
-        # self.FMCEdit.setMaximumWidth(200)
 
         IDLabel = QLabel("FMC port:")
         self.IDEdit = QLineEdit()
-        # self.IDEdit.setMinimumWidth(120)
-        # self.IDEdit.setMaximumWidth(200)
 
         TypeLabel = QLabel("Type:")
         self.TypeCombo = QComboBox()
         self.TypeCombo.addItems(ModuleType.values())
-        self.TypeCombo.currentIndexChanged.connect(self.on_TypeChanged)
 
         TypeLabel.setBuddy(self.TypeCombo)
 
-        # self.ChipBoxWidget = ChipBox(self.TypeCombo.currentText())
-        # self.ChipBoxWidget = ChipBox('SCC')
         self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
         self.mainLayout.addWidget(FMCLabel, 0, 2, 1, 1)
@@ -90,7 +61,6 @@ class ModuleBox(QWidget):
         self.mainLayout.addWidget(self.IDEdit, 0, 5, 1, 1)
         self.mainLayout.addWidget(TypeLabel, 0, 6, 1, 1)
         self.mainLayout.addWidget(self.TypeCombo, 0, 7, 1, 1)
-        # self.mainLayout.addWidget(self.ChipBoxWidget,1,0,1,7)
 
     def getSerialNumber(self):
         return self.SerialEdit.text()
@@ -104,20 +74,9 @@ class ModuleBox(QWidget):
     def getType(self):
         return self.TypeCombo.currentText()
 
-    # @pyqtSlot(int, int)
-    # def setVDDD(self, pChipID, pVDDD):
-    #   self.VDDD[pChipID] = pVDDD
-
     def getVDDD(self, pChipID):
         return self.VDDD[pChipID]
 
-    # def createChipLabels(self, pModuleType):
-    # Check keys in Module dictionary
-    #   nchips = len(ModuleLaneMap[pModuleType])
-
-    @QtCore.pyqtSlot()
-    def on_TypeChanged(self):
-        self.typechanged.emit()
 
 
 class ChipBox(QWidget):
@@ -174,6 +133,7 @@ class ChipBox(QWidget):
 
     def initList(self):
         self.module = ModuleBox()
+        
 
     # Makes a list of chips for a given module
     def createList(self):
@@ -291,7 +251,9 @@ class BeBoardBox(QWidget):
 
     def initList(self):
         ModuleRow = ModuleBox()
+        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(ModuleRow)
+                
 
     def createList(self):
         self.ListBox = QGroupBox()
@@ -325,9 +287,8 @@ class BeBoardBox(QWidget):
             # module.setMaximumWidth(500)
             self.ChipWidgetDict[module] = ChipBox(self.master,module.getType(),module.getSerialNumber())
             module.setMaximumHeight(50)
-            module.typechanged.connect(self.on_TypeChanged)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
-            self.ListLayout.addWidget(self.ChipWidgetDict[module], index + 1, 0, 1, 1)
+            self.ListLayout.addWidget(self.ChipWidgetDict[module], index + 3, 0, 1, 1)
             if index > 0:
                 RemoveButton = QPushButton("remove")
                 RemoveButton.setMaximumWidth(150)
@@ -357,7 +318,9 @@ class BeBoardBox(QWidget):
         self.changed.emit()
 
     def addModule(self):
-        self.ModuleList.append(ModuleBox())
+        module = ModuleBox()
+        module.TypeCombo.currentTextChanged.connect(self.updateList)
+        self.ModuleList.append(module)
         if str(sys.version).startswith("3.8"):
             self.deleteList()
             self.createList()
@@ -393,10 +356,6 @@ class BeBoardBox(QWidget):
     #   for key in self.ChipWidgetDict.keys():
     #           VDDAdict[key] = self.ChipWidgetDict[key].getVDDA()
     #   return VDDAdict
-
-    @QtCore.pyqtSlot()
-    def on_TypeChanged(self):
-        self.changed.emit()
 
 
 class StatusBox(QWidget):
