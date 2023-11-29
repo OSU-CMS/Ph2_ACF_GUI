@@ -5,8 +5,6 @@ import time
 import numpy
 from Gui.python.logging_config import logger
 
-
-
 class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
     progressSignal = pyqtSignal(str, float)
@@ -30,8 +28,12 @@ class IVCurveThread(QThread):
 
     def turnOn(self):
         self.instruments.hv_off()
-        self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
+        self.instruments.hv_on(voltage=0, delay=0.5, step_size = 10, no_lock=True)
         self.instruments.hv_compliance_current(0.00001)
+
+     def getProgress(self):
+        self.percentStep = abs(100*self.stepLength/self.stopVal)
+        self.progressSignal.emit("IVCurve", self.percentStep)
 
     # Used to break out of hv_on correctly
     def breakTest(self):
@@ -39,34 +41,20 @@ class IVCurveThread(QThread):
             return True
         return False
 
-    def getProgress(self):
-        self.percentStep = abs(100*self.stepLength/self.stopVal)
-        self.progressSignal.emit("IVCurve", self.percentStep)
-
     def abortTest(self):
         self.exiting = True
 
     def run(self):
         try:
-            _, measurements = self.instruments.hv_on(
-                lv_channel=1,
-                voltage=self.stopVal,
-                step_size=self.stepLength,
-                delay=0.2,
-                measure=True,
-                break_monitoring=self.breakTest,
-                execute_each_step=self.getProgress,
-            )
-            measurementStr = {
-                "voltage": [value[1] for value in measurements],
-                "current": [value[2] for value in measurements],
-            }
-
+            _, measurements = self.instruments.hv_on(lv_channel = 1, voltage = self.stopVal, step_size=-2, measure=True, break_monitoring=self.breakTest)
+            measurementStr = {"voltage":[value[1] for value in measurements],"current": [value[2] for value in measurements]}
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
+
+
 
 
 class IVCurveHandler(QObject):
