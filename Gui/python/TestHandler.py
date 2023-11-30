@@ -1125,7 +1125,8 @@ class TestHandler(QObject):
                 Y=measure["current"],
                 invert=True,
             )
-
+        csvfilename = "{0}/IVCurve_Module_{1}.csv".format(self.output_dir, moduleName)
+        np.savetxt(csvfilename, (measure["voltage"],measure["current"]), delimiter=',')
         filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
         filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
         self.IVCurveResult.saveToSVG(filename)
