@@ -118,12 +118,12 @@ class ArduinoWidget(QWidget):
             )
             
 
-            print(compileResult.stdout)
-            print(uploadResult.stdout)
+            if "New upload port" in str(uploadResult.stdout):
+                print("relay box script upload completed")
 
                  
         except subprocess.CalledProcessError as err:            
-            logger.error("Unable to upload script to Arduino")
+            logger.error("Unable to TM upload script to Arduino")
             logger.error(compileResult.stderr)
             logger.error(uploadResult.stderr)
 

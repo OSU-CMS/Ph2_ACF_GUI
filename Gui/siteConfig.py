@@ -63,7 +63,7 @@ icicle_instrument_setup = { "lv":"KeysightE3633A",
                             "default_hv_compliance_current": 5e-6,
                             "default_hv_delay": 2,
                             "default_hv_step_size": 10,
-                            "relay_board": "ASRL/dev/ttyACM0::INSTR",
+                            "relay_board": None,
                             "relay_board_resource":None,
                             "multimeter": None,
                             "multimeter_resource": None}
@@ -76,7 +76,7 @@ FC7List =  {
 	}
 ##############################################
 #arduinot board for monitor testing temperature
-TemArduinoPort = "ASRL/dev/ttyACM1::INSTR"
+TemArduinoPort = "ASRL/dev/ttyACM0::INSTR"
 
 
 
