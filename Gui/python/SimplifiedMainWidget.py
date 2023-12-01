@@ -49,15 +49,17 @@ from Gui.python.ArduinoWidget import *
 from Gui.python.Peltier import *
 from Gui.python.logging_config import logger
 
+import Gui.siteSettings as site_settings
+
 
 class SimplifiedMainWidget(QWidget):
     def __init__(self, master):
         super(SimplifiedMainWidget, self).__init__()
         self.master = master
         self.connection = self.master.connection
-        self.instruments = self.master.instruments
         self.TryUsername = self.master.TryUsername
         self.DisplayedPassword = self.master.DisplayedPassword
+        self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
         redledimage = QImage("icons/led-red-on.png").scaled(
@@ -68,84 +70,10 @@ class SimplifiedMainWidget(QWidget):
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         self.greenledpixmap = QPixmap.fromImage(greenledimage)
-        # self.createLogin()
         self.setupMainUI()
-        # self.createLogin()
 
-        # self.SimpModBox = SimpleModuleBox()
-
-    # def createLogin(self):
-    #     self.LoginGroupBox = QGroupBox("")
-    #     self.LoginGroupBox.setCheckable(False)
-
-    #     TitleLabel = QLabel('<font size="12"> Phase2 Pixel Module Test </font>')
-    #     TitleLabel.setFont(QFont("Courier"))
-    #     TitleLabel.setMaximumHeight(30)
-
-    #     UsernameLabel = QLabel("Username:")
-    #     self.UsernameEdit = QLineEdit("")
-    #     self.UsernameEdit.setEchoMode(QLineEdit.Normal)
-    #     self.UsernameEdit.setPlaceholderText(self.TryUsername)
-    #     self.UsernameEdit.setMinimumWidth(220)
-    #     self.UsernameEdit.setMaximumWidth(260)
-    #     self.UsernameEdit.setMaximumHeight(30)
-    #     self.UsernameEdit.setReadOnly(True)
-
-    #     PasswordLabel = QLabel("Password:")
-    #     self.PasswordEdit = QLineEdit("")
-    #     self.PasswordEdit.setEchoMode(QLineEdit.Password)
-    #     self.PasswordEdit.setPlaceholderText(self.DisplayedPassword)
-    #     self.PasswordEdit.setMinimumWidth(220)
-    #     self.PasswordEdit.setMaximumWidth(260)
-    #     self.PasswordEdit.setMaximumHeight(30)
-    #     self.PasswordEdit.setReadOnly(True)
-
-    #     layout = QGridLayout()
-    #     layout.setSpacing(20)
-    #     layout.addWidget(TitleLabel, 0, 1, 1, 3, Qt.AlignCenter)
-    #     layout.addWidget(UsernameLabel, 1, 1, 1, 1, Qt.AlignCenter)
-    #     layout.addWidget(self.UsernameEdit, 1, 2, 1, 2)
-    #     layout.addWidget(PasswordLabel, 2, 1, 1, 1, Qt.AlignCenter)
-    #     layout.addWidget(self.PasswordEdit, 2, 2, 1, 2)
-
-    #     # layout.setRowMinimumHeight(6, 50)
-
-    #     layout.setColumnStretch(0, 1)
-    #     layout.setColumnStretch(1, 1)
-    #     layout.setColumnStretch(2, 2)
-    #     layout.setColumnStretch(3, 1)
-    #     self.LoginGroupBox.setLayout(layout)
-
-    #     self.LogoGroupBox = QGroupBox("")
-    #     self.LogoGroupBox.setCheckable(False)
-    #     self.LogoGroupBox.setMaximumHeight(100)
-
-    #     self.LogoLayout = QHBoxLayout()
-    #     OSULogoLabel = QLabel()
-    #     OSUimage = QImage("icons/osuicon.jpg").scaled(
-    #         QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
-    #     )
-    #     OSUpixmap = QPixmap.fromImage(OSUimage)
-    #     OSULogoLabel.setPixmap(OSUpixmap)
-    #     CMSLogoLabel = QLabel()
-    #     CMSimage = QImage("icons/cmsicon.png").scaled(
-    #         QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
-    #     )
-    #     CMSpixmap = QPixmap.fromImage(CMSimage)
-    #     CMSLogoLabel.setPixmap(CMSpixmap)
-
-    #     self.LogoLayout.addWidget(OSULogoLabel)
-    #     self.LogoLayout.addStretch(1)
-    #     self.LogoLayout.addWidget(CMSLogoLabel)
-
-    #     self.LogoGroupBox.setLayout(self.LogoLayout)
-
-    #     self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
 
     def setupMainUI(self):
-        ##################################
-        ##  Testing some things out #######
-        ##################################
         self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.TryUsername))
 
         statusString, colorString = checkDBConnection(self.connection)
@@ -157,8 +85,6 @@ class SimplifiedMainWidget(QWidget):
         else:
             self.DBStatusValue.setPixmap(self.greenledpixmap)
 
-        # self.DBStatusValue.setText(statusString)
-        # self.DBStatusValue.setStyleSheet(colorString)
 
         self.RefreshButton = QPushButton("&Refresh")
         self.RefreshButton.clicked.connect(self.checkDevices)
@@ -178,8 +104,6 @@ class SimplifiedMainWidget(QWidget):
         self.CableEdit = QLineEdit()
 
         # Selecting default HV
-        self.HVpowersupply.setPowerModel(defaultHVModel[0])
-        self.HVpowersupply.setInstrument(defaultUSBPortHV[0])
         statusString = self.HVpowersupply.getInfo()
         self.HVPowerStatusLabel.setText("HV status")
 
@@ -420,31 +344,22 @@ class SimplifiedMainWidget(QWidget):
             self.DBStatusValue.setPixmap(self.redledpixmap)
         else:
             self.DBStatusValue.setPixmap(self.greenledpixmap)
-        # self.DBStatusValue.setText(statusString)
-        # self.DBStatusValue.setStyleSheet(colorString)
-
-        # Selecting default HV
         self.HVpowersupply.setPowerModel(defaultHVModel[0])
         self.HVpowersupply.setInstrument(defaultUSBPortHV[0])
         statusString = self.HVpowersupply.getInfo()
         self.HVPowerStatusLabel.setText("HV status")
         if statusString != "No valid device" and statusString != None:
-            # self.HVPowerStatusValue.setStyleSheet("color:green")
             self.HVPowerStatusValue.setPixmap(self.greenledpixmap)
         else:
-            # self.HVPowerStatusValue.setStyleSheet("color:red")
             self.HVPowerStatusValue.setPixmap(self.redledpixmap)
         time.sleep(0.5)
-        # Selecting default LV
         self.LVpowersupply.setPowerModel(defaultLVModel[0])
         self.LVpowersupply.setInstrument(defaultUSBPortLV[0])
         statusString = self.LVpowersupply.getInfo()
         self.LVPowerStatusLabel.setText("LV status")
         if statusString != "No valid device" and statusString != None:
-            # self.LVPowerStatusValue.setStyleSheet("color:green")
             self.LVPowerStatusValue.setPixmap(self.greenledpixmap)
         else:
-            # self.LVPowerStatusValue.setStyleSheet("color:red")
             self.LVPowerStatusValue.setPixmap(self.redledpixmap)
 
         firmwareName, fwAddress = defaultFC7, defaultFC7IP
@@ -466,35 +381,18 @@ class SimplifiedMainWidget(QWidget):
         else:
             self.FC7StatusValue.setPixmap(self.redledpixmap)
 
-        # self.FC7StatusValue.setText(FwStatusComment)
-        # self.FC7StatusValue.setStyleSheet(FwStatusColor)
         self.FwModule = self.master.FwDict[firmwareName]
 
-        # self.StatusList.append([self.FC7NameLabel,self.FC7StatusValue])
 
         # Arduino stuff
-        # self.ArduinoGroup = ArduinoWidget()
         self.ArduinoGroup.stop.connect(self.master.GlobalStop)
         self.ArduinoGroup.createArduino()
         self.ArduinoGroup.enable()
         self.ArduinoGroup.setBaudRate(defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
 
-        # self.ArduinoMonitorLabel = QLabel()
-        # self.ArduinoMonitorValue = QLabel()
         if self.ArduinoGroup.ArduinoGoodStatus == True:
             self.ArduinoMonitorValue.setPixmap(self.greenledpixmap)
         else:
             self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
 
-        # self.StatusList.append([self.ArduinoMonitorLabel,self.ArduinoMonitorValue])
-
-        # for index, items in enumerate(self.StatusList):
-        # 	self.StatusLayout.addWidget(items[0], index, 1,  1, 1)
-        # 	self.StatusLayout.addWidget(items[1], index, 2,  1, 2)
-
-        # self.StatusLayout.addWidget(self.RefreshButton,len(self.StatusList) ,1, 1, 1)
-
-        ######################################
-        ## Testin some things out (end) #######
-        ######################################

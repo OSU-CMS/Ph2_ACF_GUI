@@ -854,7 +854,7 @@ class QtApplication(QWidget):
     def connect_devices(self):
         """
         Use defaults set in siteConfig.py to setup instrument cluster.
-        If default_checkbox is not checked change this variable to reflect changes made it GUI
+        If default_checkbox is not checked change this variable to reflect changes made in GUI
         """
         self.device_settings = site_settings.icicle_instrument_setup
         if not self.default_checkbox.isChecked():
