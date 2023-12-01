@@ -55,8 +55,7 @@ class SimplifiedMainWidget(QWidget):
         super(SimplifiedMainWidget, self).__init__()
         self.master = master
         self.connection = self.master.connection
-        self.LVpowersupply = self.master.LVpowersupply
-        self.HVpowersupply = self.master.HVpowersupply
+        self.instruments = self.master.instruments
         self.TryUsername = self.master.TryUsername
         self.DisplayedPassword = self.master.DisplayedPassword
         self.mainLayout = QGridLayout()
@@ -75,73 +74,73 @@ class SimplifiedMainWidget(QWidget):
 
         # self.SimpModBox = SimpleModuleBox()
 
-    def createLogin(self):
-        self.LoginGroupBox = QGroupBox("")
-        self.LoginGroupBox.setCheckable(False)
+    # def createLogin(self):
+    #     self.LoginGroupBox = QGroupBox("")
+    #     self.LoginGroupBox.setCheckable(False)
 
-        TitleLabel = QLabel('<font size="12"> Phase2 Pixel Module Test </font>')
-        TitleLabel.setFont(QFont("Courier"))
-        TitleLabel.setMaximumHeight(30)
+    #     TitleLabel = QLabel('<font size="12"> Phase2 Pixel Module Test </font>')
+    #     TitleLabel.setFont(QFont("Courier"))
+    #     TitleLabel.setMaximumHeight(30)
 
-        UsernameLabel = QLabel("Username:")
-        self.UsernameEdit = QLineEdit("")
-        self.UsernameEdit.setEchoMode(QLineEdit.Normal)
-        self.UsernameEdit.setPlaceholderText(self.TryUsername)
-        self.UsernameEdit.setMinimumWidth(220)
-        self.UsernameEdit.setMaximumWidth(260)
-        self.UsernameEdit.setMaximumHeight(30)
-        self.UsernameEdit.setReadOnly(True)
+    #     UsernameLabel = QLabel("Username:")
+    #     self.UsernameEdit = QLineEdit("")
+    #     self.UsernameEdit.setEchoMode(QLineEdit.Normal)
+    #     self.UsernameEdit.setPlaceholderText(self.TryUsername)
+    #     self.UsernameEdit.setMinimumWidth(220)
+    #     self.UsernameEdit.setMaximumWidth(260)
+    #     self.UsernameEdit.setMaximumHeight(30)
+    #     self.UsernameEdit.setReadOnly(True)
 
-        PasswordLabel = QLabel("Password:")
-        self.PasswordEdit = QLineEdit("")
-        self.PasswordEdit.setEchoMode(QLineEdit.Password)
-        self.PasswordEdit.setPlaceholderText(self.DisplayedPassword)
-        self.PasswordEdit.setMinimumWidth(220)
-        self.PasswordEdit.setMaximumWidth(260)
-        self.PasswordEdit.setMaximumHeight(30)
-        self.PasswordEdit.setReadOnly(True)
+    #     PasswordLabel = QLabel("Password:")
+    #     self.PasswordEdit = QLineEdit("")
+    #     self.PasswordEdit.setEchoMode(QLineEdit.Password)
+    #     self.PasswordEdit.setPlaceholderText(self.DisplayedPassword)
+    #     self.PasswordEdit.setMinimumWidth(220)
+    #     self.PasswordEdit.setMaximumWidth(260)
+    #     self.PasswordEdit.setMaximumHeight(30)
+    #     self.PasswordEdit.setReadOnly(True)
 
-        layout = QGridLayout()
-        layout.setSpacing(20)
-        layout.addWidget(TitleLabel, 0, 1, 1, 3, Qt.AlignCenter)
-        layout.addWidget(UsernameLabel, 1, 1, 1, 1, Qt.AlignCenter)
-        layout.addWidget(self.UsernameEdit, 1, 2, 1, 2)
-        layout.addWidget(PasswordLabel, 2, 1, 1, 1, Qt.AlignCenter)
-        layout.addWidget(self.PasswordEdit, 2, 2, 1, 2)
+    #     layout = QGridLayout()
+    #     layout.setSpacing(20)
+    #     layout.addWidget(TitleLabel, 0, 1, 1, 3, Qt.AlignCenter)
+    #     layout.addWidget(UsernameLabel, 1, 1, 1, 1, Qt.AlignCenter)
+    #     layout.addWidget(self.UsernameEdit, 1, 2, 1, 2)
+    #     layout.addWidget(PasswordLabel, 2, 1, 1, 1, Qt.AlignCenter)
+    #     layout.addWidget(self.PasswordEdit, 2, 2, 1, 2)
 
-        # layout.setRowMinimumHeight(6, 50)
+    #     # layout.setRowMinimumHeight(6, 50)
 
-        layout.setColumnStretch(0, 1)
-        layout.setColumnStretch(1, 1)
-        layout.setColumnStretch(2, 2)
-        layout.setColumnStretch(3, 1)
-        self.LoginGroupBox.setLayout(layout)
+    #     layout.setColumnStretch(0, 1)
+    #     layout.setColumnStretch(1, 1)
+    #     layout.setColumnStretch(2, 2)
+    #     layout.setColumnStretch(3, 1)
+    #     self.LoginGroupBox.setLayout(layout)
 
-        self.LogoGroupBox = QGroupBox("")
-        self.LogoGroupBox.setCheckable(False)
-        self.LogoGroupBox.setMaximumHeight(100)
+    #     self.LogoGroupBox = QGroupBox("")
+    #     self.LogoGroupBox.setCheckable(False)
+    #     self.LogoGroupBox.setMaximumHeight(100)
 
-        self.LogoLayout = QHBoxLayout()
-        OSULogoLabel = QLabel()
-        OSUimage = QImage("icons/osuicon.jpg").scaled(
-            QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
-        )
-        OSUpixmap = QPixmap.fromImage(OSUimage)
-        OSULogoLabel.setPixmap(OSUpixmap)
-        CMSLogoLabel = QLabel()
-        CMSimage = QImage("icons/cmsicon.png").scaled(
-            QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
-        )
-        CMSpixmap = QPixmap.fromImage(CMSimage)
-        CMSLogoLabel.setPixmap(CMSpixmap)
+    #     self.LogoLayout = QHBoxLayout()
+    #     OSULogoLabel = QLabel()
+    #     OSUimage = QImage("icons/osuicon.jpg").scaled(
+    #         QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
+    #     )
+    #     OSUpixmap = QPixmap.fromImage(OSUimage)
+    #     OSULogoLabel.setPixmap(OSUpixmap)
+    #     CMSLogoLabel = QLabel()
+    #     CMSimage = QImage("icons/cmsicon.png").scaled(
+    #         QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
+    #     )
+    #     CMSpixmap = QPixmap.fromImage(CMSimage)
+    #     CMSLogoLabel.setPixmap(CMSpixmap)
 
-        self.LogoLayout.addWidget(OSULogoLabel)
-        self.LogoLayout.addStretch(1)
-        self.LogoLayout.addWidget(CMSLogoLabel)
+    #     self.LogoLayout.addWidget(OSULogoLabel)
+    #     self.LogoLayout.addStretch(1)
+    #     self.LogoLayout.addWidget(CMSLogoLabel)
 
-        self.LogoGroupBox.setLayout(self.LogoLayout)
+    #     self.LogoGroupBox.setLayout(self.LogoLayout)
 
-        self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
+    #     self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
 
     def setupMainUI(self):
         ##################################
