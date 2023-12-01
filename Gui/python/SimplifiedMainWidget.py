@@ -68,7 +68,7 @@ class SimplifiedMainWidget(QWidget):
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         self.greenledpixmap = QPixmap.fromImage(greenledimage)
-        self.createLogin()
+        # self.createLogin()
         self.setupMainUI()
         # self.createLogin()
 
