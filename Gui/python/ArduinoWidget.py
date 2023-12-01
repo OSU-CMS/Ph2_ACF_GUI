@@ -73,8 +73,9 @@ class ArduinoWidget(QWidget):
         self.UseArduino.clicked.connect(self.frozeArduinoPanel)
         self.ReleaseArduino = QPushButton("&Release")
         self.ReleaseArduino.clicked.connect(self.releaseArduinoPanel)
+        self.TempScriptUpload = QPushButton("&Upload script")
+        self.TempScriptUpload.clicked.connect(self.TemScriptUploder)
         self.ReleaseArduino.setDisabled(True)
-
         self.ArduinoBox.addWidget(self.ArduinoStatusLabel)
         self.ArduinoBox.addWidget(self.ArduinoCombo)
         self.ArduinoBox.addWidget(self.ArduinoBaudRate)
@@ -82,6 +83,7 @@ class ArduinoWidget(QWidget):
         self.ArduinoBox.addStretch(1)
         self.ArduinoBox.addWidget(self.UseArduino)
         self.ArduinoBox.addWidget(self.ReleaseArduino)
+        self.ArduinoBox.addWidget(self.TempScriptUpload)
         self.ArduinoGroup.setLayout(self.ArduinoBox)
         self.mainLayout.addWidget(self.ArduinoGroup, 0, 0)
 
@@ -93,52 +95,43 @@ class ArduinoWidget(QWidget):
         self.ResourcesList = []
         self.ResourcesList.append(site_settings.TemArduinoPort)
         return self.ResourcesList
- 
-    def frozeArduinoPanel(self):
-        # Block for ArduinoSupply operation
+    
+
+    def TemScriptUploder(self):
         
-        #if you want to enable the temperature monitor IDE code upload, just uncomment the following script and change the folder name for INO script.
-        """
         try:
-            subprocess.run(
-            #"$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
-            "/home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/bin/arduino-cli core install arduino:avr",
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
-            )
 
 
             compileResult=subprocess.run(
-            #"$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
-            "/home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/bin/arduino-cli compile --fqbn arduino:avr:uno /home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/FirmwareImages/relay_box_firmware/",
+            "$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
             )
-            #deviceName = self.ArduinoCombo.currentText()
-            deviceName = 'ASRL/dev/ttyACM0::INSTR'
+            deviceName = self.ArduinoCombo.currentText()
             portName = deviceName.lstrip("ASRL").rstrip("::INSTR")
             uploadResult=subprocess.run(
-            #f"/home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/bin/arduino-cli upload -p {portName} --fqbn arduino:avr:uno /home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/FirmwareImages/relay_box_firmware/",
-            "/home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/bin/arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno /home/RD53A/workspace/collin/getTrimValuesDB/testclone/Ph2_ACF_GUI/FirmwareImages/relay_box_firmware/",
+            f"$GUI_dir/bin/arduino-cli upload -p {portName} --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
             shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
             )
-            #print(compileResult.stdout)
-            #print(uploadResult.stdout)
-            #print(compileResult.stderr)
-            #print(uploadResult.stderr)
-                 
-        except subprocess.CalledProcessError as err:
-            print("Unable to upload script to Arduino")
             
+
+            print(compileResult.stdout)
+            print(uploadResult.stdout)
+
+                 
+        except subprocess.CalledProcessError as err:            
             logger.error("Unable to upload script to Arduino")
             logger.error(compileResult.stderr)
             logger.error(uploadResult.stderr)
-            #self.ArduinoGoodStatus = False
-        """
+
+        
+    def frozeArduinoPanel(self):
+        # Block for ArduinoSupply operation
+        
+        
         
         try:
                         
