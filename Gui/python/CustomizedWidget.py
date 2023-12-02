@@ -85,7 +85,6 @@ class ModuleBox(QWidget):
             
 
     def getSerialNumber(self):
-        print("debug :" + str(self.SerialEdit.text()))
         return self.SerialEdit.text()
 
     def getFMCID(self):
@@ -113,9 +112,7 @@ class ChipBox(QWidget):
         self.chipType = pChipType
         self.mainLayout = QHBoxLayout()
         self.ChipList = [] #chip id list for a single module
-        #       self.initList()
-        #if serialNumber == None:
-        #    self.serialNumber = ("") #default value used to created the intial box
+        #self.initList()
         self.createList()
         self.VDDAMap = {}
         self.VDDDMap = {}
@@ -127,33 +124,22 @@ class ChipBox(QWidget):
         #adding a get connection method to get the real time changes?
         GetTRimFromDB.connection=self.connection
 
-        #debug
-        if GetTRimFromDB.connection == "Offline" or GetTRimFromDB.connection == []:
-            print("serial numer : " + str(self.serialNumber))
-            print(GetTRimFromDB.connection)
 
-            #
+        if GetTRimFromDB.connection == "Offline" or GetTRimFromDB.connection == []:
             for chipid in self.ChipList:
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-        #debug
+
 
         
         else:
             if self.serialNumber != []:
                 #need to find way to haddle serial number iussue, it is not [] and None if the chip box is empty, so how we handdle it?
                 
-                sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)
-
-                print("OL serial numer : " + str(self.serialNumber))#debug
-                #sorted_VDDAlistTest,sorted_VDDDlist=GetTRimFromDB.GetTrim("RH0006") #working
-                #print("check getTrim VDDD: " +  str(sorted_VDDDlist))
-                #print("check getTrim VDDA: " +  str(sorted_VDDAlistTest))
-                
+                sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)                
 
                 #case for can't find anything on database
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
-                    #print("we can't find the trim values for the module with serial number " + str(self.serialNumber))
-                    #print(GetTRimFromDB.connection)
+
                     for chipid in self.ChipList:
                         self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
                 
@@ -164,7 +150,6 @@ class ChipBox(QWidget):
                     for chipid in self.ChipList:
                         VDDA = str(sorted_VDDAlist[i][1])
                         VDDD = str(sorted_VDDDlist[i][1])
-                        print("VDDA:"+str(VDDA))
                         self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
                         i += 1
             
@@ -173,6 +158,7 @@ class ChipBox(QWidget):
     
         self.setLayout(self.mainLayout)
 
+    
     def initList(self):
         self.module = ModuleBox(self.connection)
 
