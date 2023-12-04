@@ -15,8 +15,8 @@ ENV Ph2_ACF_VERSION=${GIT_REF}
 ENV GUI_dir=/home/cmsTkUser/Ph2_ACF_GUI
 ENV PH2ACF_BASE_DIR=${GUI_dir}/Ph2_ACF
 ENV DATA_dir=${GUI_dir}/data/TestResults
-ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}
-ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}/icicle/icicle
+ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}:${GUI_dir}/icicle/icicle:${GUI_dir}/InnerTrackerTests
+
 
 #Setting the default user in the container to be root
 USER root
