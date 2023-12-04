@@ -89,7 +89,7 @@ class PeltierSignalGenerator:
 
     # Used for all other commands that are not setTemp
     # Currently you need to format dd yourself which is the input value you want to send
-    def createCommand(self, command, dd):
+    def createCommand(self, command:str , dd:list[str]):
         stx = ["*"]
         aa = ["0", "0"]
         cc = self.commandDict[command]
