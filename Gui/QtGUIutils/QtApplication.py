@@ -81,7 +81,7 @@ class QtApplication(QWidget):
             "multimeter_resource": None,
             "multimeter": None,
         }
-        logger.debug("Initialized variables for QtApplication")
+        logger.warning("Initialized variables for QtApplication")
         print("Initialized variables for QtApplication")
 
         # self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
