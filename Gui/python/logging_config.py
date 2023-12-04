@@ -15,7 +15,7 @@ console_handler.setLevel(
 formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 console_handler.setFormatter(formatter)
 
-file_handler = logging.FileHandler('../Ph2_ACF_GUI.log')
+file_handler = logging.FileHandler('Ph2_ACF_GUI.log')
 file_handler.setLevel(logging.DEBUG)
 file_handler.setFormatter(formatter)
 # Add the console handler to the logger
