@@ -365,11 +365,12 @@ class QtApplication(QWidget):
                 self.connection = "Offline"
                 self.destroyLogin()
                 if self.expertMode:
+                    logger.debug("Entering Expert GUI")
                     self.createMain()
                     self.checkFirmware()
                 else:
+                    logger.debug("Entering Simplified GUI")
                     self.createSimplifiedMain()
-                # self.checkFirmware()
 
         except Exception as err:
             print("Failed to connect the database: {}".format(repr(err)))
