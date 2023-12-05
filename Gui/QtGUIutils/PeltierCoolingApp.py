@@ -207,7 +207,7 @@ class Peltier(QWidget):
 
     def setTemp(self) -> None:
         try:
-            message = self.convertSetTempValueToList(self.setTempInput.value())
+            message = self.pelt.convertSetTempValueToList(self.setTempInput.value())
 
             self.pelt.sendCommand(
                 self.pelt.createCommand("Fixed Desired Control Setting Write", message)
@@ -220,36 +220,13 @@ class Peltier(QWidget):
                     ["0", "0", "0", "0", "0", "0", "0", "0"],
                 )
             )
-            message = self.convertSetTempListToValue(message)
+            message = self.pelt.convertSetTempListToValue(message)
 
             self.setTempSignal.emit(message)
 
         except Exception as e:
             print("Could not set Temperature: ", e)
             self.currentSetTemp.setText("N/a")
-
-    def convertSetTempListToValue(self, temp: list) -> float:
-        temp = temp[1:9]
-        temp = "".join(temp)
-        temp = int(temp, 16) / 100
-        if temp > 1000:
-            temp = -1 * PeltierSignalGenerator.twosCompliment(temp)
-        return temp
-
-    @staticmethod
-    def convertSetTempValueToList(temp: float) -> list:
-        value = ["0", "0", "0", "0", "0", "0", "0", "0"]
-        temp *= 100
-        temp = int(temp)
-        if temp < 0:
-            temp = PeltierSignalGenerator.twosCompliment(temp)
-        temp = PeltierSignalGenerator.convertToHex(temp)
-        temp = PeltierSignalGenerator.stringToList(temp)
-        cutoff = temp.index("x")
-        temp = temp[cutoff + 1 :]
-        for i, _ in enumerate(temp):
-            value[-(i + 1)] = temp[-(i + 1)]
-        return value
 
     # Shutdown the peltier if it is on and stop threads that are running
     # Currently not implemented

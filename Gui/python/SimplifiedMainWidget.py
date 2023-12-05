@@ -145,8 +145,42 @@ class SimplifiedMainWidget(QWidget):
         if default_settings.usePeltier:
             try:
                 logger.debug("Setting up Peltier")
-                self.Peltier = PeltierController(default_settings.defaultPeltierPort, default_settings.defaultPeltierBaud)
-                self.Peltier.setTemperature(default_settings.defaultPeltierSetTemp)
+                self.Peltier = PeltierSignalGenerator()
+                # These should emit signals
+                self.Peltier.sendCommand(
+                    self.Peltier.createCommand(
+                        "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
+                    )
+                )  # Allows set point to be set by computer software
+                self.Peltier.sendCommand(
+                    self.Peltier.createCommand(
+                        "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
+                    )
+                )  # Temperature should be PID controlled
+                self.Peltier.sendCommand(
+                    self.Peltier.createCommand(
+                        "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
+                    )
+                )  # Turn off power to Peltierier in case it is on at the start
+                self.Peltier.sendCommand(
+                    self.Peltier.createCommand(
+                        "Proportional Bandwidth Write",
+                        ["0", "0", "0", "0", "0", "0", "c", "8"],
+                    )
+                )  # Set proportional bandwidth
+                message, _ = self.Peltier.sendCommand(
+                    self.Peltier.createCommand(
+                        "Control Output Polarity Read",
+                        ["0", "0", "0", "0", "0", "0", "0", "0"],
+                    )
+                )
+
+                message = self.Peltier.convertSetTempValueToList(site_settings.defaultPeltierSetTemp)
+
+                self.Peltier.sendCommand(
+                    self.Peltier.createCommand("Fixed Desired Control Setting Write", message)
+                )
+
                 time.sleep(0.5)
             except Exception as e:
                 print("Error while attempting to set Peltier", e)

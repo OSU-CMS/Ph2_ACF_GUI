@@ -120,3 +120,33 @@ class PeltierSignalGenerator:
         else:
             time.sleep(0.1)
             return buff, connection
+
+    def convertSetTempValueToList(self, temp: float) -> list:
+        """
+        Convienience function to convert floats to set temperature signals for the Peltier that can be used
+        in the message of the createCommand function
+        """
+        value = ["0", "0", "0", "0", "0", "0", "0", "0"]
+        temp *= 100
+        temp = int(temp)
+        if temp < 0:
+            temp = self.twosCompliment(temp)
+        temp = self.convertToHex(temp)
+        temp = self.stringToList(temp)
+        cutoff = temp.index("x")
+        temp = temp[cutoff + 1 :]
+        for i, _ in enumerate(temp):
+            value[-(i + 1)] = temp[-(i + 1)]
+        return value
+
+    def convertSetTempListToValue(self, temp: list) -> float:
+        """
+        Convienience function to convert return value from peltier to a decimal temperature. The input to this
+        function should be the output of sendCommand() after sending a command to read some temperature. 
+        """
+        temp = temp[1:9]
+        temp = "".join(temp)
+        temp = int(temp, 16) / 100
+        if temp > 1000:
+            temp = -1 * self.twosCompliment(temp)
+        return temp
