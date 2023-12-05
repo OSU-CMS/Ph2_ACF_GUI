@@ -50,6 +50,7 @@ from Gui.python.Peltier import *
 from Gui.python.logging_config import logger
 
 import Gui.siteSettings as site_settings
+from icicle.icicle.instrument_cluster import InstrumentCluster
 
 
 class SimplifiedMainWidget(QWidget):
@@ -60,6 +61,7 @@ class SimplifiedMainWidget(QWidget):
         self.TryUsername = self.master.TryUsername
         self.DisplayedPassword = self.master.DisplayedPassword
         self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
+        self.instrument_info = {} 
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
         redledimage = QImage("icons/led-red-on.png").scaled(
@@ -112,11 +114,15 @@ class SimplifiedMainWidget(QWidget):
         self.BeBoard.setBoardName(default_settings.defaultFC7)
         self.BeBoard.setIPAddress(FirmwareList[default_settings.defaultFC7])
         self.BeBoard.setFPGAConfig(FPGAConfigList[default_settings.defaultFC7])
+        logger.debug(f"Default FC7: {default_settings.defaultFC7}")
+        
 
         self.master.FwDict[default_settings.defaultFC7] = self.BeBoard
         self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
 
         LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), default_settings.defaultFC7)
+        logger.debug(f"FC7 log file saved to {LogFileName}")
+
         try:
             logFile = open(LogFileName, "w")
             logFile.close()
@@ -125,13 +131,13 @@ class SimplifiedMainWidget(QWidget):
                 None, "Error", "Can not create log files: {}".format(LogFileName)
             )
 
-        self.FwModule = self.master.FwDict[firmwareName]
+        self.FwModule = self.master.FwDict[default_settings.defaultFC7]
 
 
         self.ArduinoGroup = ArduinoWidget()
         self.ArduinoGroup.stop.connect(self.master.GlobalStop)
         self.ArduinoGroup.enable()
-        self.ArduinoGroup.setBaudRate(defaultSensorBaudRate)
+        self.ArduinoGroup.setBaudRate(default_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
 
         self.ArduinoMonitorLabel = QLabel()
@@ -217,6 +223,8 @@ class SimplifiedMainWidget(QWidget):
         self.mainLayout.addWidget(self.AppOption)
         self.mainLayout.addWidget(self.LogoGroupBox)
 
+        logger.debug("Simplied GUI UI Loaded")
+        
     def runNewTest(self):
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
@@ -272,7 +280,7 @@ class SimplifiedMainWidget(QWidget):
         self.StopButton.setDisabled(True)
         self.RunButton.setDisabled(False)
 
-    def getDeviceStatus(self) -> None:
+    def setDeviceStatus(self) -> None:
         """
         Set status for all connected devices
         The qualifications for a passing status are
@@ -299,6 +307,7 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_status["FC7"] = "Connected" in FwStatusComment 
         self.instrument_status["Database"]= not "offline" in statusString 
         self.instrument_status["Peltier"] = peltier_power_status and peltier_temp_status 
+
         
     def checkDevices(self):
         statusString, colorString = checkDBConnection(self.connection)
