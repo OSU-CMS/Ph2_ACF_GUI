@@ -286,7 +286,7 @@ class SimplifiedMainWidget(QWidget):
         Database -> Check if you can connect to database as defined in checkDBConnection()
         Peltier -> check if the Peltier is at the right temperature and is reachable 
         """ 
-        self.instrument_status = self.instruments.status()
+        self.instrument_status = self.instruments.status(1)
 
         FwStatusComment, _, _ = self.master.getFwComment(
             default_settings.defaultFC7, default_settings.defaultFC7IP
