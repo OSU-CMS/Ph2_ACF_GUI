@@ -325,17 +325,20 @@ class SimplifiedMainWidget(QWidget):
         """ 
         self.instrument_status = self.instruments.status(1)
 
+        logger.debug("Getting FC7 Comment")
         FwStatusComment, _, _ = self.master.getFwComment(
             default_settings.defaultFC7, default_settings.defaultFC7IP
         )
-
+        logger.debug("Checking DB Connection")
         statusString, _ = checkDBConnection(self.connection)
 
+        logger.debug("Obtaining peltier status")
         peltier_power_status = 1 if int(self.Peltier.sendCommand(self.Peltier.createCommand("Power On/Off Read", ["0", "0"]))[-1]) == 1 else 0
         peltier_temp_message = self.Peltier.sendCommand(self.Peltier.createCommand("Input1",  ["0", "0", "0", "0", "0", "0", "0", "0"]))
         peltier_temp = int("".join(peltier_temp_message[1:9]), 16)/100
         peltier_temp_status = 1 if abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 10 else 0
 
+        logger.debug("Setting up instrument_status")
         self.instrument_status["Arduino"] = self.ArduinoGroup.ArduinoGoodStatus 
         self.instrument_status["FC7"] = "Connected" in FwStatusComment 
         self.instrument_status["Database"]= not "offline" in statusString 
