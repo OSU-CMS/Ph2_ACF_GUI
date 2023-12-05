@@ -144,6 +144,7 @@ class SimplifiedMainWidget(QWidget):
 
         if default_settings.usePeltier:
             try:
+                logger.debug("Setting up Peltier")
                 self.Peltier = PeltierController(default_settings.defaultPeltierPort, default_settings.defaultPeltierBaud)
                 self.Peltier.setTemperature(default_settings.defaultPeltierSetTemp)
                 time.sleep(0.5)
@@ -152,9 +153,10 @@ class SimplifiedMainWidget(QWidget):
 
         self.instrument_info["Peltier"] = {"Label" : QLabel(), "Value" : QLabel()}
         self.instrument_info["Peltier"]["Label"].setText("Chip Temperature")
-
+        logger.debug("About to set device status")
         self.setDeviceStatus() 
 
+        logger.debug("Set device status")
         self.StatusLayout = QGridLayout()
         self.StatusLayout.addWidget(self.instrument_info["DB"]["Label"], 0, 1, 1, 1)
         self.StatusLayout.addWidget(self.instrument_info["DB"]["Value"], 0, 2, 1, 1)
