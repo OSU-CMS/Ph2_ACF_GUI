@@ -114,7 +114,9 @@ class SimplifiedMainWidget(QWidget):
         
 
         self.master.FwDict[default_settings.defaultFC7] = self.BeBoard
+        logger.debug("Initialized BeBoard in SimplifiedGUI")
         self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
+        logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
         LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), default_settings.defaultFC7)
         logger.debug(f"FC7 log file saved to {LogFileName}")
