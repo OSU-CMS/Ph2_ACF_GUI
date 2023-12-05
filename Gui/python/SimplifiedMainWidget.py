@@ -208,8 +208,10 @@ class SimplifiedMainWidget(QWidget):
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
         self.StatusLayout.addWidget(self.RefreshButton, 3, 5, 1, 2)
+        logger.debug("Setup StatusLayout")
 
         ModuleEntryLayout.addWidget(self.BeBoardWidget)
+        logger.debug("Setup ModuleEntryLayout")
 
         self.AppOption = QGroupBox()
         self.StartLayout = QHBoxLayout()
@@ -221,6 +223,7 @@ class SimplifiedMainWidget(QWidget):
         self.TestGroupLayout.addWidget(self.ProductionButton)
         self.TestGroupLayout.addWidget(self.QuickButton)
         self.TestGroup.setLayout(self.TestGroupLayout)
+        logger.debug("Added Boxes/Layouts to Simplified GUI")
 
         self.ExitButton = QPushButton("&Exit")
         self.ExitButton.clicked.connect(self.master.close)
@@ -256,16 +259,14 @@ class SimplifiedMainWidget(QWidget):
         CMSimage = QImage("../icons/cmsicon.png").scaled(
             QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
+        logger.debug("Setup Pixmap")
         CMSpixmap = QPixmap.fromImage(CMSimage)
         CMSLogoLabel.setPixmap(CMSpixmap)
         self.LogoLayout.addWidget(OSULogoLabel)
         self.LogoLayout.addStretch(1)
         self.LogoLayout.addWidget(CMSLogoLabel)
-
+        logger.debug("Added Logos")
         self.LogoGroupBox.setLayout(self.LogoLayout)
-
-        self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
-        self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
 
         self.RunButton.setIcon(RunIcon)
         self.RunButton.setIconSize(QSize(80, 80))
@@ -276,6 +277,7 @@ class SimplifiedMainWidget(QWidget):
         self.StartLayout.addWidget(self.RunButton)
         self.AppOption.setLayout(self.StartLayout)
 
+        logger.debug("Setup StartLayout")
         self.simplifiedStatusBox.setLayout(self.StatusLayout)
         self.ModuleEntryBox.setLayout(ModuleEntryLayout)
         self.mainLayout.addWidget(self.simplifiedStatusBox)
