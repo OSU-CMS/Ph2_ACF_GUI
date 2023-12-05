@@ -150,6 +150,7 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_info["Peltier"] = {"Label" : QLabel(), "Value" : QLabel()}
         self.instrument_info["Peltier"]["Label"].setText("Chip Temperature")
 
+        self.setDeviceStatus() 
 
         self.StatusLayout = QGridLayout()
         self.StatusLayout.addWidget(self.instrument_info["DB"]["Label"], 0, 1, 1, 1)
@@ -300,6 +301,12 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_status["FC7"] = "Connected" in FwStatusComment 
         self.instrument_status["Database"]= not "offline" in statusString 
         self.instrument_status["Peltier"] = peltier_power_status and peltier_temp_status 
+
+        for key, value in self.instrument_status.items():
+            if value:  
+                self.instrument_info[key]["Value"].setPixmap(self.greenledpixmap)
+            else:
+                self.instrument_info[key]["Value"].setPixmap(self.redledpixmap)
 
         
     def checkDevices(self):
