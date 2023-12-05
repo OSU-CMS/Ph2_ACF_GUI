@@ -240,6 +240,33 @@ class SimplifiedMainWidget(QWidget):
         )
         Gopixmap = QPixmap.fromImage(Goimage)
         RunIcon = QIcon(Gopixmap)
+
+        self.LogoGroupBox = QGroupBox("")
+        self.LogoGroupBox.setCheckable(False)
+        self.LogoGroupBox.setMaximumHeight(100)
+
+        self.LogoLayout = QHBoxLayout()
+        OSULogoLabel = QLabel()
+        OSUimage = QImage("../icons/osuicon.jpg").scaled(
+            QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        OSUpixmap = QPixmap.fromImage(OSUimage)
+        OSULogoLabel.setPixmap(OSUpixmap)
+        CMSLogoLabel = QLabel()
+        CMSimage = QImage("../icons/cmsicon.png").scaled(
+            QSize(200, 60), Qt.KeepAspectRatio, Qt.SmoothTransformation
+        )
+        CMSpixmap = QPixmap.fromImage(CMSimage)
+        CMSLogoLabel.setPixmap(CMSpixmap)
+        self.LogoLayout.addWidget(OSULogoLabel)
+        self.LogoLayout.addStretch(1)
+        self.LogoLayout.addWidget(CMSLogoLabel)
+
+        self.LogoGroupBox.setLayout(self.LogoLayout)
+
+        self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
+        self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
+
         self.RunButton.setIcon(RunIcon)
         self.RunButton.setIconSize(QSize(80, 80))
         self.RunButton.clicked.connect(self.runNewTest)
