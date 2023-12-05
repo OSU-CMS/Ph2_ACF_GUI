@@ -61,6 +61,7 @@ class SimplifiedMainWidget(QWidget):
         self.TryUsername = self.master.TryUsername
         self.DisplayedPassword = self.master.DisplayedPassword
         self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
+        self.instruments.open()
         self.instrument_info = {} 
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
