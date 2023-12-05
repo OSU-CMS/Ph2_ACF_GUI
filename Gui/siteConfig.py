@@ -88,7 +88,6 @@ defaultHVCurrentCompliance = 0.00001
 
 #setting HV bias voltage in V
 defaultHVsetting = -60
-
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
 	"SingleSCC" : 0.6,
