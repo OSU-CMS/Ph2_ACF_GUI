@@ -362,6 +362,7 @@ class QtApplication(QWidget):
                     self.checkFirmware()
 
             else:
+                logger.debug("Not connecting to database")
                 self.connection = "Offline"
                 self.destroyLogin()
                 if self.expertMode:
