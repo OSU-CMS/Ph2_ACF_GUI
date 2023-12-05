@@ -79,17 +79,17 @@ class SimplifiedMainWidget(QWidget):
     def setupMainUI(self):
         self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.TryUsername))
 
-        self.instrument_info["DB"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["DB"]["Label"].setText("Database connection:")
+        self.instrument_info["database"] = {"Label": QLabel(), "Value": QLabel()}
+        self.instrument_info["database"]["Label"].setText("Database connection:")
 
-        self.instrument_info["HV"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["HV"]["Label"].setText("HV status")
+        self.instrument_info["hv"] = {"Label": QLabel(), "Value": QLabel()}
+        self.instrument_info["hv"]["Label"].setText("HV status")
 
-        self.instrument_info["LV"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["LV"]["Label"].setText("LV status")
+        self.instrument_info["lv"] = {"Label": QLabel(), "Value": QLabel()}
+        self.instrument_info["lv"]["Label"].setText("LV status")
 
-        self.instrument_info["FC7"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["FC7"]["Label"].setText(default_settings.defaultFC7)
+        self.instrument_info["fc7"] = {"Label": QLabel(), "Value": QLabel()}
+        self.instrument_info["fc7"]["Label"].setText(default_settings.defaultFC7)
 
         self.RefreshButton = QPushButton("&Refresh")
         self.RefreshButton.clicked.connect(self.checkDevices)
@@ -139,8 +139,8 @@ class SimplifiedMainWidget(QWidget):
         self.ArduinoGroup.setBaudRate(default_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
 
-        self.instrument_info["Arduino"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["Arduino"]["Label"].setText("Temperature and Humidity")
+        self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
+        self.instrument_info["arduino"]["Label"].setText("Temperature and Humidity")
 
         if default_settings.usePeltier:
             try:
@@ -185,28 +185,28 @@ class SimplifiedMainWidget(QWidget):
             except Exception as e:
                 print("Error while attempting to set Peltier", e)
 
-        self.instrument_info["Peltier"] = {"Label" : QLabel(), "Value" : QLabel()}
-        self.instrument_info["Peltier"]["Label"].setText("Chip Temperature")
+        self.instrument_info["peltier"] = {"Label" : QLabel(), "Value" : QLabel()}
+        self.instrument_info["peltier"]["Label"].setText("Chip Temperature")
         logger.debug("About to set device status")
         self.setDeviceStatus() 
 
         logger.debug("Set device status")
         self.StatusLayout = QGridLayout()
-        self.StatusLayout.addWidget(self.instrument_info["DB"]["Label"], 0, 1, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["DB"]["Value"], 0, 2, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["HV"]["Label"], 0, 3, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["HV"]["Value"], 0, 4, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["database"]["Label"], 0, 1, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["database"]["Value"], 0, 2, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
 
-        self.StatusLayout.addWidget(self.instrument_info["LV"]["Label"], 1, 1, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["LV"]["Value"], 1, 2, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["FC7"]["Label"], 1, 3, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["FC7"]["Value"], 1, 4, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["fc7"]["Label"], 1, 3, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["fc7"]["Value"], 1, 4, 1, 1)
 
-        self.StatusLayout.addWidget(self.instrument_info["Arduino"]["Label"], 2, 1, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["Arduino"]["Value"], 2, 2, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["arduino"]["Label"], 2, 1, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["arduino"]["Value"], 2, 2, 1, 1)
         if default_settings.usePeltier:
-            self.StatusLayout.addWidget(self.instrument_info["Peltier"]["Label"], 2, 3, 1, 1)
-            self.StatusLayout.addWidget(self.instrument_info["Peltier"]["Value"], 2, 4, 1, 1)
+            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
+            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
         self.StatusLayout.addWidget(self.RefreshButton, 3, 5, 1, 2)
 
         ModuleEntryLayout.addWidget(self.BeBoardWidget)
@@ -341,10 +341,10 @@ class SimplifiedMainWidget(QWidget):
         peltier_temp_status = 1 if abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 10 else 0
 
         logger.debug("Setting up instrument_status")
-        self.instrument_status["Arduino"] = self.ArduinoGroup.ArduinoGoodStatus 
-        self.instrument_status["FC7"] = "Connected" in FwStatusComment 
-        self.instrument_status["Database"]= not "offline" in statusString 
-        self.instrument_status["Peltier"] = peltier_power_status and peltier_temp_status 
+        self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus 
+        self.instrument_status["fc7"] = "Connected" in FwStatusComment 
+        self.instrument_status["database"]= not "offline" in statusString 
+        self.instrument_status["peltier"] = peltier_power_status and peltier_temp_status 
 
         logger.debug(f'{__name__} Setup instrument status {self.instrument_status}')
         for key, value in self.instrument_status.items():
