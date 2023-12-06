@@ -133,12 +133,15 @@ class ChipBox(QWidget):
         
         else:
             if self.serialNumber != []:
-                #need to find way to haddle serial number iussue, it is not [] and None if the chip box is empty, so how we handdle it?
+                #need to find way to haddle serial number iussue, it is not [] and None if the chip box is empty, so how to handdle it?
                 
                 sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)                
 
                 #case for can't find anything on database
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
+                    print("debug run into special issue")
+                    print("special debug" +str(self.serialNumber.te))
+             
 
                     for chipid in self.ChipList:
                         self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
@@ -196,11 +199,17 @@ class ChipBox(QWidget):
         self.ChipVDDDLabel = QLabel("VDDD:")
         self.ChipVDDDEdit = QLineEdit()
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
+        
+        if not self.ChipVDDDEdit.text():#debug
+            print("no VDDD text")
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit() 
         self.ChipVDDDEdit.setText(VDDD)
         self.ChipVDDAEdit.setText(VDDA)
         self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
+
+        #self.ChipLabel.stateChanged.connect(self.doNothing) #debug -> it complaint none type. something is wrong
+
 
         self.VChipLayout = QGridLayout()
         self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
@@ -211,6 +220,9 @@ class ChipBox(QWidget):
 
         return self.VChipLayout
 
+    #use for debug only. feel free to remove it later
+    def doNothing(self):
+        print("status change! debug")
 
 
     def makeChipBox(self, pChipID):    
@@ -223,14 +235,14 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit()
-        """
+        
         if "CROC" in self.chipType:
             self.ChipVDDDEdit.setText("8")
             self.ChipVDDAEdit.setText("8")
         else:
             self.ChipVDDDEdit.setText("16")
             self.ChipVDDAEdit.setText("16")
-        """ 
+        
         self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
         
         self.VChipLayout = QGridLayout()
@@ -337,8 +349,6 @@ class BeBoardBox(QWidget):
 
         for index, module in enumerate(self.ModuleList):
             # module.setMaximumWidth(500)
-
-            #edit the Chip bos with set value at here?
             self.ChipWidgetDict[module] = ChipBox(self.master,module.getType(),module.getSerialNumber())
             module.setMaximumHeight(50)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
@@ -394,6 +404,9 @@ class BeBoardBox(QWidget):
             FwModule.setFMCID(module.getFMCID())
             FwModule.setModuleName(module.getSerialNumber())
             for chip in ModuleLaneMap[module.getType()].values():
+                print("Sereial number debug : " + str(module.getSerialNumber()))
+                print("chip number debug : " + str(chip))
+
                 FwModule.setChipStatus(
                     chip, self.ChipWidgetDict[module].getChipStatus(chip)
                 )
@@ -527,7 +540,10 @@ class SimpleModuleBox(QWidget):
         self.SerialEdit.setText(serial)
 
     def getSerialNumber(self):
-        return self.SerialEdit.text()
+        if not self.SerialEdit.text(): #case for nothing is inside serial box
+            return None
+        else:
+            return self.SerialEdit.text()
 
     def getFMCID(self):
         return defaultFMC
