@@ -137,18 +137,23 @@ class ChipBox(QWidget):
                 
                 sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)                
 
-                #case for can't find anything on database
+                #case for can't find anything on database, but it might cause bug in the checkbox error(no sure). 
+                # under online mode the set values in makeChipBox() can't work properly. I believe it has to do with issue in finding the module type
+                # The script at below is temporaly commented out. such that makeChipBox will not be not be call under online mode.
+                #But there is need to figure out how to handle the case of can't find data on Database.
+                """
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
                     print("debug run into special issue")
-                    print("special debug" +str(self.serialNumber.te))
+                    print("special debug" +str(self.serialNumber))
              
-
                     for chipid in self.ChipList:
                         self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+                """
                 
                 
-                else:
-                    print(str(sorted_VDDAlist))
+                #else:
+                # I create the if statement to the following script. such that makeChipBoxWithDB() will only be call when serial box is not empty
+                if sorted_VDDAlist != [] or sorted_VDDDlist != []:
                     i = 0
                     for chipid in self.ChipList:
                         VDDA = str(sorted_VDDAlist[i][1])
@@ -235,6 +240,7 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit()
+        self.ChipLabel.stateChanged.connect(self.doNothing) #debug -> it complaint none type. something is wrong
         
         if "CROC" in self.chipType:
             self.ChipVDDDEdit.setText("8")
