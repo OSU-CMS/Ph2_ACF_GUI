@@ -82,7 +82,23 @@ class ModuleBox(QWidget):
         self.mainLayout.addWidget(self.IDEdit, 0, 5, 1, 1)
         
 
-            
+    def setType(self):
+        #this method is created to set moudle type under online mode and comboBox is hidden
+        if self.SerialEdit.text().startswith("RH"):
+            chipType = "CROC 1x2"
+            print(self.TypeCombo.currentText())#debug
+            self.TypeCombo.setEditText(chipType)
+            print(self.TypeCombo.currentText())#debug
+
+        print(self.TypeCombo.currentText())#debug
+        if self.SerialEdit.text().startswith("SH"):
+            chipType = "TFPX CROC Quad"
+            print(self.TypeCombo.currentText())#debug
+            self.TypeCombo.setEditText(chipType)
+            print(self.TypeCombo.currentText())#debug
+        
+
+        
 
     def getSerialNumber(self):
         return self.SerialEdit.text()
@@ -102,7 +118,7 @@ class ModuleBox(QWidget):
 
 class ChipBox(QWidget):
     chipchanged = pyqtSignal(int, int)
-    #adding default value to serialNumber="RH0009" can prevent ChipBox from crashing
+    #adding default value to serialNumber="RH0009" can prevent ChipBox from crashing under online mode
     def __init__(self, master,pChipType,serialNumber="RH0009"):
         super().__init__()
         logger.debug("Inside ChipBox")
@@ -213,7 +229,7 @@ class ChipBox(QWidget):
         self.ChipVDDAEdit.setText(VDDA)
         self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
 
-        #self.ChipLabel.stateChanged.connect(self.doNothing) #debug -> it complaint none type. something is wrong
+        self.ChipLabel.stateChanged.connect(self.doNothing) #debug -> it complaint none type. it is working now. But chipbox error still exist
 
 
         self.VChipLayout = QGridLayout()
@@ -321,9 +337,15 @@ class BeBoardBox(QWidget):
         if self.master.connection == "Offline":
             ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         else:
-            ModuleRow.OnlineButton.clicked.connect(self.updateList)
-
+            ModuleRow.OnlineButton.clicked.connect(self.updateList)# Debug: cause chip box unable to create, need to fix it
+            ModuleRow.OnlineButton.clicked.connect(ModuleRow.setType)      
         self.ModuleList.append(ModuleRow)
+    
+    #debug please delete DBupdateList, in case I forgot
+    def DBupdateList(self):
+        #change the text in combo box
+        #self.ModuleRow.setType
+        self.updateList()
 
     def createList(self):
         self.ListBox = QGroupBox()
@@ -410,9 +432,10 @@ class BeBoardBox(QWidget):
             FwModule.setFMCID(module.getFMCID())
             FwModule.setModuleName(module.getSerialNumber())
             for chip in ModuleLaneMap[module.getType()].values():
+                print("type debug : " + str(module.getType()) )
                 print("Sereial number debug : " + str(module.getSerialNumber()))
-                print("chip number debug : " + str(chip))
-
+                print("chip number debug : " + str(chip))#find an extra issue. chip number is 0, it should be 12 for first chip of Croc 1*2 module. This is fine under offline mode
+                print("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) #it cause bug at here, it is none
                 FwModule.setChipStatus(
                     chip, self.ChipWidgetDict[module].getChipStatus(chip)
                 )
