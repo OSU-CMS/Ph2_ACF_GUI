@@ -84,17 +84,18 @@ class ModuleBox(QWidget):
 
     def setType(self):
         #this method is created to set moudle type under online mode and comboBox is hidden
+        print(self.SerialEdit.text())
         if self.SerialEdit.text().startswith("RH"):
             chipType = "CROC 1x2"
             print(self.TypeCombo.currentText())#debug
-            self.TypeCombo.setEditText(chipType)
+            self.TypeCombo.setCurrentText(chipType)
             print(self.TypeCombo.currentText())#debug
 
         print(self.TypeCombo.currentText())#debug
         if self.SerialEdit.text().startswith("SH"):
             chipType = "TFPX CROC Quad"
             print(self.TypeCombo.currentText())#debug
-            self.TypeCombo.setEditText(chipType)
+            self.TypeCombo.setCurrentText(chipType)
             print(self.TypeCombo.currentText())#debug
         
 
