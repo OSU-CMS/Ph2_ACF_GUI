@@ -150,26 +150,21 @@ class ChipBox(QWidget):
         
         else:
             if self.serialNumber != []:
-                #need to find way to haddle serial number iussue, it is not [] and None if the chip box is empty, so how to handdle it?
                 
                 sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)                
 
-                #case for can't find anything on database, but it might cause bug in the checkbox error(no sure). 
-                # under online mode the set values in makeChipBox() can't work properly. I believe it has to do with issue in finding the module type
-                # The script at below is temporaly commented out. such that makeChipBox will not be not be call under online mode.
-                #But there is need to figure out how to handle the case of can't find data on Database.
-                """
+                #case for can't find anything on database
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
-                    print("debug run into special issue")
+
                     print("special debug" +str(self.serialNumber))
-             
+                    print(f"can find the data for module {self.serialNumber}")
                     for chipid in self.ChipList:
-                        self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-                """
+                        VDDA = "can't find the value"
+                        VDDD = "can't find the value"
+                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
                 
                 
-                #else:
-                # I create the if statement to the following script. such that makeChipBoxWithDB() will only be call when serial box is not empty
+
                 if sorted_VDDAlist != [] or sorted_VDDDlist != []:
                     i = 0
                     for chipid in self.ChipList:
@@ -342,11 +337,6 @@ class BeBoardBox(QWidget):
             ModuleRow.OnlineButton.clicked.connect(ModuleRow.setType)      
         self.ModuleList.append(ModuleRow)
     
-    #debug please delete DBupdateList, in case I forgot
-    def DBupdateList(self):
-        #change the text in combo box
-        #self.ModuleRow.setType
-        self.updateList()
 
     def createList(self):
         self.ListBox = QGroupBox()
