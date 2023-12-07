@@ -84,19 +84,15 @@ class ModuleBox(QWidget):
 
     def setType(self):
         #this method is created to set moudle type under online mode and comboBox is hidden
-        print(self.SerialEdit.text())
         if self.SerialEdit.text().startswith("RH"):
             chipType = "CROC 1x2"
-            print(self.TypeCombo.currentText())#debug
             self.TypeCombo.setCurrentText(chipType)
-            print(self.TypeCombo.currentText())#debug
 
-        print(self.TypeCombo.currentText())#debug
         if self.SerialEdit.text().startswith("SH"):
             chipType = "TFPX CROC Quad"
-            print(self.TypeCombo.currentText())#debug
+
             self.TypeCombo.setCurrentText(chipType)
-            print(self.TypeCombo.currentText())#debug
+
         
 
         
@@ -138,7 +134,6 @@ class ChipBox(QWidget):
         
         #get trim values from DB
         GetTRimFromDB=GetTrimClass()
-        #adding a get connection method to get the real time changes?
         GetTRimFromDB.connection=self.connection
 
 
@@ -155,8 +150,6 @@ class ChipBox(QWidget):
 
                 #case for can't find anything on database
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
-
-                    print("special debug" +str(self.serialNumber))
                     print(f"can find the data for module {self.serialNumber}")
                     for chipid in self.ChipList:
                         VDDA = "can't find the value"
@@ -217,16 +210,13 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit = QLineEdit()
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         
-        if not self.ChipVDDDEdit.text():#debug
+        if not self.ChipVDDDEdit.text():
             print("no VDDD text")
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit() 
         self.ChipVDDDEdit.setText(VDDD)
         self.ChipVDDAEdit.setText(VDDA)
         self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
-
-        self.ChipLabel.stateChanged.connect(self.doNothing) #debug -> it complaint none type. it is working now. But chipbox error still exist
-
 
         self.VChipLayout = QGridLayout()
         self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
@@ -237,9 +227,7 @@ class ChipBox(QWidget):
 
         return self.VChipLayout
 
-    #use for debug only. feel free to remove it later
-    def doNothing(self):
-        print("status change! debug")
+
 
 
     def makeChipBox(self, pChipID):    
@@ -252,7 +240,6 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit()
-        self.ChipLabel.stateChanged.connect(self.doNothing) #debug -> it complaint none type. something is wrong
         
         if "CROC" in self.chipType:
             self.ChipVDDDEdit.setText("8")
@@ -333,7 +320,7 @@ class BeBoardBox(QWidget):
         if self.master.connection == "Offline":
             ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         else:
-            ModuleRow.OnlineButton.clicked.connect(self.updateList)# Debug: cause chip box unable to create, need to fix it
+            ModuleRow.OnlineButton.clicked.connect(self.updateList)
             ModuleRow.OnlineButton.clicked.connect(ModuleRow.setType)      
         self.ModuleList.append(ModuleRow)
     
