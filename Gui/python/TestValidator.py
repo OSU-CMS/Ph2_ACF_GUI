@@ -59,6 +59,10 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
             for i in range(1, 18):
                 Grade[module][i] = 1.0
                 PassModule[module][i] = True
+    
+    elif testName in "SLDOScan":
+        pass
+    
     else:
         try:
             CanvasList = {}
