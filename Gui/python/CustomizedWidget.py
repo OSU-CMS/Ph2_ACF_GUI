@@ -148,9 +148,8 @@ class ChipBox(QWidget):
                 
                 sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)                
 
-                #case for can't find anything on database
+                #case for can't find anything on the database
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
-                    print(f"can find the data for module {self.serialNumber}")
                     for chipid in self.ChipList:
                         VDDA = "can't find the value"
                         VDDD = "can't find the value"
@@ -194,7 +193,7 @@ class ChipBox(QWidget):
                     self.ChipList.append(ModuleLaneMap[self.chipType][lane])
             
             else:
-                print("current module can't be found on database")
+                logger.debug("current module can't be found on database")
 
 
            
@@ -211,7 +210,7 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         
         if not self.ChipVDDDEdit.text():
-            print("no VDDD text")
+            logger.debug("no VDDD text")
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit() 
         self.ChipVDDDEdit.setText(VDDD)
@@ -410,10 +409,10 @@ class BeBoardBox(QWidget):
             FwModule.setFMCID(module.getFMCID())
             FwModule.setModuleName(module.getSerialNumber())
             for chip in ModuleLaneMap[module.getType()].values():
-                print("type debug : " + str(module.getType()) )
-                print("Sereial number debug : " + str(module.getSerialNumber()))
-                print("chip number debug : " + str(chip))#find an extra issue. chip number is 0, it should be 12 for first chip of Croc 1*2 module. This is fine under offline mode
-                print("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) #it cause bug at here, it is none
+                logger.debug("type debug : " + str(module.getType()) )
+                logger.debug("Sereial number debug : " + str(module.getSerialNumber()))
+                logger.debug("chip number debug : " + str(chip))
+                logger.debug("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) 
                 FwModule.setChipStatus(
                     chip, self.ChipWidgetDict[module].getChipStatus(chip)
                 )
