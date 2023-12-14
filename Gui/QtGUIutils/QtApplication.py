@@ -604,9 +604,9 @@ class QtApplication(QWidget):
             if self.relay_port_combobox.currentText() != None:
                 self.relay_ScriptUpload.clicked.connect(self.uploadScript)
         except Exception as e:
-            print(self.relay_port_combobox.currentText())
-            print(f"Unexpected error: {e}")
-            print("relay box ScriptUpload error")
+            logger.error(self.relay_port_combobox.currentText())
+            logger.error(f"Unexpected error: {e}")
+            logger.error("relay box ScriptUpload error")
         
         
         self.relay_remote_control.toggled.connect(lambda: self.enableDevice("relay"))
