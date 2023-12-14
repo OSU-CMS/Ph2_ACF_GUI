@@ -854,8 +854,7 @@ class QtApplication(QWidget):
             "multimeter": self.multimeter_group,
         }
     
-    def test(self):
-        print("do not things")
+
 
     def uploadScript(self):
         try:
