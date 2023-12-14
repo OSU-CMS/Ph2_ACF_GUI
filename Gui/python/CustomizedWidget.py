@@ -158,12 +158,10 @@ class ChipBox(QWidget):
                 
 
                 if sorted_VDDAlist != [] or sorted_VDDDlist != []:
-                    i = 0
-                    for chipid in self.ChipList:
+                    for i, chipid in enumerate(self.ChipList):
                         VDDA = str(sorted_VDDAlist[i][1])
                         VDDD = str(sorted_VDDDlist[i][1])
                         self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
-                        i += 1
             
         
         self.makeChipGroupBox(self.ChipGroupBoxDict)
