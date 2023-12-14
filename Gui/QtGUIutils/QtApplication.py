@@ -858,8 +858,6 @@ class QtApplication(QWidget):
 
     def uploadScript(self):
         try:
-
-            #temporary solution for dealing with arduino:avr can't be found inside docker
             compileResult=subprocess.run(
             "$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
             shell=True,
