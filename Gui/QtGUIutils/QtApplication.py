@@ -872,8 +872,8 @@ class QtApplication(QWidget):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
             )
-            print(compileResult.stdout)
-            print(uploadResult.stdout)
+            logger.debug(compileResult.stdout)
+            logger.debug(uploadResult.stdout)
             if "New upload port" in str(uploadResult.stdout):
                 print("upload completed")
             print(compileResult.stderr)
