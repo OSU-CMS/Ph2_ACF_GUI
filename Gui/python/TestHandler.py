@@ -1205,6 +1205,14 @@ class TestHandler(QObject):
         self.testIndexTracker += 1
         if isCompositeTest(self.info[1]):
             self.runTest()
+        
+        """
+        adding new script to make updateValidation work with SLDOScan
+        """
+        grade, passmodule, self.figurelist = ResultGrader(
+            self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap
+        )
+        self.updateValidation.emit(grade, passmodule)
 
     def interactiveCheck(self, plot):
         pass

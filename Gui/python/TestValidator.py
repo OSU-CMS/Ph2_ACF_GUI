@@ -60,8 +60,11 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
                 Grade[module][i] = 1.0
                 PassModule[module][i] = True
     
+    #dummy algorism
     elif testName in "SLDOScan":
-        pass
+        for module in ExpectedModuleList:
+
+            pass
     
     else:
         try:
