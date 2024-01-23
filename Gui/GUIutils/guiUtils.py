@@ -403,7 +403,8 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 
     BeBoardModule0.SetRegisterValue(RegisterSettings)
     HWDescription0.AddBeBoard(BeBoardModule0)
-    HWDescription0.AddSettings(HWSettings_Dict[testName])
+    ###  This is where you specify which set of HW settings to use for a test  ######
+    HWDescription0.AddSettings(HWSettings_Dict[testName])  
     MonitoringModule0 = MonitoringModule(boardtype)
     if "RD53A" in boardtype:
         MonitoringModule0.SetMonitoringList(MonitoringListA)

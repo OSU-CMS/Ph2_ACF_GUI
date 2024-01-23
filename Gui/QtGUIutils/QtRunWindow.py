@@ -75,13 +75,15 @@ class QtRunWindow(QWidget):
         # self.LogoGroupBox = self.master.LogoGroupBox
         self.firmware = firmware
         self.info = info
-        if "AllScan_Tuning" in self.info[1]:
-            runTestList = pretuningList
-            runTestList.extend(tuningList * len(defaultTargetThr))
-            runTestList.extend(posttuningList)
-            CompositeList.update({"AllScan_Tuning": runTestList})
 
-        elif isCompositeTest(self.info[1]):
+        # Removing for sequencefix
+#        if "AllScan_Tuning" in self.info[1]:
+#            runTestList = pretuningList
+#            runTestList.extend(tuningList * len(defaultTargetThr))
+#            runTestList.extend(posttuningList)
+#            CompositeList.update({"AllScan_Tuning": runTestList})
+
+        if isCompositeTest(self.info[1]):
             runTestList = CompositeList[self.info[1]]
         else:
             runTestList = self.info[1]
@@ -148,18 +150,18 @@ class QtRunWindow(QWidget):
 
         # added from Bowen
         print("test list should be {0}".format(self.info[1]))
-        self.j = 0
+        #self.j = 0
         # stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
         # if len(runTestList)>1:
-        for i in range(len(runTestList)):
-            if runTestList[i] == "ThresholdAdjustment":
-                self.j += 1
-            if self.j == 0:
-                stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j]
-            else:
-                stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j - 1]
+        #for i in range(len(runTestList)):
+        #    if runTestList[i] == "ThresholdAdjustment":
+        #        self.j += 1
+        #    if self.j == 0:
+        #        stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j]
+        #    else:
+        #        stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j - 1]
 
-        logger.info(stepWiseGlobalValue)
+        #logger.info(stepWiseGlobalValue)
 
     def setLoginUI(self):
         X = self.master.dimension.width() / 10

@@ -561,7 +561,7 @@ class GetTrimClass():
 		parenetNum = results[0][0]
 
 		cursor.execute(f"select component.description from component where component.serial_number='{serialNumber}';")
-		results = cursor.fetchall() #[('CROC 1x2 HPK sensor module',)]
+		results = cursor.fetchall() #[('TFPX CROC 1x2 HPK sensor module',)]
 		if debug == True:
 			print("raw description"+str(results))
 

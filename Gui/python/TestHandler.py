@@ -325,8 +325,8 @@ class TestHandler(QObject):
             return
         # testName = CompositeList[self.info[1]][self.testIndexTracker]
         testName = runTestList[self.testIndexTracker]
-        if self.info[1] == "AllScan_Tuning":
-            updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
+        #if self.info[1] == "AllScan_Tuning":
+        #    updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
         self.runSingleTest(testName)
 
     def runSingleTest(self, testName):

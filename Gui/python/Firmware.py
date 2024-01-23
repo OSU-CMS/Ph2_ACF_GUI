@@ -46,7 +46,7 @@ class QtModule:
     def __init__(self, **kwargs):
         self.__moduleName = "SerialNumber1"
         self.__moduleID = "0"
-        self.__moduleType = "SingleSCC"
+        self.__moduleType = "TFPX SCC"
         self.__FMCID = "0"
         self.__OGID = "0"
         self.__chipDict = {}
@@ -91,7 +91,7 @@ class QtModule:
         if fwType in ModuleType.values():
             self.__moduleType = fwType
         else:
-            self.__moduleType = "SingleSCC"
+            self.__moduleType = "TFPX SCC"
         self.setupChips()
 
     def getModuleType(self):
