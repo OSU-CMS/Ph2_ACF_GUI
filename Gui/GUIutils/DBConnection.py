@@ -121,7 +121,7 @@ def getAllTests(dbconnection):
             None, "Warning", "Database connection broken", QMessageBox.Ok
         )
         remoteList = []
-    localList = list(Test.keys())
+    localList = Test  
     remoteList = [remoteList[i][0] for i in range(len(remoteList))]
     for test in remoteList:
         if not test in localList:
