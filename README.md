@@ -41,6 +41,7 @@ This container is meant for developers or users who would like to customize some
 1. Clone GUI repo and checkout the DEV branch:
 ```
 git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
+cd Ph2_ACF_GUI
 git checkout DEV
 ```
 or pull the latest changes while inside the Ph2_ACF_GUI directory:
