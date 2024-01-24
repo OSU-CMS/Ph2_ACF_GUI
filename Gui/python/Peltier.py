@@ -11,7 +11,9 @@ from Gui.python.logging_config import logger
 
 class PeltierSignalGenerator:
     def __init__(self):
-        self.ser = serial.Serial(defaultPeltierPort, defaultPeltierBaud)
+        print("Connecting Peltier Port")
+        self.ser = serial.Serial(defaultPeltierPort, defaultPeltierBaud, timeout=5, write_timeout=5, inter_byte_timeout=5)
+        print("Peltier connected")
         self.commandDict = {
             "Input1": ["0", "1"],
             "Desired Control Value": ["0", "3"],
@@ -100,20 +102,25 @@ class PeltierSignalGenerator:
         return command
 
     def sendCommand(self, command):
+        logger.debug(f"Sending Command: {command}")
         try:
             for bit in command:
                 self.ser.write(bit.encode())
+            logger.debug("Command sent waiting on reply")
             message, passed = self.recieveMessage()
+            logger.debug(f"Recieved message: {message}")
             return message, passed
         except:
             return None, False
 
     # Will recieve message but will only check if the command gave an error, will not decode the message
+    # TODO: The timeout is working, however, only one bit is being read at a time. Make it so that it only needs to go through one time out before giving up on the message/Peltier setup
     def recieveMessage(self):
         connection = True
         buff = self.buffer.copy()
         for i in range(len(buff)):
             buff[i] = self.ser.read(1).decode("utf-8")
+            logger.debug("AHHHHHH")
         if buff == self.checksumError:
             connection = False
             return buff, connection

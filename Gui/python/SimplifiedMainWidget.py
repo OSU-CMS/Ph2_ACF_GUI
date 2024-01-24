@@ -55,14 +55,16 @@ from icicle.icicle.instrument_cluster import InstrumentCluster
 
 class SimplifiedMainWidget(QWidget):
     def __init__(self, master):
-        super(SimplifiedMainWidget, self).__init__()
+        super().__init__()
         self.master = master
         self.connection = self.master.connection
         self.TryUsername = self.master.TryUsername
         self.DisplayedPassword = self.master.DisplayedPassword
+
         self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
         self.instruments.open()
         self.instrument_info = {} 
+
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
         redledimage = QImage("icons/led-red-on.png").scaled(
@@ -112,13 +114,12 @@ class SimplifiedMainWidget(QWidget):
         self.BeBoard.setIPAddress(FirmwareList[default_settings.defaultFC7])
         self.BeBoard.setFPGAConfig(FPGAConfigList[default_settings.defaultFC7])
         logger.debug(f"Default FC7: {default_settings.defaultFC7}")
-        
 
         self.master.FwDict[default_settings.defaultFC7] = self.BeBoard
         logger.debug("Initialized BeBoard in SimplifiedGUI")
         self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
-
+        
         LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), default_settings.defaultFC7)
         logger.debug(f"FC7 log file saved to {LogFileName}")
 
@@ -129,7 +130,6 @@ class SimplifiedMainWidget(QWidget):
             QMessageBox(
                 None, "Error", "Can not create log files: {}".format(LogFileName)
             )
-
         self.FwModule = self.master.FwDict[default_settings.defaultFC7]
 
 
@@ -146,12 +146,14 @@ class SimplifiedMainWidget(QWidget):
             try:
                 logger.debug("Setting up Peltier")
                 self.Peltier = PeltierSignalGenerator()
+                logger.debug("created self.Peltier")
                 # These should emit signals
                 self.Peltier.sendCommand(
                     self.Peltier.createCommand(
                         "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                     )
                 )  # Allows set point to be set by computer software
+                logger.debug("Setup computer communication for Peltier")
                 self.Peltier.sendCommand(
                     self.Peltier.createCommand(
                         "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
@@ -209,7 +211,6 @@ class SimplifiedMainWidget(QWidget):
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
         self.StatusLayout.addWidget(self.RefreshButton, 3, 5, 1, 2)
         logger.debug("Setup StatusLayout")
-
         ModuleEntryLayout.addWidget(self.BeBoardWidget)
         logger.debug("Setup ModuleEntryLayout")
 
@@ -329,7 +330,6 @@ class SimplifiedMainWidget(QWidget):
         current = float(current) if current else 0.0
         voltage = self.LVpowersupply.ReadVoltage()
         voltage = float(voltage) if voltage else 0.0
-        # print('Current = {0}'.format(current))
         self.RunButton.setDisabled(True)
         self.StopButton.setDisabled(False)
 
