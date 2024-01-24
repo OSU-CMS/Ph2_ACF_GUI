@@ -41,6 +41,7 @@ This container is meant for developers or users who would like to customize some
 1. Clone GUI repo and checkout the DEV branch:
 ```
 git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
+cd Ph2_ACF_GUI
 git checkout DEV
 ```
 or pull the latest changes while inside the Ph2_ACF_GUI directory:
@@ -80,7 +81,57 @@ python3 QtApplication
 exit
 ``` 
 will close and kill the container.  Other commands may only exit the container and keep it running in the background, so be sure to use this method of exiting.  Another option is to hit ctrl-D.
+## General Notes On Docker
+After installing docker to your system make sure that you have enabled the docker service. To check the status of the docker service, you can run: 
+```
+sudo systemctl status docker
+```
+To enable the service run: 
+```
+sudo systemctl enable --now docker
+```
 
+Also ensure that your user has been added to the docker user group so that docker can be ran without the use of root privileges. You can check this by running:
+```
+id $USER
+```
+This should show docker listed in your groups. 
+To add a user to a group, run 
+```
+sudo usermod -aG docker $USER
+```
+## Docker Notes for Alma Linux 
+RHEL insists that users of Alma use a program called podman. They claim that podman is a drop in replacement for docker, however, this does not seem to be the case. As such, there are special instructions that need to be followed in order to run "normal" docker. You can run the following commands to remove podman and install docker. Instructions for this process were obtained [here](https://www.liquidweb.com/kb/install-docker-on-linux-almalinux/). 
+
+1. Update system
+```
+sudo dnf --refresh update
+sudo dnf upgrade
+```
+2. Install yum-utils so we can add the repository that contains docker
+```
+sudo dnf install yum-utils
+```
+3. Add the docker repository 
+```
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+```
+4. Install necessary docker packages
+```
+sudo dnf install docker-ce docker-ce-cli containerd.io docker-compose-plugin
+```
+5. Enable and start docker service
+```
+sudo systemctl enable --now docker
+```
+6. Add user to docker user group to enable to the use of docker 
+```
+sudo usermod -aG docker $USER
+```
+7. Reboot for user group to take affect
+```
+reboot
+```
 # The following is only needed if you are NOT using Docker
 ## Set up the software environment:
 This software will only work in Alma Linux 9 (RHEL 9).  It is highly recommended that everyone use the Docker containers rather than this method.  This software is only tested while running inside the Docker containers, so proceed at your own risk.
