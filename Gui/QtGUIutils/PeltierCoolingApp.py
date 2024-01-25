@@ -88,27 +88,32 @@ class Peltier(QWidget):
             self.polaritySignal.connect(self.setPolarityStatus)
 
             # These should emit signals
-            self.pelt.sendCommand(
+            if not self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
-            )  # Allows set point to be set by computer software
-            self.pelt.sendCommand(
+            )[1]: raise Exception("Could not communicate with Peltier")
+
+                # Allows set point to be set by computer software
+            if not self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                 )
-            )  # Temperature should be PID controlled
-            self.pelt.sendCommand(
+            )[1]: raise Exception("Could not communicate with Peltier") # Temperature should be PID controlled
+
+            if not self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
-            )  # Turn off power to Peltier in case it is on at the start
-            self.pelt.sendCommand(
+            )[1]: raise Exception("Could not communicate with Peltier")   # Turn off power to Peltier in case it is on at the start
+
+            if not self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Proportional Bandwidth Write",
                     ["0", "0", "0", "0", "0", "0", "c", "8"],
                 )
-            )  # Set proportional bandwidth
+            )[1]: raise Exception("Could not communicate with Peltier")  # Set proportional bandwidth
+
             message, _ = self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Control Output Polarity Read",
@@ -136,8 +141,8 @@ class Peltier(QWidget):
             self.timer.start(500)  # Perform monitoring functions every 500ms
 
         except Exception as e:
-            print(e)
             print("Error while attempting to setup Peltier Controller: ", e)
+            
 
     def enableButtons(self):
         self.powerButton.setEnabled(True)
@@ -174,7 +179,7 @@ class Peltier(QWidget):
                 )
             except Exception as e:
                 print("Could not turn off controller due to error: ", e)
-
+                
     def setPolarityStatus(self, polarity):
         if polarity[8] == "0":
             self.polarityValue = "HEAT WP1+ and WP2-"
