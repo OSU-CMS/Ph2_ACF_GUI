@@ -25,6 +25,7 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.DBConnection import *
 from Configuration.XMLUtil import *
 from Gui.python.logging_config import logger
+from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 ##########################################################################
 ##########################################################################
 
@@ -466,14 +467,14 @@ def GetTBrowser(DQMFile):
 
 
 def isCompositeTest(TestName):
-    if TestName in CompositeTest:
+    if TestName in CompositeTests.keys:
         return True
     else:
         return False
 
 
 def isSingleTest(TestName):
-    if TestName in SingleTest:
+    if TestName in Test_to_Ph2ACF_Map.keys():
         return True
     else:
         return False

@@ -41,6 +41,7 @@ import numpy
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import *
 from Gui.python.logging_config import logger
+from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 
 class ScanCanvas(FigureCanvas):
@@ -124,10 +125,10 @@ class RunStatusCanvas(FigureCanvas):
         self.xticks = [""]
 
         if isCompositeTest(self.parent.info[1]):
-            for i in range(len(CompositeList[self.parent.info[1]])):
-                self.xticks.append(Test[CompositeList[self.parent.info[1]][i]])
+            for i in range(len(CompositeTests[self.parent.info[1]])):
+                self.xticks.append(Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]])
         if isSingleTest(self.parent.info[1]):
-            self.xticks.append(Test[self.parent.info[1]])
+            self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
         self.grades = self.parent.grades
 
         self.fig = Figure(figsize=(width, height), dpi=dpi)
@@ -145,7 +146,7 @@ class RunStatusCanvas(FigureCanvas):
     def compute_initial_figure(self):
         self.axes.cla()
         if isCompositeTest(self.parent.info[1]):
-            xList = [x for x in range(1, 1 + len(CompositeList[self.parent.info[1]]))]
+            xList = [x for x in range(1, 1 + len(CompositeTests[self.parent.info[1]]))]
         if isSingleTest(self.parent.info[1]):
             xList = [x for x in range(1, 2)]
 
@@ -197,9 +198,9 @@ class RunStatusCanvas(FigureCanvas):
     def renew(self):
         self.xticks = [""]
         if isCompositeTest(self.parent.info[1]):
-            for i in range(len(CompositeList[self.parent.info[1]])):
-                self.xticks.append(Test[CompositeList[self.parent.info[1]][i]])
+            for i in range(len(CompositeTests[self.parent.info[1]])):
+                self.xticks.append(Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]])
         if isSingleTest(self.parent.info[1]):
-            self.xticks.append(Test[self.parent.info[1]])
+            self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
         self.grades = self.parent.grades
         self.compute_initial_figure()

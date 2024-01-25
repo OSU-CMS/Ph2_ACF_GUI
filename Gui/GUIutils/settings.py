@@ -3,6 +3,7 @@
 import os
 from collections import defaultdict
 from Gui.siteSettings import *
+import InnerTrackerTests.TestSequences as TestSequences
 
 # List of expert users
 ExpertUserList = [
@@ -168,7 +169,7 @@ BoxSize = {
     "TFPX CROC Quad": 3,
 }
 
-Test = {
+'''Test = {
     "StandardSequence": "noise",
     "AllScan": "noise",
     "QuickTest": "noise",
@@ -191,7 +192,9 @@ Test = {
     "GenericDAC-DAC": "gendacdac",
     "Physics": "physics",
 }
+'''
 
+'''
 SingleTest = [
     "IVCurve",
     "SLDOScan",
@@ -212,7 +215,9 @@ SingleTest = [
     "GenericDAC-DAC",
     "Physics",
 ]
+'''
 
+'''
 CompositeTest = ["StandardSequence", "AllScan", "QuickTest"]
 
 CompositeList = {
@@ -246,7 +251,7 @@ CompositeList = {
         "GainScan"],
     "QuickTest": ["IVCurve", "PixelAlive", "NoiseScan"],
 }
-
+'''
 #pretuningList = ["IVCurve", "InjectionDelay", "PixelAlive", "NoiseScan"]
 #tuningList = ["ThresholdAdjustment", "ThresholdEqualization", "SCurveScan"]
 #posttuningList = ["NoiseScan", "SCurveScan"]
@@ -257,7 +262,7 @@ updatedXMLValues = defaultdict(dict)
 
 updatedGlobalValue = defaultdict(lambda: None)
 stepWiseGlobalValue = defaultdict(dict)  # key : index
-
+'''
 header = [
     "Source",
     "Module_ID",
@@ -267,3 +272,4 @@ header = [
     "Grade",
     "DQMFile",
 ]  # Stop using
+'''

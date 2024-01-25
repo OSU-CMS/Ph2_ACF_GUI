@@ -62,6 +62,7 @@ from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
 from Gui.python.TestHandler import *
 from Gui.python.logging_config import logger
+from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 
 class QtRunWindow(QWidget):
@@ -84,7 +85,7 @@ class QtRunWindow(QWidget):
 #            CompositeList.update({"AllScan_Tuning": runTestList})
 
         if isCompositeTest(self.info[1]):
-            runTestList = CompositeList[self.info[1]]
+            runTestList = CompositeTests[self.info[1]]
         else:
             runTestList = self.info[1]
 
@@ -473,7 +474,7 @@ class QtRunWindow(QWidget):
             self.StatusTable.setRowCount(row + 1)
             if isCompositeTest(self.info[1]):
                 self.StatusTable.setItem(
-                    row, 0, QTableWidgetItem(CompositeList[self.info[1]][index])
+                    row, 0, QTableWidgetItem(CompositeTests[self.info[1]][index])
                 )
             else:
                 self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
@@ -537,7 +538,7 @@ class QtRunWindow(QWidget):
             isReRun = True
             self.grades = []
             if isCompositeTest(self.info[1]):
-                for index in range(len(CompositeList[self.info[1]])):
+                for index in range(len(CompositeTests[self.info[1]])):
                     self.ResultWidget.ProgressBar[index].setValue(0)
             else:
                 self.ResultWidget.ProgressBar[0].setValue(0)
