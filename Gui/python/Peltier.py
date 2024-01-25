@@ -114,13 +114,17 @@ class PeltierSignalGenerator:
             return None, False
 
     # Will recieve message but will only check if the command gave an error, will not decode the message
-    # TODO: The timeout is working, however, only one bit is being read at a time. Make it so that it only needs to go through one time out before giving up on the message/Peltier setup
     def recieveMessage(self):
         connection = True
         buff = self.buffer.copy()
+
         for i in range(len(buff)):
-            buff[i] = self.ser.read(1).decode("utf-8")
-            logger.debug("AHHHHHH")
+            char = self.ser.read(1).decode("utf-8")
+            if len(char) == 0:
+                return buff, False
+            buff[i] = char
+
+        logger.debug(f"Peltier Buffer Message: {buff}")
         if buff == self.checksumError:
             connection = False
             return buff, connection
