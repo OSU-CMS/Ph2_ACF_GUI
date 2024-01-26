@@ -1,52 +1,26 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap, QTextCursor, QColor
+from PyQt5.QtGui import QPixmap, QColor
 from PyQt5.QtWidgets import (
     QAbstractItemView,
-    QApplication,
     QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
     QDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QListWidget,
     QPlainTextEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
     QTableWidget,
     QTableWidgetItem,
-    QTabWidget,
-    QTextEdit,
-    QTreeWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
     QMessageBox,
     QSplitter,
 )
 
-import sys
 import os
-import re
-import subprocess
 import threading
 import time
-from datetime import datetime
-import random
-from subprocess import Popen, PIPE
 import logging
 
 from Gui.GUIutils.DBConnection import *

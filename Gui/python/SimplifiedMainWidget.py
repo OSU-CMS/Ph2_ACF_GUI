@@ -1,54 +1,28 @@
-from PyQt5 import QtCore
-from PyQt5 import QtSerialPort
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QIcon
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
-    QApplication,    
-    QButtonGroup,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QFormLayout,
-    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
     QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
-    QMainWindow,
     QMessageBox,
 )
 
-import pyvisa as visa
-import subprocess
 
-from Gui.QtGUIutils.QtRunWindow import *
-from Gui.QtGUIutils.QtFwCheckDetails import *
-from Gui.python.CustomizedWidget import *
-from Gui.python.Firmware import *
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.FirmwareUtil import *
+from Gui.QtGUIutils.QtRunWindow import QtRunWindow
+from Gui.python.CustomizedWidget import SimpleBeBoardBox
+from Gui.python.Firmware import QtBeBoard
+from Gui.GUIutils.DBConnection import checkDBConnection
 import Gui.GUIutils.settings as default_settings
-from Gui.python.ArduinoWidget import *
-from Gui.python.Peltier import *
+from Gui.python.ArduinoWidget import ArduinoWidget
+from Gui.python.Peltier import PeltierSignalGenerator 
 from Gui.python.logging_config import logger
-
 import Gui.siteSettings as site_settings
 from icicle.icicle.instrument_cluster import InstrumentCluster
 
@@ -91,7 +65,7 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_info["lv"]["Label"].setText("LV status")
 
         self.instrument_info["fc7"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["fc7"]["Label"].setText(default_settings.defaultFC7)
+        self.instrument_info["fc7"]["Label"].setText(site_settings.defaultFC7)
 
         self.RefreshButton = QPushButton("&Refresh")
         self.RefreshButton.clicked.connect(self.checkDevices)
