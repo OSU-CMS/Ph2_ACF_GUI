@@ -147,7 +147,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
     try:
         root, tree = LoadXML(InputFile)
         # FirmwareList just stores the IP address of the FC7 board being used
-        fwIP = FirmwareList[firmwareName]
+        fwIP = FC7List[firmwareName]
         # For all nodes that match .//connection
         for Node in root.findall(".//connection"):
             if fwIP not in Node.attrib["uri"]:

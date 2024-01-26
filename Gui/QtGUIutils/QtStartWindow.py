@@ -142,7 +142,7 @@ class SummaryBox(QWidget):
             ###FIXME:  Here I need to modify the CMSIT
 
             # fc7_ip = FirmwareList[defaultFC7]
-            fc7_ip = FirmwareList[pfirmwareName]
+            fc7_ip = FC7List[pfirmwareName]
             uricmd = "sed -i -e 's/192.168.1.80/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )

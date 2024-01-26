@@ -11,7 +11,6 @@ ExpertUserList = [
     "localexpert",
 ]
 
-FirmwareList = FC7List
 
 """
 if os.path.isfile(os.environ.get('GUI_dir')+"/fc7_ip_address.txt"):
