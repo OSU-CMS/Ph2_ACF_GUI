@@ -196,3 +196,10 @@ After logging in you will need to specify some hardware configurations.
 3. If you are using the default HV and LV configuration that you set in `Gui/siteSettings.py`, you can click "Connect all devices" to connect HV and LV devices as well as your Arduino device if you have that set up.  Otherwise, you can select the port for each device from a list or uncheck the boxes next to them if you prefer to control them manually.
 4. Clicking "New" will open a window for running a new test.  You will choose which test(s) you would like to run and which type of module you are testing.  You will also need to enter the Module serial number, FMC number, and Chip ID number in the provided fields.  Once you've done that, you can choose the power mode (direct or SLDO) and click "Next".  If you are manually controlling your HV and LV, a window will open asking if you want to continue.  Click "Yes" to open a new window for running test. 
 5. When the next window opens, click "Run" to begin the test(s).
+# Bug List / Fixes: 
+This is a list of issues that have only happened on a singular device, therefore do not warrant a complete bug fix, but should be documented somewhere. 
+* If you can't launch the docker with error: Invalid MIT-MAGIC-COOKIE-1 keyqt.qpa.xcb: could not connect to display :0
+run the command
+```
+xhost +local:
+```
