@@ -59,11 +59,11 @@ Open the file siteConfig.py in your favorite text editor and go to the "Icicle v
 In run_Docker.sh you need to update the devices in the "mydevicelist" to reflect the ports you will be using. The plan for this to be automated, but for now you need to change it in this file.
 
 4. Choose the developer Docker image:
-In run_Docker.sh you need to comment the line that runs the "user" Docker image and uncomment the line that runs the "dev" docker image.
+
 
 5. Start the docker container:
 ```
-bash run_Docker.sh
+bash run_Docker.sh dev
 ```
 
 6. Set up Ph2_ACF and open GUI:
