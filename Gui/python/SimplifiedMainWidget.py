@@ -148,34 +148,31 @@ class SimplifiedMainWidget(QWidget):
                 self.Peltier = PeltierSignalGenerator()
                 logger.debug("created self.Peltier")
                 # These should emit signals
-                self.Peltier.sendCommand(
-                    self.Peltier.createCommand(
+                if not self.pelt.sendCommand(
+                    self.pelt.createCommand(
                         "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                     )
-                )  # Allows set point to be set by computer software
-                logger.debug("Setup computer communication for Peltier")
-                self.Peltier.sendCommand(
-                    self.Peltier.createCommand(
+                )[1]: raise Exception("Could not communicate with Peltier")
+
+                    # Allows set point to be set by computer software
+                if not self.pelt.sendCommand(
+                    self.pelt.createCommand(
                         "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                     )
-                )  # Temperature should be PID controlled
-                self.Peltier.sendCommand(
-                    self.Peltier.createCommand(
+                )[1]: raise Exception("Could not communicate with Peltier") # Temperature should be PID controlled
+
+                if not self.pelt.sendCommand(
+                    self.pelt.createCommand(
                         "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                     )
-                )  # Turn off power to Peltierier in case it is on at the start
-                self.Peltier.sendCommand(
-                    self.Peltier.createCommand(
+                )[1]: raise Exception("Could not communicate with Peltier")   # Turn off power to Peltier in case it is on at the start
+
+                if not self.pelt.sendCommand(
+                    self.pelt.createCommand(
                         "Proportional Bandwidth Write",
                         ["0", "0", "0", "0", "0", "0", "c", "8"],
                     )
-                )  # Set proportional bandwidth
-                message, _ = self.Peltier.sendCommand(
-                    self.Peltier.createCommand(
-                        "Control Output Polarity Read",
-                        ["0", "0", "0", "0", "0", "0", "0", "0"],
-                    )
-                )
+                )[1]: raise Exception("Could not communicate with Peltier")  # Set proportional bandwidth
 
                 message = self.Peltier.convertSetTempValueToList(site_settings.defaultPeltierSetTemp)
 
@@ -209,7 +206,7 @@ class SimplifiedMainWidget(QWidget):
         if default_settings.usePeltier:
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
-        self.StatusLayout.addWidget(self.RefreshButton, 3, 5, 1, 2)
+        self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
         logger.debug("Setup StatusLayout")
         ModuleEntryLayout.addWidget(self.BeBoardWidget)
         logger.debug("Setup ModuleEntryLayout")
@@ -264,7 +261,9 @@ class SimplifiedMainWidget(QWidget):
         CMSpixmap = QPixmap.fromImage(CMSimage)
         CMSLogoLabel.setPixmap(CMSpixmap)
         self.LogoLayout.addWidget(OSULogoLabel)
-        self.LogoLayout.addStretch(1)
+        window_label = QLabel()
+        window_label.setText("Phase 2 Pixel Module Test")
+        self.LogoLayout.addWidget(window_label)
         self.LogoLayout.addWidget(CMSLogoLabel)
         logger.debug("Added Logos")
         self.LogoGroupBox.setLayout(self.LogoLayout)
@@ -284,7 +283,6 @@ class SimplifiedMainWidget(QWidget):
         self.mainLayout.addWidget(self.simplifiedStatusBox)
         self.mainLayout.addWidget(self.ModuleEntryBox)
         self.mainLayout.addWidget(self.AppOption)
-        self.mainLayout.addWidget(self.LogoGroupBox)
 
         logger.debug("Simplied GUI UI Loaded")
         
@@ -352,6 +350,7 @@ class SimplifiedMainWidget(QWidget):
         Database -> Check if you can connect to database as defined in checkDBConnection()
         Peltier -> check if the Peltier is at the right temperature and is reachable 
         """ 
+        logger.debug("Getting instrument status")
         self.instrument_status = self.instruments.status(1)
 
         logger.debug("Getting FC7 Comment")
@@ -363,11 +362,19 @@ class SimplifiedMainWidget(QWidget):
 
         logger.debug("Obtaining peltier status")
         peltier_power_status = 1 if int(self.Peltier.sendCommand(self.Peltier.createCommand("Power On/Off Read", ["0", "0"]))[-1]) == 1 else 0
-        peltier_temp_message, _ = self.Peltier.sendCommand(self.Peltier.createCommand("Input1",  ["0", "0", "0", "0", "0", "0", "0", "0"]))
+        peltier_temp_message, temp_message_pass = self.Peltier.sendCommand(self.Peltier.createCommand("Input1",  ["0", "0", "0", "0", "0", "0", "0", "0"]))
+        if not temp_message_pass:
+            peltier_temp_message = None
+
         logger.debug("Formatting peltier output")
-        peltier_temp = int("".join(peltier_temp_message[1:9]), 16)/100
+        if peltier_temp_message:
+            peltier_temp = int("".join(peltier_temp_message[1:9]), 16)/100
+        else:
+            peltier_temp = None
+
         logger.debug("Evaluating temp status")
-        peltier_temp_status = 1 if abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 10 else 0
+        
+        peltier_temp_status = 1 if (peltier_temp and abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 10) else 0
 
         logger.debug("Setting up instrument_status")
         self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus 

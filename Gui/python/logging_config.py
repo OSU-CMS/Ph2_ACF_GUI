@@ -8,7 +8,7 @@ logger.setLevel(logging.DEBUG)
 # Create a handler for writing logs to the console
 console_handler = logging.StreamHandler()
 console_handler.setLevel(
-    logging.INFO
+    logging.DEBUG
 )  # Set the minimum log level for the console handler
 
 # Create a formatter to customize the log message format (optional)
