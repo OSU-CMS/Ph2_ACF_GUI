@@ -467,7 +467,7 @@ def GetTBrowser(DQMFile):
 
 
 def isCompositeTest(TestName):
-    if TestName in CompositeTests.keys:
+    if TestName in CompositeTests.keys():
         return True
     else:
         return False

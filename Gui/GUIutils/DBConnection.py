@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import QMessageBox
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import *
 from Gui.python.logging_config import logger
+from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
 DB_TestResult_Schema = [
     "Module_ID, Account, CalibrationName, ExecutionTime, Grading, DQMFile"
@@ -121,7 +122,7 @@ def getAllTests(dbconnection):
             None, "Warning", "Database connection broken", QMessageBox.Ok
         )
         remoteList = []
-    localList = list(Test.keys())
+    localList = list(Test_to_Ph2ACF_Map.keys())
     remoteList = [remoteList[i][0] for i in range(len(remoteList))]
     for test in remoteList:
         if not test in localList:
