@@ -59,11 +59,11 @@ Open the file siteConfig.py in your favorite text editor and go to the "Icicle v
 In run_Docker.sh you need to update the devices in the "mydevicelist" to reflect the ports you will be using. The plan for this to be automated, but for now you need to change it in this file.
 
 4. Choose the developer Docker image:
-In run_Docker.sh you need to comment the line that runs the "user" Docker image and uncomment the line that runs the "dev" docker image.
+
 
 5. Start the docker container:
 ```
-bash run_Docker.sh
+bash run_Docker.sh dev
 ```
 
 6. Set up Ph2_ACF and open GUI:
@@ -196,6 +196,12 @@ After logging in you will need to specify some hardware configurations.
 3. If you are using the default HV and LV configuration that you set in `Gui/siteSettings.py`, you can click "Connect all devices" to connect HV and LV devices as well as your Arduino device if you have that set up.  Otherwise, you can select the port for each device from a list or uncheck the boxes next to them if you prefer to control them manually.
 4. Clicking "New" will open a window for running a new test.  You will choose which test(s) you would like to run and which type of module you are testing.  You will also need to enter the Module serial number, FMC number, and Chip ID number in the provided fields.  Once you've done that, you can choose the power mode (direct or SLDO) and click "Next".  If you are manually controlling your HV and LV, a window will open asking if you want to continue.  Click "Yes" to open a new window for running test. 
 5. When the next window opens, click "Run" to begin the test(s).
+
+# Notes on contributing
+If you would like to contribute, and you are not at Ohio State there are a few things to keep in mind: 
+1. The computer we currently use to run this GUI has python version 3.6, therefore, when adding code to the GUI you should make sure that your code is compatible with python 3.6. If using the docker image in dev mode, this should be satisfied.
+2. Please ensure that you have tested your code with a module installed or if you do not have a module, that you ensure the GUI launches before making a pull request.
+
 # Bug List / Fixes: 
 This is a list of issues that have only happened on a singular device, therefore do not warrant a complete bug fix, but should be documented somewhere. 
 * If you can't launch the docker with error: Invalid MIT-MAGIC-COOKIE-1 keyqt.qpa.xcb: could not connect to display :0

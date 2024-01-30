@@ -30,6 +30,7 @@ from Gui.python.SLDOScanHandler import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.siteSettings import *
 from Gui.python.logging_config import logger
+from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 import logging
 
@@ -180,7 +181,7 @@ class TestHandler(QObject):
 
         # If currentTest is not set check if it's a compositeTest and if so set testname accordingly, otherwise set it based off the test set in info[1]
         if self.currentTest == "" and isCompositeTest(self.info[1]):
-            testName = CompositeList[self.info[1]][0]
+            testName = CompositeTests[self.info[1]][0]
         elif self.currentTest == None:
             testName = self.info[1]
         else:
@@ -318,15 +319,15 @@ class TestHandler(QObject):
         if self.halt:
             # self.LVpowersupply.TurnOff()
             return
-        runTestList = CompositeList[self.info[1]]
+        runTestList = CompositeTests[self.info[1]]
 
-        if self.testIndexTracker == len(CompositeList[self.info[1]]):
+        if self.testIndexTracker == len(CompositeTests[self.info[1]]):
             self.testIndexTracker = 0
             return
         # testName = CompositeList[self.info[1]][self.testIndexTracker]
         testName = runTestList[self.testIndexTracker]
-        if self.info[1] == "AllScan_Tuning":
-            updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
+        #if self.info[1] == "AllScan_Tuning":
+        #    updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
         self.runSingleTest(testName)
 
     def runSingleTest(self, testName):
@@ -398,7 +399,7 @@ class TestHandler(QObject):
             "echo",
             [
                 "Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(
-                    Test[self.currentTest]
+                    Test_to_Ph2ACF_Map[self.currentTest]
                 )
             ],
         )
@@ -459,7 +460,7 @@ class TestHandler(QObject):
             "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")), "DoNSteps"
         )
 
-        if Test[self.currentTest] in [
+        if Test_to_Ph2ACF_Map[self.currentTest] in [
             "pixelalive",
             "noise",
             "latency",
@@ -475,14 +476,14 @@ class TestHandler(QObject):
         ]:
             self.run_process.start(
                 "CMSITminiDAQ",
-                ["-f", "CMSIT.xml", "-c", "{}".format(Test[self.currentTest])],
+                ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
             )
-            if Test[self.currentTest] == "threqu":
+            if Test_to_Ph2ACF_Map[self.currentTest] == "threqu":
                 self.isTDACtuned = True
         else:
             self.info_process.start(
                 "echo",
-                ["test {} not runnable, quitting...".format(Test[self.currentTest])],
+                ["test {} not runnable, quitting...".format(Test_to_Ph2ACF_Map[self.currentTest])],
             )
 
         # Question = QMessageBox()
@@ -905,7 +906,7 @@ class TestHandler(QObject):
         self.readingOutput = False
 
     def updateNeeded(self, textStr):
-        currentTest = Test[self.currentTest]
+        currentTest = Test_to_Ph2ACF_Map[self.currentTest]
         # print('board type in update section is {0}'.format(self.ModuleType))
         if currentTest in ["thradj", "thrmin"] and "Global threshold for" in textStr:
             if "CROC" in self.ModuleType:
@@ -974,7 +975,7 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
-            if self.testIndexTracker == len(CompositeList[self.info[1]]):
+            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
         elif isSingleTest(self.info[1]):
@@ -1021,7 +1022,7 @@ class TestHandler(QObject):
         if (
             status == False
             and isCompositeTest(self.info[1])
-            and self.testIndexTracker < len(CompositeList[self.info[1]])
+            and self.testIndexTracker < len(CompositeTests[self.info[1]])
         ):
             self.forceContinue()
 
@@ -1149,7 +1150,7 @@ class TestHandler(QObject):
                 measure=False,
             )
 
-            if self.testIndexTracker == len(CompositeList[self.info[1]]):
+            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
         elif isSingleTest(self.info[1]):
@@ -1189,7 +1190,7 @@ class TestHandler(QObject):
                 measure=False,
             )
 
-            if self.testIndexTracker == len(CompositeList[self.info[1]]):
+            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
         elif isSingleTest(self.info[1]):
