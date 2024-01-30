@@ -57,7 +57,7 @@ from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
 from Gui.siteSettings import *
-
+from InnerTrackerTests.TestSequences import TestList
 # from Gui.QtGUIutils.QtProductionTestWindow import *
 
 
@@ -371,7 +371,8 @@ class QtStartWindow(QWidget):
         testlayout = QGridLayout()
         TestLabel = QLabel("Test:")
         self.TestCombo = QComboBox()
-        self.TestList = getAllTests(self.master.connection)
+        #self.TestList = getAllTests(self.master.connection)
+        self.TestList = TestList
         self.TestCombo.addItems(self.TestList)
         TestLabel.setBuddy(self.TestCombo)
 

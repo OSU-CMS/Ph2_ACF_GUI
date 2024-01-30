@@ -487,7 +487,7 @@ class SimpleModuleBox(QWidget):
         if "ZH" in SerialNumber:
             self.Type = "TFPX Quad"
         elif "SCC" in SerialNumber:
-            self.Type = "SingleSCC"
+            self.Type = "TFPX SCC"
         return self.Type
 
     @QtCore.pyqtSlot()
@@ -642,7 +642,7 @@ class SimpleBeBoardBox(QWidget):
             if fwType in ModuleType.values():
                 FwModule.__moduleType = fwType
             else:
-                FwModule.__moduleType = "SingleSCC"
+                FwModule.__moduleType = "TFPX SCC"
 
             for i in ModuleLaneMap[FwModule.__moduleType].keys():
                 FEChip = QtChip()

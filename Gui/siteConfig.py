@@ -94,7 +94,7 @@ ModuleCurrentMap = {
 	"TFPX Quad" : 6.5,
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
-	"CROC 1x2"  : 4.5,
+	"TFPX CROC 1x2"  : 4.5,
 	"TFPX CROC Quad" : 6.5,
 	"CROC SCC"  : 2.0,
 }
@@ -105,25 +105,30 @@ ModuleVoltageMapSLDO = {
 	"TFPX Quad" : 2.98,
 	"TEPX Quad" : 2.0,
 	"TBPX Quad" : 2.98,
-	"CROC 1x2"  : 2.3,
+	"TFPX CROC 1x2"  : 2.3,
 	"TFPX CROC Quad" : 2.98,
 	"CROC SCC"  : 1.8,
 }
 
+###### Should not be using direct voltage, so this block can probably be removed #####
 ##  Configuring the voltage settings for each module type.  These values are in Volts.
 ModuleVoltageMap = {
 	"SingleSCC" : 1.3,
 	"CROC SCC"  : 1.6,
 }
+#####################################################
 
+
+######  can probably remove this block  #############
 #setting the sequence of threshold tuning targets:
-defaultTargetThr = ['2000','1500','1200','1000','800']
+#defaultTargetThr = ['2000','1500','1200','1000','800']
 
 ##### The following settings are for SLDO scans developed for Purdue.#####
 ##### Do not modify these settings unless you know what you are doing.####
 #default settings for SLDO scan.
 defaultSLDOscanVoltage = 0.0
 defaultSLDOscanMaxCurrent = 0.0
+#####################################################
 
 
 ### Setting for Peltier Controller

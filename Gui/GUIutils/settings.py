@@ -3,6 +3,7 @@
 import os
 from collections import defaultdict
 from Gui.siteSettings import *
+import InnerTrackerTests.TestSequences as TestSequences
 
 # List of expert users
 ExpertUserList = [
@@ -87,17 +88,17 @@ FPGAConfigList = {
 }
 
 ModuleType = {
-    1: "SingleSCC",
+    1: "TFPX SCC",
     2: "TFPX Quad",
     3: "TEPX Quad",
     4: "TBPX Quad",
-    5: "CROC 1x2",
+    5: "TFPX CROC 1x2",
     6: "TFPX CROC Quad",
-    7: "CROC SCC",
+    7: "TFPX CROC SCC",
 }
 
 firmware_image = {
-    "SingleSCC": {
+    "TFPX SCC": {
         "v4-11": "SCC_ELE_RD53A_v4-5.bit",
         "v4-13": "SCC_ELE_RD53A_v4-6.bit",
         "v4-14": "SCC_ELE_RD53A_v4-6.bit",
@@ -117,12 +118,12 @@ firmware_image = {
         "v4-13": "QUAD_ELE_RD53A_v4-6.bit",
         "v4-14": "QUAD_ELE_RD53A_v4-6.bit",
     },
-    "CROC SCC": {
+    "TFPX CROC SCC": {
         "v4-11": "SCC_ELE_CROC_v4-5.bit",
         "v4-13": "SCC_ELE_CROC_v4-6.bit",
         "v4-14": "SCC_ELE_CROC_v4-6.bit",
     },
-    "CROC 1x2": {
+    "TFPX CROC 1x2": {
         "v4-11": "QUAD_ELE_CROC_v4-5.bit",
         "v4-13": "QUAD_ELE_CROC_v4-6.bit",
         "v4-14": "QUAD_ELE_CROC_v4-6.bit",
@@ -138,14 +139,14 @@ ModuleLaneMap = {
     "TFPX Quad": {"0": "4", "1": "2", "2": "7", "3": "5"},
     "TEPX Quad": {"0": "0", "1": "1", "2": "2", "3": "3"},
     "TBPX Quad": {"0": "4", "1": "5", "2": "6", "3": "7"},
-    "SingleSCC": {"0": "0"},
-    "CROC SCC": {"0": "15"},
-    "CROC 1x2": {"0": "12", "2": "13"},
+    "TFPX SCC": {"0": "0"},
+    "TFPX CROC SCC": {"0": "15"},
+    "TFPX CROC 1x2": {"0": "12", "2": "13"},
     "TFPX CROC Quad": {"0": "12", "1": "13", "2": "14"},
 }
 
 ChipMap = {
-    "CROC 1x2": {
+    "TFPX CROC 1x2": {
         'VDDD_B': 	'13',
         'VDDA_B': 	'13',
         'VDDA_A': 	'12',
@@ -158,138 +159,17 @@ ChipMap = {
     }
 
 BoxSize = {
-    "SingleSCC": 1,
+    "TFPX SCC": 1,
     "TFPX Quad": 4,
     "TEPX Quad": 4,
     "TBPX Quad": 4,
-    "CROC SCC": 1,
-    "CROC 1x2": 2,
+    "TFPX CROC SCC": 1,
+    "TFPX CROC 1x2": 2,
     "TFPX CROC Quad": 3,
 }
-
-
-ConfigFiles = {
-    "Latency": "/Configuration/Defaults/CMSIT.xml",
-    "PixelAlive": "/Configuration/Defaults/CMSIT.xml",
-    "NoiseScan": "/Configuration/Defaults/CMSIT.xml",
-    "SCurveScan": "/Configuration/Defaults/CMSIT.xml",
-    "GainScan": "/Configuration/Defaults/CMSIT.xml",
-    "ThresholdEqualization": "/Configuration/Defaults/CMSIT.xml",
-    "GainOptimization": "/Configuration/Defaults/CMSIT.xml",
-    "ThresholdMinimization": "/Configuration/Defaults/CMSIT.xml",
-    "ThresholdAdjustment": "/Configuration/Defaults/CMSIT.xml",
-    "InjectionDelay": "/Configuration/Defaults/CMSIT.xml",
-    "ClockDelay": "/Configuration/Defaults/CMSIT.xml",
-    "BitErrorRate": "/Configuration/Defaults/CMSIT.xml",
-    "DataRBOptimization": "/Configuration/Defaults/CMSIT.xml",
-    "ChipIntVoltageTuning": "/Configuration/Defaults/CMSIT.xml",
-    "GenericDAC-DAC": "/Configuration/Defaults/CMSIT.xml",
-    "Physics": "/Configuration/Defaults/CMSIT.xml",
-    "AllScan": "/Configuration/Defaults/CMSIT.xml",
-}
-
-Test = {
-    "AllScan_Tuning": "noise",
-    "AllScan": "noise",
-    "QuickTest": "noise",
-    "IVCurve": "ivcurve",
-    "SLDOScan": "sldoscan",
-    "Latency": "latency",
-    "PixelAlive": "pixelalive",
-    "NoiseScan": "noise",
-    "SCurveScan": "scurve",
-    "GainScan": "gain",
-    "ThresholdEqualization": "threqu",
-    "GainOptimization": "gainopt",
-    "ThresholdMinimization": "thrmin",
-    "ThresholdAdjustment": "thradj",
-    "InjectionDelay": "injdelay",
-    "ClockDelay": "clockdelay",
-    "BitErrorRate": "bertest",
-    "DataRBOptimization": "datarbopt",
-    "ChipIntVoltageTuning": "voltagetuning",
-    "GenericDAC-DAC": "gendacdac",
-    "Physics": "physics",
-}
-
-TestName2File = {
-    "Latency": "Latency",
-    "PixelAlive": "PixelAlive",
-    "IVCurve": "IVCurve",
-    "SLDOScan": "SLDOScan",
-    "NoiseScan": "NoiseScan",
-    "SCurveScan": "SCurve",
-    "GainScan": "Gain",
-    "ThresholdEqualization": "ThrEqualization",
-    "GainOptimization": "GainOptimization",
-    "ThresholdMinimization": "ThrMinimization",
-    "ThresholdAdjustment": "ThrAdjustment",
-    "InjectionDelay": "InjectionDelay",
-    "ClockDelay": "ClockDelay",
-    "BitErrorRate": "BitErrRate",
-    "DataRBOptimization": "DataRBOpt",
-    "ChipIntVoltageTuning": "VoltageTuning",
-    "GenericDAC-DAC": "GenDACDAC",
-    "Physics": "Physics",
-}
-
-SingleTest = [
-    "IVCurve",
-    "SLDOScan",
-    "Latency",
-    "PixelAlive",
-    "NoiseScan",
-    "SCurveScan",
-    "GainScan",
-    "ThresholdEqualization",
-    "GainOptimization",
-    "ThresholdMinimization",
-    "ThresholdAdjustment",
-    "InjectionDelay",
-    "ClockDelay",
-    "BitErrorRate",
-    "DataRBOptimization",
-    "ChipIntVoltageTuning",
-    "GenericDAC-DAC",
-    "Physics",
-]
-
-CompositeTest = ["AllScan_Tuning", "AllScan", "QuickTest"]
-
-CompositeList = {
-    "AllScan": [
-        "IVCurve",
-        "PixelAlive",
-        "NoiseScan",
-        "ThresholdAdjustment",
-        "ThresholdEqualization",
-        "SCurveScan",
-        "NoiseScan",
-        "GainScan",
-        "GainOptimization",
-        "InjectionDelay",
-        "SCurveScan",
-    ],
-    "QuickTest": ["IVCurve", "PixelAlive", "NoiseScan"],
-}
-
-pretuningList = ["IVCurve", "InjectionDelay", "PixelAlive", "NoiseScan"]
-tuningList = ["ThresholdAdjustment", "ThresholdEqualization", "SCurveScan"]
-posttuningList = ["NoiseScan", "SCurveScan"]
-# posttuningList = ['GainScan','GainOptimization','InjectionDelay','SCurveScan']
 
 # Reserved for updated value for XML configuration
 updatedXMLValues = defaultdict(dict)
 
 updatedGlobalValue = defaultdict(lambda: None)
 stepWiseGlobalValue = defaultdict(dict)  # key : index
-
-header = [
-    "Source",
-    "Module_ID",
-    "User",
-    "Test",
-    "Time",
-    "Grade",
-    "DQMFile",
-]  # Stop using
