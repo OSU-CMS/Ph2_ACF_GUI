@@ -18,14 +18,14 @@ logger = logging.getLogger(__name__)
 # Set gpib debug mode to True if you want to see SCPI commands sent to HV and LV devices:
 GPIB_DebugMode = False
 
-
-##  The following block sets defaults that are to be used in the simplified (non-expert) mode.  ##
-##  This mode is currently under development, so these values don't currently do anything       ##
-
+# Ph2_ACF version being used
+defaultACFVersion = "4.0.13"
 # default FC7 boardName
-defaultFC7 = "fc7.board.1"
+defaultFC7 = ['fc7.board.1']
 # default IP address of IP address
-defaultFC7IP = '192.168.1.80'
+defaultFC7IP = ['192.168.1.80']
+# default fpga config
+#defaultFPGAConfig = 'IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28'
 # default FMC board number
 defaultFMC = '0'
 # default mode for LV powering (Direct,SLDO,etc)
@@ -47,9 +47,10 @@ defaultHVModel = ["Keithley 2410 (RS232)"]
 defaultUSBPortLV = ["ASRL/dev/ttyUSBLV::INSTR"]
 # default model for LV power supply
 defaultLVModel = ["KeySight E3633 (RS232)"]
-#default BaudRate for Arduino sensor
-defaultSensorBaudRate = 9600
-#################################
+# default setting for module ( "SingleSCC","TFPX Quad","TEPX Quad","TBPX Quad","Yellow Module (Purdue)"):
+defaultModuleType = "TFPX Quad"
+# default mode for LV powering (Direct,SLDO,etc)
+defaultPowerMode = "SLDO"
 
 # Icicle variables
 icicle_instrument_setup = { "lv":"KeysightE3633A",
@@ -76,11 +77,23 @@ Monitor_CROC = "0"
 
 #setting default HV current compliance in mA
 defaultHVCurrentCompliance = 0.00001
-
-#setting HV bias voltage in V
+#setting default HV bias voltage in V
 defaultHVsetting = -60
+#default BaudRate for Arduino sensor
+defaultSensorBaudRate = 9600
+#default DBServerIP
+defaultDBServerIP = '127.0.0.1'
+#default DBName
+defaultDBName = 'SampleDB'
+defaultTargetThr = ['2000','1500','1200','1000','800']
+##### The following settings are for SLDO scans developed for Purdue.#####
+##### Do not modify these settings unless you know what you are doing.####
+#default settings for SLDO scan.
+defaultSLDOscanVoltage = 0.0
+defaultSLDOscanMaxCurrent = 0.0
 
-## Configuring the current settings for each module type.  These values are in Amps. 
+
+# Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
 	"TFPX SCC" : 0.6,
 	"TFPX Quad" : 6.5,
@@ -129,4 +142,7 @@ usePeltier = True
 defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 20
-defaultPeltierWarningTemp = 40
+#defaultPeltierWarningTemp = 40
+defaultPeltierMaxTemp = 30
+defaultPeltierMaxTempDiff = 5
+dualTempReading = False

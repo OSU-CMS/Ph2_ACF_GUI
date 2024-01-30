@@ -18,7 +18,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
-
 import sys
 import os
 import pyvisa
@@ -350,24 +349,34 @@ class QtApplication(QWidget):
                     self.TryHostAddress,
                     self.TryDatabase,
                 )
+                logger.debug("Attempted to connect to database") 
 
                 if isActive(self.connection):
+                    logger.debug("Database connection active")
                     self.destroyLogin()
                     if self.expertMode:
+                        logger.debug("About to create expert window")
                         self.createMain()
                     else:
+                        logger.debug("About to create simplified window")
                         self.createSimplifiedMain()
+                    logger.debug("Running checkFirmware()")
                     self.checkFirmware()
+                else:
+                    logger.error("Database connection failed")
 
             else:
                 self.connection = "Offline"
                 self.destroyLogin()
+
                 if self.expertMode:
+                    logger.debug("Launching expert mode offline")
                     self.createMain()
+                    logger.debug("About to checkFirmware")
                     self.checkFirmware()
                 else:
+                    logger.debug("Launching simplified mode offline")
                     self.createSimplifiedMain()
-                # self.checkFirmware()
 
         except Exception as err:
             print("Failed to connect the database: {}".format(repr(err)))
@@ -417,6 +426,7 @@ class QtApplication(QWidget):
                 BeBoard.setIPAddress(site_settings.FC7List[firmwareName])
                 BeBoard.setFPGAConfig(settings.FPGAConfigList[firmwareName])
                 self.FwDict[firmwareName] = BeBoard
+            logger.debug("Added FC7 to dictionary")
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))
 
@@ -470,7 +480,7 @@ class QtApplication(QWidget):
                     lambda state, x="{0}".format(index - 1): self.showLogFw(x)
                 )
                 StatusLayout.addWidget(LogButton, index, 6, 1, 1)
-
+        logger.debug("Added widgets to expert window")
         if self.FwUnderUsed != "":
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
@@ -580,6 +590,7 @@ class QtApplication(QWidget):
         self.LVPowerLayout.addStretch(1)
 
         self.LVPowerGroup.setLayout(self.LVPowerLayout)
+        logger.debug("Setup LV and HV")
 
         self.relay_group = QGroupBox("Relay Box")
         self.relay_group.setDisabled(True)
@@ -619,7 +630,7 @@ class QtApplication(QWidget):
         relay_layout.addWidget(self.relay_model_status)
         relay_layout.addStretch(1)
         self.relay_group.setLayout(relay_layout)
-
+        logger.debug("Setup Relay")
         self.multimeter_group = QGroupBox("Multimeter")
         self.multimeter_group.setDisabled(True)
         multimeter_layout = QHBoxLayout()
@@ -660,13 +671,13 @@ class QtApplication(QWidget):
         multimeter_layout.addWidget(self.multimeter_status)
         multimeter_layout.addStretch(1)
         self.multimeter_group.setLayout(multimeter_layout)
-
+        logger.debug("Setup Multimeter widgets")
         self.ArduinoGroup = ArduinoWidget()
         self.ArduinoGroup.stop.connect(self.GlobalStop)
         self.ArduinoControl = QCheckBox("Use arduino monitoring")
         self.ArduinoControl.setChecked(True)
         self.ArduinoControl.toggled.connect(self.switchArduinoPanel)
-
+        logger.debug("Setup Arduino Widgets")
         self.MainOption = QGroupBox("Main")
 
         kMinimumWidth = 120
@@ -683,7 +694,7 @@ class QtApplication(QWidget):
         self.SummaryButton.setMaximumHeight(kMaximumHeight)
         self.SummaryButton.clicked.connect(self.openSummaryWindow)
         SummaryLabel = QLabel("Statistics of test status")
-
+        logger.debug("Setup Summary widgets")
         self.NewTestButton = QPushButton("&New")
         self.NewTestButton.setDefault(True)
         self.NewTestButton.setMinimumWidth(kMinimumWidth)
@@ -697,7 +708,7 @@ class QtApplication(QWidget):
         if self.ProcessingTest == True:
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
-
+        logger.debug("Setup New test button")
         self.NewProductionTestButton = QPushButton("&Production Test")
         self.NewProductionTestButton.setMinimumWidth(kMinimumWidth)
         self.NewProductionTestButton.setMaximumWidth(kMaximumWidth)
@@ -708,7 +719,7 @@ class QtApplication(QWidget):
         )  # FIXME This is to temporarily disable the test until LV can be added.
         self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
         NewProductionTestLabel = QLabel("Open production test")
-
+        logger.debug("Setup NewProductionTest Widgets")
         self.ReviewButton = QPushButton("&Review")
         self.ReviewButton.setMinimumWidth(kMinimumWidth)
         self.ReviewButton.setMaximumWidth(kMaximumWidth)
@@ -716,7 +727,7 @@ class QtApplication(QWidget):
         self.ReviewButton.setMaximumHeight(kMaximumHeight)
         self.ReviewButton.clicked.connect(self.openReviewWindow)
         ReviewLabel = QLabel("Review all results")
-
+        logger.debug("Setup ReviewButton widget")
         self.ReviewModuleButton = QPushButton("&Show Module")
         self.ReviewModuleButton.setMinimumWidth(kMinimumWidth)
         self.ReviewModuleButton.setMaximumWidth(kMaximumWidth)
@@ -726,13 +737,14 @@ class QtApplication(QWidget):
         self.ReviewModuleEdit = QLineEdit("")
         self.ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
         self.ReviewModuleEdit.setPlaceholderText("Enter Module ID")
-
+        logger.debug("Setup ReviewModuleEdit")
         self.PeltierCooling = Peltier(100)
+        logger.debug("Instantiate Peltier")
         self.PeltierBox = QGroupBox("Peltier Controller", self)
         self.PeltierLayout = QGridLayout()
         self.PeltierLayout.addWidget(self.PeltierCooling)
         self.PeltierBox.setLayout(self.PeltierLayout)
-
+        logger.debug("Setup Peltier widget")
         layout = QGridLayout()
         layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
         layout.addWidget(NewTestLabel, 0, 1, 1, 2)
@@ -744,7 +756,7 @@ class QtApplication(QWidget):
         layout.addWidget(ReviewLabel, 3, 1, 1, 2)
         layout.addWidget(self.ReviewModuleButton, 4, 0, 1, 1)
         layout.addWidget(self.ReviewModuleEdit, 4, 1, 1, 2)
-
+        logger.debug("Added all widgets to layout")
         ####################################################
         # Functions for expert mode
         ####################################################
@@ -760,6 +772,7 @@ class QtApplication(QWidget):
             DBConsoleLabel = QLabel("Console for database")
             layout.addWidget(self.DBConsoleButton, 5, 0, 1, 1)
             layout.addWidget(DBConsoleLabel, 5, 1, 1, 2)
+            logger.debug("Added expert-only widgets")
 
         ####################################################
         # Functions for expert mode  (END)
@@ -790,6 +803,7 @@ class QtApplication(QWidget):
             self.RefreshButton.clicked.connect(self.update)
             self.RefreshButton.clicked.connect(self.setDefault)
 
+        logger.debug("Setup Refresh button")
         self.LogoutButton = QPushButton("&Logout")
         # Fixme: more conditions to be added
         if self.ProcessingTest:
@@ -797,7 +811,7 @@ class QtApplication(QWidget):
         self.LogoutButton.clicked.connect(self.destroyMain)
         self.LogoutButton.clicked.connect(self.setLoginUI)
         self.LogoutButton.clicked.connect(self.createLogin)
-
+        logger.debug("Setup Logout buttons")
         self.ExitButton = QPushButton("&Exit")
         # Fixme: more conditions to be added
         if self.ProcessingTest:
@@ -828,9 +842,10 @@ class QtApplication(QWidget):
         self.mainLayout.addWidget(self.PeltierBox, 12, 1, 1, 1)
         self.mainLayout.addWidget(self.AppOption, 13, 1, 1, 1)
         self.mainLayout.addWidget(self.LogoGroupBox, 13, 0, 1, 1)
-
+        logger.debug("Setup mainLayout")
+        
         self.setDefault()
-
+        logger.debug("Ran setDefault")
         # create a dictionary to easily disable groupboxes later
         self.groupbox_mapping = {
             "hv": self.HVPowerGroup,
@@ -838,6 +853,7 @@ class QtApplication(QWidget):
             "relay": self.relay_group,
             "multimeter": self.multimeter_group,
         }
+
 
     def setDefault(self):
         if self.expertMode is False:
