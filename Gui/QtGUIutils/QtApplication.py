@@ -278,12 +278,16 @@ class QtApplication(QWidget):
         CMSLogoLabel.setPixmap(CMSpixmap)
         self.LogoLayout.addWidget(OSULogoLabel)
         self.LogoLayout.addStretch(1)
+        logoTextLabel = QLabel("Ph2_ACF GUI")
+        logoTextLabel.setFont(QFont("Arial", 16))
+        self.LogoLayout.addWidget(logoTextLabel)
+        self.LogoLayout.addStretch(1)
         self.LogoLayout.addWidget(CMSLogoLabel)
 
         self.LogoGroupBox.setLayout(self.LogoLayout)
 
         self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
-        self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
+        self.mainLayout.addWidget(self.LogoGroupBox, 2, 0)
 
     def changeDBList(self):
         try:
