@@ -50,7 +50,7 @@ from Gui.python.Peltier import *
 from Gui.python.logging_config import logger
 
 import Gui.siteSettings as site_settings
-from icicle.icicle.instrument_cluster import InstrumentCluster
+from icicle.icicle.instrument_cluster import InstrumentCluster, InstrumentNotInstantiated
 
 
 class SimplifiedMainWidget(QWidget):
@@ -350,8 +350,10 @@ class SimplifiedMainWidget(QWidget):
         Database -> Check if you can connect to database as defined in checkDBConnection()
         Peltier -> check if the Peltier is at the right temperature and is reachable 
         """ 
-        logger.debug("Getting instrument status")
-        self.instrument_status = self.instruments.status(1)
+        
+        self.instrument_status = self.check_powersupplies_and_relay()
+
+        logger.debug(f"Instrument status is {self.instrument_status}")
 
         logger.debug("Getting FC7 Comment")
         FwStatusComment, _, _ = self.master.getFwComment(
@@ -389,7 +391,26 @@ class SimplifiedMainWidget(QWidget):
             else:
                 value["Value"].setPixmap(self.redledpixmap)
         logger.debug(f'{__name__} Setup led labels')
-        
+
+    def check_powersupplies_and_relay(self) -> dict[str, int]:
+        """
+        Check if LV, HV, and relay board are connected and communicable
+
+        If the LV or HV are connected but not on they will have a status of 0
+        using the instrument_cluster.status() method. If we cannot communicate
+        with them then they will freeze the GUI. Therefore, if the code reaches
+        this part the HV and LV should always have a good status and we need to
+        invert the values from instrument_cluster.status()
+        """
+        status = self.instruments.status(lv_channel=1)
+        return_status = {} 
+        for key, value in status.items():
+            if value == 0:
+                return_status[key] = 1
+            elif type(value) == InstrumentNotInstantiated:
+                return_status[key] = 0
+        return return_status
+
     def checkDevices(self):
         statusString, colorString = checkDBConnection(self.connection)
         if "offline" in statusString:
