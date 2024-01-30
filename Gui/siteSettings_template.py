@@ -82,36 +82,36 @@ defaultHVsetting = -60
 
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
-	"SingleSCC" : 0.6,
+	"TFPX SCC" : 0.6,
 	"TFPX Quad" : 6.5,
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
 	"Yellow Module (Purdue)": 6.5,
 
-	"CROC 1x2"  : 4.5,
+	"TFPX CROC 1x2"  : 4.5,
 
 	"TFPX CROC Quad" : 6.5,
-	"CROC SCC"  : 2.0,
+	"TFPX CROC SCC"  : 2.0,
 }
 
 ## Configuring the voltage limit for each module type when operating in SLDO mode.  These values are in Volts.
 ModuleVoltageMapSLDO = {
-	"SingleSCC" : 1.8,
+	"TFPX SCC" : 1.8,
 	"TFPX Quad" : 2.98,
 	"TEPX Quad" : 2.0,
 	"TBPX Quad" : 2.98,
 	"Yellow Module (Purdue)": 2.8,
 
-	"CROC 1x2"  : 2.2,
+	"TFPX CROC 1x2"  : 2.2,
 
 	"TFPX CROC Quad" : 2.98,
-	"CROC SCC"  : 1.8,
+	"TFPX CROC SCC"  : 1.8,
 }
 
 ##  Configuring the voltage settings for each module type.  These values are in Volts.
 ModuleVoltageMap = {
-	"SingleSCC" : 1.3,
-	"CROC SCC"  : 1.6,
+	"TFPX SCC" : 1.3,
+	"TFPX CROC SCC"  : 1.6,
 }
 
 #setting the sequence of threshold tuning targets:

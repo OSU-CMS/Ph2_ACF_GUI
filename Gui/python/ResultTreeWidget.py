@@ -46,7 +46,7 @@ from Gui.GUIutils.guiUtils import *
 from Gui.python.ROOTInterface import *
 from Gui.QtGUIutils.QtTCanvasWidget import *
 from Gui.python.logging_config import logger
-
+from InnerTrackerTests.TestSequences import CompositeTests
 
 class ResultTreeWidget(QWidget):
     def __init__(self, info, width, height, master):
@@ -79,8 +79,8 @@ class ResultTreeWidget(QWidget):
 
     def initializeProgressBar(self):
         if isCompositeTest(self.info[1]):
-            self.ProgressBarList = CompositeList[self.info[1]]
-            self.runtimeList = CompositeList[self.info[1]]
+            self.ProgressBarList = CompositeTests[self.info[1]]
+            self.runtimeList = CompositeTests[self.info[1]]
         else:
             self.ProgressBarList = [self.info[1]]
             self.runtimeList = [self.info[1]]
