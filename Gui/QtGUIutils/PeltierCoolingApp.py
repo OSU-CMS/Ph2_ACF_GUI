@@ -1,8 +1,9 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QMessageBox
-from PyQt5.QtCore import *
-from Gui.python.Peltier import *
-from Gui.siteSettings import *
+from PyQt5.QtCore import pyqtSignal, QTimer
+
+from Gui.python.Peltier import PeltierSignalGenerator
+import Gui.siteSettings as settings
 
 import time
 import os
@@ -255,7 +256,10 @@ class Peltier(QWidget):
                     ["0", "0", "0", "0", "0", "0", "0", "0"],
                 )
             )
-            message = self.convertSetTempListToValue(message)
+            try:
+                message = self.convertSetTempListToValue(message)
+            except Exception as e:
+                logger.warn(f"Failed to send message due to error: {e}")
 
             self.setTempSignal.emit(message)
 
@@ -342,7 +346,7 @@ class Peltier(QWidget):
             return
 
     def tempLimit(self, temp):
-        if temp >= defaultPeltierMaxTemp and self.emergencySwitch == False:
+        if temp >= settings.defaultPeltierMaxTemp and self.emergencySwitch == False:
             print("Temperature too high")
             self.haltSig = True
             self.urgentSignal.emit(self.haltSig)
@@ -351,7 +355,7 @@ class Peltier(QWidget):
             pass
     
     def tempDiff(self):
-        if abs(self.t2-self.t1) > defaultPeltierMaxTempDiff and self.emergencySwitch == False:
+        if abs(self.t2-self.t1) > settings.defaultPeltierMaxTempDiff and self.emergencySwitch == False:
             print("Temp difference too big")
             self.haltSig = True
             self.urgentSignal.emit(self.haltSig)
