@@ -133,3 +133,4 @@ defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 20
 defaultPeltierWarningTemp = 40
+dualTempReading = True

@@ -71,8 +71,6 @@ class Peltier(QWidget):
         self.currentTempDisplay = QtWidgets.QLCDNumber(self)
         self.gridLayout.addWidget(self.currentTempDisplay, 4, 0, 1, 1)
 
-        self.currentTempDisplay2 = QtWidgets.QLCDNumber(self)
-        self.gridLayout.addWidget(self.currentTempDisplay2, 4, 0, 1, 2)
 
         self.setTempButton = QtWidgets.QPushButton("Set Temperature", self)
         self.setTempButton.setEnabled(False)
@@ -83,13 +81,17 @@ class Peltier(QWidget):
         self.setTempInput.setRange(-50, 50)
         self.gridLayout.addWidget(self.setTempInput, 2, 0, 1, 1)
 
-        self.currentTempLabel2 = QtWidgets.QLabel(self)
-        self.gridLayout.addWidget(self.currentTempLabel2, 4, 1, 1, 1)
 
         self.polarityButton = QtWidgets.QPushButton("Change Polarity", self)
         self.polarityButton.setEnabled(False)
         self.polarityButton.clicked.connect(self.polarityToggle)
         self.gridLayout.addWidget(self.polarityButton, 2, 1, 1, 1)
+
+        if settings.dualTempReading:
+            self.currentTempDisplay2 = QtWidgets.QLCDNumber(self)
+            self.gridLayout.addWidget(self.currentTempDisplay2, 4, 0, 1, 2)
+            self.currentTempLabel2 = QtWidgets.QLabel(self)
+            self.gridLayout.addWidget(self.currentTempLabel2, 4, 1, 1, 1)
 
         self.setLayout(self.gridLayout)
 
@@ -140,11 +142,12 @@ class Peltier(QWidget):
             # Create QTimer that will call functions
             self.timer = QTimer()
             self.timer.timeout.connect(self.controllerMonitoring)
-            self.timer.timeout.connect(self.controllerMonitoring2)
             self.tempReading.connect(lambda temp: self.currentTempDisplay.display(temp))
-            self.tempReading2.connect(
-                lambda temp: self.currentTempDisplay2.display(temp)
-            )
+            if settings.dualTempReading:
+                self.tempReading2.connect(
+                    lambda temp: self.currentTempDisplay2.display(temp)
+                )
+                self.timer.timeout.connect(self.controllerMonitoring2)
             self.powerReading.connect(lambda power: self.setPowerStatus(power))
             self.timer.start(500)  # Perform monitoring functions every 500ms
 
@@ -166,7 +169,7 @@ class Peltier(QWidget):
             self.powerStatus.setPixmap(self.redledpixmap)
             self.powerStatusValue = 0
         else:
-            print("Unkown power status")
+            logger.error("Unkown power status")
 
     def powerToggle(self):
         if self.powerStatusValue == 0:
@@ -183,7 +186,7 @@ class Peltier(QWidget):
                     try:
                         self.pelt.sendCommand(self.pelt.createCommand('Power On/Off Write', ['0','0','0','0','0','0','0','1']))
                     except Exception as e:
-                        print("Could not turn on controller due to error: ", e)
+                        logger.error("Could not turn on controller due to error: ", e)
         elif self.powerStatusValue == 1:
             try:
                 self.pelt.sendCommand(
@@ -192,7 +195,7 @@ class Peltier(QWidget):
                     )
                 )
             except Exception as e:
-                print("Could not turn off controller due to error: " , e)
+                logger.error("Could not turn off controller due to error: " , e)
                 
     def setPolarityStatus(self, polarity):
         if polarity[8] == "0":
@@ -202,7 +205,7 @@ class Peltier(QWidget):
             self.polarityValue = "HEAT WP2+ and WP1-"
             self.polarityButton.setText(self.polarityValue)
         else:
-            print("Unexpected value sent back from polarity change function")
+            logger.error("Unexpected value sent back from polarity change function")
 
     def polarityToggle(self):
         if self.polarityValue == "HEAT WP1+ and WP2-":
@@ -222,7 +225,7 @@ class Peltier(QWidget):
         )
         self.polarityButton.setText(
             self.polarityValue
-        )  # FIXME Probably a better idea to read polarity from controller
+        )  
 
     def setTemp(self)-> None:
         try:
