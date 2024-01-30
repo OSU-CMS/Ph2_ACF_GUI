@@ -1,6 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget, QMessageBox
-from PyQt5.QtCore import pyqtSignal, QTimer
+from PyQt5.QtCore import pyqtSignal, QTimer, Qt
 
 from Gui.python.Peltier import PeltierSignalGenerator
 import Gui.siteSettings as settings
@@ -90,23 +90,6 @@ class Peltier(QWidget):
         self.polarityButton.setEnabled(False)
         self.polarityButton.clicked.connect(self.polarityToggle)
         self.gridLayout.addWidget(self.polarityButton, 2, 1, 1, 1)
-
-        self.powerStatus = QtWidgets.QLabel(self)
-        self.powerStatusLabel = QtWidgets.QLabel("Power Status of Peltier: ", self)
-        self.powerButton = QtWidgets.QPushButton("Peltier Power On/Off")
-        self.powerButton.setEnabled(False)
-        self.powerButton.clicked.connect(self.powerToggle)
-        self.gridLayout.addWidget(self.powerButton, 0, 2, 1, 1)
-        self.gridLayout.addWidget(self.powerStatusLabel, 1, 2, 1, 1)
-
-        self.image = QtGui.QPixmap()
-        redledimage = QtGui.QImage(self.Ph2ACFDirectory + "/Gui/icons/led-red-on.png").scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.redledpixmap = QtGui.QPixmap.fromImage(redledimage)
-        greenledimage = QtGui.QImage(self.Ph2ACFDirectory + "/Gui/icons/green-led-on.png" ).scaled(QtCore.QSize(60,10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        self.greenledpixmap = QtGui.QPixmap.fromImage(greenledimage)
-        self.powerStatus.setPixmap(self.redledpixmap) # The power status will initially always show that it's off, if it's actually on the status will be update in 0.5 seconds.
-        self.gridLayout.addWidget(self.powerStatus, 1, 3, 1, 1)
-
 
         self.setLayout(self.gridLayout)
 
@@ -347,7 +330,7 @@ class Peltier(QWidget):
 
     def tempLimit(self, temp):
         if temp >= settings.defaultPeltierMaxTemp and self.emergencySwitch == False:
-            print("Temperature too high")
+            logger.warn("Temperature is too high! Shutting down test!")
             self.haltSig = True
             self.urgentSignal.emit(self.haltSig)
             self.emergencySwitch = True
@@ -356,7 +339,16 @@ class Peltier(QWidget):
     
     def tempDiff(self):
         if abs(self.t2-self.t1) > settings.defaultPeltierMaxTempDiff and self.emergencySwitch == False:
-            print("Temp difference too big")
+
+            logger.warn(
+                """
+                Temperature difference too high between thermistors,
+                there is probably a runaway heating issue.
+                Ensure that peltier plate is sufficiently
+                cooled. Shutting down test!
+                """
+            )
+
             self.haltSig = True
             self.urgentSignal.emit(self.haltSig)
             self.emergencySwitch = True
