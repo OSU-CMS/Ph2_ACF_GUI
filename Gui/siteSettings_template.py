@@ -141,4 +141,4 @@ defaultPeltierSetTemp = 20
 #defaultPeltierWarningTemp = 40
 defaultPeltierMaxTemp = 30
 defaultPeltierMaxTempDiff = 5
-
+dualTempReading = False
