@@ -63,10 +63,10 @@ icicle_instrument_setup = { "lv":"KeysightE3633A",
                             "default_hv_compliance_current": 5e-6,
                             "default_hv_delay": 2,
                             "default_hv_step_size": 10}
-#                            "relay_board": "RelayBoard",
-#                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
-#                            "multimeter": "HP34401A",
-#                            "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR"}
+                            "relay_board": "RelayBoard",
+                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
+                            "multimeter": "HP34401A",
+                            "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR"}
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 
 FC7List =  {
@@ -110,20 +110,25 @@ ModuleVoltageMapSLDO = {
 	"CROC SCC"  : 1.8,
 }
 
+###### Should not be using direct voltage, so this block can probably be removed #####
 ##  Configuring the voltage settings for each module type.  These values are in Volts.
 ModuleVoltageMap = {
 	"SingleSCC" : 1.3,
 	"CROC SCC"  : 1.6,
 }
+#####################################################
 
+
+######  can probably remove this block  #############
 #setting the sequence of threshold tuning targets:
-defaultTargetThr = ['2000','1500','1200','1000','800']
+#defaultTargetThr = ['2000','1500','1200','1000','800']
 
 ##### The following settings are for SLDO scans developed for Purdue.#####
 ##### Do not modify these settings unless you know what you are doing.####
 #default settings for SLDO scan.
 defaultSLDOscanVoltage = 0.0
 defaultSLDOscanMaxCurrent = 0.0
+#####################################################
 
 
 ### Setting for Peltier Controller
