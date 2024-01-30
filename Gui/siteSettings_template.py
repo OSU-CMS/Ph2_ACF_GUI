@@ -1,3 +1,16 @@
+
+import logging
+
+# Customize the logging configuration
+logging.basicConfig(
+   level=logging.INFO,
+   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+   filename='my_project.log',  # Specify a log file
+   filemode='w'  # 'w' for write, 'a' for append
+)
+
+logger = logging.getLogger(__name__)
+
 ######################################################################
 # To be edited by expert as default setting for Hardware configuration
 ######################################################################
@@ -39,10 +52,28 @@ defaultModuleType = "TFPX Quad"
 # default mode for LV powering (Direct,SLDO,etc)
 defaultPowerMode = "SLDO"
 
-#defaultVoltageMap = {
-#    "Direct" : 1.28,
-#    "SLDO"   : 1.90
-#}
+# Icicle variables
+icicle_instrument_setup = { "lv":"KeysightE3633A",
+                            "lv_resource" : "ASRL/dev/ttyUSBLV::INSTR",
+                            "default_lv_channel" : 1,
+                            "default_lv_voltage" : 1.8,
+                            "default_lv_current" : 3,
+                            "hv": "Keithley2410",
+                            "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
+                            "default_hv_voltage": -80,
+                            "default_hv_compliance_current": 5e-6,
+                            "default_hv_delay": 2,
+                            "default_hv_step_size": 10,
+                            "relay_board": "RelayBoard",
+                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
+                            "multimeter": "Keithley2000",
+                            "multimeter_resource": "ASRL/dev/ttyUSB3::INSTR"}
+
+
+## Specify whether of not you want to monitor chip temperature during the tests ##
+## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
+Monitor_RD53A = "1"
+Monitor_CROC = "0"
 
 #setting default HV current compliance in mA
 defaultHVCurrentCompliance = 0.00001

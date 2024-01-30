@@ -1,3 +1,16 @@
+
+import logging
+
+# Customize the logging configuration
+logging.basicConfig(
+   level=logging.INFO,
+   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+   filename='my_project.log',  # Specify a log file
+   filemode='w'  # 'w' for write, 'a' for append
+)
+
+logger = logging.getLogger(__name__)
+
 ######################################################################
 # To be edited by expert as default setting for Hardware configuration
 ######################################################################
@@ -37,6 +50,23 @@ defaultLVModel = ["KeySight E3633 (RS232)"]
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 9600
 #################################
+
+# Icicle variables
+icicle_instrument_setup = { "lv":"KeysightE3633A",
+                            "lv_resource" : "ASRL/dev/ttyUSBLV::INSTR",
+                            "default_lv_channel" : 1,
+                            "default_lv_voltage" : 1.8,
+                            "default_lv_current" : 3,
+                            "hv": "Keithley2410",
+                            "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
+                            "default_hv_voltage": -80,
+                            "default_hv_compliance_current": 5e-6,
+                            "default_hv_delay": 2,
+                            "default_hv_step_size": 10,
+                            "relay_board": "RelayBoard",
+                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
+                            "multimeter": "HP34401A",
+                            "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR"}
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 
@@ -98,7 +128,7 @@ defaultSLDOscanMaxCurrent = 0.0
 
 
 ### Setting for Peltier Controller
-usePeltier = True
+usePeltier = False
 defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 20

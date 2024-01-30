@@ -1,226 +1,227 @@
 from Gui.GUIutils.settings import *
-
-class QtChip():
-	def __init__(self):
-		self.__chipID = ""
-		self.__chipLane = ""
-		self.__chipVDDA = ""
-		self.__chipVDDD = ""
-		self.__chipStatus = True
-
-	
-	def setID(self, id):
-		self.__chipID = str(id)
-
-	def getID(self):
-		return self.__chipID
-
-	def setLane(self, lane):
-		self.__chipLane = str(lane)
-	
-	def setVDDA(self, pVDDAtrim):
-		self.__chipVDDA = str(pVDDAtrim)
-	
-	def setVDDD(self, pVDDDtrim):
-		self.__chipVDDD = str(pVDDDtrim)
-
-	def setStatus(self, pStatus):
-		self.__chipStatus = pStatus
-
-	def getVDDA(self):
-		return self.__chipVDDA
-	
-	def getVDDD(self):
-		return self.__chipVDDD
-	
-	def getStatus(self):
-		return self.__chipStatus
-
-	def getLane(self):
-		return self.__chipLane
+from Gui.python.logging_config import logger
 
 
-# Dedicated for OpticalGroup and 
-class QtModule():
-	def __init__(self, **kwargs):
-		self.__moduleName = "SerialNumber1"
-		self.__moduleID =  "0"
-		self.__moduleType = "SingleSCC"
-		self.__FMCID = "0"
-		self.__OGID = "0"
-		self.__chipDict = {}
-		self.__VDDAMap = {}  #Format is {chipID : VDDA value}
-		self.__VDDDMap = {}  #Format is {chipID : VDDD value}
-		self.__ChipStatusMap = {}  #Format is {chipID : enable flag}
+class QtChip:
+    def __init__(self):
+        self.__chipID = ""
+        self.__chipLane = ""
+        self.__chipVDDA = ""
+        self.__chipVDDD = ""
+        self.__chipStatus = True
 
-		for key,value in kwargs.items():
-			if key == "id":
-				self.__moduleID = str(value)
-			if key == "type":
-				self.__moduleType = str(value)
+    def setID(self, id):
+        self.__chipID = str(id)
 
-			
-		#FIXME: This need to pass along a dictionary of chipID : [VDDA,VDDD]
-		#self.setupChips()  #commented because I think it is redundant, but not 100% sure.
-	
-	def setModuleName(self, name):
-		self.__moduleName = name
+    def getID(self):
+        return self.__chipID
 
-	def getModuleName(self):
-		return self.__moduleName
+    def setLane(self, lane):
+        self.__chipLane = str(lane)
 
-	def setModuleID(self, id):
-		self.__moduleID = id
-	
-	def getModuleID(self):
-		return self.__moduleID
+    def setVDDA(self, pVDDAtrim):
+        self.__chipVDDA = str(pVDDAtrim)
 
-	def setFMCID(self, fmcId):
-		self.__FMCID = fmcId
+    def setVDDD(self, pVDDDtrim):
+        self.__chipVDDD = str(pVDDDtrim)
 
-	def getFMCID(self):
-		return self.__FMCID
+    def setStatus(self, pStatus):
+        self.__chipStatus = pStatus
 
-	def setOpticalGroupID(self, ogId):
-		self.__OGID = ogId
+    def getVDDA(self):
+        return self.__chipVDDA
 
-	def getOpticalGroupID(self):
-		return self.__OGID
+    def getVDDD(self):
+        return self.__chipVDDD
 
-	def setModuleType(self, fwType):
-		if fwType in ModuleType.values():
-			self.__moduleType = fwType
-		else:
-			self.__moduleType = "SingleSCC"
-		self.setupChips() 
+    def getStatus(self):
+        return self.__chipStatus
 
-	def getModuleType(self):
-		return self.__moduleType
+    def getLane(self):
+        return self.__chipLane
 
-	def setChipVDDD(self, pChipID, pVDDDtrim):
-		self.__VDDDMap[pChipID] = pVDDDtrim
-		#self.setupChips()
 
-	def setChipVDDA(self, pChipID, pVDDAtrim):
-		self.__VDDAMap[pChipID] = pVDDAtrim
+# Dedicated for OpticalGroup and
+class QtModule:
+    def __init__(self, **kwargs):
+        self.__moduleName = "SerialNumber1"
+        self.__moduleID = "0"
+        self.__moduleType = "SingleSCC"
+        self.__FMCID = "0"
+        self.__OGID = "0"
+        self.__chipDict = {}
+        self.__VDDAMap = {}  # Format is {chipID : VDDA value}
+        self.__VDDDMap = {}  # Format is {chipID : VDDD value}
+        self.__ChipStatusMap = {}  # Format is {chipID : enable flag}
 
-	def setChipStatus(self, pChipID, pStatus):
-		self.__ChipStatusMap[pChipID] = pStatus
+        for key, value in kwargs.items():
+            if key == "id":
+                self.__moduleID = str(value)
+            if key == "type":
+                self.__moduleType = str(value)
 
-	#FIXME: This function needs to accept a dictionary of chipID : [VDDA, VDDD].  
-	def setupChips(self, **kwargs):
-		self.__chipDict = {}
-		if "chips" in kwargs.keys():
-			pass
-			return
-		#for key,value in kwargs.items():
-		#	if key=='VDDA':
+        # FIXME: This need to pass along a dictionary of chipID : [VDDA,VDDD]
+        # self.setupChips()  #commented because I think it is redundant, but not 100% sure.
 
-		for i in ModuleLaneMap[self.__moduleType].keys():
-			
-			FEChip = QtChip()
-			#FEChip.setID(8)
-			LaneID = str(i)
-			chipNumber = ModuleLaneMap[self.__moduleType][LaneID]
-			FEChip.setID(ModuleLaneMap[self.__moduleType][LaneID])
-			FEChip.setLane(LaneID)
-			FEChip.setVDDA(self.__VDDAMap[chipNumber])
-			FEChip.setVDDD(self.__VDDDMap[chipNumber])
-			FEChip.setStatus(self.__ChipStatusMap[chipNumber])
-			
-			self.__chipDict[i] = FEChip
-	
-	def getChips(self):
-		return self.__chipDict
+    def setModuleName(self, name):
+        self.__moduleName = name
 
-class QtOpticalGroup():
-	def __init__(self):
-		self.__FMCID = "0"
-		self.__OGID = "0"
-		self.__moduleDict = {}
+    def getModuleName(self):
+        return self.__moduleName
 
-	def setFMCID(self, fmcId):
-		self.__FMCID = fmcId
+    def setModuleID(self, id):
+        self.__moduleID = id
 
-	def getFMCID(self):
-		return self.__FMCID
+    def getModuleID(self):
+        return self.__moduleID
 
-	def setOpticalGroupID(self, ogId):
-		self.__OGID = ogId
+    def setFMCID(self, fmcId):
+        self.__FMCID = fmcId
 
-	def getOpticalGroupID(self):
-		return self.__OGID
+    def getFMCID(self):
+        return self.__FMCID
 
-	def setupModule(self, **kwargs):
-		self.__moduleDict = {}
-		if "module" in kwargs.keys():
-			pass
-			return
-		for i in ModuleLaneMap[self.__moduleType].keys():
-			FEChip = QtChip()
-			#FEChip.setID(8)
-			FEChip.setID(i)
-			FEChip.setLane(i)
-			self.__chipDict[i] = FEChip
-	
-	def getChips(self):
-		return self.__chipDict
+    def setOpticalGroupID(self, ogId):
+        self.__OGID = ogId
 
-	
+    def getOpticalGroupID(self):
+        return self.__OGID
 
-class QtBeBoard():
-	def __init__(self, boardName = ""):
-		self.__boardName= ""
-		self.__ipAddress = "0.0.0.0"
-		self.__moduleDict = {}
-		self.__fpgaConfigName = ""
+    def setModuleType(self, fwType):
+        if fwType in ModuleType.values():
+            self.__moduleType = fwType
+        else:
+            self.__moduleType = "SingleSCC"
+        self.setupChips()
 
-	def setBoardName(self, name):
-		self.__boardName = name
+    def getModuleType(self):
+        return self.__moduleType
 
-	def getBoardName(self):
-		return self.__boardName
+    def setChipVDDD(self, pChipID, pVDDDtrim):
+        self.__VDDDMap[pChipID] = pVDDDtrim
+        # self.setupChips()
 
-	def setIPAddress(self, ipAddress):
-		self.__ipAddress = ipAddress
-		
-	def getIPAddress(self):
-		return self.__ipAddress
+    def setChipVDDA(self, pChipID, pVDDAtrim):
+        self.__VDDAMap[pChipID] = pVDDAtrim
 
-	def setFPGAConfig(self, fpgaConfig):
-		self.__fpgaConfigName = fpgaConfig
-		return True
-	
-	def addModule(self, key, module):
-		if module not in self.__moduleDict.values():
-			self.__moduleDict[key] = module
-			return True
-		else:
-			return False
+    def setChipStatus(self, pChipID, pStatus):
+        self.__ChipStatusMap[pChipID] = pStatus
 
-	def getAllModules(self):
-		return self.__moduleDict
+    # FIXME: This function needs to accept a dictionary of chipID : [VDDA, VDDD].
+    def setupChips(self, **kwargs):
+        self.__chipDict = {}
+        if "chips" in kwargs.keys():
+            pass
+            return
+        # for key,value in kwargs.items():
+        #       if key=='VDDA':
 
-	def getModuleByIndex(self, key):
-		if key in self.__moduleDict.keys():
-			return self.__moduleDict[key]
-		else:
-			return None
+        for i in ModuleLaneMap[self.__moduleType].keys():
+            FEChip = QtChip()
+            # FEChip.setID(8)
+            LaneID = str(i)
+            chipNumber = ModuleLaneMap[self.__moduleType][LaneID]
+            FEChip.setID(ModuleLaneMap[self.__moduleType][LaneID])
+            FEChip.setLane(LaneID)
+            FEChip.setVDDA(self.__VDDAMap[chipNumber])
+            FEChip.setVDDD(self.__VDDDMap[chipNumber])
+            FEChip.setStatus(self.__ChipStatusMap[chipNumber])
 
-	def removeModule(self, module):
-		for key, item in self.__moduleDict.items():
-			if module == item:
-				self.__moduleDict.pop(key)
-				return  True
-		return False
+            self.__chipDict[i] = FEChip
 
-	def removeModuleByKey(self, removeKey):
-		for key in self.__moduleDict.keys():
-			if removeKey == key:
-				self.__moduleDict.pop(key)
-				return True
-		return False
+    def getChips(self):
+        return self.__chipDict
 
-	def removeAllModule(self):
-		self.__moduleDict.clear()
-		
+    def addChip(self, index: int, value: QtChip) -> None:
+        self.__chipDict[index] = value
+
+
+class QtOpticalGroup:
+    def __init__(self):
+        self.__FMCID = "0"
+        self.__OGID = "0"
+        self.__moduleDict = {}
+
+    def setFMCID(self, fmcId):
+        self.__FMCID = fmcId
+
+    def getFMCID(self):
+        return self.__FMCID
+
+    def setOpticalGroupID(self, ogId):
+        self.__OGID = ogId
+
+    def getOpticalGroupID(self):
+        return self.__OGID
+
+    def setupModule(self, **kwargs):
+        self.__moduleDict = {}
+        if "module" in kwargs.keys():
+            pass
+            return
+        for i in ModuleLaneMap[self.__moduleType].keys():
+            FEChip = QtChip()
+            # FEChip.setID(8)
+            FEChip.setID(i)
+            FEChip.setLane(i)
+            self.__chipDict[i] = FEChip
+
+    def getChips(self):
+        return self.__chipDict
+
+
+class QtBeBoard:
+    def __init__(self, boardName=""):
+        self.__boardName = ""
+        self.__ipAddress = "0.0.0.0"
+        self.__moduleDict = {}
+        self.__fpgaConfigName = ""
+
+    def setBoardName(self, name):
+        self.__boardName = name
+
+    def getBoardName(self):
+        return self.__boardName
+
+    def setIPAddress(self, ipAddress):
+        self.__ipAddress = ipAddress
+
+    def getIPAddress(self):
+        return self.__ipAddress
+
+    def setFPGAConfig(self, fpgaConfig):
+        self.__fpgaConfigName = fpgaConfig
+        return True
+
+    def addModule(self, key, module):
+        if module not in self.__moduleDict.values():
+            self.__moduleDict[key] = module
+            return True
+        else:
+            return False
+
+    def getAllModules(self):
+        return self.__moduleDict
+
+    def getModuleByIndex(self, key):
+        if key in self.__moduleDict.keys():
+            return self.__moduleDict[key]
+        else:
+            return None
+
+    def removeModule(self, module):
+        for key, item in self.__moduleDict.items():
+            if module == item:
+                self.__moduleDict.pop(key)
+                return True
+        return False
+
+    def removeModuleByKey(self, removeKey):
+        for key in self.__moduleDict.keys():
+            if removeKey == key:
+                self.__moduleDict.pop(key)
+                return True
+        return False
+
+    def removeAllModule(self):
+        self.__moduleDict.clear()
