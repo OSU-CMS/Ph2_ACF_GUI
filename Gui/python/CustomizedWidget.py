@@ -146,15 +146,26 @@ class ChipBox(QWidget):
         else:
             if self.serialNumber != []:
                 
-                sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)                
+                sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)     
 
+                #right now there is no data for ZH-module on the database. So the trim values will be set as the default value
                 #case for can't find anything on database
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
-                    print(f"can find the data for module {self.serialNumber}")
-                    for chipid in self.ChipList:
-                        VDDA = "can't find the value"
-                        VDDD = "can't find the value"
-                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
+                    if self.serialNumber.startswith("ZH"):
+                        for chipid in self.ChipList:
+                            VDDA = "16"
+                            VDDD = "16"
+                            self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
+
+                    else:
+
+                        print(f"I can't find the data for module {self.serialNumber}")
+                        
+
+                        for chipid in self.ChipList:
+                            VDDA = "can't find the value"
+                            VDDD = "can't find the value"
+                            self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
                 
                 
 
@@ -188,13 +199,20 @@ class ChipBox(QWidget):
                 for lane in ModuleLaneMap[self.chipType]:
                     self.ChipList.append(ModuleLaneMap[self.chipType][lane])
 
-            if self.serialNumber.startswith("SH"):
+            elif self.serialNumber.startswith("SH"):
                 self.chipType = "TFPX CROC Quad"
                 for lane in ModuleLaneMap[self.chipType]:
                     self.ChipList.append(ModuleLaneMap[self.chipType][lane])
             
+            elif self.serialNumber.startswith("ZH"):
+                self.chipType = "TFPX Quad"
+                for lane in ModuleLaneMap[self.chipType]:
+                    self.ChipList.append(ModuleLaneMap[self.chipType][lane])
+            
             else:
+
                 print("current module can't be found on database")
+
 
 
            
