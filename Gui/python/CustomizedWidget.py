@@ -54,6 +54,7 @@ class ModuleBox(QWidget):
 
         FMCLabel = QLabel("FMC:")
         self.FMCEdit = QLineEdit()
+        self.FMCEdit.setText('L12')
 
         IDLabel = QLabel("FMC port:")
         self.IDEdit = QLineEdit()

@@ -122,28 +122,17 @@ class SummaryBox(QWidget):
         # To be finished
 
         try:
-            # if not os.access(os.environ.get('GUI_dir'),os.W_OK):
-            # 	QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
-            # 	return
-            # if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
-            # 	QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
-            # 	return
             self.result = True
             FWisPresent = False
             if "CROC" in self.module.getType():
                 boardtype = "RD53B"
             else:
                 boardtype = "RD53A"
+
             # updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
-
-            # print('write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)))
-            # print('write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)))
-
-            ###FIXME:  Here I need to modify the CMSIT
-
-            # fc7_ip = FirmwareList[defaultFC7]
             fc7_ip = FirmwareList[pfirmwareName]
-            uricmd = "sed -i -e 's/192.168.1.80/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(
+            
+            uricmd = "sed -i -e 's/192.168.0.50/{0}/g' {1}/Ph2_ACF/settings/CMSIT_{2}.xml".format(    
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )
             updateuri = subprocess.call([uricmd], shell=True)
@@ -156,7 +145,7 @@ class SummaryBox(QWidget):
                 [
                     "fpgaconfig",
                     "-c",
-                    os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype),
+                    os.environ.get("GUI_dir") + "/Ph2_ACF/settings/CMSIT_{}.xml".format(boardtype),
                     "-l",
                 ],
                 stdout=subprocess.PIPE,
@@ -182,7 +171,7 @@ class SummaryBox(QWidget):
                         [
                             "fpgaconfig",
                             "-c",
-                            "CMSIT_{}.xml".format(boardtype),
+                            os.environ.get("GUI_dir") + "/Ph2_ACF/settings/CMSIT_{}.xml".format(boardtype),
                             "-f",
                             "{}".format(
                                 os.environ.get("GUI_dir")
@@ -213,7 +202,7 @@ class SummaryBox(QWidget):
                     [
                         "fpgaconfig",
                         "-c",
-                        "CMSIT_{}.xml".format(boardtype),
+                        os.environ.get("GUI_dir") + "/Ph2_ACF/settings/CMSIT_{}.xml".format(boardtype),
                         "-i",
                         "{}".format(firmwareImage),
                     ],
@@ -223,7 +212,7 @@ class SummaryBox(QWidget):
                 print(fwload.stdout.decode("UTF-8"))
                 print("resetting beboard")
                 fwreset = subprocess.run(
-                    ["CMSITminiDAQ", "-f", "CMSIT_{}.xml".format(boardtype), "-r"],
+                    ["CMSITminiDAQ", "-f", os.environ.get("GUI_dir") + "/Ph2_ACF/settings/CMSIT_{}.xml".format(boardtype), "-r"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )

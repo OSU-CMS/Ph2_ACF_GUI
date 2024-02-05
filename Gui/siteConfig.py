@@ -27,7 +27,7 @@ defaultFC7 = "fc7.board.1"
 # default IP address of IP address
 defaultFC7IP = '192.168.1.80'
 # default FMC board number
-defaultFMC = '0'
+defaultFMC = 'L12'
 # default mode for LV powering (Direct,SLDO,etc)
 defaultPowerMode = "SLDO"
 #default DBServerIP
@@ -65,11 +65,11 @@ icicle_instrument_setup = { "lv":"KeysightE3633A",
                             "default_hv_voltage": -80,
                             "default_hv_compliance_current": 5e-6,
                             "default_hv_delay": 2,
-                            "default_hv_step_size": 10,
-                            "relay_board": "RelayBoard",
-                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
-                            "multimeter": "HP34401A",
-                            "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR"}
+                            "default_hv_step_size": 10,}
+#                            "relay_board": "RelayBoard",
+#                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
+#                            "multimeter": "HP34401A",
+#                            "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR"}
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 
 FC7List =  {
@@ -83,7 +83,7 @@ FC7List =  {
 ## Specify whether of not you want to monitor chip temperature during the tests ##
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
-Monitor_CROC = "1"
+Monitor_CROC = "0"
 
 #setting default HV current compliance in mA
 defaultHVCurrentCompliance = 0.00001
