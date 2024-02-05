@@ -222,12 +222,9 @@ class ChipBox(QWidget):
                     self.ChipList.append(ModuleLaneMap[self.chipType][lane])
             
             else:
-<<<<<<< HEAD
 
-                print("current module can't be found on database")
-=======
-                logger.debug("current module can't be found on database")
->>>>>>> b855d5f5896ac295c6dcf870de9ec4639a4c5588
+                logger.warning("current module can't be found on database")
+
 
 
 
