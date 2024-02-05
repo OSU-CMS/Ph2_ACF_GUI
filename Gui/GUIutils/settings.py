@@ -123,7 +123,7 @@ firmware_image = {
         "Dev": "SCC_ELE_CROC_v4-8.bit",
         "v4-13": "SCC_ELE_CROC_v4-6.bit",
         "v4-14": "SCC_ELE_CROC_v4-6.bit",
-    }
+    },
     "TFPX CROC 1x2": {
         "Dev": "QUAD_ELE_CROC_v4-8.bit",
         "v4-13": "QUAD_ELE_CROC_v4-6.bit",
