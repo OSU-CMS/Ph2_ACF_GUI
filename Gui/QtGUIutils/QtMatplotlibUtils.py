@@ -76,7 +76,8 @@ class ScanCanvas(FigureCanvas):
         self.axes.cla()
         self.axes.set_xlabel(self.xlabel)
         self.axes.set_ylabel(self.ylabel)
-        self.axes.plot(self.X, self.Y, color="green", linestyle="dashed", linewidth=3)
+        self.axes.plot(self.X, self.Y, '-x')
+#        self.axes.plot(self.X, self.Y, color="green", linestyle="dashed", linewidth=3)
         self.axes.invert_xaxis()
         self.axes.invert_yaxis()
 

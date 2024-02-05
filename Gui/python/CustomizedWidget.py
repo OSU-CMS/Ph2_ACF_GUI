@@ -148,6 +148,7 @@ class ChipBox(QWidget):
                 
                 sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)     
 
+
                 #right now there is no data for ZH-module on the database. So the trim values will be set as the default value
                 #case for can't find anything on database
                 if sorted_VDDAlist == [] or sorted_VDDDlist == []:
@@ -166,16 +167,15 @@ class ChipBox(QWidget):
                             VDDA = ""
                             VDDD = ""
                             self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
+
                 
                 
 
                 if sorted_VDDAlist != [] or sorted_VDDDlist != []:
-                    i = 0
-                    for chipid in self.ChipList:
+                    for i, chipid in enumerate(self.ChipList):
                         VDDA = str(sorted_VDDAlist[i][1])
                         VDDD = str(sorted_VDDDlist[i][1])
                         self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
-                        i += 1
             
         
         self.makeChipGroupBox(self.ChipGroupBoxDict)
@@ -222,8 +222,12 @@ class ChipBox(QWidget):
                     self.ChipList.append(ModuleLaneMap[self.chipType][lane])
             
             else:
+<<<<<<< HEAD
 
                 print("current module can't be found on database")
+=======
+                logger.debug("current module can't be found on database")
+>>>>>>> b855d5f5896ac295c6dcf870de9ec4639a4c5588
 
 
 
@@ -241,7 +245,7 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         
         if not self.ChipVDDDEdit.text():
-            print("no VDDD text")
+            logger.debug("no VDDD text")
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit() 
         self.ChipVDDDEdit.setText(VDDD)
@@ -440,10 +444,10 @@ class BeBoardBox(QWidget):
             FwModule.setFMCID(module.getFMCID())
             FwModule.setModuleName(module.getSerialNumber())
             for chip in ModuleLaneMap[module.getType()].values():
-                print("type debug : " + str(module.getType()) )
-                print("Sereial number debug : " + str(module.getSerialNumber()))
-                print("chip number debug : " + str(chip))#find an extra issue. chip number is 0, it should be 12 for first chip of Croc 1*2 module. This is fine under offline mode
-                print("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) #it cause bug at here, it is none
+                logger.debug("type debug : " + str(module.getType()) )
+                logger.debug("Sereial number debug : " + str(module.getSerialNumber()))
+                logger.debug("chip number debug : " + str(chip))
+                logger.debug("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) 
                 FwModule.setChipStatus(
                     chip, self.ChipWidgetDict[module].getChipStatus(chip)
                 )
