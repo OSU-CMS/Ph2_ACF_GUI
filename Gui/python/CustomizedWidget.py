@@ -144,7 +144,7 @@ class ChipBox(QWidget):
 
         
         else:
-            if self.serialNumber != []:
+            if self.serialNumber != "":
                 
                 sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)     
 
@@ -158,13 +158,13 @@ class ChipBox(QWidget):
                             self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
 
                     else:
-
+                        self.DBcheckingMessage(self.serialNumber)
                         print(f"I can't find the data for module {self.serialNumber}")
-                        
+
 
                         for chipid in self.ChipList:
-                            VDDA = "can't find the value"
-                            VDDD = "can't find the value"
+                            VDDA = ""
+                            VDDD = ""
                             self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
                 
                 
@@ -183,6 +183,18 @@ class ChipBox(QWidget):
         self.setLayout(self.mainLayout)
 
     
+    def DBcheckingMessage(self,serialNO):
+        reply = QMessageBox.question(
+                self,
+                "warning",
+                f"{serialNO} can't be found on the DB. Would you like to manully type the trim values?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+
+
+
+
     def initList(self):
         self.module = ModuleBox(self.connection)
 
