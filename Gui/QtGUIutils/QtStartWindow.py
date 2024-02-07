@@ -132,7 +132,7 @@ class SummaryBox(QWidget):
             # updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
             fc7_ip = FirmwareList[pfirmwareName]
             
-            uricmd = "sed -i -e 's/192.168.0.50/{0}/g' {1}/Ph2_ACF/settings/CMSIT_{2}.xml".format(    
+            uricmd = "sed -i -e 's/192.168.0.50/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(    
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )
             updateuri = subprocess.call([uricmd], shell=True)
@@ -145,7 +145,7 @@ class SummaryBox(QWidget):
                 [
                     "fpgaconfig",
                     "-c",
-                    os.environ.get("GUI_dir") + "/Ph2_ACF/settings/CMSIT_{}.xml".format(boardtype),
+                    os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype),
                     "-l",
                 ],
                 stdout=subprocess.PIPE,
@@ -171,7 +171,7 @@ class SummaryBox(QWidget):
                         [
                             "fpgaconfig",
                             "-c",
-                            os.environ.get("GUI_dir") + "/Ph2_ACF/settings/CMSIT_{}.xml".format(boardtype),
+                            os.environ.get("GUI_dir") + "/CMSIT_{}.xml".format(boardtype),
                             "-f",
                             "{}".format(
                                 os.environ.get("GUI_dir")
@@ -202,7 +202,7 @@ class SummaryBox(QWidget):
                     [
                         "fpgaconfig",
                         "-c",
-                        os.environ.get("GUI_dir") + "/Ph2_ACF/settings/CMSIT_{}.xml".format(boardtype),
+                        os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype),
                         "-i",
                         "{}".format(firmwareImage),
                     ],
@@ -212,7 +212,7 @@ class SummaryBox(QWidget):
                 print(fwload.stdout.decode("UTF-8"))
                 print("resetting beboard")
                 fwreset = subprocess.run(
-                    ["CMSITminiDAQ", "-f", os.environ.get("GUI_dir") + "/Ph2_ACF/settings/CMSIT_{}.xml".format(boardtype), "-r"],
+                    ["CMSITminiDAQ", "-f", os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype), "-r"],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )
