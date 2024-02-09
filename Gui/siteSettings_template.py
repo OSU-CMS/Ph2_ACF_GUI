@@ -61,8 +61,8 @@ icicle_instrument_setup = { "lv":"KeysightE3633A",
                             "default_lv_current" : 3,
                             "hv": "Keithley2410",
                             "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
-                            "default_hv_voltage": -80,
-                            "default_hv_compliance_current": 5e-6,
+                            "default_hv_voltage": -80, #in volts
+                            "default_hv_compliance_current": 5e-6, #in amperes
                             "default_hv_delay": 2,
                             "default_hv_step_size": 10,
                             "relay_board": "RelayBoard",
@@ -74,13 +74,7 @@ icicle_instrument_setup = { "lv":"KeysightE3633A",
 ## Specify whether of not you want to monitor chip temperature during the tests ##
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
-Monitor_CROC = "0"
-
-#setting default HV current compliance in mA
-defaultHVCurrentCompliance = 0.00001
-
-#setting HV bias voltage in V
-defaultHVsetting = -60
+Monitor_CROC = "1"
 
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
