@@ -42,8 +42,20 @@ class SimplifiedMainWidget(QWidget):
             self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
             self.instruments.open()
         except SerialException:
-            self.instruments = None
-            logger.warning("Could not connect all instruments for testing! Do not proceed with testing!")
+            instrument_warning_message = QMessageBox()
+            instrument_warning_message.setIcon(QMessageBox.Critical)
+            instrument_warning_message.setInformativeText(
+                    """
+                    Your instruments could not be
+                    connected! Check siteConfig.py
+                    to make sure you have set the
+                    ports and devices correctly and
+                    check the phyiscal connections to
+                    the devices
+                    """
+            )
+            self.close()
+            
             
         self.instrument_info = {} 
 
@@ -328,7 +340,7 @@ class SimplifiedMainWidget(QWidget):
         Database -> Check if you can connect to database as defined in checkDBConnection()
         Peltier -> check if the Peltier is at the right temperature and is reachable 
         """ 
-        
+
         self.instrument_status = self.check_powersupplies_and_relay()
 
         logger.debug(f"Instrument status is {self.instrument_status}")
@@ -403,6 +415,7 @@ class SimplifiedMainWidget(QWidget):
         invert the values from instrument_cluster.status()
         """
         status = self.instruments.status(lv_channel=1)
+        logger.debug(f"Status of instrument_cluster instruments: {status}")
         return_status = {} 
         for key, value in status.items():
             if value == 0:
