@@ -32,6 +32,7 @@ from icicle.icicle.instrument_cluster import InstrumentCluster, InstrumentNotIns
 
 class SimplifiedMainWidget(QWidget):
     def __init__(self, master):
+        logger.debug("SimplifiedMainWidget.__init__()")
         super().__init__()
         self.master = master
         self.connection = self.master.connection
@@ -308,15 +309,8 @@ class SimplifiedMainWidget(QWidget):
 
         self.runFlag = True
         self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
-        self.LVpowersupply.setPoweringMode(default_settings.defaultPowerMode)
-        # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
         # TODO  There shouldn't be a default value here, we should be getting the LV from the QR code or the module name
-       # self.LVpowersupply.setModuleType(default_settings.defaultModuleType)
-        self.LVpowersupply.TurnOn()
-        # self.HVpowersupply.RampingUp(-60,-3)
-        current = self.LVpowersupply.ReadCurrent()
         current = float(current) if current else 0.0
-        voltage = self.LVpowersupply.ReadVoltage()
         voltage = float(voltage) if voltage else 0.0
         self.RunButton.setDisabled(True)
         self.StopButton.setDisabled(False)
@@ -441,9 +435,6 @@ class SimplifiedMainWidget(QWidget):
         else:
             self.HVPowerStatusValue.setPixmap(self.redledpixmap)
         time.sleep(0.5)
-        self.LVpowersupply.setPowerModel(defaultLVModel[0])
-        self.LVpowersupply.setInstrument(defaultUSBPortLV[0])
-        statusString = self.LVpowersupply.getInfo()
         self.LVPowerStatusLabel.setText("LV status")
         if statusString != "No valid device" and statusString != None:
             self.LVPowerStatusValue.setPixmap(self.greenledpixmap)
