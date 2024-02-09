@@ -66,10 +66,10 @@ icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A,
                             "default_hv_compliance_current": 5e-6, #in amps
                             "default_hv_delay": 1, #in seconds
                             "default_hv_step_size": 10, #in volts
- #                           "relay_board": "RelayBoard", #Choices are RelayBoard
- #                           "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
- #                           "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
- #                           "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
+                            "relay_board": "RelayBoard", #Choices are RelayBoard
+                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
+                            "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
+                            "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
 							}
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
