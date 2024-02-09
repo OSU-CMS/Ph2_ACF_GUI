@@ -1,19 +1,21 @@
 # Ph2_ACF_GUI
 Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 
+## Installation:
+This software is designed to run using Docker. This ensures that all testing is performed with consistent and 
 ## Running in docker:
-Using docker is the easiest and most simple way to install and run this software.  A compiled version of the most current stable release of Ph2_ACF is included in the container. There are two containers available to meet the needs of both developers and users.
+This software is designed to run using Docker. A compiled version of the most current stable release of Ph2_ACF and everything required to run it is included in the container. There are two containers available to meet the needs of both developers and users.
 
 ### Docker for users:
-This container is designed for users who are testing modules.  The following set of directions can be used for the initial setup:
+This container is designed for users who are testing modules whether that be at a testing center or and assembly center.  The following set of directions can be used for the initial setup:
 
-1. Clone GUI repo and checkout the DEV branch:
+1. Initial clone GUI repo:
 ```
 git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
-git checkout DEV
 ```
-or pull the latest changes while inside the Ph2_ACF_GUI directory:
+or, pull the latest changes while inside the Ph2_ACF_GUI directory:
 ```
+git submodule update --recursive --remote
 git pull --recurse-submodules
 ```
 
@@ -23,29 +25,30 @@ cd Ph2_ACF_GUI/Gui
 ```
 Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can set the model of LV/HV devices, specify the USB ports, etc.  You should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
 
-3. Specify device ports:
-In run_Docker.sh you need to update the devices in the "mydevicelist" to reflect the ports you will be using. The plan for this to be automated, but for now you need to change it in this file.
-
-4. Start the docker container:
+3. Start the docker container:
 ```
 cd ..
 bash run_Docker.sh
 ```
 
-5. That's it!  At this point the GUI should be open and ready to use.
+4. That's it!  At this point the GUI should be open and ready to use.
 
+5. On the login screen you can use either of the following usernames to log in locally (bypassing connection to the database).
+
+For non-expert mode:    username = `local`  (in development)
+For expert mode:        username = `localexpert`
 
 ### Docker for developers:
 This container is meant for developers or users who would like to customize some aspects of the GUI.  It sets up the environment for the GUI and Ph2_ACF to run and opens to a command line.  Local files are mounted to the container so that changes to the local files will be reflected inside the container.  This allows for code development without needing to build a new Docker image after each modification of the code.
 
-1. Clone GUI repo and checkout the DEV branch:
+1. Clone GUI repo:
 ```
 git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
 cd Ph2_ACF_GUI
-git checkout DEV
 ```
 or pull the latest changes while inside the Ph2_ACF_GUI directory:
 ```
+git submodule update --recursive --remote
 git pull --recurse-submodules
 ```
 
@@ -55,18 +58,14 @@ cd Ph2_ACF_GUI/Gui
 ```
 Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can set the model of LV/HV devices, specify the USB ports, etc.  You should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
 
-3. Specify device ports:
-In run_Docker.sh you need to update the devices in the "mydevicelist" to reflect the ports you will be using. The plan for this to be automated, but for now you need to change it in this file.
+3. Choose the developer Docker image:
 
-4. Choose the developer Docker image:
-
-
-5. Start the docker container:
+4. Start the docker container:
 ```
 bash run_Docker.sh dev
 ```
 
-6. Set up Ph2_ACF and open GUI:
+5. Set up Ph2_ACF and open GUI:
 When you first open the container you should run
 ```
 source prepare_Ph2_ACF
@@ -76,7 +75,7 @@ This will set up the Ph2_ACF environment variables in the container and open the
 python3 QtApplication
 ```
 
-7. Exit and kill container when done:
+6. Exit and kill container when done:
 ```
 exit
 ``` 
@@ -132,46 +131,6 @@ sudo usermod -aG docker $USER
 ```
 reboot
 ```
-# The following is only needed if you are NOT using Docker
-## Set up the software environment:
-This software will only work in Alma Linux 9 (RHEL 9).  It is highly recommended that everyone use the Docker containers rather than this method.  This software is only tested while running inside the Docker containers, so proceed at your own risk.
-
-1. Clone GUI repo
-```
-git clone --recurse-submodules https://github.com/OSU-CMS/Ph2_ACF_GUI.git
-```
-or pull the latest changes
-```
-git pull --recurse-submodules
-```
-
-2. Go into Ph2_ACF_GUI directory and update submodules
-```
-git submodule update --init --recursive
-```
-
-3. Install python packages
-```
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
-```
-
-4. Compile submodules
-``` 
-source compileSubModules.sh
-```
-
-
-5. Default settings are specified in the `Gui/siteSettings.py` file.  This is where you set the default configurations for your system.  This file does not exist on the repository, but instead there is a `Gui/siteSettings_template.py` file.  Copy this file:
-```
-cp Gui/siteSettings_template.py Gui/siteSettings.py
-```
-and then edit it to match the settings needed at your site.  If you are updating Ph2_ACF_GUI, then you should check the difference for any additions that are not site-specific:
-```
-vim -d Gui/siteSettings_template.py Gui/siteSettings.py
-```
-and then copy and paste whatever lines are needed to your `Gui/siteSettings.py` file. 
-
 
 ## Run the GUI
 ```
