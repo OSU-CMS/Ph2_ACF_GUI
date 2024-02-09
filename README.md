@@ -24,6 +24,8 @@ git pull --recurse-submodules
 cd Ph2_ACF_GUI/Gui
 ```
 Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can set the model of LV/HV devices, specify the USB ports, etc.  You should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
+<img width="525" alt="configureGUI" src="https://github.com/OSU-CMS/Ph2_ACF_GUI/assets/19957717/126fe7a2-70a7-4791-86e0-4cb839d6dc4b">
+
 
 3. Start the docker container:
 ```
