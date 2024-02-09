@@ -24,7 +24,7 @@ git pull --recurse-submodules
 ```
 cd Ph2_ACF_GUI/Gui
 ```
-Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can set the model of LV/HV devices, specify the USB ports, etc.  You should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
+Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can set the model of LV/HV devices, specify the USB ports, etc.  If there are devices that you do not have connected you should comment out those lines. For examlple, if you do not have a relay board or a digital multimeter you should comment those lines out. Not doing so will cause the GUI to fail when connecting devices. You should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
 
 <img width="744" alt="Screenshot 2024-02-09 at 4 23 51 PM" src="https://github.com/OSU-CMS/Ph2_ACF_GUI/assets/19957717/4c1269a3-936c-474b-af7d-ee0aed485c40">
 
