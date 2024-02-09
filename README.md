@@ -2,7 +2,8 @@
 Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 
 ## Installation:
-This software is designed to run using Docker. This ensures that all testing is performed with consistent and 
+This software is designed to run using Docker. This ensures that all testing is performed in a reliable and consistent way.
+
 ## Running in docker:
 This software is designed to run using Docker. A compiled version of the most current stable release of Ph2_ACF and everything required to run it is included in the container. There are two containers available to meet the needs of both developers and users.
 
