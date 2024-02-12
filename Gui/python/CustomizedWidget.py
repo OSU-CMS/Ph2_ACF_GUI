@@ -1,15 +1,3 @@
-import logging
-
-# Customize the logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    filename="my_project.log",  # Specify a log file
-    filemode="w",  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
-
 from PyQt5 import QtCore
 from Gui.GUIutils.DBConnection import GetTrimClass
 from PyQt5.QtCore import *
@@ -28,6 +16,7 @@ from PyQt5.QtWidgets import (
 
 import sys
 
+import Gui.siteSettings as site_settings
 from Gui.python.Firmware import *
 from Gui.GUIutils.settings import *
 from Gui.GUIutils.FirmwareUtil import *
@@ -568,7 +557,7 @@ class SimpleModuleBox(QWidget):
         self.CableIDEdit.setReadOnly(True)
 
         TypeLabel = QLabel("Type:")
-        self.Type = defaultModuleType
+        #self.Type = site_settings.defaultModuleType
 
         self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
@@ -644,6 +633,7 @@ class SimpleBeBoardBox(QWidget):
         self.ModuleList[-1].SerialEdit.setFocus()
 
     def createList(self):
+        logger.debug(f'{__name__} : Creating module list')
         self.ListBox = QGroupBox()
 
         self.ListLayout = QGridLayout()
@@ -659,6 +649,7 @@ class SimpleBeBoardBox(QWidget):
         self.mainLayout.removeWidget(self.ListBox)
 
     def updateList(self):
+        logger.debug(f'{__name__} : Updating module list')
         [columns, rows] = [self.ListLayout.columnCount(), self.ListLayout.rowCount()]
 
         for i in range(columns):
@@ -667,7 +658,7 @@ class SimpleBeBoardBox(QWidget):
                 if item:
                     widget = item.widget()
                     self.ListLayout.removeWidget(widget)
-
+        logger.debug(f'{__name__} : Before connecting module signals')
         for index, module in enumerate(self.ModuleList):
             # module.setMaximumWidth(500)
             module.setMaximumHeight(50)
@@ -675,18 +666,7 @@ class SimpleBeBoardBox(QWidget):
             module.textchanged.connect(self.on_ModuleFilled)
             module.setID(index)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
-            # Add "remove" botton
-            # if index > 0:
-            #   RemoveButton = QPushButton("remove")
-            #   RemoveButton.setMaximumWidth(150)
-            #   RemoveButton.clicked.connect(lambda x = index: self.removeModule(x))
-            #   self.ListLayout.addWidget(RemoveButton,index,1,1,1)
-        # ModuleLayout = QFormLayout()
-        # ModuleItem = ModuleBox()
-
-        # ModuleItem.destroy.connect(partial(self.removeModule,ModuleItem))
-        # ModuleLayout.addRow(ModuleBox())
-
+        logger.debug(f'{__name__} : After connecting module signals')
         NewButton = QPushButton("add")
         NewButton.setMaximumWidth(150)
         NewButton.clicked.connect(self.addModule)
@@ -699,6 +679,7 @@ class SimpleBeBoardBox(QWidget):
         # self.ListLayout.addWidget(NewButton,len(self.ModuleList),1,1,1)
         self.ListLayout.addWidget(ClearButton, len(self.ModuleList), 0, 1, 1)
         self.update()
+        logger.debug(f'{__name__} : Finished setting up module list')
 
     def removeModule(self, index):
         # For Manual change

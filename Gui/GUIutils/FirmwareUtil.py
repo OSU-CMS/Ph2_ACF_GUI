@@ -7,7 +7,6 @@
   Support:              email to wei.856@osu.edu
 """
 import subprocess
-from subprocess import Popen, PIPE
 from datetime import datetime
 from Gui.python.logging_config import logger
 

@@ -81,6 +81,8 @@ class QtApplication(QWidget):
             "multimeter_resource": None,
             "multimeter": None,
         }
+        logger.warning("Initialized variables for QtApplication")
+        print("Initialized variables for QtApplication")
 
         # self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
         # self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
@@ -276,12 +278,16 @@ class QtApplication(QWidget):
         CMSLogoLabel.setPixmap(CMSpixmap)
         self.LogoLayout.addWidget(OSULogoLabel)
         self.LogoLayout.addStretch(1)
+        logoTextLabel = QLabel("Ph2_ACF GUI")
+        logoTextLabel.setFont(QFont("Arial", 16))
+        self.LogoLayout.addWidget(logoTextLabel)
+        self.LogoLayout.addStretch(1)
         self.LogoLayout.addWidget(CMSLogoLabel)
 
         self.LogoGroupBox.setLayout(self.LogoLayout)
 
         self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
-        self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
+        self.mainLayout.addWidget(self.LogoGroupBox, 2, 0)
 
     def changeDBList(self):
         try:
@@ -360,14 +366,16 @@ class QtApplication(QWidget):
                     self.checkFirmware()
 
             else:
+                logger.debug("Not connecting to database")
                 self.connection = "Offline"
                 self.destroyLogin()
                 if self.expertMode:
+                    logger.debug("Entering Expert GUI")
                     self.createMain()
                     self.checkFirmware()
                 else:
+                    logger.debug("Entering Simplified GUI")
                     self.createSimplifiedMain()
-                # self.checkFirmware()
 
         except Exception as err:
             print("Failed to connect the database: {}".format(repr(err)))
@@ -854,7 +862,7 @@ class QtApplication(QWidget):
     def connect_devices(self):
         """
         Use defaults set in siteConfig.py to setup instrument cluster.
-        If default_checkbox is not checked change this variable to reflect changes made it GUI
+        If default_checkbox is not checked change this variable to reflect changes made in GUI
         """
         self.device_settings = site_settings.icicle_instrument_setup
         if not self.default_checkbox.isChecked():
