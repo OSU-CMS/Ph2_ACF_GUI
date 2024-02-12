@@ -55,7 +55,7 @@ then
            -v ${PWD}/InnerTrackerTests/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/InnerTrackerTests/\
            -v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
            -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-           -e XAUTHORITY=$XAUTH --net host  local:InnerTrackerTest
+           -e XAUTHORITY=$XAUTH --net host  majoyce2/ph2_acf_gui_dev:latest
 else
     echo "running as user"
     docker run --rm -ti $mydevices -v ${PWD}:${PWD}\
