@@ -441,7 +441,7 @@ class SimplifiedMainWidget(QWidget):
                 Could not connect to all devices, please check device
                 connections and ensure you are want to connect to all devices
                 as stated in siteConfig.py in the icicle_instrument_setup
-                dictionary
+                dictionary. 
                 """
                 )
             error_box.setIcon(QMessageBox.Critical)
@@ -520,7 +520,6 @@ class SimplifiedMainWidget(QWidget):
 
     def destroySimplified(self):
         self.clearLayout(self.master.mainLayout)
-        self.master.setLoginUI()
         self.master.createLogin()
 
     def clearLayout(self, layout):
