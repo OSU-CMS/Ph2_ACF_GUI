@@ -131,8 +131,11 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["arduino"]["Label"].setText("Temperature and Humidity")
 
+        self.Peltier = None
         if site_settings.usePeltier:
             try:
+                self.instrument_info["peltier"] = {"Label" : QLabel(), "Value" : QLabel()}
+                self.instrument_info["peltier"]["Label"].setText("Chip Temperature")
                 logger.debug("Setting up Peltier")
                 self.Peltier = PeltierSignalGenerator()
                 logger.debug("created self.Peltier")
@@ -170,12 +173,10 @@ class SimplifiedMainWidget(QWidget):
                 )
 
                 time.sleep(0.5)
+
             except Exception as e:
                 print("Error while attempting to set Peltier", e)
                 self.Peltier = None
-
-        self.instrument_info["peltier"] = {"Label" : QLabel(), "Value" : QLabel()}
-        self.instrument_info["peltier"]["Label"].setText("Chip Temperature")
         logger.debug("About to set device status")
         self.setDeviceStatus() 
 
@@ -193,7 +194,7 @@ class SimplifiedMainWidget(QWidget):
 
         self.StatusLayout.addWidget(self.instrument_info["arduino"]["Label"], 2, 1, 1, 1)
         self.StatusLayout.addWidget(self.instrument_info["arduino"]["Value"], 2, 2, 1, 1)
-        if site_settings.usePeltier:
+        if self.Peltier:
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
         self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
@@ -346,26 +347,26 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Checking DB Connection")
         statusString, _ = checkDBConnection(self.connection)
 
-        logger.debug("Obtaining peltier status")
-        peltier_power_status = 1 if int(self.Peltier.sendCommand(self.Peltier.createCommand("Power On/Off Read", ["0", "0"]))[-1]) == 1 else 0
-        peltier_temp_message, temp_message_pass = self.Peltier.sendCommand(self.Peltier.createCommand("Input1",  ["0", "0", "0", "0", "0", "0", "0", "0"]))
-        if not temp_message_pass:
-            peltier_temp_message = None
 
-        logger.debug("Formatting peltier output")
-        if peltier_temp_message:
-            peltier_temp = int("".join(peltier_temp_message[1:9]), 16)/100
-        else:
-            peltier_temp = None
+        if self.Peltier: 
+            peltier_power_status = None
+            peltier_temp_status = None
+            logger.debug("Obtaining peltier status")
+            peltier_power_status = 1 if int(self.Peltier.sendCommand(self.Peltier.createCommand("Power On/Off Read", ["0", "0"]))[-1]) == 1 else 0
+            peltier_temp_message, temp_message_pass = self.Peltier.sendCommand(self.Peltier.createCommand("Input1",  ["0", "0", "0", "0", "0", "0", "0", "0"]))
+            if not temp_message_pass:
+                peltier_temp_message = None
 
-        logger.debug("Evaluating temp status")
-        
-        peltier_temp_status = 1 if (peltier_temp and abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 10) else 0
+            logger.debug("Formatting peltier output")
+            if peltier_temp_message:
+                peltier_temp = int("".join(peltier_temp_message[1:9]), 16)/100
+            else:
+                peltier_temp = None
 
-        peltier_power_status = None
-        peltier_temp_status = None
+            logger.debug("Evaluating temp status")
 
-        if self.Peltier:
+            peltier_temp_status = 1 if (peltier_temp and abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 10) else 0
+
             logger.debug("Obtaining peltier status")
             peltier_power_status = 1 if int(self.Peltier.sendCommand(self.Peltier.createCommand("Power On/Off Read", ["0", "0"]))[-1]) == 1 else 0
             peltier_temp_message, _ = self.Peltier.sendCommand(self.Peltier.createCommand("Input1",  ["0", "0", "0", "0", "0", "0", "0", "0"]))
