@@ -114,27 +114,27 @@ class SimplifiedMainWidget(QWidget):
             self.Peltier = PeltierSignalGenerator()
             logger.debug("created self.Peltier")
             # These should emit signals
-            if not self.pelt.sendCommand(
-                self.pelt.createCommand(
+            if not self.Peltier.sendCommand(
+                self.Peltier.createCommand(
                     "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
             )[1]: raise Exception("Could not communicate with Peltier")
 
                 # Allows set point to be set by computer software
-            if not self.pelt.sendCommand(
-                self.pelt.createCommand(
+            if not self.Peltier.sendCommand(
+                self.Peltier.createCommand(
                     "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                 )
             )[1]: raise Exception("Could not communicate with Peltier") # Temperature should be PID controlled
 
-            if not self.pelt.sendCommand(
-                self.pelt.createCommand(
+            if not self.Peltier.sendCommand(
+                self.Peltier.createCommand(
                     "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
             )[1]: raise Exception("Could not communicate with Peltier")   # Turn off power to Peltier in case it is on at the start
 
-            if not self.pelt.sendCommand(
-                self.pelt.createCommand(
+            if not self.Peltier.sendCommand(
+                self.Peltier.createCommand(
                     "Proportional Bandwidth Write",
                     ["0", "0", "0", "0", "0", "0", "c", "8"],
                 )
