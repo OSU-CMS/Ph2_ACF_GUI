@@ -215,10 +215,12 @@ SER_SEL_OUT_2             0xB0          0b1                     0b1             
 SER_SEL_OUT_3             0xB1          0b1                     0b1                                 2
 CDR_CONFIG_SEL_SER_CLK    0xB2          0b000                   0b000                               3
 
-ADC_OFFSET_VOLT           0xC0          0d63                    0d63                               16
-ADC_MAXIMUM_VOLT          0xC1          0d839                   0d839                              16
-TEMPSENS_IDEAL_FACTOR     0xC2          0d1225                  0d1225                             16
-VREF_ADC                  0xC3          0d900                   0d900                              12
+RESISTORI2V               0xC0          0d10000                 0d10000                            16
+ADC_OFFSET_VOLT           0xC1          0d63                    0d63                               16
+ADC_MAXIMUM_VOLT          0xC2          0d839                   0d839                              16
+TEMPSENS_IDEAL_FACTOR     0xC3          0d1225                  0d1225                             16
+SAMPLE_N_TIMES            0xC4          0d10                    0d10                               16
+VREF_ADC                  0xC5          0d900                   0d900                              12
 
 *-------------------------------------------------------------------------------------------------------
 PIXELCONFIGURATION

@@ -99,37 +99,37 @@ ModuleType = {
 
 firmware_image = {
     "TFPX SCC": {
-        "v4-11": "SCC_ELE_RD53A_v4-5.bit",
+        "Dev": "SCC_ELE_RD53A_v4-8.bit",
         "v4-13": "SCC_ELE_RD53A_v4-6.bit",
         "v4-14": "SCC_ELE_RD53A_v4-6.bit",
     },
     "TFPX Quad": {
-        "v4-11": "QUAD_ELE_RD53A_v4-5.bit",
+        "Dev": "QUAD_ELE_RD53A_v4-8.bit",
         "v4-13": "QUAD_ELE_RD53A_v4-6.bit",
         "v4-14": "QUAD_ELE_RD53A_v4-6.bit",
     },
     "TEPX Quad": {
-        "v4-11": "QUAD_ELE_RD53A_v4-5.bit",
+        "Dev": "QUAD_ELE_RD53A_v4-8.bit",
         "v4-13": "QUAD_ELE_RD53A_v4-6.bit",
         "v4-14": "QUAD_ELE_RD53A_v4-6.bit",
     },
     "TBPX Quad": {
-        "v4-11": "QUAD_ELE_RD53A_v4-5.bit",
+        "Dev": "QUAD_ELE_RD53A_v4-8.bit",
         "v4-13": "QUAD_ELE_RD53A_v4-6.bit",
         "v4-14": "QUAD_ELE_RD53A_v4-6.bit",
     },
     "TFPX CROC SCC": {
-        "v4-11": "SCC_ELE_CROC_v4-5.bit",
+        "Dev": "SCC_ELE_CROC_v4-8.bit",
         "v4-13": "SCC_ELE_CROC_v4-6.bit",
         "v4-14": "SCC_ELE_CROC_v4-6.bit",
     },
     "TFPX CROC 1x2": {
-        "v4-11": "QUAD_ELE_CROC_v4-5.bit",
+        "Dev": "QUAD_ELE_CROC_v4-8.bit",
         "v4-13": "QUAD_ELE_CROC_v4-6.bit",
         "v4-14": "QUAD_ELE_CROC_v4-6.bit",
     },
     "TFPX CROC Quad": {
-        "v4-11": "QUAD_ELE_CROC_v4-5.bit",
+        "Dev": "QUAD_ELE_CROC_v4-8.bit",
         "v4-13": "QUAD_ELE_CROC_v4-6.bit",
         "v4-14": "QUAD_ELE_CROC_v4-6.bit",
     },

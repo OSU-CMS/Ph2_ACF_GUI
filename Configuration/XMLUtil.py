@@ -118,7 +118,7 @@ class OGModule():
 class FEModule():
   def __init__(self):
     self.FeId="0" 
-    self.FMCId="0" 
+    self.FMCId="L12" 
     self.ModuleId="0" 
     self.Status="1"
     self.File_Path = "./"
@@ -167,6 +167,12 @@ class FE():
     self.settingList = {}
     self.VDDAtrim = "8"
     self.VDDDtrim = "8"
+    self.RxGroups = "6"
+    self.RxChannels = "0"
+    self.RxPolarities = "0"
+    self.TxGroups = "3"
+    self.TxChannels = "0"
+    self.TxPolarities = "0"
     
 
   def SetFE(self, Id, Lane, configfile = "CMSIT_RD53.txt"):
@@ -252,7 +258,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
     #Node_BeBoard.Set('Id',BeBoard.Id)
     #Node_BeBoard.Set('boardType',BeBoard.boardType)
     #Node_BeBoard.Set('eventType',BeBoard.eventType)
-    Node_BeBoard = SetNodeAttribute(Node_BeBoard,{'Id':BeBoard.Id,'boardType':BeBoard.boardType,'eventType':BeBoard.eventType})
+    Node_BeBoard = SetNodeAttribute(Node_BeBoard,{'Id':BeBoard.Id,'boardType':BeBoard.boardType,'eventType':BeBoard.eventType, 'configure':"1"})
 
     Node_connection = ET.SubElement(Node_BeBoard, 'connection')
     #Node_connection.Set('id',BeBoard.id)
@@ -279,13 +285,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
 
       for HyBridModule in HyBridList:
         Node_HyBrid = ET.SubElement(Node_OGModule, 'Hybrid')
-        StatusStr = 'Status'
-        if "v4-11" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
-        if "v4-13" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
-        if "v4-14" in Ph2_ACF_VERSION:
-            StatusStr = 'enable'
+        StatusStr = 'enable'
 
         Node_HyBrid = SetNodeAttribute(Node_HyBrid,{'Id':HyBridModule.Id,StatusStr:HyBridModule.Status,'Name':HyBridModule.Name})
         #### This is where the RD53_Files is setup ####
@@ -301,10 +301,10 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
           BeBoard.boardType =  boardtype 
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
-          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configfile':FE.configfile})
+          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configfile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})
           if 'RD53B' in boardtype:
             Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
-            Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,{'primary':"1",'outputLanes':"0001",'singleChannelInputs':"0000",'dualChannelInput':"0000"})
+            Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,{'primary':"1",'master':"0",'outputLanes':"0001",'singleChannelInputs':"0000",'dualChannelInput':"0000"})
           Node_FESetting = ET.SubElement(Node_FE,"Settings")
           FE.settingList['VOLTAGE_TRIM_ANA'] = FE.VDDAtrim
           FE.settingList['VOLTAGE_TRIM_DIG'] = FE.VDDDtrim

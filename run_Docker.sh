@@ -3,7 +3,7 @@ SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/
 
 mode=$1
 echo "the mode is $mode"
-## Change the ports in 'mydevicelist' to those which you wish to use with the GUI#############
+## Finding the USB ports to use with the GUI#############
 mydevices=""
 target="tty"
 mydevicelist=()
@@ -34,43 +34,27 @@ mydevices=$(echo $mydevices | xargs)
 echo $mydevices | xargs
 ################################################################################################
 
-#docker run --rm -ti -v $PWD:$PWD -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data $devices -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH   -e XAUTHORITY=$XAUTH --net host  local/testimage
-#docker run --rm -ti -v $PWD:$PWD -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data --device=/dev/ttyUSBHV --device=/dev/ttyUSBLV --device=/dev/ttyUSBPeltier --device=/dev/ttyACM0 -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH   -e XAUTHORITY=$XAUTH --net host  local/testimage
-#docker run --rm -ti $mydevices -v $PWD:$PWD -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py:ro -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH   -e XAUTHORITY=$XAUTH --net host  majoyce2/ph2_acf_gui:latest
-
-#docker run --rm -ti $mydevices -v $PWD:$PWD -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py:ro -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH   -e XAUTHORITY=$XAUTH --net host  majoyce2/ph2_acf_gui:latest
-
-#docker run --rm -ti $mydevices -v $PWD:$PWD -v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data -v ${PWD}/Gui/QtGUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/ -v ${PWD}/Gui/GUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/ -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH   -e XAUTHORITY=$XAUTH --net host  local/testimage
 if [[ $mode == "dev" ]] 
 then
     echo "running as $mode"
     docker run --rm -ti $mydevices -v ${PWD}:${PWD}\
-           -v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
-           -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
-           -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
-           -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
-           -v ${PWD}/Gui/QtGUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/\
-           -v ${PWD}/Gui/GUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/\
-           -v ${PWD}/Gui/python/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/\
-           -v ${PWD}/InnerTrackerTests/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/InnerTrackerTests/\
-           -v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
-           -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-           -e XAUTHORITY=$XAUTH --net host  majoyce2/ph2_acf_gui_dev:latest
+	    -v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
+	    -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
+	    -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
+	    -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
+	    -v ${PWD}/Gui/QtGUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/\
+	    -v ${PWD}/Gui/GUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/\
+	    -v ${PWD}/Gui/python/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/\
+	    -v ${PWD}/InnerTrackerTests/:/home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/\
+	    -v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
+	    -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
+	    -e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
 else
     echo "running as user"
     docker run --rm -ti $mydevices -v ${PWD}:${PWD}\
-           -v ${PWD}/InnerTrackerTests:/home/cmsTkUser/Ph2_ACF_GUI/Gui/InnerTrackerTests\
-           -v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
-           -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
-           -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
-           -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
-           -v ${PWD}/Gui/QtGUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/\
-           -v ${PWD}/Gui/GUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/\
-           -v ${PWD}/Gui/python/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/\
-           -v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
-           -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-           -e XAUTHORITY=$XAUTH --net host  majoyce2/ph2_acf_gui_user:v4-14
+	    -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
+	    -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
+	    -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
+	    -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
+	    -e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_user:latest
 fi
-
-
-#docker run --rm -ti $mydevices -v ${PWD}:${PWD} -v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data -v ${PWD}/Gui/QtGUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/ -v ${PWD}/Gui/GUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/ -v ${PWD}/Gui/python/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/ -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH   -e XAUTHORITY=$XAUTH --net host  local/testimage
