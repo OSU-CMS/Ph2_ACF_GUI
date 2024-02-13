@@ -409,7 +409,7 @@ class BeBoardBox(QWidget):
         self.changed.emit()
 
     def addModule(self):
-        module = ModuleBox()
+        module = ModuleBox(self.master.connection)
         module.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(module)
         if str(sys.version).startswith("3.8"):

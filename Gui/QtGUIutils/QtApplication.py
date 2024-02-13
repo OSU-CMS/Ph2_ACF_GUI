@@ -35,6 +35,7 @@ from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
 from Gui.QtGUIutils.QtStartWindow import QtStartWindow
 from Gui.QtGUIutils.QtProductionTestWindow import QtProductionTestWindow
 from Gui.QtGUIutils.QtModuleReviewWindow import QtModuleReviewWindow
+#from Gui.QtGUIutils.QtDBConsoleWindow import QtDBConsoleWindow #FIXME The imports from this module cause things to crash.
 
 from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
@@ -765,6 +766,7 @@ class QtApplication(QWidget):
             self.DBConsoleButton.setMinimumHeight(kMinimumHeight)
             self.DBConsoleButton.setMaximumHeight(kMaximumHeight)
             self.DBConsoleButton.clicked.connect(self.openDBConsole)
+            self.DBConsoleButton.setDisabled(True)
             DBConsoleLabel = QLabel("Console for database")
             layout.addWidget(self.DBConsoleButton, 1, 0, 1, 1)
             layout.addWidget(DBConsoleLabel, 1, 1, 1, 2)

@@ -109,10 +109,8 @@ class SummaryBox(QWidget):
             value["Power-up Mode"] = self.PowerModeCombo.currentText()
             # Fixme
             measureList = [
-                "Analog Volts(V)",
-                "Digital Volts(V)",
-                "Analog I(A)",
-                "Digital I(A)",
+                "Set Bias Voltage (V)",
+                "Set LV Current (A)",
             ]
             for item in measureList:
                 value[item] = 1.0
