@@ -169,7 +169,7 @@ class SummaryBox(QWidget):
                         [
                             "fpgaconfig",
                             "-c",
-                            os.environ.get("GUI_dir") + "/CMSIT_{}.xml".format(boardtype),
+                            os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype),
                             "-f",
                             "{}".format(
                                 os.environ.get("GUI_dir")
