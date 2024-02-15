@@ -82,6 +82,8 @@ class QtApplication(QWidget):
             "multimeter_resource": None,
             "multimeter": None,
         }
+        logger.warning("Initialized variables for QtApplication")
+        print("Initialized variables for QtApplication")
 
         # self.HVpowersupply = PowerSupply(powertype="HV", serverIndex=1)
         # self.LVpowersupply = PowerSupply(powertype="LV", serverIndex=2)
@@ -277,12 +279,16 @@ class QtApplication(QWidget):
         CMSLogoLabel.setPixmap(CMSpixmap)
         self.LogoLayout.addWidget(OSULogoLabel)
         self.LogoLayout.addStretch(1)
+        logoTextLabel = QLabel("Ph2_ACF GUI")
+        logoTextLabel.setFont(QFont("Arial", 16))
+        self.LogoLayout.addWidget(logoTextLabel)
+        self.LogoLayout.addStretch(1)
         self.LogoLayout.addWidget(CMSLogoLabel)
 
         self.LogoGroupBox.setLayout(self.LogoLayout)
 
         self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
-        self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
+        self.mainLayout.addWidget(self.LogoGroupBox, 2, 0)
 
     def changeDBList(self):
         try:
@@ -361,14 +367,16 @@ class QtApplication(QWidget):
                     self.checkFirmware()
 
             else:
+                logger.debug("Not connecting to database")
                 self.connection = "Offline"
                 self.destroyLogin()
                 if self.expertMode:
+                    logger.debug("Entering Expert GUI")
                     self.createMain()
                     self.checkFirmware()
                 else:
+                    logger.debug("Entering Simplified GUI")
                     self.createSimplifiedMain()
-                # self.checkFirmware()
 
         except Exception as err:
             print("Failed to connect the database: {}".format(repr(err)))
@@ -460,17 +468,17 @@ class QtApplication(QWidget):
                 FPGAConfigButton.clicked.connect(
                     lambda state, x="{0}".format(index - 1): self.setuDTCFw(x)
                 )
-                StatusLayout.addWidget(FPGAConfigButton, index, 4, 1, 1)
+                #StatusLayout.addWidget(FPGAConfigButton, index, 4, 1, 1)
                 SolutionButton = QPushButton("&Firmware Status")
                 SolutionButton.clicked.connect(
                     lambda state, x="{0}".format(index - 1): self.showCommentFw(x)
                 )
-                StatusLayout.addWidget(SolutionButton, index, 5, 1, 1)
+                #StatusLayout.addWidget(SolutionButton, index, 5, 1, 1)
                 LogButton = QPushButton("&Log")
                 LogButton.clicked.connect(
                     lambda state, x="{0}".format(index - 1): self.showLogFw(x)
                 )
-                StatusLayout.addWidget(LogButton, index, 6, 1, 1)
+                #StatusLayout.addWidget(LogButton, index, 6, 1, 1)
 
         if self.FwUnderUsed != "":
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
@@ -751,14 +759,14 @@ class QtApplication(QWidget):
         layout = QGridLayout()
         layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
         layout.addWidget(NewTestLabel, 0, 1, 1, 2)
-        layout.addWidget(self.NewProductionTestButton, 1, 0, 1, 1)
-        layout.addWidget(NewProductionTestLabel, 1, 1, 1, 2)
-        layout.addWidget(self.SummaryButton, 2, 0, 1, 1)
-        layout.addWidget(SummaryLabel, 2, 1, 1, 2)
-        layout.addWidget(self.ReviewButton, 3, 0, 1, 1)
-        layout.addWidget(ReviewLabel, 3, 1, 1, 2)
-        layout.addWidget(self.ReviewModuleButton, 4, 0, 1, 1)
-        layout.addWidget(self.ReviewModuleEdit, 4, 1, 1, 2)
+        #layout.addWidget(self.NewProductionTestButton, 1, 0, 1, 1)
+        #layout.addWidget(NewProductionTestLabel, 1, 1, 1, 2)
+        #layout.addWidget(self.SummaryButton, 2, 0, 1, 1)
+        #layout.addWidget(SummaryLabel, 2, 1, 1, 2)
+        layout.addWidget(self.ReviewButton, 2, 0, 1, 1)
+        layout.addWidget(ReviewLabel, 2, 1, 1, 2)
+        layout.addWidget(self.ReviewModuleButton, 3, 0, 1, 1)
+        layout.addWidget(self.ReviewModuleEdit, 3, 1, 1, 2)
 
         ####################################################
         # Functions for expert mode
@@ -773,8 +781,8 @@ class QtApplication(QWidget):
             self.DBConsoleButton.setMaximumHeight(kMaximumHeight)
             self.DBConsoleButton.clicked.connect(self.openDBConsole)
             DBConsoleLabel = QLabel("Console for database")
-            layout.addWidget(self.DBConsoleButton, 5, 0, 1, 1)
-            layout.addWidget(DBConsoleLabel, 5, 1, 1, 2)
+            layout.addWidget(self.DBConsoleButton, 1, 0, 1, 1)
+            layout.addWidget(DBConsoleLabel, 1, 1, 1, 2)
 
         ####################################################
         # Functions for expert mode  (END)
@@ -827,22 +835,22 @@ class QtApplication(QWidget):
         self.AppLayout.addWidget(self.ExitButton)
         self.AppOption.setLayout(self.AppLayout)
 
-        self.mainLayout.addWidget(self.FirmwareStatus, 0, 0, 1, 2)
-        self.mainLayout.addWidget(self.UseDefaultGroup, 1, 0, 1, 2)
+        self.mainLayout.addWidget(self.FirmwareStatus, 0, 0, 1, 1)
+        self.mainLayout.addWidget(self.UseDefaultGroup, 1, 0, 1, 1)
         self.mainLayout.addWidget(self.HVPowerRemoteControl, 2, 0, 1, 1)
-        self.mainLayout.addWidget(self.HVPowerGroup, 3, 0, 1, 2)
-        self.mainLayout.addWidget(self.LVPowerRemoteControl, 4, 0, 1, 1)
-        self.mainLayout.addWidget(self.LVPowerGroup, 5, 0, 1, 2)
-        self.mainLayout.addWidget(self.relay_remote_control, 6, 0, 1, 1)
-        self.mainLayout.addWidget(self.relay_group, 7, 0, 1, 2)
-        self.mainLayout.addWidget(self.multimeter_remote_control, 8, 0, 1, 1)
-        self.mainLayout.addWidget(self.multimeter_group, 9, 0, 1, 2)
-        self.mainLayout.addWidget(self.ArduinoGroup, 10, 0, 1, 2)
-        self.mainLayout.addWidget(self.ArduinoControl, 11, 0, 1, 2)
-        self.mainLayout.addWidget(self.MainOption, 12, 0, 1, 1)
-        self.mainLayout.addWidget(self.PeltierBox, 12, 1, 1, 1)
-        self.mainLayout.addWidget(self.AppOption, 13, 1, 1, 1)
-        self.mainLayout.addWidget(self.LogoGroupBox, 13, 0, 1, 1)
+        self.mainLayout.addWidget(self.HVPowerGroup, 3, 0, 1, 1)
+        self.mainLayout.addWidget(self.LVPowerRemoteControl, 2, 1, 1, 1)
+        self.mainLayout.addWidget(self.LVPowerGroup, 3, 1, 1, 1)
+        self.mainLayout.addWidget(self.relay_remote_control, 4, 0, 1, 1)
+        self.mainLayout.addWidget(self.relay_group, 5, 0, 1, 1)
+        self.mainLayout.addWidget(self.multimeter_remote_control, 4, 1, 1, 1)
+        self.mainLayout.addWidget(self.multimeter_group, 5, 1, 1, 1)
+        self.mainLayout.addWidget(self.ArduinoGroup, 7, 1, 1, 1)
+        self.mainLayout.addWidget(self.ArduinoControl, 6, 1, 1, 1)
+        self.mainLayout.addWidget(self.MainOption, 0, 1, 2, 1)
+        self.mainLayout.addWidget(self.PeltierBox, 6, 0, 4, 1)
+        self.mainLayout.addWidget(self.AppOption, 8, 1, 1, 1)
+        self.mainLayout.addWidget(self.LogoGroupBox, 9, 1, 1, 1)
 
         self.setDefault()
 
@@ -903,7 +911,7 @@ class QtApplication(QWidget):
     def connect_devices(self):
         """
         Use defaults set in siteConfig.py to setup instrument cluster.
-        If default_checkbox is not checked change this variable to reflect changes made it GUI
+        If default_checkbox is not checked change this variable to reflect changes made in GUI
         """
         self.device_settings = site_settings.icicle_instrument_setup
         if not self.default_checkbox.isChecked():

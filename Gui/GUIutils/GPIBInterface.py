@@ -406,7 +406,7 @@ class PowerSupply:
                     print("doing turnOffHV in rampingUP")  # debug
                 # self.Instrument.set('SENSE_CURRENT_RANGE', 10e-6)
                 # self.Instrument.set('VOLTAGE_MODE', 'FIX')
-                self.SetHVComplianceLimit(defaultHVCurrentCompliance)
+               # self.SetHVComplianceLimit(default_hv_compliance_current)
                 self.SetHVVoltage(0)
                 self.TurnOn()
 

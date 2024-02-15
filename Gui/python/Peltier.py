@@ -11,7 +11,9 @@ from Gui.python.logging_config import logger
 
 class PeltierSignalGenerator:
     def __init__(self):
-        self.ser = serial.Serial(defaultPeltierPort, defaultPeltierBaud)
+        print("Connecting Peltier Port")
+        self.ser = serial.Serial(defaultPeltierPort, defaultPeltierBaud, timeout=5, write_timeout=5, inter_byte_timeout=5)
+        print("Peltier connected")
         self.commandDict = {
             "Input1": ["0", "1"],
             "Desired Control Value": ["0", "3"],
@@ -89,7 +91,7 @@ class PeltierSignalGenerator:
 
     # Used for all other commands that are not setTemp
     # Currently you need to format dd yourself which is the input value you want to send
-    def createCommand(self, command, dd):
+    def createCommand(self, command:str , dd:list[str]):
         stx = ["*"]
         aa = ["0", "0"]
         cc = self.commandDict[command]
@@ -100,10 +102,13 @@ class PeltierSignalGenerator:
         return command
 
     def sendCommand(self, command):
+        logger.debug(f"Sending Command: {command}")
         try:
             for bit in command:
                 self.ser.write(bit.encode())
+            logger.debug("Command sent waiting on reply")
             message, passed = self.recieveMessage()
+            logger.debug(f"Recieved message: {message}")
             return message, passed
         except:
             return None, False
@@ -112,11 +117,47 @@ class PeltierSignalGenerator:
     def recieveMessage(self):
         connection = True
         buff = self.buffer.copy()
+
         for i in range(len(buff)):
-            buff[i] = self.ser.read(1).decode("utf-8")
+            char = self.ser.read(1).decode("utf-8")
+            if len(char) == 0:
+                return buff, False
+            buff[i] = char
+
+        logger.debug(f"Peltier Buffer Message: {buff}")
         if buff == self.checksumError:
             connection = False
             return buff, connection
         else:
             time.sleep(0.1)
             return buff, connection
+
+    def convertSetTempValueToList(self, temp: float) -> list:
+        """
+        Convienience function to convert floats to set temperature signals for the Peltier that can be used
+        in the message of the createCommand function
+        """
+        value = ["0", "0", "0", "0", "0", "0", "0", "0"]
+        temp *= 100
+        temp = int(temp)
+        if temp < 0:
+            temp = self.twosCompliment(temp)
+        temp = self.convertToHex(temp)
+        temp = self.stringToList(temp)
+        cutoff = temp.index("x")
+        temp = temp[cutoff + 1 :]
+        for i, _ in enumerate(temp):
+            value[-(i + 1)] = temp[-(i + 1)]
+        return value
+
+    def convertSetTempListToValue(self, temp: list) -> float:
+        """
+        Convienience function to convert return value from peltier to a decimal temperature. The input to this
+        function should be the output of sendCommand() after sending a command to read some temperature. 
+        """
+        temp = temp[1:9]
+        temp = "".join(temp)
+        temp = int(temp, 16) / 100
+        if temp > 1000:
+            temp = -1 * self.twosCompliment(temp)
+        return temp

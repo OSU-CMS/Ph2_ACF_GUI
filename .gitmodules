@@ -1,7 +1,3 @@
-[submodule "power_supply"]
-	path = power_supply
-	url = https://gitlab.cern.ch/cms_tk_ph2/power_supply.git
-	branch = developer
 [submodule "Ph2_ACF"]
 	path = Ph2_ACF
 	url = https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF.git
@@ -10,7 +6,7 @@
 	path = icicle
 	url = https://gitlab.cern.ch/rdelossa/instrument-control-icicle-osu.git
 	branch = master
-
 [submodule "InnerTrackerTests"]
 	path = InnerTrackerTests
 	url = https://gitlab.cern.ch/cms_tk_ph2/inner-tracker-tests.git
+	branch = master

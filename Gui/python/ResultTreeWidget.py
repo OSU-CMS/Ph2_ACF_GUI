@@ -46,7 +46,7 @@ from Gui.GUIutils.guiUtils import *
 from Gui.python.ROOTInterface import *
 from Gui.QtGUIutils.QtTCanvasWidget import *
 from Gui.python.logging_config import logger
-
+from InnerTrackerTests.TestSequences import CompositeTests
 
 class ResultTreeWidget(QWidget):
     def __init__(self, info, width, height, master):
@@ -56,6 +56,7 @@ class ResultTreeWidget(QWidget):
         self.DisplayH = height
         self.FileList = []
         self.IVFileList = []
+        self.SLDOFileList = []
         self.info = info
         self.ProgressBarList = []
         self.ProgressBar = {}
@@ -78,8 +79,8 @@ class ResultTreeWidget(QWidget):
 
     def initializeProgressBar(self):
         if isCompositeTest(self.info[1]):
-            self.ProgressBarList = CompositeList[self.info[1]]
-            self.runtimeList = CompositeList[self.info[1]]
+            self.ProgressBarList = CompositeTests[self.info[1]]
+            self.runtimeList = CompositeTests[self.info[1]]
         else:
             self.ProgressBarList = [self.info[1]]
             self.runtimeList = [self.info[1]]
@@ -286,6 +287,24 @@ class ResultTreeWidget(QWidget):
         self.IVFileList += stepFiles2
 
         for File in self.IVFileList:
+            CurrentNode = QTreeWidgetItem()
+            CurrentNode.setText(0, File.split("/")[-1])
+            CurrentNode.setData(0, Qt.UserRole, File)
+            self.TreeRoot.addChild(CurrentNode)
+    def updateSLDOResult(self, sourceFolder):
+        process2 = subprocess.run(
+            'find {0} -type f -name "*.svg" '.format(sourceFolder),
+            shell=True,
+            stdout=subprocess.PIPE,
+        )
+        stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
+
+        if stepFiles2 == [""]:
+            return
+
+        self.SLDOFileList += stepFiles2
+
+        for File in self.SLDOFileList:
             CurrentNode = QTreeWidgetItem()
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)

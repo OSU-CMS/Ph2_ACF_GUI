@@ -11,6 +11,7 @@ import subprocess
 import threading
 import time
 from datetime import datetime
+import numpy as np
 
 from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.guiUtils import *
@@ -29,6 +30,7 @@ from Gui.python.SLDOScanHandler import *
 from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.siteSettings import *
 from Gui.python.logging_config import logger
+from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 import logging
 
@@ -48,6 +50,7 @@ class TestHandler(QObject):
     historyRefresh = pyqtSignal(object)
     updateResult = pyqtSignal(object)
     updateIVResult = pyqtSignal(object)
+    updateSLDOResult = pyqtSignal(object)
     updateValidation = pyqtSignal(object, object)
     powerSignal = pyqtSignal()
 
@@ -121,6 +124,7 @@ class TestHandler(QObject):
         self.ProgressingMode = "None"
         self.ProgressValue = 0
         self.IVProgressValue = 0
+        self.SLDOProgressValue = 0
         self.runtimeList = []
         self.info_process = QProcess(self)
         self.info_process.readyReadStandardOutput.connect(
@@ -137,7 +141,9 @@ class TestHandler(QObject):
         self.historyRefresh.connect(self.runwindow.refreshHistory)
         self.updateResult.connect(self.runwindow.updateResult)
         self.updateIVResult.connect(self.runwindow.updateIVResult)
+        self.updateSLDOResult.connect(self.runwindow.updateSLDOResult)
         self.updateValidation.connect(self.runwindow.updateValidation)
+
 
         self.initializeRD53Dict()
 
@@ -175,7 +181,7 @@ class TestHandler(QObject):
 
         # If currentTest is not set check if it's a compositeTest and if so set testname accordingly, otherwise set it based off the test set in info[1]
         if self.currentTest == "" and isCompositeTest(self.info[1]):
-            testName = CompositeList[self.info[1]][0]
+            testName = CompositeTests[self.info[1]][0]
         elif self.currentTest == None:
             testName = self.info[1]
         else:
@@ -313,15 +319,15 @@ class TestHandler(QObject):
         if self.halt:
             # self.LVpowersupply.TurnOff()
             return
-        runTestList = CompositeList[self.info[1]]
+        runTestList = CompositeTests[self.info[1]]
 
-        if self.testIndexTracker == len(CompositeList[self.info[1]]):
+        if self.testIndexTracker == len(CompositeTests[self.info[1]]):
             self.testIndexTracker = 0
             return
         # testName = CompositeList[self.info[1]][self.testIndexTracker]
         testName = runTestList[self.testIndexTracker]
-        if self.info[1] == "AllScan_Tuning":
-            updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
+        #if self.info[1] == "AllScan_Tuning":
+        #    updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
         self.runSingleTest(testName)
 
     def runSingleTest(self, testName):
@@ -337,20 +343,29 @@ class TestHandler(QObject):
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
-            self.IVCurveHandler = IVCurveHandler(self, self.instruments)
+            self.IVCurveHandler = IVCurveHandler(self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.IVCurve()
             return
 
         if testName == "SLDOScan":
+            self.currentTest = testName
+            self.configTest()
             self.SLDOScanData = []
-            self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOScanHandler(self, self.LVpowersupply)
-            self.SLDOScanHandler.finished.connect(self.SLDOScanFinished)
+            #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, end_current=ModuleCurrentMap[self.master.module_in_use], voltage_limit=ModuleVoltageMapSLDO[self.master.module_in_use])
+            self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
+            self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
+            self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
             self.SLDOScanHandler.SLDOScan()
             return
 
+        #If the HV is not already on, turn it on.
+        if not self.instruments.status(lv_channel=None)["hv"]:
+            self.instruments.hv_on(
+                lv_channel=None, voltage=icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
+            )
         self.tempindex = 0
         self.starttime = None
         self.ProgressingMode = "None"
@@ -384,7 +399,7 @@ class TestHandler(QObject):
             "echo",
             [
                 "Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(
-                    Test[self.currentTest]
+                    Test_to_Ph2ACF_Map[self.currentTest]
                 )
             ],
         )
@@ -445,7 +460,7 @@ class TestHandler(QObject):
             "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")), "DoNSteps"
         )
 
-        if Test[self.currentTest] in [
+        if Test_to_Ph2ACF_Map[self.currentTest] in [
             "pixelalive",
             "noise",
             "latency",
@@ -461,14 +476,14 @@ class TestHandler(QObject):
         ]:
             self.run_process.start(
                 "CMSITminiDAQ",
-                ["-f", "CMSIT.xml", "-c", "{}".format(Test[self.currentTest])],
+                ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
             )
-            if Test[self.currentTest] == "threqu":
+            if Test_to_Ph2ACF_Map[self.currentTest] == "threqu":
                 self.isTDACtuned = True
         else:
             self.info_process.start(
                 "echo",
-                ["test {} not runnable, quitting...".format(Test[self.currentTest])],
+                ["test {} not runnable, quitting...".format(Test_to_Ph2ACF_Map[self.currentTest])],
             )
 
         # Question = QMessageBox()
@@ -891,7 +906,7 @@ class TestHandler(QObject):
         self.readingOutput = False
 
     def updateNeeded(self, textStr):
-        currentTest = Test[self.currentTest]
+        currentTest = Test_to_Ph2ACF_Map[self.currentTest]
         # print('board type in update section is {0}'.format(self.ModuleType))
         if currentTest in ["thradj", "thrmin"] and "Global threshold for" in textStr:
             if "CROC" in self.ModuleType:
@@ -960,7 +975,7 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
-            if self.testIndexTracker == len(CompositeList[self.info[1]]):
+            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
         elif isSingleTest(self.info[1]):
@@ -1007,7 +1022,7 @@ class TestHandler(QObject):
         if (
             status == False
             and isCompositeTest(self.info[1])
-            and self.testIndexTracker < len(CompositeList[self.info[1]])
+            and self.testIndexTracker < len(CompositeTests[self.info[1]])
         ):
             self.forceContinue()
 
@@ -1018,6 +1033,9 @@ class TestHandler(QObject):
         if measurementType=='IVCurve':
             self.IVProgressValue += stepSize/2.0
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
+        if 'SLDO' in measurementType:
+            self.SLDOProgressValue += stepSize
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
 
     def updateMeasurement(self, measureType, measure):
         """
@@ -1074,6 +1092,24 @@ class TestHandler(QObject):
                 self.figurelist = {"-1": [output]}
                 self.updateResult.emit((step, self.figurelist))
 
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
+        for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
+            moduleName = module.getModuleName()
+        filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, pin)
+        csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, pin)
+        #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
+        total_result_stacked = np.vstack(total_result)
+        np.savetxt(csvfilename, total_result_stacked, delimiter=',')
+        plt.figure()
+        plt.plot(total_result_stacked[:,2],total_result_stacked[:,1],'-x',label="module input voltage")
+        plt.plot(total_result_stacked[:,2],total_result_stacked[:,3],'-x',label=pin)
+        plt.grid(True)
+        plt.xlabel("Current (A)")
+        plt.ylabel("Voltage (V)")
+        plt.legend()
+        plt.savefig(filename)
+
+
     def IVCurveFinished(self, test: str, measure: dict):
         for (
             module
@@ -1090,7 +1126,8 @@ class TestHandler(QObject):
                 Y=measure["current"],
                 invert=True,
             )
-
+        csvfilename = "{0}/IVCurve_Module_{1}.csv".format(self.output_dir, moduleName)
+        np.savetxt(csvfilename, (measure["voltage"],measure["current"]), delimiter=',')
         filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
         filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
         self.IVCurveResult.saveToSVG(filename)
@@ -1104,15 +1141,16 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
+            
             self.master.instruments.hv_on(
                 lv_channel=None,
-                voltage=defaultHVsetting,
+                voltage=icicle_instrument_setup['default_hv_voltage'],
                 delay=0.3,
                 step_size=-3,
                 measure=False,
             )
 
-            if self.testIndexTracker == len(CompositeList[self.info[1]]):
+            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
         elif isSingleTest(self.info[1]):
@@ -1130,10 +1168,41 @@ class TestHandler(QObject):
             self.runTest()
 
     def SLDOScanFinished(self):
-        self.LVpowersupply.Reset()
-        self.LVpowersupply.InitialDevice()
-        self.LVpowersupply.setCompCurrent(compcurrent=1.05)  # Fixed for different chip
-        self.LVpowersupply.TurnOn()
+        for (
+            module
+        ) in (
+            self.firmware.getAllModules().values()
+        ):  # FIXME This is not the ideal way to do this... I think...
+            moduleName = module.getModuleName()
+
+        # Will send signal to turn off power supply after composite or single tests are run
+        if isCompositeTest(self.info[1]):
+            self.instruments.lv_on(
+                lv_channel=None,
+                voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
+                current=ModuleCurrentMap[self.master.module_in_use],
+            )
+            self.master.instruments.hv_on(
+                lv_channel=None,
+                voltage=icicle_instrument_setup['default_hv_voltage'],
+                delay=0.3,
+                step_size=-3,
+                measure=False,
+            )
+
+            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
+                self.powerSignal.emit()
+                EnableReRun = True
+        elif isSingleTest(self.info[1]):
+            EnableReRun = True
+            self.powerSignal.emit()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit(self.modulestatus)
+        if self.master.expertMode:
+            self.updateSLDOResult.emit(self.output_dir)
+
         self.testIndexTracker += 1
         if isCompositeTest(self.info[1]):
             self.runTest()

@@ -25,7 +25,7 @@ from Gui.GUIutils.settings import *
 from Gui.GUIutils.DBConnection import *
 from Configuration.XMLUtil import *
 from Gui.python.logging_config import logger
-
+from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 ##########################################################################
 ##########################################################################
 
@@ -148,7 +148,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
     try:
         root, tree = LoadXML(InputFile)
         # FirmwareList just stores the IP address of the FC7 board being used
-        fwIP = FirmwareList[firmwareName]
+        fwIP = FC7List[firmwareName]
         # For all nodes that match .//connection
         for Node in root.findall(".//connection"):
             if fwIP not in Node.attrib["uri"]:
@@ -391,6 +391,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                     module.getModuleName(), module.getModuleID(), chip.getID()
                 ),
             )
+
             FEChip.ConfigureFE(FESettings_Dict[testName])
             FEChip.VDDAtrim = chip.getVDDA()
             FEChip.VDDDtrim = chip.getVDDD()
@@ -403,7 +404,8 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 
     BeBoardModule0.SetRegisterValue(RegisterSettings)
     HWDescription0.AddBeBoard(BeBoardModule0)
-    HWDescription0.AddSettings(HWSettings_Dict[testName])
+    ###  This is where you specify which set of HW settings to use for a test  ######
+    HWDescription0.AddSettings(HWSettings_Dict[testName])  
     MonitoringModule0 = MonitoringModule(boardtype)
     if "RD53A" in boardtype:
         MonitoringModule0.SetMonitoringList(MonitoringListA)
@@ -465,14 +467,14 @@ def GetTBrowser(DQMFile):
 
 
 def isCompositeTest(TestName):
-    if TestName in CompositeTest:
+    if TestName in CompositeTests.keys():
         return True
     else:
         return False
 
 
 def isSingleTest(TestName):
-    if TestName in SingleTest:
+    if TestName in Test_to_Ph2ACF_Map.keys():
         return True
     else:
         return False

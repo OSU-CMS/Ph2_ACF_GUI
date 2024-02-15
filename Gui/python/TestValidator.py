@@ -30,7 +30,7 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
         try:
             CanvasList = {}
             FileName = "{0}/Run{1}_{2}.root".format(
-                inputDir, runNumber, TestName2File[testName]
+                inputDir, runNumber, testName
             )
             if os.path.isfile(FileName):
                 Nodes = GetDirectory(FileName)
@@ -63,7 +63,7 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
         try:
             CanvasList = {}
             FileName = "{0}/Run{1}_{2}.root".format(
-                inputDir, runNumber, TestName2File[testName]
+                inputDir, runNumber, testName
             )
             if os.path.isfile(FileName):
                 Nodes = GetDirectory(FileName)

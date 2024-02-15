@@ -1,52 +1,26 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap, QTextCursor, QColor
+from PyQt5.QtGui import QPixmap, QColor
 from PyQt5.QtWidgets import (
     QAbstractItemView,
-    QApplication,
     QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
     QDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QListWidget,
     QPlainTextEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
     QTableWidget,
     QTableWidgetItem,
-    QTabWidget,
-    QTextEdit,
-    QTreeWidget,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
     QMessageBox,
     QSplitter,
 )
 
-import sys
 import os
-import re
-import subprocess
 import threading
 import time
-from datetime import datetime
-import random
-from subprocess import Popen, PIPE
 import logging
 
 from Gui.GUIutils.DBConnection import *
@@ -62,6 +36,7 @@ from Gui.python.TestValidator import *
 from Gui.python.ANSIColoringParser import *
 from Gui.python.TestHandler import *
 from Gui.python.logging_config import logger
+from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 
 class QtRunWindow(QWidget):
@@ -75,14 +50,16 @@ class QtRunWindow(QWidget):
         # self.LogoGroupBox = self.master.LogoGroupBox
         self.firmware = firmware
         self.info = info
-        if "AllScan_Tuning" in self.info[1]:
-            runTestList = pretuningList
-            runTestList.extend(tuningList * len(defaultTargetThr))
-            runTestList.extend(posttuningList)
-            CompositeList.update({"AllScan_Tuning": runTestList})
 
-        elif isCompositeTest(self.info[1]):
-            runTestList = CompositeList[self.info[1]]
+        # Removing for sequencefix
+#        if "AllScan_Tuning" in self.info[1]:
+#            runTestList = pretuningList
+#            runTestList.extend(tuningList * len(defaultTargetThr))
+#            runTestList.extend(posttuningList)
+#            CompositeList.update({"AllScan_Tuning": runTestList})
+
+        if isCompositeTest(self.info[1]):
+            runTestList = CompositeTests[self.info[1]]
         else:
             runTestList = self.info[1]
 
@@ -148,18 +125,18 @@ class QtRunWindow(QWidget):
 
         # added from Bowen
         print("test list should be {0}".format(self.info[1]))
-        self.j = 0
+        #self.j = 0
         # stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
         # if len(runTestList)>1:
-        for i in range(len(runTestList)):
-            if runTestList[i] == "ThresholdAdjustment":
-                self.j += 1
-            if self.j == 0:
-                stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j]
-            else:
-                stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j - 1]
+        #for i in range(len(runTestList)):
+        #    if runTestList[i] == "ThresholdAdjustment":
+        #        self.j += 1
+        #    if self.j == 0:
+        #        stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j]
+        #    else:
+        #        stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j - 1]
 
-        logger.info(stepWiseGlobalValue)
+        #logger.info(stepWiseGlobalValue)
 
     def setLoginUI(self):
         X = self.master.dimension.width() / 10
@@ -471,7 +448,7 @@ class QtRunWindow(QWidget):
             self.StatusTable.setRowCount(row + 1)
             if isCompositeTest(self.info[1]):
                 self.StatusTable.setItem(
-                    row, 0, QTableWidgetItem(CompositeList[self.info[1]][index])
+                    row, 0, QTableWidgetItem(CompositeTests[self.info[1]][index])
                 )
             else:
                 self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
@@ -535,7 +512,7 @@ class QtRunWindow(QWidget):
             isReRun = True
             self.grades = []
             if isCompositeTest(self.info[1]):
-                for index in range(len(CompositeList[self.info[1]])):
+                for index in range(len(CompositeTests[self.info[1]])):
                     self.ResultWidget.ProgressBar[index].setValue(0)
             else:
                 self.ResultWidget.ProgressBar[0].setValue(0)
@@ -606,6 +583,13 @@ class QtRunWindow(QWidget):
         # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
         if self.master.expertMode:
             self.ResultWidget.updateIVResult(newResult)
+        else:
+            step, displayDict = newResult
+            self.ResultWidget.updateDisplayList(step, displayDict)
+
+    def updateSLDOResult(self, newResult):
+        if self.master.expertMode:
+            self.ResultWidget.updateSLDOResult(newResult)
         else:
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)

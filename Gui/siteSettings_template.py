@@ -31,9 +31,11 @@ defaultFMC = '0'
 # default mode for LV powering (Direct,SLDO,etc)
 defaultPowerMode = "SLDO"
 #default DBServerIP
-defaultDBServerIP = '127.0.0.1'
+#defaultDBServerIP = '127.0.0.1'
+defaultDBServerIP = 'cmsfpixdb.physics.purdue.edu'
 #default DBName
-defaultDBName = 'SampleDB'
+#defaultDBName = 'SampleDB'
+defaultDBName = 'cmsfpix_phase2'
 ##################################
 
 
@@ -59,8 +61,8 @@ icicle_instrument_setup = { "lv":"KeysightE3633A",
                             "default_lv_current" : 3,
                             "hv": "Keithley2410",
                             "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
-                            "default_hv_voltage": -80,
-                            "default_hv_compliance_current": 5e-6,
+                            "default_hv_voltage": -80, #in volts
+                            "default_hv_compliance_current": 5e-6, #in amperes
                             "default_hv_delay": 2,
                             "default_hv_step_size": 10,
                             "relay_board": "RelayBoard",
@@ -72,46 +74,40 @@ icicle_instrument_setup = { "lv":"KeysightE3633A",
 ## Specify whether of not you want to monitor chip temperature during the tests ##
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
-Monitor_CROC = "0"
-
-#setting default HV current compliance in mA
-defaultHVCurrentCompliance = 0.00001
-
-#setting HV bias voltage in V
-defaultHVsetting = -60
+Monitor_CROC = "1"
 
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
-	"SingleSCC" : 0.6,
+	"TFPX SCC" : 0.6,
 	"TFPX Quad" : 6.5,
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
 	"Yellow Module (Purdue)": 6.5,
 
-	"CROC 1x2"  : 4.5,
+	"TFPX CROC 1x2"  : 4.5,
 
 	"TFPX CROC Quad" : 6.5,
-	"CROC SCC"  : 2.0,
+	"TFPX CROC SCC"  : 2.0,
 }
 
 ## Configuring the voltage limit for each module type when operating in SLDO mode.  These values are in Volts.
 ModuleVoltageMapSLDO = {
-	"SingleSCC" : 1.8,
+	"TFPX SCC" : 1.8,
 	"TFPX Quad" : 2.98,
 	"TEPX Quad" : 2.0,
 	"TBPX Quad" : 2.98,
 	"Yellow Module (Purdue)": 2.8,
 
-	"CROC 1x2"  : 2.2,
+	"TFPX CROC 1x2"  : 2.2,
 
 	"TFPX CROC Quad" : 2.98,
-	"CROC SCC"  : 1.8,
+	"TFPX CROC SCC"  : 1.8,
 }
 
 ##  Configuring the voltage settings for each module type.  These values are in Volts.
 ModuleVoltageMap = {
-	"SingleSCC" : 1.3,
-	"CROC SCC"  : 1.6,
+	"TFPX SCC" : 1.3,
+	"TFPX CROC SCC"  : 1.6,
 }
 
 #setting the sequence of threshold tuning targets:
