@@ -58,6 +58,8 @@ from Gui.GUIutils.FirmwareUtil import *
 from Gui.GUIutils.settings import *
 from Gui.siteSettings import *
 from InnerTrackerTests.TestSequences import TestList
+from siteSettings import icicle_instrument_setup
+
 # from Gui.QtGUIutils.QtProductionTestWindow import *
 
 
@@ -97,12 +99,12 @@ class SummaryBox(QWidget):
         self.DetailsButton = QPushButton("Details")
         self.DetailsButton.clicked.connect(self.showDetails)
 
-        self.mainLayout.addWidget(FEIDLabel, 0, 0, 1, 1)
-        # self.mainLayout.addWidget(self.ChipBoxWidget,0,1,1,1)
+        #self.mainLayout.addWidget(FEIDLabel, 0, 0, 1, 1)
+        #self.mainLayout.addWidget(self.ChipBoxWidget,0,1,1,1)
         self.mainLayout.addWidget(PowerModeLabel, 1, 0, 1, 1)
         self.mainLayout.addWidget(self.PowerModeCombo, 1, 1, 1, 1)
         self.mainLayout.addWidget(self.CheckLabel, 2, 0, 1, 1)
-        self.mainLayout.addWidget(self.DetailsButton, 2, 1, 1, 1)
+        #self.mainLayout.addWidget(self.DetailsButton, 2, 1, 1, 1)
 
     def measureFwPar(self):
         for index, (key, value) in enumerate(self.verboseResult.items()):
@@ -113,7 +115,10 @@ class SummaryBox(QWidget):
                 "Set LV Current (A)",
             ]
             for item in measureList:
-                value[item] = 1.0
+                if 'LV Current' in item:
+                    value[item] = ModuleCurrentMap[self.module.getType()]
+                if 'Bias Voltage' in item:
+                    value[item] = icicle_instrument_setup['default_hv_voltage']
             self.verboseResult[key] = value
 
     def checkFwPar(self, pfirmwareName):
@@ -418,8 +423,8 @@ class QtStartWindow(QWidget):
 
         self.StartLayout.addStretch(1)
         self.StartLayout.addWidget(self.CancelButton)
-        self.StartLayout.addWidget(self.ResetButton)
-        self.StartLayout.addWidget(self.CheckButton)
+        #self.StartLayout.addWidget(self.ResetButton)
+        #self.StartLayout.addWidget(self.CheckButton)
         self.StartLayout.addWidget(self.NextButton)
         self.AppOption.setLayout(self.StartLayout)
 
