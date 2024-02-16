@@ -46,6 +46,7 @@ from instrument_cluster import InstrumentCluster
 
 from Gui.python.logging_config import logger
 
+import subprocess
 
 
 class QtApplication(QWidget):
@@ -603,7 +604,20 @@ class QtApplication(QWidget):
         self.relay_model_combo.addItems(InstrumentCluster.package_map.keys())
         self.relay_model_status = QLabel()
         self.relay_remote_control = QCheckBox("Use relay")
-        self.relay_remote_control.setChecked(False)
+        self.relay_ScriptUpload = QPushButton("&Upload Script")
+        self.relay_remote_control.setChecked(False) 
+        
+        
+        try:
+            #self.relay_ScriptUpload.clicked.connect(self.uploadScript(self.relay_port_combobox.currentText()))
+            if self.relay_port_combobox.currentText() != None:
+                self.relay_ScriptUpload.clicked.connect(self.uploadScript)
+        except Exception as e:
+            logger.error(self.relay_port_combobox.currentText())
+            logger.error(f"Unexpected error: {e}")
+            logger.error("relay box ScriptUpload error")
+        
+        
         self.relay_remote_control.toggled.connect(lambda: self.enableDevice("relay"))
         self.relay_port_combobox.activated.connect(
             lambda: self.update_instrument_info(
@@ -620,12 +634,13 @@ class QtApplication(QWidget):
             if self.relay_remote_control.isChecked()
             else self.relay_group.setDisabled(True)
         )
-
+        
         relay_layout.addWidget(relay_board_port_label)
         relay_layout.addWidget(self.relay_port_combobox)
         relay_layout.addWidget(self.relay_model_label)
         relay_layout.addWidget(self.relay_model_combo)
         relay_layout.addWidget(self.relay_model_status)
+        relay_layout.addWidget(self.relay_ScriptUpload)
         relay_layout.addStretch(1)
         self.relay_group.setLayout(relay_layout)
 
@@ -848,6 +863,40 @@ class QtApplication(QWidget):
             "relay": self.relay_group,
             "multimeter": self.multimeter_group,
         }
+    
+
+
+    def uploadScript(self):
+        try:
+            compileResult=subprocess.run(
+            "$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+            )
+            portName = self.relay_port_combobox.currentText().lstrip("ASRL").rstrip("::INSTR")
+            #portName = "/dev/ttyACM0"
+            uploadResult=subprocess.run(
+            f"$GUI_dir/bin/arduino-cli upload -p {portName} --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+            )
+            logger.debug(compileResult.stdout)
+            logger.debug(uploadResult.stdout)
+            if "New upload port" in str(uploadResult.stdout):
+                print("upload completed")
+            print(compileResult.stderr)
+            print(uploadResult.stderr)
+                 
+        except subprocess.CalledProcessError as err:
+            print("current port:" + str(portName))
+            print("please check the port addrss")
+            print("Unable to upload script to Arduino")
+            logger.error("Unable to upload script to Arduino")
+            logger.error(compileResult.stderr)
+            logger.error(uploadResult.stderr)
+        
 
     def setDefault(self):
         if self.expertMode is False:

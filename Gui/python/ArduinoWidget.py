@@ -36,7 +36,9 @@ from UserCustoms.python.ArduinoParser import *
 import pyvisa as visa
 import subprocess
 import numpy as np
+import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
+
 
 
 class ArduinoWidget(QWidget):
@@ -71,106 +73,72 @@ class ArduinoWidget(QWidget):
         self.UseArduino.clicked.connect(self.frozeArduinoPanel)
         self.ReleaseArduino = QPushButton("&Release")
         self.ReleaseArduino.clicked.connect(self.releaseArduinoPanel)
+        self.TempScriptUpload = QPushButton("&Upload script")
+        self.TempScriptUpload.clicked.connect(self.TemScriptUploder)
         self.ReleaseArduino.setDisabled(True)
-
         self.ArduinoBox.addWidget(self.ArduinoStatusLabel)
         self.ArduinoBox.addWidget(self.ArduinoCombo)
         self.ArduinoBox.addWidget(self.ArduinoBaudRate)
         self.ArduinoBox.addWidget(self.ArduinoBRCombo)
-        # self.ArduinoBox.addWidget(self.ArduinoValues)
         self.ArduinoBox.addStretch(1)
         self.ArduinoBox.addWidget(self.UseArduino)
         self.ArduinoBox.addWidget(self.ReleaseArduino)
+        self.ArduinoBox.addWidget(self.TempScriptUpload)
         self.ArduinoGroup.setLayout(self.ArduinoBox)
         self.mainLayout.addWidget(self.ArduinoGroup, 0, 0)
 
         self.ArduinoMeasureValue = QLabel()
         self.mainLayout.addWidget(self.ArduinoMeasureValue, 1, 0)
+    
 
     def listResources(self):
-        self.ResourcesManager = visa.ResourceManager("@py")
+        self.ResourcesList = []
+        self.ResourcesList.append(site_settings.TemArduinoPort)
+        return self.ResourcesList
+    
+
+    def TemScriptUploder(self):
+        
         try:
-            self.ResourcesList = self.ResourcesManager.list_resources()
-            print(self.ResourcesList)
-            self.getDeviceName()
-            return list(self.deviceMap.keys())
-        except Exception as err:
-            logger.error("Failed to list all resources: {}".format(err))
-            self.ResourcesList = ()
-            return self.ResourcesList
 
-    def getDeviceName(self):
-        self.deviceMap = {}
-        for device in self.ResourcesList:
-            try:
-                pipe = subprocess.Popen(
-                    [
-                        "udevadm",
-                        "info",
-                        " --query",
-                        "all",
-                        "--name",
-                        device.lstrip("ASRL").rstrip("::INSTR"),
-                        "--attribute-walk",
-                    ],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                )
-                raw_output = pipe.communicate()[0]
-                vendor_list = [
-                    info
-                    for info in raw_output.splitlines()
-                    if b"ATTRS{idVendor}" in info or b"ATTRS{vendor}" in info
-                ]
-                product_list = [
-                    info
-                    for info in raw_output.splitlines()
-                    if b"ATTRS{idProduct}" in info or b"ATTRS{product}" in info
-                ]
-                idvendor = (
-                    vendor_list[0]
-                    .decode("UTF-8")
-                    .split("==")[1]
-                    .lstrip('"')
-                    .rstrip('"')
-                    .replace("0x", "")
-                )
-                idproduct = (
-                    product_list[0]
-                    .decode("UTF-8")
-                    .split("==")[1]
-                    .lstrip('"')
-                    .rstrip('"')
-                    .replace("0x", "")
-                )
-                deviceId = "{}:{}".format(idvendor, idproduct)
-                pipeUSB = subprocess.Popen(
-                    ["lsusb", "-d", deviceId],
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                )
-                usbInfo = pipeUSB.communicate()[0]
-                deviceName = usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(" ")
 
-                if deviceName == None:
-                    logger.warning("No device name found for {}:".format(device))
-                    # self.deviceMap[device] = device
-                elif "Arduino" in deviceName:
-                    self.deviceMap[deviceName] = device
-                else:
-                    pass
-            except Exception as err:
-                logger.error("Error found:{}".format(err))
-                # self.deviceMap[device] = device
+            compileResult=subprocess.run(
+            "$GUI_dir/bin/arduino-cli compile --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+            )
+            deviceName = self.ArduinoCombo.currentText()
+            portName = deviceName.lstrip("ASRL").rstrip("::INSTR")
+            uploadResult=subprocess.run(
+            f"$GUI_dir/bin/arduino-cli upload -p {portName} --fqbn arduino:avr:uno $GUI_dir/FirmwareImages/relay_box_firmware/",
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+            )
+            
 
+            if "New upload port" in str(uploadResult.stdout):
+                print("relay box script upload completed")
+
+                 
+        except subprocess.CalledProcessError as err:            
+            logger.error("Unable to TM upload script to Arduino")
+            logger.error(compileResult.stderr)
+            logger.error(uploadResult.stderr)
+
+        
     def frozeArduinoPanel(self):
         # Block for ArduinoSupply operation
+        
+        
+        
         try:
+                        
             self.setSerial(
-                self.deviceMap[self.ArduinoCombo.currentText()],
+                self.ArduinoCombo.currentText(),
                 self.ArduinoBRCombo.currentText(),
             )
-            print(self.deviceMap[self.ArduinoCombo.currentText()])
             self.ArduinoCombo.setDisabled(True)
             self.ArduinoBRCombo.setDisabled(True)
             self.UseArduino.setDisabled(True)
@@ -178,7 +146,7 @@ class ArduinoWidget(QWidget):
         except Exception as err:
             logger.error("Unable to use Arduino")
             self.ArduinoGoodStatus = False
-
+        
     def releaseArduinoPanel(self):
         self.serial.close()
         self.ArduinoCombo.setDisabled(False)

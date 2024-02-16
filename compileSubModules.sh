@@ -57,3 +57,9 @@ $PWD/bin/arduino-cli core install arduino:avr
 
 echo "-----GUI Environment Setup Complete-----"
 echo "                                        "
+
+#download and save arduino command line interface into the folder $PWD/bin
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | sh
+#download the compilation tool-kit for UNO board 
+$PWD/bin/arduino-cli core install arduino:avr
+

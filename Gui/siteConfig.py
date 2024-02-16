@@ -78,6 +78,12 @@ FC7List =  {
 	'fc7.board.1'			 :  '192.168.1.80',
 	'fc7.board.2'			 :  '192.168.1.81',
 	}
+##############################################
+#arduinot board for monitor testing temperature
+TemArduinoPort = "ASRL/dev/ttyACM0::INSTR"
+
+
+
 
 ## Specify whether of not you want to monitor chip temperature during the tests ##
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
