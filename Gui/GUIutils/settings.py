@@ -92,9 +92,13 @@ ModuleType = {
     2: "TFPX Quad",
     3: "TEPX Quad",
     4: "TBPX Quad",
-    5: "TFPX CROC 1x2",
-    6: "TFPX CROC Quad",
-    7: "CROC SCC",
+    5: "CROC SCC",
+    6: "TFPX CROC 1x2",
+    7: "TEPX CROC 1x2",
+    8: "TBPX CROC 1x2",
+    9: "TFPX CROC Quad",
+    10: "TEPX CROC Quad",
+    11: "TBPX CROC Quad",
 }
 
 firmware_image = {
@@ -133,6 +137,26 @@ firmware_image = {
         "v4-13": "QUAD_ELE_CROC_v4-6.bit",
         "v4-14": "QUAD_ELE_CROC_v4-6.bit",
     },
+    "TEPX CROC 1x2": {
+        "Dev": "QUAD_ELE_CROC_v4-8.bit",
+        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
+        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+    },
+    "TEPX CROC Quad": {
+        "Dev": "QUAD_ELE_CROC_v4-8.bit",
+        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
+        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+    },
+    "TBPX CROC 1x2": {
+        "Dev": "QUAD_ELE_CROC_v4-8.bit",
+        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
+        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+    },
+    "TBPX CROC Quad": {
+        "Dev": "QUAD_ELE_CROC_v4-8.bit",
+        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
+        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+    },
 }
 
 ModuleLaneMap = {
@@ -142,7 +166,11 @@ ModuleLaneMap = {
     "SCC": {"0": "0"},
     "CROC SCC": {"0": "15"},
     "TFPX CROC 1x2": {"0": "12", "2": "13"},
-    "TFPX CROC Quad": {"0": "12", "1": "13", "2": "14"},
+    "TEPX CROC 1x2": {"0": "0", "2": "2"},
+    "TBPX CROC 1x2": {"0": "0", "2": "2"},
+    "TFPX CROC Quad": {"2": "12", "1": "13", "0": "14", "3": "15"},
+    "TEPX CROC Quad": {"0": "0", "1": "1", "2": "2", "3": "3"},
+    "TBPX CROC Quad": {"0": "0", "1": "1", "2": "2", "3": "3"},
 }
 
 ChipMap = {
@@ -165,7 +193,11 @@ BoxSize = {
     "TBPX Quad": 4,
     "CROC SCC": 1,
     "TFPX CROC 1x2": 2,
-    "TFPX CROC Quad": 3,
+    "TEPX CROC 1x2": 2,
+    "TBPX CROC 1x2": 2,
+    "TFPX CROC Quad": 4,
+    "TEPX CROC Quad": 4,
+    "TBPX CROC Quad": 4,
 }
 
 # Reserved for updated value for XML configuration

@@ -93,6 +93,10 @@ ModuleCurrentMap = {
 	"TFPX CROC 1x2"  : 4.5,
 	"TFPX CROC Quad" : 6.5,
 	"CROC SCC"  : 2.0,
+	"TEPX CROC 1x2"  : 4.5,
+	"TEPX CROC Quad" : 6.5,
+	"TBPX CROC 1x2"  : 4.5,
+	"TBPX CROC Quad" : 6.5,
 }
 
 ## Configuring the voltage limit for each module type when operating in SLDO mode.  These values are in Volts.
