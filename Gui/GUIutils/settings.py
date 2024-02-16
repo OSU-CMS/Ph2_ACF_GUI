@@ -88,17 +88,17 @@ FPGAConfigList = {
 }
 
 ModuleType = {
-    1: "TFPX SCC",
+    1: "SCC",
     2: "TFPX Quad",
     3: "TEPX Quad",
     4: "TBPX Quad",
     5: "TFPX CROC 1x2",
     6: "TFPX CROC Quad",
-    7: "TFPX CROC SCC",
+    7: "CROC SCC",
 }
 
 firmware_image = {
-    "TFPX SCC": {
+    "SCC": {
         "Dev": "SCC_ELE_RD53A_v4-8.bit",
         "v4-13": "SCC_ELE_RD53A_v4-6.bit",
         "v4-14": "SCC_ELE_RD53A_v4-6.bit",
@@ -118,7 +118,7 @@ firmware_image = {
         "v4-13": "QUAD_ELE_RD53A_v4-6.bit",
         "v4-14": "QUAD_ELE_RD53A_v4-6.bit",
     },
-    "TFPX CROC SCC": {
+    "CROC SCC": {
         "Dev": "SCC_ELE_CROC_v4-8.bit",
         "v4-13": "SCC_ELE_CROC_v4-6.bit",
         "v4-14": "SCC_ELE_CROC_v4-6.bit",
@@ -139,8 +139,8 @@ ModuleLaneMap = {
     "TFPX Quad": {"0": "4", "1": "2", "2": "7", "3": "5"},
     "TEPX Quad": {"0": "0", "1": "1", "2": "2", "3": "3"},
     "TBPX Quad": {"0": "4", "1": "5", "2": "6", "3": "7"},
-    "TFPX SCC": {"0": "0"},
-    "TFPX CROC SCC": {"0": "15"},
+    "SCC": {"0": "0"},
+    "CROC SCC": {"0": "15"},
     "TFPX CROC 1x2": {"0": "12", "2": "13"},
     "TFPX CROC Quad": {"0": "12", "1": "13", "2": "14"},
 }
@@ -159,11 +159,11 @@ ChipMap = {
     }
 
 BoxSize = {
-    "TFPX SCC": 1,
+    "SCC": 1,
     "TFPX Quad": 4,
     "TEPX Quad": 4,
     "TBPX Quad": 4,
-    "TFPX CROC SCC": 1,
+    "CROC SCC": 1,
     "TFPX CROC 1x2": 2,
     "TFPX CROC Quad": 3,
 }
