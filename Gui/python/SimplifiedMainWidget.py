@@ -330,9 +330,6 @@ class SimplifiedMainWidget(QWidget):
 
         self.runFlag = True
         self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
-        # TODO  There shouldn't be a default value here, we should be getting the LV from the QR code or the module name
-        current = float(current) if current else 0.0
-        voltage = float(voltage) if voltage else 0.0
         self.RunButton.setDisabled(True)
         self.StopButton.setDisabled(False)
 
