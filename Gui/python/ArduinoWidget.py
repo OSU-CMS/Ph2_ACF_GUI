@@ -76,7 +76,7 @@ class ArduinoWidget(QWidget):
         self.TempScriptUpload = QPushButton("&Upload script")
         self.TempScriptUpload.clicked.connect(self.TemScriptUploder)
         self.ReleaseArduino.setDisabled(True)
-        self.TempScriptUpload.setDisable(True)
+        self.TempScriptUpload.setEnabled(False)
         self.ArduinoBox.addWidget(self.ArduinoStatusLabel)
         self.ArduinoBox.addWidget(self.ArduinoCombo)
         self.ArduinoBox.addWidget(self.ArduinoBaudRate)
