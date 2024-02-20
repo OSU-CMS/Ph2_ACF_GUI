@@ -135,7 +135,7 @@ class SummaryBox(QWidget):
             # updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
             fc7_ip = FC7List[pfirmwareName]
             
-            uricmd = "sed -i -e 's/192.168.0.50/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(    
+            uricmd = "sed -i -e 's/fc7-1/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(    
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )
             updateuri = subprocess.call([uricmd], shell=True)

@@ -277,7 +277,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
         Node_OpFiles = ET.SubElement(Node_OGModule, 'lqGBT_Files')
         Node_OpFiles = SetNodeAttribute(Node_OpFiles,{'path':"${PWD}/"})
         Node_lqGBT = ET.SubElement(Node_OGModule, 'lqGBT')
-        Node_lqGBT = SetNodeAttribute( Node_lqGBT, {'Id':'0','version':'1','configfile':'CMSIT_LqGBT-v1.txt','ChipAddress':'0x70','RxDataRate':'1280','RxHSLPolarity':'0','TxDataRate':'160','TxHSLPolarity':'1'})
+        Node_lqGBT = SetNodeAttribute( Node_lqGBT, {'Id':'0','version':'1','configFile':'CMSIT_LqGBT-v1.txt','ChipAddress':'0x70','RxDataRate':'1280','RxHSLPolarity':'0','TxDataRate':'160','TxHSLPolarity':'1'})
         Node_lqGBTsettings = ET.SubElement(Node_lqGBT, 'Settings')
         
       HyBridList = OGModule.HyBridList
@@ -301,7 +301,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
           BeBoard.boardType =  boardtype 
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
-          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configfile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})
+          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})
           if 'RD53B' in boardtype:
             Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
             Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,{'primary':"1",'master':"0",'outputLanes':"0001",'singleChannelInputs':"0000",'dualChannelInput':"0000"})
