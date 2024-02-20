@@ -2,9 +2,9 @@
 
 <HwDescription>
   <BeBoard Id="0" boardType="RD53" eventType="VR" configure="1">
-    <connection id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=192.168.1.80:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
+    <connection id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=fc7-1:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
     <!---
-        <connection id="cmsinnertracker.crate0.slot0" uri="ipbusudp-2.0://192.168.1.80:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
+        <connection id="cmsinnertracker.crate0.slot0" uri="ipbusudp-2.0://fc7-1:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
     -->
 
     <!-- Frontend chip configuration -->
