@@ -2,16 +2,17 @@
 
 <HwDescription>
   <BeBoard Id="0" boardType="RD53" eventType="VR" configure="1">
-    <connection id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=192.168.0.50:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
+    <connection id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=fc7-1:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
     <!---
-        <connection id="cmsinnertracker.crate0.slot0" uri="ipbusudp-2.0://192.168.1.80:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
+        <connection id="cmsinnertracker.crate0.slot0" uri="ipbusudp-2.0://fc7-1:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
     -->
 
     <!-- Frontend chip configuration -->
     <OpticalGroup Id="0" FMCId="L12">
       <!--
       <lpGBT_Files path="${PWD}/" />
-      <lpGBT Id="0" version="0" configfile="CMSIT_LpGBT-v0.txt" ChipAddress="0x70" RxDataRate="1280" RxHSLPolarity="1" TxDataRate="160" TxHSLPolarity="0">
+      <lpGBT_ConfigFile fileName="lpgbt_calibration.csv" />
+      <lpGBT Id="0" version="0" configFile="CMSIT_LpGBT-v0.txt" ChipAddress="0x70" RxDataRate="1280" RxHSLPolarity="1" TxDataRate="160" TxHSLPolarity="0">
       -->
       <!-- Put here any LpGBT register, if needed -->
       <!--
@@ -23,7 +24,7 @@
         <RD53_Files path="${PWD}/" />
 
         <!-- Available Comment fields are: 50x50, 25x100origR0C0, 25x100origR1C0, unknown, combined with RD53A, RD53B, dual, quad -->
-        <RD53A Id="0" Lane="0" configfile="CMSIT_RD53A.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53A 50x50">
+        <RD53A Id="0" Lane="0" configFile="CMSIT_RD53A.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53A 50x50">
           <!-- Overwrite .txt configuration file settings -->
           <Settings
               PA_IN_BIAS_LIN         =   "350"
@@ -284,16 +285,14 @@
     <Setting name="byTime">                1 </Setting>
     <Setting name="framesORtime">         10 </Setting>
 
-    <Setting name="TargetBER">          1e-5 </Setting>
-
-    <Setting name="RegNameDAC1">   VCAL_HIGH </Setting>
-    <Setting name="StartValueDAC1">      250 </Setting>
-    <Setting name="StopValueDAC1">       600 </Setting>
-    <Setting name="StepDAC1">             50 </Setting>
-    <Setting name="RegNameDAC2"> user.ctrl_regs.fast_cmd_reg_5.delay_after_inject_pulse </Setting>
-    <Setting name="StartValueDAC2">       28 </Setting>
-    <Setting name="StopValueDAC2">        50 </Setting>
-    <Setting name="StepDAC2">              1 </Setting>
+    <Setting name="RegNameDAC1"> user.ctrl_regs.fast_cmd_reg_5.delay_after_inject_pulse </Setting>
+    <Setting name="StartValueDAC1">       28 </Setting>
+    <Setting name="StopValueDAC1">        50 </Setting>
+    <Setting name="StepDAC1">              1 </Setting>
+    <Setting name="RegNameDAC2">   VCAL_HIGH </Setting>
+    <Setting name="StartValueDAC2">      300 </Setting>
+    <Setting name="StopValueDAC2">      1000 </Setting>
+    <Setting name="StepDAC2">             20 </Setting>
 
     <Setting name="DoOnlyNGroups">         0 </Setting>
     <Setting name="DisplayHisto">          0 </Setting>
@@ -302,12 +301,14 @@
     <Setting name="StopIfCommFails">       1 </Setting>
 
     <!-- === Expert settings ===
+         DoSplitByHybrid = 1: split ROOT file by Hybrid;             DoSplitByHybrid = 0: do not split ROOT file by Hybrid
          DataOutputDir:   set the output directory for all data. If not specified files will be saved in ./Results/
-         SaveBinaryData = 0: do not save raw data in binary format; SaveBinaryData = 1: save raw data in binary format
+         SaveBinaryData = 0:  do not save raw data in binary format; SaveBinaryData = 1:  save raw data in binary format
          nHITxCol:        number of simultaneously injected pixels per column (it must be a divider of chip rows)
          InjLatency:      controls the latency of the injection in terms of 100ns period (up to 4095)
          nClkDelays:      controls the delay between two consecutive injections in terms of 100ns period (up to 4095)
     -->
+    <Setting name="DoSplitByHybrid">       0 </Setting>
     <Setting name="DataOutputDir">           </Setting>
     <Setting name="SaveBinaryData">        0 </Setting>
     <Setting name="nHITxCol">              1 </Setting>
