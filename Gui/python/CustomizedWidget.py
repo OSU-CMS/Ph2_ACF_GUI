@@ -589,7 +589,11 @@ class SimpleModuleBox(QWidget):
         if "ZH" in SerialNumber:
             self.Type = "TFPX Quad"
         elif "SCC" in SerialNumber:
-            self.Type = "TFPX SCC"
+            self.Type = "SingleSCC"
+        elif "RH" in SerialNumber:
+            self.Type = "TFPX CROC 1x2"
+        elif "SH" in SerialNumber:
+            self.Type = "TFPX CROC Quad"
         return self.Type
 
     @QtCore.pyqtSlot()

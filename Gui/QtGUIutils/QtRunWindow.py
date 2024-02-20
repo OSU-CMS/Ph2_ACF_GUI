@@ -42,9 +42,12 @@ from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 class QtRunWindow(QWidget):
     resized = pyqtSignal()
 
-    def __init__(self, master, info, firmware):
+    def __init__(self, info, firmware, connection, dimension: QSize,
+                 expertMode: bool = False):
         super(QtRunWindow, self).__init__()
-        self.master = master
+        self.connection = connection
+        self.dimension = dimension
+        self.expertMode = expertMode
         self.master.globalStop.connect(self.urgentStop)
 
         # self.LogoGroupBox = self.master.LogoGroupBox
@@ -63,13 +66,13 @@ class QtRunWindow(QWidget):
         else:
             runTestList = self.info[1]
 
-        self.connection = self.master.connection
         self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
         self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
+        logging.debug("Master.instruments: {}".format(master.instruments))
         self.testHandler = TestHandler(self, master, info, firmware)
         self.testHandler.powerSignal.connect(
             lambda: self.master.instruments.off(
@@ -139,10 +142,10 @@ class QtRunWindow(QWidget):
         #logger.info(stepWiseGlobalValue)
 
     def setLoginUI(self):
-        X = self.master.dimension.width() / 10
-        Y = self.master.dimension.height() / 10
-        Width = self.master.dimension.width() * 8.0 / 10
-        Height = self.master.dimension.height() * 8.0 / 10
+        X = self.dimension.width() / 10
+        Y = self.dimension.height() / 10
+        Width = self.dimension.width() * 8.0 / 10
+        Height = self.dimension.height() * 8.0 / 10
         self.setGeometry(X, Y, Width, Height)
         self.setWindowTitle("Run Control Page")
         self.DisplayH = self.height() * 3.0 / 7
@@ -234,7 +237,7 @@ class QtRunWindow(QWidget):
 		self.ControlLayout.addWidget(self.AbortButton,1,1,1,1)
 		self.ControlLayout.addWidget(self.saveCheckBox,1,2,1,1)
 		"""
-        if self.master.expertMode == True:
+        if self.expertMode == True:
             self.ControlLayout.addWidget(self.RunButton, 0, 0, 1, 1)
             self.ControlLayout.addWidget(self.AbortButton, 0, 1, 1, 1)
             self.ControlLayout.addWidget(self.ResetButton, 0, 2, 1, 1)
@@ -373,7 +376,7 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
-        if self.master.expertMode == True:
+        if self.expertMode == True:
             self.StartLayout.addWidget(self.ConnectButton)
         self.StartLayout.addWidget(self.BackButton)
         self.StartLayout.addWidget(self.FinishButton)
@@ -417,7 +420,7 @@ class QtRunWindow(QWidget):
         self.close()
 
     def creatStartWindow(self):
-        if self.backSignal == True and self.master.expertMode == True:
+        if self.backSignal == True and self.expertMode == True:
             self.master.openNewTest()
 
     def occupied(self):
@@ -425,6 +428,7 @@ class QtRunWindow(QWidget):
 
     def release(self):
         self.abortTest()
+        # This just disables the logout and exit buttons
         self.master.ProcessingTest = False
         if self.master.expertMode == True:
             self.master.NewTestButton.setDisabled(False)

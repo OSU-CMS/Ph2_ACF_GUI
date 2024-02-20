@@ -32,13 +32,6 @@ from Gui.siteSettings import *
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
-import logging
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
-
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
@@ -58,7 +51,8 @@ class TestHandler(QObject):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
-        # self.LVpowersupply.Reset()
+        logger.debug("Master: {}".format(self.master))
+        logger.debug("instruments: {}".format(self.instruments))
 
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
         # self.LVpowersupply.TurnOn()
@@ -332,6 +326,7 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
+        logger.debug(f"Instruments status: {self.instruments}")
         if not self.instruments.status(lv_channel=None)["lv"]:
             self.instruments.lv_on(
                 lv_channel=None,
