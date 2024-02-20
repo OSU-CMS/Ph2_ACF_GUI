@@ -3,12 +3,11 @@ import time
 from serial import SerialException
 from typing import Optional
 
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QPushButton,
     QRadioButton,
@@ -20,6 +19,7 @@ from PyQt5.QtWidgets import (
 
 
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
+from Gui.GUIutils.FirmwareUtil import fwStatusParser
 from Gui.python.CustomizedWidget import SimpleBeBoardBox
 from Gui.python.Firmware import QtBeBoard
 from Gui.GUIutils.DBConnection import checkDBConnection
@@ -32,14 +32,14 @@ from icicle.icicle.instrument_cluster import InstrumentCluster, InstrumentNotIns
 
 
 class SimplifiedMainWidget(QWidget):
-    def __init__(self, master):
+    abort_signal = pyqtSignal()
+    close_signal = pyqtSignal()
+    def __init__(self, connection, username, password):
         logger.debug("SimplifiedMainWidget.__init__()")
         super().__init__()
-        self.master = master
-        self.connection = self.master.connection
-        self.TryUsername = self.master.TryUsername
-        self.DisplayedPassword = self.master.DisplayedPassword
-
+        self.connection = connection
+        self.username = username
+        self.password = password
         try :
             self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
             self.instruments.open()
@@ -78,15 +78,13 @@ class SimplifiedMainWidget(QWidget):
         self.BeBoard.setIPAddress(site_settings.FC7List[site_settings.defaultFC7])
         self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
         logger.debug(f"Default FC7: {site_settings.defaultFC7}")
-        self.master.FwDict[default_settings.defaultFC7] = self.BeBoard
         logger.debug("Initialized BeBoard in SimplifiedGUI")
         self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
-        self.FwModule = self.master.FwDict[default_settings.defaultFC7]
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
     def setupArduino(self):
         self.ArduinoGroup = ArduinoWidget()
-        self.ArduinoGroup.stop.connect(self.master.GlobalStop)
+        self.ArduinoGroup.stop.connect(self.abort_signal.emit)
         self.ArduinoGroup.enable()
         self.ArduinoGroup.setBaudRate(default_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
@@ -169,7 +167,6 @@ class SimplifiedMainWidget(QWidget):
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
         self.RefreshButton = QPushButton("&Refresh")
-        self.RefreshButton.clicked.connect(self.checkDevices)
         self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
         logger.debug("Setup StatusLayout")
     def setupUI(self):
@@ -210,7 +207,7 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Added Boxes/Layouts to Simplified GUI")
 
         self.ExitButton = QPushButton("&Exit")
-        self.ExitButton.clicked.connect(self.master.close)
+        self.ExitButton.clicked.connect(self.close_signal.emit)
         self.StopButton = QPushButton(self)
         Stopimage = QImage("icons/Stop_v2.png").scaled(
             QSize(80, 80), Qt.KeepAspectRatio, Qt.SmoothTransformation
@@ -274,7 +271,7 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Simplied GUI UI Loaded")
 
     def createWindow(self):
-        self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.TryUsername))
+        self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.username))
 
         self.instrument_info["database"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["database"]["Label"].setText("Database connection:")
@@ -309,7 +306,7 @@ class SimplifiedMainWidget(QWidget):
                 return
 
         self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
-        if self.FwModule.getModuleByIndex(0) == None:
+        if self.BeBoard.getModuleByIndex(0) == None:
             QMessageBox.information(
                 None,
                 "Error",
@@ -319,12 +316,12 @@ class SimplifiedMainWidget(QWidget):
             return
         if self.ProductionButton.isChecked():
             self.info = [
-                self.FwModule.getModuleByIndex(0).getOpticalGroupID(),
+                self.BeBoard.getModuleByIndex(0).getOpticalGroupID(),
                 "AllScan",
             ]
         else:
             self.info = [
-                self.FwModule.getModuleByIndex(0).getOpticalGroupID(),
+                self.BeBoard.getModuleByIndex(0).getOpticalGroupID(),
                 "QuickTest",
             ]
 
@@ -358,9 +355,9 @@ class SimplifiedMainWidget(QWidget):
         logger.debug(f"Instrument status is {self.instrument_status}")
 
         logger.debug("Getting FC7 Comment")
-        FwStatusComment, _, _ = self.master.getFwComment(
-            default_settings.defaultFC7, default_settings.defaultFC7IP
-        )
+
+        LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), site_settings.defaultFC7)
+        FwStatusComment, _, _ = fwStatusParser(self.BeBoard, LogFileName) 
         logger.debug("Checking DB Connection")
         statusString, _ = checkDBConnection(self.connection)
 
@@ -454,62 +451,6 @@ class SimplifiedMainWidget(QWidget):
                 return_status[key] = 0
         return return_status
 
-    def checkDevices(self):
-        statusString, _ = checkDBConnection(self.connection)
-        if "offline" in statusString:
-            self.DBStatusValue.setPixmap(self.redledpixmap)
-        else:
-            self.DBStatusValue.setPixmap(self.greenledpixmap)
-
-        
-        self.HVpowersupply.setPowerModel(defaultHVModel[0])
-        self.HVpowersupply.setInstrument(defaultUSBPortHV[0])
-        statusString = self.HVpowersupply.getInfo()
-        self.HVPowerStatusLabel.setText("HV status")
-        if statusString != "No valid device" and statusString != None:
-            self.HVPowerStatusValue.setPixmap(self.greenledpixmap)
-        else:
-            self.HVPowerStatusValue.setPixmap(self.redledpixmap)
-        time.sleep(0.5)
-        self.LVPowerStatusLabel.setText("LV status")
-        if statusString != "No valid device" and statusString != None:
-            self.LVPowerStatusValue.setPixmap(self.greenledpixmap)
-        else:
-            self.LVPowerStatusValue.setPixmap(self.redledpixmap)
-
-        firmwareName, fwAddress = defaultFC7, defaultFC7IP
-
-        LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), firmwareName)
-        try:
-            logFile = open(LogFileName, "w")
-            logFile.close()
-        except:
-            QMessageBox(
-                None, "Error", "Can not create log files: {}".format(LogFileName)
-            )
-
-        FwStatusComment, _, _ = self.master.getFwComment(
-            firmwareName, LogFileName
-        )
-        if "Connected" in FwStatusComment:
-            self.FC7StatusValue.setPixmap(self.greenledpixmap)
-        else:
-            self.FC7StatusValue.setPixmap(self.redledpixmap)
-
-        self.FwModule = self.master.FwDict[firmwareName]
-
-
-        # Arduino stuff
-        self.ArduinoGroup.stop.connect(self.master.GlobalStop)
-        self.ArduinoGroup.createArduino()
-        self.ArduinoGroup.enable()
-        self.ArduinoGroup.setBaudRate(defaultSensorBaudRate)
-        self.ArduinoGroup.frozeArduinoPanel()
-
-        if self.ArduinoGroup.ArduinoGoodStatus == True:
-            self.ArduinoMonitorValue.setPixmap(self.greenledpixmap)
-        else:
-            self.ArduinoMonitorValue.setPixmap(self.redledpixmap)
 
     def retryLogin(self):
         self.master.mainLayout.removeWidget(self)
