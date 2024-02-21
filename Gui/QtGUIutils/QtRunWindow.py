@@ -41,6 +41,7 @@ from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 class QtRunWindow(QWidget):
     resized = pyqtSignal()
+    abort_signal = pyqtSignal() 
 
     def __init__(self, info, firmware, connection, dimension: QSize,
                  expertMode: bool = False):
@@ -48,9 +49,9 @@ class QtRunWindow(QWidget):
         self.connection = connection
         self.dimension = dimension
         self.expertMode = expertMode
-        self.master.globalStop.connect(self.urgentStop)
 
-        # self.LogoGroupBox = self.master.LogoGroupBox
+        
+
         self.firmware = firmware
         self.info = info
 
@@ -72,7 +73,6 @@ class QtRunWindow(QWidget):
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
-        logging.debug("Master.instruments: {}".format(master.instruments))
         self.testHandler = TestHandler(self, master, info, firmware)
         self.testHandler.powerSignal.connect(
             lambda: self.master.instruments.off(
@@ -430,7 +430,7 @@ class QtRunWindow(QWidget):
         self.abortTest()
         # This just disables the logout and exit buttons
         self.master.ProcessingTest = False
-        if self.master.expertMode == True:
+        if self.expertMode == True:
             self.master.NewTestButton.setDisabled(False)
             self.master.LogoutButton.setDisabled(False)
             self.master.ExitButton.setDisabled(False)
@@ -484,8 +484,7 @@ class QtRunWindow(QWidget):
         # self.runNext.set()
 
     def connectDB(self):
-        if isActive(self.master.connection):
-            self.connection = self.master.connection
+        if isActive(self.connection):
             self.refresh()
             self.saveCheckBox.setDisabled(False)
             return
@@ -529,6 +528,7 @@ class QtRunWindow(QWidget):
 
     def urgentStop(self):
         self.testHandler.urgentStop()
+        self.abort_signal.emit()
 
     #######################################################################
     ##  For result display

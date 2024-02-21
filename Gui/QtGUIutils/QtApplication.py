@@ -1058,8 +1058,8 @@ class QtApplication(QWidget):
 
             fileName = self.LogList[index]
             if firmwareName != self.FwUnderUsed:
-                FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(
-                    BeBoard, fileName
+                FwStatusComment, FwStatusColor, FwStatusVerbose = fwStatusParser(
+                    self.FwDict[firmwareName], fileName
                 )
                 self.StatusList[index + 1][1].setText(FwStatusComment)
                 self.StatusList[index + 1][1].setStyleSheet(FwStatusColor)

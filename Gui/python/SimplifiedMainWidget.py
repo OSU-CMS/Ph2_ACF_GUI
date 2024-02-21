@@ -25,7 +25,7 @@ from Gui.python.Firmware import QtBeBoard
 from Gui.GUIutils.DBConnection import checkDBConnection
 import Gui.GUIutils.settings as default_settings
 from Gui.python.ArduinoWidget import ArduinoWidget
-from Gui.python.Peltier import PeltierSignalGenerator 
+from Gui.python.Peltier import PeltierSignalGenerator
 from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings
 from icicle.icicle.instrument_cluster import InstrumentCluster, InstrumentNotInstantiated
@@ -34,14 +34,16 @@ from icicle.icicle.instrument_cluster import InstrumentCluster, InstrumentNotIns
 class SimplifiedMainWidget(QWidget):
     abort_signal = pyqtSignal()
     close_signal = pyqtSignal()
+
     def __init__(self, connection, username, password):
         logger.debug("SimplifiedMainWidget.__init__()")
         super().__init__()
         self.connection = connection
         self.username = username
         self.password = password
-        try :
-            self.instruments = InstrumentCluster(**site_settings.icicle_instrument_setup)
+        try:
+            self.instruments = InstrumentCluster(**site_settings.
+                                                 icicle_instrument_setup)
             self.instruments.open()
         except SerialException:
             instrument_warning_message = QMessageBox()
@@ -57,8 +59,8 @@ class SimplifiedMainWidget(QWidget):
                     """
             )
             self.close()
-            
-        self.instrument_info = {} 
+
+        self.instrument_info = {}
 
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
@@ -92,22 +94,24 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_info["arduino"]["Label"].setText("Temperature and Humidity")
 
     def setupLogFile(self):
-        LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), default_settings.defaultFC7)
+        LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),
+                                                default_settings.defaultFC7)
         logger.debug(f"FC7 log file saved to {LogFileName}")
 
         try:
             logFile = open(LogFileName, "w")
             logFile.close()
-        except:
+        except Exception as e:
             messageBox = QMessageBox()
             messageBox.setIcon(QMessageBox.Error)
+            logger.error("Could not create file due to error {}".format(e))
             messageBox.setText("Can not create log files: {}".format(LogFileName))
-            messageBox.exec() 
+            messageBox.exec()
 
     def setupPeltier(self):
         try:
             self.instrument_info["peltier"] = {"Label" : QLabel(), "Value" : QLabel()}
-            self.instrument_info["peltier"]["Label"].setText("Chip Temperature")
+            self.instrument_info["peltier"]["Label"].setText("Peltier Temperature")
             logger.debug("Setting up Peltier")
             self.Peltier = PeltierSignalGenerator()
             logger.debug("created self.Peltier")
@@ -118,7 +122,7 @@ class SimplifiedMainWidget(QWidget):
                 )
             )[1]: raise Exception("Could not communicate with Peltier")
 
-                # Allows set point to be set by computer software
+            # Allows set point to be set by computer software
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
                     "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
