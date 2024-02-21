@@ -96,7 +96,7 @@ class QtApplication(QWidget):
 
     def setLoginUI(self):
         self.setGeometry(300, 300, 400, 500)
-        self.setWindowTitle("Phase2 Pixel Module Test GUI")
+        self.setWindowTitle("IT Module GUI")
 
         if (
             sys.platform.startswith("linux")
@@ -160,9 +160,9 @@ class QtApplication(QWidget):
         self.LoginGroupBox = QGroupBox("")
         self.LoginGroupBox.setCheckable(False)
 
-        TitleLabel = QLabel('<font size="12"> Phase2 Pixel Module Test </font>')
+        TitleLabel = QLabel('<font size="12"> IT Module Testing GUI </font>')
         TitleLabel.setFont(QFont("Courier"))
-        TitleLabel.setMaximumHeight(30)
+        TitleLabel.setMaximumHeight(40)
 
         UsernameLabel = QLabel("Username:")
         self.UsernameEdit = QLineEdit("")
@@ -500,8 +500,8 @@ class QtApplication(QWidget):
         self.default_checkbox.setChecked(True)
 
         self.DefaultLayout.addWidget(self.DefaultButton)
-        self.DefaultLayout.addWidget(self.default_checkbox)
-        self.DefaultLayout.addWidget(self.reset_devices)
+        #self.DefaultLayout.addWidget(self.default_checkbox)
+        #self.DefaultLayout.addWidget(self.reset_devices)
         self.DefaultLayout.addStretch(1)
         self.UseDefaultGroup.setLayout(self.DefaultLayout)
 
@@ -662,43 +662,56 @@ class QtApplication(QWidget):
 
         self.multimeter_group = QGroupBox("Multimeter")
         self.multimeter_group.setDisabled(True)
-        multimeter_layout = QHBoxLayout()
-        multimeter_port_label = QLabel()
-        multimeter_port_label.setText("Choose Multimeter Port")
-        self.multimeter_port_combobox = QComboBox()
-        self.multimeter_port_combobox.addItems(self.available_visa_resources)
-        self.multimeter_model_label = QLabel()
-        self.multimeter_model_label.setText("Multimeter Model:")
-        self.multimeter_model_combo = QComboBox()
-        self.multimeter_model_combo.addItems(InstrumentCluster.package_map.keys())
+        multimeter_layout = QGridLayout()
+        self.multimeter_port_label = QLabel()
+        self.multimeter_port_label.setText("Multimeter Port")
+        self.multimeter_port_name = QLabel()
+        if 'multimeter_resource' in site_settings.icicle_instrument_setup.keys():
+            self.multimeter_port_name.setText('{0}'.format(site_settings.icicle_instrument_setup['multimeter_resource']))
+        else:
+            self.multimeter_port_name.setText('No multimeter connection specified.')
+
+
+        #self.multimeter_port_combobox = QComboBox()
+        #self.multimeter_port_combobox.addItems(self.available_visa_resources)
+        self.multimeter_device_label = QLabel()
+        self.multimeter_device_label.setText("Multimeter Device:")
+        self.multimeter_device_name = QLabel()
+        if 'multimeter' in site_settings.icicle_instrument_setup.keys():
+            self.multimeter_device_name.setText('{0}'.format(site_settings.icicle_instrument_setup['multimeter']))
+        else:
+            self.multimeter_device_name.setText('No mulitimeter device specified.')
+
+        #self.multimeter_model_combo = QComboBox()
+        #self.multimeter_model_combo.addItems(InstrumentCluster.package_map.keys())
         self.multimeter_status = QLabel()
         #self.multimeter_remote_control = QCheckBox("Use Multimeter")
         #self.multimeter_remote_control.setChecked(False)
         #self.multimeter_remote_control.toggled.connect(
         #    lambda: self.enableDevice("multimeter")
         #)
-        self.multimeter_port_combobox.activated.connect(
-            lambda: self.update_instrument_info(
-                "multimeter_resource", self.multimeter_port_combobox.currentText()
-            )
-        )
-        self.multimeter_model_combo.activated.connect(
-            lambda: self.update_instrument_info(
-                "multimeter", self.multimeter_model_combo.currentText()
-            )
-        )
+        #self.multimeter_port_combobox.activated.connect(
+        #    lambda: self.update_instrument_info(
+        #        "multimeter_resource", self.multimeter_port_combobox.currentText()
+        #    )
+        #)
+        #self.multimeter_model_combo.activated.connect(
+        #    lambda: self.update_instrument_info(
+        #        "multimeter", self.multimeter_model_combo.currentText()
+        #    )
+        #)
         #self.multimeter_remote_control.toggled.connect(
         #    lambda: self.multimeter_group.setDisabled(False)
         #    if self.multimeter_remote_control.isChecked()
         #    else self.multimeter_group.setDisabled(True)
         #)
 
-        multimeter_layout.addWidget(multimeter_port_label)
-        multimeter_layout.addWidget(self.multimeter_port_combobox)
-        multimeter_layout.addWidget(self.multimeter_model_label)
-        multimeter_layout.addWidget(self.multimeter_model_combo)
-        multimeter_layout.addWidget(self.multimeter_status)
-        multimeter_layout.addStretch(1)
+        multimeter_layout.addWidget(self.multimeter_port_label,1,0,1,1)
+        multimeter_layout.addWidget(self.multimeter_port_name,1,1,1,1)
+        multimeter_layout.addWidget(self.multimeter_device_label,0,0,1,1)
+        multimeter_layout.addWidget(self.multimeter_device_name,0,1,1,1)
+        #multimeter_layout.addWidget(self.multimeter_status)
+        #multimeter_layout.addStretch(1)
         self.multimeter_group.setLayout(multimeter_layout)
 
         self.ArduinoGroup = ArduinoWidget()
