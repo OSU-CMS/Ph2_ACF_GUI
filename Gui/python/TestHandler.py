@@ -47,7 +47,10 @@ class TestHandler(QObject):
     updateValidation = pyqtSignal(object, object)
     powerSignal = pyqtSignal()
 
-    def __init__(self, runwindow, master, info, firmware):
+    def __init__(self, runwindow, instrument_cluster,
+                 module_in_use: str, info, firmware,
+                 database_connection=None):
+
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments

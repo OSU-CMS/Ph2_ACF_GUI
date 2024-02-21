@@ -390,7 +390,8 @@ class QtApplication(QWidget):
     def createSimplifiedMain(self):
         self.SimpleMain = SimplifiedMainWidget(self.connection,
                                                self.TryUsername,
-                                               self.DisplayedPassword)
+                                               self.DisplayedPassword,
+                                               self.dimension)
 
         self.SimpleMain.abort_signal.connect(self.GlobalStop)
         self.SimpleMain.close_signal.connect(self.close)

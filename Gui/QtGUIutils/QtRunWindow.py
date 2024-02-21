@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
     QSplitter,
 )
 
+from typing import Tuple
 import os
 import threading
 import time
@@ -43,8 +44,18 @@ class QtRunWindow(QWidget):
     resized = pyqtSignal()
     abort_signal = pyqtSignal() 
 
-    def __init__(self, info, firmware, connection, dimension: QSize,
-                 expertMode: bool = False):
+    def __init__(self, info: Tuple[int, str], firmware: str,
+                 connection: QtStartConnection,
+                 dimension: QSize, expertMode: bool = False):
+        """
+        Variable Description:
+        info: contains the optical group ID and the test that you would like
+              to run
+        firmware: Refers to the FC7
+        connection: The connection to the database
+        dimension: Size of Qt window
+        expertMode: Whether or not the user is signed in to use the expertMode
+        """
         super(QtRunWindow, self).__init__()
         self.connection = connection
         self.dimension = dimension
@@ -73,7 +84,7 @@ class QtRunWindow(QWidget):
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
-        self.testHandler = TestHandler(self, master, info, firmware)
+        self.testHandler = TestHandler(self, , info, firmware)
         self.testHandler.powerSignal.connect(
             lambda: self.master.instruments.off(
                 lv_channel=None, hv_delay=0.3, hv_step_size=10, measure=False

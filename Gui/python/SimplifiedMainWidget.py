@@ -35,12 +35,13 @@ class SimplifiedMainWidget(QWidget):
     abort_signal = pyqtSignal()
     close_signal = pyqtSignal()
 
-    def __init__(self, connection, username, password):
+    def __init__(self, connection, username, password, dimension):
         logger.debug("SimplifiedMainWidget.__init__()")
         super().__init__()
         self.connection = connection
         self.username = username
         self.password = password
+        self.dimension = dimension
         try:
             self.instruments = InstrumentCluster(**site_settings.
                                                  icicle_instrument_setup)
@@ -330,7 +331,8 @@ class SimplifiedMainWidget(QWidget):
             ]
 
         self.runFlag = True
-        self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
+        self.RunTest = QtRunWindow(self.info, self.firmwareDescription,
+                                   self.connection, self.dimension)
         self.RunButton.setDisabled(True)
         self.StopButton.setDisabled(False)
 
