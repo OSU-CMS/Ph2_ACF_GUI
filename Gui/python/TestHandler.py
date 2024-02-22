@@ -814,36 +814,17 @@ class TestHandler(QObject):
                         self.runwindow.ResultWidget.ProgressBar[
                             self.testIndexTracker
                         ].setValue(self.ProgressValue)
+                        ##Added because of Ph2_ACF bug:
+                        
                     except:
                         pass
-                elif "TEMPSENS_" in textStr:
-                    try:
-                        output = textStr.split("[")
-                        sensor = output[8]
-                        sensorMeasure = sensor[3:]
-                        print(sensorMeasure)
-                        if sensorMeasure != "":
-                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                            self.tempindex += 1
-                    except Exception as e:
-                        print("Failed due to {0}".format(e))
-                elif "INTERNAL_NTC" in textStr:
-                    try:
-                        output = textStr.split("[")
-                        sensor = output[8]
-                        sensorMeasure = sensor[3:]
-                        print(sensorMeasure)
-                        if sensorMeasure != "":
-                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                            self.tempindex += 1
-                    except Exception as e:
-                        print("Failed due to {0}".format(e))
-                continue
-
-            elif self.ProgressingMode == "Summary":
+                
                 toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
+
                 if toUpdate:
+                    print("trying to update xml value")
                     try:
+                        self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
                         # print("made it to Summary")
                         UpdatedValuetext = textStr.split()[valueIndex]
                         # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
@@ -876,6 +857,72 @@ class TestHandler(QObject):
                     except Exception as err:
                         logger.error("Failed to update ")
 
+                elif "TEMPSENS_" in textStr:
+                    try:
+                        output = textStr.split("[")
+                        sensor = output[8]
+                        sensorMeasure = sensor[3:]
+                        print(sensorMeasure)
+                        if sensorMeasure != "":
+                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+                            self.tempindex += 1
+                    except Exception as e:
+                        print("Failed due to {0}".format(e))
+                elif "INTERNAL_NTC" in textStr:
+                    try:
+                        output = textStr.split("[")
+                        sensor = output[8]
+                        sensorMeasure = sensor[3:]
+                        #print(sensorMeasure)
+                        if sensorMeasure != "":
+                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+                            self.tempindex += 1
+                    except Exception as e:
+                        print("Failed due to {0}".format(e))
+
+                continue
+            #This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
+            
+            elif self.ProgressingMode == "Summary":
+                toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
+                if toUpdate:
+                    print("trying to update xml value")
+                    try:
+                        self.runwindow.ResultWidget.ProgressBar[
+                            self.testIndexTracker
+                        ].setValue(100)
+                        # print("made it to Summary")
+                        UpdatedValuetext = textStr.split()[valueIndex]
+                        # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
+                        UpdatedValue = int(
+                            re.sub(r"\033\[(\d|;)+?m", "", UpdatedValuetext)
+                        )
+                        print("New {0} value is {1}".format(UpdatedFEKey, UpdatedValue))
+                        # print(textStr.split())
+                        # globalThreshold = int(textStr.split()[-1])
+                        chipIdentifier = textStr.split("=")[-1].split("is")[0]
+                        chipIdentifier = re.sub(
+                            r"\033\[(\d|;)+?m", "", chipIdentifier
+                        ).split("]")[0]
+                        HybridIDKey = chipIdentifier.split("/")[2]
+                        ChipIDKey = chipIdentifier.split("/")[3]
+                        print("Hybrid id {0}".format(HybridIDKey))
+                        print("chipID {0}".format(ChipIDKey))
+                        updatedXMLValueKey = "{}/{}".format(HybridIDKey, ChipIDKey)
+                        updatedXMLValues[updatedXMLValueKey][
+                            UpdatedFEKey
+                        ] = UpdatedValue
+                        if "DAC_GDAC_M_LIN" in UpdatedFEKey:
+                            updatedXMLValues[updatedXMLValueKey][
+                                "DAC_GDAC_L_LIN"
+                            ] = UpdatedValue
+                            updatedXMLValues[updatedXMLValueKey][
+                                "DAC_GDAC_R_LIN"
+                            ] = UpdatedValue
+
+                    except Exception as err:
+                        logger.error("Failed to update ")
+        
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
