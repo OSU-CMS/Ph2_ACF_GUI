@@ -219,11 +219,6 @@ class QtApplication(QWidget):
             self.disableCheckBox.toggled.connect(self.HostName.setDisabled)
             self.disableCheckBox.toggled.connect(self.DatabaseCombo.setDisabled)
 
-        # self.expertCheckBox = QCheckBox("&Expert Mode")
-        # self.expertCheckBox.setMaximumHeight(30)
-        # self.expertCheckBox.setChecked(self.expertMode)
-        # self.expertCheckBox.clicked.connect(self.switchMode)
-
         button_login = QPushButton("&Login")
         button_login.setDefault(True)
         button_login.clicked.connect(self.checkLogin)
@@ -235,23 +230,7 @@ class QtApplication(QWidget):
         layout.addWidget(self.UsernameEdit, 1, 2, 1, 2)
         layout.addWidget(PasswordLabel, 2, 1, 1, 1, Qt.AlignRight)
         layout.addWidget(self.PasswordEdit, 2, 2, 1, 2)
-        # layout.addWidget(HostLabel,3,1,1,1,Qt.AlignRight)
-        # if self.expertMode:
-        # 	layout.addWidget(self.HostEdit,3,2,1,2)
-        # else:
-        # 	layout.addWidget(self.HostName,3,2,1,2)
-        # layout.addWidget(DatabaseLabel,4,1,1,1,Qt.AlignRight)
-        # if self.expertMode:
-        # 	layout.addWidget(self.DatabaseEdit,4,2,1,2)
-        # else:
-        # 	layout.addWidget(self.DatabaseCombo,4,2,1,2)
 
-        #######  uncomment for debugging (skips db connection) ####
-
-        # layout.addWidget(self.disableCheckBox,5,2,1,1,Qt.AlignLeft)
-
-        ###########################################################
-        # layout.addWidget(self.expertCheckBox,5,3,1,1,Qt.AlignRight)
         layout.addWidget(button_login, 6, 1, 1, 3)
         layout.setRowMinimumHeight(6, 50)
 
@@ -312,8 +291,6 @@ class QtApplication(QWidget):
 
     def destroyLogin(self):
         self.LoginGroupBox.deleteLater()
-        # self.LogoGroupBox.deleteLater()
-        # self.mainLayout.removeWidget(self.LoginGroupBox)
 
     def checkLogin(self):
         msg = QMessageBox()
@@ -324,18 +301,12 @@ class QtApplication(QWidget):
                 self.TryUsername = self.UsernameEdit.text()
                 self.TryPassword = self.PasswordEdit.text()
                 self.DisplayedPassword = self.PasswordEdit.displayText()
-                # self.TryHostAddress = self.HostEdit.text()
-                # self.TryDatabase = self.DatabaseEdit.text()
-                # self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
-                # self.TryDatabase = str(self.DatabaseCombo.currentText())
                 self.TryHostAddress = settings.defaultDBServerIP
                 self.TryDatabase = str(settings.defaultDBName)
             else:
                 self.TryUsername = self.UsernameEdit.text()
                 self.TryPassword = self.PasswordEdit.text()
                 self.DisplayedPassword = self.PasswordEdit.displayText()
-                # self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
-                # self.TryDatabase = str(self.DatabaseCombo.currentText())
                 self.TryHostAddress = settings.defaultDBServerIP
                 self.TryDatabase = str(settings.defaultDBName)
         except:
@@ -910,27 +881,32 @@ class QtApplication(QWidget):
         Use defaults set in siteConfig.py to setup instrument cluster.
         If default_checkbox is not checked change this variable to reflect changes made in GUI
         """
-        self.device_settings = site_settings.icicle_instrument_setup
-        if not self.default_checkbox.isChecked():
-            for key, value in self.connected_device_information.items():
-                self.device_settings[key] = value
-        try:
-            self.instruments = InstrumentCluster(**self.device_settings)
-            self.instruments.open()
+        if site_settings.icicle_instrument_setup:
+            self.device_settings = site_settings.icicle_instrument_setup
+            if not self.default_checkbox.isChecked():
+                for key, value in self.connected_device_information.items():
+                    self.device_settings[key] = value
+            try:
+                self.instruments = InstrumentCluster(**self.device_settings)
+                self.instruments.open()
 
-            if (
-                self.instruments.status(lv_channel=None)["lv"]
-                or self.instruments.status(lv_channel=None)["hv"]
-            ):
-                self.instruments.off()
-            self.disable_instrument_widgets()
+                if (
+                    self.instruments.status(lv_channel=None)["lv"]
+                    or self.instruments.status(lv_channel=None)["hv"]
+                ):
+                    self.instruments.off()
+                self.disable_instrument_widgets()
 
-        except Exception as e:
-            print("Error: ", e)
-            QMessageBox.information(
-                None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
-            )
-
+            except Exception as e:
+                print("Error: ", e)
+                QMessageBox.information(
+                    None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
+                )
+        else:
+            QMessageBox.warning(None, 'Warning',
+                                'You have opted to control your power supplies'
+                                'manually. Proceed at your own risk',
+                                QMessageBox.Ok)
         self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
 
@@ -951,21 +927,25 @@ class QtApplication(QWidget):
         #self.multimeter_remote_control.setDisabled(True)
 
     def reconnectDevices(self):
-        self.device_settings = site_settings.icicle_instrument_setup
+        if site_settings.icicle_instrument_setup:
+            self.device_settings = site_settings.icicle_instrument_setup
 
-        self.instruments.close()
-        # I believe that this should "free" the memory taken by the previous instance
-        # of InstrumentCluster(), however, it is at the will of the garbage collector
-        self.instruments = None
+            self.instruments.close()
+            # I believe that this should "free" the memory taken by the previous instance
+            # of InstrumentCluster(), however, it is at the will of the garbage collector
+            self.instruments = None
 
-        #self.HVPowerRemoteControl.setDisabled(False)
-        #self.LVPowerRemoteControl.setDisabled(False)
-        #self.relay_remote_control.setDisabled(False)
-        #self.multimeter_remote_control.setDisabled(False)
+            self.HVPowerRemoteControl.setDisabled(False)
+            self.LVPowerRemoteControl.setDisabled(False)
+            self.relay_remote_control.setDisabled(False)
+            self.multimeter_remote_control.setDisabled(False)
 
-        for instrument, useFlag in self.desired_devices.items():
-            if useFlag and instrument in self.groupbox_mapping:
-                self.groupbox_mapping[instrument].setDisabled(False)
+            for instrument, useFlag in self.desired_devices.items():
+                if useFlag and instrument in self.groupbox_mapping:
+                    self.groupbox_mapping[instrument].setDisabled(False)
+        else:
+            logger.info(" You are running in manual mode, reconnecting"
+                        "does nothing")
 
     def reCreateMain(self):
         print("Refreshing the main page")
@@ -1049,33 +1029,19 @@ class QtApplication(QWidget):
     def openDBConsole(self):
         self.StartDBConsole = QtDBConsoleWindow(self)
 
-    def switchHVPowerPanel(self):
-        if self.HVPowerRemoteControl.isChecked():
-            self.HVPowerGroup.setDisabled(False)
-            self.desired_devices["hv"] = 1
-        else:
-            self.HVPowerGroup.setDisabled(True)
-            self.desired_devices["hv"] = 0
-
-
     def releaseHVPowerPanel(self):
-        self.instruments.hv_off()
-        try:
-            #self.HVPowerCombo.setDisabled(False)
-            self.HVPowerStatusValue.setText("")
-            self.UseHVPowerSupply.setDisabled(False)
+        if self.instruments:
+            self.instruments.hv_off()
+            try:
+                self.HVPowerCombo.setDisabled(False)
+                self.HVPowerStatusValue.setText("")
+                self.UseHVPowerSupply.setDisabled(False)
 
-        # with Exception as err:
-        except Exception as err:
-            print("HV PowerPanel not released properly")
-
-    def switchLVPowerPanel(self):
-        if self.LVPowerRemoteControl.isChecked():
-            self.LVPowerGroup.setDisabled(False)
-            self.desired_devices["lv"] = 1
+            # with Exception as err:
+            except Exception as err:
+                print("HV PowerPanel not released properly")
         else:
-            self.LVPowerGroup.setDisabled(True)
-            self.desired_devices["lv"] = 0
+            logger.info("You must manually turn off the HV")
 
     def enableDevice(self, device):
         """Keep track of whether a device wants to be used"""
@@ -1083,9 +1049,12 @@ class QtApplication(QWidget):
 
 
     def releaseLVPowerPanel(self):
-        self.instruments.lv_off(1)
-        self.LVPowerCombo.setDisabled(False)
-        self.LVPowerStatusValue.setText("")
+        if self.instruments:
+            self.instruments.lv_off(1)
+            self.LVPowerCombo.setDisabled(False)
+            self.LVPowerStatusValue.setText("")
+        else:
+            logger.info("You must manually turn on LV power supply")
 
     def switchArduinoPanel(self):
         if self.ArduinoControl.isChecked():
@@ -1232,7 +1201,7 @@ class QtApplication(QWidget):
 
         if reply == QMessageBox.Yes:
             print("Application terminated")
-            if self.instruments != None:
+            if self.instruments is not None:
                 self.instruments.off()
 
             # If you didn't start the Peltier controller, tempPower won't be defined
