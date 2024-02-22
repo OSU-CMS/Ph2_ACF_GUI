@@ -396,7 +396,6 @@ class QtApplication(QWidget):
                 BeBoard = QtBeBoard()
                 BeBoard.setBoardName(firmwareName)
                 BeBoard.setIPAddress(site_settings.FC7List[firmwareName])
-                BeBoard.setFPGAConfig(settings.FPGAConfigList[firmwareName])
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))
