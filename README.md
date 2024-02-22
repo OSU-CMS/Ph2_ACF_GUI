@@ -4,6 +4,18 @@ Grading GUI for CMS Tracker Phase2 Acquisition &amp; Control Framework
 ## Installation:
 This software is designed to run using Docker. This ensures that all testing is performed in a reliable and consistent way.
 
+## Device settings:
+Devices are controlled using the Icicle package. Please make sure your devices have the correct settings in order for proper communication.
+
+| Model | baud rate | termination|
+| --- | ---| --- |
+| Keithley 2410 | 19200 | LF |
+| Keithley 2000 | 19200 | device default |
+| HP34401A | 9600 | device default |
+| Keysight E3633A | 9600 | device default |
+
+
+
 ## Running in docker:
 This software is designed to run using Docker. A compiled version of the most current stable release of Ph2_ACF and everything required to run it is included in the container. There are two containers available to meet the needs of both developers and users.
 
@@ -139,8 +151,7 @@ reboot
 
 ## Run the GUI
 ```
-cd Gui
-python3 QtApplication.py
+bash run_Docker.sh
 ```
 On the login screen you can use either of the following usernames to log in locally (bypassing connection to the database).
 
@@ -157,13 +168,13 @@ After logging in you will see status indicators for the database, HV, LV, FC7, T
 After logging in you will need to specify some hardware configurations.  
 1. Choose FC7 by click the "Use" button next to the appropriate FC7.
 2. If you are using the Peltier control you should click "Start Peltier", enter you temperature setting, click "Set Temperature", click "Turn on Peltier".
-3. If you are using the default HV and LV configuration that you set in `Gui/siteSettings.py`, you can click "Connect all devices" to connect HV and LV devices as well as your Arduino device if you have that set up.  Otherwise, you can select the port for each device from a list or uncheck the boxes next to them if you prefer to control them manually.
-4. Clicking "New" will open a window for running a new test.  You will choose which test(s) you would like to run and which type of module you are testing.  You will also need to enter the Module serial number, FMC number, and Chip ID number in the provided fields.  Once you've done that, you can choose the power mode (direct or SLDO) and click "Next".  If you are manually controlling your HV and LV, a window will open asking if you want to continue.  Click "Yes" to open a new window for running test. 
+3. Device configurations are set in `Gui/siteConfig.py`, you can click "Connect all devices" to connect HV and LV devices as well as your other devices if you have that set up. 
+4. Clicking "New" will open a window for running a new test.  You will choose which test(s) you would like to run and which type of module you are testing.  You will also need to enter the Module serial number, FMC number (L12 or L8), and FMC port number (0-3) in the provided fields.  Once you've done that, you can choose the power mode (direct or SLDO) and click "Next".  If you are manually controlling your HV and LV, a window will open asking if you want to continue.  Click "Yes" to open a new window for running test. 
 5. When the next window opens, click "Run" to begin the test(s).
 
 # Notes on contributing
 If you would like to contribute, and you are not at Ohio State there are a few things to keep in mind: 
-1. The computer we currently use to run this GUI has python version 3.6, therefore, when adding code to the GUI you should make sure that your code is compatible with python 3.6. If using the docker image in dev mode, this should be satisfied.
+1. This software uses Python 3.9 and is designed to work in an Alma Linux 9 environment.  If using the docker image in dev mode, this should be satisfied.  We are happy to give more detailed instructions for anyone interested.
 2. Please ensure that you have tested your code with a module installed or if you do not have a module, that you ensure the GUI launches before making a pull request.
 
 # Bug List / Fixes: 
