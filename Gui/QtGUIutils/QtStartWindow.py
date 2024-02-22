@@ -230,11 +230,19 @@ class SummaryBox(QWidget):
                 # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
                 self.master.module_in_use = self.module.getType()
 
-                self.master.instruments.lv_on(
-                    None,
-                    ModuleVoltageMapSLDO[self.master.module_in_use],
-                    ModuleCurrentMap[self.master.module_in_use],
-                )
+                if self.master.instruments: 
+                    self.master.instruments.lv_on(
+                        None,
+                        ModuleVoltageMapSLDO[self.master.module_in_use],
+                        ModuleCurrentMap[self.master.module_in_use],
+                    )
+                else:
+                    QMessageBox.info(None, "Info", "You should now turn on LV"
+                                     "power supply to the following voltage"
+                                     "and current:"
+                                     f"{ModuleVoltageMapSLDO[self.master.module_in_use]}V"
+                                     f"{ModuleCurrentMap[self.master.module_in_use]}A")
+                                     
                 logging.info("Turned on LV power supply")
 
             # # Want to try and connect twice
@@ -365,6 +373,10 @@ class QtStartWindow(QWidget):
         self.TestCombo = QComboBox()
         #self.TestList = getAllTests(self.master.connection)
         self.TestList = TestList
+        if not self.master.instruments:
+            self.TestList.remove("AllScan")
+            self.TestList.remove("QuickTest")
+            self.TestList.remove("FullSequence")
         self.TestCombo.addItems(self.TestList)
         TestLabel.setBuddy(self.TestCombo)
 
@@ -545,14 +557,19 @@ class QtStartWindow(QWidget):
                 self.release()
                 # This line was previosly commented
                 try:
-                    self.master.instruments.off(
-                        lv_channel=None, hv_delay=0.5, hv_step_size=10
-                    )
+                    if self.master.instruments:
+                        self.master.instruments.off(
+                            lv_channel=None, hv_delay=0.5, hv_step_size=10
+                        )
 
-                    print("Window closed")
-                except:
+                        print("Window closed")
+                    else:
+                        logger.info(" You are running in manual mode."
+                                    " You must turn off powers supplies yourself.")
+                except Exception as e:
                     print(
                         "Waring: Incident detected while trying to turn of power supply, please check power status"
                     )
+                    logger.error(e)
             else:
                 event.ignore()
