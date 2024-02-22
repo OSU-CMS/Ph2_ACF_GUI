@@ -106,7 +106,11 @@ ModuleVoltageMapSLDO = {
 	"TEPX Quad" : 2.0,
 	"TBPX Quad" : 2.98,
 	"TFPX CROC 1x2"  : 2.3,
+	"TEPX CROC 1x2"  : 2.3,
+	"TBPX CROC 1x2"  : 2.3,
 	"TFPX CROC Quad" : 2.98,
+	"TEPX CROC Quad" : 2.98,
+	"TBPX CROC Quad" : 2.98,
 	"CROC SCC"  : 1.8,
 }
 

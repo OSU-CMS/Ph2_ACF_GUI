@@ -190,7 +190,7 @@ class MonitoringModule():
       self.Enable=Monitor_RD53A
     else:
       self.Enable=Monitor_CROC
-    self.SleepTime=10000
+    self.SleepTime=30000
     self.MonitoringList = {}
   def SetType(self, Type):
     self.Type=Type
