@@ -40,16 +40,7 @@ defaultDBName = 'cmsfpix_phase2'
 ##################################
 
 
-## The following block assigns ports to devices when the "connect all devices" button is clicked ##
 
-# default USB port for HV power supply
-defaultUSBPortHV = ["ASRL/dev/ttyUSBHV::INSTR"]
-# default model for HV power supply
-defaultHVModel = ["Keithley 2410 (RS232)"]
-# default USB port for LV power supply
-defaultUSBPortLV = ["ASRL/dev/ttyUSBLV::INSTR"]
-# default model for LV power supply
-defaultLVModel = ["KeySight E3633 (RS232)"]
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 9600
 #################################

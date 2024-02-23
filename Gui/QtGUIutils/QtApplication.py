@@ -425,7 +425,6 @@ class QtApplication(QWidget):
                 BeBoard = QtBeBoard()
                 BeBoard.setBoardName(firmwareName)
                 BeBoard.setIPAddress(site_settings.FC7List[firmwareName])
-                BeBoard.setFPGAConfig(settings.FPGAConfigList[firmwareName])
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))
@@ -524,6 +523,10 @@ class QtApplication(QWidget):
         self.HVDeviceLabel = QLabel()
         self.HVDeviceLabel.setText("HV Device:")
         self.HVDeviceName = QLabel()
+        if 'hv' in site_settings.icicle_instrument_setup.keys():
+            self.HVDeviceName.setText("{0}".format(site_settings.icicle_instrument_setup['hv']))
+        else:
+            self.HVDeviceName.setText('No hv device specified.')
         self.HVDeviceName.setText("{0}".format(site_settings.icicle_instrument_setup['hv']))
         #self.HVPowerModelCombo = QComboBox()
         #self.HVPowerModelCombo.addItems(InstrumentCluster.package_map.keys())
