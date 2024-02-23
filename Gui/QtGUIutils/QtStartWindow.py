@@ -76,7 +76,8 @@ class SummaryBox(QWidget):
         self.mainLayout = QGridLayout()
         self.initResult()
         self.createBody()
-        self.measureFwPar()
+        if icicle_instrument_setup is not None:
+            self.measureFwPar()
         # self.checkFwPar()
         self.setLayout(self.mainLayout)
 
@@ -96,15 +97,10 @@ class SummaryBox(QWidget):
         # self.ChipBoxWidget = ChipBox(self.module.getType())
 
         self.CheckLabel = QLabel()
-        self.DetailsButton = QPushButton("Details")
-        self.DetailsButton.clicked.connect(self.showDetails)
-
-        #self.mainLayout.addWidget(FEIDLabel, 0, 0, 1, 1)
-        #self.mainLayout.addWidget(self.ChipBoxWidget,0,1,1,1)
+        
         self.mainLayout.addWidget(PowerModeLabel, 1, 0, 1, 1)
         self.mainLayout.addWidget(self.PowerModeCombo, 1, 1, 1, 1)
         self.mainLayout.addWidget(self.CheckLabel, 2, 0, 1, 1)
-        #self.mainLayout.addWidget(self.DetailsButton, 2, 1, 1, 1)
 
     def measureFwPar(self):
         for index, (key, value) in enumerate(self.verboseResult.items()):
@@ -224,6 +220,7 @@ class SummaryBox(QWidget):
 
                 print("Firmware image is now loaded")
             logging.debug("Made it to turn on LV")
+
             if self.master.desired_devices["lv"]:
                 self.master.powering_mode = self.PowerModeCombo.currentText()
 
@@ -237,82 +234,14 @@ class SummaryBox(QWidget):
                         ModuleCurrentMap[self.master.module_in_use],
                     )
                 else:
-                    QMessageBox.info(None, "Info", "You should now turn on LV"
-                                     "power supply to the following voltage"
-                                     "and current:"
-                                     f"{ModuleVoltageMapSLDO[self.master.module_in_use]}V"
-                                     f"{ModuleCurrentMap[self.master.module_in_use]}A")
+                    QMessageBox.information(None, "Info", "You should now turn on LV "
+                                     "power supply to the following voltage "
+                                     "and current: \n"
+                                     f"{ModuleVoltageMapSLDO[self.master.module_in_use]}V \n"
+                                     f"{ModuleCurrentMap[self.master.module_in_use]}A \n")
                                      
                 logging.info("Turned on LV power supply")
 
-            # # Want to try and connect twice
-            # self.Stopcount = 0
-            # while self.Stopcount < 2:
-            #     measurements = self.master.instruments._lv.measure(self.master.instruments._default_lv_channel)
-            #     # find the set value
-            #     TestVoltage = ModuleVoltageMapSLDO[self.master.module_in_use]
-            #     TestCurrent = ModuleCurrentMap[self.master.module_in_use]
-            #     print("Readvoltage:" + str(measurements[0]))
-            #     print("Readcurrent:" + str(measurements[1]))
-            #     print("TestCurrent" + str(TestCurrent))
-            #     print("TestVoltage" + str(TestVoltage))
-
-            #     # compare the difference between the Setup value vs the reading value
-            #     volDiff = abs(TestVoltage - measurements[0])
-            #     ampDiff = abs(TestCurrent - measurements[1])
-
-            #     if volDiff <= 0.5 and ampDiff <= 0.5 and (self.master.instruments.status(None)["lv"]):
-            #         leakageCurrent = 0.0
-            #         _, measurement = self.master.instruments.hv_on(None, voltage = defaultHVsetting, delay = 0.3, step_size = -3, measure = True)
-            #         leakageCurrent = measurement[-1][2]
-
-            #         logger.debug(f"Leakage Current: {leakageCurrent}")
-            #         properCurrent = ModuleCurrentMap[self.module.getType()]
-            #         if (
-            #             current < properCurrent + 0.2
-            #             and current > properCurrent - 0.2
-            #         ):
-            #             self.result = True
-            #             self.CheckLabel.setText(
-            #                 "OK\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-            #                     measurements[1], measurements[0]
-            #                 )
-            #             )
-            #             self.CheckLabel.setStyleSheet("color:green")
-            #         else:
-            #             self.result = False
-            #             self.CheckLabel.setText(
-            #                 "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-            #                     measurements[1], measurements[0]
-            #                 )
-            #             )
-            #             self.CheckLabel.setStyleSheet("color:red")
-
-            #     else:
-            #         self.result = False
-            #         self.CheckLabel.setText(
-            #             "Failed\nCurrent: {:.2f}A\nVoltage: {:.2f}V".format(
-            #                 measurements[1], measurements[0]
-            #             )
-            #         )
-            #         self.CheckLabel.setStyleSheet("color:red")
-
-            #         self.Stopcount += 1
-            #         print("LV PS is off now. HV PS can't be turn on")
-            #         print("attempt to turn on the LV PS again")
-            #         time.sleep(2)
-
-            #if self.master.desired_devices["hv"]:
-            #    self.master.instruments.hv_on(
-            #        lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
-            #    )
-
-            #    logging.info("Turned on HV power supply")
-            ##if not 'SLDO' in self.TestCombo.currentText():
-             #   print('this should turn on hv')
-            #    self.master.instruments.hv_on(
-             #       lv_channel=None, voltage=defaultHVsetting, delay=0.3, step_size=10
-             #   )
 
 
             return self.result
@@ -320,8 +249,8 @@ class SummaryBox(QWidget):
             self.result = False
             self.CheckLabel.setText("No measurement")
             self.CheckLabel.setStyleSheet("color:red")
-            # logging.error("Failed to check current")
-            logging.error(err)
+            print("AHHHHHHH")
+            print(err)
             return False
 
     def getDetails(self):
@@ -374,9 +303,13 @@ class QtStartWindow(QWidget):
         #self.TestList = getAllTests(self.master.connection)
         self.TestList = TestList
         if not self.master.instruments:
-            self.TestList.remove("AllScan")
-            self.TestList.remove("QuickTest")
-            self.TestList.remove("FullSequence")
+            if "AllScan" in self.TestList:
+                self.TestList.remove("AllScan")
+            if "QuickTest" in self.TestList:
+                self.TestList.remove("QuickTest")
+            if "FullSequence" in self.TestList:
+                self.TestList.remove("FullSequence")
+
         self.TestCombo.addItems(self.TestList)
         TestLabel.setBuddy(self.TestCombo)
 

@@ -670,8 +670,9 @@ class QtRunWindow(QWidget):
                         lv_channel=None, hv_delay=0.3, hv_step_size=10
                     )
                 else:
-                    QMessageBox(None, "Warning", "You must turn off"
-                                "instruments manually")
+                    QMessageBox.information(self, "Info", "You must turn off "
+                                            "instruments manually",
+                                            QMessageBox.Ok)
                 event.accept()
             else:
                 self.backSignal = False

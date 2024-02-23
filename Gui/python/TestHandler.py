@@ -339,13 +339,6 @@ class TestHandler(QObject):
                     voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=ModuleCurrentMap[self.master.module_in_use],
                 )
-        else:
-            QMessageBox(None, "Info",
-                        "You can now turn on the LV to \n"
-                        f"{ModuleVoltageMapSLDO[self.master.module_in_use]}V\n"
-                        f"{ModuleCurrentMap[self.master.module_in_use]}A\n",
-                        QMessageBox.Ok)
-                
 
         if testName == "IVCurve":
             self.currentTest = testName
@@ -375,8 +368,6 @@ class TestHandler(QObject):
                 self.instruments.hv_on(
                     lv_channel=None, voltage=icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
                 )
-        QMessageBox(None, "Info", "You can now turn on the HV",
-                    QMessageBox.Ok)
 
         self.tempindex = 0
         self.starttime = None
