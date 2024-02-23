@@ -370,7 +370,7 @@ class TestHandler(QObject):
             return
 
         #If the HV is not already on, turn it on.
-        if self.instruments:
+        if self.instruments;
             if not self.instruments.status(lv_channel=None)["hv"]:
                 self.instruments.hv_on(
                     lv_channel=None, voltage=icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
