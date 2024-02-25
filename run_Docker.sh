@@ -37,7 +37,7 @@ echo $mydevices | xargs
 if [[ $mode == "dev" ]] 
 then
     echo "running as $mode"
-    docker run --rm -ti $mydevices -v ${PWD}:${PWD}\
+    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
 	    -v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
 	    -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 	    -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
@@ -51,7 +51,7 @@ then
 	    -e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
 else
     echo "running as user"
-    docker run --rm -ti $mydevices -v ${PWD}:${PWD}\
+    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
 	    -v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 	    -v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 	    -v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
