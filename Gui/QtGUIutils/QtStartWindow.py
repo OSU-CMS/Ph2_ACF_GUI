@@ -249,7 +249,6 @@ class SummaryBox(QWidget):
             self.result = False
             self.CheckLabel.setText("No measurement")
             self.CheckLabel.setStyleSheet("color:red")
-            print("AHHHHHHH")
             print(err)
             return False
 

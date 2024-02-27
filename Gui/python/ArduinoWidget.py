@@ -170,9 +170,7 @@ class ArduinoWidget(QWidget):
                 self.deviceMap[self.ArduinoCombo.currentText()],
                 self.ArduinoBRCombo.currentText(),
             )
-            print("AHHHHHH")
             print(self.deviceMap[self.ArduinoCombo.currentText()])
-            print("BBBBBBBB")
             self.ArduinoCombo.setDisabled(True)
             self.ArduinoBRCombo.setDisabled(True)
             self.UseArduino.setDisabled(True)
