@@ -176,7 +176,7 @@ class ArduinoWidget(QWidget):
             self.UseArduino.setDisabled(True)
             self.ReleaseArduino.setDisabled(False)
         except Exception as err:
-            logger.error("Unable to use Arduino")
+            logger.error(f"Unable to use Arduino: {err}")
             self.ArduinoGoodStatus = False
 
     def releaseArduinoPanel(self):
