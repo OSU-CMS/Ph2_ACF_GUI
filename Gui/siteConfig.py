@@ -55,23 +55,27 @@ defaultSensorBaudRate = 9600
 #################################
 
 # Icicle variables
-#icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A, HMP4040, TTI
-#                            "lv_resource" : "ASRL/dev/ttyUSBLV::INSTR",
-#                            "default_lv_channel" : 1,
-#                            "default_lv_voltage" : 1.8, #in volts
-#                            "default_lv_current" : 3, #in amps
-#                            "hv": "Keithley2410", #Choices are: Keithley2410
-#                            "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
-#                            "default_hv_voltage": -80, #in volts
-#                            "default_hv_compliance_current": 5e-6, #in amps
-#                            "default_hv_delay": 1, #in seconds
-#                            "default_hv_step_size": 10, #in volts
-#                            "relay_board": "RelayBoard", #Choices are RelayBoard
-#                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
-#                            "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
-#                            "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
-#							}
-icicle_instrument_setup = None
+
+# Set this variable to use your powersupplies manually
+# IF THIS VARIABLE IS SET, THEN ICICLE_INSTRUMENT_SETUP WILL NOT BE USED
+manual_powersupply_control = False
+
+icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A, HMP4040, TTI
+                           "lv_resource" : "ASRL/dev/ttyUSBLV::INSTR",
+                           "default_lv_channel" : 1,
+                           "default_lv_voltage" : 1.8, #in volts
+                           "default_lv_current" : 3, #in amps
+                           "hv": "Keithley2410", #Choices are: Keithley2410
+                           "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
+                           "default_hv_voltage": -80, #in volts
+                           "default_hv_compliance_current": 5e-6, #in amps
+                           "default_hv_delay": 1, #in seconds
+                           "default_hv_step_size": 10, #in volts
+                           "relay_board": "RelayBoard", #Choices are RelayBoard
+                           "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
+                           "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
+                           "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
+							}
 
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##

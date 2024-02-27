@@ -848,7 +848,7 @@ class QtApplication(QWidget):
         Use defaults set in siteConfig.py to setup instrument cluster.
         If default_checkbox is not checked change this variable to reflect changes made in GUI
         """
-        if site_settings.icicle_instrument_setup:
+        if not site_settings.manual_powersupply_control:
             self.device_settings = site_settings.icicle_instrument_setup
             if not self.default_checkbox.isChecked():
                 for key, value in self.connected_device_information.items():
@@ -869,6 +869,8 @@ class QtApplication(QWidget):
                 QMessageBox.information(
                     None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
                 )
+                self.instruments = None
+
         self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
         self.ArduinoGroup.frozeArduinoPanel()
 
@@ -889,7 +891,7 @@ class QtApplication(QWidget):
         #self.multimeter_remote_control.setDisabled(True)
 
     def reconnectDevices(self):
-        if site_settings.icicle_instrument_setup:
+        if self.instruments and not site_settings.manual_powersupply_control:
             self.device_settings = site_settings.icicle_instrument_setup
 
             self.instruments.close()
@@ -905,6 +907,7 @@ class QtApplication(QWidget):
             for instrument, useFlag in self.desired_devices.items():
                 if useFlag and instrument in self.groupbox_mapping:
                     self.groupbox_mapping[instrument].setDisabled(False)
+            
         else:
             logger.info(" You are running in manual mode, reconnecting"
                         "does nothing")
