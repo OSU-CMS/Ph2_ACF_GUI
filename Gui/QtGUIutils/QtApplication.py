@@ -1158,12 +1158,13 @@ class QtApplication(QWidget):
     ##  Main page and related functions  (END)
     ###############################################################
     def manual_control_warning(self):
-        QMessageBox.warning(self, "Manual Control",
-                            "You have opted for manual power supply "
-                            "control. If this is incorrect edit "
-                            "icicle_instrument_setup in siteConfig.py. "
-                            "Otherwise, proceed at your own risk",
-                            QMessageBox.Ok)
+        if not self.instruments:
+            QMessageBox.warning(self, "Manual Control",
+                                "You have opted for manual power supply "
+                                "control. If this is incorrect edit "
+                                "icicle_instrument_setup in siteConfig.py. "
+                                "Otherwise, proceed at your own risk",
+                                QMessageBox.Ok)
     def closeEvent(self, event):
         reply = QMessageBox.question(
             self,
