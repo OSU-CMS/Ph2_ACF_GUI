@@ -37,7 +37,8 @@ from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
 from Gui.QtGUIutils.QtStartWindow import QtStartWindow
 from Gui.QtGUIutils.QtProductionTestWindow import QtProductionTestWindow
 from Gui.QtGUIutils.QtModuleReviewWindow import QtModuleReviewWindow
-#from Gui.QtGUIutils.QtDBConsoleWindow import QtDBConsoleWindow #FIXME The imports from this module cause things to crash.
+# FIXME The imports from this module cause things to crash.
+# from Gui.QtGUIutils.QtDBConsoleWindow import QtDBConsoleWindow
 
 from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
@@ -1155,16 +1156,17 @@ class QtApplication(QWidget):
             self.releaseLVPowerPanel()
 
     ###############################################################
-    ##  Main page and related functions  (END)
+    #  Main page and related functions  (END)                     #
     ###############################################################
     def manual_control_warning(self):
-        if not self.instruments:
+        if not self.instruments: 
             QMessageBox.warning(self, "Manual Control",
                                 "You have opted for manual power supply "
                                 "control. If this is incorrect edit "
-                                "icicle_instrument_setup in siteConfig.py. "
+                                "manual_powersupply_control in siteConfig.py. "
                                 "Otherwise, proceed at your own risk",
                                 QMessageBox.Ok)
+
     def closeEvent(self, event):
         reply = QMessageBox.question(
             self,
