@@ -492,10 +492,12 @@ class QtApplication(QWidget):
         self.HVDeviceLabel = QLabel()
         self.HVDeviceLabel.setText("HV Device:")
         self.HVDeviceName = QLabel()
-        if site_settings.icicle_instrument_setup is not None: 
+        #if site_settings.icicle_instrument_setup is not None:
+        if not site_settings.manual_powersupply_control: 
             self.HVDeviceName.setText("{0}".format(site_settings.icicle_instrument_setup['hv']))
             self.HVPortName.setText("{0}".format(site_settings.icicle_instrument_setup['hv_resource']))
         else:
+            self.HVPortName.setText("")
             self.HVDeviceName.setText("Manual HV Control")
 
         self.HVPowerStatusValue = QLabel()
@@ -527,9 +529,11 @@ class QtApplication(QWidget):
         self.LVDeviceName = QLabel()
         self.LVPowerStatusValue = QLabel()
         
-        if site_settings.icicle_instrument_setup is not None: 
-            self.LVPortName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv_resource']))
+        #if site_settings.icicle_instrument_setup is not None: 
+        if not site_settings.manual_powersupply_control:
+            
             self.LVDeviceName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv']))
+            self.LVPortName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv_resource']))
         else:
             self.LVPortName.setText("")
             self.LVDeviceName.setText("Manual LV Control")
@@ -546,24 +550,25 @@ class QtApplication(QWidget):
         self.relay_board_port_label = QLabel()
         self.relay_board_port_label.setText("Relay Port:")
         self.relay_board_port_name = QLabel()
-        if site_settings.icicle_instrument_setup is not None:
+        
+        self.relay_device_label = QLabel()
+        self.relay_device_label.setText("Relay Device:")
+        self.relay_device_name = QLabel()
+
+        #if site_settings.icicle_instrument_setup is not None: 
+        if not site_settings.manual_powersupply_control:
+            if 'relay_board' in site_settings.icicle_instrument_setup.keys():
+                self.relay_device_name.setText('{0}'.format(site_settings.icicle_instrument_setup['relay_board']))
+            else:
+                self.relay_device_name.setText('No relay board device specified.')
             if 'relay_board_resource' in site_settings.icicle_instrument_setup.keys():
                 self.relay_board_port_name.setText('{0}'.format(site_settings.icicle_instrument_setup['relay_board_resource']))
             else:
                 self.relay_board_port_name.setText('No relay board connection specified.')
         else:
+            self.relay_device_name.setText("Manual Relay Control")
             self.relay_board_port_name.setText("")
 
-        self.relay_device_label = QLabel()
-        self.relay_device_label.setText("Relay Device:")
-        self.relay_device_name = QLabel()
-        if site_settings.icicle_instrument_setup is not None: 
-            if 'relay_board' in site_settings.icicle_instrument_setup.keys():
-                self.relay_device_name.setText('{0}'.format(site_settings.icicle_instrument_setup['relay_board']))
-            else:
-                self.relay_device_name.setText('No relay board device specified.')
-        else:
-            self.relay_device_name.setText("Manual Relay Control")
         self.relay_model_status = QLabel()
         #self.relay_remote_control = QCheckBox("Use relay")
         #self.relay_remote_control.setChecked(False)
@@ -598,26 +603,25 @@ class QtApplication(QWidget):
         self.multimeter_port_label = QLabel()
         self.multimeter_port_label.setText("Multimeter Port")
         self.multimeter_port_name = QLabel()
-        if site_settings.icicle_instrument_setup is not None:
-            if 'multimeter_resource' in site_settings.icicle_instrument_setup.keys():
-                self.multimeter_port_name.setText('{0}'.format(site_settings.icicle_instrument_setup['multimeter_resource']))
-            else:
-                self.multimeter_port_name.setText('No multimeter connection specified.')
-        else:
-            self.multimeter_port_name.setText("")
-
+        
         #self.multimeter_port_combobox = QComboBox()
         #self.multimeter_port_combobox.addItems(self.available_visa_resources)
         self.multimeter_device_label = QLabel()
         self.multimeter_device_label.setText("Multimeter Device:")
         self.multimeter_device_name = QLabel()
-        if site_settings.icicle_instrument_setup is not None: 
+        #if site_settings.icicle_instrument_setup is not None: 
+        if not site_settings.manual_powersupply_control:
             if 'multimeter' in site_settings.icicle_instrument_setup.keys():
                 self.multimeter_device_name.setText('{0}'.format(site_settings.icicle_instrument_setup['multimeter']))
             else:
                 self.multimeter_device_name.setText('No mulitimeter device specified.')
+            if 'multimeter_resource' in site_settings.icicle_instrument_setup.keys():
+                self.multimeter_port_name.setText('{0}'.format(site_settings.icicle_instrument_setup['multimeter_resource']))
+            else:
+                self.multimeter_port_name.setText('No multimeter connection specified.')
         else:
             self.multimeter_device_name.setText("Manual multimeter control")
+            self.multimeter_port_name.setText("")
 
         #self.multimeter_model_combo = QComboBox()
         #self.multimeter_model_combo.addItems(InstrumentCluster.package_map.keys())
