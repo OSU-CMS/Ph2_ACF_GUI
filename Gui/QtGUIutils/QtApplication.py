@@ -23,7 +23,6 @@ from PyQt5.QtWidgets import (
 import sys
 import os
 import pyvisa
-import pdb
 
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
@@ -849,7 +848,6 @@ class QtApplication(QWidget):
         Use defaults set in siteConfig.py to setup instrument cluster.
         If default_checkbox is not checked change this variable to reflect changes made in GUI
         """
-        pdb.set_trace()
         if not site_settings.manual_powersupply_control:
             self.device_settings = site_settings.icicle_instrument_setup
             if not self.default_checkbox.isChecked():
