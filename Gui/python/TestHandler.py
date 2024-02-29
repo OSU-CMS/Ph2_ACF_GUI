@@ -1042,8 +1042,6 @@ class TestHandler(QObject):
 
         # manually validate the result
 
-        print(self.figurelist)
-
         notAccept = False
         if status == False:
             for key in self.figurelist.keys():
