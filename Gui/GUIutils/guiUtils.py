@@ -192,20 +192,20 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 
             for Node in root.findall(".//Settings"):
                 # print("Found Settings Node!")
-                if "VCAL_HIGH" in Node.attrib:
-                    RD53Node = Node.getparent()
-                    HyBridNode = RD53Node.getparent()
+                #if "VCAL_HIGH" in Node.attrib:
+                    #RD53Node = Node.getparent()
+                    #HyBridNode = RD53Node.getparent()
                     ## Potential Change: please check if it is [HyBrid ID/RD53 ID] or [HyBrid ID/RD53 Lane]
-                    chipKeyName = "{0}/{1}".format(
-                        HyBridNode.attrib["Id"], RD53Node.attrib["Id"]
-                    )
-                    print("chipKeyName is {0}".format(chipKeyName))
-                    if len(updatedXMLValues[chipKeyName]) > 0:
-                        for key in updatedXMLValues[chipKeyName].keys():
-                            Node.set(key, str(updatedXMLValues[chipKeyName][key]))
+                    #chipKeyName = "{0}/{1}".format(
+                        #HyBridNode.attrib["Id"], RD53Node.attrib["Id"]
+                    #)
+                    #print("chipKeyName is {0}".format(chipKeyName))
+                    if len(updatedXMLValues) > 0:
+                        for key in updatedXMLValues.keys():
+                            Node.set(key, str(updatedXMLValues[key]))
                             print(
                                 "Node {0} has been set to {1}".format(
-                                    key, updatedXMLValues[chipKeyName][key]
+                                    key, updatedXMLValues[key]
                                 )
                             )
 
