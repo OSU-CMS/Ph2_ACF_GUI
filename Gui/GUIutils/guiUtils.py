@@ -192,7 +192,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
 
             for Node in root.findall(".//Settings"):
                 # print("Found Settings Node!")
-                #if "VCAL_HIGH" in Node.attrib:
+                if "VCAL_HIGH" in Node.attrib:
                     #RD53Node = Node.getparent()
                     #HyBridNode = RD53Node.getparent()
                     ## Potential Change: please check if it is [HyBrid ID/RD53 ID] or [HyBrid ID/RD53 Lane]
