@@ -476,6 +476,7 @@ class TestHandler(QObject):
             "thradj",
             "physics",
             "gain",
+            "gendacdac",
         ]:
             self.run_process.start(
                 "CMSITminiDAQ",

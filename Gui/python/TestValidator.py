@@ -16,7 +16,7 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
     ExpectedModuleList = [
         module.lstrip("Module") for module in inputDir.split("_") if "Module" in module
     ]
-
+    #FIXME Need to read from available tests instead of this being hardcoded.
     if testName in [
         "PixelAlive",
         "NoiseScan",
