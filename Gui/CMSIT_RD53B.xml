@@ -24,7 +24,7 @@
         <RD53_Files path="${PWD}/" />
 
         <!-- Available Comment fields are: 50x50, 25x100origR0C0, 25x100origR1C0, unknown, combined with RD53A, RD53B, dual, quad -->
-        <RD53B Id="15" Lane="0" configFile="CMSIT_RD53B.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53B 50x50">
+        <RD53B Id="15" enable="1" Lane="0" configFile="CMSIT_RD53B.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53B 50x50">
           <LaneConfig isPrimary="1" masterLane="0" outputLanes="0001" singleChannelInputs="0000" dualChannelInput="0000" />
           <!-- Overwrite .txt configuration file settings -->
           <Settings
@@ -78,6 +78,7 @@
               ADC_MAXIMUM_VOLT       =    "839"
               TEMPSENS_IDEAL_FACTOR  =   "1225"
               SAMPLE_N_TIMES         =     "10"
+              WAIT_MUX_CONFIG        =    "100"
               VREF_ADC               =    "800"
               />
         </RD53B>
@@ -199,7 +200,7 @@
             INJtype            = 6:  analog + X-talk decoupled pixels
          ResetMask             = 0:  do not enable masked pixels;             ResetMask             = 1: enable all pixels
          ResetTDAC             = -1: do not reset TDAC;                       ResetTDAC             >=0: reset all TDACs to value
-         DoDataIntegrity       = 0:  no data integrity detection;             DoDataIntegrity       = 1: run data integrity detection
+         DoDataIntegrity       = 0:  no data integrity detection;             DoDataIntegrity       = 1: run data integrity detection at core-colum level; DoDataIntegrity = 2: run data integrity detection at pixel level
          DoOnlyNGroups         = 0:  do not consider this option;             DoOnlyNGroups         = n: run only on the specified number of groups
          DisplayHisto          = 0:  don't display;                           DisplayHisto          = 1: display
          UpdateChipCfg         = 0:  don't update;                            UpdateChipCfg         = 1: update
@@ -312,7 +313,7 @@
        MonitoringSleepTime: sleep for monitoring thread in milliseconds
   -->
   <MonitoringSettings>
-    <Monitoring type="RD53B" enable="0">
+    <Monitoring type="RD53B" enable="0" silentRunning="0">
       <MonitoringSleepTime> 1000 </MonitoringSleepTime>
       <MonitoringElement device="RD53"  register="VINA"                 enable="1"/>
       <MonitoringElement device="RD53"  register="VDDA"                 enable="1"/>
