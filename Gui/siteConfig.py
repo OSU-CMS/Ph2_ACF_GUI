@@ -75,6 +75,8 @@ icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A,
  #                          "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
 							}
 
+#Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
+IVcurve_range = -120 #Maximum voltage in Volts to be used in IVcurve
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
