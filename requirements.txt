@@ -9,5 +9,4 @@ pyvisa-py
 pyserial
 click
 psutil
-zeroconf
 PyUSB

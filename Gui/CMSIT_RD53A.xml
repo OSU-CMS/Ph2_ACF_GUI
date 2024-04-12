@@ -24,7 +24,7 @@
         <RD53_Files path="${PWD}/" />
 
         <!-- Available Comment fields are: 50x50, 25x100origR0C0, 25x100origR1C0, unknown, combined with RD53A, RD53B, dual, quad -->
-        <RD53A Id="0" Lane="0" configFile="CMSIT_RD53A.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53A 50x50">
+        <RD53A Id="0" enable="1" Lane="0" configFile="CMSIT_RD53A.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53A 50x50">
           <!-- Overwrite .txt configuration file settings -->
           <Settings
               PA_IN_BIAS_LIN         =   "350"
@@ -320,7 +320,7 @@
        MonitoringSleepTime: sleep for monitoring thread in milliseconds
   -->
   <MonitoringSettings>
-    <Monitoring type="RD53A" enable="0">
+    <Monitoring type="RD53A" enable="0" silentRunning="0">
       <MonitoringSleepTime> 1000 </MonitoringSleepTime>
       <MonitoringElement device="RD53"  register="VIN_ana_ShuLDO"  enable="1"/>
       <MonitoringElement device="RD53"  register="VOUT_ana_ShuLDO" enable="1"/>

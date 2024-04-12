@@ -75,6 +75,8 @@ icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A,
  #                          "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
 							}
 
+#Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
+IVcurve_range = -120 #Maximum voltage in Volts to be used in IVcurve
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
@@ -94,12 +96,12 @@ ModuleCurrentMap = {
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
 	"TFPX CROC 1x2"  : 4.5,
-	"TFPX CROC Quad" : 6.5,
+	"TFPX CROC Quad" : 7.5,
 	"CROC SCC"  : 2.0,
 	"TEPX CROC 1x2"  : 4.5,
-	"TEPX CROC Quad" : 6.5,
+	"TEPX CROC Quad" : 7.5,
 	"TBPX CROC 1x2"  : 4.5,
-	"TBPX CROC Quad" : 6.5,
+	"TBPX CROC Quad" : 7.5,
 }
 
 ## Configuring the voltage limit for each module type when operating in SLDO mode.  These values are in Volts.
