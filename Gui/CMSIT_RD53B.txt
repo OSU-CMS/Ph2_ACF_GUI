@@ -1,3 +1,8 @@
+* |  _ \|  _ \| ___|___ /| __ )
+* | |_) | | | |___ \ |_ \|  _ \
+* |  _ <| |_| |___) |__) | |_) |
+* |_| \_\____/|____/____/|____/
+
 *-------------------------------------------------------------------------------------------------------
 * Pixel Section
 *-------------------------------------------------------------------------------------------------------
@@ -39,7 +44,7 @@ DAC_PREAMP_T_LIN          0x1A          0d150                   0d150           
 DAC_PREAMP_M_LIN          0x1B          0d150                   0d150                              10
 DAC_FC_LIN                0x1C          0d20                    0d20                               10
 DAC_KRUM_CURR_LIN         0x1D          0d70                    0d70                               10
-DAC_REF_KRUM_LIN          0x1E          0d260                   0d360                              10
+DAC_REF_KRUM_LIN          0x1E          0d360                   0d360                              10
 DAC_COMP_LIN              0x1F          0d80                    0d80                               10
 DAC_COMP_TA_LIN           0x20          0d900                   0d900                              10
 DAC_GDAC_L_LIN            0x21          0d900                   0d900                              10
@@ -338,12 +343,20 @@ SelfTriggerEn             0x122         0b0                     0b0             
 ServiceFrameSkip          0x123         0b0                     0b0                                 8
 EnServiceData             0x124         0b0                     0b0                                 1
 
-RESISTORI2V               0x1A0         0d5000                  0d5000                             16
-ADC_OFFSET_VOLT           0x1A1         0d63                    0d63                               16
-ADC_MAXIMUM_VOLT          0x1A2         0d839                   0d839                              16
-TEMPSENS_IDEAL_FACTOR     0x1A3         0d1225                  0d1225                             16
-SAMPLE_N_TIMES            0x1A4         0d10                    0d10                               16
-VREF_ADC                  0x1A5         0d800                   0d800                              12
+RESISTORI2V               0x1A0         0d5000                  0d4990                             16
+ADC_OFFSET_VOLT           0x1A1         0d63                    0d68                               16
+ADC_MAXIMUM_VOLT          0x1A2         0d839                   0d777                              16
+TEMPSENS_IDEAL_FACTOR     0x1A3         0d1225                  0d1266                             16
+TEMPSENS_IDEAL_FACTOR_ANA 0x1A4         0d1225                  0d1267                             16
+TEMPSENS_IDEAL_FACTOR_DIG 0x1A5         0d1225                  0d1267                             16
+RADSENS_IDEAL_FACTOR      0x1A6         0d1000                  0d1035                             16
+RADSENS_IDEAL_FACTOR_ANA  0x1A7         0d1000                  0d1036                             16
+RADSENS_IDEAL_FACTOR_DIG  0x1A8         0d1000                  0d1035                             16
+TEMPSENS_OFFSET_TOP       0x1A9         0d350                   0d350                              16
+TEMPSENS_OFFSET_BOTTOM    0x1AA         0d350                   0d350                              16
+SAMPLE_N_TIMES            0x1AB         0d10                    0d10                               16
+WAIT_MUX_CONFIG           0x1AC         0d100                   0d100                              16
+VREF_ADC                  0x1AD         0d800                   0d800                              12
 
 *-------------------------------------------------------------------------------------------------------
 PIXELCONFIGURATION

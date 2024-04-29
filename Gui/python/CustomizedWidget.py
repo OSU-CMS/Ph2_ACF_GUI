@@ -113,6 +113,7 @@ class ChipBox(QWidget):
         self.connection = self.master.connection
         self.serialNumber=serialNumber
         self.chipType = pChipType
+        logger.debug('the chip type passed to the chipbox is {0}'.format(self.chipType))
         self.mainLayout = QHBoxLayout()
         self.ChipList = [] #chip id list for a single module
         #self.initList()
@@ -128,6 +129,7 @@ class ChipBox(QWidget):
 
 
         if GetTRimFromDB.connection == "Offline" or GetTRimFromDB.connection == []:
+            
             for chipid in self.ChipList:
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
 
@@ -193,11 +195,11 @@ class ChipBox(QWidget):
         if self.connection == "Offline" or self.connection == []:
             for lane in ModuleLaneMap[self.chipType]:
                 self.ChipList.append(ModuleLaneMap[self.chipType][lane])
-        
+
         else:
             
             if self.serialNumber.startswith("RH"):
-                self.chipType = "CROC 1x2"
+                self.chipType = "TFPX CROC 1x2"
                 for lane in ModuleLaneMap[self.chipType]:
                     self.ChipList.append(ModuleLaneMap[self.chipType][lane])
 
@@ -409,7 +411,7 @@ class BeBoardBox(QWidget):
         self.changed.emit()
 
     def addModule(self):
-        module = ModuleBox()
+        module = ModuleBox(self.master.connection)
         module.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(module)
         if str(sys.version).startswith("3.8"):
@@ -588,8 +590,6 @@ class SimpleModuleBox(QWidget):
     def getType(self, SerialNumber):
         if "ZH" in SerialNumber:
             self.Type = "TFPX Quad"
-        elif "SCC" in SerialNumber:
-            self.Type = "SingleSCC"
         elif "RH" in SerialNumber:
             self.Type = "TFPX CROC 1x2"
         elif "SH" in SerialNumber:

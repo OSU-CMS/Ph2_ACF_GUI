@@ -40,38 +40,43 @@ defaultDBName = 'cmsfpix_phase2'
 ##################################
 
 
-## The following block assigns ports to devices when the "connect all devices" button is clicked ##
 
-# default USB port for HV power supply
-defaultUSBPortHV = ["ASRL/dev/ttyUSBHV::INSTR"]
-# default model for HV power supply
-defaultHVModel = ["Keithley 2410 (RS232)"]
-# default USB port for LV power supply
-defaultUSBPortLV = ["ASRL/dev/ttyUSBLV::INSTR"]
-# default model for LV power supply
-defaultLVModel = ["KeySight E3633 (RS232)"]
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 9600
+
+#UIC coldbox variables
+usePeltier = True
+defaultPeltierPort = '/dev/ttyUSBPeltier'
+defaultPeltierBaud = 9600
+defaultPeltierSetTemp = 5
+defaultPeltierWarningTemp = 40
 #################################
 
 # Icicle variables
+
+# Set this variable to use your powersupplies manually
+# IF THIS VARIABLE IS SET, THEN ICICLE_INSTRUMENT_SETUP WILL NOT BE USED
+manual_powersupply_control = False
+
 icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A, HMP4040, TTI
-                            "lv_resource" : "ASRL/dev/ttyUSBLV::INSTR",
-                            "default_lv_channel" : 1,
-                            "default_lv_voltage" : 1.8, #in volts
-                            "default_lv_current" : 3, #in amps
-                            "hv": "Keithley2410", #Choices are: Keithley2410
-                            "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
-                            "default_hv_voltage": -80, #in volts
-                            "default_hv_compliance_current": 5e-6, #in amps
-                            "default_hv_delay": 1, #in seconds
-                            "default_hv_step_size": 10, #in volts
-#                            "relay_board": "RelayBoard", #Choices are RelayBoard
-#                            "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
-#                            "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
-#                            "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
+                           "lv_resource" : "ASRL/dev/ttyUSBLV::INSTR",
+                           "default_lv_channel" : 1,
+                           "default_lv_voltage" : 1.8, #in volts
+                           "default_lv_current" : 3, #in amps
+                           "hv": "Keithley2410", #Choices are: Keithley2410
+                           "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
+                           "default_hv_voltage": -80, #in volts
+                           "default_hv_compliance_current": 5e-6, #in amps
+                           "default_hv_delay": 1, #in seconds
+                           "default_hv_step_size": 10, #in volts
+ #                          "relay_board": "RelayBoard", #Choices are RelayBoard
+ #                          "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
+ #                          "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
+ #                          "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
 							}
 
+#Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
+IVcurve_range = -120 #Maximum voltage in Volts to be used in IVcurve
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
@@ -86,30 +91,38 @@ Monitor_CROC = "1"
 
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
-	"SingleSCC" : 0.6,
+	"SCC" : 0.6,
 	"TFPX Quad" : 6.5,
 	"TEPX Quad" : 6,
 	"TBPX Quad" : 6.5,
 	"TFPX CROC 1x2"  : 4.5,
-	"TFPX CROC Quad" : 6.5,
+	"TFPX CROC Quad" : 7.5,
 	"CROC SCC"  : 2.0,
+	"TEPX CROC 1x2"  : 4.5,
+	"TEPX CROC Quad" : 7.5,
+	"TBPX CROC 1x2"  : 4.5,
+	"TBPX CROC Quad" : 7.5,
 }
 
 ## Configuring the voltage limit for each module type when operating in SLDO mode.  These values are in Volts.
 ModuleVoltageMapSLDO = {
-	"SingleSCC" : 1.8,
+	"SCC" : 1.8,
 	"TFPX Quad" : 2.98,
 	"TEPX Quad" : 2.0,
 	"TBPX Quad" : 2.98,
 	"TFPX CROC 1x2"  : 2.3,
+	"TEPX CROC 1x2"  : 2.3,
+	"TBPX CROC 1x2"  : 2.3,
 	"TFPX CROC Quad" : 2.98,
+	"TEPX CROC Quad" : 2.98,
+	"TBPX CROC Quad" : 2.98,
 	"CROC SCC"  : 1.8,
 }
 
 ###### Should not be using direct voltage, so this block can probably be removed #####
 ##  Configuring the voltage settings for each module type.  These values are in Volts.
 ModuleVoltageMap = {
-	"SingleSCC" : 1.3,
+	"SCC" : 1.3,
 	"CROC SCC"  : 1.6,
 }
 #####################################################
@@ -131,6 +144,6 @@ defaultSLDOscanMaxCurrent = 0.0
 usePeltier = True
 defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
-defaultPeltierSetTemp = 20
+defaultPeltierSetTemp = 5
 defaultPeltierWarningTemp = 40
 IVcurve_range = -120 

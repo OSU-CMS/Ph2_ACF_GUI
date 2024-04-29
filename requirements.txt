@@ -9,3 +9,4 @@ pyvisa-py
 pyserial
 click
 psutil
+PyUSB
