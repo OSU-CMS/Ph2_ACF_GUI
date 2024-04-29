@@ -174,6 +174,7 @@ class SimplifiedMainWidget(QWidget):
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
         self.RefreshButton = QPushButton("&Refresh")
+        self.RefreshButton.clicked.connect(self.setDeviceStatus)
         self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
         logger.debug("Setup StatusLayout")
     def setupUI(self):
@@ -404,7 +405,7 @@ class SimplifiedMainWidget(QWidget):
                 peltier_temp = None
             logger.debug("Evaluating temp status")
             if peltier_temp:
-                peltier_temp_status = 1 if abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 10 else 0
+                peltier_temp_status = 1 if abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 15 else 0
 
 
         logger.debug("Setting up instrument_status")
