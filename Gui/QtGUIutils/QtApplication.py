@@ -388,6 +388,7 @@ class QtApplication(QWidget):
     ##  Main page for non-expert
     ###############################################################
     def createSimplifiedMain(self):
+        self.connect_devices()
         self.SimpleMain = SimplifiedMainWidget(self, self.connection,
                                                self.TryUsername,
                                                self.DisplayedPassword,
@@ -870,9 +871,10 @@ class QtApplication(QWidget):
         changes made in GUI
         """
         self.device_settings = site_settings.icicle_instrument_setup
-        if not self.default_checkbox.isChecked():
-            for key, value in self.connected_device_information.items():
-                self.device_settings[key] = value
+        if self.expertMode:
+            if not self.default_checkbox.isChecked():
+                for key, value in self.connected_device_information.items():
+                    self.device_settings[key] = value
         try:
             self.instruments = InstrumentCluster(**self.device_settings)
             self.instruments.open()
@@ -882,16 +884,17 @@ class QtApplication(QWidget):
                 or self.instruments.status(lv_channel=None)["hv"]
             ):
                 self.instruments.off()
-            self.disable_instrument_widgets()
+            if self.expertMode:
+                self.disable_instrument_widgets()
 
         except Exception as e:
             print("Error: ", e)
             QMessageBox.information(
                 None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
             )
-
-        self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
-        self.ArduinoGroup.frozeArduinoPanel()
+        if self.expertMode:
+            self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+            self.ArduinoGroup.frozeArduinoPanel()
 
     def disable_instrument_widgets(self):
         """

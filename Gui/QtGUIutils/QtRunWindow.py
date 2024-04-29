@@ -18,7 +18,6 @@ from PyQt5.QtWidgets import (
     QSplitter,
 )
 
-from typing import Tuple
 import os
 import threading
 import time
@@ -42,27 +41,13 @@ from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 class QtRunWindow(QWidget):
     resized = pyqtSignal()
-    abort_signal = pyqtSignal() 
 
-    def __init__(self, info: Tuple[int, str], firmware: str,
-                 connection: QtStartConnection,
-                 dimension: QSize, expertMode: bool = False):
-        """
-        Variable Description:
-        info: contains the optical group ID and the test that you would like
-              to run
-        firmware: Refers to the FC7
-        connection: The connection to the database
-        dimension: Size of Qt window
-        expertMode: Whether or not the user is signed in to use the expertMode
-        """
+    def __init__(self, master, info, firmware):
         super(QtRunWindow, self).__init__()
-        self.connection = connection
-        self.dimension = dimension
-        self.expertMode = expertMode
+        self.master = master
+        self.master.globalStop.connect(self.urgentStop)
 
-        
-
+        # self.LogoGroupBox = self.master.LogoGroupBox
         self.firmware = firmware
         self.info = info
 
@@ -78,13 +63,15 @@ class QtRunWindow(QWidget):
         else:
             runTestList = self.info[1]
 
+        self.connection = self.master.connection
         self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
         self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
-        self.testHandler = TestHandler(self, , info, firmware)
+        self.testHandler = TestHandler(self, master, info, firmware)
+        assert self.master.instruments is not None, logger.error("Unable to setup instruments")
         self.testHandler.powerSignal.connect(
             lambda: self.master.instruments.off(
                 lv_channel=None, hv_delay=0.3, hv_step_size=10, measure=False
@@ -153,10 +140,10 @@ class QtRunWindow(QWidget):
         #logger.info(stepWiseGlobalValue)
 
     def setLoginUI(self):
-        X = self.dimension.width() / 10
-        Y = self.dimension.height() / 10
-        Width = self.dimension.width() * 8.0 / 10
-        Height = self.dimension.height() * 8.0 / 10
+        X = self.master.dimension.width() / 10
+        Y = self.master.dimension.height() / 10
+        Width = self.master.dimension.width() * 8.0 / 10
+        Height = self.master.dimension.height() * 8.0 / 10
         self.setGeometry(X, Y, Width, Height)
         self.setWindowTitle("Run Control Page")
         self.DisplayH = self.height() * 3.0 / 7
@@ -248,7 +235,7 @@ class QtRunWindow(QWidget):
 		self.ControlLayout.addWidget(self.AbortButton,1,1,1,1)
 		self.ControlLayout.addWidget(self.saveCheckBox,1,2,1,1)
 		"""
-        if self.expertMode == True:
+        if self.master.expertMode == True:
             self.ControlLayout.addWidget(self.RunButton, 0, 0, 1, 1)
             self.ControlLayout.addWidget(self.AbortButton, 0, 1, 1, 1)
             self.ControlLayout.addWidget(self.ResetButton, 0, 2, 1, 1)
@@ -387,7 +374,7 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
-        if self.expertMode == True:
+        if self.master.expertMode == True:
             self.StartLayout.addWidget(self.ConnectButton)
         self.StartLayout.addWidget(self.BackButton)
         self.StartLayout.addWidget(self.FinishButton)
@@ -431,7 +418,7 @@ class QtRunWindow(QWidget):
         self.close()
 
     def creatStartWindow(self):
-        if self.backSignal == True and self.expertMode == True:
+        if self.backSignal == True and self.master.expertMode == True:
             self.master.openNewTest()
 
     def occupied(self):
@@ -439,9 +426,8 @@ class QtRunWindow(QWidget):
 
     def release(self):
         self.abortTest()
-        # This just disables the logout and exit buttons
         self.master.ProcessingTest = False
-        if self.expertMode == True:
+        if self.master.expertMode == True:
             self.master.NewTestButton.setDisabled(False)
             self.master.LogoutButton.setDisabled(False)
             self.master.ExitButton.setDisabled(False)
@@ -495,7 +481,8 @@ class QtRunWindow(QWidget):
         # self.runNext.set()
 
     def connectDB(self):
-        if isActive(self.connection):
+        if isActive(self.master.connection):
+            self.connection = self.master.connection
             self.refresh()
             self.saveCheckBox.setDisabled(False)
             return
@@ -539,7 +526,6 @@ class QtRunWindow(QWidget):
 
     def urgentStop(self):
         self.testHandler.urgentStop()
-        self.abort_signal.emit()
 
     #######################################################################
     ##  For result display
@@ -679,9 +665,14 @@ class QtRunWindow(QWidget):
 
             if reply == QMessageBox.Yes:
                 self.release()
-                self.master.instruments.off(
-                    lv_channel=None, hv_delay=0.3, hv_step_size=10
-                )
+                if self.master.instruments:
+                    self.master.instruments.off(
+                        lv_channel=None, hv_delay=0.3, hv_step_size=10
+                    )
+                else:
+                    QMessageBox.information(self, "Info", "You must turn off "
+                                            "instruments manually",
+                                            QMessageBox.Ok)
                 event.accept()
             else:
                 self.backSignal = False
