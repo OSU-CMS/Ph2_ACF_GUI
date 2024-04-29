@@ -35,9 +35,10 @@ class SimplifiedMainWidget(QWidget):
     abort_signal = pyqtSignal()
     close_signal = pyqtSignal()
 
-    def __init__(self, connection, username, password, dimension):
+    def __init__(self, master, connection, username, password, dimension):
         logger.debug("SimplifiedMainWidget.__init__()")
         super().__init__()
+        self.master = master
         self.connection = connection
         self.username = username
         self.password = password
@@ -122,6 +123,7 @@ class SimplifiedMainWidget(QWidget):
                     "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
             )[1]: raise Exception("Could not communicate with Peltier")
+            logger.debug("Execute Peltier write command")
 
             # Allows set point to be set by computer software
             if not self.Peltier.sendCommand(
@@ -129,26 +131,26 @@ class SimplifiedMainWidget(QWidget):
                     "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                 )
             )[1]: raise Exception("Could not communicate with Peltier") # Temperature should be PID controlled
-
+            logger.debug("Executed Peltier PID command")
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
                     "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
             )[1]: raise Exception("Could not communicate with Peltier")   # Turn off power to Peltier in case it is on at the start
-
+            logger.debug("Turned off Peltier")
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
                     "Proportional Bandwidth Write",
                     ["0", "0", "0", "0", "0", "0", "c", "8"],
                 )
             )[1]: raise Exception("Could not communicate with Peltier")  # Set proportional bandwidth
-
+            logger.debug("Set Peltier Bandwidth")
             message = self.Peltier.convertSetTempValueToList(site_settings.defaultPeltierSetTemp)
 
             self.Peltier.sendCommand(
                 self.Peltier.createCommand("Fixed Desired Control Setting Write", message)
             )
-
+            logger.debug("Set peltier temp")
             time.sleep(0.5)
         except Exception as e:
             print("Error while attempting to set Peltier", e)
@@ -331,8 +333,7 @@ class SimplifiedMainWidget(QWidget):
             ]
 
         self.runFlag = True
-        self.RunTest = QtRunWindow(self.info, self.firmwareDescription,
-                                   self.connection, self.dimension)
+        self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
         self.RunButton.setDisabled(True)
         self.StopButton.setDisabled(False)
 

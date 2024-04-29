@@ -388,7 +388,7 @@ class QtApplication(QWidget):
     ##  Main page for non-expert
     ###############################################################
     def createSimplifiedMain(self):
-        self.SimpleMain = SimplifiedMainWidget(self.connection,
+        self.SimpleMain = SimplifiedMainWidget(self, self.connection,
                                                self.TryUsername,
                                                self.DisplayedPassword,
                                                self.dimension)

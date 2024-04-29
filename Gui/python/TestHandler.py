@@ -32,6 +32,13 @@ from Gui.siteSettings import *
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
+import logging
+
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
@@ -47,15 +54,11 @@ class TestHandler(QObject):
     updateValidation = pyqtSignal(object, object)
     powerSignal = pyqtSignal()
 
-    def __init__(self, runwindow, instrument_cluster,
-                 module_in_use: str, info, firmware,
-                 database_connection=None):
-
+    def __init__(self, runwindow, master, info, firmware):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
-        logger.debug("Master: {}".format(self.master))
-        logger.debug("instruments: {}".format(self.instruments))
+        # self.LVpowersupply.Reset()
 
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
         # self.LVpowersupply.TurnOn()
@@ -329,13 +332,13 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
-        logger.debug(f"Instruments status: {self.instruments}")
-        if not self.instruments.status(lv_channel=None)["lv"]:
-            self.instruments.lv_on(
-                lv_channel=None,
-                voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
-                current=ModuleCurrentMap[self.master.module_in_use],
-            )
+        if self.instruments:
+            if not self.instruments.status(lv_channel=None)["lv"]:
+                self.instruments.lv_on(
+                    lv_channel=None,
+                    voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
+                    current=ModuleCurrentMap[self.master.module_in_use],
+                )
 
         if testName == "IVCurve":
             self.currentTest = testName
@@ -360,10 +363,12 @@ class TestHandler(QObject):
             return
 
         #If the HV is not already on, turn it on.
-        if not self.instruments.status(lv_channel=None)["hv"]:
-            self.instruments.hv_on(
-                lv_channel=None, voltage=icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
-            )
+        if self.instruments:
+            if not self.instruments.status(lv_channel=None)["hv"]:
+                self.instruments.hv_on(
+                    lv_channel=None, voltage=icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
+                )
+
         self.tempindex = 0
         self.starttime = None
         self.ProgressingMode = "None"
@@ -812,36 +817,17 @@ class TestHandler(QObject):
                         self.runwindow.ResultWidget.ProgressBar[
                             self.testIndexTracker
                         ].setValue(self.ProgressValue)
+                        ##Added because of Ph2_ACF bug:
+                        
                     except:
                         pass
-                elif "TEMPSENS_" in textStr:
-                    try:
-                        output = textStr.split("[")
-                        sensor = output[8]
-                        sensorMeasure = sensor[3:]
-                        print(sensorMeasure)
-                        if sensorMeasure != "":
-                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                            self.tempindex += 1
-                    except Exception as e:
-                        print("Failed due to {0}".format(e))
-                elif "INTERNAL_NTC" in textStr:
-                    try:
-                        output = textStr.split("[")
-                        sensor = output[8]
-                        sensorMeasure = sensor[3:]
-                        print(sensorMeasure)
-                        if sensorMeasure != "":
-                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                            self.tempindex += 1
-                    except Exception as e:
-                        print("Failed due to {0}".format(e))
-                continue
-
-            elif self.ProgressingMode == "Summary":
+                
                 toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
+
                 if toUpdate:
+                    print("trying to update xml value")
                     try:
+                        self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
                         # print("made it to Summary")
                         UpdatedValuetext = textStr.split()[valueIndex]
                         # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
@@ -874,6 +860,72 @@ class TestHandler(QObject):
                     except Exception as err:
                         logger.error("Failed to update ")
 
+                elif "TEMPSENS_" in textStr:
+                    try:
+                        output = textStr.split("[")
+                        sensor = output[8]
+                        sensorMeasure = sensor[3:]
+                        print(sensorMeasure)
+                        if sensorMeasure != "":
+                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+                            self.tempindex += 1
+                    except Exception as e:
+                        print("Failed due to {0}".format(e))
+                elif "INTERNAL_NTC" in textStr:
+                    try:
+                        output = textStr.split("[")
+                        sensor = output[8]
+                        sensorMeasure = sensor[3:]
+                        #print(sensorMeasure)
+                        if sensorMeasure != "":
+                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+                            self.tempindex += 1
+                    except Exception as e:
+                        print("Failed due to {0}".format(e))
+
+                continue
+            #This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
+            
+            elif self.ProgressingMode == "Summary":
+                toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
+                if toUpdate:
+                    print("trying to update xml value")
+                    try:
+                        self.runwindow.ResultWidget.ProgressBar[
+                            self.testIndexTracker
+                        ].setValue(100)
+                        # print("made it to Summary")
+                        UpdatedValuetext = textStr.split()[valueIndex]
+                        # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
+                        UpdatedValue = int(
+                            re.sub(r"\033\[(\d|;)+?m", "", UpdatedValuetext)
+                        )
+                        print("New {0} value is {1}".format(UpdatedFEKey, UpdatedValue))
+                        # print(textStr.split())
+                        # globalThreshold = int(textStr.split()[-1])
+                        chipIdentifier = textStr.split("=")[-1].split("is")[0]
+                        chipIdentifier = re.sub(
+                            r"\033\[(\d|;)+?m", "", chipIdentifier
+                        ).split("]")[0]
+                        HybridIDKey = chipIdentifier.split("/")[2]
+                        ChipIDKey = chipIdentifier.split("/")[3]
+                        print("Hybrid id {0}".format(HybridIDKey))
+                        print("chipID {0}".format(ChipIDKey))
+                        updatedXMLValueKey = "{}/{}".format(HybridIDKey, ChipIDKey)
+                        updatedXMLValues[updatedXMLValueKey][
+                            UpdatedFEKey
+                        ] = UpdatedValue
+                        if "DAC_GDAC_M_LIN" in UpdatedFEKey:
+                            updatedXMLValues[updatedXMLValueKey][
+                                "DAC_GDAC_L_LIN"
+                            ] = UpdatedValue
+                            updatedXMLValues[updatedXMLValueKey][
+                                "DAC_GDAC_R_LIN"
+                            ] = UpdatedValue
+
+                    except Exception as err:
+                        logger.error("Failed to update ")
+        
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
@@ -989,8 +1041,6 @@ class TestHandler(QObject):
         status = self.validateTest()
 
         # manually validate the result
-
-        print(self.figurelist)
 
         notAccept = False
         if status == False:
