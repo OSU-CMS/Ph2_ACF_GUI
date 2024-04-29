@@ -853,34 +853,36 @@ class QtApplication(QWidget):
         self.connected_device_information[key] = info
 
     def connect_devices(self):
+        
         """
         Use defaults set in siteConfig.py to setup instrument cluster.
         If default_checkbox is not checked change this variable to reflect
         changes made in GUI
         """
-        if not site_settings.manual_powersupply_control:
-            self.device_settings = site_settings.icicle_instrument_setup
-            if not self.default_checkbox.isChecked():
-                for key, value in self.connected_device_information.items():
-                    self.device_settings[key] = value
+        self.device_settings = site_settings.icicle_instrument_setup
+        if not site_settings.manual_powersupply_control :
+            if self.expertMode:
+                if not self.default_checkbox.isChecked():
+                    for key, value in self.connected_device_information.items():
+                        self.device_settings[key] = value
             try:
                 self.instruments = InstrumentCluster(**self.device_settings)
                 self.instruments.open()
 
-            if (
-                self.instruments.status(lv_channel=None)["lv"]
-                or self.instruments.status(lv_channel=None)["hv"]
-            ):
-                self.instruments.off()
-            if self.expertMode:
-                self.disable_instrument_widgets()
+                if (
+                    self.instruments.status(lv_channel=None)["lv"]
+                    or self.instruments.status(lv_channel=None)["hv"]
+                ):
+                    self.instruments.off()
+                if self.expertMode:
+                    self.disable_instrument_widgets()
 
             except Exception as e:
                 print("Error: ", e)
                 QMessageBox.information(
                     None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
                 )
-            self.instruments = None
+                self.instruments = None
 
         if self.expertMode:                
             self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
