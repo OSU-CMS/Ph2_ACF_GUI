@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (
 
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.GUIutils.FirmwareUtil import fwStatusParser
-from Gui.python.CustomizedWidget import SimpleBeBoardBox
+from Gui.python.CustomizedWidget import SimpleBeBoardBox, SimpleModuleBox
 from Gui.python.Firmware import QtBeBoard
 from Gui.GUIutils.DBConnection import checkDBConnection
 import Gui.GUIutils.settings as default_settings
@@ -338,6 +338,12 @@ class SimplifiedMainWidget(QWidget):
         self.StopButton.setDisabled(False)
 
         self.RunTest.resetConfigTest()
+        
+        module:SimpleModuleBox = self.BeBoardWidget.getModules()[0]
+
+        module_type = module.getType(module.getSerialNumber())
+        logger.debug("Module Type: {}".format(module_type))
+        self.master.module_in_use = module_type
         self.RunTest.initialTest()
         # self.RunTest.runTest()
 
