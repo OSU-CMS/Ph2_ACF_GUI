@@ -84,7 +84,7 @@ class IVCurveHandler(QObject):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
 
-        assert self.instrument is not None, logger.debug("Error instantiating instrument cluster")
+        assert self.instruments is not None, logger.debug("Error instantiating instrument cluster")
 
         self.test = IVCurveThread(self, instrument_cluster=self.instruments)
         self.test.progressSignal.connect(self.transmitProgress)
