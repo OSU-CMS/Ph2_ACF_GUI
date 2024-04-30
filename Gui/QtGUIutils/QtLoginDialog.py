@@ -45,15 +45,14 @@ from Gui.python.logging_config import logger
 
 
 class QtLoginDialog(QDialog):
-    def __init__(self, master):
+    def __init__(self, username, password, address, database, connection):
         super(QtLoginDialog, self).__init__()
-        self.master = master
         self.expertMode = False
-        self.connection = "Offline"
-        self.TryUsername = ""
-        self.TryPassword = ""
-        self.TryHostAddress = ""
-        self.TryDatabase = ""
+        self.connection = connection
+        self.TryUsername = username
+        self.TryPassword = password
+        self.TryHostAddress = address
+        self.TryDatabase = database
 
         self.mainLayout = QGridLayout()
 
@@ -80,7 +79,7 @@ class QtLoginDialog(QDialog):
 
         HostLabel = QLabel("HostName:")
 
-        if self.expertMode == False:
+        if not self.expertMode:
             self.HostName = QComboBox()
             self.HostName.addItems(dblist)
             self.HostName.currentIndexChanged.connect(self.changeDBList)
@@ -92,7 +91,7 @@ class QtLoginDialog(QDialog):
             self.HostEdit.setMaximumHeight(30)
 
         DatabaseLabel = QLabel("Database:")
-        if self.expertMode == False:
+        if self.expertMode:
             self.DatabaseCombo = QComboBox()
             self.DBNames = eval(self.HostName.currentText() + ".All_list")
             self.DatabaseCombo.addItems(self.DBNames)
@@ -144,11 +143,10 @@ class QtLoginDialog(QDialog):
         self.mainLayout.removeWidget(self.LoginGroupBox)
 
     def checkLogin(self):
-        msg = QMessageBox()
         expertList = ["mjoyce", "kwei"]  # temporary fix for demonstration
         if self.UsernameEdit.text() in expertList:
             self.expertMode = True
-        if self.expertMode == True:
+        if self.expertMode:
             self.TryUsername = self.UsernameEdit.text()
             self.TryPassword = self.PasswordEdit.text()
             # self.TryHostAddress = DBServerIP[str(self.HostName.currentText())]
@@ -167,20 +165,11 @@ class QtLoginDialog(QDialog):
         )
 
         if isActive(self.connection):
-            self.setConnection()
+            self.accept()
         else:
             QMessageBox().information(
                 None, "Error", "Database not connected", QMessageBox.Ok
             )
-
-    def setConnection(self):
-        self.master.TryUsername = self.TryUsername
-        self.master.TryPassword = self.TryPassword
-        self.master.TryHostAddress = self.TryHostAddress
-        self.master.TryDatabase = self.TryDatabase
-        self.master.connection = self.connection
-        self.master.update()
-        self.accept()
 
     def switchMode(self):
         if self.expertMode:

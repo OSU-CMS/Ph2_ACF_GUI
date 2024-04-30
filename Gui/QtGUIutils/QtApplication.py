@@ -48,7 +48,6 @@ from instrument_cluster import InstrumentCluster
 from Gui.python.logging_config import logger
 
 
-
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
 
@@ -347,6 +346,7 @@ class QtApplication(QWidget):
                     self.createMain()
                     self.checkFirmware()
                 else:
+                    logger.debug("FwDict: {}".format(self.FwDict))
                     logger.debug("Entering Simplified GUI")
                     self.createSimplifiedMain()
 
@@ -361,9 +361,14 @@ class QtApplication(QWidget):
     ##  Main page for non-expert
     ###############################################################
     def createSimplifiedMain(self):
-        # self.welcomebox = QGroupBox("Hello,{}!".format(self.TryUsername))
-        # self.FirmwareStatus.setDisabled(True)
-        self.SimpleMain = SimplifiedMainWidget(self)
+        self.connect_devices()
+        self.SimpleMain = SimplifiedMainWidget(self, self.connection,
+                                               self.TryUsername,
+                                               self.DisplayedPassword,
+                                               self.dimension)
+
+        self.SimpleMain.abort_signal.connect(self.GlobalStop)
+        self.SimpleMain.close_signal.connect(self.close)
         self.mainLayout.addWidget(self.SimpleMain)
 
     ###############################################################
@@ -848,15 +853,18 @@ class QtApplication(QWidget):
         self.connected_device_information[key] = info
 
     def connect_devices(self):
+        
         """
         Use defaults set in siteConfig.py to setup instrument cluster.
-        If default_checkbox is not checked change this variable to reflect changes made in GUI
+        If default_checkbox is not checked change this variable to reflect
+        changes made in GUI
         """
-        if not site_settings.manual_powersupply_control:
-            self.device_settings = site_settings.icicle_instrument_setup
-            if not self.default_checkbox.isChecked():
-                for key, value in self.connected_device_information.items():
-                    self.device_settings[key] = value
+        self.device_settings = site_settings.icicle_instrument_setup
+        if not site_settings.manual_powersupply_control :
+            if self.expertMode:
+                if not self.default_checkbox.isChecked():
+                    for key, value in self.connected_device_information.items():
+                        self.device_settings[key] = value
             try:
                 self.instruments = InstrumentCluster(**self.device_settings)
                 self.instruments.open()
@@ -866,7 +874,8 @@ class QtApplication(QWidget):
                     or self.instruments.status(lv_channel=None)["hv"]
                 ):
                     self.instruments.off()
-                self.disable_instrument_widgets()
+                if self.expertMode:
+                    self.disable_instrument_widgets()
 
             except Exception as e:
                 print("Error: ", e)
@@ -875,8 +884,9 @@ class QtApplication(QWidget):
                 )
                 self.instruments = None
 
-        self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
-        self.ArduinoGroup.frozeArduinoPanel()
+        if self.expertMode:                
+            self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+            self.ArduinoGroup.frozeArduinoPanel()
 
     def disable_instrument_widgets(self):
         """
@@ -1039,8 +1049,8 @@ class QtApplication(QWidget):
 
             fileName = self.LogList[index]
             if firmwareName != self.FwUnderUsed:
-                FwStatusComment, FwStatusColor, FwStatusVerbose = self.getFwComment(
-                    firmwareName, fileName
+                FwStatusComment, FwStatusColor, FwStatusVerbose = fwStatusParser(
+                    self.FwDict[firmwareName], fileName
                 )
                 self.StatusList[index + 1][1].setText(FwStatusComment)
                 self.StatusList[index + 1][1].setStyleSheet(FwStatusColor)
@@ -1063,9 +1073,9 @@ class QtApplication(QWidget):
             index = self.getIndex(self.FwUnderUsed, self.StatusList)
             self.occupyFw("{0}".format(index))
 
-    def getFwComment(self, firmwareName, fileName):
+    def getFwComment(self, BeBoard: QtBeBoard, fileName):
         comment, color, verboseInfo = fwStatusParser(
-            self.FwDict[firmwareName], fileName
+            BeBoard, fileName
         )
         return comment, color, verboseInfo
 
