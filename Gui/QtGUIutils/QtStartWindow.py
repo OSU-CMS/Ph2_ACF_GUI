@@ -74,8 +74,9 @@ class SummaryBox(QWidget):
         self.chipSwitches = {}
 
         self.mainLayout = QGridLayout()
-        self.initResult()
-        self.createBody()
+        if self.master.expertMode: 
+            self.initResult()
+            self.createBody()
         if icicle_instrument_setup is not None:
             self.measureFwPar()
         # self.checkFwPar()
@@ -117,13 +118,14 @@ class SummaryBox(QWidget):
                     value[item] = icicle_instrument_setup['default_hv_voltage']
             self.verboseResult[key] = value
 
-    def checkFwPar(self, pfirmwareName):
+    @staticmethod
+    def checkFwPar(pfirmwareName, module_type):
         # To be finished
 
         try:
-            self.result = True
+            #self.result = True
             FWisPresent = False
-            if "CROC" in self.module.getType():
+            if "CROC" in module_type:
                 boardtype = "RD53B"
             else:
                 boardtype = "RD53A"
@@ -136,7 +138,7 @@ class SummaryBox(QWidget):
             )
             updateuri = subprocess.call([uricmd], shell=True)
 
-            firmwareImage = firmware_image[self.module.getType()][
+            firmwareImage = firmware_image[module_type][
                 os.environ.get("Ph2_ACF_VERSION")
             ]
             print("checking if firmware is on the SD card for {}".format(firmwareImage))
@@ -220,35 +222,11 @@ class SummaryBox(QWidget):
 
                 print("Firmware image is now loaded")
             logging.debug("Made it to turn on LV")
-
-            if self.master.desired_devices["lv"]:
-                self.master.powering_mode = self.PowerModeCombo.currentText()
-
-                # self.master.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
-                self.master.module_in_use = self.module.getType()
-
-                if self.master.instruments: 
-                    self.master.instruments.lv_on(
-                        None,
-                        ModuleVoltageMapSLDO[self.master.module_in_use],
-                        ModuleCurrentMap[self.master.module_in_use],
-                    )
-                else:
-                    QMessageBox.information(None, "Info", "You should now turn on LV "
-                                     "power supply to the following voltage "
-                                     "and current: \n"
-                                     f"{ModuleVoltageMapSLDO[self.master.module_in_use]}V \n"
-                                     f"{ModuleCurrentMap[self.master.module_in_use]}A \n")
-                                     
-                logging.info("Turned on LV power supply")
-
-
-
-            return self.result
+            return True
         except Exception as err:
-            self.result = False
-            self.CheckLabel.setText("No measurement")
-            self.CheckLabel.setStyleSheet("color:red")
+            #self.result = False
+            #self.CheckLabel.setText("No measurement")
+            #self.CheckLabel.setStyleSheet("color:red")
             print(err)
             return False
 
@@ -416,7 +394,7 @@ class QtStartWindow(QWidget):
     def checkFwPar(self, pfirmwareName):
         GlobalCheck = True
         for item in self.ModuleList:
-            item.checkFwPar(pfirmwareName)
+            item.checkFwPar(pfirmwareName, item.module.getType())
             GlobalCheck = GlobalCheck and item.getResult()
         self.passCheck = GlobalCheck
         return GlobalCheck

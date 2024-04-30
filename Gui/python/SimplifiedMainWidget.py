@@ -3,6 +3,7 @@ import time
 from serial import SerialException
 from typing import Optional
 
+from Gui.QtGUIutils.QtStartWindow import SummaryBox
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
@@ -116,6 +117,7 @@ class SimplifiedMainWidget(QWidget):
             self.instrument_info["peltier"]["Label"].setText("Peltier Temperature")
             logger.debug("Setting up Peltier")
             self.Peltier = PeltierSignalGenerator()
+            assert self.Peltier is not None, "Peltier object was not created"
             logger.debug("created self.Peltier")
             # These should emit signals
             if not self.Peltier.sendCommand(
@@ -345,6 +347,7 @@ class SimplifiedMainWidget(QWidget):
         module_type = module.getType(module.getSerialNumber())
         logger.debug("Module Type: {}".format(module_type))
         self.master.module_in_use = module_type
+        fw_check = SummaryBox.checkFwPar(self.BeBoard, module_type)
         self.RunTest.initialTest()
         # self.RunTest.runTest()
 
