@@ -74,9 +74,9 @@ class SummaryBox(QWidget):
         self.chipSwitches = {}
 
         self.mainLayout = QGridLayout()
-        if self.master.expertMode: 
-            self.initResult()
-            self.createBody()
+       
+        self.initResult()
+        self.createBody()
         if icicle_instrument_setup is not None:
             self.measureFwPar()
         # self.checkFwPar()
