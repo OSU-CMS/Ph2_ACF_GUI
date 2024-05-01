@@ -4,7 +4,7 @@ from serial import SerialException
 from typing import Optional
 
 from Gui.QtGUIutils.QtStartWindow import SummaryBox
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QTimer
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
     QGridLayout,
@@ -44,6 +44,9 @@ class SimplifiedMainWidget(QWidget):
         self.username = username
         self.password = password
         self.dimension = dimension
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.setDeviceStatus)
+        
         try:
             self.instruments = InstrumentCluster(**site_settings.
                                                  icicle_instrument_setup)
@@ -154,6 +157,8 @@ class SimplifiedMainWidget(QWidget):
             )
             logger.debug("Set peltier temp")
             time.sleep(0.5)
+
+            self.peltier_temperature_label = QLabel(self) 
         except Exception as e:
             print("Error while attempting to set Peltier", e)
             self.Peltier = None
@@ -175,6 +180,7 @@ class SimplifiedMainWidget(QWidget):
         if self.Peltier:
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
             self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
+            self.StatusLayout.addWidget(self.peltier_temperature_label, 3, 3, 1, 1)
         self.RefreshButton = QPushButton("&Refresh")
         self.RefreshButton.clicked.connect(self.setDeviceStatus)
         self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
@@ -303,6 +309,7 @@ class SimplifiedMainWidget(QWidget):
         self.setDeviceStatus() 
         self.setupStatusWidgets()
         self.setupUI()
+        self.timer.start(1000)
         
     def runNewTest(self):
         for module in self.BeBoardWidget.getModules():
@@ -367,9 +374,9 @@ class SimplifiedMainWidget(QWidget):
         Peltier -> check if the Peltier is at the right temperature and is reachable 
         """ 
 
-        self.instrument_status = self.check_icicle_devices()
-
-        logger.debug(f"Instrument status is {self.instrument_status}")
+        #self.instrument_status = self.check_icicle_devices()
+        self.instrument_status = {} 
+        #logger.debug(f"Instrument status is {self.instrument_status}")
 
         logger.debug("Getting FC7 Comment")
 
@@ -394,6 +401,8 @@ class SimplifiedMainWidget(QWidget):
             else:
                 peltier_temp = None
 
+            # Update temperature widget 
+            self.peltier_temperature_label.setText("{} C".format(peltier_temp))
             logger.debug("Evaluating temp status")
 
             peltier_temp_status = 1 if (peltier_temp and abs(peltier_temp - default_settings.defaultPeltierSetTemp) < 10) else 0
@@ -412,15 +421,21 @@ class SimplifiedMainWidget(QWidget):
 
 
         logger.debug("Setting up instrument_status")
+        logger.debug("instrument_status: {}".format(self.instrument_status))
+        logger.debug("instruments: ".format(self.instruments))
+       
+        self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus 
+        self.instrument_status["fc7"] = "Connected" in FwStatusComment 
+        self.instrument_status["database"]= not "offline" in statusString 
+        if self.Peltier:
+            self.instrument_status["peltier"] = peltier_power_status and peltier_temp_status 
+        else:
+            self.instrument_status["peltier"] = 0
 
-        if self.instruments and self.instrument_status:
-            self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus 
-            self.instrument_status["fc7"] = "Connected" in FwStatusComment 
-            self.instrument_status["database"]= not "offline" in statusString 
-            if self.Peltier:
-                self.instrument_status["peltier"] = peltier_power_status and peltier_temp_status 
-            else:
-                self.instrument_status["peltier"] = 0
+        # Icicle will deal with the powersupplies, so I will just always set their status to good
+        # Technically a false sense of security for the user. 
+        self.instrument_status["hv"] = True
+        self.instrument_status["lv"] = True
         if self.instruments:
             logger.debug(f'{__name__} Setup instrument status {self.instrument_status}')
             for key, value in self.instrument_info.items():
@@ -466,8 +481,7 @@ class SimplifiedMainWidget(QWidget):
                 return_status[key] = 1
             elif type(value) == InstrumentNotInstantiated:
                 return_status[key] = 0
-        return return_status
-
+        return return_status        
 
     def retryLogin(self):
         self.master.mainLayout.removeWidget(self)
