@@ -1193,9 +1193,14 @@ class QtApplication(QWidget):
 
             # If you didn't start the Peltier controller, tempPower won't be defined
             try:
-                self.PeltierCooling.shutdown()
+                if self.expertMode:
+                    self.PeltierCooling.shutdown()
+                else:
+                    self.SimpleMain.worker.abort_worker()
+                    self.SimpleMain.Peltier.sendCommand(self.SimpleMain.Peltier.createCommand("Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]))
+
             except Exception as e:
-                print("Could not shutdown Peltier: ", e)
+                logger.error(f"Could not shutdown Peltier: {e}")
                 pass
 
             try:
