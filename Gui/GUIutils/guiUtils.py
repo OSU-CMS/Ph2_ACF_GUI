@@ -354,6 +354,8 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
     BeBoardModule0 = BeBoardModule()
     AllModules = firmwareList.getAllModules().values()
     boardtype = "RD53A"
+    revPolarity = False #Flag to determine whether or not to reverse the Aurora lane polarity
+    RegisterSettingsList = RegisterSettings
     # Setup all optical groups for the modules
     for module in AllModules:
         AllOG = {}
@@ -371,6 +373,14 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
             FESettings_Dict = FESettings_DictB
             globalSettings_Dict = globalSettings_DictB
             HWSettings_Dict = HWSettings_DictB
+            FELaneConfig_Dict = FELaneConfig_DictB
+            if "Quad" in module.getModuleType():
+                RxPolarities = "1"
+                revPolarity = True
+            else:
+                RxPolarities = "0"
+            #LaneConfigSettings_Dict = LaneConfigSettings_DictB
+            
             boardtype = "RD53B"
         else:
             FESettings_Dict = FESettings_DictA
@@ -381,18 +391,20 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
         # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
         for chip in module.getChips().values():
             print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
-            if not chip.getStatus():
+            if not chip.getStatus(): #FIXME should be able to use chip.getStatus to use enable flag in the xml files
                 continue
             FEChip = FE()
             FEChip.SetFE(
                 chip.getID(),
                 chip.getLane(),
+                RxPolarities,
                 "CMSIT_RD53_{0}_{1}_{2}.txt".format(
                     module.getModuleName(), module.getModuleID(), chip.getID()
                 ),
             )
 
             FEChip.ConfigureFE(FESettings_Dict[testName])
+            FEChip.ConfigureLaneConfig(FELaneConfig_Dict[testName][int(chip.getLane())])
             FEChip.VDDAtrim = chip.getVDDA()
             FEChip.VDDDtrim = chip.getVDDD()
             HyBridModule0.AddFE(FEChip)
@@ -401,8 +413,9 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 
     for OpticalGroupModule in AllOG.values():
         BeBoardModule0.AddOGModule(OpticalGroupModule)
-
-    BeBoardModule0.SetRegisterValue(RegisterSettings)
+    if revPolarity:
+        RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = 11
+    BeBoardModule0.SetRegisterValue(RegisterSettingsList)
     HWDescription0.AddBeBoard(BeBoardModule0)
     ###  This is where you specify which set of HW settings to use for a test  ######
     HWDescription0.AddSettings(HWSettings_Dict[testName])  
