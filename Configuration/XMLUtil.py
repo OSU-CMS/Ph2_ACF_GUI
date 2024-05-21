@@ -6,6 +6,7 @@ from InnerTrackerTests.FESettings import *
 from InnerTrackerTests.HWSettings import *
 from InnerTrackerTests.MonitoringSettings import *
 from InnerTrackerTests.RegisterSettings import *
+from InnerTrackerTests.FELaneConfig import *
 from Gui.GUIutils.settings import *
 
 import logging
@@ -98,8 +99,8 @@ class BeBoardModule():
     self.uri = uri
     self.address_table = address_table
 
-  def SetRegisterValue(self, RegisterSettings):
-    self.RegisterSettings = RegisterSettings
+  def SetRegisterValue(self, pRegisterSettings):
+    self.RegisterSettings = pRegisterSettings
 
 class OGModule():
   def __init__(self):
@@ -165,6 +166,7 @@ class FE():
     self.Lane="0" 
     self.configfile="CMSIT_RD53.txt"
     self.settingList = {}
+    self.laneConfigList = {}
     self.VDDAtrim = "8"
     self.VDDDtrim = "8"
     self.RxGroups = "6"
@@ -175,12 +177,15 @@ class FE():
     self.TxPolarities = "0"
     
 
-  def SetFE(self, Id, Lane, configfile = "CMSIT_RD53.txt"):
+  def SetFE(self, Id, Lane, RxPolarities = "0", configfile = "CMSIT_RD53.txt"): #FIXME I think this is where you need to configure the lane config but cause it needs to have either the chipID or lane# passed to it
     self.Id = str(Id)
     self.Lane = str(Lane)
     self.configfile = configfile
+    self.RxPolarities = RxPolarities
   def ConfigureFE(self, settingList):
     self.settingList = settingList
+  def ConfigureLaneConfig(self, laneConfigList):
+    self.laneConfigList = laneConfigList
    
 
 class MonitoringModule():
@@ -304,7 +309,8 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
           Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})
           if 'RD53B' in boardtype:
             Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
-            Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,{'primary':"1",'master':"0",'outputLanes':"0001",'singleChannelInputs':"0000",'dualChannelInput':"0000"})
+            Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,FE.laneConfigList)
+            #Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,{'primary':"1",'master':"0",'outputLanes':"0001",'singleChannelInputs':"0000",'dualChannelInput':"0000"})
           Node_FESetting = ET.SubElement(Node_FE,"Settings")
           FE.settingList['VOLTAGE_TRIM_ANA'] = FE.VDDAtrim
           FE.settingList['VOLTAGE_TRIM_DIG'] = FE.VDDDtrim
