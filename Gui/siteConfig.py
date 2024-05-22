@@ -48,7 +48,7 @@ defaultSensorBaudRate = 9600
 usePeltier = True
 defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
-defaultPeltierSetTemp = 5
+defaultPeltierSetTemp = 10
 defaultPeltierWarningTemp = 40
 #################################
 
@@ -76,7 +76,7 @@ icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A,
 							}
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
-IVcurve_range = -120 #Maximum voltage in Volts to be used in IVcurve
+IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
@@ -140,10 +140,3 @@ defaultSLDOscanMaxCurrent = 0.0
 #####################################################
 
 
-### Setting for Peltier Controller
-usePeltier = True
-defaultPeltierPort = '/dev/ttyUSBPeltier'
-defaultPeltierBaud = 9600
-defaultPeltierSetTemp = 5
-defaultPeltierWarningTemp = 40
-IVcurve_range = -120 
