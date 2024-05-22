@@ -52,7 +52,7 @@ class ArduinoWidget(QWidget):
         self.ArduinoGoodStatus = False
 
     def createArduino(self):
-        self.ArduinoGroup = QGroupBox("Arduino device")
+        self.ArduinoGroup = QGroupBox("Arduino Device")
         self.ArduinoBox = QHBoxLayout()
         self.ArduinoStatusLabel = QLabel()
         self.ArduinoStatusLabel.setText("Choose Arduino:")
@@ -87,6 +87,7 @@ class ArduinoWidget(QWidget):
         self.ArduinoMeasureValue = QLabel()
         self.mainLayout.addWidget(self.ArduinoMeasureValue, 1, 0)
 
+    #TODO: Returns an empty list or something, doesn't work correctly and doesn't return the resource
     def listResources(self):
         self.ResourcesManager = visa.ResourceManager("@py")
         try:
