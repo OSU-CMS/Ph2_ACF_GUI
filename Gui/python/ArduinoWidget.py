@@ -189,8 +189,9 @@ class ArduinoWidget(QWidget):
         self.ArduinoList = self.listResources()
 
     def setBaudRate(self, baudRate):
-        self.ArduinoBRCombo.clear()
-        self.ArduinoBRCombo.addItems([str(baudRate)])
+        #self.ArduinoBRCombo.clear()
+        #self.ArduinoBRCombo.addItems([str(baudRate)])
+        self.ArduinoBRCombo.setCurrentText(str(baudRate))
 
     def setSerial(self, deviceName, baudRate):
         deviceName = deviceName.lstrip("ASRL").rstrip("::INSTR")
@@ -222,16 +223,16 @@ class ArduinoWidget(QWidget):
             try:
                 text = self.serial.readLine().data().decode("utf-8", "ignore")
                 text = text.rstrip("\r\n")
-                T = float(text.split(" ")[4])
-                RH = float(text.split(" ")[1])
-                N = (np.log(RH / 100) + 17.27 * T / (237.3 + T)) / 17.27
-                Td = round(237.3 * N / (1 - N), 2)
-                if T >= Td:
+                temp = float(text.split(" ")[4])
+                humidity = float(text.split(" ")[1])
+                N = (np.log(humidity / 100) + 17.27 * temp / (237.3 + temp)) / 17.27
+                dew_point = round(237.3 * N / (1 - N), 2)
+                if temp >= dew_point:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : green}")
                 else:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
 
-                climatetext = text + ", Dew Point Temperature: {0} Celsius".format(Td)
+                climatetext = text + f", Dew Point Temperature: {dew_point} Celsius"
                 StopSignal, measureText = ArduinoParser(text)
                 self.ArduinoMeasureValue.setText(climatetext)
                 # self.ArduinoMeasureValue.setText(measureText)
