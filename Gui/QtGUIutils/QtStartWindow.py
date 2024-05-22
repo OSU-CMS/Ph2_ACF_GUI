@@ -394,8 +394,9 @@ class QtStartWindow(QWidget):
     def checkFwPar(self, pfirmwareName):
         GlobalCheck = True
         for item in self.ModuleList:
-            item.checkFwPar(pfirmwareName, item.module.getType())
-            GlobalCheck = GlobalCheck and item.getResult()
+            #item.checkFwPar(pfirmwareName, item.module.getType())
+            GlobalCheck = GlobalCheck and item.checkFwPar(pfirmwareName, item.module.getType())
+            #GlobalCheck = GlobalCheck and item.getResult()
         self.passCheck = GlobalCheck
         return GlobalCheck
 
