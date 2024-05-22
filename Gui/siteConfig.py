@@ -92,9 +92,9 @@ Monitor_CROC = "1"
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
 	"SCC" : 0.6,
-	"TFPX Quad" : 6.5,
-	"TEPX Quad" : 6,
-	"TBPX Quad" : 6.5,
+	"TFPX RD53A Quad" : 6.5,
+	"TEPX RD53A Quad" : 6,
+	"TBPX RD53A Quad" : 6.5,
 	"TFPX CROC 1x2"  : 4.5,
 	"TFPX CROC Quad" : 7.5,
 	"CROC SCC"  : 2.0,
@@ -107,9 +107,9 @@ ModuleCurrentMap = {
 ## Configuring the voltage limit for each module type when operating in SLDO mode.  These values are in Volts.
 ModuleVoltageMapSLDO = {
 	"SCC" : 1.8,
-	"TFPX Quad" : 2.98,
-	"TEPX Quad" : 2.0,
-	"TBPX Quad" : 2.98,
+	"TFPX RD53A Quad" : 2.98,
+	"TEPX RD53A Quad" : 2.0,
+	"TBPX RD53A Quad" : 2.98,
 	"TFPX CROC 1x2"  : 2.3,
 	"TEPX CROC 1x2"  : 2.3,
 	"TBPX CROC 1x2"  : 2.3,
