@@ -76,7 +76,7 @@ icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A,
 							}
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
-IVcurve_range = -60 #Maximum voltage in Volts to be used in IVcurve
+IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
