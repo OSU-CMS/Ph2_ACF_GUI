@@ -87,7 +87,6 @@ class ArduinoWidget(QWidget):
         self.ArduinoMeasureValue = QLabel()
         self.mainLayout.addWidget(self.ArduinoMeasureValue, 1, 0)
 
-    #TODO: Returns an empty list or something, doesn't work correctly and doesn't return the resource
     def listResources(self):
         self.ResourcesManager = visa.ResourceManager("@py")
         try:
@@ -108,7 +107,7 @@ class ArduinoWidget(QWidget):
                     [
                         "udevadm",
                         "info",
-                        " --query",
+                        "--query",
                         "all",
                         "--name",
                         device.lstrip("ASRL").rstrip("::INSTR"),
@@ -239,7 +238,7 @@ class ArduinoWidget(QWidget):
                 # self.ArduinoMeasureValue.setText(measureText)
                 if StopSignal:
                     self.stopCount += 1
-                    logging.warning(
+                    logger.warning(
                         "Anomalous value detected, stop signal will be emitted in {}".format(
                             10 - self.stopCount
                         )
