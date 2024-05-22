@@ -1,5 +1,5 @@
 #include "DHT.h"
-#define DHT22_PIN 6
+#define DHT22_PIN 5
 DHT dht22(DHT22_PIN, DHT22);
 
 void setup() {
@@ -16,9 +16,7 @@ void loop() {
   if (isnan(humidity) || isnan(tempC)) {
     Serial.println("Failed to read from DHT22 sensor!");
   } else {
-    Serial.print("Humidity: " + humidity);
-    Serial.print("| "); 
-    Serial.print("Temperature: " + tempC);
+    Serial.println("Humidity: " + String(humidity) + " | " + "Temperature: " + String(tempC));
   }
-  delay(1000)
+  delay(1000);
 }
