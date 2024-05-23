@@ -60,6 +60,7 @@ class ArduinoWidget(QWidget):
         self.ArduinoList = self.listResources()
         self.ArduinoCombo = QComboBox()
         self.ArduinoCombo.addItems(self.ArduinoList)
+        self.ArduinoCombo.clicked.connect(self.refreshDeviceList)
         self.ArduinoBaudRate = QLabel()
         self.ArduinoBaudRate.setText("BaudRate:")
         self.ArduinoBaudRateList = [
@@ -161,7 +162,7 @@ class ArduinoWidget(QWidget):
                     logger.warning("No device name found for {}:".format(device))
                     # self.deviceMap[device] = device
                 elif "Arduino" in deviceName:
-                    self.deviceMap[deviceName] = device
+                    self.deviceMap[deviceName + device[12:16]] = device
                 else:
                     pass
             except Exception as err:
@@ -194,6 +195,13 @@ class ArduinoWidget(QWidget):
         self.ReleaseArduino.setDisabled(True)
         self.InstallFirmware.setDisabled(False)
         self.ArduinoList = self.listResources()
+        self.refreshDeviceList()
+        
+    def refreshDeviceList(self):
+        currentDevice = self.ArduinoCombo.currentText()
+        self.ArduinoCombo.clear()
+        self.ArduinoCombo.addItems(self.ArduinoList)
+        self.ArduinoCombo.setCurrentText(currentDevice)
     
     def installArduinoFirmware(self):
         try:
