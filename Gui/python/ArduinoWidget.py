@@ -195,7 +195,6 @@ class ArduinoWidget(QWidget):
         self.ReleaseArduino.setDisabled(True)
         self.InstallFirmware.setDisabled(False)
         self.ArduinoList = self.listResources()
-        self.refreshDeviceList()
         
     def refreshDeviceList(self):
         currentDevice = self.ArduinoCombo.currentText()
