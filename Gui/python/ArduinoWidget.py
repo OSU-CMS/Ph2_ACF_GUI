@@ -185,10 +185,10 @@ class ArduinoWidget(QWidget):
             logger.error(f"Unable to use Arduino: {err}")
             self.ArduinoGoodStatus = False
 
-    def releaseArduinoPanel(self, message=""):
+    def releaseArduinoPanel(self):
         self.serial.close()
         self.ArduinoCombo.setDisabled(False)
-        self.ArduinoMeasureValue.setText(message)
+        self.ArduinoMeasureValue.setText("")
         self.UseArduino.setDisabled(False)
         self.ArduinoBRCombo.setDisabled(False)
         self.ReleaseArduino.setDisabled(True)
@@ -283,7 +283,9 @@ class ArduinoWidget(QWidget):
             self.ArduinoMeasureValue.setText("The Arduino could not be read.")
         if self.readAttempts > 200:
             self.readAttempts = 0
-            self.releaseArduinoPanel(message="The Arduino could not be read.")
+            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
+            self.releaseArduinoPanel()
+            logger.error("Could not communicate with the Arduino, check to ensure that you are using the appropriate baud rate and firmware.")
 
     @QtCore.pyqtSlot()
     def StopSignal(self):
