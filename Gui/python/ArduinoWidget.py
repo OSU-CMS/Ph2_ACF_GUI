@@ -185,10 +185,10 @@ class ArduinoWidget(QWidget):
             logger.error(f"Unable to use Arduino: {err}")
             self.ArduinoGoodStatus = False
 
-    def releaseArduinoPanel(self):
+    def releaseArduinoPanel(self, message=""):
         self.serial.close()
         self.ArduinoCombo.setDisabled(False)
-        self.ArduinoMeasureValue.setText("")
+        self.ArduinoMeasureValue.setText(message)
         self.UseArduino.setDisabled(False)
         self.ArduinoBRCombo.setDisabled(False)
         self.ReleaseArduino.setDisabled(True)
@@ -210,8 +210,6 @@ class ArduinoWidget(QWidget):
             self.ArduinoMeasureValue.setText("The Arduino firmware could not be installed.")
 
     def setBaudRate(self, baudRate):
-        #self.ArduinoBRCombo.clear()
-        #self.ArduinoBRCombo.addItems([str(baudRate)])
         self.ArduinoBRCombo.setCurrentText(str(baudRate))
 
     def setSerial(self, deviceName, baudRate):
@@ -254,7 +252,7 @@ class ArduinoWidget(QWidget):
                 else:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
 
-                climatetext = text + f", Dew Point Temperature: {dew_point} Celsius"
+                climatetext = f"Temperature: {temp} C | Humidity: {humidity}% | Dew Point: {dew_point} C"
                 StopSignal, measureText = ArduinoParser(text)
                 self.ArduinoMeasureValue.setText(climatetext)
                 # self.ArduinoMeasureValue.setText(measureText)
@@ -283,6 +281,9 @@ class ArduinoWidget(QWidget):
         if self.readAttempts > 10:
             self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
             self.ArduinoMeasureValue.setText("The Arduino could not be read.")
+        if self.readAttempts > 200:
+            self.readAttempts = 0
+            self.releaseArduinoPanel(message="The Arduino could not be read.")
 
     @QtCore.pyqtSlot()
     def StopSignal(self):
