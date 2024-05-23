@@ -85,6 +85,7 @@ class ArduinoWidget(QWidget):
         self.ArduinoBox.addStretch(1)
         self.ArduinoBox.addWidget(self.UseArduino)
         self.ArduinoBox.addWidget(self.ReleaseArduino)
+        self.ArduinoBox.addWidget(self.InstallFirmware)
         self.ArduinoGroup.setLayout(self.ArduinoBox)
         self.mainLayout.addWidget(self.ArduinoGroup, 0, 0)
 
