@@ -196,12 +196,18 @@ class ArduinoWidget(QWidget):
         self.ArduinoList = self.listResources()
     
     def installArduinoFirmware(self):
-        device = self.deviceMap[self.ArduinoCombo.currentText()].lstrip("ASRL").rstrip("::INSTR")
-        subprocess.run(["../bin/arduino-cli", "lib", "install", "DHT sensor library@1.4.6"]) #install dependency
-        subprocess.run(["../bin/arduino-cli", "compile", "../FirmwareImages/DHT22_Sensor/DHT22_Sensor.ino", "-b", "arduino:avr:uno"]) #compile firmware
-        subprocess.run(["../bin/arduino-cli", "upload", "../FirmwareImages/DHT22_Sensor/", "-p", f"{device}", "-b", "arduino:avr:uno"]) #upload to Arduino
-        self.setBaudRate(9600) #default arduino baud rate
-        self.ArduinoMeasureValue.setText("The Arduino firmware has been installed.")
+        try:
+            device = self.deviceMap[self.ArduinoCombo.currentText()].lstrip("ASRL").rstrip("::INSTR")
+            subprocess.check_call(["../bin/arduino-cli", "lib", "install", "DHT sensor library@1.4.6"]) #install dependency
+            subprocess.check_call(["../bin/arduino-cli", "compile", "../FirmwareImages/DHT22_Sensor/DHT22_Sensor.ino", "-b", "arduino:avr:uno"]) #compile firmware
+            subprocess.check_call(["../bin/arduino-cli", "upload", "../FirmwareImages/DHT22_Sensor/", "-p", f"{device}", "-b", "arduino:avr:uno"]) #upload to Arduino
+            self.setBaudRate(9600) #default arduino baud rate
+            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : white}")
+            self.ArduinoMeasureValue.setText("The Arduino firmware has been installed.")
+        except Exception as err:
+            logger.error("{0}".format(err))
+            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : white}")
+            self.ArduinoMeasureValue.setText("The Arduino firmware could not be installed.")
 
     def setBaudRate(self, baudRate):
         #self.ArduinoBRCombo.clear()
