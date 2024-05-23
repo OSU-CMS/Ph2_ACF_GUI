@@ -196,12 +196,11 @@ class ArduinoWidget(QWidget):
         self.ArduinoList = self.listResources()
     
     def installArduinoFirmware(self):
-        self.ArduinoMeasureValue.setText("Installing Arduino firmware...")
         device = self.deviceMap[self.ArduinoCombo.currentText()].lstrip("ASRL").rstrip("::INSTR")
-        subprocess.run(["../bin/arduino-cli", "lib", "install", "\"DHT sensor library\"@1.4.6"]) #install dependency
+        subprocess.run(["../bin/arduino-cli", "lib", "install", "DHT sensor library@1.4.6"]) #install dependency
         subprocess.run(["../bin/arduino-cli", "compile", "../FirmwareImages/DHT22_Sensor/DHT22_Sensor.ino", "-b", "arduino:avr:uno"]) #compile firmware
         subprocess.run(["../bin/arduino-cli", "upload", "../FirmwareImages/DHT22_Sensor/", "-p", f"{device}", "-b", "arduino:avr:uno"]) #upload to Arduino
-        self.setBaudRate(self, 9600) #default arduino baud rate
+        self.setBaudRate(9600) #default arduino baud rate
         self.ArduinoMeasureValue.setText("The Arduino firmware has been installed.")
 
     def setBaudRate(self, baudRate):
@@ -237,7 +236,6 @@ class ArduinoWidget(QWidget):
     def receive(self):
         self.readAttempts += 1
         while self.serial.canReadLine():
-            self.readAttempts = 0
             try:
                 text = self.serial.readLine().data().decode("utf-8", "ignore")
                 text = text.rstrip("\r\n")
@@ -269,8 +267,11 @@ class ArduinoWidget(QWidget):
                 if self.stopCount >= 10:
                     self.StopSignal()
                     self.stopCount = 0
+                
+                self.readAttempts = 0
 
             except Exception as err:
+                self.readAttempts += 1
                 logger.error("{0}".format(err))
         
         if self.readAttempts > 10:
