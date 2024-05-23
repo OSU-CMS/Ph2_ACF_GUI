@@ -891,41 +891,14 @@ class TestHandler(QObject):
                 if toUpdate:
                     print("trying to update xml value")
                     try:
-                        self.runwindow.ResultWidget.ProgressBar[
-                            self.testIndexTracker
-                        ].setValue(100)
-                        # print("made it to Summary")
-                        UpdatedValuetext = textStr.split()[valueIndex]
-                        # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
-                        UpdatedValue = int(
-                            re.sub(r"\033\[(\d|;)+?m", "", UpdatedValuetext)
-                        )
-                        print("New {0} value is {1}".format(UpdatedFEKey, UpdatedValue))
-                        # print(textStr.split())
-                        # globalThreshold = int(textStr.split()[-1])
-                        chipIdentifier = textStr.split("=")[-1].split("is")[0]
-                        chipIdentifier = re.sub(
-                            r"\033\[(\d|;)+?m", "", chipIdentifier
-                        ).split("]")[0]
-                        HybridIDKey = chipIdentifier.split("/")[2]
-                        ChipIDKey = chipIdentifier.split("/")[3]
-                        print("Hybrid id {0}".format(HybridIDKey))
-                        print("chipID {0}".format(ChipIDKey))
-                        updatedXMLValueKey = "{}/{}".format(HybridIDKey, ChipIDKey)
-                        updatedXMLValues[updatedXMLValueKey][
-                            UpdatedFEKey
-                        ] = UpdatedValue
+                        UpdatedValue = ""
+                        updatedXMLValues[UpdatedFEKey] = UpdatedValue
                         if "DAC_GDAC_M_LIN" in UpdatedFEKey:
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_L_LIN"
-                            ] = UpdatedValue
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_R_LIN"
-                            ] = UpdatedValue
-
+                            updatedXMLValues["DAC_GDAC_L_LIN"] = UpdatedValue
+                            updatedXMLValues["DAC_GDAC_R_LIN"] = UpdatedValue
                     except Exception as err:
                         logger.error("Failed to update ")
-        
+
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
@@ -935,7 +908,7 @@ class TestHandler(QObject):
                         self.currentTest
                     )
                 )
-
+            
             text = textStr.encode("ascii")
             numUpAnchor, text = parseANSI(text)
             # if numUpAnchor > 0:
@@ -954,39 +927,38 @@ class TestHandler(QObject):
             # self.runwindow.ConsoleView.setTextCursor(textCursor)
             # self.runwindow.ConsoleView.appendHtml(text.decode("utf-8"))
         self.readingOutput = False
-
-    def updateNeeded(self, textStr):
-        currentTest = Test_to_Ph2ACF_Map[self.currentTest]
-        # print('board type in update section is {0}'.format(self.ModuleType))
-        if currentTest in ["thradj", "thrmin"] and "Global threshold for" in textStr:
+    
+    def updateNeeded(self,textStr):
+        currentTest = Test[self.current]
+        if currentTest in ["thradj", "thrmin"]:
             if "CROC" in self.ModuleType:
                 return (
-                    True,
-                    "DAC_GDAC_M_LIN",
-                    -1,
-                )  # FIXME need to make this also update DAC_GDAC_L_LIN and DAC_GDAC_R_LIN
+                    "DAC_GDAC_M_LIN"
+                )    
             else:
-                return True, "Vthreshold_LIN", -1
-        elif currentTest in ["threq"] and "Best VCAL_HIGH" in textStr:
-            return True, "VCAL_HIGH", -1
-        elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
+                return "Vthreshold_LIN" 
+        elif currentTest in ["threq"]:
+            return "VCAL_HIGH"
+        elif currentTest in ["gainopt"] :
             if "CROC" in self.ModuleType:
-                return True, "DAC_KRUM_CURR_LIN", -1
+                return "DAC_KRUM_CURR_LIN"
             else:
-                return True, "KRUM_CURR_LIN", -1
+                return "KRUM_CURR_LIN"
+            
+        #Need to be considered more
         elif currentTest in ["injdelay"]:
-            if "New latency dac" in textStr:
-                if "CROC" in self.ModuleType:
-                    return True, "TriggerConfig", -2
-                else:
-                    return True, "LATENCY_CONFIG", -2
-            elif "New injection delay" in textStr:
-                return True, "CAL_EDGE_FINE_DELAY", -2
+            #if "New latency dac" in textStr:
+            if "New injection delay" in textStr:
+                return "CAL_EDGE_FINE_DELAY"
+            elif "CROC" in self.ModuleType:
+                return "TriggerConfig"
             else:
-                return (False, None, 0)
+                return "LATENCY_CONFIG"
+            #else:
+                #return  None
         else:
-            return (False, None, 0)
-
+            return None
+        
     # Reads data that is normally printed to the terminal and saves it to the output file
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_info(self):
