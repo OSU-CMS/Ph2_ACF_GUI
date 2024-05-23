@@ -60,7 +60,6 @@ class ArduinoWidget(QWidget):
         self.ArduinoList = self.listResources()
         self.ArduinoCombo = QComboBox()
         self.ArduinoCombo.addItems(self.ArduinoList)
-        self.ArduinoCombo.clicked.connect(self.refreshDeviceList)
         self.ArduinoBaudRate = QLabel()
         self.ArduinoBaudRate.setText("BaudRate:")
         self.ArduinoBaudRateList = [
