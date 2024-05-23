@@ -50,6 +50,7 @@ class ArduinoWidget(QWidget):
         self.serial = None
         self.stopCount = 0
         self.ArduinoGoodStatus = False
+        self.readAttempts = 0
 
     def createArduino(self):
         self.ArduinoGroup = QGroupBox("Arduino Device")
@@ -66,12 +67,15 @@ class ArduinoWidget(QWidget):
         ]
         self.ArduinoBRCombo = QComboBox()
         self.ArduinoBRCombo.addItems(self.ArduinoBaudRateList)
+        self.ArduinoBRCombo.setCurrentText(str(9600))
         # self.ArduinoValues = QLabel()
         self.UseArduino = QPushButton("&Use")
         self.UseArduino.clicked.connect(self.frozeArduinoPanel)
         self.ReleaseArduino = QPushButton("&Release")
         self.ReleaseArduino.clicked.connect(self.releaseArduinoPanel)
         self.ReleaseArduino.setDisabled(True)
+        self.InstallFirmware = QPushButton("&Install")
+        self.InstallFirmware.clicked.connect(self.installArduinoFirmware)
 
         self.ArduinoBox.addWidget(self.ArduinoStatusLabel)
         self.ArduinoBox.addWidget(self.ArduinoCombo)
@@ -175,6 +179,7 @@ class ArduinoWidget(QWidget):
             self.ArduinoBRCombo.setDisabled(True)
             self.UseArduino.setDisabled(True)
             self.ReleaseArduino.setDisabled(False)
+            self.InstallFirmware.setDisabled(True)
         except Exception as err:
             logger.error(f"Unable to use Arduino: {err}")
             self.ArduinoGoodStatus = False
@@ -186,7 +191,17 @@ class ArduinoWidget(QWidget):
         self.UseArduino.setDisabled(False)
         self.ArduinoBRCombo.setDisabled(False)
         self.ReleaseArduino.setDisabled(True)
+        self.InstallFirmware.setDisabled(False)
         self.ArduinoList = self.listResources()
+    
+    def installArduinoFirmware(self):
+        self.ArduinoMeasureValue.setText("Installing Arduino firmware...")
+        device = self.deviceMap[self.ArduinoCombo.currentText()].lstrip("ASRL").rstrip("::INSTR")
+        subprocess.run(["../bin/arduino-cli", "lib", "install", "\"DHT sensor library\"@1.4.6"]) #install dependency
+        subprocess.run(["../bin/arduino-cli", "compile", "../FirmwareImages/DHT22_Sensor/DHT22_Sensor.ino", "-b", "arduino:avr:uno"]) #compile firmware
+        subprocess.run(["../bin/arduino-cli", "upload", "../FirmwareImages/DHT22_Sensor/", "-p", f"{device}", "-b", "arduino:avr:uno"]) #upload to Arduino
+        self.setBaudRate(self, 9600) #default arduino baud rate
+        self.ArduinoMeasureValue.setText("The Arduino firmware has been installed.")
 
     def setBaudRate(self, baudRate):
         #self.ArduinoBRCombo.clear()
@@ -219,7 +234,9 @@ class ArduinoWidget(QWidget):
 
     @QtCore.pyqtSlot()
     def receive(self):
+        self.readAttempts += 1
         while self.serial.canReadLine():
+            self.readAttempts = 0
             try:
                 text = self.serial.readLine().data().decode("utf-8", "ignore")
                 text = text.rstrip("\r\n")
@@ -254,6 +271,10 @@ class ArduinoWidget(QWidget):
 
             except Exception as err:
                 logger.error("{0}".format(err))
+        
+        if self.readAttempts > 10:
+            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
+            self.ArduinoMeasureValue.setText("The Arduino could not be read.")
 
     @QtCore.pyqtSlot()
     def StopSignal(self):
