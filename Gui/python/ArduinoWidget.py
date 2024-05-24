@@ -194,12 +194,6 @@ class ArduinoWidget(QWidget):
         self.ReleaseArduino.setDisabled(True)
         self.InstallFirmware.setDisabled(False)
         self.ArduinoList = self.listResources()
-        
-    def refreshDeviceList(self):
-        currentDevice = self.ArduinoCombo.currentText()
-        self.ArduinoCombo.clear()
-        self.ArduinoCombo.addItems(self.ArduinoList)
-        self.ArduinoCombo.setCurrentText(currentDevice)
     
     def installArduinoFirmware(self):
         try:
