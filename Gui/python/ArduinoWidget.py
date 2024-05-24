@@ -249,10 +249,12 @@ class ArduinoWidget(QWidget):
                 dew_point = round(237.3 * N / (1 - N), 2)
                 if temp >= dew_point:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : green}")
-                    stopSignal = False
+                    #stopSignal = False
                 else:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
-                    stopSignal = True
+                    #stopSignal = True
+                    #look into this later, determine whether a global stop signal for condensation is necessary
+                    
 
                 climatetext = f"Temperature: {temp} C | Humidity: {humidity}% | Dew Point: {dew_point} C"
                 self.ArduinoMeasureValue.setText(climatetext)
