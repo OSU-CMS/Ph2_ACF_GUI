@@ -32,7 +32,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
-from UserCustoms.python.ArduinoParser import *
 import pyvisa as visa
 import subprocess
 import numpy as np
@@ -241,6 +240,7 @@ class ArduinoWidget(QWidget):
         self.readAttempts += 1
         while self.serial.canReadLine():
             try:
+                stopSignal = False
                 text = self.serial.readLine().data().decode("utf-8", "ignore")
                 text = text.rstrip("\r\n")
                 temp = float(text.split(" ")[4])
@@ -249,14 +249,15 @@ class ArduinoWidget(QWidget):
                 dew_point = round(237.3 * N / (1 - N), 2)
                 if temp >= dew_point:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : green}")
+                    stopSignal = False
                 else:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
+                    stopSignal = True
 
                 climatetext = f"Temperature: {temp} C | Humidity: {humidity}% | Dew Point: {dew_point} C"
-                StopSignal, measureText = ArduinoParser(text)
                 self.ArduinoMeasureValue.setText(climatetext)
-                # self.ArduinoMeasureValue.setText(measureText)
-                if StopSignal:
+                
+                if stopSignal:
                     self.stopCount += 1
                     logger.warning(
                         "Anomalous value detected, stop signal will be emitted in {}".format(
@@ -271,7 +272,7 @@ class ArduinoWidget(QWidget):
                 if self.stopCount >= 10:
                     self.StopSignal()
                     self.stopCount = 0
-                
+
                 self.readAttempts = 0
 
             except Exception as err:
@@ -283,7 +284,6 @@ class ArduinoWidget(QWidget):
             self.ArduinoMeasureValue.setText("The Arduino could not be read.")
         if self.readAttempts > 200:
             self.readAttempts = 0
-            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
             self.releaseArduinoPanel()
             logger.error("Could not communicate with the Arduino, check to ensure that you are using the appropriate baud rate and firmware.")
 
