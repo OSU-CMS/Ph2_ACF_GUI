@@ -32,7 +32,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
-from UserCustoms.python.ArduinoParser import *
 import pyvisa as visa
 import subprocess
 import numpy as np
@@ -50,9 +49,10 @@ class ArduinoWidget(QWidget):
         self.serial = None
         self.stopCount = 0
         self.ArduinoGoodStatus = False
+        self.readAttempts = 0
 
     def createArduino(self):
-        self.ArduinoGroup = QGroupBox("Arduino device")
+        self.ArduinoGroup = QGroupBox("Arduino Device")
         self.ArduinoBox = QHBoxLayout()
         self.ArduinoStatusLabel = QLabel()
         self.ArduinoStatusLabel.setText("Choose Arduino:")
@@ -66,12 +66,15 @@ class ArduinoWidget(QWidget):
         ]
         self.ArduinoBRCombo = QComboBox()
         self.ArduinoBRCombo.addItems(self.ArduinoBaudRateList)
+        self.ArduinoBRCombo.setCurrentText(str(9600))
         # self.ArduinoValues = QLabel()
         self.UseArduino = QPushButton("&Use")
         self.UseArduino.clicked.connect(self.frozeArduinoPanel)
         self.ReleaseArduino = QPushButton("&Release")
         self.ReleaseArduino.clicked.connect(self.releaseArduinoPanel)
         self.ReleaseArduino.setDisabled(True)
+        self.InstallFirmware = QPushButton("&Install")
+        self.InstallFirmware.clicked.connect(self.installArduinoFirmware)
 
         self.ArduinoBox.addWidget(self.ArduinoStatusLabel)
         self.ArduinoBox.addWidget(self.ArduinoCombo)
@@ -81,6 +84,7 @@ class ArduinoWidget(QWidget):
         self.ArduinoBox.addStretch(1)
         self.ArduinoBox.addWidget(self.UseArduino)
         self.ArduinoBox.addWidget(self.ReleaseArduino)
+        self.ArduinoBox.addWidget(self.InstallFirmware)
         self.ArduinoGroup.setLayout(self.ArduinoBox)
         self.mainLayout.addWidget(self.ArduinoGroup, 0, 0)
 
@@ -107,7 +111,7 @@ class ArduinoWidget(QWidget):
                     [
                         "udevadm",
                         "info",
-                        " --query",
+                        "--query",
                         "all",
                         "--name",
                         device.lstrip("ASRL").rstrip("::INSTR"),
@@ -156,7 +160,7 @@ class ArduinoWidget(QWidget):
                     logger.warning("No device name found for {}:".format(device))
                     # self.deviceMap[device] = device
                 elif "Arduino" in deviceName:
-                    self.deviceMap[deviceName] = device
+                    self.deviceMap[deviceName + device[12:16]] = device
                 else:
                     pass
             except Exception as err:
@@ -175,6 +179,7 @@ class ArduinoWidget(QWidget):
             self.ArduinoBRCombo.setDisabled(True)
             self.UseArduino.setDisabled(True)
             self.ReleaseArduino.setDisabled(False)
+            self.InstallFirmware.setDisabled(True)
         except Exception as err:
             logger.error(f"Unable to use Arduino: {err}")
             self.ArduinoGoodStatus = False
@@ -186,11 +191,25 @@ class ArduinoWidget(QWidget):
         self.UseArduino.setDisabled(False)
         self.ArduinoBRCombo.setDisabled(False)
         self.ReleaseArduino.setDisabled(True)
+        self.InstallFirmware.setDisabled(False)
         self.ArduinoList = self.listResources()
+    
+    def installArduinoFirmware(self):
+        try:
+            device = self.deviceMap[self.ArduinoCombo.currentText()].lstrip("ASRL").rstrip("::INSTR")
+            subprocess.check_call(["../bin/arduino-cli", "lib", "install", "DHT sensor library@1.4.6"]) #install dependency
+            subprocess.check_call(["../bin/arduino-cli", "compile", "../FirmwareImages/DHT22_Sensor/DHT22_Sensor.ino", "-b", "arduino:avr:uno"]) #compile firmware
+            subprocess.check_call(["../bin/arduino-cli", "upload", "../FirmwareImages/DHT22_Sensor/", "-p", f"{device}", "-b", "arduino:avr:uno"]) #upload to Arduino
+            self.setBaudRate(9600) #default arduino baud rate
+            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : white}")
+            self.ArduinoMeasureValue.setText("The Arduino firmware has been installed.")
+        except Exception as err:
+            logger.error("{0}".format(err))
+            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : white}")
+            self.ArduinoMeasureValue.setText("The Arduino firmware could not be installed.")
 
     def setBaudRate(self, baudRate):
-        self.ArduinoBRCombo.clear()
-        self.ArduinoBRCombo.addItems([str(baudRate)])
+        self.ArduinoBRCombo.setCurrentText(str(baudRate))
 
     def setSerial(self, deviceName, baudRate):
         deviceName = deviceName.lstrip("ASRL").rstrip("::INSTR")
@@ -218,26 +237,31 @@ class ArduinoWidget(QWidget):
 
     @QtCore.pyqtSlot()
     def receive(self):
+        self.readAttempts += 1
         while self.serial.canReadLine():
             try:
+                stopSignal = False
                 text = self.serial.readLine().data().decode("utf-8", "ignore")
                 text = text.rstrip("\r\n")
-                T = float(text.split(" ")[4])
-                RH = float(text.split(" ")[1])
-                N = (np.log(RH / 100) + 17.27 * T / (237.3 + T)) / 17.27
-                Td = round(237.3 * N / (1 - N), 2)
-                if T >= Td:
+                temp = float(text.split(" ")[4])
+                humidity = float(text.split(" ")[1])
+                N = (np.log(humidity / 100) + 17.27 * temp / (237.3 + temp)) / 17.27
+                dew_point = round(237.3 * N / (1 - N), 2)
+                if temp >= dew_point:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : green}")
+                    #stopSignal = False
                 else:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
+                    #stopSignal = True
+                    #look into this later, determine whether a global stop signal for condensation is necessary
+                    
 
-                climatetext = text + ", Dew Point Temperature: {0} Celsius".format(Td)
-                StopSignal, measureText = ArduinoParser(text)
+                climatetext = f"Temperature: {temp} C | Humidity: {humidity}% | Dew Point: {dew_point} C"
                 self.ArduinoMeasureValue.setText(climatetext)
-                # self.ArduinoMeasureValue.setText(measureText)
-                if StopSignal:
+                
+                if stopSignal:
                     self.stopCount += 1
-                    logging.warning(
+                    logger.warning(
                         "Anomalous value detected, stop signal will be emitted in {}".format(
                             10 - self.stopCount
                         )
@@ -251,8 +275,19 @@ class ArduinoWidget(QWidget):
                     self.StopSignal()
                     self.stopCount = 0
 
+                self.readAttempts = 0
+
             except Exception as err:
+                self.readAttempts += 1
                 logger.error("{0}".format(err))
+        
+        if self.readAttempts > 10:
+            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
+            self.ArduinoMeasureValue.setText("The Arduino could not be read.")
+        if self.readAttempts > 200:
+            self.readAttempts = 0
+            self.releaseArduinoPanel()
+            logger.error("Could not communicate with the Arduino, check to ensure that you are using the appropriate baud rate and firmware.")
 
     @QtCore.pyqtSlot()
     def StopSignal(self):
