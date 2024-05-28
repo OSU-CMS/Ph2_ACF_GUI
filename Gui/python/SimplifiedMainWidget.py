@@ -93,6 +93,8 @@ class SimplifiedMainWidget(QWidget):
         self.ArduinoGroup.stop.connect(self.abort_signal.emit)
         self.ArduinoGroup.enable()
         self.ArduinoGroup.setBaudRate(default_settings.defaultSensorBaudRate)
+        self.ArduinoGroup.setPort("ASRL/dev/ttyACM0::INSTR")
+        #self.ArduinoGroup.setPort(default_settings.defaultArduinoPort)
         self.ArduinoGroup.frozeArduinoPanel()
         self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["arduino"]["Label"].setText("Temperature and Humidity")
@@ -312,7 +314,11 @@ class SimplifiedMainWidget(QWidget):
         #self.setupStatusWidgets()
         self.setupUI()
 
-        
+    def updateArduinoIndicator(self):
+        if(self.ArduinoGroup.condensationRisk):
+            self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+        else:
+            self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
 
     def updatePeltierTemp(self, temp:float):
         self.peltier_temperature_label.setText("{}C".format(temp))
@@ -399,12 +405,13 @@ class SimplifiedMainWidget(QWidget):
         statusString, _ = checkDBConnection(self.connection)
 
 
-        # Launch QThread to monitor Peltier temperature and power 
+        # Launch QThread to monitor Peltier temperature/power and Arduino temperature/humidity
         self.thread = QThread()
         self.worker = Worker_Polling()
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.temp.connect(self.updatePeltierTemp)
+        self.worker.temp.connect(self.updateArduinoIndicator)
         self.thread.start()
 
         logger.debug("Setting up instrument_status")
