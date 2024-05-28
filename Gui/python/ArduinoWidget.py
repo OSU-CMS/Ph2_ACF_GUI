@@ -61,6 +61,7 @@ class ArduinoWidget(QWidget):
         self.ArduinoList = self.listResources()
         self.ArduinoCombo = QComboBox()
         self.ArduinoCombo.addItems(self.ArduinoList)
+        self.ArduinoCombo.setCurrentText(str(site_settings.defaultArduino))
         self.ArduinoBaudRate = QLabel()
         self.ArduinoBaudRate.setText("BaudRate:")
         self.ArduinoBaudRateList = [
