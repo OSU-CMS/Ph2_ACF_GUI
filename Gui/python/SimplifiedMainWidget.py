@@ -92,9 +92,8 @@ class SimplifiedMainWidget(QWidget):
         self.ArduinoGroup = ArduinoWidget()
         self.ArduinoGroup.stop.connect(self.abort_signal.emit)
         self.ArduinoGroup.enable()
-        self.ArduinoGroup.setBaudRate(default_settings.defaultSensorBaudRate)
-        self.ArduinoGroup.setPort("Arduino SA Uno R3 (CDC ACM) ACM0")
-        #self.ArduinoGroup.setPort(default_settings.defaultArduinoPort)
+        self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+        self.ArduinoGroup.setPort(site_settings.defaultArduino)
         self.ArduinoGroup.frozeArduinoPanel()
         self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["arduino"]["Label"].setText("Temperature and Humidity")
