@@ -36,7 +36,7 @@ import pyvisa as visa
 import subprocess
 import numpy as np
 from Gui.python.logging_config import logger
-import Gui.GUIutils.settings as default_settings
+import Gui.siteSettings as site_settings
 
 
 class ArduinoWidget(QWidget):
@@ -68,7 +68,7 @@ class ArduinoWidget(QWidget):
         ]
         self.ArduinoBRCombo = QComboBox()
         self.ArduinoBRCombo.addItems(self.ArduinoBaudRateList)
-        self.ArduinoBRCombo.setCurrentText(str(default_settings.defaultSensorBaudRate))
+        self.ArduinoBRCombo.setCurrentText(str(site_settings.defaultSensorBaudRate))
         # self.ArduinoValues = QLabel()
         self.UseArduino = QPushButton("&Use")
         self.UseArduino.clicked.connect(self.frozeArduinoPanel)
@@ -201,7 +201,7 @@ class ArduinoWidget(QWidget):
             subprocess.check_call(["../bin/arduino-cli", "lib", "install", "DHT sensor library@1.4.6"]) #install dependency
             subprocess.check_call(["../bin/arduino-cli", "compile", "../FirmwareImages/DHT22_Sensor/DHT22_Sensor.ino", "-b", "arduino:avr:uno"]) #compile firmware
             subprocess.check_call(["../bin/arduino-cli", "upload", "../FirmwareImages/DHT22_Sensor/", "-p", f"{device}", "-b", "arduino:avr:uno"]) #upload to Arduino
-            self.setBaudRate(default_settings.defaultSensorBaudRate) #default arduino baud rate
+            self.setBaudRate(site_settings.defaultSensorBaudRate) #default arduino baud rate
             self.ArduinoMeasureValue.setStyleSheet("QLabel {color : white}")
             self.ArduinoMeasureValue.setText("The Arduino firmware has been installed.")
         except Exception as err:
