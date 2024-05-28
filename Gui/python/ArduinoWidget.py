@@ -68,7 +68,7 @@ class ArduinoWidget(QWidget):
         ]
         self.ArduinoBRCombo = QComboBox()
         self.ArduinoBRCombo.addItems(self.ArduinoBaudRateList)
-        self.ArduinoBRCombo.setCurrentText(default_settings.defaultSensorBaudRate)
+        self.ArduinoBRCombo.setCurrentText(str(default_settings.defaultSensorBaudRate))
         # self.ArduinoValues = QLabel()
         self.UseArduino = QPushButton("&Use")
         self.UseArduino.clicked.connect(self.frozeArduinoPanel)
@@ -156,13 +156,13 @@ class ArduinoWidget(QWidget):
                     stderr=subprocess.STDOUT,
                 )
                 usbInfo = pipeUSB.communicate()[0]
-                deviceName = usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(" ")
+                deviceName = usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(" ").rstrip("\n")
 
                 if deviceName == None:
                     logger.warning("No device name found for {}:".format(device))
                     # self.deviceMap[device] = device
                 elif "Arduino" in deviceName:
-                    self.deviceMap[deviceName + device[12:16]] = device
+                    self.deviceMap[deviceName + " " + device[12:16]] = device
                 else:
                     pass
             except Exception as err:
@@ -176,7 +176,6 @@ class ArduinoWidget(QWidget):
                 self.deviceMap[self.ArduinoCombo.currentText()],
                 self.ArduinoBRCombo.currentText(),
             )
-            print(self.deviceMap[self.ArduinoCombo.currentText()])
             self.ArduinoCombo.setDisabled(True)
             self.ArduinoBRCombo.setDisabled(True)
             self.UseArduino.setDisabled(True)
