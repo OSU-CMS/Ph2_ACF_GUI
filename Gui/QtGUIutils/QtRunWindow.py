@@ -50,6 +50,7 @@ class QtRunWindow(QWidget):
         # self.LogoGroupBox = self.master.LogoGroupBox
         self.firmware = firmware
         self.info = info
+        print('The info is: {0}'.format(self.info[1]))
 
         # Removing for sequencefix
 #        if "AllScan_Tuning" in self.info[1]:
