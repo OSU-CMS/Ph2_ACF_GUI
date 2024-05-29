@@ -22,15 +22,12 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
         try:
             CanvasList = {}
             FileName = "{0}/Run{1}_{2}.root".format(
-                inputDir, runNumber, testName
+                inputDir, runNumber, testName.split('_')[0]
             )
             if os.path.isfile(FileName):
                 Nodes = GetDirectory(FileName)
                 for Node in Nodes:
                     CanvasList = GetCanvasVAL(Node, CanvasList, ModuleMap)
-                Grade, PassModule, figureList = eval(
-                    "Grade{}(CanvasList)".format(testName)
-                )
                 
                 Test_to_Function_Map = {
                     'latency':None,
