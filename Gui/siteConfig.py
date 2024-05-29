@@ -43,6 +43,7 @@ defaultDBName = 'cmsfpix_phase2'
 
 #default BaudRate for Arduino sensor
 defaultSensorBaudRate = 9600
+defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #UIC coldbox variables
 usePeltier = True

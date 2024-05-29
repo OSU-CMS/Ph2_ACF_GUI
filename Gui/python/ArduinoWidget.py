@@ -36,6 +36,7 @@ import pyvisa as visa
 import subprocess
 import numpy as np
 from Gui.python.logging_config import logger
+import Gui.siteSettings as site_settings
 
 
 class ArduinoWidget(QWidget):
@@ -50,6 +51,7 @@ class ArduinoWidget(QWidget):
         self.stopCount = 0
         self.ArduinoGoodStatus = False
         self.readAttempts = 0
+        self.condensationRisk = True
 
     def createArduino(self):
         self.ArduinoGroup = QGroupBox("Arduino Device")
@@ -59,6 +61,7 @@ class ArduinoWidget(QWidget):
         self.ArduinoList = self.listResources()
         self.ArduinoCombo = QComboBox()
         self.ArduinoCombo.addItems(self.ArduinoList)
+        self.ArduinoCombo.setCurrentText(str(site_settings.defaultArduino))
         self.ArduinoBaudRate = QLabel()
         self.ArduinoBaudRate.setText("BaudRate:")
         self.ArduinoBaudRateList = [
@@ -66,7 +69,7 @@ class ArduinoWidget(QWidget):
         ]
         self.ArduinoBRCombo = QComboBox()
         self.ArduinoBRCombo.addItems(self.ArduinoBaudRateList)
-        self.ArduinoBRCombo.setCurrentText(str(9600))
+        self.ArduinoBRCombo.setCurrentText(str(site_settings.defaultSensorBaudRate))
         # self.ArduinoValues = QLabel()
         self.UseArduino = QPushButton("&Use")
         self.UseArduino.clicked.connect(self.frozeArduinoPanel)
@@ -154,13 +157,13 @@ class ArduinoWidget(QWidget):
                     stderr=subprocess.STDOUT,
                 )
                 usbInfo = pipeUSB.communicate()[0]
-                deviceName = usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(" ")
+                deviceName = usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(" ").rstrip("\n")
 
                 if deviceName == None:
                     logger.warning("No device name found for {}:".format(device))
                     # self.deviceMap[device] = device
                 elif "Arduino" in deviceName:
-                    self.deviceMap[deviceName + device[12:16]] = device
+                    self.deviceMap[deviceName + " " + device[12:16]] = device
                 else:
                     pass
             except Exception as err:
@@ -174,7 +177,6 @@ class ArduinoWidget(QWidget):
                 self.deviceMap[self.ArduinoCombo.currentText()],
                 self.ArduinoBRCombo.currentText(),
             )
-            print(self.deviceMap[self.ArduinoCombo.currentText()])
             self.ArduinoCombo.setDisabled(True)
             self.ArduinoBRCombo.setDisabled(True)
             self.UseArduino.setDisabled(True)
@@ -200,7 +202,7 @@ class ArduinoWidget(QWidget):
             subprocess.check_call(["../bin/arduino-cli", "lib", "install", "DHT sensor library@1.4.6"]) #install dependency
             subprocess.check_call(["../bin/arduino-cli", "compile", "../FirmwareImages/DHT22_Sensor/DHT22_Sensor.ino", "-b", "arduino:avr:uno"]) #compile firmware
             subprocess.check_call(["../bin/arduino-cli", "upload", "../FirmwareImages/DHT22_Sensor/", "-p", f"{device}", "-b", "arduino:avr:uno"]) #upload to Arduino
-            self.setBaudRate(9600) #default arduino baud rate
+            self.setBaudRate(site_settings.defaultSensorBaudRate) #default arduino baud rate
             self.ArduinoMeasureValue.setStyleSheet("QLabel {color : white}")
             self.ArduinoMeasureValue.setText("The Arduino firmware has been installed.")
         except Exception as err:
@@ -208,6 +210,9 @@ class ArduinoWidget(QWidget):
             self.ArduinoMeasureValue.setStyleSheet("QLabel {color : white}")
             self.ArduinoMeasureValue.setText("The Arduino firmware could not be installed.")
 
+    def setPort(self, port):
+        self.ArduinoCombo.setCurrentText(str(port))
+    
     def setBaudRate(self, baudRate):
         self.ArduinoBRCombo.setCurrentText(str(baudRate))
 
@@ -249,12 +254,14 @@ class ArduinoWidget(QWidget):
                 dew_point = round(237.3 * N / (1 - N), 2)
                 if temp >= dew_point:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : green}")
+                    self.condensationRisk = False
                     #stopSignal = False
                 else:
                     self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
+                    self.condensationRisk = True
                     #stopSignal = True
                     #look into this later, determine whether a global stop signal for condensation is necessary
-                    
+
 
                 climatetext = f"Temperature: {temp} C | Humidity: {humidity}% | Dew Point: {dew_point} C"
                 self.ArduinoMeasureValue.setText(climatetext)
