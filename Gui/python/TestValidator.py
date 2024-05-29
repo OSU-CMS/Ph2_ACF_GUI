@@ -8,6 +8,7 @@ from collections import defaultdict
 from Gui.GUIutils.settings import *
 from Gui.python.ROOTInterface import *
 from Gui.python.logging_config import logger
+from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
 
 def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
@@ -17,28 +18,42 @@ def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
         module.lstrip("Module") for module in inputDir.split("_") if "Module" in module
     ]
 
-    if testName in [
-        "PixelAlive",
-        "NoiseScan",
-        "SCurveScan",
-        "GainScan",
-        "InjectionDelay",
-        "GainOptimization",
-        "ThresholdAdjustment",
-        "ThresholdEqualization",
-    ]:
+    if testName in Test_to_Ph2ACF_Map.keys():
         try:
             CanvasList = {}
             FileName = "{0}/Run{1}_{2}.root".format(
-                inputDir, runNumber, testName
+                inputDir, runNumber, testName.split('_')[0]
             )
             if os.path.isfile(FileName):
                 Nodes = GetDirectory(FileName)
                 for Node in Nodes:
                     CanvasList = GetCanvasVAL(Node, CanvasList, ModuleMap)
-                Grade, PassModule, figureList = eval(
-                    "Grade{}(CanvasList)".format(testName)
-                )
+                
+                Test_to_Function_Map = {
+                    'latency':None,
+                    'pixelalive':GradePixelAlive,
+                    'noise':GradeNoiseScan,
+                    'gain':GradeGainScan,
+                    'scurve':GradeSCurveScan,
+                    'threqu':GradeThresholdEqualization,
+                    'gainopt':GradeGainOptimization,
+                    'thrmin':None,
+                    'thradj':GradeThresholdAdjustment,
+                    'injdelay':GradeInjectionDelay,
+                    'clockdelay':None,
+                    'bertest':None,
+                    'datarbopt':None,
+                    'voltagetuning':None,
+                    'gendacdac':None,
+                    'physics':None,
+                }
+                
+                try:
+                    Grade, PassModule, figureList = Test_to_Function_Map[Test_to_Ph2ACF_Map[testName]](CanvasList)
+                except:
+                    logger.error(f"There is no test function written for {testName}.")
+
+                
                 if set(Grade.keys()) != set(ExpectedModuleList):
                     logger.warning(
                         "Retrieved modules from ROOT file doesn't match with folder name"
