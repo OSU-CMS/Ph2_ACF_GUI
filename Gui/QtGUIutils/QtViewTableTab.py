@@ -1,5 +1,5 @@
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap
+#from PyQt5.QtCore import *
+#from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
     QSlider,
     QSpinBox,
     QStyleFactory,
+    QTableView,
     QTableWidget,
     QTabWidget,
     QTextEdit,

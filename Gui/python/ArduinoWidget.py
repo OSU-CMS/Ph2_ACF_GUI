@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
 from PyQt5 import QtSerialPort
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QIODevice, pyqtSignal
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,

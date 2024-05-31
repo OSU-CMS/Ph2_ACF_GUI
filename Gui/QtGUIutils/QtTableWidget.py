@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
 from PyQt5.QtGui import QBrush, QColor, QPixmap, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import (
     QApplication,

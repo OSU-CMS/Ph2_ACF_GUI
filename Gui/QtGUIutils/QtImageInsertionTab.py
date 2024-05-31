@@ -1,5 +1,5 @@
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtCore import Qt, QDateTime
+#from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,

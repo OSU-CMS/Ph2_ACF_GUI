@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import *
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPixmap, QTextCursor, QColor, QFont
 from PyQt5.QtWidgets import (
     QAbstractItemView,

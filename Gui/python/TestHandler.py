@@ -1,9 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtWidgets import (
-    QMessageBox,
-    QProcess,
-)
+from PyQt5.QtCore import pyqtSignal, QObject, QProcess
+from PyQt5.QtWidgets import QMessageBox
 
 import sys
 import os

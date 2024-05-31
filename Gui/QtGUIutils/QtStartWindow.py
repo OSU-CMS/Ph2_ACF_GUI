@@ -10,7 +10,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,

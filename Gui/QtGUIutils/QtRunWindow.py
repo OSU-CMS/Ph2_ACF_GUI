@@ -1,5 +1,5 @@
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap, QColor
+from PyQt5.QtCore import pyqtSignal, Qt, QSize
+from PyQt5.QtGui import QPixmap, QColor, QImage
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QCheckBox,

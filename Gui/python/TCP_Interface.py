@@ -11,7 +11,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QObject, pyqtSignal
 import os, re, subprocess, errno
 
 from Gui.python.TCP import (

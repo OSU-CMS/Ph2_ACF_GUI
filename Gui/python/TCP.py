@@ -16,7 +16,7 @@ import subprocess, os, signal
 import time, datetime
 #g++ -std=c++1y -fPIC -shared *.cc -o NetworkUtils.so -lm -lboost_regex
 #from PySide2.QtCore import QThreadPool, Signal, QObject
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QObject, pyqtSignal
 
 class TCPServer():
     def __init__( self, pFolder = None, index = 0):
