@@ -41,10 +41,13 @@ import subprocess
 import logging
 
 from functools import partial
-from Gui.GUIutils.settings import *
-from Gui.GUIutils.guiUtils import *
-from Gui.python.ROOTInterface import *
-from Gui.QtGUIutils.QtTCanvasWidget import *
+#from Gui.GUIutils.settings import *
+from Gui.GUIutils.guiUtils import isCompositeTest
+from Gui.python.ROOTInterface import (
+    GetDirectory,
+    TCanvas2SVG,
+)
+from Gui.QtGUIutils.QtTCanvasWidget import QtTCanvasWidget
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests
 

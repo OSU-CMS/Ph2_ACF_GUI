@@ -14,7 +14,10 @@ logger = logging.getLogger(__name__)
 from PyQt5.QtCore import *
 import os, re, subprocess, errno
 
-from Gui.python.TCP import *
+from Gui.python.TCP import (
+    TCPServer,
+    TCPClient,
+)
 
 import threading
 

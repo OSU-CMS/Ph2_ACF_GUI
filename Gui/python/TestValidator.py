@@ -5,8 +5,11 @@ ROOT.gROOT.SetBatch(ROOT.kTRUE)
 import os
 import re
 from collections import defaultdict
-from Gui.GUIutils.settings import *
-from Gui.python.ROOTInterface import *
+#from Gui.GUIutils.settings import *
+from Gui.python.ROOTInterface import (
+    GetDirectory,
+    TCanvas2SVG,
+)
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 

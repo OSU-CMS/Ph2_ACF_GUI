@@ -1,5 +1,5 @@
 from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap
+from PyQt5.QtGui import QImage, QFont, QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -35,10 +35,13 @@ import sys
 import os
 import numpy
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
-from Gui.QtGUIutils.QtDBTableWidget import *
-from Gui.QtGUIutils.QtImageViewer import *
+from Gui.GUIutils.DBConnection import (
+    mysql,
+    retrieveWithConstraint,
+    )
+#from Gui.GUIutils.guiUtils import *
+from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
+#from Gui.QtGUIutils.QtImageViewer import *
 from Gui.python.logging_config import logger
 
 

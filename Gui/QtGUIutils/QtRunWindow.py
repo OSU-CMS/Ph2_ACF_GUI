@@ -23,18 +23,19 @@ import threading
 import time
 import logging
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
+from Gui.GUIutils.DBConnection import checkDBConnection
+from Gui.GUIutils.guiUtils import isActive, isCompositeTest
 
 # from Gui.QtGUIutils.QtStartWindow import *
-from Gui.QtGUIutils.QtCustomizeWindow import *
-from Gui.QtGUIutils.QtTableWidget import *
-from Gui.QtGUIutils.QtMatplotlibUtils import *
-from Gui.QtGUIutils.QtLoginDialog import *
-from Gui.python.ResultTreeWidget import *
-from Gui.python.TestValidator import *
-from Gui.python.ANSIColoringParser import *
-from Gui.python.TestHandler import *
+from Gui.QtGUIutils.QtCustomizeWindow import QtCustomizeWindow
+#from Gui.QtGUIutils.QtTableWidget import *
+#from Gui.QtGUIutils.QtMatplotlibUtils import *
+from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
+from Gui.python.ResultTreeWidget import ResultTreeWidget
+#from Gui.python.TestValidator import *
+#from Gui.python.ANSIColoringParser import *
+from Gui.python.TestHandler import TestHandler
+from Gui.GUIutils.settings import ModuleLaneMap
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 

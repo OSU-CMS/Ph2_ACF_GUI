@@ -36,10 +36,13 @@ import sys
 import os
 import numpy
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
-from Gui.QtGUIutils.QtDBTableWidget import *
-from Gui.QtGUIutils.QtFileDialogPreview import *
+from Gui.GUIutils.DBConnection import (
+    describeTable,
+    insertGenericTable,
+)
+#from Gui.GUIutils.guiUtils import *
+#from Gui.QtGUIutils.QtDBTableWidget import *
+#from Gui.QtGUIutils.QtFileDialogPreview import *
 from Gui.python.logging_config import logger
 
 

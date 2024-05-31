@@ -35,9 +35,15 @@ import sys
 import os
 import numpy
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
-from Gui.QtGUIutils.QtDBTableWidget import *
+from Gui.GUIutils.DBConnection import (
+    getTableList,
+    describeTable,
+    retrieveWithConstraintSyntax,
+    retrieveGenericTable,
+)
+import mysql.connector
+#from Gui.GUIutils.guiUtils import *
+from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
 from Gui.python.logging_config import logger
 
 

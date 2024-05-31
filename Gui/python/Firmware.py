@@ -1,4 +1,7 @@
-from Gui.GUIutils.settings import *
+from Gui.GUIutils.settings import (
+    ModuleType,
+    ModuleLaneMap,
+)
 from Gui.python.logging_config import logger
 
 

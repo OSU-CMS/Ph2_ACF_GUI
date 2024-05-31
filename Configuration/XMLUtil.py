@@ -7,7 +7,8 @@ from InnerTrackerTests.HWSettings import *
 from InnerTrackerTests.MonitoringSettings import *
 from InnerTrackerTests.RegisterSettings import *
 from InnerTrackerTests.FELaneConfig import *
-from Gui.GUIutils.settings import *
+#from Gui.GUIutils.settings import *
+from Gui.python.CustomizedWidget import ModuleBox
 
 import logging
 
@@ -303,7 +304,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
         FEList = HyBridModule.FEList
         ### This is where the RD53 block is being made ###
         for FE in FEList:
-          BeBoard.boardType =  boardtype 
+          BeBoard.boardType = boardtype+ModuleBox.getVersion() if 'RD53B' in boardtype else boardtype
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
           Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})

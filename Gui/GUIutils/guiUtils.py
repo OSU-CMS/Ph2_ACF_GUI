@@ -21,9 +21,21 @@ from itertools import islice
 from textwrap import dedent
 from functools import partial
 
-from Gui.GUIutils.settings import *
-from Gui.GUIutils.DBConnection import *
-from Configuration.XMLUtil import *
+from Gui.GUIutils.settings import (
+    updatedGlobalValue,
+    updatedXMLValues,
+)
+#from Gui.GUIutils.DBConnection import *
+from Configuration.XMLUtil import (
+    HWDescription,
+    BeBoardModule,
+    OGModule,
+    HyBridModule,
+    FE,
+    MonitoringModule,
+    LoadXML,
+    GenerateHWDescriptionXML
+)
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 ##########################################################################

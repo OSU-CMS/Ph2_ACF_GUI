@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import serial
-from Gui.siteSettings import *
+from Gui.siteSettings import defaultPeltierPort, defaultPeltierBaud
 from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5 import QtSerialPort

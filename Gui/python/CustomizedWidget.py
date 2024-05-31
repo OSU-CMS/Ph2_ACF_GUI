@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QPushButton,
     QHBoxLayout,
     QWidget,
@@ -17,10 +18,16 @@ from PyQt5.QtWidgets import (
 import sys
 
 import Gui.siteSettings as site_settings
-from Gui.python.Firmware import *
-from Gui.GUIutils.settings import *
-from Gui.GUIutils.FirmwareUtil import *
-from Gui.QtGUIutils.QtFwCheckDetails import *
+from Gui.python.Firmware import (
+    QtChip,
+    QtModule,
+)
+from Gui.GUIutils.settings import (
+    ModuleLaneMap,
+    ModuleType,
+)
+#from Gui.GUIutils.FirmwareUtil import *
+#from Gui.QtGUIutils.QtFwCheckDetails import *
 
 from Gui.python.logging_config import logger
 
@@ -54,6 +61,11 @@ class ModuleBox(QWidget):
         self.TypeCombo.addItems(ModuleType.values())
         TypeLabel.setBuddy(self.TypeCombo)
 
+        VersionLabel = QLabel("Version:")
+        self.ModuleVersionCombo = QComboBox()
+        self.ModuleVersionCombo.addItems(["v1", "v2"])
+        VersionLabel.setBuddy(self.ModuleVersionCombo)
+
         #hide the combo box at above when it is connected
         if self.connection == "Offline":
             
@@ -70,6 +82,8 @@ class ModuleBox(QWidget):
         self.mainLayout.addWidget(self.FMCEdit, 0, 3, 1, 1)
         self.mainLayout.addWidget(IDLabel, 0, 4, 1, 1)
         self.mainLayout.addWidget(self.IDEdit, 0, 5, 1, 1)
+        #self.mainLayout.addWidget(VersionLabel, 0, 8, 1, 1)
+        self.mainLayout.addWidget(self.ModuleVersionCombo, 0, 9, 1, 1)
         
 
     def setType(self):
@@ -98,6 +112,9 @@ class ModuleBox(QWidget):
 
     def getType(self):
         return self.TypeCombo.currentText()
+    
+    def getVersion(self):
+        return self.ModuleVersionCombo.currentText()
 
     def getVDDD(self, pChipID):
         return self.VDDD[pChipID]
@@ -547,7 +564,7 @@ class SimpleModuleBox(QWidget):
 
         FMCLabel = QLabel("FMC:")
         # self.FMCEdit = QLineEdit()
-        self.FMCEdit = defaultFMC
+        self.FMCEdit = site_settings.defaultFMC
         # self.FMCEdit.setMinimumWidth(120)
         # self.FMCEdit.setMaximumWidth(200)
 
@@ -576,7 +593,7 @@ class SimpleModuleBox(QWidget):
             return self.SerialEdit.text()
 
     def getFMCID(self):
-        return defaultFMC
+        return site_settings.defaultFMC
 
     def setID(self, laneId):
         self.CableIDEdit.setText(str(laneId))
@@ -606,7 +623,7 @@ class SimpleModuleBox(QWidget):
         ## Add Parser
         self.textchanged.emit()
     
-    @pyqtSlot()
+    @QtCore.pyqtSlot()
     def on_editing_finished(self):
         self.SerialString = self.SerialEdit.text()
         self.textchanged.emit()

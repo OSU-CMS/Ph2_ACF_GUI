@@ -36,8 +36,8 @@ import sys
 import os
 import numpy
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
+#from Gui.GUIutils.DBConnection import *
+#from Gui.GUIutils.guiUtils import *
 from Gui.python.logging_config import logger
 
 

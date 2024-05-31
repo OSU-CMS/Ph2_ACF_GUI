@@ -34,7 +34,7 @@ import sys
 import os
 import numpy
 
-from Gui.QtGUIutils.QtMatplotlibUtils import *
+from Gui.QtGUIutils.QtMatplotlibUtils import SummaryCanvas
 from Gui.python.logging_config import logger
 
 
@@ -90,7 +90,7 @@ class QtSummaryWindow(QWidget):
         self.OptionBox = QGroupBox()
         CheckBoxLayout = QHBoxLayout()
 
-        for site in SiteList:
+        for site in self.SiteList: #this is the only accessible SiteList reference I could find
             checkBox = QCheckBox("&{0}".format(site))
             self.checkboxs.append(checkBox)
             CheckBoxLayout.addWidget(checkBox)

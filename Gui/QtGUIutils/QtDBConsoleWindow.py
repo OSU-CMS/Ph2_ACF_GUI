@@ -41,12 +41,24 @@ import os
 import subprocess
 from subprocess import Popen, PIPE
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
-from Gui.QtGUIutils.QtDBTableWidget import *
-from Gui.QtGUIutils.QtViewTableTab import *
-from Gui.QtGUIutils.QtImageInsertionTab import *
-from Gui.QtGUIutils.QtImageViewerTab import *
+from Gui.GUIutils.DBConnection import (
+    QtStartConnection,
+    checkDBConnection,
+    describeTable,
+    retrieveWithConstraint,
+    retrieveGenericTable,
+    insertGenericTable,
+    createNewUser,
+    describeInstitute,
+    retrieveAllInstitute,
+    updateGenericTable,
+    getByColumnName
+)
+from Gui.GUIutils.guiUtils import isActive
+from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
+from Gui.QtGUIutils.QtViewTableTab import QtViewTableTab
+from Gui.QtGUIutils.QtImageInsertionTab import QtImageInsertionTab
+from Gui.QtGUIutils.QtImageViewerTab import QtImageViewerTab
 from Gui.python.logging_config import logger
 
 class QtDBConsoleWindow(QMainWindow):
@@ -1157,7 +1169,7 @@ class QtDBConsoleWindow(QMainWindow):
         pass
 
     def changeDBList(self):
-        self.DBNames = DBNames[str(self.HostName.currentText())]
+        self.DBNames = DBNames[str(self.HostName.currentText())] #only reference to DBNames I could find is commented out in Gui/GUIutils/settings.py
         self.DatabaseCombo.clear()
         self.DatabaseCombo.addItems(self.DBNames)
         self.DatabaseCombo.setCurrentIndex(0)

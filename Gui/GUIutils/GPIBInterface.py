@@ -3,12 +3,18 @@ import importlib
 import subprocess
 import logging
 import os
+import time
 
 
-from Gui.GUIutils.settings import *
-from Configuration.XMLUtil import *
-from Gui.python.TCP_Interface import *
-from Gui.siteSettings import *
+#from Gui.GUIutils.settings import *
+#from Configuration.XMLUtil import *
+#from Gui.python.TCP_Interface import *
+from Gui.siteSettings import (
+    ModuleVoltageMapSLDO,
+    ModuleVoltageMap,
+    ModuleCurrentMap,
+    GPIB_DebugMode
+)
 from keysightE3633A import KeysightE3633A
 from keithley2410 import Keithley2410
 from Gui.python.logging_config import logger
