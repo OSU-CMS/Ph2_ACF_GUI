@@ -36,6 +36,24 @@ from Configuration.XMLUtil import (
     LoadXML,
     GenerateHWDescriptionXML
 )
+from InnerTrackerTests.GlobalSettings import (
+    globalSettings_DictA,
+    globalSettings_DictB,
+)
+from InnerTrackerTests.FESettings import (
+    FESettings_DictA,
+    FESettings_DictB,
+)
+from InnerTrackerTests.HWSettings import (
+    HWSettings_DictA,
+    HWSettings_DictB,
+)
+from InnerTrackerTests.MonitoringSettings import (
+    MonitoringListA,
+    MonitoringListB,
+)
+from InnerTrackerTests.RegisterSettings import RegisterSettings
+from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
 from Gui.siteSettings import FC7List
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
