@@ -2,11 +2,15 @@ import lxml.etree as ET
 import os
 from xml.dom import minidom
 from InnerTrackerTests.GlobalSettings import *
-from InnerTrackerTests.FESettings import *
-from InnerTrackerTests.HWSettings import *
+from InnerTrackerTests.FESettings import FESettings
+from InnerTrackerTests.HWSettings import HWSettings
 from InnerTrackerTests.MonitoringSettings import *
-from InnerTrackerTests.RegisterSettings import *
+from InnerTrackerTests.RegisterSettings import RegisterSettings
 from InnerTrackerTests.FELaneConfig import *
+from Gui.siteSettings import (
+  Monitor_RD53A,
+  Monitor_CROC,
+)
 #from Gui.GUIutils.settings import *
 #from Gui.python.CustomizedWidget import ModuleBox
 
