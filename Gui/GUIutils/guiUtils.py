@@ -36,6 +36,7 @@ from Configuration.XMLUtil import (
     LoadXML,
     GenerateHWDescriptionXML
 )
+from Gui.siteSettings import FC7List
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 ##########################################################################

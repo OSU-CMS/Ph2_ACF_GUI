@@ -385,7 +385,7 @@ class TestHandler(QObject):
         if self.instruments:
             if not self.instruments.status(lv_channel=None)["hv"]:
                 self.instruments.hv_on(
-                    lv_channel=None, voltage=icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
+                    lv_channel=None, voltage=site_settings.icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
                 )
 
         self.tempindex = 0
@@ -1211,7 +1211,7 @@ class TestHandler(QObject):
             
             self.master.instruments.hv_on(
                 lv_channel=None,
-                voltage=icicle_instrument_setup['default_hv_voltage'],
+                voltage=site_settings.icicle_instrument_setup['default_hv_voltage'],
                 delay=0.3,
                 step_size=-3,
                 measure=False,
@@ -1251,7 +1251,7 @@ class TestHandler(QObject):
             )
             self.master.instruments.hv_on(
                 lv_channel=None,
-                voltage=icicle_instrument_setup['default_hv_voltage'],
+                voltage=site_settings.icicle_instrument_setup['default_hv_voltage'],
                 delay=0.3,
                 step_size=-3,
                 measure=False,
