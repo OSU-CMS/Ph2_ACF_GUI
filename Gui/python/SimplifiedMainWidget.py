@@ -348,14 +348,12 @@ class SimplifiedMainWidget(QWidget):
                 self.BeBoard.getModuleByIndex(0).getOpticalGroupID(),
                 "ROCTune",
             ]
-            print(self.info[1])
         else:
             self.info = [
                 self.BeBoard.getModuleByIndex(0).getOpticalGroupID(),
                 "QuickTest",
             ]
         self.runFlag = True
-        print('the info is: {0}'.format(self.info))
         self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
         self.RunButton.setDisabled(True)
         self.StopButton.setDisabled(False)

@@ -121,9 +121,7 @@ class SummaryBox(QWidget):
     @staticmethod
     def checkFwPar(pfirmwareName, module_type, fc7_ip):
         # To be finished
-        print("performing checkFwPar with module type {0}".format(module_type))
         try:
-            print('we are in the fwpar check now')
             #self.result = True
             FWisPresent = False
             boardtype = "RD53B"

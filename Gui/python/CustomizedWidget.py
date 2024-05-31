@@ -735,16 +735,21 @@ class SimpleBeBoardBox(QWidget):
 
     def getModules(self):
         return self.FilledModuleList
+        #return self.FilledModuleList
 
     def getFirmwareDescription(self, **kwargs):
         for index, module in enumerate(self.FilledModuleList):
             if module.getSerialNumber() == "":
                 continue
-            FwModule = QtModule()
+
+            fwType = module.getType(module.getSerialNumber())
+            
+            FwModule = QtModule(type=fwType)
             FwModule.setModuleID(module.getID())
             FwModule.setFMCID(module.getFMCID())
             FwModule.setModuleName(module.getSerialNumber())
-            fwType = module.getType(module.getSerialNumber())
+            
+            ##Checked here and the correct fwType is being set
             if fwType in ModuleType.values():
                 FwModule.__moduleType = fwType
             else:
