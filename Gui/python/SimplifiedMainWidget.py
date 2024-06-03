@@ -82,7 +82,7 @@ class SimplifiedMainWidget(QWidget):
         self.BeBoard = QtBeBoard()
         self.BeBoard.setBoardName(site_settings.defaultFC7)
         self.BeBoard.setIPAddress(site_settings.FC7List[site_settings.defaultFC7])
-        self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
+        #self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
         logger.debug(f"Default FC7: {site_settings.defaultFC7}")
         logger.debug("Initialized BeBoard in SimplifiedGUI")
         self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
@@ -100,7 +100,7 @@ class SimplifiedMainWidget(QWidget):
 
     def setupLogFile(self):
         LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),
-                                                default_settings.defaultFC7)
+                                                site_settings.defaultFC7)
         logger.debug(f"FC7 log file saved to {LogFileName}")
 
         try:
@@ -322,7 +322,7 @@ class SimplifiedMainWidget(QWidget):
 
     def updatePeltierTemp(self, temp:float):
         self.peltier_temperature_label.setText("{}C".format(temp))
-        if abs(temp - default_settings.defaultPeltierSetTemp) < 15:
+        if abs(temp - site_settings.defaultPeltierSetTemp) < 15:
             self.instrument_info["peltier"]["Value"].setPixmap(self.greenledpixmap)
         else: 
             self.instrument_info["peltier"]["Value"].setPixmap(self.redledpixmap)

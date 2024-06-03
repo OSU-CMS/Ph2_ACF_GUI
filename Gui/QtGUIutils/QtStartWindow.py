@@ -401,7 +401,7 @@ class QtStartWindow(QWidget):
         GlobalCheck = True
         for item in self.ModuleList:
             #item.checkFwPar(pfirmwareName, item.module.getType())
-            GlobalCheck = GlobalCheck and item.checkFwPar(pfirmwareName, item.module.getType(), site_settings.FC7List[pfirmwareName])
+            GlobalCheck = GlobalCheck and item.checkFwPar(pfirmwareName, item.module.getType(), FC7List[pfirmwareName])
             #GlobalCheck = GlobalCheck and item.getResult()
         self.passCheck = GlobalCheck
         return GlobalCheck
