@@ -1,3 +1,4 @@
+*  ____  ____  ____ _____   _
 * |  _ \|  _ \| ___|___ /  / \
 * | |_) | | | |___ \ |_ \ / _ \
 * |  _ <| |_| |___) |__) / ___ \
@@ -88,7 +89,7 @@ CLK_DATA_DELAY            0x28          0b000000000             0b000000000     
 VCAL_HIGH                 0x29          0b000111110100          0b000111110100                     12
 VCAL_MED                  0x2A          0b000100101100          0b000100101100                     12
 CH_SYNC_CONF              0x2B          0b001000001000          0b001000001000                     12
-GLOBAL_PULSE_ROUTE        0x2C          0b0000000000000000      0b0000000000000000                 16
+GlobalPulseConf           0x2C          0b0000000000000000      0b0000000000000000                 16
 MONITOR_FRAME_SKIP        0x2D          0b00110010              0b00110010                          8
 EN_CORE_COL_CAL_SYNC_1    0x2E          0b1111111111111111      0b1111111111111111                 16
 EN_CORE_COL_CAL_SYNC_2    0x2F          0b1111111111111111      0b1111111111111111                 16
@@ -226,6 +227,13 @@ ADC_MAXIMUM_VOLT          0xC2          0d839                   0d839           
 TEMPSENS_IDEAL_FACTOR     0xC3          0d1225                  0d1225                             16
 SAMPLE_N_TIMES            0xC4          0d10                    0d10                               16
 VREF_ADC                  0xC5          0d900                   0d900                              12
+
+READTRIG_CNT              0x200         0b0                     0b0                                16
+RDWRFIFOERROR_CNT         0x201         0b0                     0b0                                16
+GatedHITOR_0_CNT          0x202         0b0                     0b0                                16
+GatedHITOR_1_CNT          0x203         0b0                     0b0                                16
+PIXELSEU_CNT              0x204         0b0                     0b0                                16
+GLOBALCONFIGSEU_CNT       0x205         0b0                     0b0                                16
 
 *-------------------------------------------------------------------------------------------------------
 PIXELCONFIGURATION

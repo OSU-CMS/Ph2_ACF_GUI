@@ -10,8 +10,8 @@
     <!-- Frontend chip configuration -->
     <OpticalGroup Id="0" FMCId="L12">
       <!--
-      <lpGBT_Files path="${PWD}/" />
-      <lpGBT_ConfigFile fileName="lpgbt_calibration.csv" />
+      <lpGBT_Files path="${PWD}" />
+      <lpGBT_ConfigFile fileName="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/lpgbt_calibration.csv" />
       <lpGBT Id="0" version="0" configFile="CMSIT_LpGBT-v0.txt" ChipAddress="0x70" RxDataRate="1280" RxHSLPolarity="1" TxDataRate="160" TxHSLPolarity="0">
       -->
       <!-- Put here any LpGBT register, if needed -->
@@ -24,7 +24,7 @@
         <RD53_Files path="${PWD}/" />
 
         <!-- Available Comment fields are: 50x50, 25x100origR0C0, 25x100origR1C0, unknown, combined with RD53A, RD53B, dual, quad -->
-        <RD53B Id="15" enable="1" Lane="0" configFile="CMSIT_RD53B.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53B 50x50">
+        <RD53Bv1 Id="15" enable="1" Lane="0" configFile="CMSIT_RD53Bv1.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53B 50x50">
           <LaneConfig isPrimary="1" masterLane="0" outputLanes="0001" singleChannelInputs="0000" dualChannelInput="0000" />
           <!-- Overwrite .txt configuration file settings -->
           <Settings
@@ -81,7 +81,7 @@
               WAIT_MUX_CONFIG        =    "100"
               VREF_ADC               =    "800"
               />
-        </RD53B>
+        </RD53Bv1>
 
         <Global
             EN_CORE_COL_0            =  "65535"
@@ -294,12 +294,12 @@
     <Setting name="StopIfCommFails">       1 </Setting>
 
     <!-- === Expert settings ===
-         DoSplitByHybrid = 1: split ROOT file by Hybrid;             DoSplitByHybrid = 0: do not split ROOT file by Hybrid
-         DataOutputDir:   set the output directory for all data. If not specified files will be saved in ./Results/
-         SaveBinaryData = 0:  do not save raw data in binary format; SaveBinaryData = 1:  save raw data in binary format
-         nHITxCol:        number of simultaneously injected pixels per column (it must be a divider of chip rows)
-         InjLatency:      controls the latency of the injection in terms of 100ns period (up to 4095)
-         nClkDelays:      controls the delay between two consecutive injections in terms of 100ns period (up to 4095)
+         DoSplitByHybrid = 1: split ROOT file by Hybrid; DoSplitByHybrid = 0: do not split ROOT file by Hybrid
+         DataOutputDir:    set the output directory for all data. If not specified files will be saved in ./Results/
+         SaveBinaryData  = 0: do not save raw data in binary format; SaveBinaryData = 1: save raw data in binary format
+         nHITxCol:         number of simultaneously injected pixels per column (it must be a divider of chip rows)
+         InjLatency:       controls the latency of the injection in terms of 100ns period (up to 4095)
+         nClkDelays:       controls the delay between two consecutive injections in terms of 100ns period (up to 4095)
     -->
     <Setting name="DoSplitByHybrid">       0 </Setting>
     <Setting name="DataOutputDir">           </Setting>
