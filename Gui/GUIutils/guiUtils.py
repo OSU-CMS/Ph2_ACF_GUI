@@ -21,9 +21,40 @@ from itertools import islice
 from textwrap import dedent
 from functools import partial
 
-from Gui.GUIutils.settings import *
-from Gui.GUIutils.DBConnection import *
-from Configuration.XMLUtil import *
+from Gui.GUIutils.settings import (
+    updatedGlobalValue,
+    updatedXMLValues,
+)
+#from Gui.GUIutils.DBConnection import *
+from Configuration.XMLUtil import (
+    HWDescription,
+    BeBoardModule,
+    OGModule,
+    HyBridModule,
+    FE,
+    MonitoringModule,
+    LoadXML,
+    GenerateHWDescriptionXML
+)
+from InnerTrackerTests.GlobalSettings import (
+    globalSettings_DictA,
+    globalSettings_DictB,
+)
+from InnerTrackerTests.FESettings import (
+    FESettings_DictA,
+    FESettings_DictB,
+)
+from InnerTrackerTests.HWSettings import (
+    HWSettings_DictA,
+    HWSettings_DictB,
+)
+from InnerTrackerTests.MonitoringSettings import (
+    MonitoringListA,
+    MonitoringListB,
+)
+from InnerTrackerTests.RegisterSettings import RegisterSettings
+from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
+from Gui.siteSettings import FC7List
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 ##########################################################################
@@ -381,7 +412,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                 RxPolarities = "0"
             #LaneConfigSettings_Dict = LaneConfigSettings_DictB
             
-            boardtype = "RD53B"
+            boardtype = "RD53B"+module.getModuleVersion()
         else:
             FESettings_Dict = FESettings_DictA
             globalSettings_Dict = globalSettings_DictA

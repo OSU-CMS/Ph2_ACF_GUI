@@ -1,5 +1,5 @@
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap
+#from PyQt5.QtCore import *
+#from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -38,8 +38,11 @@ from matplotlib.figure import Figure
 
 import numpy
 
-from Gui.GUIutils.settings import *
-from Gui.GUIutils.guiUtils import *
+#from Gui.GUIutils.settings import *
+from Gui.GUIutils.guiUtils import (
+    isCompositeTest,
+    isSingleTest,
+)
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 

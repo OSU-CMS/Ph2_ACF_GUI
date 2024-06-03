@@ -1,6 +1,6 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap
+# from PyQt5 import QtCore
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -40,9 +40,9 @@ import subprocess
 from subprocess import Popen, PIPE
 
 from Gui.python.logging_config import logger
-from Gui.GUIutils.settings import *
-from Configuration.XMLUtil import *
-from Gui.python.Firmware import *
+#from Gui.GUIutils.settings import *
+from Configuration.XMLUtil import LoadXML
+#from Gui.python.Firmware import *
 
 
 class QtuDTCDialog(QDialog):

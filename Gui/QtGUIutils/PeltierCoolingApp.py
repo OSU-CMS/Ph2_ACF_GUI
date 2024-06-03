@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QWidget, QMessageBox
-from PyQt5.QtCore import *
-from Gui.python.Peltier import *
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import pyqtSignal, Qt, QTimer
+from Gui.python.Peltier import PeltierSignalGenerator
 import time
 import os
 from Gui.python.logging_config import logger

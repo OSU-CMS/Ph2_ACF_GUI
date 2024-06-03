@@ -10,7 +10,8 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -48,15 +49,19 @@ import math
 import subprocess
 import time
 
-from Gui.QtGUIutils.QtRunWindow import *
-from Gui.QtGUIutils.QtFwCheckDetails import *
-from Gui.QtGUIutils.QtApplication import *
-from Gui.python.CustomizedWidget import *
-from Gui.python.Firmware import *
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.FirmwareUtil import *
-from Gui.GUIutils.settings import *
-import Gui.siteSettings as site_settings
+from Gui.QtGUIutils.QtRunWindow import QtRunWindow
+from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
+#from Gui.QtGUIutils.QtApplication import *
+from Gui.python.CustomizedWidget import BeBoardBox
+#from Gui.python.Firmware import *
+#from Gui.GUIutils.DBConnection import *
+from Gui.GUIutils.FirmwareUtil import FEPowerUpVD
+from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
+from Gui.siteSettings import (
+    FC7List,
+    ModuleCurrentMap,
+)
+
 from InnerTrackerTests.TestSequences import TestList
 from siteSettings import icicle_instrument_setup
 

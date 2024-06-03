@@ -1,8 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import (
-    QMessageBox,
-)
+from PyQt5.QtCore import pyqtSignal, QObject, QProcess
+from PyQt5.QtWidgets import QMessageBox
 
 import sys
 import os
@@ -12,23 +10,44 @@ import threading
 import time
 from datetime import datetime
 import numpy as np
+import matplotlib.pyplot as plt
+import hashlib
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
+from Gui.GUIutils.DBConnection import (
+    insertGenericTable,
+    retrieveWithConstraint,
+    )
+from Gui.GUIutils.settings import (
+    ModuleLaneMap,
+    firmware_image,
+    updatedXMLValues,
+)
+from Gui.GUIutils.guiUtils import (
+    ConfigureTest,
+    isActive,
+    SetupXMLConfigfromFile,
+    SetupRD53Config,
+    SetupRD53ConfigfromFile,
+    UpdateXMLValue,
+    CheckXMLValue,
+    GenerateXMLConfig,
+    isCompositeTest,
+    isSingleTest,
+    formatter,
+)
 
 # from Gui.QtGUIutils.QtStartWindow import *
-from Gui.QtGUIutils.QtCustomizeWindow import *
-from Gui.QtGUIutils.QtTableWidget import *
-from Gui.QtGUIutils.QtMatplotlibUtils import *
-from Gui.QtGUIutils.QtLoginDialog import *
-from Gui.python.ResultTreeWidget import *
-from Gui.python.TestValidator import *
-from Gui.python.QResultDialog import *
-from Gui.python.ANSIColoringParser import *
-from Gui.python.IVCurveHandler import *
-from Gui.python.SLDOScanHandler import *
-from Gui.QtGUIutils.QtMatplotlibUtils import *
-from Gui.siteSettings import *
+#from Gui.QtGUIutils.QtCustomizeWindow import *
+#from Gui.QtGUIutils.QtTableWidget import *
+from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
+#from Gui.QtGUIutils.QtLoginDialog import *
+#from Gui.python.ResultTreeWidget import *
+from Gui.python.TestValidator import ResultGrader
+from Gui.python.QResultDialog import QResultDialog
+from Gui.python.ANSIColoringParser import parseANSI
+from Gui.python.IVCurveHandler import IVCurveHandler
+from Gui.python.SLDOScanHandler import SLDOCurveHandler
+import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
@@ -336,8 +355,8 @@ class TestHandler(QObject):
             if not self.instruments.status(lv_channel=None)["lv"]:
                 self.instruments.lv_on(
                     lv_channel=None,
-                    voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
-                    current=ModuleCurrentMap[self.master.module_in_use],
+                    voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                    current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
 
         if testName == "IVCurve":
@@ -355,7 +374,7 @@ class TestHandler(QObject):
             self.configTest()
             self.SLDOScanData = []
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, end_current=ModuleCurrentMap[self.master.module_in_use], voltage_limit=ModuleVoltageMapSLDO[self.master.module_in_use])
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
@@ -366,7 +385,7 @@ class TestHandler(QObject):
         if self.instruments:
             if not self.instruments.status(lv_channel=None)["hv"]:
                 self.instruments.hv_on(
-                    lv_channel=None, voltage=icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
+                    lv_channel=None, voltage=site_settings.icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
                 )
 
         self.tempindex = 0
@@ -1192,7 +1211,7 @@ class TestHandler(QObject):
             
             self.master.instruments.hv_on(
                 lv_channel=None,
-                voltage=icicle_instrument_setup['default_hv_voltage'],
+                voltage=site_settings.icicle_instrument_setup['default_hv_voltage'],
                 delay=0.3,
                 step_size=-3,
                 measure=False,
@@ -1227,12 +1246,12 @@ class TestHandler(QObject):
         if isCompositeTest(self.info[1]):
             self.instruments.lv_on(
                 lv_channel=None,
-                voltage=ModuleVoltageMapSLDO[self.master.module_in_use],
-                current=ModuleCurrentMap[self.master.module_in_use],
+                voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                current=site_settings.ModuleCurrentMap[self.master.module_in_use],
             )
             self.master.instruments.hv_on(
                 lv_channel=None,
-                voltage=icicle_instrument_setup['default_hv_voltage'],
+                voltage=site_settings.icicle_instrument_setup['default_hv_voltage'],
                 delay=0.3,
                 step_size=-3,
                 measure=False,

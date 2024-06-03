@@ -2,8 +2,8 @@
 
 import os
 from collections import defaultdict
-from Gui.siteSettings import *
-import InnerTrackerTests.TestSequences as TestSequences
+#from Gui.siteSettings import *
+#import InnerTrackerTests.TestSequences as TestSequences
 
 # List of expert users
 ExpertUserList = [

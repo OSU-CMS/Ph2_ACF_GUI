@@ -1,4 +1,4 @@
-from PyQt5.QtCore import *
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -33,10 +33,10 @@ import sys
 import os
 import math
 
-from Gui.python.CustomizedWidget import *
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.FirmwareUtil import *
-from Gui.GUIutils.settings import *
+from Gui.python.CustomizedWidget import StatusBox
+#from Gui.GUIutils.DBConnection import *
+#from Gui.GUIutils.FirmwareUtil import *
+#from Gui.GUIutils.settings import *
 from Gui.python.logging_config import logger
 
 

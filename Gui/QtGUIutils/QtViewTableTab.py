@@ -1,5 +1,5 @@
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap
+#from PyQt5.QtCore import *
+#from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
     QSlider,
     QSpinBox,
     QStyleFactory,
+    QTableView,
     QTableWidget,
     QTabWidget,
     QTextEdit,
@@ -35,9 +36,15 @@ import sys
 import os
 import numpy
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
-from Gui.QtGUIutils.QtDBTableWidget import *
+from Gui.GUIutils.DBConnection import (
+    getTableList,
+    describeTable,
+    retrieveWithConstraintSyntax,
+    retrieveGenericTable,
+)
+import mysql.connector
+#from Gui.GUIutils.guiUtils import *
+from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
 from Gui.python.logging_config import logger
 
 

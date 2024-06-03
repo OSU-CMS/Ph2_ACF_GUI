@@ -2,12 +2,17 @@ import lxml.etree as ET
 import os
 from xml.dom import minidom
 from InnerTrackerTests.GlobalSettings import *
-from InnerTrackerTests.FESettings import *
-from InnerTrackerTests.HWSettings import *
+from InnerTrackerTests.FESettings import FESettings
+from InnerTrackerTests.HWSettings import HWSettings
 from InnerTrackerTests.MonitoringSettings import *
-from InnerTrackerTests.RegisterSettings import *
+from InnerTrackerTests.RegisterSettings import RegisterSettings
 from InnerTrackerTests.FELaneConfig import *
-from Gui.GUIutils.settings import *
+from Gui.siteSettings import (
+  Monitor_RD53A,
+  Monitor_CROC,
+)
+#from Gui.GUIutils.settings import *
+#from Gui.python.CustomizedWidget import ModuleBox
 
 import logging
 
@@ -247,7 +252,7 @@ def SetNodeRegister(Node, Dict):
 
 def SetMonitoring(Node, MonitoringItem):
   Node_Monitoring = ET.SubElement(Node, 'Monitoring')
-  Node_Monitoring = SetNodeAttribute(Node_Monitoring,{'type':MonitoringItem.Type,'enable':MonitoringItem.Enable})
+  Node_Monitoring = SetNodeAttribute(Node_Monitoring,{'type':MonitoringItem.Type.split('v')[0],'enable':MonitoringItem.Enable})
   Node_SleepTime  = ET.SubElement(Node_Monitoring, 'MonitoringSleepTime')
   Node_SleepTime.text = str(MonitoringItem.SleepTime)
   for element in MonitoringItem.MonitoringList.keys():
@@ -303,7 +308,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
         FEList = HyBridModule.FEList
         ### This is where the RD53 block is being made ###
         for FE in FEList:
-          BeBoard.boardType =  boardtype 
+          BeBoard.boardType = boardtype
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
           Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})

@@ -15,8 +15,11 @@ from itertools import compress
 
 from subprocess import Popen, PIPE
 from PyQt5.QtWidgets import QMessageBox
-from Gui.GUIutils.settings import *
-from Gui.GUIutils.guiUtils import *
+#from Gui.GUIutils.settings import *
+from Gui.GUIutils.guiUtils import (
+    isActive,
+    formatter,
+)
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 

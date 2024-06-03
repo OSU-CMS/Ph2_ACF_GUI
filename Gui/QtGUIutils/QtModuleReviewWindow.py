@@ -1,6 +1,6 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap
+#from PyQt5 import QtCore
+#from PyQt5.QtCore import *
+#from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -40,12 +40,20 @@ import subprocess
 import hashlib
 from subprocess import Popen, PIPE
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
-from Gui.QtGUIutils.QtStartWindow import *
-from Gui.QtGUIutils.QtTableWidget import *
-from Gui.QtGUIutils.QtLoginDialog import *
-from Gui.python.ROOTInterface import *
+from Gui.GUIutils.DBConnection import (
+    checkDBConnection,
+    getLocalRemoteTests,
+    retrieveWithConstraint,
+    insertGenericTable,
+)
+from Gui.GUIutils.guiUtils import (
+    isActive,
+    GetTBrowser,
+)
+#from Gui.QtGUIutils.QtStartWindow import *
+from Gui.QtGUIutils.QtTableWidget import QtTableWidget
+from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
+#from Gui.python.ROOTInterface import *
 from Gui.python.logging_config import logger
 
 

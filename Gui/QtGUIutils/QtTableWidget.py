@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import *
+from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
 from PyQt5.QtGui import QBrush, QColor, QPixmap, QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import (
     QApplication,
@@ -38,9 +38,9 @@ import os
 import subprocess
 from subprocess import Popen, PIPE
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
-from Gui.GUIutils.settings import *
+#from Gui.GUIutils.DBConnection import *
+#from Gui.GUIutils.guiUtils import *
+#from Gui.GUIutils.settings import *
 from Gui.python.logging_config import logger
 
 Color = {

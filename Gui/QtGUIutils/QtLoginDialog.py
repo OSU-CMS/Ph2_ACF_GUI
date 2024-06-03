@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
+#from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -39,8 +39,11 @@ import os
 import subprocess
 from subprocess import Popen, PIPE
 
-from Gui.GUIutils.settings import *
-from Gui.GUIutils.DBConnection import *
+from Gui.GUIutils.settings import dblist
+from Gui.GUIutils.DBConnection import (
+    QtStartConnection,
+    isActive,
+)
 from Gui.python.logging_config import logger
 
 

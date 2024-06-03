@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtGui import QPixmap, QTextCursor, QColor
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QPixmap, QTextCursor, QColor, QFont
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QApplication,
@@ -48,14 +48,14 @@ from datetime import datetime
 import random
 from subprocess import Popen, PIPE
 
-from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.guiUtils import *
-from Gui.QtGUIutils.QtMatplotlibUtils import *
-from Gui.QtGUIutils.QtLoginDialog import *
-from Gui.python.ResultTreeWidget import *
-from Gui.python.TestValidator import *
-from Gui.python.IVCurveHandler import *
-from Gui.python.SLDOScanHandler import *
+#from Gui.GUIutils.DBConnection import *
+#from Gui.GUIutils.guiUtils import *
+from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
+#from Gui.QtGUIutils.QtLoginDialog import *
+#from Gui.python.ResultTreeWidget import *
+#from Gui.python.TestValidator import *
+from Gui.python.IVCurveHandler import IVCurveHandler
+#from Gui.python.SLDOScanHandler import *
 from Gui.python.logging_config import logger
 
 

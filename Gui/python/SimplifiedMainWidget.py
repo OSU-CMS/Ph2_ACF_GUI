@@ -4,7 +4,7 @@ from serial import SerialException
 from typing import Optional
 
 from Gui.QtGUIutils.QtStartWindow import SummaryBox
-from PyQt5.QtCore import Qt, QSize, pyqtSignal,  QObject, QThread
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
     QGridLayout,
