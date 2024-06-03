@@ -94,10 +94,10 @@ class TestHandler(QObject):
         self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
-			self.moduleVersion = self.firmware.getModuleByIndex(0).getModuleVersion()
+            self.moduleVersion = self.firmware.getModuleByIndex(0).getModuleVersion()
         else:
             self.boardType = "RD53A"
-			self.moduleVersion = ""
+            self.moduleVersion = ""
         self.Ph2_ACF_ver = os.environ.get("Ph2_ACF_VERSION")
         print("Using version {0} of Ph2_ACF".format(self.Ph2_ACF_ver))
         self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
