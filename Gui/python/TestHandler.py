@@ -94,8 +94,10 @@ class TestHandler(QObject):
         self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
+            self.moduleVersion = self.firmware.getModuleByIndex(0).getModuleVersion()
         else:
             self.boardType = "RD53A"
+            self.moduleVersion = ""
         self.Ph2_ACF_ver = os.environ.get("Ph2_ACF_VERSION")
         print("Using version {0} of Ph2_ACF".format(self.Ph2_ACF_ver))
         self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
@@ -226,7 +228,7 @@ class TestHandler(QObject):
             if self.rd53_file[key] == None:
                 self.rd53_file[key] = os.environ.get(
                     "PH2ACF_BASE_DIR"
-                ) + "/settings/RD53Files/CMSIT_{0}.txt".format(self.boardType)
+                ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(self.boardType, self.moduleVersion)
                 print("Gettings config file {0}".format(self.rd53_file[key]))
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
