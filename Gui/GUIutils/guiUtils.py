@@ -412,7 +412,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                 RxPolarities = "0"
             #LaneConfigSettings_Dict = LaneConfigSettings_DictB
             
-            boardtype = "RD53B"
+            boardtype = "RD53B"+module.getVersion() #I think this is the only line change that matters :(
         else:
             FESettings_Dict = FESettings_DictA
             globalSettings_Dict = globalSettings_DictA

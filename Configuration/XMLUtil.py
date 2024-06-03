@@ -307,9 +307,8 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
         Node_FEPath = SetNodeAttribute(Node_FEPath,{'file':HyBridModule.File_Path})
         FEList = HyBridModule.FEList
         ### This is where the RD53 block is being made ###
-        from Gui.python.CustomizedWidget import ModuleBox
         for FE in FEList:
-          BeBoard.boardType = boardtype+ModuleBox.getVersion() if 'RD53B' in boardtype else boardtype
+          BeBoard.boardType = boardtype
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
           Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})

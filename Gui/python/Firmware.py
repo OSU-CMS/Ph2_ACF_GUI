@@ -56,6 +56,7 @@ class QtModule:
         self.__VDDAMap = {}  # Format is {chipID : VDDA value}
         self.__VDDDMap = {}  # Format is {chipID : VDDD value}
         self.__ChipStatusMap = {}  # Format is {chipID : enable flag}
+        self.__moduleVersion = "v1"
 
         for key, value in kwargs.items():
             if key == "id":
@@ -109,6 +110,12 @@ class QtModule:
 
     def setChipStatus(self, pChipID, pStatus):
         self.__ChipStatusMap[pChipID] = pStatus
+    
+    def setModuleVersion(self, version):
+        self.__moduleVersion = version
+    
+    def getModuleVersion(self):
+        return self.__moduleVersion
 
     # FIXME: This function needs to accept a dictionary of chipID : [VDDA, VDDD].
     def setupChips(self, **kwargs):

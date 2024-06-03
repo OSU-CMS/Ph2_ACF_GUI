@@ -462,6 +462,7 @@ class BeBoardBox(QWidget):
 
             # FwModule.setOpticalGroupID(module.getID())
             FwModule.setModuleType(module.getType())
+            FwModule.setModuleVersion(module.getVersion())
             self.firmware.addModule(index, FwModule)
         return self.firmware
 
