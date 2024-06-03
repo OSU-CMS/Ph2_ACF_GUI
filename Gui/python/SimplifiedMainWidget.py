@@ -218,9 +218,10 @@ class SimplifiedMainWidget(QWidget):
         self.TestGroupLayout = QVBoxLayout()
         self.ProductionButton = QRadioButton("&Full Test")
         self.QuickButton = QRadioButton("&Quick Test")
-        self.ProductionButton.setChecked(True)
-        self.TestGroupLayout.addWidget(self.ProductionButton)
+        self.QuickButton.setChecked(True)
         self.TestGroupLayout.addWidget(self.QuickButton)
+        self.TestGroupLayout.addWidget(self.ProductionButton)
+
         self.TestGroup.setLayout(self.TestGroupLayout)
         logger.debug("Added Boxes/Layouts to Simplified GUI")
 
@@ -343,7 +344,6 @@ class SimplifiedMainWidget(QWidget):
             )
             return
         if self.ProductionButton.isChecked():
-            print('production was checked')
             self.info = [
                 self.BeBoard.getModuleByIndex(0).getOpticalGroupID(),
                 "ROCTune",
