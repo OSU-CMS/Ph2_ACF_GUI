@@ -4,8 +4,8 @@
 	branch = Dev
 [submodule "icicle"]
 	path = icicle
-	url = https://gitlab.cern.ch/rdelossa/instrument-control-icicle-osu.git
-	branch = master
+	url = https://gitlab.cern.ch/icicle/icicle.git
+	branch = new_adc_board_v2
 [submodule "InnerTrackerTests"]
 	path = InnerTrackerTests
 	url = https://gitlab.cern.ch/cms_tk_ph2/inner-tracker-tests.git
