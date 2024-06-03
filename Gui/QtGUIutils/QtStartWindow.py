@@ -61,6 +61,7 @@ from Gui.siteSettings import (
     FC7List,
     ModuleCurrentMap,
 )
+
 from InnerTrackerTests.TestSequences import TestList
 from siteSettings import icicle_instrument_setup
 
@@ -123,28 +124,29 @@ class SummaryBox(QWidget):
             self.verboseResult[key] = value
 
     @staticmethod
-    def checkFwPar(pfirmwareName, module_type):
+    def checkFwPar(pfirmwareName, module_type, fc7_ip):
         # To be finished
-
         try:
             #self.result = True
             FWisPresent = False
+            boardtype = "RD53B"
             if "CROC" in module_type:
                 boardtype = "RD53B"
             else:
                 boardtype = "RD53A"
-
+            print('board type is: {0}'.format(boardtype))
             # updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
-            fc7_ip = FC7List[pfirmwareName]
-            
+            #fc7_ip = site_settings.FC7List[pfirmwareName] #Commented because I don't think we need it.  Remove line after test.
+            print('The fc7 ip is: {0}'.format(fc7_ip))
             uricmd = "sed -i -e 's/fc7-1/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(    
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )
             updateuri = subprocess.call([uricmd], shell=True)
-
+            print('updated the uri value')
             firmwareImage = firmware_image[module_type][
                 os.environ.get("Ph2_ACF_VERSION")
             ]
+
             print("checking if firmware is on the SD card for {}".format(firmwareImage))
             fwlist = subprocess.run(
                 [
@@ -399,7 +401,7 @@ class QtStartWindow(QWidget):
         GlobalCheck = True
         for item in self.ModuleList:
             #item.checkFwPar(pfirmwareName, item.module.getType())
-            GlobalCheck = GlobalCheck and item.checkFwPar(pfirmwareName, item.module.getType())
+            GlobalCheck = GlobalCheck and item.checkFwPar(pfirmwareName, item.module.getType(), site_settings.FC7List[pfirmwareName])
             #GlobalCheck = GlobalCheck and item.getResult()
         self.passCheck = GlobalCheck
         return GlobalCheck

@@ -217,11 +217,12 @@ class SimplifiedMainWidget(QWidget):
         self.StartLayout = QHBoxLayout()
         self.TestGroup = QGroupBox()
         self.TestGroupLayout = QVBoxLayout()
-        self.ProductionButton = QRadioButton("&Production Test")
+        self.ProductionButton = QRadioButton("&Full Test")
         self.QuickButton = QRadioButton("&Quick Test")
-        self.ProductionButton.setChecked(True)
-        self.TestGroupLayout.addWidget(self.ProductionButton)
+        self.QuickButton.setChecked(True)
         self.TestGroupLayout.addWidget(self.QuickButton)
+        self.TestGroupLayout.addWidget(self.ProductionButton)
+
         self.TestGroup.setLayout(self.TestGroupLayout)
         logger.debug("Added Boxes/Layouts to Simplified GUI")
 
@@ -350,14 +351,13 @@ class SimplifiedMainWidget(QWidget):
         if self.ProductionButton.isChecked():
             self.info = [
                 self.BeBoard.getModuleByIndex(0).getOpticalGroupID(),
-                "AllScan",
+                "ROCTune",
             ]
         else:
             self.info = [
                 self.BeBoard.getModuleByIndex(0).getOpticalGroupID(),
                 "QuickTest",
             ]
-
         self.runFlag = True
         self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
         self.RunButton.setDisabled(True)
@@ -368,9 +368,10 @@ class SimplifiedMainWidget(QWidget):
         module:SimpleModuleBox = self.BeBoardWidget.getModules()[0]
 
         module_type = module.getType(module.getSerialNumber())
-        logger.debug("Module Type: {}".format(module_type))
+        print("Module Type: {}".format(module_type))
         self.master.module_in_use = module_type
-        fw_check = SummaryBox.checkFwPar(self.BeBoard, module_type)
+        print("BeBoard is: {}".format(self.BeBoard))
+        fw_check = SummaryBox.checkFwPar(site_settings.defaultFC7, module_type, site_settings.FC7List[site_settings.defaultFC7])
         self.RunTest.initialTest()
         # self.RunTest.runTest()
 
