@@ -125,7 +125,6 @@ class QtRunWindow(QWidget):
         self.resized.connect(self.rescaleImage)
 
         # added from Bowen
-        print("test list should be {0}".format(self.info[1]))
         #self.j = 0
         # stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
         # if len(runTestList)>1:

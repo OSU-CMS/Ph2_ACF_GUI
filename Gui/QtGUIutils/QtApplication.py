@@ -983,6 +983,7 @@ class QtApplication(QWidget):
 
     def openNewTest(self):
         FwModule = self.FwDict[self.FwUnderUsed]
+        print('FwModule is:'.format(FwModule))
         self.StartNewTest = QtStartWindow(self, FwModule)
 
         self.NewTestButton.setDisabled(True)
