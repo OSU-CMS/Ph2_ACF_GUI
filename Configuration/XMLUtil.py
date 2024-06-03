@@ -252,7 +252,7 @@ def SetNodeRegister(Node, Dict):
 
 def SetMonitoring(Node, MonitoringItem):
   Node_Monitoring = ET.SubElement(Node, 'Monitoring')
-  Node_Monitoring = SetNodeAttribute(Node_Monitoring,{'type':MonitoringItem.Type,'enable':MonitoringItem.Enable})
+  Node_Monitoring = SetNodeAttribute(Node_Monitoring,{'type':MonitoringItem.Type.split('v')[0],'enable':MonitoringItem.Enable})
   Node_SleepTime  = ET.SubElement(Node_Monitoring, 'MonitoringSleepTime')
   Node_SleepTime.text = str(MonitoringItem.SleepTime)
   for element in MonitoringItem.MonitoringList.keys():
