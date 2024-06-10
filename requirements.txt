@@ -10,3 +10,4 @@ pyserial
 click
 psutil
 PyUSB
+requests

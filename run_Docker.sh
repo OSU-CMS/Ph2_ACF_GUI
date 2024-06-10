@@ -48,6 +48,7 @@ then
 	    -v ${PWD}/InnerTrackerTests/:/home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/\
 	    -v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
+		-v ${PWD}/felis:/home/cmsTkUser/Ph2_ACF_GUI/felis/\
 	    -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
 	    -e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest #local/testimage423newdev:latest
 else

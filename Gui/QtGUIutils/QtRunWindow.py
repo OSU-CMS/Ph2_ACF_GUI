@@ -596,28 +596,16 @@ class QtRunWindow(QWidget):
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
 
-    def updateValidation(self, grade, passmodule):
+    def updateValidation(self, passed):
         try:
-            status = True
-            self.grades.append(grade)
-            self.modulestatus.append(passmodule)
-
-            self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
-            self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet(
-                "color: green"
-            )
-            for module in passmodule.values():
-                if False in module.values():
-                    status = False
-                    self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText(
-                        "Failed"
-                    )
-                    self.ResultWidget.StatusLabel[
-                        self.testIndexTracker - 1
-                    ].setStyleSheet("color: red")
-
+            if passed:
+                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
+                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: green")
+            else:
+                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Failed")
+                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: red")
             time.sleep(0.5)
-            return status
+            return passed
         # self.StatusCanvas.renew()
         # self.StatusCanvas.update()
         # self.HistoryLayout.removeWidget(self.StatusCanvas)

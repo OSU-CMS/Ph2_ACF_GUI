@@ -70,7 +70,7 @@ class TestHandler(QObject):
     updateResult = pyqtSignal(object)
     updateIVResult = pyqtSignal(object)
     updateSLDOResult = pyqtSignal(object)
-    updateValidation = pyqtSignal(object, object)
+    updateValidation = pyqtSignal(object)
     powerSignal = pyqtSignal()
 
     def __init__(self, runwindow, master, info, firmware):
@@ -135,6 +135,8 @@ class TestHandler(QObject):
         # Fixme: QTimer to be added to update the page automatically
         self.grades = []
         self.modulestatus = []
+        
+        self.figurelist = {}
 
         self.run_process = QProcess(self)
         self.run_process.readyReadStandardOutput.connect(
@@ -559,18 +561,11 @@ class TestHandler(QObject):
 
     def validateTest(self):
         try:
-            grade = {}
-            passmodule = {}
-            grade, passmodule, self.figurelist = ResultGrader(
-                self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap
+            passed = ResultGrader(
+                self.output_dir, self.currentTest, self.RunNumber, self.ModuleType
             )
-            self.updateValidation.emit(grade, passmodule)
-
-            status = True
-            for module in passmodule.values():
-                if False in module.values():
-                    status = False
-            return status
+            self.updateValidation.emit(passed)
+            return passed
         # self.StatusCanvas.renew()
         # self.StatusCanvas.update()
         # self.HistoryLayout.removeWidget(self.StatusCanvas)
@@ -1062,32 +1057,14 @@ class TestHandler(QObject):
         # validate the results
         status = self.validateTest()
 
-        # manually validate the result
-
-        notAccept = False
-        if status == False:
-            for key in self.figurelist.keys():
-                for plot in self.figurelist[key]:
-                    dialog = QResultDialog(self, plot)
-                    result = dialog.exec_()
-                    if result:
-                        continue
-                    else:
-                        notAccept = True
-        if notAccept:
-            self.abortTest()
-
         # show the score of test
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateResult.emit(self.output_dir)
             print(self.output_dir)
         else:
-            #self.updateResult.emit(self.output_dir)
-            #print(self.output_dir)
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
-            print(step, self.figurelist)
 
         if self.autoSave:
             self.saveTestToDB()
@@ -1137,7 +1114,6 @@ class TestHandler(QObject):
             self.IVCurveResult.update()
             if not self.master.expertMode:
                 step = "IVCurve"
-                self.figurelist = {"-1": [output]}
                 self.updateIVResult.emit((step, self.figurelist))
 
         if measureType == "SLDOScan":
@@ -1163,7 +1139,6 @@ class TestHandler(QObject):
             self.SLDOScanResult.update()
             if not self.master.expertMode:
                 step = "SLDOScan"
-                self.figurelist = {"-1": [output]}
                 self.updateResult.emit((step, self.figurelist))
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
@@ -1208,13 +1183,13 @@ class TestHandler(QObject):
         self.IVCurveResult.saveToSVG(filename)
         self.IVCurveResult.saveToSVG(filename2)
 
-        grade, passmodule, self.figurelist = ResultGrader(
-            self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap
+        passed = ResultGrader(
+            self.output_dir, self.currentTest, self.RunNumber, self.ModuleType
         )
+        self.updateValidation.emit(passed)
 
         step="IVCurve"
-        self.figurelist={"-1": [filename]}
-        self.updateValidation.emit(grade, passmodule)
+
         EnableReRun = False
 
 
@@ -1241,7 +1216,7 @@ class TestHandler(QObject):
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateIVResult.emit(self.output_dir)
-        else : 
+        else: 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
         self.testIndexTracker += 1

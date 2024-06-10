@@ -5,114 +5,42 @@ ROOT.gROOT.SetBatch(ROOT.kTRUE)
 import os
 import re
 from collections import defaultdict
-#from Gui.GUIutils.settings import *
 from Gui.python.ROOTInterface import (
     GetDirectory,
     TCanvas2SVG,
 )
+from Gui.GUIutils.settings import ModuleLaneMap
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
+from felis import Felis
 
 
-def ResultGrader(inputDir, testName, runNumber, ModuleMap={}):
-    Grade = {}
-    PassModule = {}
-    ExpectedModuleList = [
-        module.lstrip("Module") for module in inputDir.split("_") if "Module" in module
-    ]
-
-    if testName in Test_to_Ph2ACF_Map.keys():
-        try:
-            CanvasList = {}
-            FileName = "{0}/Run{1}_{2}.root".format(
-                inputDir, runNumber, testName.split('_')[0]
-            )
-            if os.path.isfile(FileName):
-                Nodes = GetDirectory(FileName)
-                for Node in Nodes:
-                    CanvasList = GetCanvasVAL(Node, CanvasList, ModuleMap)
-                
-                Test_to_Function_Map = {
-                    'latency':None,
-                    'pixelalive':GradePixelAlive,
-                    'noise':GradeNoiseScan,
-                    'gain':GradeGainScan,
-                    'scurve':GradeSCurveScan,
-                    'threqu':GradeThresholdEqualization,
-                    'gainopt':GradeGainOptimization,
-                    'thrmin':None,
-                    'thradj':GradeThresholdAdjustment,
-                    'injdelay':GradeInjectionDelay,
-                    'clockdelay':None,
-                    'bertest':None,
-                    'datarbopt':None,
-                    'voltagetuning':None,
-                    'gendacdac':None,
-                    'physics':None,
-                }
-                
-                try:
-                    Grade, PassModule, figureList = Test_to_Function_Map[Test_to_Ph2ACF_Map[testName]](CanvasList)
-                except:
-                    logger.error(f"There is no test function written for {testName}.")
-
-                
-                if set(Grade.keys()) != set(ExpectedModuleList):
-                    logger.warning(
-                        "Retrieved modules from ROOT file doesn't match with folder name"
-                    )
-            else:
-                for module in ExpectedModuleList:
-                    Grade[module] = {0: -1.0}
-                    PassModule[module] = {0: False}
-                    figureList = {}
-        except Exception as err:
-            print("Failed to get the score: {}".format(repr(err)))
-
-    elif testName in "IVCurve":
-        for module in ExpectedModuleList:
-            Grade[module] = {0: 1.0}
-            PassModule[module] = {0: True}
-            figureList = {}
-            for i in range(1, 18):
-                Grade[module][i] = 1.0
-                PassModule[module][i] = True
-    else:
-        try:
-            CanvasList = {}
-            FileName = "{0}/Run{1}_{2}.root".format(
-                inputDir, runNumber, testName
-            )
-            if os.path.isfile(FileName):
-                Nodes = GetDirectory(FileName)
-                for Node in Nodes:
-                    CanvasList = GetCanvasVAL(Node, CanvasList, ModuleMap)
-                Grade, PassModule, figureList = FakeGrade(CanvasList)
-                if set(Grade.keys()) != set(ExpectedModuleList):
-                    logger.warning(
-                        "Retrived modules from ROOT file doesn't match with folder name"
-                    )
-            else:
-                for module in ExpectedModuleList:
-                    Grade[module] = {0: -1.0}
-                    PassModule[module] = {0: False}
-                    figureList = {}
-        except Exception as err:
-            print("Failed to get the fake score: {}".format(repr(err)))
-
-    for key in Grade.keys():
-        try:
-            gradeFile = open("{}/Grade_Module{}.txt".format(inputDir, key), "w")
-            gradeFile.write("Test:       {}\n".format(testName))
-            gradeFile.write("runNumber:  {}\n".format(runNumber))
-            gradeFile.write("Grade:      {}\n".format(min(Grade[key].values())))
-            gradeFile.close()
-        except Exception as err:
-            print("Failed to write Grading file: {}".format(repr(err)))
-
-    # print(Grade)
-    # print(PassModule)
-    return Grade, PassModule, figureList
+def ResultGrader(inputDir, testName, runNumber, moduleType):    
+    #rubric_name = "rubricV2.py"
+    try:
+        module_name = inputDir.split("Module")[1].split('_')[0]
+        ROOT_file_path = "{0}/Run{1}_{2}.root".format(
+            inputDir, runNumber, testName.split('_')[0].rstrip("Scan")
+        )
+        chip_canvases = [
+            f"Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_{i}" for i in ModuleLaneMap[moduleType].values()
+        ]
+        relevant_files = [os.fsdecode(file) for file in os.listdir(inputDir)]
+        
+        my_felis = Felis(inputDir, False)
+        sanity, message = my_felis.set_result(
+            ROOT_file_path,
+            chip_canvases,
+            relevant_files,
+            module_name,
+            testName,
+            Test_to_Ph2ACF_Map[testName],
+        )
+        
+        return sanity
+    except Exception as err:
+        print("Failed to get the score: {}".format(repr(err)))
+        return False
 
 
 def GetCanvasVAL(node, canvasList, ModuleMap):
