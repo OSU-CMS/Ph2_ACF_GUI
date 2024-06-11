@@ -4,6 +4,7 @@ Class to perform the SLDO curve scanning
 
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from Gui.python.logging_config import logger
+from icicle.icicle.instrument_cluster import DummyInstrument
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -41,8 +42,21 @@ class SLDOCurveWorker(QThread):
             'DEFAULT': self.instruments._adc_board.PIN_MAP,
         }
 
-
     def run(self) -> None:
+        adc_present = type(self.instruments._adc_board) is not DummyInstrument
+        relay_present = type(self.instruments._relay_board) is not DummyInstrument
+        dmm_present = type(self.instruments._multimeter) is not DummyInstrument
+        
+        if adc_present:
+            logger.info("Running with ADC.")
+            self.runWithADC()
+        elif relay_present and dmm_present:
+            logger.info("Running with Relay+DMM.")
+            self.runWithRelayDMM()
+        else:
+            logger.error("You do not have instruments required to run an SLDOScan connected.\nYou must have an Adc Board or (Relay Board and Multimeter).")
+
+    def runWithADC(self) -> None:
         """
         Run thread that will ramp up the LV while measuring from the multimeter, then ramp down doing the same thing.
         Combine the two list of measurments and return that from the function.
@@ -123,6 +137,75 @@ class SLDOCurveWorker(QThread):
             self.measure.emit(total_result, self.PIN_MAPPINGS[self.moduleType][pin]) 
         #All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
+    
+    def runWithRelayDMM(self) -> None:
+        """
+        Run thread that will ramp up the LV while measuring from the multimeter, then ramp down doing the same thing.
+        Combine the two list of measurments and return that from the function.
+
+        measure: emitted after VI curve of each pin contains array of MM measurements
+        progress: emitted after each cycle of the LV sweep
+        """
+        # Initialize a list to store the results
+        self.result_list = []
+        self.labels = []
+        # Turn off instruments
+        self.instruments.hv_off()
+        self.instruments.lv_off()
+        self.instruments._multimeter.set("SYSTEM_MODE","REM")
+        logger.info('turned off the lv and hv')
+        for key in self.instruments._relay_board.PIN_MAP.keys():
+            if "VDD" in key:
+                self.pin_list.append(key)
+                print('adding {0} to pin_list'.format(key))
+        for pin in self.pin_list:
+            # Make label for plot
+            self.labels.append(pin)
+            # Connect to relay pin
+            logger.info('made it inside the pin loop')
+            self.instruments.relay_pin(pin)
+            # ramp up LV
+            self.instruments.lv_on(current=self.starting_current, voltage=self.max_voltage)
+            _, result_ = self.instruments._lv.sweep(
+                "CURRENT",
+                self.instruments._default_lv_channel,
+                self.target_current,
+                delay=self.delay,
+                step_size=self.step_size,
+                measure=True,
+                measure_function=self.instruments.multimeter_measure,
+                measure_args={"measured_unit":"SLDO", "cycles": self.integration_cycles},
+                log_function=logger.info,
+                #execute_each_step=self.getProgress,
+                break_monitoring=self.breakTest
+            )
+
+            result_up = np.array(result_)
+            # Ramp down LV and measure on the way down
+            _, result_ = self.instruments._lv.sweep(
+                "CURRENT",
+                self.instruments._default_lv_channel,
+                self.starting_current,
+                delay=self.delay,
+                step_size=self.step_size,
+                measure=True,
+                measure_function=self.instruments.multimeter_measure,
+                measure_args={"measured_unit":"SLDO", "cycles": self.integration_cycles},
+                log_function=logger.info,
+                #execute_each_step=self.getProgress,
+                break_monitoring= self.breakTest
+            )
+            result_down = np.array(result_)
+            total_result = np.concatenate((result_up, result_down), axis=0)
+            print('total result is {0}'.format(total_result))
+            self.instruments.lv_off()
+            
+        # Emit a signal that passees the list of results to the SLDOCurveHandler.  
+            self.getProgress()  
+            self.measure.emit(total_result, pin)
+        #All pins have been scanned so we emit the finished signal
+        self.finishedSignal.emit()
+
 
     def getProgress(self):
         self.percentStep = abs(100/len(self.pin_list))
