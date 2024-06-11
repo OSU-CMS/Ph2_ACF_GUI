@@ -561,15 +561,11 @@ class TestHandler(QObject):
 
     def validateTest(self):
         try:
-            passed = ResultGrader(
+            result = ResultGrader(
                 self.output_dir, self.currentTest, self.RunNumber, self.ModuleType
             )
-            self.updateValidation.emit(passed)
-            return passed
-        # self.StatusCanvas.renew()
-        # self.StatusCanvas.update()
-        # self.HistoryLayout.removeWidget(self.StatusCanvas)
-        # self.HistoryLayout.addWidget(self.StatusCanvas)
+            self.updateValidation.emit(result)
+            return list(result.values())[0]
         except Exception as err:
             logger.error(err)
 
@@ -1183,15 +1179,14 @@ class TestHandler(QObject):
         self.IVCurveResult.saveToSVG(filename)
         self.IVCurveResult.saveToSVG(filename2)
 
-        passed = ResultGrader(
+        result = ResultGrader(
             self.output_dir, self.currentTest, self.RunNumber, self.ModuleType
         )
-        self.updateValidation.emit(passed)
+        self.updateValidation.emit(result)
 
         step="IVCurve"
 
         EnableReRun = False
-
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):

@@ -293,8 +293,9 @@ class QtRunWindow(QWidget):
         self.StatusTable = QTableWidget()
         self.header = ["TestName"]
         for key in self.testHandler.rd53_file.keys():
-            ChipName = key.split("_")
-            self.header.append("Module{}_Chip{}".format(ChipName[0], ChipName[2]))
+            ModuleID = key.split("_")[0]
+            if f"Module{ModuleID}" not in self.header:
+                self.header.append("Module{}".format(ModuleID))
         self.StatusTable.setColumnCount(len(self.header))
         self.StatusTable.setHorizontalHeaderLabels(self.header)
         self.StatusTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
@@ -454,22 +455,21 @@ class QtRunWindow(QWidget):
             else:
                 self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
             for moduleKey in test.keys():
-                for chipKey in test[moduleKey].keys():
-                    ChipID = "Module{}_Chip{}".format(moduleKey, chipKey)
-                    status = "Pass" if test[moduleKey][chipKey] == True else "Failed"
-                    if ChipID in self.header:
-                        columnId = self.header.index(ChipID)
-                        self.StatusTable.setItem(
-                            row, columnId, QTableWidgetItem(status)
+                status = "Pass" if test[moduleKey] else "Failed"
+                moduleID = f"Module{moduleKey}"
+                if moduleID in self.header:
+                    columnID = self.header.index(moduleID)
+                    self.StatusTable.setItem(
+                        row, columnID, QTableWidgetItem(status)
+                    )
+                    if status == "Pass":
+                        self.StatusTable.item(row, columnID).setBackground(
+                            QColor(Qt.green)
                         )
-                        if status == "Pass":
-                            self.StatusTable.item(row, columnId).setBackground(
-                                QColor(Qt.green)
-                            )
-                        elif status == "Failed":
-                            self.StatusTable.item(row, columnId).setBackground(
-                                QColor(Qt.red)
-                            )
+                    elif status == "Failed":
+                        self.StatusTable.item(row, columnID).setBackground(
+                            QColor(Qt.red)
+                        )
 
         self.HistoryLayout.addWidget(self.StatusTable)
 
@@ -596,8 +596,10 @@ class QtRunWindow(QWidget):
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
 
-    def updateValidation(self, passed):
+    def updateValidation(self, result:dict):
         try:
+            passed = list(result.values())[0]
+            self.modulestatus.append(result)
             if passed:
                 self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
                 self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: green")

@@ -4,6 +4,7 @@ ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
 import os
 import re
+import sys
 from collections import defaultdict
 from Gui.python.ROOTInterface import (
     GetDirectory,
@@ -12,6 +13,7 @@ from Gui.python.ROOTInterface import (
 from Gui.GUIutils.settings import ModuleLaneMap
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
+sys.path.append("./../felis") #temporary until a new docker image is built with the new path
 from felis import Felis
 
 
@@ -37,10 +39,10 @@ def ResultGrader(inputDir, testName, runNumber, moduleType):
             Test_to_Ph2ACF_Map[testName],
         )
         
-        return sanity
+        return {module_name:sanity}
     except Exception as err:
         print("Failed to get the score: {}".format(repr(err)))
-        return False
+        return {module_name:False}
 
 
 def GetCanvasVAL(node, canvasList, ModuleMap):

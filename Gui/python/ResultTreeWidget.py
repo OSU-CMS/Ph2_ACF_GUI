@@ -270,7 +270,7 @@ class ResultTreeWidget(QWidget):
 
         self.FileList += stepFiles
 
-        for File in self.FileList:
+        for File in set(self.FileList):
             CurrentNode = QTreeWidgetItem()
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
@@ -293,7 +293,7 @@ class ResultTreeWidget(QWidget):
 
         self.IVFileList += stepFiles2
 
-        for File in self.IVFileList:
+        for File in set(self.IVFileList):
             CurrentNode = QTreeWidgetItem()
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
@@ -316,7 +316,7 @@ class ResultTreeWidget(QWidget):
 
         self.SLDOFileList += stepFiles2
 
-        for File in self.SLDOFileList:
+        for File in set(self.SLDOFileList):
             CurrentNode = QTreeWidgetItem()
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
