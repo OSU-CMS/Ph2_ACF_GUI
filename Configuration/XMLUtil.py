@@ -168,6 +168,7 @@ class HyBridModule():
 class FE():
   def __init__(self):
     self.Id="0" 
+    self.Enabled = "0"
     self.Lane="0" 
     self.configfile="CMSIT_RD53.txt"
     self.settingList = {}
@@ -182,8 +183,9 @@ class FE():
     self.TxPolarities = "0"
     
 
-  def SetFE(self, Id, Lane, RxPolarities = "0", configfile = "CMSIT_RD53.txt"): #FIXME I think this is where you need to configure the lane config but cause it needs to have either the chipID or lane# passed to it
+  def SetFE(self, Id, Enabled, Lane, RxPolarities = "0", configfile = "CMSIT_RD53.txt"): #FIXME I think this is where you need to configure the lane config but cause it needs to have either the chipID or lane# passed to it
     self.Id = str(Id)
+    self.Enabled = str(Enabled)
     self.Lane = str(Lane)
     self.configfile = configfile
     self.RxPolarities = RxPolarities
@@ -311,7 +313,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
           BeBoard.boardType = boardtype
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
-          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})
+          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})
           if 'RD53B' in boardtype:
             Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
             Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,FE.laneConfigList)
