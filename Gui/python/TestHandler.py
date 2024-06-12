@@ -565,7 +565,7 @@ class TestHandler(QObject):
                 self.output_dir, self.currentTest, self.RunNumber, self.ModuleType
             )
             self.updateValidation.emit(result)
-            return list(result.values())[0]
+            return list(result.values())[0][0]
         except Exception as err:
             logger.error(err)
 

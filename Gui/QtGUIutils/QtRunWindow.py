@@ -299,6 +299,7 @@ class QtRunWindow(QWidget):
         self.StatusTable.setColumnCount(len(self.header))
         self.StatusTable.setHorizontalHeaderLabels(self.header)
         self.StatusTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.StatusTable.itemClicked.connect(self.displayTestResultPopup)
         self.HistoryLayout.addWidget(self.StatusTable)
         self.HistoryBox.setLayout(self.HistoryLayout)
 
@@ -455,7 +456,7 @@ class QtRunWindow(QWidget):
             else:
                 self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
             for moduleKey in test.keys():
-                status = "Pass" if test[moduleKey] else "Failed"
+                status = "Pass" if test[moduleKey][0] else "Failed"
                 moduleID = f"Module{moduleKey}"
                 if moduleID in self.header:
                     columnID = self.header.index(moduleID)
@@ -472,6 +473,16 @@ class QtRunWindow(QWidget):
                         )
 
         self.HistoryLayout.addWidget(self.StatusTable)
+
+    def displayTestResultPopup(self, item):
+        row = item.row() #row = index, they are aligned in refreshHistory()
+        col = item.column()
+        message = self.modulestatus[row][self.header[col].lstrip("Module")][1]
+        
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Additional Information")
+        msg_box.setText(message)
+        msg_box.exec_()
 
     def sendBackSignal(self):
         self.backSignal = True
@@ -598,7 +609,7 @@ class QtRunWindow(QWidget):
 
     def updateValidation(self, result:dict):
         try:
-            passed = list(result.values())[0]
+            passed = list(result.values())[0][0]
             self.modulestatus.append(result)
             if passed:
                 self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
