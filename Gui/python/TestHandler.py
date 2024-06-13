@@ -21,6 +21,7 @@ from Gui.GUIutils.settings import (
     ModuleLaneMap,
     firmware_image,
     updatedXMLValues,
+    optimizationTestMap,
 )
 from Gui.GUIutils.guiUtils import (
     ConfigureTest,
@@ -395,6 +396,7 @@ class TestHandler(QObject):
         self.starttime = None
         self.ProgressingMode = "None"
         self.currentTest = testName
+        self.updateOptimizedXMLValues()
         self.configTest()
 
         print(self.output_dir)
@@ -485,31 +487,12 @@ class TestHandler(QObject):
             "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")), "DoNSteps"
         )
 
-        if Test_to_Ph2ACF_Map[self.currentTest] in [
-            "pixelalive",
-            "noise",
-            "latency",
-            "injdelay",
-            "clockdelay",
-            "threqu",
-            "thrmin",
-            "scurve",
-            "gainopt",
-            "thradj",
-            "physics",
-            "gain",
-        ]:
-            self.run_process.start(
-                "CMSITminiDAQ",
-                ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
-            )
-            if Test_to_Ph2ACF_Map[self.currentTest] == "threqu":
-                self.isTDACtuned = True
-        else:
-            self.info_process.start(
-                "echo",
-                ["test {} not runnable, quitting...".format(Test_to_Ph2ACF_Map[self.currentTest])],
-            )
+        self.run_process.start(
+            "CMSITminiDAQ",
+            ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
+        )
+        if Test_to_Ph2ACF_Map[self.currentTest] == "threqu":
+            self.isTDACtuned = True
 
         # Question = QMessageBox()
         # Question.setIcon(QMessageBox.Question)
@@ -843,45 +826,6 @@ class TestHandler(QObject):
                         
                     except:
                         pass
-                
-                toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
-
-                if toUpdate:
-                    print("trying to update xml value")
-                    try:
-                        self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
-                        # print("made it to Summary")
-                        UpdatedValuetext = textStr.split()[valueIndex]
-                        # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
-                        UpdatedValue = int(
-                            re.sub(r"\033\[(\d|;)+?m", "", UpdatedValuetext)
-                        )
-                        print("New {0} value is {1}".format(UpdatedFEKey, UpdatedValue))
-                        # print(textStr.split())
-                        # globalThreshold = int(textStr.split()[-1])
-                        chipIdentifier = textStr.split("=")[-1].split("is")[0]
-                        chipIdentifier = re.sub(
-                            r"\033\[(\d|;)+?m", "", chipIdentifier
-                        ).split("]")[0]
-                        HybridIDKey = chipIdentifier.split("/")[2]
-                        ChipIDKey = chipIdentifier.split("/")[3]
-                        print("Hybrid id {0}".format(HybridIDKey))
-                        print("chipID {0}".format(ChipIDKey))
-                        updatedXMLValueKey = "{}/{}".format(HybridIDKey, ChipIDKey)
-                        updatedXMLValues[updatedXMLValueKey][
-                            UpdatedFEKey
-                        ] = UpdatedValue
-                        if "DAC_GDAC_M_LIN" in UpdatedFEKey:
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_L_LIN"
-                            ] = UpdatedValue
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_R_LIN"
-                            ] = UpdatedValue
-
-                    except Exception as err:
-                        logger.error("Failed to update ")
-
                 elif "TEMPSENS_" in textStr:
                     try:
                         output = textStr.split("[")
@@ -908,46 +852,6 @@ class TestHandler(QObject):
                 continue
             #This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
             
-            elif self.ProgressingMode == "Summary":
-                toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
-                if toUpdate:
-                    print("trying to update xml value")
-                    try:
-                        self.runwindow.ResultWidget.ProgressBar[
-                            self.testIndexTracker
-                        ].setValue(100)
-                        # print("made it to Summary")
-                        UpdatedValuetext = textStr.split()[valueIndex]
-                        # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
-                        UpdatedValue = int(
-                            re.sub(r"\033\[(\d|;)+?m", "", UpdatedValuetext)
-                        )
-                        print("New {0} value is {1}".format(UpdatedFEKey, UpdatedValue))
-                        # print(textStr.split())
-                        # globalThreshold = int(textStr.split()[-1])
-                        chipIdentifier = textStr.split("=")[-1].split("is")[0]
-                        chipIdentifier = re.sub(
-                            r"\033\[(\d|;)+?m", "", chipIdentifier
-                        ).split("]")[0]
-                        HybridIDKey = chipIdentifier.split("/")[2]
-                        ChipIDKey = chipIdentifier.split("/")[3]
-                        print("Hybrid id {0}".format(HybridIDKey))
-                        print("chipID {0}".format(ChipIDKey))
-                        updatedXMLValueKey = "{}/{}".format(HybridIDKey, ChipIDKey)
-                        updatedXMLValues[updatedXMLValueKey][
-                            UpdatedFEKey
-                        ] = UpdatedValue
-                        if "DAC_GDAC_M_LIN" in UpdatedFEKey:
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_L_LIN"
-                            ] = UpdatedValue
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_R_LIN"
-                            ] = UpdatedValue
-
-                    except Exception as err:
-                        logger.error("Failed to update ")
-        
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
@@ -977,37 +881,28 @@ class TestHandler(QObject):
             # self.runwindow.ConsoleView.appendHtml(text.decode("utf-8"))
         self.readingOutput = False
 
-    def updateNeeded(self, textStr):
-        currentTest = Test_to_Ph2ACF_Map[self.currentTest]
-        # print('board type in update section is {0}'.format(self.ModuleType))
-        if currentTest in ["thradj", "thrmin"] and "Global threshold for" in textStr:
-            if "CROC" in self.ModuleType:
-                return (
-                    True,
-                    "DAC_GDAC_M_LIN",
-                    -1,
-                )  # FIXME need to make this also update DAC_GDAC_L_LIN and DAC_GDAC_R_LIN
-            else:
-                return True, "Vthreshold_LIN", -1
-        elif currentTest in ["threq"] and "Best VCAL_HIGH" in textStr:
-            return True, "VCAL_HIGH", -1
-        elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
-            if "CROC" in self.ModuleType:
-                return True, "DAC_KRUM_CURR_LIN", -1
-            else:
-                return True, "KRUM_CURR_LIN", -1
-        elif currentTest in ["injdelay"]:
-            if "New latency dac" in textStr:
-                if "CROC" in self.ModuleType:
-                    return True, "TriggerConfig", -2
-                else:
-                    return True, "LATENCY_CONFIG", -2
-            elif "New injection delay" in textStr:
-                return True, "CAL_EDGE_FINE_DELAY", -2
-            else:
-                return (False, None, 0)
-        else:
-            return (False, None, 0)
+    def updateOptimizedXMLValues(self):
+        print('trying to update the xml value')
+        try:
+            if Test_to_Ph2ACF_Map[self.currentTest] in optimizationTestMap.keys():
+                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
+                updatedFEKeys = optimizationTestMap[Test_to_Ph2ACF_Map[self.currentTest]]
+                modules = [module for module in self.firmware.getAllModules().values()]
+                for module in modules:
+                    chipIDs = [chip.getID() for chip in module.getChips().values()]
+                    hybridID = module.getFMCPort()
+                    print("HybridID {0}".format(hybridID))
+                    print("chipIDs {0}".format(chipIDs))
+                    for chipID in chipIDs:
+                        updatedXMLValues[f"{hybridID}/{chipID}"] = {}
+                        for updatedFEKey in updatedFEKeys:
+                            if "TriggerConfig" in updatedFEKey and "CROC" not in self.ModuleType:
+                                continue
+                            elif "LATENCY_CONFIG" in updatedFEKey and "CROC" in self.ModuleType:
+                                continue
+                            updatedXMLValues[f"{hybridID}/{chipID}"][updatedFEKey] = ""
+        except Exception as err:
+            logger.error(f"Failed to update, {err}")
 
     # Reads data that is normally printed to the terminal and saves it to the output file
     @QtCore.pyqtSlot()
