@@ -35,6 +35,8 @@ from Gui.GUIutils.guiUtils import (
     isSingleTest,
     formatter,
 )
+sys.path.append("./../felis") #temporary until a new docker image is built with the new python path
+from felis import Felis
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
@@ -133,6 +135,8 @@ class TestHandler(QObject):
         self.listWidgetIndex = 0
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
+        
+        self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
         self.grades = []
         self.modulestatus = []
         
@@ -562,7 +566,8 @@ class TestHandler(QObject):
     def validateTest(self):
         try:
             result = ResultGrader(
-                self.output_dir, self.currentTest, self.RunNumber, self.ModuleType
+                self.felis, self.output_dir, self.currentTest,
+                self.testIndexTracker, self.RunNumber, self.ModuleType,
             )
             self.updateValidation.emit(result)
             return list(result.values())[0][0]
@@ -1041,6 +1046,13 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                status, message = self.felis.upload_results(
+                    self.output_dir.split("Module")[1].split('_')[0],
+                    self.master.TryUsername,
+                    self.master.TryPassword,
+                )
+                if not status:
+                    logger.error(f"Error uploading test results: {message}")
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1180,7 +1192,8 @@ class TestHandler(QObject):
         self.IVCurveResult.saveToSVG(filename2)
 
         result = ResultGrader(
-            self.output_dir, self.currentTest, self.RunNumber, self.ModuleType
+            self.felis, self.output_dir, self.currentTest,
+            self.testIndexTracker, self.RunNumber, self.ModuleType,
         )
         self.updateValidation.emit(result)
 
@@ -1202,6 +1215,13 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                status, message = self.felis.upload_results(
+                    self.output_dir.split("Module")[1].split('_')[0],
+                    self.master.TryUsername,
+                    self.master.TryPassword,
+                )
+                if not status:
+                    logger.error(f"Error uploading test results: {message}")
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1244,6 +1264,13 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                status, message = self.felis.upload_results(
+                    self.output_dir.split("Module")[1].split('_')[0],
+                    self.master.TryUsername,
+                    self.master.TryPassword,
+                )
+                if not status:
+                    logger.error(f"Error uploading test results: {message}")
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
