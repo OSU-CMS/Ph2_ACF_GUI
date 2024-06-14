@@ -451,7 +451,7 @@ class BeBoardBox(QWidget):
             FwModule.setModuleName(module.getSerialNumber())
             for chip in ModuleLaneMap[module.getType()].values():
                 logger.debug("type debug : " + str(module.getType()) )
-                logger.debug("Sereial number debug : " + str(module.getSerialNumber()))
+                logger.debug("Serial number debug : " + str(module.getSerialNumber()))
                 logger.debug("chip number debug : " + str(chip))
                 logger.debug("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) 
                 FwModule.setChipStatus(
