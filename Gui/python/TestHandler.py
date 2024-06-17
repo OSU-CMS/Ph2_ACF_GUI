@@ -354,6 +354,7 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
+        self.outputString.emit("Executing Single Step test...")
         if self.instruments:
             if not self.instruments.status(lv_channel=None)["lv"]:
                 self.instruments.lv_on(
@@ -369,6 +370,7 @@ class TestHandler(QObject):
             self.IVCurveHandler = IVCurveHandler(self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
+            self.outputString.emit("Beginning IVCurve")
             self.IVCurveHandler.IVCurve()
             return
 
@@ -381,6 +383,7 @@ class TestHandler(QObject):
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
+            self.outputString.emit("Beginning SLDOScan")
             self.SLDOScanHandler.SLDOScan()
             return
 
@@ -545,8 +548,10 @@ class TestHandler(QObject):
 
             self.starttime = None
             if self.IVCurveHandler:
+                self.outputString.emit("Aborting IVCurve")
                 self.IVCurveHandler.stop()
             if self.SLDOScanHandler:
+                self.outputString.emit("Aborting SLDOScan")
                 self.SLDOScanHandler.stop()
         else:
             return
@@ -1111,60 +1116,60 @@ class TestHandler(QObject):
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
 
-    def updateMeasurement(self, measureType, measure):
-        """
-        Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
-        if in simplified gui add to figure list
-        """
-        if measureType == "IVCurve":
-            voltages = measure["voltage"]
-            currents = measure["current"]
-            logger.debug(f"Voltages: {voltages}")
-            logger.debug(f"Currents: {currents}")
-            # self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-            #     Percentage * 100
-            # )
-            tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
-            if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
-                try:
-                    os.mkdir(tmpDir)
-                    logger.info("Creating " + tmpDir)
-                except:
-                    logger.warning("Failed to create " + tmpDir)
-            svgFile = "IVCurve.svg"
-            output = self.IVCurveResult.saveToSVG(tmpDir + "/" + svgFile)
-            print(f"SVG file output: {output}")
-            self.IVCurveResult.update()
-            if not self.master.expertMode:
-                step = "IVCurve"
-                self.figurelist = {"-1": [output]}
-                self.updateIVResult.emit((step, self.figurelist))
+    # def updateMeasurement(self, measureType, measure):
+    #     """
+    #     Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
+    #     if in simplified gui add to figure list
+    #     """
+    #     if measureType == "IVCurve":
+    #         voltages = measure["voltage"]
+    #         currents = measure["current"]
+    #         logger.debug(f"Voltages: {voltages}")
+    #         logger.debug(f"Currents: {currents}")
+    #         # self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+    #         #     Percentage * 100
+    #         # )
+    #         tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
+    #         if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
+    #             try:
+    #                 os.mkdir(tmpDir)
+    #                 logger.info("Creating " + tmpDir)
+    #             except:
+    #                 logger.warning("Failed to create " + tmpDir)
+    #         svgFile = "IVCurve.svg"
+    #         output = self.IVCurveResult.saveToSVG(tmpDir + "/" + svgFile)
+    #         print(f"SVG file output: {output}")
+    #         self.IVCurveResult.update()
+    #         if not self.master.expertMode:
+    #             step = "IVCurve"
+    #             self.figurelist = {"-1": [output]}
+    #             self.updateIVResult.emit((step, self.figurelist))
 
-        if measureType == "SLDOScan":
-            voltages = measure["voltage"]
-            currents = measure["current"]
-            Percentage = measure["percentage"]
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                Percentage * 100
-            )
-            if float(voltages) < -0.1 and float(currents) < -0.1:
-                return
-            self.SLDOScanData.append([voltages, currents])
-            self.SLDOScanResult.updatePlots(self.SLDOScanData)
-            tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
-            if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
-                try:
-                    os.mkdir(tmpDir)
-                    logger.info("Creating " + tmpDir)
-                except:
-                    logger.warning("Failed to create " + tmpDir)
-            svgFile = "SLDOScan.svg"
-            output = self.SLDOScanResult.saveToSVG(tmpDir + "/" + svgFile)
-            self.SLDOScanResult.update()
-            if not self.master.expertMode:
-                step = "SLDOScan"
-                self.figurelist = {"-1": [output]}
-                self.updateResult.emit((step, self.figurelist))
+    #     if measureType == "SLDOScan":
+    #         voltages = measure["voltage"]
+    #         currents = measure["current"]
+    #         Percentage = measure["percentage"]
+    #         self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+    #             Percentage * 100
+    #         )
+    #         if float(voltages) < -0.1 and float(currents) < -0.1:
+    #             return
+    #         self.SLDOScanData.append([voltages, currents])
+    #         self.SLDOScanResult.updatePlots(self.SLDOScanData)
+    #         tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
+    #         if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
+    #             try:
+    #                 os.mkdir(tmpDir)
+    #                 logger.info("Creating " + tmpDir)
+    #             except:
+    #                 logger.warning("Failed to create " + tmpDir)
+    #         svgFile = "SLDOScan.svg"
+    #         output = self.SLDOScanResult.saveToSVG(tmpDir + "/" + svgFile)
+    #         self.SLDOScanResult.update()
+    #         if not self.master.expertMode:
+    #             step = "SLDOScan"
+    #             self.figurelist = {"-1": [output]}
+    #             self.updateResult.emit((step, self.figurelist))
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
@@ -1189,6 +1194,9 @@ class TestHandler(QObject):
     def IVCurveFinished(self, test: str, measure: dict):
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        self.outputString.emit(f"Voltages: {measure['voltage']}")
+        self.outputString.emit(f"Currents: {measure['current']}")
 
         for module in self.firmware.getAllModules().values():  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
