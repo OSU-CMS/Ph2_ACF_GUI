@@ -51,7 +51,7 @@ then
 	    -v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
 	    -v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 	    -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-	    -e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest #local/testimage423newdev:latest
+	    -e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
 else
     echo "running as user"
     docker run --pull=always --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
