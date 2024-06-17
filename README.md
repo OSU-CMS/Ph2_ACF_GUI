@@ -9,8 +9,8 @@ Devices are controlled using the Icicle package. Please make sure your devices h
 
 | Model | baud rate | termination|
 | --- | ---| --- |
-| Keithley 2410 | 19200 | LF |
-| Keithley 2000 | 19200 | device default |
+| Keithley 2410 | 9600 | LF |
+| Keithley 2000 | 9600 | device default |
 | HP34401A | 9600 | device default |
 | Keysight E3633A | 9600 | device default |
 
@@ -158,7 +158,7 @@ On the login screen you can use either of the following usernames to log in loca
 For non-expert mode:    username = `local`  
 For expert mode:        username = `localexpert`
 
-### Non-expert mode (In development)
+### Non-expert mode
 After logging in you will see status indicators for the database, HV, LV, FC7, Temp/Humidity.  If you are running locally, then the database indicator will be red.  If anything else is red you can click the "Refresh" button to attempt to reconnect all the devices.  If you are ready to test a module you should:
 1. Either manually (on a keyboard) enter an module id into the appropriate box and press "enter" on the keyboard or scan a QR code with your scanner (if you have one).
 2. (Optional) Choose "Quick Test" if you don't want to run the full suite of tests.
