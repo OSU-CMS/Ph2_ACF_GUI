@@ -377,7 +377,7 @@ class TestHandler(QObject):
             self.configTest()
             self.SLDOScanData = []
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType='DEFAULT', end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
@@ -1175,8 +1175,10 @@ class TestHandler(QObject):
         total_result_stacked = np.vstack(total_result)
         np.savetxt(csvfilename, total_result_stacked, delimiter=',')
         plt.figure()
-        plt.plot(total_result_stacked[:,2],total_result_stacked[:,1],'-x',label="module input voltage")
-        plt.plot(total_result_stacked[:,2],total_result_stacked[:,3],'-x',label=pin)
+        plt.plot(total_result_stacked[0], total_result_stacked[1], '-x', label="module input voltage (up)")
+        plt.plot(total_result_stacked[0], total_result_stacked[2], '-x', label=f"{pin} (up)")
+        plt.plot(total_result_stacked[3], total_result_stacked[4], '-x', label="module input voltage (down)")
+        plt.plot(total_result_stacked[3], total_result_stacked[5], '-x', label=f"{pin} (down)")
         plt.grid(True)
         plt.xlabel("Current (A)")
         plt.ylabel("Voltage (V)")
@@ -1249,13 +1251,9 @@ class TestHandler(QObject):
             self.runTest()
 
     def SLDOScanFinished(self):
-        for (
-            module
-        ) in (
-            self.firmware.getAllModules().values()
-        ):  # FIXME This is not the ideal way to do this... I think...
-            moduleName = module.getModuleName()
-
+        # for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
+        #     moduleName = module.getModuleName()
+        EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
             self.instruments.lv_on(

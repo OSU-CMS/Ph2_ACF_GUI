@@ -400,24 +400,15 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
         HyBridModule0.SetHyBridModule(module.getModuleID(), "1")
         HyBridModule0.SetHyBridName(module.getModuleName())
 
-        if "CROC" in module.getModuleType():
-            FESettings_Dict = FESettings_DictB
-            globalSettings_Dict = globalSettings_DictB
-            HWSettings_Dict = HWSettings_DictB
-            FELaneConfig_Dict = FELaneConfig_DictB
-            if "Quad" in module.getModuleType():
-                RxPolarities = "1"
-                revPolarity = True
-            else:
-                RxPolarities = "0"
-            #LaneConfigSettings_Dict = LaneConfigSettings_DictB
-            
-            boardtype = "RD53B"+module.getModuleVersion()
-        else:
-            FESettings_Dict = FESettings_DictA
-            globalSettings_Dict = globalSettings_DictA
-            HWSettings_Dict = HWSettings_DictA
-            boardtype = "RD53A"
+        #Modified so that these variables are in scope of their usage. Not sure how it was working before
+        moduleType = module.getModuleType()
+        RxPolarities = "1" if "CROC" and "Quad" in moduleType else "0" if "CROC" in moduleType else None        
+        revPolarity = "CROC" and "Quad" in moduleType
+        FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
+        globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
+        HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
+        FELaneConfig_Dict = FELaneConfig_DictB if "CROC" in moduleType else None
+        boardtype = "RD53B"+module.getModuleVersion() if "CROC" in moduleType else "RD53A"
 
         # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
         for chip in module.getChips().values():
