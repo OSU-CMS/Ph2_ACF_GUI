@@ -136,6 +136,14 @@ class TestHandler(QObject):
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
         
+        felisScratchDir = "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch"
+        if not os.path.isdir(felisScratchDir):
+            try:
+                os.makedirs(felisScratchDir)
+                logger.info("New Felis scratch directory created.")
+            except OSError as e:
+                logger.error(f"Error making Felis scratch directory: {e.strerror}")
+        
         self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
         self.grades = []
         self.modulestatus = []
