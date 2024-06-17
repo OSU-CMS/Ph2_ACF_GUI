@@ -265,6 +265,7 @@ class QtRunWindow(QWidget):
         )
         # self.ConsoleView.setCenterOnScroll(True)
         self.ConsoleView.ensureCursorVisible()
+        self.ConsoleView.setReadOnly(True)
 
         ConsoleLayout.addWidget(self.ConsoleView)
         TerminalBox.setLayout(ConsoleLayout)
