@@ -11,9 +11,9 @@ from Gui.python.logging_config import logger
 
 class PeltierSignalGenerator:
     def __init__(self):
-        print("Connecting Peltier Port")
+        #print("Connecting Peltier Port")
         self.ser = serial.Serial(defaultPeltierPort, defaultPeltierBaud, timeout=5, write_timeout=5, inter_byte_timeout=5)
-        print("Peltier connected")
+        #print("Peltier connected")
         self.commandDict = {
             "Input1": ["0", "1"],
             "Desired Control Value": ["0", "3"],

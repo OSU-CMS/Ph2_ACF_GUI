@@ -293,6 +293,7 @@ class TestHandler(QObject):
         self.config_file = ""
         return
 
+
     def saveConfigs(self):
         for key in self.rd53_file.keys():
             try:
@@ -1080,9 +1081,13 @@ class TestHandler(QObject):
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateResult.emit(self.output_dir)
+            print(self.output_dir)
         else:
+            #self.updateResult.emit(self.output_dir)
+            #print(self.output_dir)
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
+            print(step, self.figurelist)
 
         if self.autoSave:
             self.saveTestToDB()
@@ -1111,7 +1116,6 @@ class TestHandler(QObject):
         Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
         if in simplified gui add to figure list
         """
-        # print(measure)
         if measureType == "IVCurve":
             voltages = measure["voltage"]
             currents = measure["current"]
@@ -1129,6 +1133,7 @@ class TestHandler(QObject):
                     logger.warning("Failed to create " + tmpDir)
             svgFile = "IVCurve.svg"
             output = self.IVCurveResult.saveToSVG(tmpDir + "/" + svgFile)
+            print(f"SVG file output: {output}")
             self.IVCurveResult.update()
             if not self.master.expertMode:
                 step = "IVCurve"
@@ -1182,11 +1187,10 @@ class TestHandler(QObject):
 
 
     def IVCurveFinished(self, test: str, measure: dict):
-        for (
-            module
-        ) in (
-            self.firmware.getAllModules().values()
-        ):  # FIXME This is not the ideal way to do this... I think...
+        # Get the current timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        for module in self.firmware.getAllModules().values():  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
 
             self.IVCurveResult = ScanCanvas(
@@ -1197,18 +1201,24 @@ class TestHandler(QObject):
                 Y=measure["current"],
                 invert=True,
             )
-        csvfilename = "{0}/IVCurve_Module_{1}.csv".format(self.output_dir, moduleName)
-        np.savetxt(csvfilename, (measure["voltage"],measure["current"]), delimiter=',')
-        filename = "{0}/IVCurve_Module_{1}.svg".format(self.output_dir, moduleName)
-        filename2 = "IVCurve_Module_{0}.svg".format(moduleName)
+
+        csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, timestamp)
+        np.savetxt(csvfilename, (measure["voltage"], measure["current"]), delimiter=',')
+        
+        filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, timestamp)
+        filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
         self.IVCurveResult.saveToSVG(filename)
         self.IVCurveResult.saveToSVG(filename2)
 
         grade, passmodule, self.figurelist = ResultGrader(
             self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap
         )
+
+        step="IVCurve"
+        self.figurelist={"-1": [filename]}
         self.updateValidation.emit(grade, passmodule)
         EnableReRun = False
+
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
@@ -1233,6 +1243,8 @@ class TestHandler(QObject):
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateIVResult.emit(self.output_dir)
+        else : 
+            self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
         self.testIndexTracker += 1
         if isCompositeTest(self.info[1]):
@@ -1269,6 +1281,7 @@ class TestHandler(QObject):
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateSLDOResult.emit(self.output_dir)
+        
 
         self.testIndexTracker += 1
         if isCompositeTest(self.info[1]):

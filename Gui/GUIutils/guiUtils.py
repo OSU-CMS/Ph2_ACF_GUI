@@ -413,11 +413,10 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
         # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
         for chip in module.getChips().values():
             print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
-            if not chip.getStatus(): #FIXME should be able to use chip.getStatus to use enable flag in the xml files
-                continue
             FEChip = FE()
             FEChip.SetFE(
                 chip.getID(),
+                "1" if chip.getStatus() else "0",
                 chip.getLane(),
                 RxPolarities,
                 "CMSIT_RD53_{0}_{1}_{2}.txt".format(

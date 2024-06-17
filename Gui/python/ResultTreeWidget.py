@@ -184,12 +184,12 @@ class ResultTreeWidget(QWidget):
     def onItemClicked(self, item, col):
         self.OutputTree.resizeColumnToContents(0)
         if item.text(0).endswith(";TCanvas"):
-            print("the test is {0}".format(item.text(0)))
-            print("This item is a TCanvas")
+            #print("the test is {0}".format(item.text(0)))
+            #print("This item is a TCanvas")
             canvas = item.data(0, Qt.UserRole)
             canvasname = str(item.text(0))
             canvasname = canvasname.split(";")[0]
-            print("The canvas is {0}".format(canvas))
+            #print("The canvas is {0}".format(canvas))
             self.displayResult(canvas, canvasname)
         elif "svg" in str(item.data(0, Qt.UserRole)):
             canvas = item.data(0, Qt.UserRole)
@@ -275,17 +275,20 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
             self.getResult(CurrentNode, File)
-
+    
     def updateIVResult(self, sourceFolder):
+
         process2 = subprocess.run(
-            'find {0} -type f -name "*.svg" '.format(sourceFolder),
+            'find {0} -type f -name "*IVCurve_Module_*.svg" '.format(sourceFolder),
             shell=True,
             stdout=subprocess.PIPE,
         )
         stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
 
         if stepFiles2 == [""]:
+            #print("No IV files found.")  # Debugging output if no IV files are found
             return
+        #print("IV files found:", stepFiles2)  # Debugging output to show the found IV files
 
         self.IVFileList += stepFiles2
 
@@ -294,6 +297,8 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
+        #print("IV files processed.")  # Debugging output to indicate IV files processing is done
+
     def updateSLDOResult(self, sourceFolder):
         process2 = subprocess.run(
             'find {0} -type f -name "*.svg" '.format(sourceFolder),
@@ -303,7 +308,10 @@ class ResultTreeWidget(QWidget):
         stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
 
         if stepFiles2 == [""]:
+            print("No SLD files found.")  # Debugging output if no SLD files are found
             return
+
+        print("SLD files found:", stepFiles2)  # Debugging output to show the found SLD files
 
         self.SLDOFileList += stepFiles2
 
@@ -312,6 +320,7 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
+        print("SLD files processed.")  # Debugging output to indicate SLD files processing is done
 
     def displayResult(self, canvas, name=None):
         print("the name passed was {0}".format(name))
