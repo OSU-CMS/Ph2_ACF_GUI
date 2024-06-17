@@ -112,6 +112,10 @@ def TCanvas2SVG(outputDir, canvas, name=None):
         canvas.Draw()
         if "SCurve" in name:
             canvas.SetLogz()
+        if "PixelAlive" in name:
+            ROOT.gStyle.SetOptStat(0) #no statistics box
+        else:
+            ROOT.gStyle.SetOptStat(1111) #default statistics box
         canvas.Print(outputFile)
         # canvas.Close()
         logger.info(outputFile + " is saved")
