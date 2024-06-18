@@ -826,6 +826,9 @@ class TestHandler(QObject):
                         
                     except:
                         pass
+
+                if self.check_for_end_of_test(textStr):
+                    self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
                 elif "TEMPSENS_" in textStr:
                     try:
                         output = textStr.split("[")
@@ -885,7 +888,6 @@ class TestHandler(QObject):
         print('trying to update the xml value')
         try:
             if Test_to_Ph2ACF_Map[self.currentTest] in optimizationTestMap.keys():
-                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
                 updatedFEKeys = optimizationTestMap[Test_to_Ph2ACF_Map[self.currentTest]]
                 modules = [module for module in self.firmware.getAllModules().values()]
                 for module in modules:
@@ -900,9 +902,30 @@ class TestHandler(QObject):
                                 continue
                             elif "LATENCY_CONFIG" in updatedFEKey and "CROC" in self.ModuleType:
                                 continue
+                            elif "Vthreshold_LIN" in updatedFEKey and "CROC" in self.ModuleType:
+                                continue
+                            elif "DAC_GDAC_" in updatedFEKey and "CROC" not in self.ModuleType:
+                                continue
                             updatedXMLValues[f"{hybridID}/{chipID}"][updatedFEKey] = ""
         except Exception as err:
             logger.error(f"Failed to update, {err}")
+    
+    def check_for_end_of_test(self, textStr):
+        #function to support the quick fix in on_readyReadStandardOutput() where
+        #the progress bar doesn't always reach 100%.
+        currentTest = Test_to_Ph2ACF_Map[self.currentTest]
+        if currentTest in ["thradj", "thrmin"] and "Global threshold for" in textStr:
+            return True
+        elif currentTest in ["threq"] and "Best VCAL_HIGH" in textStr:
+            return True
+        elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
+            return True
+        elif currentTest in ["injdelay"]:
+            if "New latency dac" in textStr:
+                return True
+            elif "New injection delay" in textStr:
+                return True
+        return False
 
     # Reads data that is normally printed to the terminal and saves it to the output file
     @QtCore.pyqtSlot()
