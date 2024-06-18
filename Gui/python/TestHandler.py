@@ -855,7 +855,10 @@ class TestHandler(QObject):
                 continue
             #This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
             
-            elif "@@@ Initializing the Hardware @@@" in textStr:
+            elif self.ProgressingMode == "Summary":
+                if self.check_for_end_of_test(textStr):
+                    self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
+	    elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
                 self.ProgressingMode = "Perform"
