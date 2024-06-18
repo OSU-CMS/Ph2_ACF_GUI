@@ -400,7 +400,7 @@ class TestHandler(QObject):
         self.currentTest = testName
         self.configTest()
 
-        print(self.output_dir)
+        
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
 
@@ -814,6 +814,7 @@ class TestHandler(QObject):
 
         alltext = self.run_process.readAllStandardOutput().data().decode()
         self.outputfile.write(alltext)
+    #print(alltext)
         # outputfile.close()
         textline = alltext.split("\n")
         # fileLines = open(self.outputFile,"r")
@@ -892,7 +893,7 @@ class TestHandler(QObject):
                         output = textStr.split("[")
                         sensor = output[8]
                         sensorMeasure = sensor[3:]
-                        print(sensorMeasure)
+                        
                         if sensorMeasure != "":
                             self.runwindow.updatetemp(self.tempindex, sensorMeasure)
                             self.tempindex += 1
@@ -901,12 +902,20 @@ class TestHandler(QObject):
                 elif "INTERNAL_NTC" in textStr:
                     try:
                         output = textStr.split("[")
-                        sensor = output[8]
-                        sensorMeasure = sensor[3:]
-                        #print(sensorMeasure)
-                        if sensorMeasure != "":
-                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                            self.tempindex += 1
+                        if len(output) > 8:  # Ensure there is something at index 8
+                            sensor = output[8].strip() 
+                            sensorMeasure = sensor[3:].split("C")[0].strip()
+                            import re
+                            sensorMeasure = re.sub(r'[^\d\.\+\-]', '', sensorMeasure)
+                            sensorMeasure += " °C"
+                    
+            
+                            if sensorMeasure != "":
+                                self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+                                self.tempindex += 1
+                            else:
+                                self.runwindow.updatetemp(self.tempindex, "Bad Reading, Will Retry")
+                                self.tempindex += 1
                     except Exception as e:
                         print("Failed due to {0}".format(e))
 
@@ -1086,13 +1095,13 @@ class TestHandler(QObject):
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateResult.emit(self.output_dir)
-            print(self.output_dir)
+            #print(self.output_dir)
         else:
             #self.updateResult.emit(self.output_dir)
             #print(self.output_dir)
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
-            print(step, self.figurelist)
+            #print(step, self.figurelist)
 
         if self.autoSave:
             self.saveTestToDB()
@@ -1115,6 +1124,7 @@ class TestHandler(QObject):
         if 'SLDO' in measurementType:
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
+
 
     # def updateMeasurement(self, measureType, measure):
     #     """
@@ -1170,6 +1180,7 @@ class TestHandler(QObject):
     #             step = "SLDOScan"
     #             self.figurelist = {"-1": [output]}
     #             self.updateResult.emit((step, self.figurelist))
+
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...

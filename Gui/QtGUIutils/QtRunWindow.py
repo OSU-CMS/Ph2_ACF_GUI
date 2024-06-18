@@ -353,6 +353,7 @@ class QtRunWindow(QWidget):
     def updatetemp(self, index, sensorMeasure):
         index = index % len(self.TempLabelList)
         self.TempLabelList[index].setText(sensorMeasure)
+        
 
     def destroyMain(self):
         self.MainBodyBox.deleteLater()
