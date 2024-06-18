@@ -94,12 +94,7 @@ class ModuleBox(QWidget):
 
         if self.SerialEdit.text().startswith("SH"):
             chipType = "TFPX CROC Quad"
-
             self.TypeCombo.setCurrentText(chipType)
-
-        
-
-        
 
     def getSerialNumber(self):
         return self.SerialEdit.text()
@@ -463,6 +458,7 @@ class BeBoardBox(QWidget):
             # FwModule.setOpticalGroupID(module.getID())
             FwModule.setModuleType(module.getType())
             FwModule.setModuleVersion(module.getVersion())
+            FwModule.setFMCPort(module.getID())
             self.firmware.addModule(index, FwModule)
         return self.firmware
 

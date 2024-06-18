@@ -200,6 +200,33 @@ BoxSize = {
     "TBPX CROC Quad": 4,
 }
 
+optimizationTestMap = {
+    'thradj':[
+        'DAC_GDAC_M_LIN',
+        'DAC_GDAC_L_LIN',
+        'DAC_GDAC_R_LIN',
+        'Vthreshold_LIN',
+    ],
+    'thrmin':[
+        'DAC_GDAC_M_LIN'
+        'DAC_GDAC_L_LIN'
+        'DAC_GDAC_R_LIN'
+        'Vthreshold_LIN'
+    ],
+    'threq':[
+        'VCAL_HIGH',
+    ],
+    'gainopt':[
+        'DAC_KRUM_CURR_LIN',
+        'KRUM_CURR_LIN',
+    ],
+    'injdelay':[
+        'TriggerConfig',
+        'LATENCY_CONFIG',
+        'CAL_EDGE_FINE_DELAY',
+    ],
+}
+
 # Reserved for updated value for XML configuration
 updatedXMLValues = defaultdict(dict)
 

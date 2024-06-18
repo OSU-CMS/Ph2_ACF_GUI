@@ -51,6 +51,7 @@ class QtModule:
         self.__moduleID = "0"
         self.__moduleType = "CROC SCC"
         self.__FMCID = "0"
+        self.__FMCPort = "0"
         self.__OGID = "0"
         self.__chipDict = {}
         self.__VDDAMap = {}  # Format is {chipID : VDDA value}
@@ -84,6 +85,12 @@ class QtModule:
 
     def getFMCID(self):
         return self.__FMCID
+
+    def setFMCPort(self, fmcPort):
+        self.__FMCPort = fmcPort
+
+    def getFMCPort(self):
+        return self.__FMCPort
 
     def setOpticalGroupID(self, ogId):
         self.__OGID = ogId
@@ -131,7 +138,7 @@ class QtModule:
             # FEChip.setID(8)
             LaneID = str(i)
             chipNumber = ModuleLaneMap[self.__moduleType][LaneID]
-            FEChip.setID(ModuleLaneMap[self.__moduleType][LaneID])
+            FEChip.setID(chipNumber)
             FEChip.setLane(LaneID)
             FEChip.setVDDA(self.__VDDAMap[chipNumber])
             FEChip.setVDDD(self.__VDDDMap[chipNumber])
