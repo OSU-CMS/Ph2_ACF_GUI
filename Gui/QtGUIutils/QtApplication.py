@@ -42,8 +42,8 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
-from icicle.icicle.instrument_cluster import BadStatusForOperationError
-from instrument_cluster import InstrumentCluster
+from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
+
 
 from Gui.python.logging_config import logger
 

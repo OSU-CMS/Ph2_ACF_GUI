@@ -184,12 +184,12 @@ class ResultTreeWidget(QWidget):
     def onItemClicked(self, item, col):
         self.OutputTree.resizeColumnToContents(0)
         if item.text(0).endswith(";TCanvas"):
-            print("the test is {0}".format(item.text(0)))
-            print("This item is a TCanvas")
+            #print("the test is {0}".format(item.text(0)))
+            #print("This item is a TCanvas")
             canvas = item.data(0, Qt.UserRole)
             canvasname = str(item.text(0))
             canvasname = canvasname.split(";")[0]
-            print("The canvas is {0}".format(canvas))
+            #print("The canvas is {0}".format(canvas))
             self.displayResult(canvas, canvasname)
         elif "svg" in str(item.data(0, Qt.UserRole)):
             canvas = item.data(0, Qt.UserRole)
@@ -233,7 +233,7 @@ class ResultTreeWidget(QWidget):
             self.allDisplayed = False
 
     def showNextPlot(self):
-        
+
         self.timer.start(3000)
         if len(self.displayList) == 0:
             return
@@ -287,9 +287,9 @@ class ResultTreeWidget(QWidget):
         stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
 
         if stepFiles2 == [""]:
-            print("No IV files found.")  # Debugging output if no IV files are found
+            #print("No IV files found.")  # Debugging output if no IV files are found
             return
-        print("IV files found:", stepFiles2)  # Debugging output to show the found IV files
+        #print("IV files found:", stepFiles2)  # Debugging output to show the found IV files
 
         self.IVFileList += stepFiles2
 
@@ -298,7 +298,7 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
-        print("IV files processed.")  # Debugging output to indicate IV files processing is done
+        #print("IV files processed.")  # Debugging output to indicate IV files processing is done
 
     def updateSLDOResult(self, sourceFolder):
         process2 = subprocess.run(

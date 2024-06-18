@@ -96,7 +96,7 @@ class SimplifiedMainWidget(QWidget):
         self.ArduinoGroup.setPort(site_settings.defaultArduino)
         self.ArduinoGroup.frozeArduinoPanel()
         self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["arduino"]["Label"].setText("Temperature and Humidity")
+        self.instrument_info["arduino"]["Label"].setText("Condensation Risk")
 
     def setupLogFile(self):
         LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),
@@ -309,7 +309,10 @@ class SimplifiedMainWidget(QWidget):
         self.setupBeBoard()
         self.setupLogFile() 
         self.setupArduino()
-        self.setupPeltier()
+        if site_settings.usePeltier:
+            self.setupPeltier()
+        else:
+            self.Peltier = None
         self.setDeviceStatus() 
         #self.setupStatusWidgets()
         self.setupUI()
@@ -410,7 +413,8 @@ class SimplifiedMainWidget(QWidget):
         self.worker = Worker_Polling()
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        self.worker.temp.connect(self.updatePeltierTemp)
+        if site_settings.usePeltier:
+            self.worker.temp.connect(self.updatePeltierTemp)
         self.worker.temp.connect(self.updateArduinoIndicator)
         self.thread.start()
 
@@ -427,7 +431,8 @@ class SimplifiedMainWidget(QWidget):
         # Technically a false sense of security for the user. 
         self.instrument_status["hv"] = True
         self.instrument_status["lv"] = True
-        self.instrument_status["peltier"] = False
+        if site_settings.usePeltier:
+            self.instrument_status["peltier"] = False
         if self.instruments:
             logger.debug(f'{__name__} Setup instrument status {self.instrument_status}')
             for key, value in self.instrument_info.items():
@@ -499,7 +504,7 @@ class Worker_Polling(QObject):
         self.delay = 0.5
         self.abort = False
     def run(self):
-        while not self.abort: 
+        while not self.abort and site_settings.usePeltier: 
             self.Peltier = PeltierSignalGenerator()
             peltier_power_status = 1 if int(self.Peltier.sendCommand(self.Peltier.createCommand("Power On/Off Read", ["0", "0"]))[-1]) == 1 else 0
             peltier_temp_message, temp_message_pass = self.Peltier.sendCommand(self.Peltier.createCommand("Input1",  ["0", "0", "0", "0", "0", "0", "0", "0"]))
@@ -513,6 +518,10 @@ class Worker_Polling(QObject):
 
             self.temp.emit(peltier_temp)
             self.power.emit(peltier_power_status)
+            time.sleep(self.delay)
+        
+        while not self.abort:
+            self.temp.emit(0.0)
             time.sleep(self.delay)
     def abort_worker(self):
         print("Worker aborted")
