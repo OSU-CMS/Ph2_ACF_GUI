@@ -78,6 +78,8 @@ class TestHandler(QObject):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
+        self.mod_dict={}
+        self.fused_dict_index=[-1,-1]
         # self.LVpowersupply.Reset()
 
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
@@ -804,7 +806,27 @@ class TestHandler(QObject):
         # textline = fileLines.readlines()
 
         for textStr in textline:
+            import re
             try:
+                if "Configuring chips of hybrid" in textStr:
+                    ansi_escape = re.compile(r'\x1b\[.*?m')
+                    clean_text = ansi_escape.sub('', textStr)
+                    hybrid_id = clean_text.split("hybrid: ")[-1].strip()
+                    self.mod_dict[hybrid_id] = {}
+                    self.fused_dict_index[0] = hybrid_id
+
+                if "Configuring RD53" in textStr:
+                    ansi_escape = re.compile(r'\x1b\[.*?m')
+                    clean_text = ansi_escape.sub('', textStr)
+                    chip_number= clean_text.split("RD53: ")[-1].strip()
+                    self.fused_dict_index[1]= chip_number
+
+                if "Fused ID" in textStr:
+                    ansi_escape = re.compile(r'\x1b\[.*?m')
+                    clean_text = ansi_escape.sub('', textStr)
+                    fuse_id =clean_text.split("Fused ID: ")[-1].strip()
+                    self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]]= fuse_id
+                    
                 if self.starttime != None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
