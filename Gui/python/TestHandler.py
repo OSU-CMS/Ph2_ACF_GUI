@@ -872,7 +872,7 @@ class TestHandler(QObject):
             elif self.ProgressingMode == "Summary":
                 if self.check_for_end_of_test(textStr):
                     self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
-	    elif "@@@ Initializing the Hardware @@@" in textStr:
+            elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
                 self.ProgressingMode = "Perform"
