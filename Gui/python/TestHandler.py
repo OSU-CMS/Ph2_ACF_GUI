@@ -870,15 +870,13 @@ class TestHandler(QObject):
                         print("Failed due to {0}".format(e))
                 elif "INTERNAL_NTC" in textStr:
                     try:
-                        output = textStr.split("[")
-                        if len(output) > 8:  # Ensure there is something at index 8
-                            sensor = output[8].strip() 
-                            sensorMeasure = sensor[3:].split("C")[0].strip()
-                            import re
-                            sensorMeasure = re.sub(r'[^\d\.\+\-]', '', sensorMeasure)
-                            sensorMeasure += " °C"
-                    
-            
+                        ansi_pattern = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+                        clean_text=ansi_pattern.sub('', textStr)
+                        if "INTERNAL_NTC" in clean_text:
+                            sensor=clean_text.split("INTERNAL_NTC:")[1].strip().split("C")[0].strip()
+                            sensorMeasure0=re.sub(r'[^\d\.\+\- ]', '', sensor)
+                            sensorMeasure0 += " °C"
+                            sensorMeasure = sensorMeasure0.replace("+-", "+/-")
                             if sensorMeasure != "":
                                 self.runwindow.updatetemp(self.tempindex, sensorMeasure)
                                 self.tempindex += 1
