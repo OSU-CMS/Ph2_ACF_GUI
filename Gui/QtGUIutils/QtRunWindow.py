@@ -293,11 +293,13 @@ class QtRunWindow(QWidget):
         self.StatusTable = QTableWidget()
         self.header = ["TestName"]
         for key in self.testHandler.rd53_file.keys():
-            ChipName = key.split("_")
-            self.header.append("Module{}_Chip{}".format(ChipName[0], ChipName[2]))
+            ModuleID = key.split("_")[0]
+            if f"Module{ModuleID}" not in self.header:
+                self.header.append("Module{}".format(ModuleID))
         self.StatusTable.setColumnCount(len(self.header))
         self.StatusTable.setHorizontalHeaderLabels(self.header)
         self.StatusTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.StatusTable.itemClicked.connect(self.displayTestResultPopup)
         self.HistoryLayout.addWidget(self.StatusTable)
         self.HistoryBox.setLayout(self.HistoryLayout)
 
@@ -455,24 +457,33 @@ class QtRunWindow(QWidget):
             else:
                 self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
             for moduleKey in test.keys():
-                for chipKey in test[moduleKey].keys():
-                    ChipID = "Module{}_Chip{}".format(moduleKey, chipKey)
-                    status = "Pass" if test[moduleKey][chipKey] == True else "Failed"
-                    if ChipID in self.header:
-                        columnId = self.header.index(ChipID)
-                        self.StatusTable.setItem(
-                            row, columnId, QTableWidgetItem(status)
+                status = "Pass" if test[moduleKey][0] else "Failed"
+                moduleID = f"Module{moduleKey}"
+                if moduleID in self.header:
+                    columnID = self.header.index(moduleID)
+                    self.StatusTable.setItem(
+                        row, columnID, QTableWidgetItem(status)
+                    )
+                    if status == "Pass":
+                        self.StatusTable.item(row, columnID).setBackground(
+                            QColor(Qt.green)
                         )
-                        if status == "Pass":
-                            self.StatusTable.item(row, columnId).setBackground(
-                                QColor(Qt.green)
-                            )
-                        elif status == "Failed":
-                            self.StatusTable.item(row, columnId).setBackground(
-                                QColor(Qt.red)
-                            )
+                    elif status == "Failed":
+                        self.StatusTable.item(row, columnID).setBackground(
+                            QColor(Qt.red)
+                        )
 
         self.HistoryLayout.addWidget(self.StatusTable)
+
+    def displayTestResultPopup(self, item):
+        row = item.row() #row = index, they are aligned in refreshHistory()
+        col = item.column()
+        message = self.modulestatus[row][self.header[col].lstrip("Module")][1]
+        
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Additional Information")
+        msg_box.setText(message)
+        msg_box.exec_()
 
     def sendBackSignal(self):
         self.backSignal = True
@@ -583,28 +594,18 @@ class QtRunWindow(QWidget):
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
 
-    def updateValidation(self, grade, passmodule):
+    def updateValidation(self, result:dict):
         try:
-            status = True
-            self.grades.append(grade)
-            self.modulestatus.append(passmodule)
-
-            self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
-            self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet(
-                "color: green"
-            )
-            for module in passmodule.values():
-                if False in module.values():
-                    status = False
-                    self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText(
-                        "Failed"
-                    )
-                    self.ResultWidget.StatusLabel[
-                        self.testIndexTracker - 1
-                    ].setStyleSheet("color: red")
-
+            passed = list(result.values())[0][0]
+            self.modulestatus.append(result)
+            if passed:
+                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
+                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: green")
+            else:
+                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Failed")
+                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: red")
             time.sleep(0.5)
-            return status
+            return passed
         # self.StatusCanvas.renew()
         # self.StatusCanvas.update()
         # self.HistoryLayout.removeWidget(self.StatusCanvas)

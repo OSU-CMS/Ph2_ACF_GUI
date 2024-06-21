@@ -10,4 +10,5 @@ pyserial
 click
 psutil
 PyUSB
+requests
 fasteners

@@ -36,6 +36,8 @@ from Gui.GUIutils.guiUtils import (
     isSingleTest,
     formatter,
 )
+sys.path.append("./../felis") #temporary until a new docker image is built with the new python path
+from felis import Felis
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
@@ -71,7 +73,7 @@ class TestHandler(QObject):
     updateResult = pyqtSignal(object)
     updateIVResult = pyqtSignal(object)
     updateSLDOResult = pyqtSignal(object)
-    updateValidation = pyqtSignal(object, object)
+    updateValidation = pyqtSignal(object)
     powerSignal = pyqtSignal()
 
     def __init__(self, runwindow, master, info, firmware):
@@ -133,8 +135,20 @@ class TestHandler(QObject):
         self.listWidgetIndex = 0
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
+        
+        felisScratchDir = "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch"
+        if not os.path.isdir(felisScratchDir):
+            try:
+                os.makedirs(felisScratchDir)
+                logger.info("New Felis scratch directory created.")
+            except OSError as e:
+                logger.error(f"Error making Felis scratch directory: {e.strerror}")
+        
+        self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
         self.grades = []
         self.modulestatus = []
+        
+        self.figurelist = {}
 
         self.run_process = QProcess(self)
         self.run_process.readyReadStandardOutput.connect(
@@ -545,22 +559,12 @@ class TestHandler(QObject):
 
     def validateTest(self):
         try:
-            grade = {}
-            passmodule = {}
-            grade, passmodule, self.figurelist = ResultGrader(
-                self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap
+            result = ResultGrader(
+                self.felis, self.output_dir, self.currentTest,
+                self.testIndexTracker, self.RunNumber, self.ModuleType,
             )
-            self.updateValidation.emit(grade, passmodule)
-
-            status = True
-            for module in passmodule.values():
-                if False in module.values():
-                    status = False
-            return status
-        # self.StatusCanvas.renew()
-        # self.StatusCanvas.update()
-        # self.HistoryLayout.removeWidget(self.StatusCanvas)
-        # self.HistoryLayout.addWidget(self.StatusCanvas)
+            self.updateValidation.emit(result)
+            return list(result.values())[0][0]
         except Exception as err:
             logger.error(err)
 
@@ -793,6 +797,13 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                status, message = self.felis.upload_results(
+                    self.output_dir.split("Module")[1].split('_')[0],
+                    self.master.TryUsername,
+                    self.master.TryPassword,
+                )
+                if not status:
+                    logger.error(f"Error uploading test results: {message}")
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -805,32 +816,14 @@ class TestHandler(QObject):
         # validate the results
         status = self.validateTest()
 
-        # manually validate the result
-
-        notAccept = False
-        if status == False:
-            for key in self.figurelist.keys():
-                for plot in self.figurelist[key]:
-                    dialog = QResultDialog(self, plot)
-                    result = dialog.exec_()
-                    if result:
-                        continue
-                    else:
-                        notAccept = True
-        if notAccept:
-            self.abortTest()
-
         # show the score of test
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateResult.emit(self.output_dir)
             #print(self.output_dir)
         else:
-            #self.updateResult.emit(self.output_dir)
-            #print(self.output_dir)
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
-            #print(step, self.figurelist)
 
         if self.autoSave:
             self.saveTestToDB()
@@ -853,7 +846,6 @@ class TestHandler(QObject):
         if 'SLDO' in measurementType:
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
-
 
     # def updateMeasurement(self, measureType, measure):
     #     """
@@ -910,7 +902,6 @@ class TestHandler(QObject):
     #             self.figurelist = {"-1": [output]}
     #             self.updateResult.emit((step, self.figurelist))
 
-
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
@@ -958,15 +949,15 @@ class TestHandler(QObject):
         self.IVCurveResult.saveToSVG(filename)
         self.IVCurveResult.saveToSVG(filename2)
 
-        grade, passmodule, self.figurelist = ResultGrader(
-            self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap
+        result = ResultGrader(
+            self.felis, self.output_dir, self.currentTest,
+            self.testIndexTracker, self.RunNumber, self.ModuleType,
         )
+        self.updateValidation.emit(result)
 
         step="IVCurve"
-        self.figurelist={"-1": [filename]}
-        self.updateValidation.emit(grade, passmodule)
-        EnableReRun = False
 
+        EnableReRun = False
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
@@ -982,6 +973,13 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                status, message = self.felis.upload_results(
+                    self.output_dir.split("Module")[1].split('_')[0],
+                    self.master.TryUsername,
+                    self.master.TryPassword,
+                )
+                if not status:
+                    logger.error(f"Error uploading test results: {message}")
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -991,7 +989,7 @@ class TestHandler(QObject):
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateIVResult.emit(self.output_dir)
-        else : 
+        else: 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
         self.testIndexTracker += 1
@@ -1020,6 +1018,13 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                status, message = self.felis.upload_results(
+                    self.output_dir.split("Module")[1].split('_')[0],
+                    self.master.TryUsername,
+                    self.master.TryPassword,
+                )
+                if not status:
+                    logger.error(f"Error uploading test results: {message}")
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()

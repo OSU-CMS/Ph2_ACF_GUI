@@ -10,3 +10,6 @@
 	path = InnerTrackerTests
 	url = https://gitlab.cern.ch/cms_tk_ph2/inner-tracker-tests.git
 	branch = master
+[submodule "felis"]
+	path = felis
+	url = https://gitlab.cern.ch/sdemares/felis

@@ -48,10 +48,11 @@ then
 	    -v ${PWD}/Gui/python/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/\
 	    -v ${PWD}/InnerTrackerTests/:/home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/\
 	    -v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
-	    -v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
-	    -v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
-	    -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-	    -e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
+            -v ${PWD}/felis:/home/cmsTkUser/Ph2_ACF_GUI/felis/\
+            -v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
+            -v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
+            -w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
+            -e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
 else
     echo "running as user"
     docker run --pull=always --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
