@@ -136,6 +136,7 @@ class ResultTreeWidget(QWidget):
             self.OutputTree.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
             self.OutputTree.setHeaderLabels(["Name"])
             self.OutputTree.itemClicked.connect(self.onItemClicked)
+            self.OutputTree.itemExpanded.connect(self.onItemExpanded)
             self.TreeRoot = QTreeWidgetItem(self.OutputTree)
             self.TreeRoot.setText(0, "Files..")
         else:
@@ -184,16 +185,24 @@ class ResultTreeWidget(QWidget):
     def onItemClicked(self, item, col):
         self.OutputTree.resizeColumnToContents(0)
         if item.text(0).endswith(";TCanvas"):
+            temp = item.clone()
+            while item.parent().text(0) != "Files..":
+                item = item.parent()
+            runNumber = item.text(0).split('_')[0]
             #print("the test is {0}".format(item.text(0)))
             #print("This item is a TCanvas")
-            canvas = item.data(0, Qt.UserRole)
-            canvasname = str(item.text(0))
+            canvas = temp.data(0, Qt.UserRole)
+            canvasname = str(temp.text(0))
             canvasname = canvasname.split(";")[0]
             #print("The canvas is {0}".format(canvas))
-            self.displayResult(canvas, canvasname)
+            self.displayResult(canvas, canvasname, runNumber)
         elif "svg" in str(item.data(0, Qt.UserRole)):
             canvas = item.data(0, Qt.UserRole)
             self.displayResult(canvas)
+
+    @QtCore.pyqtSlot(QTreeWidgetItem)
+    def onItemExpanded(self, item):
+        self.OutputTree.resizeColumnToContents(0)
 
     def DirectoryVAL(self, QTreeNode, node):
         if node.getDaugthers() != []:
@@ -323,9 +332,10 @@ class ResultTreeWidget(QWidget):
             self.TreeRoot.addChild(CurrentNode)
         print("SLD files processed.")  # Debugging output to indicate SLD files processing is done
 
-    def displayResult(self, canvas, name=None):
+    def displayResult(self, canvas, name=None, runNumber=""):
         print("the name passed was {0}".format(name))
-        tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
+        tmpDir = os.environ.get("GUI_dir") + f"/Gui/.tmp/{runNumber}"
+        #tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
         if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
             try:
                 os.mkdir(tmpDir)
@@ -343,9 +353,7 @@ class ResultTreeWidget(QWidget):
             # self.DisplayView = QPixmap(jpgFile).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             # self.DisplayLabel.setPixmap(self.DisplayView)
             # self.update
-            self.Plot.append("index")
-            self.Plot[self.count] = QtTCanvasWidget(self.master, svgFile)
-            self.count = self.count + 1
+            self.Plot.append(QtTCanvasWidget(self.master, svgFile))
             logger.info("Displaying " + svgFile)
         except:
             logger.error("Failed to display " + svgFile)

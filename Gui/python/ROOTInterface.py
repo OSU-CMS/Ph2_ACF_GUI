@@ -119,8 +119,8 @@ def TCanvas2SVG(outputDir, canvas, name=None):
         canvas.Print(outputFile)
         # canvas.Close()
         logger.info(outputFile + " is saved")
-    except:
-        logger.warning("Failed to save " + outputFile)
+    except Exception as e:
+        logger.warning("Failed to save " + outputFile + "\nReason: " + str(e))
     return outputFile
 
 
