@@ -12,4 +12,5 @@
 	branch = master
 [submodule "felis"]
 	path = felis
-	url = https://gitlab.cern.ch/sdemares/felis
+	url = https://gitlab.cern.ch/sdemares/felis.git
+	branch = master

@@ -11,4 +11,5 @@ click
 psutil
 PyUSB
 requests
+tqdm
 fasteners
