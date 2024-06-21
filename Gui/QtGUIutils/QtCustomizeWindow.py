@@ -93,7 +93,6 @@ class QtCustomizeWindow(QWidget):
     def __init__(self, master, rd53dict):
         super(QtCustomizeWindow, self).__init__()
         self.master = master
-        self.connection = self.master.connection
         self.rd53_file = rd53dict
 
         self.RD53List = {}
