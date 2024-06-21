@@ -78,6 +78,8 @@ class TestHandler(QObject):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
+        self.mod_dict={}
+        self.fused_dict_index=[-1,-1]
         # self.LVpowersupply.Reset()
 
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
@@ -804,7 +806,27 @@ class TestHandler(QObject):
         # textline = fileLines.readlines()
 
         for textStr in textline:
+            import re
             try:
+                if "Configuring chips of hybrid" in textStr:
+                    ansi_escape = re.compile(r'\x1b\[.*?m')
+                    clean_text = ansi_escape.sub('', textStr)
+                    hybrid_id = clean_text.split("hybrid: ")[-1].strip()
+                    self.mod_dict[hybrid_id] = {}
+                    self.fused_dict_index[0] = hybrid_id
+
+                if "Configuring RD53" in textStr:
+                    ansi_escape = re.compile(r'\x1b\[.*?m')
+                    clean_text = ansi_escape.sub('', textStr)
+                    chip_number= clean_text.split("RD53: ")[-1].strip()
+                    self.fused_dict_index[1]= chip_number
+
+                if "Fused ID" in textStr:
+                    ansi_escape = re.compile(r'\x1b\[.*?m')
+                    clean_text = ansi_escape.sub('', textStr)
+                    fuse_id =clean_text.split("Fused ID: ")[-1].strip()
+                    self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]]= fuse_id
+                    
                 if self.starttime != None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
@@ -848,15 +870,13 @@ class TestHandler(QObject):
                         print("Failed due to {0}".format(e))
                 elif "INTERNAL_NTC" in textStr:
                     try:
-                        output = textStr.split("[")
-                        if len(output) > 8:  # Ensure there is something at index 8
-                            sensor = output[8].strip() 
-                            sensorMeasure = sensor[3:].split("C")[0].strip()
-                            import re
-                            sensorMeasure = re.sub(r'[^\d\.\+\-]', '', sensorMeasure)
-                            sensorMeasure += " °C"
-                    
-            
+                        ansi_pattern = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+                        clean_text=ansi_pattern.sub('', textStr)
+                        if "INTERNAL_NTC" in clean_text:
+                            sensor=clean_text.split("INTERNAL_NTC:")[1].strip().split("C")[0].strip()
+                            sensorMeasure0=re.sub(r'[^\d\.\+\- ]', '', sensor)
+                            sensorMeasure0 += " °C"
+                            sensorMeasure = sensorMeasure0.replace("+-", "+/-")
                             if sensorMeasure != "":
                                 self.runwindow.updatetemp(self.tempindex, sensorMeasure)
                                 self.tempindex += 1
