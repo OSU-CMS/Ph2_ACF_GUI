@@ -15,9 +15,9 @@ def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, modu
         )
         chipCanvasPath = "Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_{0:02d}"
         chip_canvases = [
-            chipCanvasPath.format(chipNumber) for chipNumber in ModuleLaneMap[moduleType].values()
+            chipCanvasPath.format(int(chipNumber)) for chipNumber in ModuleLaneMap[moduleType].values()
         ]
-        relevant_files = [os.fsdecode(file) for file in os.listdir(inputDir)] 
+        relevant_files = [inputDir+"/"+os.fsdecode(file) for file in os.listdir(inputDir)] 
         
         success, message = felis.set_module(
             module_name, moduleType.split(" ")[2], moduleType.split(" ")[0], True, "link"

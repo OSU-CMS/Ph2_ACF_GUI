@@ -297,13 +297,13 @@ class QtApplication(QWidget):
         if self.UsernameEdit.text().split('_')[0] not in ['local', 'localexpert']:
             try:
                 print("Connecting to Panthera...")
-                panthera_url = "https://panthera.fit.edu/index.php"
+                panthera_login_url = "https://panthera.fit.edu/index.php"
                 session = requests.Session()
                 credentials = {
                     'username': self.UsernameEdit.text().split('_')[0],
                     'userpass': self.PasswordEdit.text()
                 }
-                response = session.post(panthera_url, data=credentials, allow_redirects=True)
+                response = session.post(panthera_login_url, data=credentials, allow_redirects=True)
                 if response.status_code != 200:
                     raise ConnectionError(f"There was an error connecting to the database. Status Code: {response.status_code}")
                 root = etree.HTML(response.text)
@@ -356,69 +356,6 @@ class QtApplication(QWidget):
                 logger.debug("FwDict: {}".format(self.FwDict))
                 logger.debug("Entering Simplified GUI")
                 self.createSimplifiedMain()
-            
-
-    # def checkLogin(self):###
-    #     msg = QMessageBox()
-    #     if self.UsernameEdit.text() in settings.ExpertUserList:
-    #         self.expertMode = True
-    #     try:
-    #         if self.expertMode == True:
-    #             self.TryUsername = self.UsernameEdit.text()
-    #             self.TryPassword = self.PasswordEdit.text()
-    #             self.DisplayedPassword = self.PasswordEdit.displayText()
-    #             self.TryHostAddress = settings.defaultDBServerIP
-    #             self.TryDatabase = str(settings.defaultDBName)
-    #         else:
-    #             self.TryUsername = self.UsernameEdit.text()
-    #             self.TryPassword = self.PasswordEdit.text()
-    #             self.DisplayedPassword = self.PasswordEdit.displayText()
-    #             self.TryHostAddress = settings.defaultDBServerIP
-    #             self.TryDatabase = str(settings.defaultDBName)
-    #     except:
-    #         print("Unexpected content detected ")
-
-    #     try:
-    #         if self.TryUsername == "":
-    #             msg.information(
-    #                 None, "Error", "Please enter a valid username", QMessageBox.Ok
-    #             )
-    #             return
-    #         if (
-    #             self.TryUsername not in ["local", "localexpert"]
-    #             and self.disableCheckBox.isChecked() == False
-    #         ):                
-    #             print("Connect to database...")
-    #             self.connection = QtStartConnection(
-    #                 self.TryUsername,
-    #                 self.TryPassword,
-    #                 self.TryHostAddress,
-    #                 self.TryDatabase,
-    #             )
-
-    #             if isActive(self.connection):
-    #                 self.destroyLogin()
-    #                 if self.expertMode:
-    #                     self.createMain()
-    #                 else:
-    #                     self.createSimplifiedMain()
-    #                 self.checkFirmware()
-
-    #         else:
-    #             logger.debug("Not connecting to database")
-    #             self.connection = "Offline"
-    #             self.destroyLogin()
-    #             if self.expertMode:
-    #                 logger.debug("Entering Expert GUI")
-    #                 self.createMain()
-    #                 self.checkFirmware()
-    #             else:
-    #                 logger.debug("FwDict: {}".format(self.FwDict))
-    #                 logger.debug("Entering Simplified GUI")
-    #                 self.createSimplifiedMain()
-
-    #     except Exception as err:
-    #         print("Failed to connect the database: {}".format(repr(err)))
 
     ###############################################################
     ##  Login page and related functions  (END)
@@ -443,11 +380,14 @@ class QtApplication(QWidget):
         self.FirmwareStatus.setDisabled(True)
 
         DBStatusLabel = QLabel()
-        DBStatusLabel.setText("Database connection:")
+        DBStatusLabel.setText("Database:")
         DBStatusValue = QLabel()
-        DBStatusValue.setText(self.operator_name)
-        colorString = "color: red" if self.operator_name == "Local User" else "color: green"
-        DBStatusValue.setStyleSheet(colorString)
+        if self.operator_name == "Local User":
+            DBStatusValue.setText("Not Connected")
+            DBStatusValue.setStyleSheet("color: red")
+        else:
+            DBStatusValue.setText("Connected")
+            DBStatusValue.setStyleSheet("color: green")
 
         self.StatusList = []
         self.StatusList.append([DBStatusLabel, DBStatusValue])

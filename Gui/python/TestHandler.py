@@ -36,8 +36,7 @@ from Gui.GUIutils.guiUtils import (
     isSingleTest,
     formatter,
 )
-sys.path.append("./../felis") #temporary until a new docker image is built with the new python path
-from felis import Felis
+from felis.felis import Felis
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
@@ -65,7 +64,7 @@ logger = logging.getLogger(__name__)
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
     haltSignal = pyqtSignal(object)
-    finishSingal = pyqtSignal(object)
+    finishSignal = pyqtSignal(object)
     proceedSignal = pyqtSignal(object)
     outputString = pyqtSignal(object)
     stepFinished = pyqtSignal(object)
@@ -123,11 +122,10 @@ class TestHandler(QObject):
         self.outputFile = ""
         self.errorFile = ""
 
-        # self.autoSave = False
         self.autoSave = True
         self.backSignal = False
         self.halt = False
-        self.finishSingal = False
+        self.finishSignal = False
         self.proceedSignal = False
 
         self.runNext = threading.Event()
@@ -797,13 +795,6 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
-                status, message = self.felis.upload_results(
-                    self.output_dir.split("Module")[1].split('_')[0],
-                    self.master.TryUsername,
-                    self.master.TryPassword,
-                )
-                if not status:
-                    logger.error(f"Error uploading test results: {message}")
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -826,7 +817,7 @@ class TestHandler(QObject):
             self.updateResult.emit((step, self.figurelist))
 
         if self.autoSave:
-            self.saveTestToDB()
+            self.upload_to_Panthera()
         # self.update()
 
         if (
@@ -973,13 +964,8 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
-                status, message = self.felis.upload_results(
-                    self.output_dir.split("Module")[1].split('_')[0],
-                    self.master.TryUsername,
-                    self.master.TryPassword,
-                )
-                if not status:
-                    logger.error(f"Error uploading test results: {message}")
+                if self.autoSave:
+                    self.upload_to_Panthera()
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1018,13 +1004,8 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
-                status, message = self.felis.upload_results(
-                    self.output_dir.split("Module")[1].split('_')[0],
-                    self.master.TryUsername,
-                    self.master.TryPassword,
-                )
-                if not status:
-                    logger.error(f"Error uploading test results: {message}")
+                if self.autoSave:
+                    self.upload_to_Panthera()
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1059,3 +1040,16 @@ class TestHandler(QObject):
             self.halt = True
             self.haltSignal.emit(self.halt)
             self.starttime = None
+
+    def upload_to_Panthera(self):
+        try:
+            print("Uploading to Panthera...")
+            status, message = self.felis.upload_results(
+                self.output_dir.split("Module")[1].split('_')[0], #moduleName Ex: RH0001
+                self.master.username,
+                self.master.password,
+            )
+            if not status:
+                raise ConnectionError(message)
+        except Exception as e:
+            logger.error(f"There was an error uploading the test results. {str(e)}")

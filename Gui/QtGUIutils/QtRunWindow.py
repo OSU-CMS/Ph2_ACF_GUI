@@ -100,7 +100,7 @@ class QtRunWindow(QWidget):
 
         self.backSignal = False
         self.haltSignal = False
-        self.finishSingal = False
+        self.finishSignal = False
         self.proceedSignal = False
 
         self.runNext = threading.Event()
@@ -217,7 +217,7 @@ class QtRunWindow(QWidget):
         self.AbortButton.clicked.connect(self.abortTest)
         # self.SaveButton = QPushButton("&Save")
         # self.SaveButton.clicked.connect(self.saveTest)
-        self.saveCheckBox = QCheckBox("&auto-save to DB")
+        self.saveCheckBox = QCheckBox("&auto-save to Panthera")
         self.saveCheckBox.setMaximumHeight(30)
         self.saveCheckBox.setChecked(self.testHandler.autoSave)
         # if not isActive(self.connection):
@@ -364,8 +364,9 @@ class QtRunWindow(QWidget):
         self.AppOption = QGroupBox()
         self.StartLayout = QHBoxLayout()
 
-        self.ConnectButton = QPushButton("&Connect to DB")
-        self.ConnectButton.clicked.connect(lambda : print('ConnectButton Clicked'))#self.connectDB)
+        self.UploadButton = QPushButton("&Upload Results")
+        self.UploadButton.clicked.connect(self.testHandler.upload_to_Panthera)
+        self.UploadButton.setDisabled(True)
 
         self.BackButton = QPushButton("&Back")
         self.BackButton.clicked.connect(self.sendBackSignal)
@@ -378,7 +379,7 @@ class QtRunWindow(QWidget):
 
         self.StartLayout.addStretch(1)
         if self.master.expertMode == True:
-            self.StartLayout.addWidget(self.ConnectButton)
+            self.StartLayout.addWidget(self.UploadButton)
         self.StartLayout.addWidget(self.BackButton)
         self.StartLayout.addWidget(self.FinishButton)
         self.AppOption.setLayout(self.StartLayout)
@@ -564,11 +565,12 @@ class QtRunWindow(QWidget):
     def finish(self, EnableReRun):
         self.RunButton.setDisabled(True)
         self.RunButton.setText("&Continue")
-        self.finishSingal = True
+        self.finishSignal = True
 
         if EnableReRun:
             self.RunButton.setText("&Re-run")
             self.RunButton.setDisabled(False)
+            self.UploadButton.setDisabled(False)
 
     def updateResult(self, newResult):
         # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
