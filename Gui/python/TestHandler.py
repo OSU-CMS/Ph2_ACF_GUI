@@ -21,6 +21,7 @@ from Gui.GUIutils.settings import (
     ModuleLaneMap,
     firmware_image,
     updatedXMLValues,
+    optimizationTestMap,
 )
 from Gui.GUIutils.guiUtils import (
     ConfigureTest,
@@ -90,7 +91,6 @@ class TestHandler(QObject):
         self.runwindow = runwindow
         self.firmware = firmware
         self.info = info
-        self.connection = self.master.connection
         self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
         self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
@@ -232,7 +232,6 @@ class TestHandler(QObject):
             "_Module".join(ModuleIDs),
             self.output_dir,
             self.input_dir,
-            self.connection,
         )
 
         # The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
@@ -368,6 +367,7 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
+        self.outputString.emit("Executing Single Step test...")
         if self.instruments:
             if not self.instruments.status(lv_channel=None)["lv"]:
                 self.instruments.lv_on(
@@ -383,6 +383,7 @@ class TestHandler(QObject):
             self.IVCurveHandler = IVCurveHandler(self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
+            self.outputString.emit("Beginning IVCurve")
             self.IVCurveHandler.IVCurve()
             return
 
@@ -391,10 +392,11 @@ class TestHandler(QObject):
             self.configTest()
             self.SLDOScanData = []
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType='DEFAULT', end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
+            self.outputString.emit("Beginning SLDOScan")
             self.SLDOScanHandler.SLDOScan()
             return
 
@@ -409,9 +411,10 @@ class TestHandler(QObject):
         self.starttime = None
         self.ProgressingMode = "None"
         self.currentTest = testName
+        self.updateOptimizedXMLValues()
         self.configTest()
 
-        print(self.output_dir)
+        
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
 
@@ -499,31 +502,12 @@ class TestHandler(QObject):
             "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")), "DoNSteps"
         )
 
-        if Test_to_Ph2ACF_Map[self.currentTest] in [
-            "pixelalive",
-            "noise",
-            "latency",
-            "injdelay",
-            "clockdelay",
-            "threqu",
-            "thrmin",
-            "scurve",
-            "gainopt",
-            "thradj",
-            "physics",
-            "gain",
-        ]:
-            self.run_process.start(
-                "CMSITminiDAQ",
-                ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
-            )
-            if Test_to_Ph2ACF_Map[self.currentTest] == "threqu":
-                self.isTDACtuned = True
-        else:
-            self.info_process.start(
-                "echo",
-                ["test {} not runnable, quitting...".format(Test_to_Ph2ACF_Map[self.currentTest])],
-            )
+        self.run_process.start(
+            "CMSITminiDAQ",
+            ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
+        )
+        if Test_to_Ph2ACF_Map[self.currentTest] == "threqu":
+            self.isTDACtuned = True
 
         # Question = QMessageBox()
         # Question.setIcon(QMessageBox.Question)
@@ -559,8 +543,10 @@ class TestHandler(QObject):
 
             self.starttime = None
             if self.IVCurveHandler:
+                self.outputString.emit("Aborting IVCurve")
                 self.IVCurveHandler.stop()
             if self.SLDOScanHandler:
+                self.outputString.emit("Aborting SLDOScan")
                 self.SLDOScanHandler.stop()
         else:
             return
@@ -610,196 +596,6 @@ class TestHandler(QObject):
         except:
             print("Failed to copy file to output directory")
 
-    def saveTestToDB(self):
-        if isActive(self.connection) and self.autoSave:
-            try:
-                localDir = self.output_dir
-                getFiles = subprocess.run(
-                    'find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(
-                        localDir
-                    ),
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                )
-                fileList = getFiles.stdout.decode("utf-8").rstrip("\n").split("\n")
-                moduleList = [
-                    module for module in localDir.split("_") if "Module" in module
-                ]
-
-                if fileList == [""]:
-                    logger.warning(
-                        "No ROOT file found in the local folder, skipping..."
-                    )
-                    return
-
-                ## Submit all files
-                for submitFile in fileList:
-                    data_id = hashlib.md5("{}".format(submitFile).encode()).hexdigest()
-                    if not self.checkRemoteFile(data_id):
-                        self.uploadFile(submitFile, data_id)
-
-                    ## Submit records for all modules
-                    for module in moduleList:
-                        # print ("Module is {0}".format(module))
-                        module_id = module.strip("Module")
-                        # print ("Module_ID is {0}".format(module_id))
-                        getConfigInFiles = subprocess.run(
-                            'find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(
-                                localDir, module_id
-                            ),
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )  # changed module_id to module
-                        configInFileList = (
-                            getConfigInFiles.stdout.decode("utf-8")
-                            .rstrip("\n")
-                            .split("\n")
-                        )
-                        getConfigOutFiles = subprocess.run(
-                            'find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(
-                                localDir, module_id
-                            ),
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )  # changed module_id to module
-                        configOutFileList = (
-                            getConfigOutFiles.stdout.decode("utf-8")
-                            .rstrip("\n")
-                            .split("\n")
-                        )
-                        getXMLFiles = subprocess.run(
-                            'find {0} -mindepth 1  -maxdepth 1 -type f -name "*.xml"  '.format(
-                                localDir
-                            ),
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )
-                        XMLFileList = (
-                            getXMLFiles.stdout.decode("utf-8").rstrip("\n").split("\n")
-                        )
-                        configcolumns = []
-                        configdata = []
-                        for configInFile in configInFileList:
-                            if configInFile != [""]:
-                                configcolumns.append(
-                                    "Chip{}InConfig".format(configInFile.split("_")[-2])
-                                )
-                                configInBuffer = open(configInFile, "rb")
-                                configInBin = configInBuffer.read()
-                                configdata.append(configInBin)
-                        for configOutFile in configOutFileList:
-                            if configOutFile != [""]:
-                                configcolumns.append(
-                                    "Chip{}OutConfig".format(
-                                        configOutFile.split("_")[-2]
-                                    )
-                                )
-                                configOutBuffer = open(configOutFile, "rb")
-                                configOutBin = configOutBuffer.read()
-                                configdata.append(configOutBin)
-
-                        xmlcolumns = []
-                        xmldata = []
-                        if len(XMLFileList) > 1:
-                            print("Warning!  There are multiple xml files here!")
-                        for XMLFile in XMLFileList:
-                            if XMLFile != [""]:
-                                xmlcolumns.append("xml_file")
-                                xmlBuffer = open(XMLFile, "rb")
-                                xmlBin = xmlBuffer.read()
-                                xmldata.append(xmlBin)
-
-                        # Columns = ["part_id","date","testname","description","grade","data_id","username", "config_file", "xml_file"]
-                        # Columns = ["part_id","test_id","test_name","date","test_grade","user","Chip0InConfig","Chip0OutConfig","Chip1InConfig","Chip1OutConfig","Chip2InConfig","Chip2OutConfig","Chip3InConfig","Chip3OutConfig","plot1","plot2"]
-                        Columns = [
-                            "part_id",
-                            "test_id",
-                            "test_name",
-                            "date",
-                            "test_grade",
-                            "user",
-                            "plot1",
-                            "plot2",
-                            "root_file",
-                        ]
-                        SubmitArgs = []
-                        Value = []
-                        record = formatter(localDir, Columns, part_id=module)
-                        # record = formatter(localDir,Columns, part_id=str(module_id))
-                        # for column in ['part_id']:
-                        for column in Columns:
-                            if column == "part_id":
-                                SubmitArgs.append(column)
-                                Value.append(module)
-                            if column == "date":
-                                SubmitArgs.append(column)
-                                if (
-                                    str(sys.version)
-                                    .split(" ")[0]
-                                    .startswith(("3.7", "3.8", "3.9"))
-                                ):
-                                    TimeStamp = datetime.fromisoformat(
-                                        localDir.split("_")[-2]
-                                    )
-                                elif str(sys.version).split(" ")[0].startswith(("3.6")):
-                                    TimeStamp = datetime.strptime(
-                                        localDir.split("_")[-2].split(".")[0],
-                                        "%Y-%m-%dT%H:%M:%S",
-                                    )
-                                # print ("timestamp is {0}".format(TimeStamp))
-                                Value.append(TimeStamp)
-                                # Value.append(record[Columns.index(column)])
-                            if column == "test_name":
-                                SubmitArgs.append(column)
-                                Value.append(record[Columns.index(column)])
-                            if column == "description":
-                                SubmitArgs.append(column)
-                                Value.append("No Comment")
-                            if column == "test_grade":
-                                SubmitArgs.append(column)
-                                Value.append(-1)
-                            if column == "test_id":
-                                SubmitArgs.append(column)
-                                Value.append(data_id)
-                            if column == "user":
-                                SubmitArgs.append(column)
-                                Value.append(self.master.TryUsername)
-                            if column == "root_file":
-                                SubmitArgs.append(column)
-                                Value.append(submitFile.split("/")[-1])
-
-                        SubmitArgs = SubmitArgs + configcolumns + xmlcolumns
-                        Value = Value + configdata + xmldata
-
-                        try:
-                            insertGenericTable(
-                                self.connection, "module_tests", SubmitArgs, Value
-                            )
-                        except:
-                            print("Failed to insert")
-            except Exception as err:
-                QMessageBox.information(
-                    self, "Error", "Unable to save to DB", QMessageBox.Ok
-                )
-                print("Error: {}".format(repr(err)))
-                return
-
-    def checkRemoteFile(self, file_id):
-        remoteRecords = retrieveWithConstraint(
-            self.connection, "result_files", file_id=file_id, columns=["file_id"]
-        )
-        return remoteRecords != []
-
-    def uploadFile(self, fileName, file_id):
-        fileBuffer = open(fileName, "rb")
-        data = fileBuffer.read()
-        insertGenericTable(
-            self.connection,
-            "result_files",
-            ["file_id", "file_content"],
-            [file_id, data],
-        )
-
     #######################################################################
     ##  For real-time terminal display
     #######################################################################
@@ -813,6 +609,7 @@ class TestHandler(QObject):
 
         alltext = self.run_process.readAllStandardOutput().data().decode()
         self.outputfile.write(alltext)
+    #print(alltext)
         # outputfile.close()
         textline = alltext.split("\n")
         # fileLines = open(self.outputFile,"r")
@@ -847,51 +644,15 @@ class TestHandler(QObject):
                         
                     except:
                         pass
-                
-                toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
 
-                if toUpdate:
-                    print("trying to update xml value")
-                    try:
-                        self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
-                        # print("made it to Summary")
-                        UpdatedValuetext = textStr.split()[valueIndex]
-                        # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
-                        UpdatedValue = int(
-                            re.sub(r"\033\[(\d|;)+?m", "", UpdatedValuetext)
-                        )
-                        print("New {0} value is {1}".format(UpdatedFEKey, UpdatedValue))
-                        # print(textStr.split())
-                        # globalThreshold = int(textStr.split()[-1])
-                        chipIdentifier = textStr.split("=")[-1].split("is")[0]
-                        chipIdentifier = re.sub(
-                            r"\033\[(\d|;)+?m", "", chipIdentifier
-                        ).split("]")[0]
-                        HybridIDKey = chipIdentifier.split("/")[2]
-                        ChipIDKey = chipIdentifier.split("/")[3]
-                        print("Hybrid id {0}".format(HybridIDKey))
-                        print("chipID {0}".format(ChipIDKey))
-                        updatedXMLValueKey = "{}/{}".format(HybridIDKey, ChipIDKey)
-                        updatedXMLValues[updatedXMLValueKey][
-                            UpdatedFEKey
-                        ] = UpdatedValue
-                        if "DAC_GDAC_M_LIN" in UpdatedFEKey:
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_L_LIN"
-                            ] = UpdatedValue
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_R_LIN"
-                            ] = UpdatedValue
-
-                    except Exception as err:
-                        logger.error("Failed to update ")
-
+                if self.check_for_end_of_test(textStr):
+                    self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
                 elif "TEMPSENS_" in textStr:
                     try:
                         output = textStr.split("[")
                         sensor = output[8]
                         sensorMeasure = sensor[3:]
-                        print(sensorMeasure)
+                        
                         if sensorMeasure != "":
                             self.runwindow.updatetemp(self.tempindex, sensorMeasure)
                             self.tempindex += 1
@@ -900,12 +661,20 @@ class TestHandler(QObject):
                 elif "INTERNAL_NTC" in textStr:
                     try:
                         output = textStr.split("[")
-                        sensor = output[8]
-                        sensorMeasure = sensor[3:]
-                        #print(sensorMeasure)
-                        if sensorMeasure != "":
-                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                            self.tempindex += 1
+                        if len(output) > 8:  # Ensure there is something at index 8
+                            sensor = output[8].strip() 
+                            sensorMeasure = sensor[3:].split("C")[0].strip()
+                            import re
+                            sensorMeasure = re.sub(r'[^\d\.\+\-]', '', sensorMeasure)
+                            sensorMeasure += " °C"
+                    
+            
+                            if sensorMeasure != "":
+                                self.runwindow.updatetemp(self.tempindex, sensorMeasure)
+                                self.tempindex += 1
+                            else:
+                                self.runwindow.updatetemp(self.tempindex, "Bad Reading, Will Retry")
+                                self.tempindex += 1
                     except Exception as e:
                         print("Failed due to {0}".format(e))
 
@@ -913,45 +682,8 @@ class TestHandler(QObject):
             #This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
             
             elif self.ProgressingMode == "Summary":
-                toUpdate, UpdatedFEKey, valueIndex = self.updateNeeded(textStr)
-                if toUpdate:
-                    print("trying to update xml value")
-                    try:
-                        self.runwindow.ResultWidget.ProgressBar[
-                            self.testIndexTracker
-                        ].setValue(100)
-                        # print("made it to Summary")
-                        UpdatedValuetext = textStr.split()[valueIndex]
-                        # print(re.sub(r'\033\[(\d|;)+?m','',globalThresholdtext))
-                        UpdatedValue = int(
-                            re.sub(r"\033\[(\d|;)+?m", "", UpdatedValuetext)
-                        )
-                        print("New {0} value is {1}".format(UpdatedFEKey, UpdatedValue))
-                        # print(textStr.split())
-                        # globalThreshold = int(textStr.split()[-1])
-                        chipIdentifier = textStr.split("=")[-1].split("is")[0]
-                        chipIdentifier = re.sub(
-                            r"\033\[(\d|;)+?m", "", chipIdentifier
-                        ).split("]")[0]
-                        HybridIDKey = chipIdentifier.split("/")[2]
-                        ChipIDKey = chipIdentifier.split("/")[3]
-                        print("Hybrid id {0}".format(HybridIDKey))
-                        print("chipID {0}".format(ChipIDKey))
-                        updatedXMLValueKey = "{}/{}".format(HybridIDKey, ChipIDKey)
-                        updatedXMLValues[updatedXMLValueKey][
-                            UpdatedFEKey
-                        ] = UpdatedValue
-                        if "DAC_GDAC_M_LIN" in UpdatedFEKey:
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_L_LIN"
-                            ] = UpdatedValue
-                            updatedXMLValues[updatedXMLValueKey][
-                                "DAC_GDAC_R_LIN"
-                            ] = UpdatedValue
-
-                    except Exception as err:
-                        logger.error("Failed to update ")
-        
+                if self.check_for_end_of_test(textStr):
+                    self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
@@ -981,37 +713,48 @@ class TestHandler(QObject):
             # self.runwindow.ConsoleView.appendHtml(text.decode("utf-8"))
         self.readingOutput = False
 
-    def updateNeeded(self, textStr):
+    def updateOptimizedXMLValues(self):
+        print('trying to update the xml value')
+        try:
+            if Test_to_Ph2ACF_Map[self.currentTest] in optimizationTestMap.keys():
+                updatedFEKeys = optimizationTestMap[Test_to_Ph2ACF_Map[self.currentTest]]
+                modules = [module for module in self.firmware.getAllModules().values()]
+                for module in modules:
+                    chipIDs = [chip.getID() for chip in module.getChips().values()]
+                    hybridID = module.getFMCPort()
+                    print("HybridID {0}".format(hybridID))
+                    print("chipIDs {0}".format(chipIDs))
+                    for chipID in chipIDs:
+                        updatedXMLValues[f"{hybridID}/{chipID}"] = {}
+                        for updatedFEKey in updatedFEKeys:
+                            if "TriggerConfig" in updatedFEKey and "CROC" not in self.ModuleType:
+                                continue
+                            elif "LATENCY_CONFIG" in updatedFEKey and "CROC" in self.ModuleType:
+                                continue
+                            elif "Vthreshold_LIN" in updatedFEKey and "CROC" in self.ModuleType:
+                                continue
+                            elif "DAC_GDAC_" in updatedFEKey and "CROC" not in self.ModuleType:
+                                continue
+                            updatedXMLValues[f"{hybridID}/{chipID}"][updatedFEKey] = ""
+        except Exception as err:
+            logger.error(f"Failed to update, {err}")
+    
+    def check_for_end_of_test(self, textStr):
+        #function to support the quick fix in on_readyReadStandardOutput() where
+        #the progress bar doesn't always reach 100%.
         currentTest = Test_to_Ph2ACF_Map[self.currentTest]
-        # print('board type in update section is {0}'.format(self.ModuleType))
         if currentTest in ["thradj", "thrmin"] and "Global threshold for" in textStr:
-            if "CROC" in self.ModuleType:
-                return (
-                    True,
-                    "DAC_GDAC_M_LIN",
-                    -1,
-                )  # FIXME need to make this also update DAC_GDAC_L_LIN and DAC_GDAC_R_LIN
-            else:
-                return True, "Vthreshold_LIN", -1
+            return True
         elif currentTest in ["threq"] and "Best VCAL_HIGH" in textStr:
-            return True, "VCAL_HIGH", -1
+            return True
         elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
-            if "CROC" in self.ModuleType:
-                return True, "DAC_KRUM_CURR_LIN", -1
-            else:
-                return True, "KRUM_CURR_LIN", -1
+            return True
         elif currentTest in ["injdelay"]:
             if "New latency dac" in textStr:
-                if "CROC" in self.ModuleType:
-                    return True, "TriggerConfig", -2
-                else:
-                    return True, "LATENCY_CONFIG", -2
+                return True
             elif "New injection delay" in textStr:
-                return True, "CAL_EDGE_FINE_DELAY", -2
-            else:
-                return (False, None, 0)
-        else:
-            return (False, None, 0)
+                return True
+        return False
 
     # Reads data that is normally printed to the terminal and saves it to the output file
     @QtCore.pyqtSlot()
@@ -1077,7 +820,7 @@ class TestHandler(QObject):
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateResult.emit(self.output_dir)
-            print(self.output_dir)
+            #print(self.output_dir)
         else:
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
@@ -1104,58 +847,60 @@ class TestHandler(QObject):
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
 
-    def updateMeasurement(self, measureType, measure):
-        """
-        Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
-        if in simplified gui add to figure list
-        """
-        if measureType == "IVCurve":
-            voltages = measure["voltage"]
-            currents = measure["current"]
-            logger.debug(f"Voltages: {voltages}")
-            logger.debug(f"Currents: {currents}")
-            # self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-            #     Percentage * 100
-            # )
-            tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
-            if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
-                try:
-                    os.mkdir(tmpDir)
-                    logger.info("Creating " + tmpDir)
-                except:
-                    logger.warning("Failed to create " + tmpDir)
-            svgFile = "IVCurve.svg"
-            output = self.IVCurveResult.saveToSVG(tmpDir + "/" + svgFile)
-            print(f"SVG file output: {output}")
-            self.IVCurveResult.update()
-            if not self.master.expertMode:
-                step = "IVCurve"
-                self.updateIVResult.emit((step, self.figurelist))
+    # def updateMeasurement(self, measureType, measure):
+    #     """
+    #     Plot data continuosly, update progress bar, save resulting plot as svg to tmp dir
+    #     if in simplified gui add to figure list
+    #     """
+    #     if measureType == "IVCurve":
+    #         voltages = measure["voltage"]
+    #         currents = measure["current"]
+    #         logger.debug(f"Voltages: {voltages}")
+    #         logger.debug(f"Currents: {currents}")
+    #         # self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+    #         #     Percentage * 100
+    #         # )
+    #         tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
+    #         if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
+    #             try:
+    #                 os.mkdir(tmpDir)
+    #                 logger.info("Creating " + tmpDir)
+    #             except:
+    #                 logger.warning("Failed to create " + tmpDir)
+    #         svgFile = "IVCurve.svg"
+    #         output = self.IVCurveResult.saveToSVG(tmpDir + "/" + svgFile)
+    #         print(f"SVG file output: {output}")
+    #         self.IVCurveResult.update()
+    #         if not self.master.expertMode:
+    #             step = "IVCurve"
+    #             self.figurelist = {"-1": [output]}
+    #             self.updateIVResult.emit((step, self.figurelist))
 
-        if measureType == "SLDOScan":
-            voltages = measure["voltage"]
-            currents = measure["current"]
-            Percentage = measure["percentage"]
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                Percentage * 100
-            )
-            if float(voltages) < -0.1 and float(currents) < -0.1:
-                return
-            self.SLDOScanData.append([voltages, currents])
-            self.SLDOScanResult.updatePlots(self.SLDOScanData)
-            tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
-            if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
-                try:
-                    os.mkdir(tmpDir)
-                    logger.info("Creating " + tmpDir)
-                except:
-                    logger.warning("Failed to create " + tmpDir)
-            svgFile = "SLDOScan.svg"
-            output = self.SLDOScanResult.saveToSVG(tmpDir + "/" + svgFile)
-            self.SLDOScanResult.update()
-            if not self.master.expertMode:
-                step = "SLDOScan"
-                self.updateResult.emit((step, self.figurelist))
+    #     if measureType == "SLDOScan":
+    #         voltages = measure["voltage"]
+    #         currents = measure["current"]
+    #         Percentage = measure["percentage"]
+    #         self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+    #             Percentage * 100
+    #         )
+    #         if float(voltages) < -0.1 and float(currents) < -0.1:
+    #             return
+    #         self.SLDOScanData.append([voltages, currents])
+    #         self.SLDOScanResult.updatePlots(self.SLDOScanData)
+    #         tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
+    #         if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
+    #             try:
+    #                 os.mkdir(tmpDir)
+    #                 logger.info("Creating " + tmpDir)
+    #             except:
+    #                 logger.warning("Failed to create " + tmpDir)
+    #         svgFile = "SLDOScan.svg"
+    #         output = self.SLDOScanResult.saveToSVG(tmpDir + "/" + svgFile)
+    #         self.SLDOScanResult.update()
+    #         if not self.master.expertMode:
+    #             step = "SLDOScan"
+    #             self.figurelist = {"-1": [output]}
+    #             self.updateResult.emit((step, self.figurelist))
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
@@ -1166,8 +911,10 @@ class TestHandler(QObject):
         total_result_stacked = np.vstack(total_result)
         np.savetxt(csvfilename, total_result_stacked, delimiter=',')
         plt.figure()
-        plt.plot(total_result_stacked[:,2],total_result_stacked[:,1],'-x',label="module input voltage")
-        plt.plot(total_result_stacked[:,2],total_result_stacked[:,3],'-x',label=pin)
+        plt.plot(total_result_stacked[0], total_result_stacked[1], '-x', label="module input voltage (up)")
+        plt.plot(total_result_stacked[0], total_result_stacked[2], '-x', label=f"{pin} (up)")
+        plt.plot(total_result_stacked[3], total_result_stacked[4], '-x', label="module input voltage (down)")
+        plt.plot(total_result_stacked[3], total_result_stacked[5], '-x', label=f"{pin} (down)")
         plt.grid(True)
         plt.xlabel("Current (A)")
         plt.ylabel("Voltage (V)")
@@ -1178,6 +925,9 @@ class TestHandler(QObject):
     def IVCurveFinished(self, test: str, measure: dict):
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        self.outputString.emit(f"Voltages: {measure['voltage']}")
+        self.outputString.emit(f"Currents: {measure['current']}")
 
         for module in self.firmware.getAllModules().values():  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
@@ -1247,13 +997,9 @@ class TestHandler(QObject):
             self.runTest()
 
     def SLDOScanFinished(self):
-        for (
-            module
-        ) in (
-            self.firmware.getAllModules().values()
-        ):  # FIXME This is not the ideal way to do this... I think...
-            moduleName = module.getModuleName()
-
+        # for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
+        #     moduleName = module.getModuleName()
+        EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
             self.instruments.lv_on(

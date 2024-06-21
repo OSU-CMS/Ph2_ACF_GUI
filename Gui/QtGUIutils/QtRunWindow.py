@@ -64,7 +64,6 @@ class QtRunWindow(QWidget):
         else:
             runTestList = self.info[1]
 
-        self.connection = self.master.connection
         self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
         self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
@@ -162,10 +161,10 @@ class QtRunWindow(QWidget):
         )
         HeadLabel.setMaximumHeight(30)
 
-        statusString, colorString = checkDBConnection(self.connection)
+        colorString = "color: red" if self.master.operator_name == "Local User" else "color: green"
         StatusLabel = QLabel()
-        StatusLabel.setText(statusString)
-        StatusLabel.setStyleSheet(colorString)
+        StatusLabel.setText(self.master.operator_name)
+        StatusLabel.setStyleSheet(f"{colorString}; font-size: 14px")
 
         self.HeadLayout.addWidget(HeadLabel)
         self.HeadLayout.addStretch(1)
@@ -221,10 +220,10 @@ class QtRunWindow(QWidget):
         self.saveCheckBox = QCheckBox("&auto-save to DB")
         self.saveCheckBox.setMaximumHeight(30)
         self.saveCheckBox.setChecked(self.testHandler.autoSave)
-        if not isActive(self.connection):
-            self.saveCheckBox.setChecked(False)
-            self.testHandler.autoSave = False
-            self.saveCheckBox.setDisabled(True)
+        # if not isActive(self.connection):
+        #     self.saveCheckBox.setChecked(False)
+        #     self.testHandler.autoSave = False
+        #     self.saveCheckBox.setDisabled(True)
         self.saveCheckBox.clicked.connect(self.setAutoSave)
         ##### previous layout ##########
         """
@@ -265,6 +264,7 @@ class QtRunWindow(QWidget):
         )
         # self.ConsoleView.setCenterOnScroll(True)
         self.ConsoleView.ensureCursorVisible()
+        self.ConsoleView.setReadOnly(True)
 
         ConsoleLayout.addWidget(self.ConsoleView)
         TerminalBox.setLayout(ConsoleLayout)
@@ -354,6 +354,7 @@ class QtRunWindow(QWidget):
     def updatetemp(self, index, sensorMeasure):
         index = index % len(self.TempLabelList)
         self.TempLabelList[index].setText(sensorMeasure)
+        
 
     def destroyMain(self):
         self.MainBodyBox.deleteLater()
@@ -364,7 +365,7 @@ class QtRunWindow(QWidget):
         self.StartLayout = QHBoxLayout()
 
         self.ConnectButton = QPushButton("&Connect to DB")
-        self.ConnectButton.clicked.connect(self.connectDB)
+        self.ConnectButton.clicked.connect(lambda : print('ConnectButton Clicked'))#self.connectDB)
 
         self.BackButton = QPushButton("&Back")
         self.BackButton.clicked.connect(self.sendBackSignal)
@@ -490,20 +491,6 @@ class QtRunWindow(QWidget):
     def sendProceedSignal(self):
         self.testHandler.proceedSignal = True
         # self.runNext.set()
-
-    def connectDB(self):
-        if isActive(self.master.connection):
-            self.connection = self.master.connection
-            self.refresh()
-            self.saveCheckBox.setDisabled(False)
-            return
-
-        LoginDialog = QtLoginDialog(self.master)
-        response = LoginDialog.exec_()
-        if response == QDialog.Accepted:
-            self.connectDB()
-        else:
-            return
 
     def customizeTest(self):
         print("Customize configuration")

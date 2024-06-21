@@ -35,9 +35,8 @@ from Gui.python.logging_config import logger
 class ModuleBox(QWidget):
     typechanged = pyqtSignal()
 
-    def __init__(self,connection):
+    def __init__(self):
         super(ModuleBox, self).__init__()
-        self.connection=connection
         self.mainLayout = QGridLayout()
         self.createRow()
         self.setLayout(self.mainLayout)
@@ -66,15 +65,8 @@ class ModuleBox(QWidget):
         self.ModuleVersionCombo.addItems(["v1", "v2"])
         VersionLabel.setBuddy(self.ModuleVersionCombo)
 
-        #hide the combo box at above when it is connected
-        if self.connection == "Offline":
-            
-            self.mainLayout.addWidget(TypeLabel, 0, 6, 1, 1)
-            self.mainLayout.addWidget(self.TypeCombo, 0, 7, 1, 1)
-        
-        else:
-            self.OnlineButton = QPushButton("confirm")
-            self.mainLayout.addWidget(self.OnlineButton, 0, 7, 1, 1)
+        self.mainLayout.addWidget(TypeLabel, 0, 6, 1, 1)
+        self.mainLayout.addWidget(self.TypeCombo, 0, 7, 1, 1)
 
         self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
@@ -94,12 +86,7 @@ class ModuleBox(QWidget):
 
         if self.SerialEdit.text().startswith("SH"):
             chipType = "TFPX CROC Quad"
-
             self.TypeCombo.setCurrentText(chipType)
-
-        
-
-        
 
     def getSerialNumber(self):
         return self.SerialEdit.text()
@@ -127,7 +114,6 @@ class ChipBox(QWidget):
         super().__init__()
         logger.debug("Inside ChipBox")
         self.master = master
-        self.connection = self.master.connection
         self.serialNumber=serialNumber
         self.chipType = pChipType
         logger.debug('the chip type passed to the chipbox is {0}'.format(self.chipType))
@@ -138,134 +124,48 @@ class ChipBox(QWidget):
         self.VDDAMap = {}
         self.VDDDMap = {}
         self.ChipGroupBoxDict = {}
-        
-        
-        #get trim values from DB
-        GetTRimFromDB=GetTrimClass()
-        GetTRimFromDB.connection=self.connection
-
-
-        if GetTRimFromDB.connection == "Offline" or GetTRimFromDB.connection == []:
             
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-
-
-        
-        else:
-            if self.serialNumber != "":
-                
-                sorted_VDDAlist,sorted_VDDDlist= GetTRimFromDB.GetTrim(self.serialNumber)     
-
-
-                #right now there is no data for ZH-module on the database. So the trim values will be set as the default value
-                #case for can't find anything on database
-                if sorted_VDDAlist == [] or sorted_VDDDlist == []:
-                    if self.serialNumber.startswith("ZH"):
-                        for chipid in self.ChipList:
-                            VDDA = "16"
-                            VDDD = "16"
-                            self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
-
-                    else:
-                        self.DBcheckingMessage(self.serialNumber)
-                        print(f"I can't find the data for module {self.serialNumber}")
-
-
-                        for chipid in self.ChipList:
-                            VDDA = ""
-                            VDDD = ""
-                            self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
-
-                
-                
-
-                if sorted_VDDAlist != [] or sorted_VDDDlist != []:
-                    for i, chipid in enumerate(self.ChipList):
-                        VDDA = str(sorted_VDDAlist[i][1])
-                        VDDD = str(sorted_VDDDlist[i][1])
-                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid,VDDA,VDDD)
+        for chipid in self.ChipList:
+            self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
             
-        
         self.makeChipGroupBox(self.ChipGroupBoxDict)
     
         self.setLayout(self.mainLayout)
 
-    
-    def DBcheckingMessage(self,serialNO):
-        reply = QMessageBox.question(
-                self,
-                "warning",
-                f"{serialNO} can't be found on the DB. Would you like to manully type the trim values?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
-            )
-
-
-
-
     def initList(self):
-        self.module = ModuleBox(self.connection)
+        self.module = ModuleBox()
 
     # Makes a list of chips for a given module
     def createList(self):
-        if self.connection == "Offline" or self.connection == []:
-            for lane in ModuleLaneMap[self.chipType]:
-                self.ChipList.append(ModuleLaneMap[self.chipType][lane])
-
-        else:
-            
-            if self.serialNumber.startswith("RH"):
-                self.chipType = "TFPX CROC 1x2"
-                for lane in ModuleLaneMap[self.chipType]:
-                    self.ChipList.append(ModuleLaneMap[self.chipType][lane])
-
-            elif self.serialNumber.startswith("SH"):
-                self.chipType = "TFPX CROC Quad"
-                for lane in ModuleLaneMap[self.chipType]:
-                    self.ChipList.append(ModuleLaneMap[self.chipType][lane])
-            
-            elif self.serialNumber.startswith("ZH"):
-                self.chipType = "TFPX Quad"
-                for lane in ModuleLaneMap[self.chipType]:
-                    self.ChipList.append(ModuleLaneMap[self.chipType][lane])
-            
-            else:
-
-                logger.warning("current module can't be found on database")
-
-
-
-
-           
-
+        for lane in ModuleLaneMap[self.chipType]:
+            self.ChipList.append(ModuleLaneMap[self.chipType][lane])
 
     #get trim values from DB
-    def makeChipBoxWithDB(self, pChipID,VDDA,VDDD):
-        self.ChipID = pChipID
-        self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
-        self.ChipLabel.setChecked(True)
-        self.ChipLabel.setObjectName("ChipStatus_{0}".format(pChipID))
-        self.ChipVDDDLabel = QLabel("VDDD:")
-        self.ChipVDDDEdit = QLineEdit()
-        self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
+    # def makeChipBoxWithDB(self, pChipID,VDDA,VDDD):
+    #     self.ChipID = pChipID
+    #     self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
+    #     self.ChipLabel.setChecked(True)
+    #     self.ChipLabel.setObjectName("ChipStatus_{0}".format(pChipID))
+    #     self.ChipVDDDLabel = QLabel("VDDD:")
+    #     self.ChipVDDDEdit = QLineEdit()
+    #     self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         
-        if not self.ChipVDDDEdit.text():
-            logger.debug("no VDDD text")
-        self.ChipVDDALabel = QLabel("VDDA:")
-        self.ChipVDDAEdit = QLineEdit() 
-        self.ChipVDDDEdit.setText(VDDD)
-        self.ChipVDDAEdit.setText(VDDA)
-        self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
+    #     if not self.ChipVDDDEdit.text():
+    #         logger.debug("no VDDD text")
+    #     self.ChipVDDALabel = QLabel("VDDA:")
+    #     self.ChipVDDAEdit = QLineEdit() 
+    #     self.ChipVDDDEdit.setText(VDDD)
+    #     self.ChipVDDAEdit.setText(VDDA)
+    #     self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
 
-        self.VChipLayout = QGridLayout()
-        self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
-        self.VChipLayout.addWidget(self.ChipVDDDLabel, 1, 0, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
+    #     self.VChipLayout = QGridLayout()
+    #     self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
+    #     self.VChipLayout.addWidget(self.ChipVDDDLabel, 1, 0, 1, 1)
+    #     self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
+    #     self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
+    #     self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
 
-        return self.VChipLayout
+    #     return self.VChipLayout
 
 
 
@@ -356,12 +256,8 @@ class BeBoardBox(QWidget):
         self.setLayout(self.mainLayout)
 
     def initList(self):
-        ModuleRow = ModuleBox(self.master.connection)
-        if self.master.connection == "Offline":
-            ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
-        else:
-            ModuleRow.OnlineButton.clicked.connect(self.updateList)
-            ModuleRow.OnlineButton.clicked.connect(ModuleRow.setType)      
+        ModuleRow = ModuleBox()
+        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)    
         self.ModuleList.append(ModuleRow)
     
 
@@ -395,10 +291,11 @@ class BeBoardBox(QWidget):
 
         for index, module in enumerate(self.ModuleList):
             # module.setMaximumWidth(500)
-            self.ChipWidgetDict[module] = ChipBox(self.master,module.getType(),module.getSerialNumber())
+            self.ChipWidgetDict[module] = ChipBox(self.master, module.getType(), module.getSerialNumber())
             module.setMaximumHeight(50)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
             self.ListLayout.addWidget(self.ChipWidgetDict[module], index + 3, 0, 1, 1)
+            #FIXME pops the first module, not the last
             if index > 0:
                 RemoveButton = QPushButton("remove")
                 RemoveButton.setMaximumWidth(150)
@@ -428,7 +325,7 @@ class BeBoardBox(QWidget):
         self.changed.emit()
 
     def addModule(self):
-        module = ModuleBox(self.master.connection)
+        module = ModuleBox()
         module.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(module)
         if str(sys.version).startswith("3.8"):
@@ -451,7 +348,7 @@ class BeBoardBox(QWidget):
             FwModule.setModuleName(module.getSerialNumber())
             for chip in ModuleLaneMap[module.getType()].values():
                 logger.debug("type debug : " + str(module.getType()) )
-                logger.debug("Sereial number debug : " + str(module.getSerialNumber()))
+                logger.debug("Serial number debug : " + str(module.getSerialNumber()))
                 logger.debug("chip number debug : " + str(chip))
                 logger.debug("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) 
                 FwModule.setChipStatus(
@@ -463,6 +360,7 @@ class BeBoardBox(QWidget):
             # FwModule.setOpticalGroupID(module.getID())
             FwModule.setModuleType(module.getType())
             FwModule.setModuleVersion(module.getVersion())
+            FwModule.setFMCPort(module.getID())
             self.firmware.addModule(index, FwModule)
         return self.firmware
 

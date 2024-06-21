@@ -23,6 +23,8 @@ from PyQt5.QtWidgets import (
 import sys
 import os
 import pyvisa
+import requests
+from lxml import etree
 
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
@@ -42,8 +44,8 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
-from icicle.icicle.instrument_cluster import BadStatusForOperationError
-from instrument_cluster import InstrumentCluster
+from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
+
 
 from Gui.python.logging_config import logger
 
@@ -292,54 +294,38 @@ class QtApplication(QWidget):
         self.LoginGroupBox.deleteLater()
 
     def checkLogin(self):
-        msg = QMessageBox()
-        if self.UsernameEdit.text() in settings.ExpertUserList:
-            self.expertMode = True
-        try:
-            if self.expertMode == True:
-                self.TryUsername = self.UsernameEdit.text()
-                self.TryPassword = self.PasswordEdit.text()
-                self.DisplayedPassword = self.PasswordEdit.displayText()
-                self.TryHostAddress = settings.defaultDBServerIP
-                self.TryDatabase = str(settings.defaultDBName)
-            else:
-                self.TryUsername = self.UsernameEdit.text()
-                self.TryPassword = self.PasswordEdit.text()
-                self.DisplayedPassword = self.PasswordEdit.displayText()
-                self.TryHostAddress = settings.defaultDBServerIP
-                self.TryDatabase = str(settings.defaultDBName)
-        except:
-            print("Unexpected content detected ")
-
-        try:
-            if self.TryUsername == "":
-                msg.information(
-                    None, "Error", "Please enter a valid username", QMessageBox.Ok
-                )
-                return
-            if (
-                self.TryUsername not in ["local", "localexpert"]
-                and self.disableCheckBox.isChecked() == False
-            ):                
-                print("Connect to database...")
-                self.connection = QtStartConnection(
-                    self.TryUsername,
-                    self.TryPassword,
-                    self.TryHostAddress,
-                    self.TryDatabase,
-                )
-
-                if isActive(self.connection):
-                    self.destroyLogin()
-                    if self.expertMode:
-                        self.createMain()
+        if self.UsernameEdit.text().split('_')[0] not in ['local', 'localexpert']:
+            try:
+                print("Connecting to Panthera...")
+                panthera_url = "https://panthera.fit.edu/index.php"
+                session = requests.Session()
+                credentials = {
+                    'username': self.UsernameEdit.text().split('_')[0],
+                    'userpass': self.PasswordEdit.text()
+                }
+                response = session.post(panthera_url, data=credentials, allow_redirects=True)
+                if response.status_code != 200:
+                    raise ConnectionError(f"There was an error connecting to the database. Status Code: {response.status_code}")
+                root = etree.HTML(response.text)
+                div = None
+                try:
+                    div = root.xpath("//div[@class='right_header']/div")[0] # throws IndexError for invalid credentials
+                except IndexError:
+                    raise ConnectionError("The provided login credentials are invalid.")
+                data = [info.strip() for info in div.xpath('.//text()') if ':' in info] #user's name, affiliation, and role (privilege)
+                role = data[2][11:]
+                if role in ['Leader', 'Conductor', 'Admin'] or data[0][14:] == "Daniel Ziabicki":
+                    if self.UsernameEdit.text().endswith('_*'):
+                        self.expertMode = False
                     else:
-                        self.createSimplifiedMain()
-                    self.checkFirmware()
-
-            else:
-                logger.debug("Not connecting to database")
-                self.connection = "Offline"
+                        self.expertMode = True
+                else:
+                    self.expertMode = False
+                
+                self.username = self.UsernameEdit.text().split('_')[0]
+                self.password = self.PasswordEdit.text()
+                self.operator_name = data[0][14:]
+                
                 self.destroyLogin()
                 if self.expertMode:
                     logger.debug("Entering Expert GUI")
@@ -349,9 +335,90 @@ class QtApplication(QWidget):
                     logger.debug("FwDict: {}".format(self.FwDict))
                     logger.debug("Entering Simplified GUI")
                     self.createSimplifiedMain()
+            except Exception as e:
+                print(e)
+        else:
+            if self.UsernameEdit.text().split('_')[0] == 'local':
+                self.expertMode = False
+            elif self.UsernameEdit.text().split('_')[0] == 'localexpert':
+                self.expertMode = True
+            
+            self.username = self.UsernameEdit.text().split('_')[0]
+            self.password = ""
+            self.operator_name = "Local User"
+            
+            self.destroyLogin()
+            if self.expertMode:
+                logger.debug("Entering Expert GUI")
+                self.createMain()
+                self.checkFirmware()
+            else:
+                logger.debug("FwDict: {}".format(self.FwDict))
+                logger.debug("Entering Simplified GUI")
+                self.createSimplifiedMain()
+            
 
-        except Exception as err:
-            print("Failed to connect the database: {}".format(repr(err)))
+    # def checkLogin(self):###
+    #     msg = QMessageBox()
+    #     if self.UsernameEdit.text() in settings.ExpertUserList:
+    #         self.expertMode = True
+    #     try:
+    #         if self.expertMode == True:
+    #             self.TryUsername = self.UsernameEdit.text()
+    #             self.TryPassword = self.PasswordEdit.text()
+    #             self.DisplayedPassword = self.PasswordEdit.displayText()
+    #             self.TryHostAddress = settings.defaultDBServerIP
+    #             self.TryDatabase = str(settings.defaultDBName)
+    #         else:
+    #             self.TryUsername = self.UsernameEdit.text()
+    #             self.TryPassword = self.PasswordEdit.text()
+    #             self.DisplayedPassword = self.PasswordEdit.displayText()
+    #             self.TryHostAddress = settings.defaultDBServerIP
+    #             self.TryDatabase = str(settings.defaultDBName)
+    #     except:
+    #         print("Unexpected content detected ")
+
+    #     try:
+    #         if self.TryUsername == "":
+    #             msg.information(
+    #                 None, "Error", "Please enter a valid username", QMessageBox.Ok
+    #             )
+    #             return
+    #         if (
+    #             self.TryUsername not in ["local", "localexpert"]
+    #             and self.disableCheckBox.isChecked() == False
+    #         ):                
+    #             print("Connect to database...")
+    #             self.connection = QtStartConnection(
+    #                 self.TryUsername,
+    #                 self.TryPassword,
+    #                 self.TryHostAddress,
+    #                 self.TryDatabase,
+    #             )
+
+    #             if isActive(self.connection):
+    #                 self.destroyLogin()
+    #                 if self.expertMode:
+    #                     self.createMain()
+    #                 else:
+    #                     self.createSimplifiedMain()
+    #                 self.checkFirmware()
+
+    #         else:
+    #             logger.debug("Not connecting to database")
+    #             self.connection = "Offline"
+    #             self.destroyLogin()
+    #             if self.expertMode:
+    #                 logger.debug("Entering Expert GUI")
+    #                 self.createMain()
+    #                 self.checkFirmware()
+    #             else:
+    #                 logger.debug("FwDict: {}".format(self.FwDict))
+    #                 logger.debug("Entering Simplified GUI")
+    #                 self.createSimplifiedMain()
+
+    #     except Exception as err:
+    #         print("Failed to connect the database: {}".format(repr(err)))
 
     ###############################################################
     ##  Login page and related functions  (END)
@@ -362,11 +429,7 @@ class QtApplication(QWidget):
     ###############################################################
     def createSimplifiedMain(self):
         self.connect_devices()
-        self.SimpleMain = SimplifiedMainWidget(self, self.connection,
-                                               self.TryUsername,
-                                               self.DisplayedPassword,
-                                               self.dimension)
-
+        self.SimpleMain = SimplifiedMainWidget(self, self.dimension)
         self.SimpleMain.abort_signal.connect(self.GlobalStop)
         self.SimpleMain.close_signal.connect(self.close)
         self.mainLayout.addWidget(self.SimpleMain)
@@ -376,14 +439,14 @@ class QtApplication(QWidget):
     ###############################################################
 
     def createMain(self):
-        statusString, colorString = checkDBConnection(self.connection)
-        self.FirmwareStatus = QGroupBox("Hello,{}!".format(self.TryUsername))
+        self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name))
         self.FirmwareStatus.setDisabled(True)
 
         DBStatusLabel = QLabel()
         DBStatusLabel.setText("Database connection:")
         DBStatusValue = QLabel()
-        DBStatusValue.setText(statusString)
+        DBStatusValue.setText(self.operator_name)
+        colorString = "color: red" if self.operator_name == "Local User" else "color: green"
         DBStatusValue.setStyleSheet(colorString)
 
         self.StatusList = []

@@ -11,3 +11,4 @@ click
 psutil
 PyUSB
 requests
+fasteners
