@@ -66,8 +66,8 @@ class ScanCanvas(FigureCanvas):
         self.axes = self.fig.add_subplot(111)
         self.xlabel = xlabel
         self.ylabel = ylabel
-        self.X = np.array(X) if X is not None else numpy.array([])
-        self.Y = np.array(Y) if Y is not None else numpy.array([])
+        self.X = numpy.array(X) if X is not None else numpy.array([])
+        self.Y = numpy.array(Y) if Y is not None else numpy.array([])
         self.compute_initial_figure()
         FigureCanvas.__init__(self, self.fig)
         self.setMinimumHeight(100)
