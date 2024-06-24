@@ -101,7 +101,7 @@ class ScanCanvas(FigureCanvas):
                 self.axes.plot(plot_range, best_fit_line(plot_range), color="red", linestyle="dashed")
 
                 slope, intercept = coeffs
-                textbox_text = f'Slope: {slope:.2e}\nIntercept: {intercept:.2e}'
+                textbox_text = f'Slope: {slope:.2e} A/V'
                 self.axes.text(0.05, 0.95, textbox_text, transform=self.axes.transAxes, fontsize=10, 
                             verticalalignment='top', bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.5))
         if self.invert:
