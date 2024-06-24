@@ -321,6 +321,7 @@ class TestHandler(QObject):
     def runTest(self, reRun=False):
         if reRun:
             self.halt = False
+            self.testIndexTracker = 0
         testName = self.info[1]
 
         self.input_dir = self.output_dir
@@ -370,6 +371,7 @@ class TestHandler(QObject):
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
+            self.IVProgressValue = 0
             self.IVCurveHandler = IVCurveHandler(self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
@@ -381,6 +383,7 @@ class TestHandler(QObject):
             self.currentTest = testName
             self.configTest()
             self.SLDOScanData = []
+            self.SLDOProgressValue = 0
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
             self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType='DEFAULT', end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
@@ -995,7 +998,8 @@ class TestHandler(QObject):
         # if isSingleTest(self.info[1]):
         # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info[1]))
 
-        self.testIndexTracker += 1
+        if self.ProgressValue == 100:
+            self.testIndexTracker += 1
         self.saveConfigs()
 
         EnableReRun = False
@@ -1178,6 +1182,7 @@ class TestHandler(QObject):
         self.figurelist={"-1": [filename]}
         self.updateValidation.emit(grade, passmodule)
         EnableReRun = False
+        self.testIndexTracker += 1
 
 
         # Will send signal to turn off power supply after composite or single tests are run
@@ -1206,13 +1211,13 @@ class TestHandler(QObject):
         else : 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
-        self.testIndexTracker += 1
         if isCompositeTest(self.info[1]):
             self.runTest()
 
     def SLDOScanFinished(self):
         # for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
         #     moduleName = module.getModuleName()
+        self.testIndexTracker += 1
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
@@ -1242,8 +1247,6 @@ class TestHandler(QObject):
         if self.master.expertMode:
             self.updateSLDOResult.emit(self.output_dir)
         
-
-        self.testIndexTracker += 1
         if isCompositeTest(self.info[1]):
             self.runTest()
 
