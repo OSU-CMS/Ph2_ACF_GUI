@@ -570,7 +570,7 @@ class QtRunWindow(QWidget):
         if EnableReRun:
             self.RunButton.setText("&Re-run")
             self.RunButton.setDisabled(False)
-            self.UploadButton.setDisabled(False)
+            self.UploadButton.setDisabled(self.testHandler.autoSave)
 
     def updateResult(self, newResult):
         # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")

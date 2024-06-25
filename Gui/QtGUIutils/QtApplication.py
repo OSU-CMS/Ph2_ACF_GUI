@@ -294,10 +294,11 @@ class QtApplication(QWidget):
         self.LoginGroupBox.deleteLater()
 
     def checkLogin(self):
-        if self.UsernameEdit.text().split('_')[0] not in ['local', 'localexpert']:
+        expert_string = '_*'
+        if self.UsernameEdit.text() not in ['local', 'localexpert']:
             print("Connecting to Panthera...")
             credentials = {
-                'username': self.UsernameEdit.text().split('_')[0],
+                'username': self.UsernameEdit.text()[0:-(len(expert_string))] if self.UsernameEdit.text().endswith(expert_string) else self.UsernameEdit.text(),
                 'userpass': self.PasswordEdit.text()
             }
             data = {}
