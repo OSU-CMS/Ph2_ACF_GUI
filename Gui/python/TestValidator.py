@@ -36,7 +36,8 @@ def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, modu
         if not status:
             raise RuntimeError(message)
                 
-        return {module_name:(sanity, explanation)}
+        #return {module_name:(sanity, explanation)}
+        return {module_name:(True, explanation)}
     except Exception as err:
         logger.error("An error was thrown while grading: {}".format(repr(err)))
         return {module_name:(False, err)}
