@@ -288,7 +288,7 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Simplied GUI UI Loaded")
 
     def createWindow(self):
-        self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.master.operator_name))
+        self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.master.operator_name_first))
 
         self.instrument_info["database"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["database"]["Label"].setText("Database connection:")

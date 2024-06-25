@@ -23,8 +23,8 @@ from PyQt5.QtWidgets import (
 import sys
 import os
 import pyvisa
-import requests
-from lxml import etree
+from felis.felis_methods import get_accountInfo
+import requests.exceptions as rqx
 
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
@@ -295,48 +295,48 @@ class QtApplication(QWidget):
 
     def checkLogin(self):
         if self.UsernameEdit.text().split('_')[0] not in ['local', 'localexpert']:
+            print("Connecting to Panthera...")
+            credentials = {
+                'username': self.UsernameEdit.text().split('_')[0],
+                'userpass': self.PasswordEdit.text()
+            }
+            data = {}
             try:
-                print("Connecting to Panthera...")
-                panthera_login_url = "https://panthera.fit.edu/index.php"
-                session = requests.Session()
-                credentials = {
-                    'username': self.UsernameEdit.text().split('_')[0],
-                    'userpass': self.PasswordEdit.text()
-                }
-                response = session.post(panthera_login_url, data=credentials, allow_redirects=True)
-                if response.status_code != 200:
-                    raise ConnectionError(f"There was an error connecting to the database. Status Code: {response.status_code}")
-                root = etree.HTML(response.text)
-                div = None
-                try:
-                    div = root.xpath("//div[@class='right_header']/div")[0] # throws IndexError for invalid credentials
-                except IndexError:
-                    raise ConnectionError("The provided login credentials are invalid.")
-                data = [info.strip() for info in div.xpath('.//text()') if ':' in info] #user's name, affiliation, and role (privilege)
-                role = data[2][11:]
-                if role in ['Leader', 'Conductor', 'Admin'] or data[0][14:] == "Daniel Ziabicki":
-                    if self.UsernameEdit.text().endswith('_*'):
-                        self.expertMode = False
-                    else:
-                        self.expertMode = True
-                else:
-                    self.expertMode = False
-                
-                self.username = self.UsernameEdit.text().split('_')[0]
-                self.password = self.PasswordEdit.text()
-                self.operator_name = data[0][14:]
-                
-                self.destroyLogin()
-                if self.expertMode:
-                    logger.debug("Entering Expert GUI")
-                    self.createMain()
-                    self.checkFirmware()
-                else:
-                    logger.debug("FwDict: {}".format(self.FwDict))
-                    logger.debug("Entering Simplified GUI")
-                    self.createSimplifiedMain()
+                status, message, data = get_accountInfo(*credentials.values())
+                if not status:
+                    print(message)
+                    return
             except Exception as e:
-                print(e)
+                if type(e) is rqx.JSONDecodeError:
+                    print("Your credentials do not match any registered account.")
+                elif type(e) is rqx.ConnectionError:
+                    print("Unable to connect to the internet. Please check your connection and try again.")
+                else:
+                    print("Error fetching account data:", e)
+                return
+            
+            self.username = credentials['username']
+            self.password = credentials['userpass']
+            self.operator_name_first = data['name_first']
+            self.operator_name = data['name_first'] + " " + data['name_last']
+            
+            if data['privilege'] in ['Leader', 'Conductor', 'Admin'] or self.operator_name == "Daniel Ziabicki":
+                if self.UsernameEdit.text().endswith('_*'):
+                    self.expertMode = False
+                else:
+                    self.expertMode = True
+            else:
+                self.expertMode = False
+            
+            self.destroyLogin()
+            if self.expertMode:
+                logger.debug("Entering Expert GUI")
+                self.createMain()
+                self.checkFirmware()
+            else:
+                logger.debug("FwDict: {}".format(self.FwDict))
+                logger.debug("Entering Simplified GUI")
+                self.createSimplifiedMain()
         else:
             if self.UsernameEdit.text().split('_')[0] == 'local':
                 self.expertMode = False
@@ -346,6 +346,7 @@ class QtApplication(QWidget):
             self.username = self.UsernameEdit.text().split('_')[0]
             self.password = ""
             self.operator_name = "Local User"
+            self.operator_name_first = "Local User"
             
             self.destroyLogin()
             if self.expertMode:
@@ -376,7 +377,7 @@ class QtApplication(QWidget):
     ###############################################################
 
     def createMain(self):
-        self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name))
+        self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name_first))
         self.FirmwareStatus.setDisabled(True)
 
         DBStatusLabel = QLabel()
