@@ -301,19 +301,10 @@ class QtApplication(QWidget):
                 'username': self.UsernameEdit.text()[0:-(len(expert_string))] if self.UsernameEdit.text().endswith(expert_string) else self.UsernameEdit.text(),
                 'userpass': self.PasswordEdit.text()
             }
-            data = {}
-            try:
-                status, message, data = get_accountInfo(*credentials.values())
-                if not status:
-                    print(message)
-                    return
-            except Exception as e:
-                if type(e) is rqx.JSONDecodeError:
-                    print("Your credentials do not match any registered account.")
-                elif type(e) is rqx.ConnectionError:
-                    print("Unable to connect to the internet. Please check your connection and try again.")
-                else:
-                    print("Error fetching account data:", e)
+            
+            status, message, data = get_accountInfo(*credentials.values())
+            print(message)
+            if not status:
                 return
             
             self.username = credentials['username']
