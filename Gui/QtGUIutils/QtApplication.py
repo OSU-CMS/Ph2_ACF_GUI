@@ -44,7 +44,9 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
-from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
+# from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
+from icicle.icicle.multiment_cluster import InstrumentCluster
+
 
 
 from Gui.python.logging_config import logger
@@ -495,8 +497,15 @@ class QtApplication(QWidget):
         self.HVDeviceName = QLabel()
         #if site_settings.icicle_instrument_setup is not None:
         if not site_settings.manual_powersupply_control: 
-            self.HVDeviceName.setText("{0}".format(site_settings.icicle_instrument_setup['hv']))
-            self.HVPortName.setText("{0}".format(site_settings.icicle_instrument_setup['hv_resource']))
+            print(site_settings.icicle_instrument_setup)
+            #self.HVDeviceName.setText("{0}".format(site_settings.icicle_instrument_setup['hv']))
+            #self.HVPortName.setText("{0}".format(site_settings.icicle_instrument_setup['hv_resource']))
+            HVDevices = [device for device in site_settings.icicle_instrument_setup['instrument_dict'].keys() if 'hv' in device]
+            HVPorts = []
+            for device in HVDevices:
+                HVPorts.append(site_settings.icicle_instrument_setup['instrument_dict'][device]['resource'])
+            self.HVDeviceName.setText(" | ".join(HVDevices))
+            self.HVPortName.setText(" | ".join(HVPorts))
         else:
             self.HVPortName.setText("")
             self.HVDeviceName.setText("Manual HV Control")
@@ -532,13 +541,19 @@ class QtApplication(QWidget):
         
         #if site_settings.icicle_instrument_setup is not None: 
         if not site_settings.manual_powersupply_control:
-            
-            self.LVDeviceName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv']))
-            self.LVPortName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv_resource']))
+            # self.LVDeviceName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv']))
+            # self.LVPortName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv_resource']))
+            LVDevices = [device for device in site_settings.icicle_instrument_setup['instrument_dict'].keys() if 'lv' in device]
+            LVPorts = []
+            for device in LVDevices:
+                LVPorts.append(site_settings.icicle_instrument_setup['instrument_dict'][device]['resource'])
+            self.LVDeviceName.setText(" | ".join(LVDevices))
+            self.LVPortName.setText(" | ".join(LVPorts))
         else:
             self.LVPortName.setText("")
             self.LVDeviceName.setText("Manual LV Control")
 
+        self.LVPowerLayout.addWidget(self.LVDeviceLabel,0,0,1,1)
         self.LVPowerLayout.addWidget(self.LVDeviceName,0,1,1,1)
         self.LVPowerLayout.addWidget(self.LVPortLabel,1,0,1,1,)
         self.LVPowerLayout.addWidget(self.LVPortName,1,1,1,1)
