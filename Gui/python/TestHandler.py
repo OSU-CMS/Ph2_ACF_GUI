@@ -698,7 +698,9 @@ class TestHandler(QObject):
                                 self.tempindex += 1
                     except Exception as e:
                         print("Failed due to {0}".format(e))
-
+                text = textStr.encode("ascii")
+                numUpAnchor, text = parseANSI(text)
+                self.outputString.emit(text.decode("utf-8"))
                 continue
             #This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
             
@@ -717,21 +719,8 @@ class TestHandler(QObject):
 
             text = textStr.encode("ascii")
             numUpAnchor, text = parseANSI(text)
-            # if numUpAnchor > 0:
-            # 	textCursor = self.ConsoleView.textCursor()
-            # 	textCursor.beginEditBlock()
-            # 	textCursor.movePosition(QTextCursor.End, QTextCursor.MoveAnchor)
-            # 	textCursor.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
-            # 	for numUp in range(numUpAnchor):
-            # 		textCursor.movePosition(QTextCursor.Up, QTextCursor.KeepAnchor)
-            # 	textCursor.removeSelectedText()
-            # 	textCursor.deletePreviousChar()
-            # 	textCursor.endEditBlock()
-            # 	self.ConsoleView.setTextCursor(textCursor)
             self.outputString.emit(text.decode("utf-8"))
-            # textCursor = self.runwindow.ConsoleView.textCursor()
-            # self.runwindow.ConsoleView.setTextCursor(textCursor)
-            # self.runwindow.ConsoleView.appendHtml(text.decode("utf-8"))
+
         self.readingOutput = False
 
     def updateOptimizedXMLValues(self):
