@@ -23,6 +23,8 @@ from PyQt5.QtWidgets import (
 import sys
 import os
 import pyvisa
+from felis.felis_methods import get_accountInfo
+import requests.exceptions as rqx
 
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
@@ -292,66 +294,61 @@ class QtApplication(QWidget):
         self.LoginGroupBox.deleteLater()
 
     def checkLogin(self):
-        msg = QMessageBox()
-        if self.UsernameEdit.text() in settings.ExpertUserList:
-            self.expertMode = True
-        try:
-            if self.expertMode == True:
-                self.TryUsername = self.UsernameEdit.text()
-                self.TryPassword = self.PasswordEdit.text()
-                self.DisplayedPassword = self.PasswordEdit.displayText()
-                self.TryHostAddress = settings.defaultDBServerIP
-                self.TryDatabase = str(settings.defaultDBName)
-            else:
-                self.TryUsername = self.UsernameEdit.text()
-                self.TryPassword = self.PasswordEdit.text()
-                self.DisplayedPassword = self.PasswordEdit.displayText()
-                self.TryHostAddress = settings.defaultDBServerIP
-                self.TryDatabase = str(settings.defaultDBName)
-        except:
-            print("Unexpected content detected ")
-
-        try:
-            if self.TryUsername == "":
-                msg.information(
-                    None, "Error", "Please enter a valid username", QMessageBox.Ok
-                )
+        expert_string = '_*'
+        if self.UsernameEdit.text() not in ['local', 'localexpert']:
+            print("Connecting to Panthera...")
+            credentials = {
+                'username': self.UsernameEdit.text()[0:-(len(expert_string))] if self.UsernameEdit.text().endswith(expert_string) else self.UsernameEdit.text(),
+                'userpass': self.PasswordEdit.text()
+            }
+            
+            status, message, data = get_accountInfo(*credentials.values())
+            print(message)
+            if not status:
                 return
-            if (
-                self.TryUsername not in ["local", "localexpert"]
-                and self.disableCheckBox.isChecked() == False
-            ):                
-                print("Connect to database...")
-                self.connection = QtStartConnection(
-                    self.TryUsername,
-                    self.TryPassword,
-                    self.TryHostAddress,
-                    self.TryDatabase,
-                )
-
-                if isActive(self.connection):
-                    self.destroyLogin()
-                    if self.expertMode:
-                        self.createMain()
-                    else:
-                        self.createSimplifiedMain()
-                    self.checkFirmware()
-
-            else:
-                logger.debug("Not connecting to database")
-                self.connection = "Offline"
-                self.destroyLogin()
-                if self.expertMode:
-                    logger.debug("Entering Expert GUI")
-                    self.createMain()
-                    self.checkFirmware()
+            
+            self.username = credentials['username']
+            self.password = credentials['userpass']
+            self.operator_name_first = data['name_first']
+            self.operator_name = data['name_first'] + " " + data['name_last']
+            
+            if data['privilege'] in ['Leader', 'Conductor', 'Admin'] or self.operator_name == "Daniel Ziabicki":
+                if self.UsernameEdit.text().endswith('_*'):
+                    self.expertMode = False
                 else:
-                    logger.debug("FwDict: {}".format(self.FwDict))
-                    logger.debug("Entering Simplified GUI")
-                    self.createSimplifiedMain()
-
-        except Exception as err:
-            print("Failed to connect the database: {}".format(repr(err)))
+                    self.expertMode = True
+            else:
+                self.expertMode = False
+            
+            self.destroyLogin()
+            if self.expertMode:
+                logger.debug("Entering Expert GUI")
+                self.createMain()
+                self.checkFirmware()
+            else:
+                logger.debug("FwDict: {}".format(self.FwDict))
+                logger.debug("Entering Simplified GUI")
+                self.createSimplifiedMain()
+        else:
+            if self.UsernameEdit.text().split('_')[0] == 'local':
+                self.expertMode = False
+            elif self.UsernameEdit.text().split('_')[0] == 'localexpert':
+                self.expertMode = True
+            
+            self.username = self.UsernameEdit.text().split('_')[0]
+            self.password = ""
+            self.operator_name = "Local User"
+            self.operator_name_first = "Local User"
+            
+            self.destroyLogin()
+            if self.expertMode:
+                logger.debug("Entering Expert GUI")
+                self.createMain()
+                self.checkFirmware()
+            else:
+                logger.debug("FwDict: {}".format(self.FwDict))
+                logger.debug("Entering Simplified GUI")
+                self.createSimplifiedMain()
 
     ###############################################################
     ##  Login page and related functions  (END)
@@ -362,11 +359,7 @@ class QtApplication(QWidget):
     ###############################################################
     def createSimplifiedMain(self):
         self.connect_devices()
-        self.SimpleMain = SimplifiedMainWidget(self, self.connection,
-                                               self.TryUsername,
-                                               self.DisplayedPassword,
-                                               self.dimension)
-
+        self.SimpleMain = SimplifiedMainWidget(self, self.dimension)
         self.SimpleMain.abort_signal.connect(self.GlobalStop)
         self.SimpleMain.close_signal.connect(self.close)
         self.mainLayout.addWidget(self.SimpleMain)
@@ -376,15 +369,18 @@ class QtApplication(QWidget):
     ###############################################################
 
     def createMain(self):
-        statusString, colorString = checkDBConnection(self.connection)
-        self.FirmwareStatus = QGroupBox("Hello,{}!".format(self.TryUsername))
+        self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name_first))
         self.FirmwareStatus.setDisabled(True)
 
         DBStatusLabel = QLabel()
-        DBStatusLabel.setText("Database connection:")
+        DBStatusLabel.setText("Database:")
         DBStatusValue = QLabel()
-        DBStatusValue.setText(statusString)
-        DBStatusValue.setStyleSheet(colorString)
+        if self.operator_name == "Local User":
+            DBStatusValue.setText("Not Connected")
+            DBStatusValue.setStyleSheet("color: red")
+        else:
+            DBStatusValue.setText("Connected")
+            DBStatusValue.setStyleSheet("color: green")
 
         self.StatusList = []
         self.StatusList.append([DBStatusLabel, DBStatusValue])

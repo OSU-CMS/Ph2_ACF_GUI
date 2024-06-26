@@ -36,13 +36,10 @@ class SimplifiedMainWidget(QWidget):
     abort_signal = pyqtSignal()
     close_signal = pyqtSignal()
 
-    def __init__(self, master, connection, username, password, dimension):
+    def __init__(self, master, dimension):
         logger.debug("SimplifiedMainWidget.__init__()")
         super().__init__()
         self.master = master
-        self.connection = connection
-        self.username = username
-        self.password = password
         self.dimension = dimension
         
         try:
@@ -291,7 +288,7 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Simplied GUI UI Loaded")
 
     def createWindow(self):
-        self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.username))
+        self.simplifiedStatusBox = QGroupBox("Hello, {}!".format(self.master.operator_name_first))
 
         self.instrument_info["database"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["database"]["Label"].setText("Database connection:")
@@ -405,7 +402,6 @@ class SimplifiedMainWidget(QWidget):
         LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), site_settings.defaultFC7)
         FwStatusComment, _, _ = fwStatusParser(self.BeBoard, LogFileName) 
         logger.debug("Checking DB Connection")
-        statusString, _ = checkDBConnection(self.connection)
 
 
         # Launch QThread to monitor Peltier temperature/power and Arduino temperature/humidity
@@ -424,7 +420,7 @@ class SimplifiedMainWidget(QWidget):
        
         self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus 
         self.instrument_status["fc7"] = "Connected" in FwStatusComment 
-        self.instrument_status["database"]= not "offline" in statusString 
+        self.instrument_status["database"] = self.master.operator_name != "Local User" 
         
 
         # Icicle will deal with the powersupplies, so I will just always set their status to good

@@ -87,7 +87,7 @@ def iter_except(function, exception):
 ##########################################################################
 
 
-def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir, DBConnection):
+def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
     if not Output_Dir:
         test_dir = os.environ.get("DATA_dir") + "/Test_" + str(Test)
         if not os.path.isdir(test_dir):

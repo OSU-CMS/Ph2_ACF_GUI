@@ -36,6 +36,7 @@ from Gui.GUIutils.guiUtils import (
     isSingleTest,
     formatter,
 )
+from felis.felis import Felis
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
@@ -63,7 +64,7 @@ logger = logging.getLogger(__name__)
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
     haltSignal = pyqtSignal(object)
-    finishSingal = pyqtSignal(object)
+    finishSignal = pyqtSignal(object)
     proceedSignal = pyqtSignal(object)
     outputString = pyqtSignal(object)
     stepFinished = pyqtSignal(object)
@@ -71,7 +72,7 @@ class TestHandler(QObject):
     updateResult = pyqtSignal(object)
     updateIVResult = pyqtSignal(object)
     updateSLDOResult = pyqtSignal(object)
-    updateValidation = pyqtSignal(object, object)
+    updateValidation = pyqtSignal(object)
     powerSignal = pyqtSignal()
 
     def __init__(self, runwindow, master, info, firmware):
@@ -91,7 +92,6 @@ class TestHandler(QObject):
         self.runwindow = runwindow
         self.firmware = firmware
         self.info = info
-        self.connection = self.master.connection
         self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
         self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
@@ -124,11 +124,10 @@ class TestHandler(QObject):
         self.outputFile = ""
         self.errorFile = ""
 
-        # self.autoSave = False
         self.autoSave = True
         self.backSignal = False
         self.halt = False
-        self.finishSingal = False
+        self.finishSignal = False
         self.proceedSignal = False
 
         self.runNext = threading.Event()
@@ -136,8 +135,20 @@ class TestHandler(QObject):
         self.listWidgetIndex = 0
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
+        
+        felisScratchDir = "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch"
+        if not os.path.isdir(felisScratchDir):
+            try:
+                os.makedirs(felisScratchDir)
+                logger.info("New Felis scratch directory created.")
+            except OSError as e:
+                logger.error(f"Error making Felis scratch directory: {e.strerror}")
+        
+        self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
         self.grades = []
         self.modulestatus = []
+        
+        self.figurelist = {}
 
         self.run_process = QProcess(self)
         self.run_process.readyReadStandardOutput.connect(
@@ -221,7 +232,6 @@ class TestHandler(QObject):
             "_Module".join(ModuleIDs),
             self.output_dir,
             self.input_dir,
-            self.connection,
         )
 
         # The default place to get the config file is in /settings/RD53Files/CMSIT_RD53.txt
@@ -552,22 +562,12 @@ class TestHandler(QObject):
 
     def validateTest(self):
         try:
-            grade = {}
-            passmodule = {}
-            grade, passmodule, self.figurelist = ResultGrader(
-                self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap
+            result = ResultGrader(
+                self.felis, self.output_dir, self.currentTest,
+                self.testIndexTracker, self.RunNumber, self.ModuleType,
             )
-            self.updateValidation.emit(grade, passmodule)
-
-            status = True
-            for module in passmodule.values():
-                if False in module.values():
-                    status = False
-            return status
-        # self.StatusCanvas.renew()
-        # self.StatusCanvas.update()
-        # self.HistoryLayout.removeWidget(self.StatusCanvas)
-        # self.HistoryLayout.addWidget(self.StatusCanvas)
+            self.updateValidation.emit(result)
+            return list(result.values())[0][0]
         except Exception as err:
             logger.error(err)
 
@@ -598,196 +598,6 @@ class TestHandler(QObject):
                 # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
         except:
             print("Failed to copy file to output directory")
-
-    def saveTestToDB(self):
-        if isActive(self.connection) and self.autoSave:
-            try:
-                localDir = self.output_dir
-                getFiles = subprocess.run(
-                    'find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(
-                        localDir
-                    ),
-                    shell=True,
-                    stdout=subprocess.PIPE,
-                )
-                fileList = getFiles.stdout.decode("utf-8").rstrip("\n").split("\n")
-                moduleList = [
-                    module for module in localDir.split("_") if "Module" in module
-                ]
-
-                if fileList == [""]:
-                    logger.warning(
-                        "No ROOT file found in the local folder, skipping..."
-                    )
-                    return
-
-                ## Submit all files
-                for submitFile in fileList:
-                    data_id = hashlib.md5("{}".format(submitFile).encode()).hexdigest()
-                    if not self.checkRemoteFile(data_id):
-                        self.uploadFile(submitFile, data_id)
-
-                    ## Submit records for all modules
-                    for module in moduleList:
-                        # print ("Module is {0}".format(module))
-                        module_id = module.strip("Module")
-                        # print ("Module_ID is {0}".format(module_id))
-                        getConfigInFiles = subprocess.run(
-                            'find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_IN.txt"  '.format(
-                                localDir, module_id
-                            ),
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )  # changed module_id to module
-                        configInFileList = (
-                            getConfigInFiles.stdout.decode("utf-8")
-                            .rstrip("\n")
-                            .split("\n")
-                        )
-                        getConfigOutFiles = subprocess.run(
-                            'find {0} -mindepth 1  -maxdepth 1 -type f -name "CMSIT_RD53_{1}_*_OUT.txt"  '.format(
-                                localDir, module_id
-                            ),
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )  # changed module_id to module
-                        configOutFileList = (
-                            getConfigOutFiles.stdout.decode("utf-8")
-                            .rstrip("\n")
-                            .split("\n")
-                        )
-                        getXMLFiles = subprocess.run(
-                            'find {0} -mindepth 1  -maxdepth 1 -type f -name "*.xml"  '.format(
-                                localDir
-                            ),
-                            shell=True,
-                            stdout=subprocess.PIPE,
-                        )
-                        XMLFileList = (
-                            getXMLFiles.stdout.decode("utf-8").rstrip("\n").split("\n")
-                        )
-                        configcolumns = []
-                        configdata = []
-                        for configInFile in configInFileList:
-                            if configInFile != [""]:
-                                configcolumns.append(
-                                    "Chip{}InConfig".format(configInFile.split("_")[-2])
-                                )
-                                configInBuffer = open(configInFile, "rb")
-                                configInBin = configInBuffer.read()
-                                configdata.append(configInBin)
-                        for configOutFile in configOutFileList:
-                            if configOutFile != [""]:
-                                configcolumns.append(
-                                    "Chip{}OutConfig".format(
-                                        configOutFile.split("_")[-2]
-                                    )
-                                )
-                                configOutBuffer = open(configOutFile, "rb")
-                                configOutBin = configOutBuffer.read()
-                                configdata.append(configOutBin)
-
-                        xmlcolumns = []
-                        xmldata = []
-                        if len(XMLFileList) > 1:
-                            print("Warning!  There are multiple xml files here!")
-                        for XMLFile in XMLFileList:
-                            if XMLFile != [""]:
-                                xmlcolumns.append("xml_file")
-                                xmlBuffer = open(XMLFile, "rb")
-                                xmlBin = xmlBuffer.read()
-                                xmldata.append(xmlBin)
-
-                        # Columns = ["part_id","date","testname","description","grade","data_id","username", "config_file", "xml_file"]
-                        # Columns = ["part_id","test_id","test_name","date","test_grade","user","Chip0InConfig","Chip0OutConfig","Chip1InConfig","Chip1OutConfig","Chip2InConfig","Chip2OutConfig","Chip3InConfig","Chip3OutConfig","plot1","plot2"]
-                        Columns = [
-                            "part_id",
-                            "test_id",
-                            "test_name",
-                            "date",
-                            "test_grade",
-                            "user",
-                            "plot1",
-                            "plot2",
-                            "root_file",
-                        ]
-                        SubmitArgs = []
-                        Value = []
-                        record = formatter(localDir, Columns, part_id=module)
-                        # record = formatter(localDir,Columns, part_id=str(module_id))
-                        # for column in ['part_id']:
-                        for column in Columns:
-                            if column == "part_id":
-                                SubmitArgs.append(column)
-                                Value.append(module)
-                            if column == "date":
-                                SubmitArgs.append(column)
-                                if (
-                                    str(sys.version)
-                                    .split(" ")[0]
-                                    .startswith(("3.7", "3.8", "3.9"))
-                                ):
-                                    TimeStamp = datetime.fromisoformat(
-                                        localDir.split("_")[-2]
-                                    )
-                                elif str(sys.version).split(" ")[0].startswith(("3.6")):
-                                    TimeStamp = datetime.strptime(
-                                        localDir.split("_")[-2].split(".")[0],
-                                        "%Y-%m-%dT%H:%M:%S",
-                                    )
-                                # print ("timestamp is {0}".format(TimeStamp))
-                                Value.append(TimeStamp)
-                                # Value.append(record[Columns.index(column)])
-                            if column == "test_name":
-                                SubmitArgs.append(column)
-                                Value.append(record[Columns.index(column)])
-                            if column == "description":
-                                SubmitArgs.append(column)
-                                Value.append("No Comment")
-                            if column == "test_grade":
-                                SubmitArgs.append(column)
-                                Value.append(-1)
-                            if column == "test_id":
-                                SubmitArgs.append(column)
-                                Value.append(data_id)
-                            if column == "user":
-                                SubmitArgs.append(column)
-                                Value.append(self.master.TryUsername)
-                            if column == "root_file":
-                                SubmitArgs.append(column)
-                                Value.append(submitFile.split("/")[-1])
-
-                        SubmitArgs = SubmitArgs + configcolumns + xmlcolumns
-                        Value = Value + configdata + xmldata
-
-                        try:
-                            insertGenericTable(
-                                self.connection, "module_tests", SubmitArgs, Value
-                            )
-                        except:
-                            print("Failed to insert")
-            except Exception as err:
-                QMessageBox.information(
-                    self, "Error", "Unable to save to DB", QMessageBox.Ok
-                )
-                print("Error: {}".format(repr(err)))
-                return
-
-    def checkRemoteFile(self, file_id):
-        remoteRecords = retrieveWithConstraint(
-            self.connection, "result_files", file_id=file_id, columns=["file_id"]
-        )
-        return remoteRecords != []
-
-    def uploadFile(self, fileName, file_id):
-        fileBuffer = open(fileName, "rb")
-        data = fileBuffer.read()
-        insertGenericTable(
-            self.connection,
-            "result_files",
-            ["file_id", "file_content"],
-            [file_id, data],
-        )
 
     #######################################################################
     ##  For real-time terminal display
@@ -1021,35 +831,17 @@ class TestHandler(QObject):
         # validate the results
         status = self.validateTest()
 
-        # manually validate the result
-
-        notAccept = False
-        if status == False:
-            for key in self.figurelist.keys():
-                for plot in self.figurelist[key]:
-                    dialog = QResultDialog(self, plot)
-                    result = dialog.exec_()
-                    if result:
-                        continue
-                    else:
-                        notAccept = True
-        if notAccept:
-            self.abortTest()
-
         # show the score of test
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateResult.emit(self.output_dir)
             #print(self.output_dir)
         else:
-            #self.updateResult.emit(self.output_dir)
-            #print(self.output_dir)
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
-            #print(step, self.figurelist)
 
         if self.autoSave:
-            self.saveTestToDB()
+            self.upload_to_Panthera()
         # self.update()
 
         if (
@@ -1069,7 +861,6 @@ class TestHandler(QObject):
         if 'SLDO' in measurementType:
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
-
 
     # def updateMeasurement(self, measureType, measure):
     #     """
@@ -1126,7 +917,6 @@ class TestHandler(QObject):
     #             self.figurelist = {"-1": [output]}
     #             self.updateResult.emit((step, self.figurelist))
 
-
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
             moduleName = module.getModuleName()
@@ -1174,16 +964,18 @@ class TestHandler(QObject):
         self.IVCurveResult.saveToSVG(filename)
         self.IVCurveResult.saveToSVG(filename2)
 
-        grade, passmodule, self.figurelist = ResultGrader(
-            self.output_dir, self.currentTest, self.RunNumber, self.ModuleMap
+        result = ResultGrader(
+            self.felis, self.output_dir, self.currentTest,
+            self.testIndexTracker, self.RunNumber, self.ModuleType,
         )
+        self.updateValidation.emit(result)
 
         step="IVCurve"
-        self.figurelist={"-1": [filename]}
-        self.updateValidation.emit(grade, passmodule)
-        EnableReRun = False
+
         self.testIndexTracker += 1
 
+
+        EnableReRun = False
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
@@ -1199,6 +991,8 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                if self.autoSave:
+                    self.upload_to_Panthera()
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1208,7 +1002,7 @@ class TestHandler(QObject):
         self.historyRefresh.emit(self.modulestatus)
         if self.master.expertMode:
             self.updateIVResult.emit(self.output_dir)
-        else : 
+        else: 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
         if isCompositeTest(self.info[1]):
@@ -1237,6 +1031,8 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                if self.autoSave:
+                    self.upload_to_Panthera()
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1269,3 +1065,16 @@ class TestHandler(QObject):
             self.halt = True
             self.haltSignal.emit(self.halt)
             self.starttime = None
+
+    def upload_to_Panthera(self):
+        try:
+            print("Uploading to Panthera...")
+            status, message = self.felis.upload_results(
+                self.output_dir.split("Module")[1].split('_')[0], #moduleName Ex: RH0001
+                self.master.username,
+                self.master.password,
+            )
+            if not status:
+                raise ConnectionError(message)
+        except Exception as e:
+            logger.error(f"There was an error uploading the test results. {str(e)}")

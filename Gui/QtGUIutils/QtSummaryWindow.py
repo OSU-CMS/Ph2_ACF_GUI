@@ -42,7 +42,6 @@ class QtSummaryWindow(QWidget):
     def __init__(self, master):
         super(QtSummaryWindow, self).__init__()
         self.master = master
-        self.connection = self.master.connection
         self.GroupBoxSeg = [1, 1, 5, 1]
         self.checkboxs = []
         self.SiteList = ["All", "OSU", "Site 1", "Site2"]
