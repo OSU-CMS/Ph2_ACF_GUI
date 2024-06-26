@@ -10,6 +10,7 @@ from InnerTrackerTests.FELaneConfig import *
 from Gui.siteSettings import (
   Monitor_RD53A,
   Monitor_CROC,
+  Monitor_SleepTime,
 )
 #from Gui.GUIutils.settings import *
 #from Gui.python.CustomizedWidget import ModuleBox
@@ -202,7 +203,7 @@ class MonitoringModule():
       self.Enable=Monitor_RD53A
     else:
       self.Enable=Monitor_CROC
-    self.SleepTime=30000
+    self.SleepTime=Monitor_SleepTime
     self.MonitoringList = {}
   def SetType(self, Type):
     self.Type=Type
