@@ -90,6 +90,7 @@ FC7List =  {
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
 Monitor_CROC = "1"
+Monitor_SleepTime = "30000"  # time in milliseconds between temperature readings
 
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
