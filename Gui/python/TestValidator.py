@@ -9,7 +9,11 @@ from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
 def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, moduleType):
     try:
+        
         module_name = inputDir.split("Module")[1].split('_')[0]
+        if 'IVCurve' in testName:
+            explanation = 'No grading currently available for IVCurve'
+            return {module_name:(True, explanation)}
         ROOT_file_path = "{0}/Run{1}_{2}.root".format(
             inputDir, runNumber, testName.split('_')[0].rstrip("Scan")
         )
@@ -40,4 +44,4 @@ def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, modu
         return {module_name:(True, explanation)}
     except Exception as err:
         logger.error("An error was thrown while grading: {}".format(repr(err)))
-        return {module_name:(False, err)}
+        return {module_name:(False, str(err))}
