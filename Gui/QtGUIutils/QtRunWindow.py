@@ -453,7 +453,7 @@ class QtRunWindow(QWidget):
             self.StatusTable.setRowCount(row + 1)
             if isCompositeTest(self.info[1]):
                 self.StatusTable.setItem(
-                    row, 0, QTableWidgetItem(CompositeTests[self.info[1]][index])
+                    row, 0, QTableWidgetItem(CompositeTests[self.info[1]][index % len(CompositeTests[self.info[1]])])
                 )
             else:
                 self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
@@ -514,8 +514,10 @@ class QtRunWindow(QWidget):
             if isCompositeTest(self.info[1]):
                 for index in range(len(CompositeTests[self.info[1]])):
                     self.ResultWidget.ProgressBar[index].setValue(0)
+                    self.ResultWidget.runtime[index].setText("")
             else:
                 self.ResultWidget.ProgressBar[0].setValue(0)
+                self.ResultWidget.runtime[0].setText("")
         self.ResetButton.setDisabled(True)
         self.testHandler.runTest(isReRun)
 

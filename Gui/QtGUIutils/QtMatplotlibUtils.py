@@ -66,8 +66,8 @@ class ScanCanvas(FigureCanvas):
         self.axes = self.fig.add_subplot(111)
         self.xlabel = xlabel
         self.ylabel = ylabel
-        self.X = X
-        self.Y = Y
+        self.X = numpy.array(X) if X is not None else numpy.array([])
+        self.Y = numpy.array(Y) if Y is not None else numpy.array([])
         self.compute_initial_figure()
         FigureCanvas.__init__(self, self.fig)
         self.setMinimumHeight(100)
@@ -82,8 +82,33 @@ class ScanCanvas(FigureCanvas):
         self.axes.set_ylabel(self.ylabel)
         self.axes.plot(self.X, self.Y, '-x')
 #        self.axes.plot(self.X, self.Y, color="green", linestyle="dashed", linewidth=3)
-        self.axes.invert_xaxis()
-        self.axes.invert_yaxis()
+        
+
+        if len(self.X) > 1 and len(self.Y) > 1:
+        
+            filtered_X = self.X[self.X < -20]
+            filtered_Y = self.Y[self.X < -20]
+            
+            if len(filtered_X) > 1 and len(filtered_Y) > 1:
+                
+                coeffs = numpy.polyfit(filtered_X, filtered_Y, 1)
+                best_fit_line = numpy.poly1d(coeffs)
+                
+                
+                min_x = min(filtered_X)
+                max_x = max(filtered_X)
+                plot_range = numpy.linspace(min_x, max_x, 100)
+                self.axes.plot(plot_range, best_fit_line(plot_range), color="red", linestyle="dashed")
+
+                slope, intercept = coeffs
+                textbox_text = f'Slope: {slope:.2e} A/V'
+                self.axes.text(0.05, 0.95, textbox_text, transform=self.axes.transAxes, fontsize=10, 
+                            verticalalignment='top', bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.5))
+        if self.invert:
+            self.axes.invert_xaxis()
+            self.axes.invert_yaxis()
+        
+
 
     def updatePlots(self, points):
         self.coordinates = points
@@ -99,7 +124,6 @@ class ScanCanvas(FigureCanvas):
     def saveToSVG(self, output):
         self.fig.savefig(output, format="svg", dpi=1200)
         return output
-
 
 ## Class for Module testing Summary
 class SummaryCanvas(FigureCanvas):

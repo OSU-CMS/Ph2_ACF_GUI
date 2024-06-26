@@ -2,7 +2,6 @@
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
 mode=$1
-echo "the mode is $mode"
 ## Finding the USB ports to use with the GUI#############
 mydevices=""
 target="tty"

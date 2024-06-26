@@ -20,7 +20,6 @@ GPIB_DebugMode = False
 
 
 ##  The following block sets defaults that are to be used in the simplified (non-expert) mode.  ##
-##  This mode is currently under development, so these values don't currently do anything       ##
 
 # default FC7 boardName
 defaultFC7 = "fc7.board.1"
@@ -46,7 +45,7 @@ defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #UIC coldbox variables
-usePeltier = True
+usePeltier = False
 defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 10
@@ -70,8 +69,8 @@ icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A,
                            "default_hv_compliance_current": 5e-6, #in amps
                            "default_hv_delay": 1, #in seconds
                            "default_hv_step_size": 10, #in volts
-                           "adc_board": "AdcBoard",
-                           "adc_board_resource": "ASRL/dev/ttyUSB3::INSTR"
+#                           "adc_board": "AdcBoard",
+#                           "adc_board_resource": "ASRL/dev/ttyUSB3::INSTR"
  #                          "relay_board": "RelayBoard", #Choices are RelayBoard
  #                          "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
  #                          "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000

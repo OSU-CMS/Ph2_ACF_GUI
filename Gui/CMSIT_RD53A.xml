@@ -10,11 +10,12 @@
     <!-- Frontend chip configuration -->
     <OpticalGroup Id="0" FMCId="L12">
       <!--
-      <lpGBT_Files path="${PWD}/" />
-      <lpGBT_ConfigFile fileName="lpgbt_calibration.csv" />
-      <lpGBT Id="0" version="0" configFile="CMSIT_LpGBT-v0.txt" ChipAddress="0x70" RxDataRate="1280" RxHSLPolarity="1" TxDataRate="160" TxHSLPolarity="0">
+      <lpGBT_Files path="${PWD}" />
+      <lpGBT_ConfigFile fileName="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/lpgbt_calibration.csv" />
+      <lpGBT Id="0" version="0" configFile="CMSIT_LpGBTv0.txt" ChipAddress="0x70" RxDataRate="1280" RxHSLPolarity="1" TxDataRate="160" TxHSLPolarity="0">
       -->
-      <!-- Put here any LpGBT register, if needed -->
+      <!-- Put here any LpGBT register, if needed
+            EPRX60ChnCntr_phase = "6" -->
       <!--
         <Settings
             />
@@ -180,6 +181,8 @@
         </Register>
 
         <Register name="reset_reg">
+          <Register name="nb_of_pll_words"> 2 </Register>
+          <Register name="nb_of_sync_words"> 2 </Register>
           <Register name="ext_clk_en"> 0 </Register>
         </Register>
 
@@ -190,6 +193,11 @@
         <Register name="fast_cmd_reg_7">
           <Register name="autozero_freq"> 1000 </Register>
           <!-- In units of 10MHz clk cyles -->
+        </Register>
+
+        <Register name="cnf_cmd_ctrl">
+          <Register name="nb_slow_cmd_before_sync"> 0 </Register>
+          <Register name="nb_slow_cmd_before_pll"> 0 </Register>
         </Register>
 
       </Register>
