@@ -3,34 +3,32 @@ import ROOT
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
 import os
-from Gui.GUIutils.settings import ModuleLaneMap
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
-def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, moduleType):
+def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, module):
     try:
-        module_name = inputDir.split("Module")[1].split('_')[0]
+        module_name = module.getModuleName()
+        module_type = module.getModuleType()
         if 'IVCurve' in testName:
             explanation = 'No grading currently available for IVCurve'
             return {module_name:(True, explanation)}
         
         root_file_name = testName.split('_')[0]
-        if 'SCurveScan' in testName:
+        if 'SCurveScan' in root_file_name:
             root_file_name = 'SCurve'
-        elif 'Threshold' in testName:
+        elif 'Threshold' in root_file_name:
             root_file_name = root_file_name.replace('Threshold', 'Thr')
         ROOT_file_path = "{0}/Run{1}_{2}.root".format(
             inputDir, runNumber, root_file_name
         )
-        chipCanvasPath = "Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_{0:02d}"
-        chip_canvases = [
-            chipCanvasPath.format(int(chipNumber)) for chipNumber in ModuleLaneMap[moduleType].values()
-        ]
+        chip_canvas_path_template = "Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_{0:02d}"
+        active_chips = [chip.getID() for chip in module.getChips().values() if chip.getStatus()]
+        chip_canvases = [chip_canvas_path_template.format(int(chipID)) for chipID in active_chips]
         relevant_files = [inputDir+"/"+os.fsdecode(file) for file in os.listdir(inputDir)]
-        print('all files in directory:', relevant_files)
         
-        success, message = felis.set_module(
-            module_name, moduleType.split(" ")[2], moduleType.split(" ")[0], True, "link"
+        _1, _2 = felis.set_module(
+            module_name, module_type.split(" ")[2], module_type.split(" ")[0], True, "link"
         )
         
         status, message, sanity, explanation = felis.set_result(

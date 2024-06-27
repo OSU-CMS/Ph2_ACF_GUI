@@ -161,7 +161,7 @@ class QtRunWindow(QWidget):
         )
         HeadLabel.setMaximumHeight(30)
 
-        colorString = "color: red" if self.master.operator_name == "Local User" else "color: green"
+        colorString = "color: green" if self.master.database_connected else "color: red"
         StatusLabel = QLabel()
         StatusLabel.setText(self.master.operator_name)
         StatusLabel.setStyleSheet(f"{colorString}; font-size: 14px")
