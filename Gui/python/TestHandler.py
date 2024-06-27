@@ -797,7 +797,7 @@ class TestHandler(QObject):
         # if isSingleTest(self.info[1]):
         # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info[1]))
 
-        if self.ProgressValue == 100:
+        if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
             self.testIndexTracker += 1
         self.saveConfigs()
 
