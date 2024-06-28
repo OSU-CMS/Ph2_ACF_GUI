@@ -120,7 +120,8 @@ class SummaryBox(QWidget):
                 if 'LV Current' in item:
                     value[item] = ModuleCurrentMap[self.module.getType()]
                 if 'Bias Voltage' in item:
-                    value[item] = icicle_instrument_setup['default_hv_voltage']
+                    value[item] = icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
+                    #assumes only 1 HV titled 'hv' in instruments.json
             self.verboseResult[key] = value
 
     @staticmethod
@@ -475,7 +476,7 @@ class QtStartWindow(QWidget):
                 try:
                     if self.master.instruments:
                         self.master.instruments.off(
-                            lv_channel=None, hv_delay=0.5, hv_step_size=10
+                            hv_delay=0.5, hv_step_size=10
                         )
 
                         print("Window closed")

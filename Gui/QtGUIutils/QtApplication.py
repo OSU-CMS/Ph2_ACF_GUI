@@ -297,7 +297,7 @@ class QtApplication(QWidget):
 
     def checkLogin(self):
         expert_string = '_*'
-        if self.UsernameEdit.text() not in ['local', 'localexpert']:
+        if self.UsernameEdit.text() not in ['local', 'localexpert', '']:
             print("Connecting to Panthera...")
             credentials = {
                 'username': self.UsernameEdit.text()[0:-(len(expert_string))] if self.UsernameEdit.text().endswith(expert_string) else self.UsernameEdit.text(),
@@ -334,7 +334,7 @@ class QtApplication(QWidget):
         else:
             if self.UsernameEdit.text().split('_')[0] == 'local':
                 self.expertMode = False
-            elif self.UsernameEdit.text().split('_')[0] == 'localexpert':
+            elif self.UsernameEdit.text().split('_')[0] in ['localexpert', '']:
                 self.expertMode = True
             
             self.username = self.UsernameEdit.text().split('_')[0]
@@ -871,25 +871,36 @@ class QtApplication(QWidget):
         changes made in GUI
         """
         self.device_settings = site_settings.icicle_instrument_setup
-        if not site_settings.manual_powersupply_control :
+        if not site_settings.manual_powersupply_control:
             if self.expertMode:
                 if not self.default_checkbox.isChecked():
                     for key, value in self.connected_device_information.items():
                         self.device_settings[key] = value
             try:
                 self.instruments = InstrumentCluster(**self.device_settings)
-                self.instruments.open()
-
-                if (
-                    self.instruments.status(lv_channel=None)["lv"]
-                    or self.instruments.status(lv_channel=None)["hv"]
-                ):
+                try:
+                    self.instruments.open()
+                except Exception as e:
+                    print("Throws exception when channels_dict in instruments.json has an unpaired LV. I don't know if this presents any issue.")
+                lv_on = False
+                hv_on = False
+                
+                for number in self.instruments.get_modules().keys():
+                    if self.instruments.status()[number]["hv"]:
+                        hv_on = True
+                        break
+                for number in self.instruments.get_modules().keys():
+                    if self.instruments.status()[number]["lv"]:
+                        lv_on = True
+                        break
+                
+                if (lv_on or hv_on):
                     self.instruments.off()
                 if self.expertMode:
                     self.disable_instrument_widgets()
 
             except Exception as e:
-                print("Error: ", e)
+                print("Error:", e)
                 QMessageBox.information(
                     None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
                 )

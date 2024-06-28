@@ -36,7 +36,7 @@ class IVCurveThread(QThread):
     def turnOn(self):
         self.instruments.hv_off()
         self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
-        self.instruments.hv_compliance_current(0.00001)
+        self.instruments.hv_set_ocp(0.00001)
 
     # Used to break out of hv_on correctly
     def breakTest(self):
@@ -54,7 +54,6 @@ class IVCurveThread(QThread):
     def run(self):
         try:
             _, measurements = self.instruments.hv_on(
-                lv_channel=1,
                 voltage=self.stopVal,
                 step_size=self.stepLength,
                 delay=0.2,

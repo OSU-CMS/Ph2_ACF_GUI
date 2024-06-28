@@ -74,7 +74,7 @@ class QtRunWindow(QWidget):
         assert self.master.instruments is not None, logger.error("Unable to setup instruments")
         self.testHandler.powerSignal.connect(
             lambda: self.master.instruments.off(
-                lv_channel=None, hv_delay=0.3, hv_step_size=10, measure=False
+                hv_delay=0.3, hv_step_size=10, measure=False
             )
         )
 
@@ -660,7 +660,7 @@ class QtRunWindow(QWidget):
                 self.release()
                 if self.master.instruments:
                     self.master.instruments.off(
-                        lv_channel=None, hv_delay=0.3, hv_step_size=10
+                        hv_delay=0.3, hv_step_size=10
                     )
                 else:
                     QMessageBox.information(self, "Info", "You must turn off "

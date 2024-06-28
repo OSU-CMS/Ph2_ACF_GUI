@@ -370,9 +370,13 @@ class TestHandler(QObject):
         print("Executing Single Step test...")
         self.outputString.emit("Executing Single Step test...")
         if self.instruments:
-            if not self.instruments.status(lv_channel=None)["lv"]:
+            lv_on = False
+            for number in self.instruments.get_modules().keys():
+                if self.instruments.status()[number]["lv"]:
+                    lv_on = True
+                    break
+            if not lv_on:
                 self.instruments.lv_on(
-                    lv_channel=None,
                     voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
@@ -405,9 +409,16 @@ class TestHandler(QObject):
 
         #If the HV is not already on, turn it on.
         if self.instruments:
-            if not self.instruments.status(lv_channel=None)["hv"]:
+            default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
+            #assumes only 1 HV titled 'hv' in instruments.json
+            hv_on = False
+            for number in self.instruments.get_modules().keys():
+                if self.instruments.status()[number]["hv"]:
+                    hv_on = True
+                    break
+            if not hv_on:
                 self.instruments.hv_on(
-                    lv_channel=None, voltage=site_settings.icicle_instrument_setup['default_hv_voltage'], delay=0.3, step_size=10
+                    voltage=default_hv_voltage, delay=0.3, step_size=10,
                 )
 
         self.tempindex = 0
@@ -979,10 +990,10 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
-            
+            default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
+            #assumes only 1 HV titled 'hv' in instruments.json
             self.master.instruments.hv_on(
-                lv_channel=None,
-                voltage=site_settings.icicle_instrument_setup['default_hv_voltage'],
+                voltage=default_hv_voltage,
                 delay=0.3,
                 step_size=-3,
                 measure=False,
@@ -1016,13 +1027,13 @@ class TestHandler(QObject):
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
             self.instruments.lv_on(
-                lv_channel=None,
                 voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                 current=site_settings.ModuleCurrentMap[self.master.module_in_use],
             )
+            default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
+            #assumes only 1 HV titled 'hv' in instruments.json
             self.master.instruments.hv_on(
-                lv_channel=None,
-                voltage=site_settings.icicle_instrument_setup['default_hv_voltage'],
+                voltage=default_hv_voltage,
                 delay=0.3,
                 step_size=-3,
                 measure=False,
