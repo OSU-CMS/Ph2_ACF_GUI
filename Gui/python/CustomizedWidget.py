@@ -295,11 +295,10 @@ class BeBoardBox(QWidget):
             module.setMaximumHeight(50)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
             self.ListLayout.addWidget(self.ChipWidgetDict[module], index + 3, 0, 1, 1)
-            #FIXME pops the first module, not the last
             if index > 0:
                 RemoveButton = QPushButton("remove")
                 RemoveButton.setMaximumWidth(150)
-                RemoveButton.clicked.connect(lambda x=index: self.removeModule(x))
+                RemoveButton.clicked.connect(self.create_remove_callback(index))
                 self.ListLayout.addWidget(RemoveButton, index, 1, 1, 1)
         # ModuleLayout = QFormLayout()
         # ModuleItem = ModuleBox()
@@ -323,6 +322,11 @@ class BeBoardBox(QWidget):
         else:
             self.updateList()
         self.changed.emit()
+
+    def create_remove_callback(self, index):
+        def remove_callback():
+            self.removeModule(index)
+        return remove_callback
 
     def addModule(self):
         module = ModuleBox()
