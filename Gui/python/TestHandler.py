@@ -725,23 +725,21 @@ class TestHandler(QObject):
         try:
             if Test_to_Ph2ACF_Map[self.currentTest] in optimizationTestMap.keys():
                 updatedFEKeys = optimizationTestMap[Test_to_Ph2ACF_Map[self.currentTest]]
-                modules = [module for module in self.firmware.getAllModules().values()]
-                for module in modules:
-                    chipIDs = [chip.getID() for chip in module.getChips().values()]
+                for module in self.firmware.getAllModules().values():
+                    chipIDs = [chip.getID() for chip in module.getChips().values() if chip.getStatus()]
                     hybridID = module.getFMCPort()
                     print("HybridID {0}".format(hybridID))
                     print("chipIDs {0}".format(chipIDs))
+                    CROC = "CROC" in module.getModuleType()
                     for chipID in chipIDs:
                         updatedXMLValues[f"{hybridID}/{chipID}"] = {}
                         for updatedFEKey in updatedFEKeys:
-                            if "TriggerConfig" in updatedFEKey and "CROC" not in self.ModuleType:
-                                continue
-                            elif "LATENCY_CONFIG" in updatedFEKey and "CROC" in self.ModuleType:
-                                continue
-                            elif "Vthreshold_LIN" in updatedFEKey and "CROC" in self.ModuleType:
-                                continue
-                            elif "DAC_GDAC_" in updatedFEKey and "CROC" not in self.ModuleType:
-                                continue
+                            if CROC:
+                                if updatedFEKey in ["LATENCY_CONFIG", "Vthreshold_LIN"]: # registers not on CROC modules
+                                    continue
+                            elif not CROC:
+                                if updatedFEKey in ["TriggerConfig", "DAC_GDAC_", "CAL_EDGE_FINE_DELAY"]: # registers only on CROC modules
+                                    continue
                             updatedXMLValues[f"{hybridID}/{chipID}"][updatedFEKey] = ""
         except Exception as err:
             logger.error(f"Failed to update, {err}")
