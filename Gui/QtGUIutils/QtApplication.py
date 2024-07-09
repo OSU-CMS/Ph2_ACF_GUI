@@ -499,14 +499,14 @@ class QtApplication(QWidget):
         self.HVDeviceName = QLabel()
         #if site_settings.icicle_instrument_setup is not None:
         if not site_settings.manual_powersupply_control: 
-            print(site_settings.icicle_instrument_setup)
-            #self.HVDeviceName.setText("{0}".format(site_settings.icicle_instrument_setup['hv']))
-            #self.HVPortName.setText("{0}".format(site_settings.icicle_instrument_setup['hv_resource']))
-            HVDevices = [device for device in site_settings.icicle_instrument_setup['instrument_dict'].keys() if 'hv' in device]
+            HVDevices = []
+            for device_name, device in site_settings.icicle_instrument_setup['instrument_dict'].items():
+                if "hv" in device_name:
+                    HVDevices.append(device)
             HVPorts = []
             for device in HVDevices:
-                HVPorts.append(site_settings.icicle_instrument_setup['instrument_dict'][device]['resource'])
-            self.HVDeviceName.setText(" | ".join(HVDevices))
+                HVPorts.append(device['resource'])
+            self.HVDeviceName.setText(" | ".join([device['class'] for device in HVDevices]))
             self.HVPortName.setText(" | ".join(HVPorts))
         else:
             self.HVPortName.setText("")
@@ -543,13 +543,14 @@ class QtApplication(QWidget):
         
         #if site_settings.icicle_instrument_setup is not None: 
         if not site_settings.manual_powersupply_control:
-            # self.LVDeviceName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv']))
-            # self.LVPortName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv_resource']))
-            LVDevices = [device for device in site_settings.icicle_instrument_setup['instrument_dict'].keys() if 'lv' in device]
+            LVDevices = []
+            for device_name, device in site_settings.icicle_instrument_setup['instrument_dict'].items():
+                if "lv" in device_name:
+                    LVDevices.append(device)
             LVPorts = []
             for device in LVDevices:
-                LVPorts.append(site_settings.icicle_instrument_setup['instrument_dict'][device]['resource'])
-            self.LVDeviceName.setText(" | ".join(LVDevices))
+                LVPorts.append(device['resource'])
+            self.LVDeviceName.setText(" | ".join([device['class'] for device in LVDevices]))
             self.LVPortName.setText(" | ".join(LVPorts))
         else:
             self.LVPortName.setText("")
