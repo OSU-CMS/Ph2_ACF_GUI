@@ -333,7 +333,6 @@ class ResultTreeWidget(QWidget):
         print("SLD files processed.")  # Debugging output to indicate SLD files processing is done
 
     def displayResult(self, canvas, name=None, runNumber=""):
-        print("the name passed was {0}".format(name))
         tmpDir = os.environ.get("GUI_dir") + f"/Gui/.tmp/{runNumber}"
         #tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
         if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):

@@ -28,7 +28,7 @@ class IVCurveThread(QThread):
             self.stopVal = IVcurve_range
         else:
             self.stopVal = -80
-        self.stepLength = -2
+        self.stepLength = 2
         self.stepNum = 0
         self.stepTotal = (self.stopVal - self.startVal) / self.stepLength + 1
         self.turnOn()
@@ -53,17 +53,18 @@ class IVCurveThread(QThread):
 
     def run(self):
         try:
+            self.instruments.hv_off()
             _, measurements = self.instruments.hv_on(
-                voltage=self.stopVal,
-                step_size=self.stepLength,
+                voltage= self.stopVal,
+                step_size= self.stepLength,
                 delay=0.2,
                 measure=True,
-                break_monitoring=self.breakTest,
+                #break_monitoring=self.breakTest,
                 execute_each_step=self.getProgress,
-            )
+            )[0]
             measurementStr = {
-                "voltage": [value[1] for value in measurements],
-                "current": [value[2] for value in measurements],
+                "voltage": [value[4] for value in measurements],
+                "current": [value[5] for value in measurements],
             }
 
             print("Voltages: ", measurementStr["voltage"])
