@@ -13,10 +13,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import hashlib
 
-from Gui.GUIutils.DBConnection import (
-    insertGenericTable,
-    retrieveWithConstraint,
-    )
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
     firmware_image,
@@ -94,10 +90,11 @@ class TestHandler(QObject):
         self.info = info
         self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
-        self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+        self.module = self.firmware.getModuleByIndex(0) #temporary until multiple modules is sorted out
+        self.ModuleType = self.module.getModuleType()
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
-            self.moduleVersion = self.firmware.getModuleByIndex(0).getModuleVersion()
+            self.moduleVersion = self.module.getModuleVersion()
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
@@ -575,7 +572,7 @@ class TestHandler(QObject):
         try:
             result = ResultGrader(
                 self.felis, self.output_dir, self.currentTest,
-                self.testIndexTracker, self.RunNumber, self.ModuleType,
+                self.testIndexTracker, self.RunNumber, self.module,
             )
             self.updateValidation.emit(result)
             return list(result.values())[0][0]
@@ -709,7 +706,9 @@ class TestHandler(QObject):
                                 self.tempindex += 1
                     except Exception as e:
                         print("Failed due to {0}".format(e))
-
+                text = textStr.encode("ascii")
+                numUpAnchor, text = parseANSI(text)
+                self.outputString.emit(text.decode("utf-8"))
                 continue
             #This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
             
@@ -728,21 +727,8 @@ class TestHandler(QObject):
 
             text = textStr.encode("ascii")
             numUpAnchor, text = parseANSI(text)
-            # if numUpAnchor > 0:
-            # 	textCursor = self.ConsoleView.textCursor()
-            # 	textCursor.beginEditBlock()
-            # 	textCursor.movePosition(QTextCursor.End, QTextCursor.MoveAnchor)
-            # 	textCursor.movePosition(QTextCursor.StartOfLine, QTextCursor.KeepAnchor)
-            # 	for numUp in range(numUpAnchor):
-            # 		textCursor.movePosition(QTextCursor.Up, QTextCursor.KeepAnchor)
-            # 	textCursor.removeSelectedText()
-            # 	textCursor.deletePreviousChar()
-            # 	textCursor.endEditBlock()
-            # 	self.ConsoleView.setTextCursor(textCursor)
             self.outputString.emit(text.decode("utf-8"))
-            # textCursor = self.runwindow.ConsoleView.textCursor()
-            # self.runwindow.ConsoleView.setTextCursor(textCursor)
-            # self.runwindow.ConsoleView.appendHtml(text.decode("utf-8"))
+
         self.readingOutput = False
 
     def updateOptimizedXMLValues(self):
@@ -819,7 +805,7 @@ class TestHandler(QObject):
         # if isSingleTest(self.info[1]):
         # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info[1]))
 
-        if self.ProgressValue == 100:
+        if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
             self.testIndexTracker += 1
         self.saveConfigs()
 
@@ -830,9 +816,13 @@ class TestHandler(QObject):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
                 self.powerSignal.emit()
                 EnableReRun = True
+                if self.autoSave:
+                    self.upload_to_Panthera()
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
+            if self.autoSave:
+                self.upload_to_Panthera()
 
         self.stepFinished.emit(EnableReRun)
 
@@ -851,8 +841,6 @@ class TestHandler(QObject):
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
 
-        if self.autoSave:
-            self.upload_to_Panthera()
         # self.update()
 
         if (
@@ -977,7 +965,7 @@ class TestHandler(QObject):
 
         result = ResultGrader(
             self.felis, self.output_dir, self.currentTest,
-            self.testIndexTracker, self.RunNumber, self.ModuleType,
+            self.testIndexTracker, self.RunNumber, self.module,
         )
         self.updateValidation.emit(result)
 
@@ -1078,14 +1066,19 @@ class TestHandler(QObject):
             self.starttime = None
 
     def upload_to_Panthera(self):
-        try:
-            print("Uploading to Panthera...")
-            status, message = self.felis.upload_results(
-                self.output_dir.split("Module")[1].split('_')[0], #moduleName Ex: RH0001
-                self.master.username,
-                self.master.password,
-            )
-            if not status:
-                raise ConnectionError(message)
-        except Exception as e:
-            logger.error(f"There was an error uploading the test results. {str(e)}")
+        if self.master.database_connected:
+            try:
+                print("Uploading to Panthera...")
+                status, message = self.felis.upload_results(
+                    self.output_dir.split("Module")[1].split('_')[0], #moduleName Ex: RH0001
+                    self.master.username,
+                    self.master.password,
+                )
+                if not status:
+                    raise ConnectionError(message)
+            except Exception as e:
+                logger.error(f"There was an error uploading the test results. {str(e)}")
+                if self.autoSave:
+                    self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
+        else:
+            print("You are not connected to Panthera, upload failed.")

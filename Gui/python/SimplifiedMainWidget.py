@@ -422,7 +422,7 @@ class SimplifiedMainWidget(QWidget):
        
         self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus 
         self.instrument_status["fc7"] = "Connected" in FwStatusComment 
-        self.instrument_status["database"] = self.master.operator_name != "Local User" 
+        self.instrument_status["database"] = self.master.database_connected
         
 
         # Icicle will deal with the powersupplies, so I will just always set their status to good

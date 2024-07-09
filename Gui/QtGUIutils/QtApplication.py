@@ -313,6 +313,7 @@ class QtApplication(QWidget):
             self.password = credentials['userpass']
             self.operator_name_first = data['name_first']
             self.operator_name = data['name_first'] + " " + data['name_last']
+            self.database_connected = True
             
             if data['privilege'] in ['Leader', 'Conductor', 'Admin'] or self.operator_name == "Daniel Ziabicki":
                 if self.UsernameEdit.text().endswith('_*'):
@@ -341,6 +342,7 @@ class QtApplication(QWidget):
             self.password = ""
             self.operator_name = "Local User"
             self.operator_name_first = "Local User"
+            self.database_connected = False
             
             self.destroyLogin()
             if self.expertMode:
@@ -377,12 +379,12 @@ class QtApplication(QWidget):
         DBStatusLabel = QLabel()
         DBStatusLabel.setText("Database:")
         DBStatusValue = QLabel()
-        if self.operator_name == "Local User":
-            DBStatusValue.setText("Not Connected")
-            DBStatusValue.setStyleSheet("color: red")
-        else:
+        if self.database_connected:
             DBStatusValue.setText("Connected")
             DBStatusValue.setStyleSheet("color: green")
+        else:
+            DBStatusValue.setText("Not Connected")
+            DBStatusValue.setStyleSheet("color: red")
 
         self.StatusList = []
         self.StatusList.append([DBStatusLabel, DBStatusValue])
