@@ -61,11 +61,9 @@ class QtApplication(QWidget):
         self.setLayout(self.mainLayout)
         self.ProcessingTest = False
         self.expertMode = False
-        self.FwUnderUsed = ""
+        self.ActiveFC7s = {}
         self.module_in_use = None
         self.instruments = None
-
-        # self.FwUnderUsed = []
 
         self.FwDict = {}
         self.FwStatusVerboseDict = {}
@@ -390,9 +388,7 @@ class QtApplication(QWidget):
         self.StatusList.append([DBStatusLabel, DBStatusValue])
 
         try:
-            for index, (firmwareName, fwAddress) in enumerate(
-                site_settings.FC7List.items()
-            ):
+            for firmwareName, fwAddress in site_settings.FC7List.items():
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
                 FwStatusValue = QLabel()
@@ -400,7 +396,7 @@ class QtApplication(QWidget):
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
                 BeBoard = QtBeBoard()
                 BeBoard.setBoardName(firmwareName)
-                BeBoard.setIPAddress(site_settings.FC7List[firmwareName])
+                BeBoard.setIPAddress(fwAddress)
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))
@@ -458,9 +454,9 @@ class QtApplication(QWidget):
                 )
                 #StatusLayout.addWidget(LogButton, index, 6, 1, 1)
                 logger.debug("Setup FC7 Buttons")
-        if self.FwUnderUsed != "":
-            index = self.getIndex(self.FwUnderUsed, self.StatusList)
-            self.occupyFw("{0}".format(index))
+        if self.ActiveFC7s != {}:
+            for index in self.ActiveFC7s.keys():
+                self.occupyFw("{0}".format(index))
 
 
         self.FirmwareStatus.setLayout(StatusLayout)
@@ -706,7 +702,7 @@ class QtApplication(QWidget):
         self.NewTestButton.clicked.connect(self.openNewTest)
         self.NewTestButton.clicked.connect(self.manual_control_warning)
         self.NewTestButton.setDisabled(True)
-        if self.FwUnderUsed != "":
+        if self.ActiveFC7s != {}:
             self.NewTestButton.setDisabled(False)
         if self.ProcessingTest == True:
             self.NewTestButton.setDisabled(True)
@@ -880,11 +876,13 @@ class QtApplication(QWidget):
                     for key, value in self.connected_device_information.items():
                         self.device_settings[key] = value
             try:
-                self.instruments = InstrumentCluster(**self.device_settings)
                 try:
-                    self.instruments.open()
-                except Exception as e:
-                    print("Throws exception when channels_dict in instruments.json has an unpaired LV. I don't know if this presents any issue.")
+                    self.instruments = InstrumentCluster(**self.device_settings)
+                except ValueError:
+                    pass
+                    # InstrumentCluster.__init__() throws a ValueError when called a second time.
+                    # I don't think this error actually matters so just catching it for now.
+                self.instruments.open()
                 lv_on = False
                 hv_on = False
                 
@@ -1007,7 +1005,9 @@ class QtApplication(QWidget):
         self.ExitButton.setDisabled(True)
 
     def openNewTest(self):
-        FwModule = self.FwDict[self.FwUnderUsed]
+        FwModule = [
+            board_object for firmware, board_object in self.FwDict.items() if firmware in self.ActiveFC7s.values()
+        ]
         print('FwModule is:'.format(FwModule))
         self.StartNewTest = QtStartWindow(self, FwModule)
 
@@ -1084,20 +1084,20 @@ class QtApplication(QWidget):
             # This if was added for a test.
             if self.expertMode:
                 self.UseButtons[index].setDisabled(False)
-        if self.FwUnderUsed != "":
-            index = self.getIndex(self.FwUnderUsed, self.StatusList)
-            self.StatusList[index + 1][1].setText("Connected")
-            self.StatusList[index + 1][1].setStyleSheet("color: green")
-            self.occupyFw("{0}".format(index))
+        if self.ActiveFC7s != {}:
+            for index in self.ActiveFC7s.keys():
+                self.StatusList[index + 1][1].setText("Connected")
+                self.StatusList[index + 1][1].setStyleSheet("color: green")
+                self.occupyFw("{0}".format(index))
 
     def refreshFirmware(self):
         for index, (firmwareName, fwAddress) in enumerate(
             site_settings.FC7List.items()
         ):
             self.UseButtons[index].setDisabled(False)
-        if self.FwUnderUsed != "":
-            index = self.getIndex(self.FwUnderUsed, self.StatusList)
-            self.occupyFw("{0}".format(index))
+        if self.ActiveFC7s != {}:
+            for index in self.ActiveFC7s.keys():
+                self.occupyFw("{0}".format(index))
 
     def getFwComment(self, BeBoard: QtBeBoard, fileName):
         comment, color, verboseInfo = fwStatusParser(
@@ -1127,14 +1127,15 @@ class QtApplication(QWidget):
                 button.setText("&In use")
                 button.setDisabled(False)
                 self.CheckButton.setDisabled(True)
-                self.FwUnderUsed = self.StatusList[i + 1][0].text()
+                self.ActiveFC7s[i] = self.StatusList[i + 1][0].text()
             else:
-                button.setDisabled(True)
+                #button.setDisabled(True)
+                pass
 
     def releaseFw(self, index):
         for i, button in enumerate(self.UseButtons):
             if i == int(index):
-                self.FwUnderUsed = ""
+                del self.ActiveFC7s[i]
                 button.setText("&Use")
                 button.setDown(False)
                 button.setDisabled(False)

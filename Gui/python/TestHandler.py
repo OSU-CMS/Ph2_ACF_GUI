@@ -38,7 +38,7 @@ from felis.felis import Felis
 #from Gui.QtGUIutils.QtCustomizeWindow import *
 #from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
-#from Gui.QtGUIutils.QtLoginDialog import *
+from Gui.QtGUIutils.QtLoginDialog import *
 #from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import ResultGrader
 from Gui.python.QResultDialog import QResultDialog
@@ -64,7 +64,7 @@ class TestHandler(QObject):
     proceedSignal = pyqtSignal(object)
     outputString = pyqtSignal(object)
     stepFinished = pyqtSignal(object)
-    historyRefresh = pyqtSignal(object)
+    historyRefresh = pyqtSignal()
     updateResult = pyqtSignal(object)
     updateIVResult = pyqtSignal(object)
     updateSLDOResult = pyqtSignal(object)
@@ -90,11 +90,11 @@ class TestHandler(QObject):
         self.info = info
         self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
-        self.module = self.firmware.getModuleByIndex(0) #temporary until multiple modules is sorted out
-        self.ModuleType = self.module.getModuleType()
+        self.modules = self.firmware.getAllModules().values()
+        self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
-            self.moduleVersion = self.module.getModuleVersion()
+            self.moduleVersion = self.firmware.getModuleByIndex(0).getModuleVersion()
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
@@ -143,7 +143,6 @@ class TestHandler(QObject):
         
         self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
         self.grades = []
-        self.modulestatus = []
         
         self.figurelist = {}
 
@@ -570,12 +569,17 @@ class TestHandler(QObject):
 
     def validateTest(self):
         try:
-            result = ResultGrader(
-                self.felis, self.output_dir, self.currentTest,
-                self.testIndexTracker, self.RunNumber, self.module,
-            )
-            self.updateValidation.emit(result)
-            return list(result.values())[0][0]
+            passed = []
+            results = []
+            for module in self.modules:
+                result = ResultGrader(
+                    self.felis, self.output_dir, self.currentTest,
+                    self.testIndexTracker, self.RunNumber, module,
+                )
+                results.append(result)
+                passed.append(list(result.values())[0][0])
+            self.updateValidation.emit(results)
+            return all(passed)
         except Exception as err:
             logger.error(err)
 
@@ -698,7 +702,7 @@ class TestHandler(QObject):
                             sensorMeasure0=re.sub(r'[^\d\.\+\- ]', '', sensor)
                             sensorMeasure0 += " °C"
                             sensorMeasure = sensorMeasure0.replace("+-", "+/-")
-                            if sensorMeasure != "":
+                            if sensorMeasure != "" or sensorMeasure != "44.086 +/- 1.763 °C":
                                 self.runwindow.updatetemp(self.tempindex, sensorMeasure)
                                 self.tempindex += 1
                             else:
@@ -811,6 +815,12 @@ class TestHandler(QObject):
 
         EnableReRun = False
 
+        # Save the output ROOT file to output_dir
+        self.saveTest()
+
+        # validate the results
+        status = self.validateTest()
+
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info[1]):
             if self.testIndexTracker == len(CompositeTests[self.info[1]]):
@@ -826,14 +836,8 @@ class TestHandler(QObject):
 
         self.stepFinished.emit(EnableReRun)
 
-        # Save the output ROOT file to output_dir
-        self.saveTest()
-
-        # validate the results
-        status = self.validateTest()
-
         # show the score of test
-        self.historyRefresh.emit(self.modulestatus)
+        self.historyRefresh.emit()
         if self.master.expertMode:
             self.updateResult.emit(self.output_dir)
             #print(self.output_dir)
@@ -963,12 +967,7 @@ class TestHandler(QObject):
         self.IVCurveResult.saveToSVG(filename)
         self.IVCurveResult.saveToSVG(filename2)
 
-        result = ResultGrader(
-            self.felis, self.output_dir, self.currentTest,
-            self.testIndexTracker, self.RunNumber, self.module,
-        )
-        self.updateValidation.emit(result)
-
+        status = self.validateTest()
         step="IVCurve"
 
         self.testIndexTracker += 1
@@ -995,10 +994,12 @@ class TestHandler(QObject):
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
+            if self.autoSave:
+                self.upload_to_Panthera()
 
         self.stepFinished.emit(EnableReRun)
 
-        self.historyRefresh.emit(self.modulestatus)
+        self.historyRefresh.emit()
         if self.master.expertMode:
             self.updateIVResult.emit(self.output_dir)
         else: 
@@ -1035,10 +1036,12 @@ class TestHandler(QObject):
         elif isSingleTest(self.info[1]):
             EnableReRun = True
             self.powerSignal.emit()
+            if self.autoSave:
+                self.upload_to_Panthera()
 
         self.stepFinished.emit(EnableReRun)
 
-        self.historyRefresh.emit(self.modulestatus)
+        self.historyRefresh.emit()
         if self.master.expertMode:
             self.updateSLDOResult.emit(self.output_dir)
         
@@ -1069,13 +1072,14 @@ class TestHandler(QObject):
         if self.master.database_connected:
             try:
                 print("Uploading to Panthera...")
-                status, message = self.felis.upload_results(
-                    self.output_dir.split("Module")[1].split('_')[0], #moduleName Ex: RH0001
-                    self.master.username,
-                    self.master.password,
-                )
-                if not status:
-                    raise ConnectionError(message)
+                for module in self.modules:
+                    status, message = self.felis.upload_results(
+                        module.getModuleName(),
+                        self.master.username,
+                        self.master.password,
+                    )
+                    if not status:
+                        raise ConnectionError(message)
             except Exception as e:
                 logger.error(f"There was an error uploading the test results. {str(e)}")
                 if self.autoSave:

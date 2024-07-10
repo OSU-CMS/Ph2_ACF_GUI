@@ -439,7 +439,7 @@ class QtRunWindow(QWidget):
             self.master.SimpleMain.RunButton.setDisabled(False)
             self.master.SimpleMain.StopButton.setDisabled(True)
 
-    def refreshHistory(self, result):
+    def refreshHistory(self):
         # self.dataList = getLocalRemoteTests(self.connection, self.info[0])
         # self.proxy = QtTableWidget(self.dataList)
         # self.view.setModel(self.proxy)
@@ -448,7 +448,7 @@ class QtRunWindow(QWidget):
         print("attempting to update status in history")
         self.HistoryLayout.removeWidget(self.StatusTable)
         self.StatusTable.setRowCount(0)
-        for index, test in enumerate(self.modulestatus):
+        for index, test_results in enumerate(self.modulestatus):
             row = self.StatusTable.rowCount()
             self.StatusTable.setRowCount(row + 1)
             if isCompositeTest(self.info[1]):
@@ -457,9 +457,10 @@ class QtRunWindow(QWidget):
                 )
             else:
                 self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
-            for moduleKey in test.keys():
-                status = "Pass" if test[moduleKey][0] else "Failed"
-                moduleID = f"Module{moduleKey}"
+            for module_result in test_results:
+                moduleName = list(module_result.keys())[0]
+                status = "Pass" if module_result[moduleName][0] else "Failed"
+                moduleID = f"Module{moduleName}"
                 if moduleID in self.header:
                     columnID = self.header.index(moduleID)
                     self.StatusTable.setItem(
@@ -477,14 +478,20 @@ class QtRunWindow(QWidget):
         self.HistoryLayout.addWidget(self.StatusTable)
 
     def displayTestResultPopup(self, item):
-        row = item.row() #row = index, they are aligned in refreshHistory()
-        col = item.column()
-        message = self.modulestatus[row][self.header[col].lstrip("Module")][1]
+        try:
+            row = item.row() #row = index, they are aligned in refreshHistory()
+            col = item.column()
+            message = self.modulestatus[row][self.header.index(self.header[col])-1][self.header[col].lstrip("Module")][1]
         
-        msg_box = QMessageBox()
-        msg_box.setWindowTitle("Additional Information")
-        msg_box.setText(message)
-        msg_box.exec_()
+            msg_box = QMessageBox()
+            msg_box.setWindowTitle("Additional Information")
+            msg_box.setText(message)
+            msg_box.exec_()
+        except KeyError as e:
+            if str(e) == 'TestName':
+                pass
+            else:
+                raise e
 
     def sendBackSignal(self):
         self.backSignal = True
@@ -598,22 +605,9 @@ class QtRunWindow(QWidget):
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
 
-    def updateValidation(self, result:dict):
+    def updateValidation(self, results:list):
         try:
-            passed = list(result.values())[0][0]
-            self.modulestatus.append(result)
-            if passed:
-                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
-                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: green")
-            else:
-                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Failed")
-                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: red")
-            time.sleep(0.5)
-            return passed
-        # self.StatusCanvas.renew()
-        # self.StatusCanvas.update()
-        # self.HistoryLayout.removeWidget(self.StatusCanvas)
-        # self.HistoryLayout.addWidget(self.StatusCanvas)
+            self.modulestatus.append(results)
         except Exception as err:
             logger.error(err)
 

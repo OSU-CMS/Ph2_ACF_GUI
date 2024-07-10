@@ -22,9 +22,10 @@ def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, modu
         ROOT_file_path = "{0}/Run{1}_{2}.root".format(
             inputDir, runNumber, root_file_name
         )
-        chip_canvas_path_template = "Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_{0:02d}"
+        chip_canvas_path_template = "Detector/Board_0/OpticalGroup_0/Hybrid_{0}/Chip_{1:02d}"
         active_chips = [chip.getID() for chip in module.getChips().values() if chip.getStatus()]
-        chip_canvases = [chip_canvas_path_template.format(int(chipID)) for chipID in active_chips]
+        chip_canvases = [chip_canvas_path_template.format(module.getFMCPort(), int(chipID)) for chipID in active_chips]
+        print('chip canvases', chip_canvases)
         relevant_files = [inputDir+"/"+os.fsdecode(file) for file in os.listdir(inputDir)]
         
         _1, _2 = felis.set_module(
