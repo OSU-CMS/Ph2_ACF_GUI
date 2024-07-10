@@ -261,8 +261,6 @@ class QtStartWindow(QWidget):
         super(QtStartWindow, self).__init__()
         self.master = master
         self.firmware = firmware
-        self.firmwares = firmware
-        self.firmwareName = firmware.getBoardName()
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
         self.runFlag = False
@@ -300,11 +298,10 @@ class QtStartWindow(QWidget):
         testlayout.addWidget(self.TestCombo, 0, 1, 1, 1)
         self.TestBox.setLayout(testlayout)
 
-        self.firmware.removeAllModule()
+        for fw in self.firmware:
+            fw.removeAllModules()
 
-        self.BeBoardWidget = BeBoardBox(self.master,self.firmware)  # FLAG
-
-
+        self.BeBoardWidget = BeBoardBox(self.master, self.firmware)  # FLAG
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
         self.mainLayout.addWidget(self.BeBoardWidget, 1, 0)
@@ -428,10 +425,11 @@ class QtStartWindow(QWidget):
                     None, "Error", "No valid serial number!", QMessageBox.Ok
                 )
                 return
-            if module.getID() == "":
+            if module.getFMCPort() == "":
                 QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
                 return
-        self.checkFwPar(self.firmwareName)
+        for fw in self.firmware:
+            self.checkFwPar(fw.getBoardName())
         if self.passCheck == False:
             reply = QMessageBox().question(
                 None,
@@ -444,11 +442,18 @@ class QtStartWindow(QWidget):
                 return
 
         self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
-        # self.info = [self.firmware.getModuleByIndex(0).getModuleID(), str(self.TestCombo.currentText())]
-        self.info = [
-            self.firmware.getModuleByIndex(0).getOpticalGroupID(),
-            str(self.TestCombo.currentText()),
-        ]
+        for board in self.firmwareDescription:
+            for module in board.getAllModules().values():
+                print("### Properties ###")
+                print("Module Name:", module.getModuleName())
+                print("FMC ID:", module.getFMCID())
+                print("FMC Port:", module.getFMCPort())
+                print("Optical Group:", module.getOpticalGroupID())
+                print("Module Type:", module.getModuleType())
+                print("Module Version:", module.getModuleVersion())
+                print()
+        self.info = str(self.TestCombo.currentText()),
+        
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
         self.master.RunNewTest = QtRunWindow(

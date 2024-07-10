@@ -383,7 +383,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
     # Get Hardware discription and a list of the modules
     HWDescription0 = HWDescription()
     BeBoardModule0 = BeBoardModule()
-    AllModules = firmwareList.getAllModules().values()
+    AllModules = [fw.getAllModules().values() for fw in firmwareList]
     boardtype = "RD53A"
     revPolarity = False #Flag to determine whether or not to reverse the Aurora lane polarity
     RegisterSettingsList = RegisterSettings
@@ -394,10 +394,10 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
         OpticalGroupModule.SetOpticalGrp(module.getOpticalGroupID(), module.getFMCID())
         AllOG[module.getOpticalGroupID()] = OpticalGroupModule
 
-    for module in firmwareList.getAllModules().values():
+    for module in AllModules:
         OpticalGroupModule0 = AllOG[module.getOpticalGroupID()]
         HyBridModule0 = HyBridModule()
-        HyBridModule0.SetHyBridModule(module.getModuleID(), "1")
+        HyBridModule0.SetHyBridModule(module.getFMCPort(), "1")
         HyBridModule0.SetHyBridName(module.getModuleName())
 
         #Modified so that these variables are in scope of their usage. Not sure how it was working before

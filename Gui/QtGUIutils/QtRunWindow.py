@@ -53,20 +53,14 @@ class QtRunWindow(QWidget):
         self.info = info
 
         # Removing for sequencefix
-#        if "AllScan_Tuning" in self.info[1]:
+#        if "AllScan_Tuning" in self.info:
 #            runTestList = pretuningList
 #            runTestList.extend(tuningList * len(defaultTargetThr))
 #            runTestList.extend(posttuningList)
 #            CompositeList.update({"AllScan_Tuning": runTestList})
 
-        if isCompositeTest(self.info[1]):
-            runTestList = CompositeTests[self.info[1]]
-        else:
-            runTestList = self.info[1]
-
-        self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
-        self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+        self.ModuleType = self.firmware[0].getModuleByIndex(0).getModuleType() #module types/versions should be identical for all modules
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
@@ -155,9 +149,7 @@ class QtRunWindow(QWidget):
         self.HeadLayout = QHBoxLayout()
 
         HeadLabel = QLabel(
-            '<font size="4"> Module: {0}  Test: {1} </font>'.format(
-                self.info[0], self.info[1]
-            )
+            '<font size="4"> Test: {0} </font>'.format(self.info)
         )
         HeadLabel.setMaximumHeight(30)
 
@@ -451,12 +443,12 @@ class QtRunWindow(QWidget):
         for index, test_results in enumerate(self.modulestatus):
             row = self.StatusTable.rowCount()
             self.StatusTable.setRowCount(row + 1)
-            if isCompositeTest(self.info[1]):
+            if isCompositeTest(self.info):
                 self.StatusTable.setItem(
-                    row, 0, QTableWidgetItem(CompositeTests[self.info[1]][index % len(CompositeTests[self.info[1]])])
+                    row, 0, QTableWidgetItem(CompositeTests[self.info][index % len(CompositeTests[self.info])])
                 )
             else:
-                self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
+                self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info))
             for module_result in test_results:
                 moduleName = list(module_result.keys())[0]
                 status = "Pass" if module_result[moduleName][0] else "Failed"
@@ -518,8 +510,8 @@ class QtRunWindow(QWidget):
         if "Re" in self.RunButton.text():
             isReRun = True
             self.grades = []
-            if isCompositeTest(self.info[1]):
-                for index in range(len(CompositeTests[self.info[1]])):
+            if isCompositeTest(self.info):
+                for index in range(len(CompositeTests[self.info])):
                     self.ResultWidget.ProgressBar[index].setValue(0)
                     self.ResultWidget.runtime[index].setText("")
             else:

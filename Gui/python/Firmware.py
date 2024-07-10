@@ -74,12 +74,6 @@ class QtModule:
     def getModuleName(self):
         return self.__moduleName
 
-    def setModuleID(self, id):
-        self.__moduleID = id
-
-    def getModuleID(self):
-        return self.__moduleID
-
     def setFMCID(self, fmcId):
         self.__FMCID = fmcId
 
@@ -240,5 +234,5 @@ class QtBeBoard:
                 return True
         return False
 
-    def removeAllModule(self):
+    def removeAllModules(self):
         self.__moduleDict.clear()

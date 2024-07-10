@@ -1008,7 +1008,7 @@ class QtApplication(QWidget):
         FwModule = [
             board_object for firmware, board_object in self.FwDict.items() if firmware in self.ActiveFC7s.values()
         ]
-        print('FwModule is:'.format(FwModule))
+        print(f'FwModule is: {[board.getBoardName() for board in FwModule]}')
         self.StartNewTest = QtStartWindow(self, FwModule)
 
         self.NewTestButton.setDisabled(True)
@@ -1074,7 +1074,7 @@ class QtApplication(QWidget):
         ):
 
             fileName = self.LogList[index]
-            if firmwareName != self.FwUnderUsed:
+            if firmwareName not in self.ActiveFC7s:
                 FwStatusComment, FwStatusColor, FwStatusVerbose = fwStatusParser(
                     self.FwDict[firmwareName], fileName
                 )
@@ -1140,7 +1140,8 @@ class QtApplication(QWidget):
                 button.setDown(False)
                 button.setDisabled(False)
                 self.CheckButton.setDisabled(False)
-                self.NewTestButton.setDisabled(True)
+                if self.ActiveFC7s == {}:
+                    self.NewTestButton.setDisabled(True)
             else:
                 button.setDisabled(False)
 

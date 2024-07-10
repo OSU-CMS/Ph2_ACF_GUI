@@ -87,14 +87,15 @@ class TestHandler(QObject):
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
+        #FIXME: configTest() calls SetupXMLConfigfromFile() which takes in the firmware name. I can either iterate over every fc7 in self.firmware or
+        # modify the function to accept two or something. Since this deals with the XMLs, ask Ryan/Matt for advice.
         self.info = info
-        self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
-        self.modules = self.firmware.getAllModules().values()
-        self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+        self.modules = [fw.getAllModules().values() for fw in self.firmware]
+        self.ModuleType = self.runwindow.ModuleType
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
-            self.moduleVersion = self.firmware.getModuleByIndex(0).getModuleVersion()
+            self.moduleVersion = self.firmware[0].getModuleByIndex(0).getModuleVersion() #module types/versions should be identical for all modules
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
@@ -181,10 +182,10 @@ class TestHandler(QObject):
     def initializeRD53Dict(self):
         self.rd53_file = {}
         beboardId = 0
-        for module in self.firmware.getAllModules().values():
+        for module in self.modules:
             ogId = module.getOpticalGroupID()
             moduleName = module.getModuleName()
-            moduleId = module.getModuleID()
+            moduleId = module.getFMCPort()
             moduleType = module.getModuleType()
             for i in ModuleLaneMap[moduleType].keys():
                 self.rd53_file[
@@ -211,15 +212,15 @@ class TestHandler(QObject):
             logger.warning("Failed to retrieve RunNumber")
 
         # If currentTest is not set check if it's a compositeTest and if so set testname accordingly, otherwise set it based off the test set in info[1]
-        if self.currentTest == "" and isCompositeTest(self.info[1]):
-            testName = CompositeTests[self.info[1]][0]
+        if self.currentTest == "" and isCompositeTest(self.info):
+            testName = CompositeTests[self.info][0]
         elif self.currentTest == None:
-            testName = self.info[1]
+            testName = self.info
         else:
             testName = self.currentTest
 
         ModuleIDs = []
-        for module in self.firmware.getAllModules().values():
+        for module in self.modules:
             # ModuleIDs.append(str(module.getModuleID()))
             ModuleIDs.append(str(module.getModuleName()))
         # output_dir gets set to $DATA_dir/Test_{testname}/Test_Module{ModuleID}_{Test}_{TimeStamp}
@@ -328,7 +329,7 @@ class TestHandler(QObject):
         if reRun:
             self.halt = False
             self.testIndexTracker = 0
-        testName = self.info[1]
+        testName = self.info
 
         self.input_dir = self.output_dir
         self.output_dir = ""
@@ -351,14 +352,14 @@ class TestHandler(QObject):
         if self.halt:
             # self.LVpowersupply.TurnOff()
             return
-        runTestList = CompositeTests[self.info[1]]
+        runTestList = CompositeTests[self.info]
 
-        if self.testIndexTracker == len(CompositeTests[self.info[1]]):
+        if self.testIndexTracker == len(CompositeTests[self.info]):
             self.testIndexTracker = 0
             return
-        # testName = CompositeList[self.info[1]][self.testIndexTracker]
+        # testName = CompositeList[self.info][self.testIndexTracker]
         testName = runTestList[self.testIndexTracker]
-        #if self.info[1] == "AllScan_Tuning":
+        #if self.info == "AllScan_Tuning":
         #    updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
         self.runSingleTest(testName)
 
@@ -740,8 +741,7 @@ class TestHandler(QObject):
         try:
             if Test_to_Ph2ACF_Map[self.currentTest] in optimizationTestMap.keys():
                 updatedFEKeys = optimizationTestMap[Test_to_Ph2ACF_Map[self.currentTest]]
-                modules = [module for module in self.firmware.getAllModules().values()]
-                for module in modules:
+                for module in self.modules:
                     chipIDs = [chip.getID() for chip in module.getChips().values()]
                     hybridID = module.getFMCPort()
                     print("HybridID {0}".format(hybridID))
@@ -804,10 +804,10 @@ class TestHandler(QObject):
             return
 
         # To be removed
-        # if isCompositeTest(self.info[1]):
-        # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info[1]][self.testIndexTracker-1]))
-        # if isSingleTest(self.info[1]):
-        # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info[1]))
+        # if isCompositeTest(self.info):
+        # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info][self.testIndexTracker-1]))
+        # if isSingleTest(self.info):
+        # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info))
 
         if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
             self.testIndexTracker += 1
@@ -822,13 +822,13 @@ class TestHandler(QObject):
         status = self.validateTest()
 
         # Will send signal to turn off power supply after composite or single tests are run
-        if isCompositeTest(self.info[1]):
-            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
+        if isCompositeTest(self.info):
+            if self.testIndexTracker == len(CompositeTests[self.info]):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
                     self.upload_to_Panthera()
-        elif isSingleTest(self.info[1]):
+        elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
             if self.autoSave:
@@ -849,12 +849,12 @@ class TestHandler(QObject):
 
         if (
             status == False
-            and isCompositeTest(self.info[1])
-            and self.testIndexTracker < len(CompositeTests[self.info[1]])
+            and isCompositeTest(self.info)
+            and self.testIndexTracker < len(CompositeTests[self.info])
         ):
             self.forceContinue()
 
-        if isCompositeTest(self.info[1]):
+        if isCompositeTest(self.info):
             self.runTest()
 
     def updateProgress(self, measurementType, stepSize):
@@ -921,23 +921,25 @@ class TestHandler(QObject):
     #             self.updateResult.emit((step, self.figurelist))
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
-        for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
+        for module in self.modules:
             moduleName = module.getModuleName()
-        filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, pin)
-        csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, pin)
-        #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
-        total_result_stacked = np.vstack(total_result)
-        np.savetxt(csvfilename, total_result_stacked, delimiter=',')
-        plt.figure()
-        plt.plot(total_result_stacked[0], total_result_stacked[1], '-x', label="module input voltage (up)")
-        plt.plot(total_result_stacked[0], total_result_stacked[2], '-x', label=f"{pin} (up)")
-        plt.plot(total_result_stacked[3], total_result_stacked[4], '-x', label="module input voltage (down)")
-        plt.plot(total_result_stacked[3], total_result_stacked[5], '-x', label=f"{pin} (down)")
-        plt.grid(True)
-        plt.xlabel("Current (A)")
-        plt.ylabel("Voltage (V)")
-        plt.legend()
-        plt.savefig(filename)
+            filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, pin)
+            csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, pin)
+            #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
+            total_result_stacked = np.vstack(total_result)
+            np.savetxt(csvfilename, total_result_stacked, delimiter=',')
+
+            #Make the actual graph
+            plt.figure()
+            plt.plot(total_result_stacked[0], total_result_stacked[1], '-x', label="module input voltage (up)")
+            plt.plot(total_result_stacked[0], total_result_stacked[2], '-x', label=f"{pin} (up)")
+            plt.plot(total_result_stacked[3], total_result_stacked[4], '-x', label="module input voltage (down)")
+            plt.plot(total_result_stacked[3], total_result_stacked[5], '-x', label=f"{pin} (down)")
+            plt.grid(True)
+            plt.xlabel("Current (A)")
+            plt.ylabel("Voltage (V)")
+            plt.legend()
+            plt.savefig(filename)
 
 
     def IVCurveFinished(self, test: str, measure: dict):
@@ -947,7 +949,7 @@ class TestHandler(QObject):
         self.outputString.emit(f"Voltages: {measure['voltage']}")
         self.outputString.emit(f"Currents: {measure['current']}")
 
-        for module in self.firmware.getAllModules().values():  # FIXME This is not the ideal way to do this... I think...
+        for module in self.modules: #Only one HV and IVCurve works by sweeping HV. Ask about this.
             moduleName = module.getModuleName()
 
             self.IVCurveResult = ScanCanvas(
@@ -959,13 +961,13 @@ class TestHandler(QObject):
                 invert=True,
             )
 
-        csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, timestamp)
-        np.savetxt(csvfilename, (measure["voltage"], measure["current"]), delimiter=',')
-        
-        filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, timestamp)
-        filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
-        self.IVCurveResult.saveToSVG(filename)
-        self.IVCurveResult.saveToSVG(filename2)
+            csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, timestamp)
+            np.savetxt(csvfilename, (measure["voltage"], measure["current"]), delimiter=',')
+            
+            filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, timestamp)
+            filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
+            self.IVCurveResult.saveToSVG(filename)
+            self.IVCurveResult.saveToSVG(filename2)
 
         status = self.validateTest()
         step="IVCurve"
@@ -976,7 +978,7 @@ class TestHandler(QObject):
         EnableReRun = False
 
         # Will send signal to turn off power supply after composite or single tests are run
-        if isCompositeTest(self.info[1]):
+        if isCompositeTest(self.info):
             default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
             #assumes only 1 HV titled 'hv' in instruments.json
             self.master.instruments.hv_on(
@@ -986,12 +988,12 @@ class TestHandler(QObject):
                 measure=False,
             )
 
-            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
+            if self.testIndexTracker == len(CompositeTests[self.info]):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
                     self.upload_to_Panthera()
-        elif isSingleTest(self.info[1]):
+        elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
             if self.autoSave:
@@ -1005,16 +1007,14 @@ class TestHandler(QObject):
         else: 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
-        if isCompositeTest(self.info[1]):
+        if isCompositeTest(self.info):
             self.runTest()
 
     def SLDOScanFinished(self):
-        # for (module) in (self.firmware.getAllModules().values()):  # FIXME This is not the ideal way to do this... I think...
-        #     moduleName = module.getModuleName()
         self.testIndexTracker += 1
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
-        if isCompositeTest(self.info[1]):
+        if isCompositeTest(self.info):
             self.instruments.lv_on(
                 voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                 current=site_settings.ModuleCurrentMap[self.master.module_in_use],
@@ -1028,12 +1028,12 @@ class TestHandler(QObject):
                 measure=False,
             )
 
-            if self.testIndexTracker == len(CompositeTests[self.info[1]]):
+            if self.testIndexTracker == len(CompositeTests[self.info]):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
                     self.upload_to_Panthera()
-        elif isSingleTest(self.info[1]):
+        elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
             if self.autoSave:
@@ -1045,7 +1045,7 @@ class TestHandler(QObject):
         if self.master.expertMode:
             self.updateSLDOResult.emit(self.output_dir)
         
-        if isCompositeTest(self.info[1]):
+        if isCompositeTest(self.info):
             self.runTest()
 
     def interactiveCheck(self, plot):

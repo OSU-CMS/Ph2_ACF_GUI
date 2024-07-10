@@ -35,9 +35,10 @@ from Gui.python.logging_config import logger
 class ModuleBox(QWidget):
     typechanged = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, firmware):
         super(ModuleBox, self).__init__()
         self.mainLayout = QGridLayout()
+        self.firmware = firmware
         self.createRow()
         self.setLayout(self.mainLayout)
         self.VDDDmap = {}
@@ -51,31 +52,37 @@ class ModuleBox(QWidget):
         self.FMCEdit = QLineEdit()
         self.FMCEdit.setText('L12')
 
-        IDLabel = QLabel("FMC port:")
-        self.IDEdit = QLineEdit()
-        
+        PortLabel = QLabel("FMC port:")
+        self.PortEdit = QLineEdit()
 
         TypeLabel = QLabel("Type:")
         self.TypeCombo = QComboBox()
         self.TypeCombo.addItems(ModuleType.values())
         TypeLabel.setBuddy(self.TypeCombo)
 
+        FC7Label = QLabel("FC7:")
+        self.FC7Combo = QComboBox()
+        self.FC7Combo.addItems([board.getBoardName() for board in self.firmware])
+        if self.FC7Combo.count() == 1:
+            self.FC7Combo.setDisabled(True)
+
         VersionLabel = QLabel("Version:")
         self.ModuleVersionCombo = QComboBox()
         self.ModuleVersionCombo.addItems(["v1", "v2"])
         VersionLabel.setBuddy(self.ModuleVersionCombo)
 
-        self.mainLayout.addWidget(TypeLabel, 0, 6, 1, 1)
-        self.mainLayout.addWidget(self.TypeCombo, 0, 7, 1, 1)
-
         self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
         self.mainLayout.addWidget(FMCLabel, 0, 2, 1, 1)
         self.mainLayout.addWidget(self.FMCEdit, 0, 3, 1, 1)
-        self.mainLayout.addWidget(IDLabel, 0, 4, 1, 1)
-        self.mainLayout.addWidget(self.IDEdit, 0, 5, 1, 1)
-        #self.mainLayout.addWidget(VersionLabel, 0, 8, 1, 1)
-        self.mainLayout.addWidget(self.ModuleVersionCombo, 0, 9, 1, 1)
+        self.mainLayout.addWidget(FC7Label, 0, 4, 1, 1)
+        self.mainLayout.addWidget(self.FC7Combo, 0, 5, 1, 1)
+        self.mainLayout.addWidget(PortLabel, 0, 6, 1, 1)
+        self.mainLayout.addWidget(self.PortEdit, 0, 7, 1, 1)
+        self.mainLayout.addWidget(TypeLabel, 0, 8, 1, 1)
+        self.mainLayout.addWidget(self.TypeCombo, 0, 9, 1, 1)
+        # self.mainLayout.addWidget(VersionLabel, 0, 10, 1, 1)
+        self.mainLayout.addWidget(self.ModuleVersionCombo, 0, 11, 1, 1)
         
 
     def setType(self):
@@ -93,9 +100,12 @@ class ModuleBox(QWidget):
 
     def getFMCID(self):
         return self.FMCEdit.text()
+    
+    def getFC7(self):
+        return self.FC7Combo.currentText()
 
-    def getID(self):
-        return self.IDEdit.text()
+    def getFMCPort(self):
+        return self.PortEdit.text()
 
     def getType(self):
         return self.TypeCombo.currentText()
@@ -110,11 +120,11 @@ class ModuleBox(QWidget):
 class ChipBox(QWidget):
     chipchanged = pyqtSignal(int, int)
     #adding default value to serialNumber="RH0009" can prevent ChipBox from crashing under online mode
-    def __init__(self, master,pChipType,serialNumber="RH0009"):
+    def __init__(self, master, pChipType, serialNumber="RH0009"):
         super().__init__()
         logger.debug("Inside ChipBox")
         self.master = master
-        self.serialNumber=serialNumber
+        self.serialNumber = serialNumber
         self.chipType = pChipType
         logger.debug('the chip type passed to the chipbox is {0}'.format(self.chipType))
         self.mainLayout = QHBoxLayout()
@@ -133,7 +143,7 @@ class ChipBox(QWidget):
         self.setLayout(self.mainLayout)
 
     def initList(self):
-        self.module = ModuleBox()
+        self.module = ModuleBox(self.master.firmware)
 
     # Makes a list of chips for a given module
     def createList(self):
@@ -242,7 +252,7 @@ class ChipBox(QWidget):
 class BeBoardBox(QWidget):
     changed = pyqtSignal()
 
-    def __init__(self, master ,firmware):
+    def __init__(self, master, firmware):
         super(BeBoardBox, self).__init__()
         self.master = master #pass DB connection variable to chipBox
         self.firmware = firmware
@@ -256,10 +266,9 @@ class BeBoardBox(QWidget):
         self.setLayout(self.mainLayout)
 
     def initList(self):
-        ModuleRow = ModuleBox()
+        ModuleRow = ModuleBox(self.firmware)
         ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)    
         self.ModuleList.append(ModuleRow)
-    
 
     def createList(self):
         self.ListBox = QGroupBox()
@@ -325,7 +334,7 @@ class BeBoardBox(QWidget):
         self.changed.emit()
 
     def addModule(self):
-        module = ModuleBox()
+        module = ModuleBox(self.firmware)
         module.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(module)
         if str(sys.version).startswith("3.8"):
@@ -343,9 +352,11 @@ class BeBoardBox(QWidget):
     def getFirmwareDescription(self, **kwargs):
         for index, module in enumerate(self.ModuleList):
             FwModule = QtModule()
-            FwModule.setModuleID(module.getID())
+            FwModule.setFMCPort(module.getFMCPort()) #also known as moduleID
             FwModule.setFMCID(module.getFMCID())
             FwModule.setModuleName(module.getSerialNumber())
+            FwModule.setModuleVersion(module.getVersion())
+            
             for chip in ModuleLaneMap[module.getType()].values():
                 logger.debug("type debug : " + str(module.getType()) )
                 logger.debug("Serial number debug : " + str(module.getSerialNumber()))
@@ -357,11 +368,17 @@ class BeBoardBox(QWidget):
                 FwModule.setChipVDDA(chip, self.ChipWidgetDict[module].getVDDA(chip))
                 FwModule.setChipVDDD(chip, self.ChipWidgetDict[module].getVDDD(chip))
 
-            # FwModule.setOpticalGroupID(module.getID())
             FwModule.setModuleType(module.getType())
-            FwModule.setModuleVersion(module.getVersion())
-            FwModule.setFMCPort(module.getID())
-            self.firmware.addModule(index, FwModule)
+            selectedFC7 = module.getFC7()
+            for index, board in enumerate(self.firmware):
+                if board.getBoardName() == selectedFC7:
+                    FwModule.setOpticalGroupID(index)
+                    break
+            # getFC7() will return a string like 'fc7.board.1'
+            # to convert to int, iterate through self.firmware to access each QtBeBoard
+            # set optical group to the index of the QtBeBoard with that firmwarename
+            self.firmware[FwModule.getOpticalGroupID()].addModule(index, FwModule)
+
         return self.firmware
 
     # def getVDDA(self, module):
@@ -621,7 +638,7 @@ class SimpleBeBoardBox(QWidget):
     def clearModule(self):
         self.ModuleList = [SimpleModuleBox()]
         self.FilledModuleList = []
-        self.firmware.removeAllModule()
+        self.firmware.removeAllModules()
 
         if str(sys.version).startswith("3.8"):
             self.deleteList()
