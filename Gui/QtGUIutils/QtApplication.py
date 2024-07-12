@@ -394,9 +394,11 @@ class QtApplication(QWidget):
                 FwStatusValue = QLabel()
                 self.StatusList.append([FwNameLabel, FwStatusValue])
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
-                BeBoard = QtBeBoard()
-                BeBoard.setBoardName(firmwareName)
-                BeBoard.setIPAddress(fwAddress)
+                BeBoard = QtBeBoard(
+                    BeBoardID=str(len(self.FwDict)),
+                    boardName=firmwareName,
+                    ipAddress=fwAddress
+                )
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))

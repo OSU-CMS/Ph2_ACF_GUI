@@ -21,6 +21,7 @@ import Gui.siteSettings as site_settings
 from Gui.python.Firmware import (
     QtChip,
     QtModule,
+    QtOpticalGroup,
 )
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
@@ -183,9 +184,6 @@ class ChipBox(QWidget):
     #     self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
 
     #     return self.VChipLayout
-
-
-
 
     def makeChipBox(self, pChipID):    
         self.ChipID = pChipID
@@ -360,12 +358,55 @@ class BeBoardBox(QWidget):
     def getModules(self):
         return self.ModuleList
 
-    def getFirmwareDescription(self, **kwargs):
+    def getFirmwareDescription(self):
         for module in self.ModuleList:
-            # Your existing logic for getting firmware description
-            pass
+            #Access the currently selected QtBeBoard object
+            BeBoard = None
+            for board in self.firmware:
+                if board.getBoardName() == module.getFC7():
+                    BeBoard = board
+            if BeBoard is None:
+                raise Exception("There are no FC7s active.")
+            
+            #Access the currently selected QtOpticalGroup of the QtBeBoard
+            OpticalGroup = None
+            for og in BeBoard.getAllOpticalGroups().values():
+                if og.getFMCID() == module.getFMCID():
+                    OpticalGroup = og
+            
+            #Create it if it doesn't already exist
+            if OpticalGroup is None:
+                OpticalGroup = QtOpticalGroup(FMCID=module.getFMCID())
+                OpticalGroup.setBeBoard(BeBoard) #ignore this line, see explanation in Firmware.py
+                BeBoard.addOpticalGroup(
+                    FMCID=module.getFMCID(),
+                    OpticalGroup=OpticalGroup,
+                )
+            
+            #Create a QtModule object based on the input data
+            Module = QtModule(
+                moduleName=module.getSerialNumber(),
+                moduleType=module.getType(),
+                moduleVersion=module.getVersion(),
+                FMCPort=module.getFMCPort()
+            )
+            Module.setOpticalGroup(OpticalGroup) #ignore this line, see explanation in Firmware.py
+            
+            #Pull VDDA/VDDD trim and chip status from the ChipBox on the StartWindow.
+            for chipID in ModuleLaneMap[module.getType()].values():
+                Module.getChips()[chipID].setStatus(self.ChipWidgetDict[module].getChipStatus(chipID))
+                Module.getChips()[chipID].setVDDA(self.ChipWidgetDict[module].getVDDA(chipID))
+                Module.getChips()[chipID].setVDDD(self.ChipWidgetDict[module].getVDDD(chipID))
+            
+            #Add the QtModule object to the currently selected Optical Group
+            OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
 
-        return self.firmware
+        ret = []
+        for board in self.firmware:
+            if len(board.getAllOpticalGroups()) != 0: #if modules are connected to the board
+                board.setBoardID(len(ret))
+                ret.append(board)
+        return ret
 
 
     # def getVDDA(self, module):

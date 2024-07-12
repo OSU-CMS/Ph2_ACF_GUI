@@ -216,7 +216,7 @@ class MonitoringModule():
 
 def SetNodeAttribute(Node, Dict):
    for key in Dict:
-     Node.set(key,Dict[key])
+     Node.set(key, str(Dict[key]))
    return Node
 
 def SetNodeValue(Node, Dict):

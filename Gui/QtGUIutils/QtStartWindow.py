@@ -298,9 +298,10 @@ class QtStartWindow(QWidget):
         testlayout.addWidget(self.TestCombo, 0, 1, 1, 1)
         self.TestBox.setLayout(testlayout)
 
-        for fw in self.firmware:
-            fw.removeAllModules()
-
+        for beboard in self.firmware:
+            beboard.removeModules()
+            beboard.removeAllOpticalGroups()
+        
         self.BeBoardWidget = BeBoardBox(self.master, self.firmware)  # FLAG
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
@@ -442,17 +443,11 @@ class QtStartWindow(QWidget):
                 return
 
         self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
-        for board in self.firmwareDescription:
-            for module in board.getAllModules().values():
-                print("### Properties ###")
-                print("Module Name:", module.getModuleName())
-                print("FMC ID:", module.getFMCID())
-                print("FMC Port:", module.getFMCPort())
-                print("Optical Group:", module.getOpticalGroupID())
-                print("Module Type:", module.getModuleType())
-                print("Module Version:", module.getModuleVersion())
-                print()
-        self.info = str(self.TestCombo.currentText()),
+        
+        for beboard in self.firmwareDescription:
+            print(beboard)
+        
+        self.info = self.TestCombo.currentText()
         
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget

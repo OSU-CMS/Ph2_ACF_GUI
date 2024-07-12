@@ -60,7 +60,7 @@ class QtRunWindow(QWidget):
 #            CompositeList.update({"AllScan_Tuning": runTestList})
 
         self.ModuleMap = dict()
-        self.ModuleType = self.firmware[0].getModuleByIndex(0).getModuleType() #module types/versions should be identical for all modules
+        self.ModuleType = self.firmware[0].getModuleData()['type']
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
@@ -300,12 +300,11 @@ class QtRunWindow(QWidget):
         TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
         self.TempBox.setSizePolicy(TempBoxSP)
         self.TempLayout = QGridLayout()
-        self.type = self.ModuleType
         self.LabelList = []
         self.TempLabelList = []
-        for key, value in ModuleLaneMap[self.type].items():
+        for chipID in ModuleLaneMap[self.ModuleType].values():
             self.Label = QLabel()
-            self.Label.setText("Chip: " + str(value))
+            self.Label.setText("Chip: " + str(chipID))
             self.TempLabel = QLabel()
             self.LabelList.append(self.Label)
             self.TempLabelList.append(self.TempLabel)

@@ -87,15 +87,15 @@ class TestHandler(QObject):
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
-        #FIXME: configTest() calls SetupXMLConfigfromFile() which takes in the firmware name. I can either iterate over every fc7 in self.firmware or
-        # modify the function to accept two or something. Since this deals with the XMLs, ask Ryan/Matt for advice.
         self.info = info
         self.ModuleMap = dict()
-        self.modules = [fw.getAllModules().values() for fw in self.firmware]
+        
+        self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
+        
         self.ModuleType = self.runwindow.ModuleType
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
-            self.moduleVersion = self.firmware[0].getModuleByIndex(0).getModuleVersion() #module types/versions should be identical for all modules
+            self.moduleVersion = self.firmware[0].getModuleData()['version'] #module types/versions should be identical for all modules
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
@@ -181,9 +181,9 @@ class TestHandler(QObject):
 
     def initializeRD53Dict(self):
         self.rd53_file = {}
-        beboardId = 0
         for module in self.modules:
-            ogId = module.getOpticalGroupID()
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
             moduleName = module.getModuleName()
             moduleId = module.getFMCPort()
             moduleType = module.getModuleType()
@@ -263,19 +263,19 @@ class TestHandler(QObject):
                 # config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
                 if config_file:
                     SetupXMLConfigfromFile(
-                        config_file, self.output_dir, self.firmwareName, self.rd53_file
+                        config_file, self.output_dir, self.firmware, self.rd53_file
                     )
                 else:
                     logger.warning("No Valid XML configuration file")
                 # QMessageBox.information(None,"Noitce", "Using default XML configuration",QMessageBox.Ok)
             else:
                 SetupXMLConfigfromFile(
-                    self.config_file, self.output_dir, self.firmwareName, self.rd53_file
+                    self.config_file, self.output_dir, self.firmware, self.rd53_file
                 )
         else:
             if self.config_file != "":
                 SetupXMLConfigfromFile(
-                    self.config_file, self.output_dir, self.firmwareName, self.rd53_file
+                    self.config_file, self.output_dir, self.firmware, self.rd53_file
                 )
             else:
                 tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
@@ -289,7 +289,7 @@ class TestHandler(QObject):
                 # config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
                 if config_file:
                     SetupXMLConfigfromFile(
-                        config_file, self.output_dir, self.firmwareName, self.rd53_file
+                        config_file, self.output_dir, self.firmware, self.rd53_file
                     )
                 else:
                     logger.warning("No Valid XML configuration file")
@@ -572,13 +572,27 @@ class TestHandler(QObject):
         try:
             passed = []
             results = []
-            for module in self.modules:
-                result = ResultGrader(
-                    self.felis, self.output_dir, self.currentTest,
-                    self.testIndexTracker, self.RunNumber, module,
-                )
-                results.append(result)
-                passed.append(list(result.values())[0][0])
+            runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
+            
+            for beboard in self.firmware:
+                boardID = beboard.getBoardID()
+                for OG in beboard.getAllOpticalGroups().values():
+                    ogID = OG.getOpticalGroupID()
+                    for module in OG.getAllModules().values():
+                        hybridID = module.getFMCPort()
+                        module_data = {
+                            'boardID':boardID,
+                            'ogID':ogID,
+                            'hybridID':hybridID,
+                            'module':module
+                        }
+                        result = ResultGrader(
+                            self.felis, self.output_dir, self.currentTest,
+                            self.testIndexTracker, runNumber, module_data
+                        )
+                        results.append(result)
+                        passed.append(list(result.values())[0][0])
+            
             self.updateValidation.emit(results)
             return all(passed)
         except Exception as err:
@@ -809,8 +823,6 @@ class TestHandler(QObject):
         # if isSingleTest(self.info):
         # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(self.info))
 
-        if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
-            self.testIndexTracker += 1
         self.saveConfigs()
 
         EnableReRun = False
@@ -820,6 +832,9 @@ class TestHandler(QObject):
 
         # validate the results
         status = self.validateTest()
+        
+        if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
+            self.testIndexTracker += 1
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
