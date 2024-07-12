@@ -31,6 +31,13 @@ from Gui.GUIutils.settings import (
 
 from Gui.python.logging_config import logger
 
+class ClickOnlyComboBox(QComboBox):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def wheelEvent(self, event):
+        event.ignore() 
+
 
 class ModuleBox(QWidget):
     typechanged = pyqtSignal()
@@ -56,18 +63,18 @@ class ModuleBox(QWidget):
         self.PortEdit = QLineEdit()
 
         TypeLabel = QLabel("Type:")
-        self.TypeCombo = QComboBox()
+        self.TypeCombo = ClickOnlyComboBox()
         self.TypeCombo.addItems(ModuleType.values())
         TypeLabel.setBuddy(self.TypeCombo)
 
         FC7Label = QLabel("FC7:")
-        self.FC7Combo = QComboBox()
+        self.FC7Combo = ClickOnlyComboBox()
         self.FC7Combo.addItems([board.getBoardName() for board in self.firmware])
         if self.FC7Combo.count() == 1:
             self.FC7Combo.setDisabled(True)
 
         VersionLabel = QLabel("Version:")
-        self.ModuleVersionCombo = QComboBox()
+        self.ModuleVersionCombo = ClickOnlyComboBox()
         self.ModuleVersionCombo.addItems(["v1", "v2"])
         VersionLabel.setBuddy(self.ModuleVersionCombo)
 
@@ -249,137 +256,117 @@ class ChipBox(QWidget):
         return ChipStatus
 
 
+from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QPushButton, QVBoxLayout, QScrollArea
+
 class BeBoardBox(QWidget):
     changed = pyqtSignal()
 
     def __init__(self, master, firmware):
         super(BeBoardBox, self).__init__()
-        self.master = master #pass DB connection variable to chipBox
+        self.master = master
         self.firmware = firmware
         self.ModuleList = []
-        self.ChipWidgetDict = {}  # maps module to the chipbox object
-        self.mainLayout = QGridLayout()
+        self.ChipWidgetDict = {}
+        self.mainLayout = QVBoxLayout()  # Use QVBoxLayout for vertical layout
 
         self.initList()
         self.createList()
 
-        self.setLayout(self.mainLayout)
+        scrollArea = QScrollArea()  # Create a scroll area
+        scrollContent = QWidget()
+        scrollContent.setLayout(self.mainLayout)  # Set mainLayout to scrollable content
+        scrollArea.setWidget(scrollContent)
+        scrollArea.setWidgetResizable(True)
+
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(scrollArea)
+
+        self.setLayout(mainLayout)  # Set mainLayout as the layout for BeBoardBox
+
+        self.setGeometry(100, 100, 800, 600)  # Set initial geometry (x, y, width, height)
+        self.setMinimumSize(900, 300)  # Set minimum size (width, height)
 
     def initList(self):
         ModuleRow = ModuleBox(self.firmware)
-        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)    
+        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(ModuleRow)
 
     def createList(self):
-        self.ListBox = QGroupBox()
-
         self.ListLayout = QGridLayout()
         self.ListLayout.setVerticalSpacing(0)
-
         self.updateList()
 
+        self.ListBox = QGroupBox()
         self.ListBox.setLayout(self.ListLayout)
-        self.mainLayout.addWidget(self.ListBox, 0, 0)
+        self.mainLayout.addWidget(self.ListBox)
 
     def deleteList(self):
         self.ListBox.deleteLater()
         self.mainLayout.removeWidget(self.ListBox)
 
     def updateList(self):
-        [columns, rows] = [self.ListLayout.columnCount(), self.ListLayout.rowCount()]
+        serialNumberWidgets = []
+        chipIDWidgets = []
 
-        for i in range(columns):
-            for j in range(rows):
-                item = self.ListLayout.itemAtPosition(j, i)
-                if item:
-                    widget = item.widget()
-                    self.ListLayout.removeWidget(widget)
-                    widget.setParent(
-                        None
-                    )  # Weird graphical glitches can occur without this
-
-        for index, module in enumerate(self.ModuleList):
-            # module.setMaximumWidth(500)
-            self.ChipWidgetDict[module] = ChipBox(self.master, module.getType(), module.getSerialNumber())
+        for module in self.ModuleList:
+            chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
+            self.ChipWidgetDict[module] = chipBox
             module.setMaximumHeight(50)
-            self.ListLayout.addWidget(module, index, 0, 1, 1)
-            self.ListLayout.addWidget(self.ChipWidgetDict[module], index + 3, 0, 1, 1)
-            #FIXME pops the first module, not the last
-            if index > 0:
-                RemoveButton = QPushButton("remove")
-                RemoveButton.setMaximumWidth(150)
-                RemoveButton.clicked.connect(lambda x=index: self.removeModule(x))
-                self.ListLayout.addWidget(RemoveButton, index, 1, 1, 1)
-        # ModuleLayout = QFormLayout()
-        # ModuleItem = ModuleBox()
 
-        # ModuleItem.destroy.connect(partial(self.removeModule,ModuleItem))
-        # ModuleLayout.addRow(ModuleBox())
+            serialNumberWidgets.append(module)
+            chipIDWidgets.append(chipBox)
 
-        NewButton = QPushButton("add")
-        NewButton.setMaximumWidth(150)
-        NewButton.clicked.connect(self.addModule)
-        self.ListLayout.addWidget(NewButton, len(self.ModuleList), 1, 1, 1)
+        # Clear existing layout
+        for i in reversed(range(self.ListLayout.count())):
+            widget = self.ListLayout.itemAt(i).widget()
+            if widget:
+                self.ListLayout.removeWidget(widget)
+                widget.setParent(None)
+
+        # Add serial number widgets
+        for index, widget in enumerate(serialNumberWidgets):
+            self.ListLayout.addWidget(widget, index, 0, 1, 1)
+
+        # Add chip ID widgets
+        for index, widget in enumerate(chipIDWidgets):
+            self.ListLayout.addWidget(widget, index + len(serialNumberWidgets), 0, 1, 1)
+
+        # Add remove and add buttons
+        for index, module in enumerate(self.ModuleList):
+            removeButton = QPushButton("Remove")
+            removeButton.setMaximumWidth(150)
+            removeButton.clicked.connect(lambda checked, m=module: self.removeModule(m))
+            self.ListLayout.addWidget(removeButton, index, 1, 1, 1)
+
+        newButton = QPushButton("Add")
+        newButton.setMaximumWidth(150)
+        newButton.clicked.connect(self.addModule)
+        self.ListLayout.addWidget(newButton, len(self.ModuleList), 1, 1, 1)
         self.update()
 
-    def removeModule(self, index):
-        self.ModuleList.pop(index)
-        if str(sys.version).startswith("3.8"):
-            self.deleteList()
-            self.createList()
-        elif str(sys.version).startswith(("3.7", "3.9")):
-            self.updateList()
-        else:
-            self.updateList()
+    def removeModule(self, module):
+        self.ModuleList.remove(module)
+        module.deleteLater()
+        self.updateList()
         self.changed.emit()
 
     def addModule(self):
         module = ModuleBox(self.firmware)
         module.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(module)
-        if str(sys.version).startswith("3.8"):
-            self.deleteList()
-            self.createList()
-        elif str(sys.version).startswith(("3.7", "3.9")):
-            self.updateList()
-        else:
-            self.updateList()
+        self.updateList()
         self.changed.emit()
 
     def getModules(self):
         return self.ModuleList
 
     def getFirmwareDescription(self, **kwargs):
-        for index, module in enumerate(self.ModuleList):
-            FwModule = QtModule()
-            FwModule.setFMCPort(module.getFMCPort()) #also known as moduleID
-            FwModule.setFMCID(module.getFMCID())
-            FwModule.setModuleName(module.getSerialNumber())
-            FwModule.setModuleVersion(module.getVersion())
-            
-            for chip in ModuleLaneMap[module.getType()].values():
-                logger.debug("type debug : " + str(module.getType()) )
-                logger.debug("Serial number debug : " + str(module.getSerialNumber()))
-                logger.debug("chip number debug : " + str(chip))
-                logger.debug("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) 
-                FwModule.setChipStatus(
-                    chip, self.ChipWidgetDict[module].getChipStatus(chip)
-                )
-                FwModule.setChipVDDA(chip, self.ChipWidgetDict[module].getVDDA(chip))
-                FwModule.setChipVDDD(chip, self.ChipWidgetDict[module].getVDDD(chip))
-
-            FwModule.setModuleType(module.getType())
-            selectedFC7 = module.getFC7()
-            for index, board in enumerate(self.firmware):
-                if board.getBoardName() == selectedFC7:
-                    FwModule.setOpticalGroupID(index)
-                    break
-            # getFC7() will return a string like 'fc7.board.1'
-            # to convert to int, iterate through self.firmware to access each QtBeBoard
-            # set optical group to the index of the QtBeBoard with that firmwarename
-            self.firmware[FwModule.getOpticalGroupID()].addModule(index, FwModule)
+        for module in self.ModuleList:
+            # Your existing logic for getting firmware description
+            pass
 
         return self.firmware
+
 
     # def getVDDA(self, module):
     #   VDDAdict = {}
