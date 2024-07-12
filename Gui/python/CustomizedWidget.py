@@ -337,37 +337,40 @@ class ChipBox(QWidget):
 class BeBoardBox(QWidget):
     changed = pyqtSignal()
 
-    def __init__(self, master ,firmware):
+    def __init__(self, master, firmware):
         super(BeBoardBox, self).__init__()
-        self.master = master #pass DB connection variable to chipBox
+        self.master = master  # pass DB connection variable to chipBox
         self.firmware = firmware
         self.ModuleList = []
         self.ChipWidgetDict = {}  # maps module to the chipbox object
-        self.mainLayout = QGridLayout()
+
+        self.scrollArea = QScrollArea()
+        self.scrollArea.setWidgetResizable(True)
+
+        self.mainWidget = QWidget()
+        self.mainLayout = QGridLayout(self.mainWidget)
 
         self.initList()
         self.createList()
 
-        self.setLayout(self.mainLayout)
+        self.scrollArea.setWidget(self.mainWidget)
+        mainLayout = QVBoxLayout(self)
+        mainLayout.addWidget(self.scrollArea)
+
+        self.setLayout(mainLayout)
+        self.setGeometry(100, 100, 800, 600)  # (x, y, width, height)
+        self.setMinimumSize(800, 300)
 
     def initList(self):
-        ModuleRow = ModuleBox(self.master.connection)
-        if self.master.connection == "Offline":
-            ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
-        else:
-            ModuleRow.OnlineButton.clicked.connect(self.updateList)
-            ModuleRow.OnlineButton.clicked.connect(ModuleRow.setType)      
+        ModuleRow = ModuleBox()
+        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(ModuleRow)
-    
 
     def createList(self):
         self.ListBox = QGroupBox()
-
         self.ListLayout = QGridLayout()
         self.ListLayout.setVerticalSpacing(0)
-
         self.updateList()
-
         self.ListBox.setLayout(self.ListLayout)
         self.mainLayout.addWidget(self.ListBox, 0, 0)
 
@@ -384,31 +387,27 @@ class BeBoardBox(QWidget):
                 if item:
                     widget = item.widget()
                     self.ListLayout.removeWidget(widget)
-                    widget.setParent(
-                        None
-                    )  # Weird graphical glitches can occur without this
+                    widget.setParent(None)  # Weird graphical glitches can occur without this
 
+        # First, add all module-related widgets
         for index, module in enumerate(self.ModuleList):
-            # module.setMaximumWidth(500)
-            self.ChipWidgetDict[module] = ChipBox(self.master,module.getType(),module.getSerialNumber())
-            module.setMaximumHeight(50)
             self.ListLayout.addWidget(module, index, 0, 1, 1)
-            self.ListLayout.addWidget(self.ChipWidgetDict[module], index + 3, 0, 1, 1)
             if index > 0:
                 RemoveButton = QPushButton("remove")
                 RemoveButton.setMaximumWidth(150)
                 RemoveButton.clicked.connect(lambda x=index: self.removeModule(x))
                 self.ListLayout.addWidget(RemoveButton, index, 1, 1, 1)
-        # ModuleLayout = QFormLayout()
-        # ModuleItem = ModuleBox()
 
-        # ModuleItem.destroy.connect(partial(self.removeModule,ModuleItem))
-        # ModuleLayout.addRow(ModuleBox())
+        # Then, add all chip-related widgets
+        chip_start_row = len(self.ModuleList)
+        for index, module in enumerate(self.ModuleList):
+            self.ChipWidgetDict[module] = ChipBox(self.master, module.getType(), module.getSerialNumber())
+            self.ListLayout.addWidget(self.ChipWidgetDict[module], chip_start_row + index, 0, 1, 1)
 
         NewButton = QPushButton("add")
         NewButton.setMaximumWidth(150)
         NewButton.clicked.connect(self.addModule)
-        self.ListLayout.addWidget(NewButton, len(self.ModuleList), 1, 1, 1)
+        self.ListLayout.addWidget(NewButton, chip_start_row + len(self.ModuleList), 1, 1, 1)
         self.update()
 
     def removeModule(self, index):
@@ -423,7 +422,7 @@ class BeBoardBox(QWidget):
         self.changed.emit()
 
     def addModule(self):
-        module = ModuleBox(self.master.connection)
+        module = ModuleBox()
         module.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(module)
         if str(sys.version).startswith("3.8"):
@@ -445,17 +444,14 @@ class BeBoardBox(QWidget):
             FwModule.setFMCID(module.getFMCID())
             FwModule.setModuleName(module.getSerialNumber())
             for chip in ModuleLaneMap[module.getType()].values():
-                logger.debug("type debug : " + str(module.getType()) )
+                logger.debug("type debug : " + str(module.getType()))
                 logger.debug("Serial number debug : " + str(module.getSerialNumber()))
                 logger.debug("chip number debug : " + str(chip))
-                logger.debug("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip))) 
-                FwModule.setChipStatus(
-                    chip, self.ChipWidgetDict[module].getChipStatus(chip)
-                )
+                logger.debug("chip vdda debug :" + str(self.ChipWidgetDict[module].getVDDA(chip)))
+                FwModule.setChipStatus(chip, self.ChipWidgetDict[module].getChipStatus(chip))
                 FwModule.setChipVDDA(chip, self.ChipWidgetDict[module].getVDDA(chip))
                 FwModule.setChipVDDD(chip, self.ChipWidgetDict[module].getVDDD(chip))
 
-            # FwModule.setOpticalGroupID(module.getID())
             FwModule.setModuleType(module.getType())
             FwModule.setModuleVersion(module.getVersion())
             FwModule.setFMCPort(module.getID())
