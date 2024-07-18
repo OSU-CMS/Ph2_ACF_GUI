@@ -44,9 +44,7 @@ class SimplifiedMainWidget(QWidget):
         self.dimension = dimension
         
         try:
-            self.instruments = InstrumentCluster(**site_settings.
-                                                 icicle_instrument_setup)
-            self.instruments.open()
+            self.instruments = master.instruments
         except SerialException:
             instrument_warning_message = QMessageBox()
             instrument_warning_message.setIcon(QMessageBox.Critical)
@@ -77,13 +75,12 @@ class SimplifiedMainWidget(QWidget):
         self.createWindow()
 
     def setupBeBoard(self):
-        self.BeBoard = QtBeBoard()
-        self.BeBoard.setBoardName(site_settings.defaultFC7)
-        self.BeBoard.setIPAddress(site_settings.FC7List[site_settings.defaultFC7])
         #self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
         logger.debug(f"Default FC7: {site_settings.defaultFC7}")
         logger.debug("Initialized BeBoard in SimplifiedGUI")
-        self.BeBoardWidget = SimpleBeBoardBox(self.BeBoard)
+        self.BeBoardWidgets = []
+        for BeBoard in self.firmware:
+            self.BeBoardWidgets.append(SimpleBeBoardBox(BeBoard))
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
     def setupArduino(self):
@@ -171,18 +168,21 @@ class SimplifiedMainWidget(QWidget):
 
         self.StatusLayout.addWidget(self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
         self.StatusLayout.addWidget(self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["fc7"]["Label"], 1, 3, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["fc7"]["Value"], 1, 4, 1, 1)
+        offset = -1
+        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
+            self.StatusLayout.addWidget(self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1+index, 3, 1, 1)
+            self.StatusLayout.addWidget(self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1+index, 4, 1, 1)
+            offset += 1
 
         self.StatusLayout.addWidget(self.instrument_info["arduino"]["Label"], 2, 1, 1, 1)
         self.StatusLayout.addWidget(self.instrument_info["arduino"]["Value"], 2, 2, 1, 1)
         if self.Peltier:
-            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
-            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
-            self.StatusLayout.addWidget(self.peltier_temperature_label, 3, 3, 1, 1)
+            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2+offset, 3, 1, 1)
+            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2+offset, 4, 1, 1)
+            self.StatusLayout.addWidget(self.peltier_temperature_label, 3+offset, 3, 1, 1)
         self.RefreshButton = QPushButton("&Refresh")
         self.RefreshButton.clicked.connect(self.setDeviceStatus)
-        self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
+        self.StatusLayout.addWidget(self.RefreshButton, 3+offset, 3, 1, 1)
         logger.debug("Setup StatusLayout")
 
     def setupUI(self):
@@ -195,19 +195,24 @@ class SimplifiedMainWidget(QWidget):
 
         self.StatusLayout.addWidget(self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
         self.StatusLayout.addWidget(self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["fc7"]["Label"], 1, 3, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["fc7"]["Value"], 1, 4, 1, 1)
+        
+        offset = -1
+        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
+            self.StatusLayout.addWidget(self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1+index, 3, 1, 1)
+            self.StatusLayout.addWidget(self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1+index, 4, 1, 1)
+            offset += 1
 
         self.StatusLayout.addWidget(self.instrument_info["arduino"]["Label"], 2, 1, 1, 1)
         self.StatusLayout.addWidget(self.instrument_info["arduino"]["Value"], 2, 2, 1, 1)
         if self.Peltier:
-            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2, 3, 1, 1)
-            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2, 4, 1, 1)
-            self.StatusLayout.addWidget(self.peltier_temperature_label, 3, 3, 1, 1)
+            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Label"], 2+offset, 3, 1, 1)
+            self.StatusLayout.addWidget(self.instrument_info["peltier"]["Value"], 2+offset, 4, 1, 1)
+            self.StatusLayout.addWidget(self.peltier_temperature_label, 3+offset, 3, 1, 1)
         #self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
         logger.debug("Setup StatusLayout")
         ModuleEntryLayout = QGridLayout()
-        ModuleEntryLayout.addWidget(self.BeBoardWidget)
+        for BeBoardWidget in self.BeBoardWidgets:
+            ModuleEntryLayout.addWidget(BeBoardWidget)
         logger.debug("Setup ModuleEntryLayout")
 
 
@@ -300,11 +305,10 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_info["lv"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["lv"]["Label"].setText("LV status")
 
-        self.instrument_info["fc7"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["fc7"]["Label"].setText(site_settings.defaultFC7)
+        for firmwareName in site_settings.FC7List.keys():
+            self.instrument_info[f"fc7_{firmwareName}"] = {"Label": QLabel(), "Value": QLabel()}
+            self.instrument_info[f"fc7_{firmwareName}"]["Label"].setText(firmwareName)
 
-
-        self.setupBeBoard()
         self.setupLogFile() 
         self.setupArduino()
         if site_settings.usePeltier:
@@ -312,6 +316,7 @@ class SimplifiedMainWidget(QWidget):
         else:
             self.Peltier = None
         self.setDeviceStatus() 
+        self.setupBeBoard()
         #self.setupStatusWidgets()
         self.setupUI()
 
@@ -330,18 +335,22 @@ class SimplifiedMainWidget(QWidget):
 
 
     def runNewTest(self):
-        for module in self.BeBoardWidget.getModules():
-            if module.getSerialNumber() == "":
-                QMessageBox.information(
-                    None, "Error", "No valid serial number!", QMessageBox.Ok
-                )
-                return
-            if module.getID() == "":
-                QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
-                return
+        for BeBoardWidget in self.BeBoardWidgets:
+            for module in BeBoardWidget.getModules():
+                if module.getSerialNumber() == "":
+                    QMessageBox.information(
+                        None, "Error", "No valid serial number!", QMessageBox.Ok
+                    )
+                    return
+                if module.getID() == "":
+                    QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
+                    return
 
-        self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
-        if self.BeBoard.getModuleByIndex(0) == None:
+        self.firmwareDescription = []
+        for BeBoardWidget in self.BeBoardWidgets:
+            self.firmwareDescription.append(BeBoardWidget.getFirmwareDescription())
+        
+        if self.firmwareDescription == list(): #doesn't append board without modules, this means no modules connected
             QMessageBox.information(
                 None,
                 "Error",
@@ -349,6 +358,7 @@ class SimplifiedMainWidget(QWidget):
                 QMessageBox.Ok,
             )
             return
+        
         if self.ProductionButton.isChecked():
             self.info = "ROCTune"
         else:
@@ -360,13 +370,18 @@ class SimplifiedMainWidget(QWidget):
 
         self.RunTest.resetConfigTest()
         
-        module:SimpleModuleBox = self.BeBoardWidget.getModules()[0]
-
-        module_type = module.getType(module.getSerialNumber())
-        print("Module Type: {}".format(module_type))
+        module = self.firmwareDescription[0].getModules()[0]
+        module_type = module.getType()
         self.master.module_in_use = module_type
-        print("BeBoard is: {}".format(self.BeBoard))
-        fw_check = SummaryBox.checkFwPar(site_settings.defaultFC7, module_type, site_settings.FC7List[site_settings.defaultFC7])
+        
+        print("Firmware Description")
+        for beboard in self.firmwareDescription:
+            print(beboard)
+        
+        print("Firmware Check")
+        for beboard in self.firmwareDescription:
+            fw_check = SummaryBox.checkFwPar(beboard.getBoardName(), module_type, beboard.getIPAddress())
+        
         self.RunTest.initialTest()
         # self.RunTest.runTest()
 
@@ -393,11 +408,19 @@ class SimplifiedMainWidget(QWidget):
         #logger.debug(f"Instrument status is {self.instrument_status}")
 
         logger.debug("Getting FC7 Comment")
-
-        LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), site_settings.defaultFC7)
-        FwStatusComment, _, _ = fwStatusParser(self.BeBoard, LogFileName) 
+        self.firmware = []
+        for (firmwareName, properties) in site_settings.FC7List.items():
+            LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), firmwareName)
+            BeBoard = QtBeBoard(
+                BeBoardID=str(len(self.firmware)),
+                boardName=firmwareName,
+                ipAddress=properties['ip']
+            )
+            FwStatusComment, _, _ = fwStatusParser(BeBoard, LogFileName)
+            if FwStatusComment == "Connected":
+                self.firmware.append(BeBoard)
+        
         logger.debug("Checking DB Connection")
-
 
         # Launch QThread to monitor Peltier temperature/power and Arduino temperature/humidity
         self.thread = QThread()
@@ -413,10 +436,10 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("instrument_status: {}".format(self.instrument_status))
         logger.debug("instruments: ".format(self.instruments))
        
-        self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus 
-        self.instrument_status["fc7"] = "Connected" in FwStatusComment 
+        self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
+        for beboard in self.firmware:
+            self.instrument_status[f"fc7_{beboard.getBoardName()}"] = True
         self.instrument_status["database"] = self.master.database_connected
-        
 
         # Icicle will deal with the powersupplies, so I will just always set their status to good
         # Technically a false sense of security for the user. 

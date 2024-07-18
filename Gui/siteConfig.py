@@ -66,9 +66,9 @@ IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
-	'fc7.board.1'			 :  '192.168.1.80',
-	'fc7.board.2'			 :  '192.168.1.81',
-	}
+	'fc7.board.1'		:  {'ip': '192.168.1.80', 'FMCIDs': ['L12']},
+	'fc7.board.2'		:  {'ip': '192.168.1.81', 'FMCIDs': ['L12']},
+}
 
 ## Specify whether of not you want to monitor chip temperature during the tests ##
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
