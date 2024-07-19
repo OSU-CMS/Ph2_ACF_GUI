@@ -42,6 +42,7 @@ class SimplifiedMainWidget(QWidget):
         super().__init__()
         self.master = master
         self.dimension = dimension
+        print ("Got here 1")
         
         try:
             self.instruments = master.instruments
@@ -404,7 +405,15 @@ class SimplifiedMainWidget(QWidget):
         """ 
 
         #self.instrument_status = self.check_icicle_devices()
-        self.instrument_status = {} 
+        self.instrument_status = {
+            "arduino": False,
+            "fc7_1": False,
+            "fc7_2": False,
+            "database": False,
+            "hv": False,
+            "lv": False,
+            "peltier": site_settings.usePeltier
+        }
         #logger.debug(f"Instrument status is {self.instrument_status}")
 
         logger.debug("Getting FC7 Comment")

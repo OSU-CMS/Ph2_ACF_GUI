@@ -1,4 +1,5 @@
 from PyQt5 import QtCore
+from PyQt5.QtCore import Qt
 from Gui.GUIutils.DBConnection import GetTrimClass
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
@@ -275,6 +276,8 @@ class BeBoardBox(QWidget):
         scrollContent.setLayout(self.mainLayout)  # Set mainLayout to scrollable content
         scrollArea.setWidget(scrollContent)
         scrollArea.setWidgetResizable(True)
+        scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Ensure the scrollbar is always visible
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # Hide the horizontal scrollbar
 
         mainLayout = QVBoxLayout()
         mainLayout.addWidget(scrollArea)
@@ -360,7 +363,7 @@ class BeBoardBox(QWidget):
 
     def getFirmwareDescription(self):
         for module in self.ModuleList:
-            #Access the currently selected QtBeBoard object
+            # Access the currently selected QtBeBoard object
             BeBoard = None
             for board in self.firmware:
                 if board.getBoardName() == module.getFC7():
@@ -368,45 +371,46 @@ class BeBoardBox(QWidget):
             if BeBoard is None:
                 raise Exception("There are no FC7s active.")
             
-            #Access the currently selected QtOpticalGroup of the QtBeBoard
+            # Access the currently selected QtOpticalGroup of the QtBeBoard
             OpticalGroup = None
             for og in BeBoard.getAllOpticalGroups().values():
                 if og.getFMCID() == module.getFMCID():
                     OpticalGroup = og
             
-            #Create it if it doesn't already exist
+            # Create it if it doesn't already exist
             if OpticalGroup is None:
                 OpticalGroup = QtOpticalGroup(FMCID=module.getFMCID())
-                OpticalGroup.setBeBoard(BeBoard) #ignore this line, see explanation in Firmware.py
+                OpticalGroup.setBeBoard(BeBoard)  # Ignore this line, see explanation in Firmware.py
                 BeBoard.addOpticalGroup(
                     FMCID=module.getFMCID(),
                     OpticalGroup=OpticalGroup,
                 )
             
-            #Create a QtModule object based on the input data
+            # Create a QtModule object based on the input data
             Module = QtModule(
                 moduleName=module.getSerialNumber(),
                 moduleType=module.getType(),
                 moduleVersion=module.getVersion(),
                 FMCPort=module.getFMCPort()
             )
-            Module.setOpticalGroup(OpticalGroup) #ignore this line, see explanation in Firmware.py
+            Module.setOpticalGroup(OpticalGroup)  # Ignore this line, see explanation in Firmware.py
             
-            #Pull VDDA/VDDD trim and chip status from the ChipBox on the StartWindow.
+            # Pull VDDA/VDDD trim and chip status from the ChipBox on the StartWindow.
             for chipID in ModuleLaneMap[module.getType()].values():
                 Module.getChips()[chipID].setStatus(self.ChipWidgetDict[module].getChipStatus(chipID))
                 Module.getChips()[chipID].setVDDA(self.ChipWidgetDict[module].getVDDA(chipID))
                 Module.getChips()[chipID].setVDDD(self.ChipWidgetDict[module].getVDDD(chipID))
             
-            #Add the QtModule object to the currently selected Optical Group
+            # Add the QtModule object to the currently selected Optical Group
             OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
 
         ret = []
         for board in self.firmware:
-            if len(board.getAllOpticalGroups()) != 0: #if modules are connected to the board
+            if len(board.getAllOpticalGroups()) != 0:  # If modules are connected to the board
                 board.setBoardID(len(ret))
                 ret.append(board)
         return ret
+
 
 
     # def getVDDA(self, module):
@@ -489,55 +493,51 @@ class SimpleModuleBox(QWidget):
     textchanged = pyqtSignal()
     destroy = pyqtSignal()
 
-    def __init__(self):
+    def __init__(self, BeBoard):
         super(SimpleModuleBox, self).__init__()
         self.SerialString = None
         self.mainLayout = QGridLayout()
         self.createRow()
         self.setLayout(self.mainLayout)
+        self.BeBoard=BeBoard()
 
     def createRow(self):
         SerialLabel = QLabel("SerialNumber:")
-        # prefix = defaultModuleType if type(defaultModuleType) ==  str else ""
-        # SerialLabel = QLabel("{} SerialNumber:".format(prefix))
         self.SerialEdit = QLineEdit()
-        #self.SerialEdit.returnPressed.connect(self.on_textChange) #original code
         self.SerialEdit.returnPressed.connect(self.on_editing_finished)
-        # self.SerialEdit.setMinimumWidth(120)
-        # self.SerialEdit.setMaximumWidth(200)
 
         FMCLabel = QLabel("FMC:")
-        # self.FMCEdit = QLineEdit()
-        self.FMCEdit = site_settings.defaultFMC
-        # self.FMCEdit.setMinimumWidth(120)
-        # self.FMCEdit.setMaximumWidth(200)
+        self.FMCCombo = ClickOnlyComboBox()
+        self.FMCCombo.addItems([site_settings.FC7List[self.BeBoard.getBoardName()]["FMCIDs"]])  
+        if self.FMCCombo.count() == 1:
+            self.FMCCombo.setDisabled(True)
 
         CableIDLabel = QLabel("Cable ID:")
         self.CableIDEdit = QLineEdit()
-        # self.IDEdit.setMinimumWidth(120)
-        # self.IDEdit.setMaximumWidth(200)
         self.CableIDEdit.textChanged.connect(self.on_TypeChanged)
         self.CableIDEdit.setReadOnly(True)
 
-        TypeLabel = QLabel("Type:")
-        #self.Type = site_settings.defaultModuleType
+        
 
-        self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
-        self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
-        self.mainLayout.addWidget(CableIDLabel, 1, 0, 1, 1)
-        self.mainLayout.addWidget(self.CableIDEdit, 1, 1, 1, 1)
+        self.mainLayout.addWidget(SerialLabel, 0, 0)
+        self.mainLayout.addWidget(self.SerialEdit, 0, 1)
+        self.mainLayout.addWidget(FMCLabel, 0, 2)
+        self.mainLayout.addWidget(self.FMCCombo, 0, 3)
+        self.mainLayout.addWidget(CableIDLabel, 1, 0)
+        self.mainLayout.addWidget(self.CableIDEdit, 1, 1)
+        
 
     def setSerialNumber(self, serial):
         self.SerialEdit.setText(serial)
 
     def getSerialNumber(self):
-        if not self.SerialEdit.text(): #case for nothing is inside serial box
+        if not self.SerialEdit.text():  # case for nothing is inside serial box
             return None
         else:
             return self.SerialEdit.text()
 
     def getFMCID(self):
-        return site_settings.defaultFMC
+        return self.FMCCombo.currentText()
 
     def setID(self, laneId):
         self.CableIDEdit.setText(str(laneId))
@@ -564,13 +564,13 @@ class SimpleModuleBox(QWidget):
     @QtCore.pyqtSlot()
     def on_textChange(self):
         self.SerialString = self.SerialEdit.text()
-        ## Add Parser
         self.textchanged.emit()
-    
+
     @QtCore.pyqtSlot()
     def on_editing_finished(self):
         self.SerialString = self.SerialEdit.text()
         self.textchanged.emit()
+
     
 
 
@@ -698,39 +698,55 @@ class SimpleBeBoardBox(QWidget):
         return self.FilledModuleList
         #return self.FilledModuleList
 
-    def getFirmwareDescription(self, **kwargs):
-        for index, module in enumerate(self.FilledModuleList):
-            if module.getSerialNumber() == "":
-                continue
-
-            fwType = module.getType(module.getSerialNumber())
+    def getFirmwareDescription(self):
+        for module in self.ModuleList:
+            # Access the currently selected QtBeBoard object
+            BeBoard = None
+            for board in self.firmware:
+                if board.getBoardName() == module.getFC7():
+                    BeBoard = board
+            if BeBoard is None:
+                raise Exception("There are no FC7s active.")
             
-            FwModule = QtModule(type=fwType)
-            FwModule.setModuleID(module.getID())
-            FwModule.setFMCID(module.getFMCID())
-            FwModule.setModuleName(module.getSerialNumber())
+            # Access the currently selected QtOpticalGroup of the QtBeBoard
+            OpticalGroup = None
+            for og in BeBoard.getAllOpticalGroups().values():
+                if og.getFMCID() == module.getFMCID():
+                    OpticalGroup = og
             
-            ##Checked here and the correct fwType is being set
-            if fwType in ModuleType.values():
-                FwModule.__moduleType = fwType
-            else:
-                FwModule.__moduleType = "TFPX SCC"
+            # Create it if it doesn't already exist
+            if OpticalGroup is None:
+                OpticalGroup = QtOpticalGroup(FMCID=module.getFMCID())
+                OpticalGroup.setBeBoard(BeBoard)  # Ignore this line, see explanation in Firmware.py
+                BeBoard.addOpticalGroup(
+                    FMCID=module.getFMCID(),
+                    OpticalGroup=OpticalGroup,
+                )
+            
+            # Create a QtModule object based on the input data
+            Module = QtModule(
+                moduleName=module.getSerialNumber(),
+                moduleType=module.getType(),
+                moduleVersion=module.getVersion(),
+                FMCPort=module.getFMCPort()
+            )
+            Module.setOpticalGroup(OpticalGroup)  # Ignore this line, see explanation in Firmware.py
+            
+            # Pull VDDA/VDDD trim and chip status from the ChipBox on the StartWindow.
+            for chipID in ModuleLaneMap[module.getType()].values():
+                Module.getChips()[chipID].setStatus(self.ChipWidgetDict[module].getChipStatus(chipID))
+                Module.getChips()[chipID].setVDDA(self.ChipWidgetDict[module].getVDDA(chipID))
+                Module.getChips()[chipID].setVDDD(self.ChipWidgetDict[module].getVDDD(chipID))
+            
+            # Add the QtModule object to the currently selected Optical Group
+            OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
 
-            for i in ModuleLaneMap[FwModule.__moduleType].keys():
-                FEChip = QtChip()
-                LaneID = str(i)
-                chipNumber = ModuleLaneMap[FwModule.__moduleType][LaneID]
-                FEChip.setID(ModuleLaneMap[FwModule.__moduleType][LaneID])
-                FEChip.setLane(LaneID)
-
-                # TODO these values should be set so that they read in from the database
-                FEChip.setVDDA(16)
-                FEChip.setVDDD(16)
-                FEChip.setStatus(1)
-                FwModule.addChip(i, FEChip)
-
-            self.firmware.addModule(index, FwModule)
-        return self.firmware
+        ret = []
+        for board in self.firmware:
+            if len(board.getAllOpticalGroups()) != 0:  # If modules are connected to the board
+                board.setBoardID(len(ret))
+                ret.append(board)
+        return ret
 
     @QtCore.pyqtSlot()
     def on_TypeChanged(self):
