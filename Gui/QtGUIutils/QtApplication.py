@@ -363,6 +363,7 @@ class QtApplication(QWidget):
         self.SimpleMain.abort_signal.connect(self.GlobalStop)
         self.SimpleMain.close_signal.connect(self.close)
         self.mainLayout.addWidget(self.SimpleMain)
+        self.setMinimumSize(500, 700)
 
     ###############################################################
     ##  Main page and related functions

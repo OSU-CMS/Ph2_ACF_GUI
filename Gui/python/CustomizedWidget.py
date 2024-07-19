@@ -497,9 +497,10 @@ class SimpleModuleBox(QWidget):
         super(SimpleModuleBox, self).__init__()
         self.SerialString = None
         self.mainLayout = QGridLayout()
+        self.BeBoard=BeBoard
         self.createRow()
         self.setLayout(self.mainLayout)
-        self.BeBoard=BeBoard()
+        
 
     def createRow(self):
         SerialLabel = QLabel("SerialNumber:")
@@ -508,7 +509,7 @@ class SimpleModuleBox(QWidget):
 
         FMCLabel = QLabel("FMC:")
         self.FMCCombo = ClickOnlyComboBox()
-        self.FMCCombo.addItems([site_settings.FC7List[self.BeBoard.getBoardName()]["FMCIDs"]])  
+        self.FMCCombo.addItems(site_settings.FC7List[self.BeBoard.getBoardName()]["FMCIDs"])  
         if self.FMCCombo.count() == 1:
             self.FMCCombo.setDisabled(True)
 
@@ -591,9 +592,24 @@ class SimpleBeBoardBox(QWidget):
         self.createList()
 
         self.setLayout(self.mainLayout)
+        scrollArea = QScrollArea()  # Create a scroll area
+        scrollContent = QWidget()
+        scrollContent.setLayout(self.mainLayout)  # Set mainLayout to scrollable content
+        scrollArea.setWidget(scrollContent)
+        scrollArea.setWidgetResizable(True)
+        scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)  # Ensure the scrollbar is always visible
+        scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)  # Hide the horizontal scrollbar
+
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(scrollArea)
+
+        self.setLayout(mainLayout)  # Set mainLayout as the layout for BeBoardBox
+
+        self.setGeometry(100, 100, 800, 600)  # Set initial geometry (x, y, width, height)
+        #self.setMinimumSize(900, 300)
 
     def initList(self):
-        ModuleRow = SimpleModuleBox()
+        ModuleRow = SimpleModuleBox(self.firmware)
         self.ModuleList.append(ModuleRow)
         self.ModuleList[-1].SerialEdit.setFocus()
 
@@ -664,7 +680,7 @@ class SimpleBeBoardBox(QWidget):
         self.changed.emit()
 
     def clearModule(self):
-        self.ModuleList = [SimpleModuleBox()]
+        self.ModuleList = [SimpleModuleBox(self.firmware)]
         self.FilledModuleList = []
         self.firmware.removeAllModules()
 
@@ -679,9 +695,9 @@ class SimpleBeBoardBox(QWidget):
         self.ModuleList[-1].SerialEdit.setFocus()
 
     def addModule(self):
-        self.ModuleList.append(SimpleModuleBox())
+        self.ModuleList.append(SimpleModuleBox(self.firmware))
         # For QR Scan
-        self.BufferBox = SimpleModuleBox()
+        self.BufferBox = SimpleModuleBox(self.firmware)
 
         if str(sys.version).startswith("3.8"):
             self.deleteList()
