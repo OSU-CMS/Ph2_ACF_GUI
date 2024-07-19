@@ -13,3 +13,4 @@ PyUSB
 requests
 tqdm
 fasteners
+requests_toolbelt

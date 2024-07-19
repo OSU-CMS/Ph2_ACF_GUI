@@ -76,7 +76,7 @@ class SimplifiedMainWidget(QWidget):
 
     def setupBeBoard(self):
         #self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
-        logger.debug(f"Default FC7: {site_settings.defaultFC7}")
+        #logger.debug(f"Default FC7: {site_settings.defaultFC7}")
         logger.debug("Initialized BeBoard in SimplifiedGUI")
         self.BeBoardWidgets = []
         for BeBoard in self.firmware:
@@ -94,19 +94,19 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_info["arduino"]["Label"].setText("Condensation Risk")
 
     def setupLogFile(self):
-        LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"),
-                                                site_settings.defaultFC7)
-        logger.debug(f"FC7 log file saved to {LogFileName}")
+        for firmwareName in site_settings.FC7List.keys():
+            LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), firmwareName)
+            logger.debug(f"FC7 log file saved to {LogFileName}")
 
-        try:
-            logFile = open(LogFileName, "w")
-            logFile.close()
-        except Exception as e:
-            messageBox = QMessageBox()
-            messageBox.setIcon(QMessageBox.Error)
-            logger.error("Could not create file due to error {}".format(e))
-            messageBox.setText("Can not create log files: {}".format(LogFileName))
-            messageBox.exec()
+            try:
+                logFile = open(LogFileName, "w")
+                logFile.close()
+            except Exception as e:
+                messageBox = QMessageBox()
+                messageBox.setIcon(QMessageBox.Error)
+                logger.error("Could not create file due to error {}".format(e))
+                messageBox.setText("Can not create log files: {}".format(LogFileName))
+                messageBox.exec()
 
     def setupPeltier(self):
         try:
