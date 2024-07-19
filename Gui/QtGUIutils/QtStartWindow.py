@@ -219,6 +219,7 @@ class SummaryBox(QWidget):
                 )
                 print(fwload.stdout.decode("UTF-8"))
                 print("resetting beboard")
+                print(f'command: CMSITminiDAQ -f {os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype)} -r')
                 fwreset = subprocess.run(
                     ["CMSITminiDAQ", "-f", os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype), "-r"],
                     stdout=subprocess.PIPE,
