@@ -497,9 +497,9 @@ class SimpleModuleBox(QWidget):
         super(SimpleModuleBox, self).__init__()
         self.SerialString = None
         self.mainLayout = QGridLayout()
+        self.BeBoard=BeBoard
         self.createRow()
         self.setLayout(self.mainLayout)
-        self.BeBoard=BeBoard()
 
     def createRow(self):
         SerialLabel = QLabel("SerialNumber:")
@@ -508,14 +508,17 @@ class SimpleModuleBox(QWidget):
 
         FMCLabel = QLabel("FMC:")
         self.FMCCombo = ClickOnlyComboBox()
-        self.FMCCombo.addItems([site_settings.FC7List[self.BeBoard.getBoardName()]["FMCIDs"]])  
+        
+        self.FMCCombo.addItems(site_settings.FC7List[self.BeBoard.getBoardName()]["FMCIDs"])  
         if self.FMCCombo.count() == 1:
             self.FMCCombo.setDisabled(True)
+        if self.FMCCombo.count() == 0:
+            raise Exception(f"Connected FC7 {self.BeBoard.getBoardName()} has no connected FMCs in site config.")
 
         CableIDLabel = QLabel("Cable ID:")
         self.CableIDEdit = QLineEdit()
         self.CableIDEdit.textChanged.connect(self.on_TypeChanged)
-        self.CableIDEdit.setReadOnly(True)
+        #self.CableIDEdit.setReadOnly(True)
 
         
 
@@ -556,6 +559,16 @@ class SimpleModuleBox(QWidget):
         elif "SH" in SerialNumber:
             self.Type = "TFPX CROC Quad"
         return self.Type
+    
+    def setVersion(self, versionStr):
+        self.version = versionStr
+    
+    def getVersion(self, SerialNumber):
+        if "TH" in SerialNumber:
+            self.version = "v2"
+        else:
+            self.version = "v1"
+        return self.version
 
     @QtCore.pyqtSlot()
     def on_TypeChanged(self):
@@ -593,7 +606,7 @@ class SimpleBeBoardBox(QWidget):
         self.setLayout(self.mainLayout)
 
     def initList(self):
-        ModuleRow = SimpleModuleBox()
+        ModuleRow = SimpleModuleBox(self.firmware)
         self.ModuleList.append(ModuleRow)
         self.ModuleList[-1].SerialEdit.setFocus()
 
@@ -664,9 +677,9 @@ class SimpleBeBoardBox(QWidget):
         self.changed.emit()
 
     def clearModule(self):
-        self.ModuleList = [SimpleModuleBox()]
+        self.ModuleList = [SimpleModuleBox(self.firmware)]
         self.FilledModuleList = []
-        self.firmware.removeAllModules()
+        self.firmware.removeModules()
 
         if str(sys.version).startswith("3.8"):
             self.deleteList()
@@ -679,9 +692,9 @@ class SimpleBeBoardBox(QWidget):
         self.ModuleList[-1].SerialEdit.setFocus()
 
     def addModule(self):
-        self.ModuleList.append(SimpleModuleBox())
+        self.ModuleList.append(SimpleModuleBox(self.firmware))
         # For QR Scan
-        self.BufferBox = SimpleModuleBox()
+        self.BufferBox = SimpleModuleBox(self.firmware)
 
         if str(sys.version).startswith("3.8"):
             self.deleteList()
@@ -700,11 +713,10 @@ class SimpleBeBoardBox(QWidget):
 
     def getFirmwareDescription(self):
         for module in self.ModuleList:
+            if module.getSerialNumber() is None: continue #ignore blank entries
+            
             # Access the currently selected QtBeBoard object
-            BeBoard = None
-            for board in self.firmware:
-                if board.getBoardName() == module.getFC7():
-                    BeBoard = board
+            BeBoard = self.firmware
             if BeBoard is None:
                 raise Exception("There are no FC7s active.")
             
@@ -726,27 +738,19 @@ class SimpleBeBoardBox(QWidget):
             # Create a QtModule object based on the input data
             Module = QtModule(
                 moduleName=module.getSerialNumber(),
-                moduleType=module.getType(),
-                moduleVersion=module.getVersion(),
-                FMCPort=module.getFMCPort()
+                moduleType=module.getType(module.getSerialNumber()),
+                moduleVersion=module.getVersion(module.getSerialNumber()),
+                FMCPort=module.getID()
             )
             Module.setOpticalGroup(OpticalGroup)  # Ignore this line, see explanation in Firmware.py
             
-            # Pull VDDA/VDDD trim and chip status from the ChipBox on the StartWindow.
-            for chipID in ModuleLaneMap[module.getType()].values():
-                Module.getChips()[chipID].setStatus(self.ChipWidgetDict[module].getChipStatus(chipID))
-                Module.getChips()[chipID].setVDDA(self.ChipWidgetDict[module].getVDDA(chipID))
-                Module.getChips()[chipID].setVDDD(self.ChipWidgetDict[module].getVDDD(chipID))
+            #TODO: Pull chip VDDD/VDDA trim values from Panthera and set them here
             
             # Add the QtModule object to the currently selected Optical Group
-            OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
+            OpticalGroup.addModule(FMCPort=module.getID(), module=Module)
 
-        ret = []
-        for board in self.firmware:
-            if len(board.getAllOpticalGroups()) != 0:  # If modules are connected to the board
-                board.setBoardID(len(ret))
-                ret.append(board)
-        return ret
+        #only return the board if there are connected modules, otherwise return None
+        return self.firmware if len(self.firmware.getAllOpticalGroups()) != 0 else None
 
     @QtCore.pyqtSlot()
     def on_TypeChanged(self):
