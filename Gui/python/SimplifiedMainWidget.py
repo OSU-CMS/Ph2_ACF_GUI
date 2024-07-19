@@ -213,6 +213,7 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Setup StatusLayout")
         ModuleEntryLayout = QGridLayout()
         for BeBoardWidget in self.BeBoardWidgets:
+            ModuleEntryLayout.addWidget(QLabel(BeBoardWidget.firmware.getBoardName()))
             ModuleEntryLayout.addWidget(BeBoardWidget)
         logger.debug("Setup ModuleEntryLayout")
 
@@ -349,7 +350,12 @@ class SimplifiedMainWidget(QWidget):
 
         self.firmwareDescription = []
         for BeBoardWidget in self.BeBoardWidgets:
-            self.firmwareDescription.append(BeBoardWidget.getFirmwareDescription())
+            firmware = BeBoardWidget.getFirmwareDescription()
+            if firmware is not None:
+                firmware.setBoardID(str(len(self.firmwareDescription)))
+                #need to handle external to SimpleBeBoardBox because that class doesn't
+                #know whether the other board is None or not
+                self.firmwareDescription.append(firmware)
         
         if self.firmwareDescription == list(): #doesn't append board without modules, this means no modules connected
             QMessageBox.information(
@@ -372,7 +378,7 @@ class SimplifiedMainWidget(QWidget):
         self.RunTest.resetConfigTest()
         
         module = self.firmwareDescription[0].getModules()[0]
-        module_type = module.getType()
+        module_type = module.getModuleType()
         self.master.module_in_use = module_type
         
         print("Firmware Description")
