@@ -104,11 +104,7 @@ class QtModule:
         return self.__chipDict
     
     def getEnabledChips(self):
-        activeChips = {}
-        for ChipID, chip in self.__chipDict.items():
-            if chip.getStatus():
-                activeChips[ChipID] = chip
-        return activeChips
+        return {chipID : chip for chipID, chip in self.__chipDict.items() if chip.getStatus()}
     
     """
     These two functions define the parent object accessible from the current object. It's a shortcut
@@ -122,7 +118,7 @@ class QtModule:
     
     def __str__(self):
         chips_str = "\n".join([f"      {chipID}: {str(chip)}" for chipID, chip in self.__chipDict.items()])
-        return f"  ModuleName: {self.__moduleName}, ModuleType: {self.__moduleType}, ModuleVersion: {self.__moduleVersion}, FMCPort: {self.__FMCPort}\n    Chips:\n{chips_str}"
+        return f"  ModuleName: {self.__moduleName}, ModuleType: {self.__moduleType} {self.__moduleVersion}, FMCPort: {self.__FMCPort}\n    Chips:\n{chips_str}"
 
 
 class QtOpticalGroup:

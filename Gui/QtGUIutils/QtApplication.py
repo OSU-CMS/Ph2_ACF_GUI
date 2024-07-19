@@ -138,9 +138,7 @@ class QtApplication(QWidget):
         self.show()
 
     def initLog(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            site_settings.FC7List.items()
-        ):
+        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
 
             LogFileName = "{0}/Gui/.{1}.log".format(
                 os.environ.get("GUI_dir"), firmwareName
@@ -388,7 +386,7 @@ class QtApplication(QWidget):
         self.StatusList.append([DBStatusLabel, DBStatusValue])
 
         try:
-            for firmwareName, fwAddress in site_settings.FC7List.items():
+            for firmwareName, properties in site_settings.FC7List.items():
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
                 FwStatusValue = QLabel()
@@ -397,7 +395,7 @@ class QtApplication(QWidget):
                 BeBoard = QtBeBoard(
                     BeBoardID=str(len(self.FwDict)),
                     boardName=firmwareName,
-                    ipAddress=fwAddress
+                    ipAddress=properties['ip']
                 )
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
@@ -1071,10 +1069,7 @@ class QtApplication(QWidget):
             self.ArduinoGroup.disable()
 
     def checkFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            site_settings.FC7List.items()
-        ):
-
+        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
             fileName = self.LogList[index]
             if firmwareName not in self.ActiveFC7s:
                 FwStatusComment, FwStatusColor, FwStatusVerbose = fwStatusParser(
@@ -1093,10 +1088,8 @@ class QtApplication(QWidget):
                 self.occupyFw("{0}".format(index))
 
     def refreshFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            site_settings.FC7List.items()
-        ):
-            self.UseButtons[index].setDisabled(False)
+        for i in range(len(site_settings.FC7List.items())):
+            self.UseButtons[i].setDisabled(False)
         if self.ActiveFC7s != {}:
             for index in self.ActiveFC7s.keys():
                 self.occupyFw("{0}".format(index))
