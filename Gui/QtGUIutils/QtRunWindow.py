@@ -66,7 +66,8 @@ class QtRunWindow(QWidget):
 
         self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
-        self.ModuleType = self.firmware.getModuleByIndex(0).getModuleType()
+        self.module = self.firmware.getModuleByIndex(0)
+        self.ModuleType = self.module.getModuleType()
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
@@ -308,12 +309,12 @@ class QtRunWindow(QWidget):
         TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
         self.TempBox.setSizePolicy(TempBoxSP)
         self.TempLayout = QGridLayout()
-        self.type = self.ModuleType
         self.LabelList = []
         self.TempLabelList = []
-        for key, value in ModuleLaneMap[self.type].items():
+        active_chips = [chip.getID() for chip in self.module.getChips().values() if chip.getStatus()]
+        for chip in active_chips:
             self.Label = QLabel()
-            self.Label.setText("Chip: " + str(value))
+            self.Label.setText("Chip: " + str(chip))
             self.TempLabel = QLabel()
             self.LabelList.append(self.Label)
             self.TempLabelList.append(self.TempLabel)
