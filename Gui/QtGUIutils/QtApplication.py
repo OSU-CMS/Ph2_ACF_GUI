@@ -387,7 +387,7 @@ class QtApplication(QWidget):
         self.StatusList.append([DBStatusLabel, DBStatusValue])
 
         try:
-            for firmwareName, properties in site_settings.FC7List.items():
+            for firmwareName, ipaddress in site_settings.FC7List.items():
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
                 FwStatusValue = QLabel()
@@ -396,7 +396,7 @@ class QtApplication(QWidget):
                 BeBoard = QtBeBoard(
                     BeBoardID=str(len(self.FwDict)),
                     boardName=firmwareName,
-                    ipAddress=properties['ip']
+                    ipAddress=ipaddress
                 )
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:

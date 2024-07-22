@@ -79,9 +79,7 @@ class SimplifiedMainWidget(QWidget):
         #self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
         #logger.debug(f"Default FC7: {site_settings.defaultFC7}")
         logger.debug("Initialized BeBoard in SimplifiedGUI")
-        self.BeBoardWidgets = []
-        for BeBoard in self.firmware:
-            self.BeBoardWidgets.append(SimpleBeBoardBox(BeBoard))
+        self.BeBoardWidget = SimpleBeBoardBox(self.firmware)
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
     def setupArduino(self):
@@ -212,9 +210,7 @@ class SimplifiedMainWidget(QWidget):
         #self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
         logger.debug("Setup StatusLayout")
         ModuleEntryLayout = QGridLayout()
-        for BeBoardWidget in self.BeBoardWidgets:
-            ModuleEntryLayout.addWidget(QLabel(BeBoardWidget.firmware.getBoardName()))
-            ModuleEntryLayout.addWidget(BeBoardWidget)
+        ModuleEntryLayout.addWidget(self.BeBoardWidget)
         logger.debug("Setup ModuleEntryLayout")
 
 
@@ -337,27 +333,18 @@ class SimplifiedMainWidget(QWidget):
 
 
     def runNewTest(self):
-        for BeBoardWidget in self.BeBoardWidgets:
-            for module in BeBoardWidget.getModules():
-                if module.getSerialNumber() == "":
-                    QMessageBox.information(
-                        None, "Error", "No valid serial number!", QMessageBox.Ok
-                    )
-                    return
-                if module.getID() == "":
-                    QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
-                    return
+        for module in self.BeBoardWidget.getModules():
+            if module.getSerialNumber() == "":
+                QMessageBox.information(
+                    None, "Error", "No valid serial number!", QMessageBox.Ok
+                )
+                return
+            if module.getID() == "":
+                QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
+                return
 
-        self.firmwareDescription = []
-        for BeBoardWidget in self.BeBoardWidgets:
-            firmware = BeBoardWidget.getFirmwareDescription()
-            if firmware is not None:
-                firmware.setBoardID(str(len(self.firmwareDescription)))
-                #need to handle external to SimpleBeBoardBox because that class doesn't
-                #know whether the other board is None or not
-                self.firmwareDescription.append(firmware)
-        
-        if self.firmwareDescription == list(): #doesn't append board without modules, this means no modules connected
+        self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
+        if not self.firmwareDescription: #firmware description returns none if no modules are entered
             QMessageBox.information(
                 None,
                 "Error",
@@ -424,12 +411,12 @@ class SimplifiedMainWidget(QWidget):
 
         logger.debug("Getting FC7 Comment")
         self.firmware = []
-        for (firmwareName, properties) in site_settings.FC7List.items():
+        for firmwareName, ipaddress in site_settings.FC7List.items():
             LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), firmwareName)
             BeBoard = QtBeBoard(
                 BeBoardID=str(len(self.firmware)),
                 boardName=firmwareName,
-                ipAddress=properties['ip']
+                ipAddress=ipaddress
             )
             FwStatusComment, _, _ = fwStatusParser(BeBoard, LogFileName)
             if FwStatusComment == "Connected":
