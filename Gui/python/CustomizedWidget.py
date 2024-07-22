@@ -493,12 +493,10 @@ class SimpleModuleBox(QWidget):
     textchanged = pyqtSignal()
     destroy = pyqtSignal()
 
-    def __init__(self, BeBoard):
+    def __init__(self):
         super(SimpleModuleBox, self).__init__()
         self.SerialString = None
         self.mainLayout = QGridLayout()
-        self.BeBoard=BeBoard
-        self.BeBoard=BeBoard
         self.createRow()
         self.setLayout(self.mainLayout)
         
@@ -508,24 +506,14 @@ class SimpleModuleBox(QWidget):
         self.SerialEdit = QLineEdit()
         self.SerialEdit.returnPressed.connect(self.on_editing_finished)
 
-        FMCLabel = QLabel("FMC:")
-        self.FMCCombo = ClickOnlyComboBox()
-        self.FMCCombo.addItems(site_settings.FC7List[self.BeBoard.getBoardName()]["FMCIDs"])  
-        if self.FMCCombo.count() == 1:
-            self.FMCCombo.setDisabled(True)
-        if self.FMCCombo.count() == 0:
-            raise Exception(f"Connected FC7 {self.BeBoard.getBoardName()} has no connected FMCs in site config.")
-
         CableIDLabel = QLabel("Cable ID:")
         self.CableIDEdit = QLineEdit()
         self.CableIDEdit.textChanged.connect(self.on_TypeChanged)
         #self.CableIDEdit.setReadOnly(True)
 
-        
-
+    
         self.mainLayout.addWidget(SerialLabel, 0, 0)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1)
-        self.mainLayout.addWidget(FMCLabel, 0, 2)
         self.mainLayout.addWidget(self.FMCCombo, 0, 3)
         self.mainLayout.addWidget(CableIDLabel, 1, 0)
         self.mainLayout.addWidget(self.CableIDEdit, 1, 1)
@@ -693,8 +681,7 @@ class SimpleBeBoardBox(QWidget):
         self.changed.emit()
 
     def clearModule(self):
-        self.ModuleList = [SimpleModuleBox(self.firmware)]
-        self.ModuleList = [SimpleModuleBox(self.firmware)]
+        self.ModuleList = [SimpleModuleBox()]
         self.FilledModuleList = []
         self.firmware.removeModules()
 
@@ -709,9 +696,9 @@ class SimpleBeBoardBox(QWidget):
         self.ModuleList[-1].SerialEdit.setFocus()
 
     def addModule(self):
-        self.ModuleList.append(SimpleModuleBox(self.firmware))
+        self.ModuleList.append(SimpleModuleBox())
         # For QR Scan
-        self.BufferBox = SimpleModuleBox(self.firmware)
+        self.BufferBox = SimpleModuleBox()
 
         if str(sys.version).startswith("3.8"):
             self.deleteList()
