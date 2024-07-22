@@ -841,9 +841,9 @@ class QtApplication(QWidget):
     def setDefault(self):
         if self.expertMode is False:
             self.HVPowerGroup.setDisabled(True)
-            self.HVPowerRemoteControl.setDisabled(True)
+            # self.HVPowerRemoteControl.setDisabled(True)
             self.LVPowerGroup.setDisabled(True)
-            self.LVPowerRemoteControl.setDisabled(True)
+            # self.LVPowerRemoteControl.setDisabled(True)
             self.ArduinoGroup.disable()
             self.ArduinoControl.setDisabled(True)
 
@@ -911,8 +911,8 @@ class QtApplication(QWidget):
             # of InstrumentCluster(), however, it is at the will of the garbage collector
             self.instruments = None
 
-            self.HVPowerRemoteControl.setDisabled(False)
-            self.LVPowerRemoteControl.setDisabled(False)
+            #self.HVPowerRemoteControl.setDisabled(False)
+            #self.LVPowerRemoteControl.setDisabled(False)
             self.relay_remote_control.setDisabled(False)
             self.multimeter_remote_control.setDisabled(False)
 
@@ -942,33 +942,36 @@ class QtApplication(QWidget):
         self.FirmwareStatus.deleteLater()
         self.UseDefaultGroup.deleteLater()
         self.HVPowerGroup.deleteLater()
-        self.HVPowerRemoteControl.deleteLater()
+        # self.HVPowerRemoteControl.deleteLater()
         self.LVPowerGroup.deleteLater()
-        self.LVPowerRemoteControl.deleteLater()
+        # self.LVPowerRemoteControl.deleteLater()
         self.relay_group.deleteLater()
         #self.relay_remote_control.deleteLater()
         self.multimeter_group.deleteLater()
         #self.multimeter_remote_control.deleteLater()
         self.ArduinoGroup.deleteLater()
         self.ArduinoControl.deleteLater()
+        self.PeltierBox.deleteLater()
         self.MainOption.deleteLater()
         self.AppOption.deleteLater()
         self.LogoGroupBox.deleteLater()
         self.mainLayout.removeWidget(self.FirmwareStatus)
         self.mainLayout.removeWidget(self.HVPowerGroup)
         self.mainLayout.removeWidget(self.UseDefaultGroup)
-        self.mainLayout.removeWidget(self.HVPowerRemoteControl)
+        # self.mainLayout.removeWidget(self.HVPowerRemoteControl)
         self.mainLayout.removeWidget(self.LVPowerGroup)
-        self.mainLayout.removeWidget(self.LVPowerRemoteControl)
+        # self.mainLayout.removeWidget(self.LVPowerRemoteControl)
         self.mainLayout.removeWidget(self.relay_group)
         #self.mainLayout.removeWidget(self.relay_remote_control)
         self.mainLayout.removeWidget(self.multimeter_group)
         #self.mainLayout.removeWidget(self.multimeter_remote_control)
         self.mainLayout.removeWidget(self.ArduinoGroup)
         self.mainLayout.removeWidget(self.ArduinoControl)
+        self.mainLayout.removeWidget(self.PeltierBox)
         self.mainLayout.removeWidget(self.MainOption)
         self.mainLayout.removeWidget(self.AppOption)
         self.mainLayout.removeWidget(self.LogoGroupBox)
+        QApplication.closeAllWindows()
 
     def openNewProductionTest(self):
         self.ProdTestPage = QtProductionTestWindow(
