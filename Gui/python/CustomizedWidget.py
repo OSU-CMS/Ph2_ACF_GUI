@@ -540,9 +540,6 @@ class SimpleModuleBox(QWidget):
         else:
             return self.SerialEdit.text()
 
-    def getFMCID(self):
-        return self.FMCCombo.currentText()
-
     def setID(self, laneId):
         self.CableIDEdit.setText(str(laneId))
 
@@ -731,24 +728,27 @@ class SimpleBeBoardBox(QWidget):
     def getFirmwareDescription(self):
         for module in self.ModuleList:
             if module.getSerialNumber() is None: continue #ignore blank entries
+            cable_properties = site_settings.CableMapping[module.getID()]
+            if module.getID() not in site_settings.CableMapping.keys():
+                raise Exception(f"Encountered cable ID ({module.getID()}) not present in siteConfig.")
             
             # Access the currently selected QtBeBoard object
-            BeBoard = self.firmware
+            BeBoard = next((beboard for beboard in self.firmware if beboard.getBoardName() == cable_properties["FC7"]), None)
             if BeBoard is None:
-                raise Exception("There are no FC7s active.")
+                raise Exception(f"Could not find {cable_properties["FC7"]} in the firmware list. This may occur if the connection to the FC7 is broken.")
             
             # Access the currently selected QtOpticalGroup of the QtBeBoard
             OpticalGroup = None
             for og in BeBoard.getAllOpticalGroups().values():
-                if og.getFMCID() == module.getFMCID():
+                if og.getFMCID() == cable_properties["FMCID"]:
                     OpticalGroup = og
             
             # Create it if it doesn't already exist
             if OpticalGroup is None:
-                OpticalGroup = QtOpticalGroup(FMCID=module.getFMCID())
+                OpticalGroup = QtOpticalGroup(FMCID=cable_properties["FMCID"])
                 OpticalGroup.setBeBoard(BeBoard)  # Ignore this line, see explanation in Firmware.py
                 BeBoard.addOpticalGroup(
-                    FMCID=module.getFMCID(),
+                    FMCID=cable_properties["FMCID"],
                     OpticalGroup=OpticalGroup,
                 )
             
@@ -757,17 +757,22 @@ class SimpleBeBoardBox(QWidget):
                 moduleName=module.getSerialNumber(),
                 moduleType=module.getType(module.getSerialNumber()),
                 moduleVersion=module.getVersion(module.getSerialNumber()),
-                FMCPort=module.getID()
+                FMCPort=cable_properties["FMCPort"]
             )
             Module.setOpticalGroup(OpticalGroup)  # Ignore this line, see explanation in Firmware.py
             
             #TODO: Pull chip VDDD/VDDA trim values from Panthera and set them here
             
             # Add the QtModule object to the currently selected Optical Group
-            OpticalGroup.addModule(FMCPort=module.getID(), module=Module)
+            OpticalGroup.addModule(FMCPort=cable_properties["FMCPort"], module=Module)
 
         #only return the board if there are connected modules, otherwise return None
-        return self.firmware if len(self.firmware.getAllOpticalGroups()) != 0 else None
+        ret = []
+        for board in self.firmware:
+            if len(board.getAllOpticalGroups()) != 0:  # If modules are connected to the board
+                board.setBoardID(len(ret))
+                ret.append(board)
+        return ret
 
     @QtCore.pyqtSlot()
     def on_TypeChanged(self):
