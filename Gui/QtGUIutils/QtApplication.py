@@ -44,7 +44,9 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
-from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
+# from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
+from icicle.icicle.multiment_cluster import InstrumentCluster
+
 
 
 from Gui.python.logging_config import logger
@@ -59,11 +61,9 @@ class QtApplication(QWidget):
         self.setLayout(self.mainLayout)
         self.ProcessingTest = False
         self.expertMode = False
-        self.FwUnderUsed = ""
+        self.ActiveFC7s = {}
         self.module_in_use = None
         self.instruments = None
-
-        # self.FwUnderUsed = []
 
         self.FwDict = {}
         self.FwStatusVerboseDict = {}
@@ -138,9 +138,7 @@ class QtApplication(QWidget):
         self.show()
 
     def initLog(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            site_settings.FC7List.items()
-        ):
+        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
 
             LogFileName = "{0}/Gui/.{1}.log".format(
                 os.environ.get("GUI_dir"), firmwareName
@@ -365,6 +363,7 @@ class QtApplication(QWidget):
         self.SimpleMain.abort_signal.connect(self.GlobalStop)
         self.SimpleMain.close_signal.connect(self.close)
         self.mainLayout.addWidget(self.SimpleMain)
+        self.setMinimumSize(500, 700)
 
     ###############################################################
     ##  Main page and related functions
@@ -388,17 +387,17 @@ class QtApplication(QWidget):
         self.StatusList.append([DBStatusLabel, DBStatusValue])
 
         try:
-            for index, (firmwareName, fwAddress) in enumerate(
-                site_settings.FC7List.items()
-            ):
+            for firmwareName, ipaddress in site_settings.FC7List.items():
                 FwNameLabel = QLabel()
                 FwNameLabel.setText(firmwareName)
                 FwStatusValue = QLabel()
                 self.StatusList.append([FwNameLabel, FwStatusValue])
                 self.FwStatusVerboseDict[str(firmwareName)] = {}
-                BeBoard = QtBeBoard()
-                BeBoard.setBoardName(firmwareName)
-                BeBoard.setIPAddress(site_settings.FC7List[firmwareName])
+                BeBoard = QtBeBoard(
+                    BeBoardID=str(len(self.FwDict)),
+                    boardName=firmwareName,
+                    ipAddress=ipaddress
+                )
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))
@@ -456,9 +455,9 @@ class QtApplication(QWidget):
                 )
                 #StatusLayout.addWidget(LogButton, index, 6, 1, 1)
                 logger.debug("Setup FC7 Buttons")
-        if self.FwUnderUsed != "":
-            index = self.getIndex(self.FwUnderUsed, self.StatusList)
-            self.occupyFw("{0}".format(index))
+        if self.ActiveFC7s != {}:
+            for index in self.ActiveFC7s.keys():
+                self.occupyFw("{0}".format(index))
 
 
         self.FirmwareStatus.setLayout(StatusLayout)
@@ -497,8 +496,15 @@ class QtApplication(QWidget):
         self.HVDeviceName = QLabel()
         #if site_settings.icicle_instrument_setup is not None:
         if not site_settings.manual_powersupply_control: 
-            self.HVDeviceName.setText("{0}".format(site_settings.icicle_instrument_setup['hv']))
-            self.HVPortName.setText("{0}".format(site_settings.icicle_instrument_setup['hv_resource']))
+            HVDevices = []
+            for device_name, device in site_settings.icicle_instrument_setup['instrument_dict'].items():
+                if "hv" in device_name:
+                    HVDevices.append(device)
+            HVPorts = []
+            for device in HVDevices:
+                HVPorts.append(device['resource'])
+            self.HVDeviceName.setText(" | ".join([device['class'] for device in HVDevices]))
+            self.HVPortName.setText(" | ".join(HVPorts))
         else:
             self.HVPortName.setText("")
             self.HVDeviceName.setText("Manual HV Control")
@@ -534,13 +540,20 @@ class QtApplication(QWidget):
         
         #if site_settings.icicle_instrument_setup is not None: 
         if not site_settings.manual_powersupply_control:
-            
-            self.LVDeviceName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv']))
-            self.LVPortName.setText('{0}'.format(site_settings.icicle_instrument_setup['lv_resource']))
+            LVDevices = []
+            for device_name, device in site_settings.icicle_instrument_setup['instrument_dict'].items():
+                if "lv" in device_name:
+                    LVDevices.append(device)
+            LVPorts = []
+            for device in LVDevices:
+                LVPorts.append(device['resource'])
+            self.LVDeviceName.setText(" | ".join([device['class'] for device in LVDevices]))
+            self.LVPortName.setText(" | ".join(LVPorts))
         else:
             self.LVPortName.setText("")
             self.LVDeviceName.setText("Manual LV Control")
 
+        self.LVPowerLayout.addWidget(self.LVDeviceLabel,0,0,1,1)
         self.LVPowerLayout.addWidget(self.LVDeviceName,0,1,1,1)
         self.LVPowerLayout.addWidget(self.LVPortLabel,1,0,1,1,)
         self.LVPowerLayout.addWidget(self.LVPortName,1,1,1,1)
@@ -690,7 +703,7 @@ class QtApplication(QWidget):
         self.NewTestButton.clicked.connect(self.openNewTest)
         self.NewTestButton.clicked.connect(self.manual_control_warning)
         self.NewTestButton.setDisabled(True)
-        if self.FwUnderUsed != "":
+        if self.ActiveFC7s != {}:
             self.NewTestButton.setDisabled(False)
         if self.ProcessingTest == True:
             self.NewTestButton.setDisabled(True)
@@ -858,25 +871,38 @@ class QtApplication(QWidget):
         changes made in GUI
         """
         self.device_settings = site_settings.icicle_instrument_setup
-        if not site_settings.manual_powersupply_control :
+        if not site_settings.manual_powersupply_control:
             if self.expertMode:
                 if not self.default_checkbox.isChecked():
                     for key, value in self.connected_device_information.items():
                         self.device_settings[key] = value
             try:
-                self.instruments = InstrumentCluster(**self.device_settings)
+                try:
+                    self.instruments = InstrumentCluster(**self.device_settings)
+                except ValueError:
+                    pass
+                    # InstrumentCluster.__init__() throws a ValueError when called a second time.
+                    # I don't think this error actually matters so just catching it for now.
                 self.instruments.open()
-
-                if (
-                    self.instruments.status(lv_channel=None)["lv"]
-                    or self.instruments.status(lv_channel=None)["hv"]
-                ):
+                lv_on = False
+                hv_on = False
+                
+                for number in self.instruments.get_modules().keys():
+                    if self.instruments.status()[number]["hv"]:
+                        hv_on = True
+                        break
+                for number in self.instruments.get_modules().keys():
+                    if self.instruments.status()[number]["lv"]:
+                        lv_on = True
+                        break
+                
+                if (lv_on or hv_on):
                     self.instruments.off()
                 if self.expertMode:
                     self.disable_instrument_widgets()
 
             except Exception as e:
-                print("Error: ", e)
+                print("Error:", e)
                 QMessageBox.information(
                     None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
                 )
@@ -983,8 +1009,10 @@ class QtApplication(QWidget):
         self.ExitButton.setDisabled(True)
 
     def openNewTest(self):
-        FwModule = self.FwDict[self.FwUnderUsed]
-        print('FwModule is:'.format(FwModule))
+        FwModule = [
+            board_object for firmware, board_object in self.FwDict.items() if firmware in self.ActiveFC7s.values()
+        ]
+        print(f'FwModule is: {[board.getBoardName() for board in FwModule]}')
         self.StartNewTest = QtStartWindow(self, FwModule)
 
         self.NewTestButton.setDisabled(True)
@@ -1045,12 +1073,9 @@ class QtApplication(QWidget):
             self.ArduinoGroup.disable()
 
     def checkFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            site_settings.FC7List.items()
-        ):
-
+        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
             fileName = self.LogList[index]
-            if firmwareName != self.FwUnderUsed:
+            if firmwareName not in self.ActiveFC7s:
                 FwStatusComment, FwStatusColor, FwStatusVerbose = fwStatusParser(
                     self.FwDict[firmwareName], fileName
                 )
@@ -1060,20 +1085,18 @@ class QtApplication(QWidget):
             # This if was added for a test.
             if self.expertMode:
                 self.UseButtons[index].setDisabled(False)
-        if self.FwUnderUsed != "":
-            index = self.getIndex(self.FwUnderUsed, self.StatusList)
-            self.StatusList[index + 1][1].setText("Connected")
-            self.StatusList[index + 1][1].setStyleSheet("color: green")
-            self.occupyFw("{0}".format(index))
+        if self.ActiveFC7s != {}:
+            for index in self.ActiveFC7s.keys():
+                self.StatusList[index + 1][1].setText("Connected")
+                self.StatusList[index + 1][1].setStyleSheet("color: green")
+                self.occupyFw("{0}".format(index))
 
     def refreshFirmware(self):
-        for index, (firmwareName, fwAddress) in enumerate(
-            site_settings.FC7List.items()
-        ):
-            self.UseButtons[index].setDisabled(False)
-        if self.FwUnderUsed != "":
-            index = self.getIndex(self.FwUnderUsed, self.StatusList)
-            self.occupyFw("{0}".format(index))
+        for i in range(len(site_settings.FC7List.items())):
+            self.UseButtons[i].setDisabled(False)
+        if self.ActiveFC7s != {}:
+            for index in self.ActiveFC7s.keys():
+                self.occupyFw("{0}".format(index))
 
     def getFwComment(self, BeBoard: QtBeBoard, fileName):
         comment, color, verboseInfo = fwStatusParser(
@@ -1103,19 +1126,21 @@ class QtApplication(QWidget):
                 button.setText("&In use")
                 button.setDisabled(False)
                 self.CheckButton.setDisabled(True)
-                self.FwUnderUsed = self.StatusList[i + 1][0].text()
+                self.ActiveFC7s[i] = self.StatusList[i + 1][0].text()
             else:
-                button.setDisabled(True)
+                #button.setDisabled(True)
+                pass
 
     def releaseFw(self, index):
         for i, button in enumerate(self.UseButtons):
             if i == int(index):
-                self.FwUnderUsed = ""
+                del self.ActiveFC7s[i]
                 button.setText("&Use")
                 button.setDown(False)
                 button.setDisabled(False)
                 self.CheckButton.setDisabled(False)
-                self.NewTestButton.setDisabled(True)
+                if self.ActiveFC7s == {}:
+                    self.NewTestButton.setDisabled(True)
             else:
                 button.setDisabled(False)
 

@@ -120,7 +120,8 @@ class SummaryBox(QWidget):
                 if 'LV Current' in item:
                     value[item] = ModuleCurrentMap[self.module.getType()]
                 if 'Bias Voltage' in item:
-                    value[item] = icicle_instrument_setup['default_hv_voltage']
+                    value[item] = icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
+                    #assumes only 1 HV titled 'hv' in instruments.json
             self.verboseResult[key] = value
 
     @staticmethod
@@ -218,6 +219,7 @@ class SummaryBox(QWidget):
                 )
                 print(fwload.stdout.decode("UTF-8"))
                 print("resetting beboard")
+                print(f'command: CMSITminiDAQ -f {os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype)} -r')
                 fwreset = subprocess.run(
                     ["CMSITminiDAQ", "-f", os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype), "-r"],
                     stdout=subprocess.PIPE,
@@ -260,8 +262,6 @@ class QtStartWindow(QWidget):
         super(QtStartWindow, self).__init__()
         self.master = master
         self.firmware = firmware
-        self.firmwares = firmware
-        self.firmwareName = firmware.getBoardName()
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
         self.runFlag = False
@@ -299,11 +299,11 @@ class QtStartWindow(QWidget):
         testlayout.addWidget(self.TestCombo, 0, 1, 1, 1)
         self.TestBox.setLayout(testlayout)
 
-        self.firmware.removeAllModule()
-
-        self.BeBoardWidget = BeBoardBox(self.master,self.firmware)  # FLAG
-
-
+        for beboard in self.firmware:
+            beboard.removeModules()
+            beboard.removeAllOpticalGroups()
+        
+        self.BeBoardWidget = BeBoardBox(self.master, self.firmware)  # FLAG
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
         self.mainLayout.addWidget(self.BeBoardWidget, 1, 0)
@@ -427,10 +427,11 @@ class QtStartWindow(QWidget):
                     None, "Error", "No valid serial number!", QMessageBox.Ok
                 )
                 return
-            if module.getID() == "":
+            if module.getFMCPort() == "":
                 QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
                 return
-        self.checkFwPar(self.firmwareName)
+        for fw in self.firmware:
+            self.checkFwPar(fw.getBoardName())
         if self.passCheck == False:
             reply = QMessageBox().question(
                 None,
@@ -443,11 +444,12 @@ class QtStartWindow(QWidget):
                 return
 
         self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
-        # self.info = [self.firmware.getModuleByIndex(0).getModuleID(), str(self.TestCombo.currentText())]
-        self.info = [
-            self.firmware.getModuleByIndex(0).getOpticalGroupID(),
-            str(self.TestCombo.currentText()),
-        ]
+        
+        for beboard in self.firmwareDescription:
+            print(beboard)
+        
+        self.info = self.TestCombo.currentText()
+        
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
         self.master.RunNewTest = QtRunWindow(
@@ -475,7 +477,7 @@ class QtStartWindow(QWidget):
                 try:
                     if self.master.instruments:
                         self.master.instruments.off(
-                            lv_channel=None, hv_delay=0.5, hv_step_size=10
+                            hv_delay=0.5, hv_step_size=10
                         )
 
                         print("Window closed")

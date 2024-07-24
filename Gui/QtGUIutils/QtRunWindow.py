@@ -53,21 +53,15 @@ class QtRunWindow(QWidget):
         self.info = info
 
         # Removing for sequencefix
-#        if "AllScan_Tuning" in self.info[1]:
+#        if "AllScan_Tuning" in self.info:
 #            runTestList = pretuningList
 #            runTestList.extend(tuningList * len(defaultTargetThr))
 #            runTestList.extend(posttuningList)
 #            CompositeList.update({"AllScan_Tuning": runTestList})
 
-        if isCompositeTest(self.info[1]):
-            runTestList = CompositeTests[self.info[1]]
-        else:
-            runTestList = self.info[1]
-
-        self.firmwareName = self.firmware.getBoardName()
         self.ModuleMap = dict()
-        self.module = self.firmware.getModuleByIndex(0)
-        self.ModuleType = self.module.getModuleType()
+        self.ModuleType = self.firmware[0].getModuleData()['type']
+
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
@@ -75,7 +69,7 @@ class QtRunWindow(QWidget):
         assert self.master.instruments is not None, logger.error("Unable to setup instruments")
         self.testHandler.powerSignal.connect(
             lambda: self.master.instruments.off(
-                lv_channel=None, hv_delay=0.3, hv_step_size=10, measure=False
+                hv_delay=0.3, hv_step_size=10, measure=False
             )
         )
 
@@ -156,9 +150,7 @@ class QtRunWindow(QWidget):
         self.HeadLayout = QHBoxLayout()
 
         HeadLabel = QLabel(
-            '<font size="4"> Module: {0}  Test: {1} </font>'.format(
-                self.info[0], self.info[1]
-            )
+            '<font size="4"> Test: {0} </font>'.format(self.info)
         )
         HeadLabel.setMaximumHeight(30)
 
@@ -220,12 +212,18 @@ class QtRunWindow(QWidget):
         # self.SaveButton.clicked.connect(self.saveTest)
         self.saveCheckBox = QCheckBox("&auto-save to Panthera")
         self.saveCheckBox.setMaximumHeight(30)
-        self.saveCheckBox.setChecked(self.testHandler.autoSave)
+        if self.master.database_connected:
+            self.saveCheckBox.setChecked(self.testHandler.autoSave)
+            self.saveCheckBox.clicked.connect(self.setAutoSave)
+        else:
+            self.testHandler.autoSave = False
+            self.saveCheckBox.setChecked(False)
+            self.saveCheckBox.setDisabled(True)
         # if not isActive(self.connection):
         #     self.saveCheckBox.setChecked(False)
         #     self.testHandler.autoSave = False
         #     self.saveCheckBox.setDisabled(True)
-        self.saveCheckBox.clicked.connect(self.setAutoSave)
+        
         ##### previous layout ##########
         """
 
@@ -311,6 +309,7 @@ class QtRunWindow(QWidget):
         self.TempLayout = QGridLayout()
         self.LabelList = []
         self.TempLabelList = []
+
         active_chips = [chip.getID() for chip in self.module.getChips().values() if chip.getStatus()]
         for chip in active_chips:
             self.Label = QLabel()
@@ -440,7 +439,7 @@ class QtRunWindow(QWidget):
             self.master.SimpleMain.RunButton.setDisabled(False)
             self.master.SimpleMain.StopButton.setDisabled(True)
 
-    def refreshHistory(self, result):
+    def refreshHistory(self):
         # self.dataList = getLocalRemoteTests(self.connection, self.info[0])
         # self.proxy = QtTableWidget(self.dataList)
         # self.view.setModel(self.proxy)
@@ -449,18 +448,19 @@ class QtRunWindow(QWidget):
         print("attempting to update status in history")
         self.HistoryLayout.removeWidget(self.StatusTable)
         self.StatusTable.setRowCount(0)
-        for index, test in enumerate(self.modulestatus):
+        for index, test_results in enumerate(self.modulestatus):
             row = self.StatusTable.rowCount()
             self.StatusTable.setRowCount(row + 1)
-            if isCompositeTest(self.info[1]):
+            if isCompositeTest(self.info):
                 self.StatusTable.setItem(
-                    row, 0, QTableWidgetItem(CompositeTests[self.info[1]][index % len(CompositeTests[self.info[1]])])
+                    row, 0, QTableWidgetItem(CompositeTests[self.info][index % len(CompositeTests[self.info])])
                 )
             else:
-                self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info[1]))
-            for moduleKey in test.keys():
-                status = "Pass" if test[moduleKey][0] else "Failed"
-                moduleID = f"Module{moduleKey}"
+                self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info))
+            for module_result in test_results:
+                moduleName = list(module_result.keys())[0]
+                status = "Pass" if module_result[moduleName][0] else "Failed"
+                moduleID = f"Module{moduleName}"
                 if moduleID in self.header:
                     columnID = self.header.index(moduleID)
                     self.StatusTable.setItem(
@@ -478,14 +478,20 @@ class QtRunWindow(QWidget):
         self.HistoryLayout.addWidget(self.StatusTable)
 
     def displayTestResultPopup(self, item):
-        row = item.row() #row = index, they are aligned in refreshHistory()
-        col = item.column()
-        message = self.modulestatus[row][self.header[col].lstrip("Module")][1]
+        try:
+            row = item.row() #row = index, they are aligned in refreshHistory()
+            col = item.column()
+            message = self.modulestatus[row][self.header.index(self.header[col])-1][self.header[col].lstrip("Module")][1]
         
-        msg_box = QMessageBox()
-        msg_box.setWindowTitle("Additional Information")
-        msg_box.setText(message)
-        msg_box.exec_()
+            msg_box = QMessageBox()
+            msg_box.setWindowTitle("Additional Information")
+            msg_box.setText(message)
+            msg_box.exec_()
+        except KeyError as e:
+            if str(e) == 'TestName':
+                pass
+            else:
+                raise e
 
     def sendBackSignal(self):
         self.backSignal = True
@@ -512,8 +518,8 @@ class QtRunWindow(QWidget):
         if "Re" in self.RunButton.text():
             isReRun = True
             self.grades = []
-            if isCompositeTest(self.info[1]):
-                for index in range(len(CompositeTests[self.info[1]])):
+            if isCompositeTest(self.info):
+                for index in range(len(CompositeTests[self.info])):
                     self.ResultWidget.ProgressBar[index].setValue(0)
                     self.ResultWidget.runtime[index].setText("")
             else:
@@ -573,7 +579,8 @@ class QtRunWindow(QWidget):
         if EnableReRun:
             self.RunButton.setText("&Re-run")
             self.RunButton.setDisabled(False)
-            self.UploadButton.setDisabled(self.testHandler.autoSave)
+            if self.master.database_connected:
+                self.UploadButton.setDisabled(self.testHandler.autoSave)
 
     def updateResult(self, newResult):
         # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
@@ -599,22 +606,9 @@ class QtRunWindow(QWidget):
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
 
-    def updateValidation(self, result:dict):
+    def updateValidation(self, results:list):
         try:
-            passed = list(result.values())[0][0]
-            self.modulestatus.append(result)
-            if passed:
-                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Pass")
-                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: green")
-            else:
-                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setText("Failed")
-                self.ResultWidget.StatusLabel[self.testIndexTracker - 1].setStyleSheet("color: red")
-            time.sleep(0.5)
-            return passed
-        # self.StatusCanvas.renew()
-        # self.StatusCanvas.update()
-        # self.HistoryLayout.removeWidget(self.StatusCanvas)
-        # self.HistoryLayout.addWidget(self.StatusCanvas)
+            self.modulestatus.append(results)
         except Exception as err:
             logger.error(err)
 
@@ -661,7 +655,7 @@ class QtRunWindow(QWidget):
                 self.release()
                 if self.master.instruments:
                     self.master.instruments.off(
-                        lv_channel=None, hv_delay=0.3, hv_step_size=10
+                        hv_delay=0.3, hv_step_size=10
                     )
                 else:
                     QMessageBox.information(self, "Info", "You must turn off "

@@ -6,10 +6,10 @@ import os
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
-def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, module):
+def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, module_data):
     try:
-        module_name = module.getModuleName()
-        module_type = module.getModuleType()
+        module_name = module_data['module'].getModuleName()
+        module_type = module_data['module'].getModuleType()
         if 'IVCurve' in testName:
             explanation = 'No grading currently available for IVCurve'
             return {module_name:(True, explanation)}
@@ -20,12 +20,20 @@ def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, modu
         elif 'Threshold' in root_file_name:
             root_file_name = root_file_name.replace('Threshold', 'Thr')
         ROOT_file_path = "{0}/Run{1}_{2}.root".format(
-            inputDir, runNumber, root_file_name
+            outputDir, runNumber, root_file_name
         )
-        chip_canvas_path_template = "Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_{0:02d}"
-        active_chips = [chip.getID() for chip in module.getChips().values() if chip.getStatus()]
-        chip_canvases = [chip_canvas_path_template.format(int(chipID)) for chipID in active_chips]
-        relevant_files = [inputDir+"/"+os.fsdecode(file) for file in os.listdir(inputDir)]
+        chip_canvas_path_template = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/Chip_{chipID:02d}"
+        active_chips = [chip.getID() for chip in module_data['module'].getChips().values() if chip.getStatus()]
+        chip_canvases = [
+            chip_canvas_path_template.format(
+                boardID=module_data['boardID'],
+                ogID=module_data['ogID'],
+                hybridID=module_data['hybridID'],
+                chipID=int(chipID)
+            )
+            for chipID in active_chips
+        ]
+        relevant_files = [outputDir+"/"+os.fsdecode(file) for file in os.listdir(outputDir)]
         
         _1, _2 = felis.set_module(
             module_name, module_type.split(" ")[2], module_type.split(" ")[0], True, "link"
@@ -45,5 +53,5 @@ def ResultGrader(felis, inputDir, testName, testIndexInSequence, runNumber, modu
         #return {module_name:(sanity, explanation)}
         return {module_name:(True, explanation)}
     except Exception as err:
-        logger.error("An error was thrown while grading: {}".format(repr(err)))
-        return {module_name:(False, str(err))}
+        #logger.error("An error was thrown while grading: {}".format(repr(err)))
+        return {module_name:(False, repr(err))}

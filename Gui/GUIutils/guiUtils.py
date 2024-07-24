@@ -174,19 +174,23 @@ def SetupXMLConfig(Input_Dir, Output_Dir):
 ##########################################################################
 
 
-def SetupXMLConfigfromFile(InputFile, Output_Dir, firmwareName, RD53Dict):
+def SetupXMLConfigfromFile(InputFile, Output_Dir, firmware, RD53Dict):
     changeMade = False
     try:
         root, tree = LoadXML(InputFile)
-        # FirmwareList just stores the IP address of the FC7 board being used
-        fwIP = FC7List[firmwareName]
+        # firmware is a list of QtBeBoards (FC7s) indexed by optical group.
+        # Stores each board name and IP Address. Used to fill IP address
         # For all nodes that match .//connection
-        for Node in root.findall(".//connection"):
-            if fwIP not in Node.attrib["uri"]:
-                Node.set(
-                    "uri", "chtcp-2.0://localhost:10203?target={}:50001".format(fwIP)
-                )
-                changeMade = True
+        # for Node in root.findall(".//connection"):
+        #     opticalGroupID = Node.getparent().get('Id')
+        #     fwIP = firmware[opticalGroupID].getIPAddress()
+        #     print(f'opticalGroupID: {opticalGroupID}\nIP: {fwIP}')
+        #     if fwIP not in Node.attrib["uri"]:
+        #         print("Modified Node")
+        #         Node.set(
+        #             "uri", "chtcp-2.0://localhost:10203?target={}:50001".format(fwIP)
+        #         )
+        #         changeMade = True
 
         ###----Can probably remove this block that's commented------######
         # counter = 0
@@ -378,14 +382,12 @@ def CheckXMLValue(pFilename, pAttribute):
 
 
 def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
-    # try:
     outputFile = outputDir + "/CMSIT_" + testName + ".xml"
-    # Get Hardware discription and a list of the modules
-    HWDescription0 = HWDescription()
-    BeBoardModule0 = BeBoardModule()
-    AllModules = firmwareList.getAllModules().values()
+    
     boardtype = "RD53A"
+    RegisterSettingsList = RegisterSettings #TODO: Investigate whether this actually matters (ie deep vs shallow copy)
     revPolarity = False #Flag to determine whether or not to reverse the Aurora lane polarity
+
     RegisterSettingsList = RegisterSettings
     # Setup all optical groups for the modules
     for module in AllModules:
@@ -434,11 +436,65 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
 
     for OpticalGroupModule in AllOG.values():
         BeBoardModule0.AddOGModule(OpticalGroupModule)
+
     if revPolarity:
         RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = 11
-    BeBoardModule0.SetRegisterValue(RegisterSettingsList)
-    HWDescription0.AddBeBoard(BeBoardModule0)
-    ###  This is where you specify which set of HW settings to use for a test  ######
+    
+    # Get Hardware discription and a list of the modules
+    HWDescription0 = HWDescription()
+    for BeBoard in firmwareList:
+        BeBoardModule0 = BeBoardModule()
+
+        #Set up Optical Groups
+        for og in BeBoard.getAllOpticalGroups().values():
+            OpticalGroupModule0 = OGModule()
+            OpticalGroupModule0.SetOpticalGrp(og.getOpticalGroupID(), og.getFMCID())
+            
+            # Set up each module within the optical group
+            for module in og.getAllModules().values():
+                HyBridModule0 = HyBridModule()
+                HyBridModule0.SetHyBridModule(module.getFMCPort(), "1")
+                HyBridModule0.SetHyBridName(module.getModuleName())
+        
+                moduleType = module.getModuleType()
+                RxPolarities = "1" if "CROC" and "Quad" in moduleType else "0" if "CROC" in moduleType else None        
+                revPolarity = "CROC" and "Quad" in moduleType
+                FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
+                globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
+                HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
+                FELaneConfig_Dict = FELaneConfig_DictB if "CROC" in moduleType else None
+                boardtype = "RD53B"+module.getModuleVersion() if "CROC" in moduleType else "RD53A"
+                
+                # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
+                for chip in module.getChips().values():
+                    print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
+                    FEChip = FE()
+                    FEChip.SetFE(
+                        chip.getID(),
+                        "1" if chip.getStatus() else "0",
+                        chip.getLane(),
+                        RxPolarities,
+                        "CMSIT_RD53_{0}_{1}_{2}.txt".format(
+                            module.getModuleName(), module.getFMCPort(), chip.getID()
+                        ),
+                    )
+                    
+                    FEChip.ConfigureFE(FESettings_Dict[testName])
+                    FEChip.ConfigureLaneConfig(FELaneConfig_Dict[testName][int(chip.getLane())])
+                    FEChip.VDDAtrim = chip.getVDDA()
+                    FEChip.VDDDtrim = chip.getVDDD()
+                    HyBridModule0.AddFE(FEChip)
+                HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
+                OpticalGroupModule0.AddHyBrid(HyBridModule0)
+            
+            BeBoardModule0.AddOGModule(OpticalGroupModule0)
+        
+        BeBoardModule0.SetURI(BeBoard.getIPAddress())
+        BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")
+        
+        BeBoardModule0.SetRegisterValue(RegisterSettingsList)
+        HWDescription0.AddBeBoard(BeBoardModule0)
+    
     HWDescription0.AddSettings(HWSettings_Dict[testName])  
     MonitoringModule0 = MonitoringModule(boardtype)
     if "RD53A" in boardtype:
@@ -447,9 +503,6 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
         MonitoringModule0.SetMonitoringList(MonitoringListB)
     HWDescription0.AddMonitoring(MonitoringModule0)
     GenerateHWDescriptionXML(HWDescription0, outputFile, boardtype)
-    # except:
-    # 	logger.warning("Unexpcted issue generating {}. Please check the file".format(outputFile))
-    # 	outputFile = None
 
     return outputFile
 

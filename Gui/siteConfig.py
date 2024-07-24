@@ -1,4 +1,4 @@
-
+import json
 import logging
 
 # Customize the logging configuration
@@ -58,38 +58,27 @@ defaultPeltierWarningTemp = 40
 # IF THIS VARIABLE IS SET, THEN ICICLE_INSTRUMENT_SETUP WILL NOT BE USED
 manual_powersupply_control = False
 
-icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A, HMP4040, TTI
-                           "lv_resource" : "ASRL/dev/ttyUSBLV::INSTR",
-                           "default_lv_channel" : 1,
-                           "default_lv_voltage" : 1.8, #in volts
-                           "default_lv_current" : 3, #in amps
-                           "hv": "Keithley2410", #Choices are: Keithley2410
-                           "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
-                           "default_hv_voltage": -80, #in volts
-                           "default_hv_compliance_current": 5e-6, #in amps
-                           "default_hv_delay": 1, #in seconds
-                           "default_hv_step_size": 10, #in volts
-#                           "adc_board": "AdcBoard",
-#                           "adc_board_resource": "ASRL/dev/ttyUSB3::INSTR"
- #                          "relay_board": "RelayBoard", #Choices are RelayBoard
- #                          "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
- #                          "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
- #                          "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
-							}
+with open('instruments.json', 'r') as file:
+    icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
-	'fc7.board.1'			 :  '192.168.1.80',
-	'fc7.board.2'			 :  '192.168.1.81',
-	}
+	'fc7.board.1'	:	'192.168.1.80',
+	'fc7.board.2'	:	'192.168.1.81',
+}
+
+CableMapping = {
+    "0" : {"FC7": "fc7.board.1", "FMCID": "L12", "FMCPort": "0"},
+    "1" : {"FC7": "fc7.board.2", "FMCID": "L12", "FMCPort": "0"}
+}
 
 ## Specify whether of not you want to monitor chip temperature during the tests ##
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
-Monitor_CROC = "1"
+Monitor_CROC = "0"
 Monitor_SleepTime = "30000"  # time in milliseconds between temperature readings
 
 ## Configuring the current settings for each module type.  These values are in Amps. 
