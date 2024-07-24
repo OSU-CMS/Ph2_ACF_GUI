@@ -211,12 +211,18 @@ class QtRunWindow(QWidget):
         # self.SaveButton.clicked.connect(self.saveTest)
         self.saveCheckBox = QCheckBox("&auto-save to Panthera")
         self.saveCheckBox.setMaximumHeight(30)
-        self.saveCheckBox.setChecked(self.testHandler.autoSave)
+        if self.master.database_connected:
+            self.saveCheckBox.setChecked(self.testHandler.autoSave)
+            self.saveCheckBox.clicked.connect(self.setAutoSave)
+        else:
+            self.testHandler.autoSave = False
+            self.saveCheckBox.setChecked(False)
+            self.saveCheckBox.setDisabled(True)
         # if not isActive(self.connection):
         #     self.saveCheckBox.setChecked(False)
         #     self.testHandler.autoSave = False
         #     self.saveCheckBox.setDisabled(True)
-        self.saveCheckBox.clicked.connect(self.setAutoSave)
+        
         ##### previous layout ##########
         """
 
@@ -570,7 +576,8 @@ class QtRunWindow(QWidget):
         if EnableReRun:
             self.RunButton.setText("&Re-run")
             self.RunButton.setDisabled(False)
-            self.UploadButton.setDisabled(self.testHandler.autoSave)
+            if self.master.database_connected:
+                self.UploadButton.setDisabled(self.testHandler.autoSave)
 
     def updateResult(self, newResult):
         # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")

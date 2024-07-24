@@ -42,7 +42,6 @@ class SimplifiedMainWidget(QWidget):
         super().__init__()
         self.master = master
         self.dimension = dimension
-        print ("Got here 1")
         
         try:
             self.instruments = master.instruments

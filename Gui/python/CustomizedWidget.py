@@ -143,7 +143,7 @@ class ChipBox(QWidget):
         self.VDDAMap = {}
         self.VDDDMap = {}
         self.ChipGroupBoxDict = {}
-            
+        
         for chipid in self.ChipList:
             self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
             
@@ -509,12 +509,11 @@ class SimpleModuleBox(QWidget):
         CableIDLabel = QLabel("Cable ID:")
         self.CableIDEdit = QLineEdit()
         self.CableIDEdit.textChanged.connect(self.on_TypeChanged)
-        #self.CableIDEdit.setReadOnly(True)
+        self.CableIDEdit.setReadOnly(True)
 
     
         self.mainLayout.addWidget(SerialLabel, 0, 0)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1)
-        self.mainLayout.addWidget(self.FMCCombo, 0, 3)
         self.mainLayout.addWidget(CableIDLabel, 1, 0)
         self.mainLayout.addWidget(self.CableIDEdit, 1, 1)
         
@@ -607,7 +606,7 @@ class SimpleBeBoardBox(QWidget):
        
 
     def initList(self):
-        ModuleRow = SimpleModuleBox(self.firmware)
+        ModuleRow = SimpleModuleBox()
         self.ModuleList.append(ModuleRow)
         self.ModuleList[-1].SerialEdit.setFocus()
 
@@ -717,12 +716,16 @@ class SimpleBeBoardBox(QWidget):
             if module.getSerialNumber() is None: continue #ignore blank entries
             cable_properties = site_settings.CableMapping[module.getID()]
             if module.getID() not in site_settings.CableMapping.keys():
-                raise Exception(f"Encountered cable ID ({module.getID()}) not present in siteConfig.")
+                raise Exception(f"Encountered cable ID {module.getID()} not present in siteConfig.")
             
             # Access the currently selected QtBeBoard object
-            BeBoard = next((beboard for beboard in self.firmware if beboard.getBoardName() == cable_properties["FC7"]), None)
+            BeBoard = None
+            for beboard in self.firmware:
+                if beboard.getBoardName() == cable_properties["FC7"]:
+                    BeBoard = beboard
+            
             if BeBoard is None:
-                raise Exception(f"Could not find {cable_properties["FC7"]} in the firmware list. This may occur if the connection to the FC7 is broken.")
+                raise Exception(f"Could not find {cable_properties['FC7']} in the firmware list. This may occur if the connection to the FC7 is broken.")
             
             # Access the currently selected QtOpticalGroup of the QtBeBoard
             OpticalGroup = None

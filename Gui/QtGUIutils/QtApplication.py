@@ -293,7 +293,7 @@ class QtApplication(QWidget):
 
     def checkLogin(self):
         expert_string = '_*'
-        if self.UsernameEdit.text() not in ['local', 'localexpert', '']:
+        if self.UsernameEdit.text() not in ['local', 'localexpert']:
             print("Connecting to Panthera...")
             credentials = {
                 'username': self.UsernameEdit.text()[0:-(len(expert_string))] if self.UsernameEdit.text().endswith(expert_string) else self.UsernameEdit.text(),
@@ -331,7 +331,7 @@ class QtApplication(QWidget):
         else:
             if self.UsernameEdit.text().split('_')[0] == 'local':
                 self.expertMode = False
-            elif self.UsernameEdit.text().split('_')[0] in ['localexpert', '']:
+            elif self.UsernameEdit.text().split('_')[0] == 'localexpert':
                 self.expertMode = True
             
             self.username = self.UsernameEdit.text().split('_')[0]
