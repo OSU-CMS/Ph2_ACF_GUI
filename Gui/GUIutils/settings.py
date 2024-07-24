@@ -225,6 +225,10 @@ optimizationTestMap = {
         'LATENCY_CONFIG',
         'CAL_EDGE_FINE_DELAY',
     ],
+    'gendacdac':[
+        'VCAL_HIGH',
+        'CAL_EDGE_FINE_DELAY',
+    ],
 }
 
 # Reserved for updated value for XML configuration
