@@ -140,6 +140,8 @@ class QtOpticalGroup:
         return self.__FMCID
     
     def addModule(self, FMCPort: str, module: QtModule):
+        if FMCPort in self.__moduleDict.keys():
+            raise KeyError(f"The provided FMC port, {FMCPort}, is already assigned to another module. You cannot connect two modules to the same port.")
         self.__moduleDict[FMCPort] = module
     
     def removeModule(self, module: QtModule):
@@ -201,6 +203,8 @@ class QtBeBoard:
         return self.__ipAddress
 
     def addOpticalGroup(self, FMCID: str, OpticalGroup: QtOpticalGroup):
+        if FMCID in self.__OGDict.keys():
+            raise KeyError(f"The provided FMC ID, {FMCID}, is already assigned to another FMC. You cannot assign two FMCs to the same FMC ID.")
         OpticalGroup.setOpticalGroupID(str(len(self.__OGDict)))
         self.__OGDict[FMCID] = OpticalGroup
 
