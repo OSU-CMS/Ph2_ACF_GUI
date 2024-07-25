@@ -387,58 +387,6 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
     boardtype = "RD53A"
     RegisterSettingsList = RegisterSettings #TODO: Investigate whether this actually matters (ie deep vs shallow copy)
     revPolarity = False #Flag to determine whether or not to reverse the Aurora lane polarity
-
-    RegisterSettingsList = RegisterSettings
-    # Setup all optical groups for the modules
-    for module in AllModules:
-        AllOG = {}
-        OpticalGroupModule = OGModule()
-        OpticalGroupModule.SetOpticalGrp(module.getOpticalGroupID(), module.getFMCID())
-        AllOG[module.getOpticalGroupID()] = OpticalGroupModule
-
-    for module in firmwareList.getAllModules().values():
-        OpticalGroupModule0 = AllOG[module.getOpticalGroupID()]
-        HyBridModule0 = HyBridModule()
-        HyBridModule0.SetHyBridModule(module.getModuleID(), "1")
-        HyBridModule0.SetHyBridName(module.getModuleName())
-
-        #Modified so that these variables are in scope of their usage. Not sure how it was working before
-        moduleType = module.getModuleType()
-        RxPolarities = "1" if "CROC" and "Quad" in moduleType else "0" if "CROC" in moduleType else None        
-        revPolarity = not ("CROC" and "1x2" in moduleType)
-        FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
-        globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
-        HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
-        FELaneConfig_Dict = FELaneConfig_DictB if "CROC" in moduleType else None
-        boardtype = "RD53B"+module.getModuleVersion() if "CROC" in moduleType else "RD53A"
-
-        # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
-        for chip in module.getChips().values():
-            print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
-            FEChip = FE()
-            FEChip.SetFE(
-                chip.getID(),
-                "1" if chip.getStatus() else "0",
-                chip.getLane(),
-                RxPolarities,
-                "CMSIT_RD53_{0}_{1}_{2}.txt".format(
-                    module.getModuleName(), module.getModuleID(), chip.getID()
-                ),
-            )
-
-            FEChip.ConfigureFE(FESettings_Dict[testName])
-            FEChip.ConfigureLaneConfig(FELaneConfig_Dict[testName][int(chip.getLane())])
-            FEChip.VDDAtrim = chip.getVDDA()
-            FEChip.VDDDtrim = chip.getVDDD()
-            HyBridModule0.AddFE(FEChip)
-        HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
-        OpticalGroupModule0.AddHyBrid(HyBridModule0)
-
-    for OpticalGroupModule in AllOG.values():
-        BeBoardModule0.AddOGModule(OpticalGroupModule)
-
-    if revPolarity:
-        RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = 11
     
     # Get Hardware discription and a list of the modules
     HWDescription0 = HWDescription()
@@ -458,7 +406,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
         
                 moduleType = module.getModuleType()
                 RxPolarities = "1" if "CROC" and "Quad" in moduleType else "0" if "CROC" in moduleType else None        
-                revPolarity = "CROC" and "Quad" in moduleType
+                revPolarity = not ("CROC" and "1x2" in moduleType)
                 FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
                 globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
                 HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
@@ -488,6 +436,9 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                 OpticalGroupModule0.AddHyBrid(HyBridModule0)
             
             BeBoardModule0.AddOGModule(OpticalGroupModule0)
+        
+        if revPolarity:
+            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = 11
         
         BeBoardModule0.SetURI(BeBoard.getIPAddress())
         BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")

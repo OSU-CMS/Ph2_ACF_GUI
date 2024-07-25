@@ -310,7 +310,9 @@ class QtRunWindow(QWidget):
         self.LabelList = []
         self.TempLabelList = []
 
-        active_chips = [chip.getID() for chip in self.module.getChips().values() if chip.getStatus()]
+        modules = [module for beboard in self.firmware for module in beboard.getModules()]
+        active_chips = [chipID for module in modules for chipID in module.getEnabledChips().keys()]
+        #TODO: figure out how this should be displayed with multiple modules, doesn't crash for now
         for chip in active_chips:
             self.Label = QLabel()
             self.Label.setText("Chip: " + str(chip))
