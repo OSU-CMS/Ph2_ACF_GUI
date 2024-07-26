@@ -342,12 +342,12 @@ class SimplifiedMainWidget(QWidget):
                 QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
                 return
 
-        self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
+        self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
         if not self.firmwareDescription: #firmware description returns none if no modules are entered
             QMessageBox.information(
                 None,
                 "Error",
-                "No valid Module found!  If manually entering module number be sure to press 'Enter' on keyboard.",
+                message,
                 QMessageBox.Ok,
             )
             return

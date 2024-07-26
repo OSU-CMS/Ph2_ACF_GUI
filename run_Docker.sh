@@ -59,6 +59,7 @@ else
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
+                -v ${PWD}/Gui/instruments.json:/home/cmsTkUser/Ph2_ACF_GUI/Gui/instruments.json/\
 		-w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
 		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_user:latest
 fi

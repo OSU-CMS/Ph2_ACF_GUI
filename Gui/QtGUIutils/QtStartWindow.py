@@ -443,7 +443,16 @@ class QtStartWindow(QWidget):
             if reply == QMessageBox.No:
                 return
 
-        self.firmwareDescription = self.BeBoardWidget.getFirmwareDescription()
+        self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
+        
+        if not self.firmwareDescription: #firmware description returns none if no modules are entered
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+            return
         
         for beboard in self.firmwareDescription:
             print(beboard)

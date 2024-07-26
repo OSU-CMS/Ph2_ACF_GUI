@@ -76,9 +76,9 @@ class ModuleBox(QWidget):
             self.FC7Combo.setDisabled(True)
 
         VersionLabel = QLabel("Version:")
-        self.ModuleVersionCombo = ClickOnlyComboBox()
-        self.ModuleVersionCombo.addItems(["v1", "v2"])
-        VersionLabel.setBuddy(self.ModuleVersionCombo)
+        self.VersionCombo = ClickOnlyComboBox()
+        self.VersionCombo.addItems(["v1", "v2"])
+        VersionLabel.setBuddy(self.VersionCombo)
 
         self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
@@ -91,7 +91,7 @@ class ModuleBox(QWidget):
         self.mainLayout.addWidget(TypeLabel, 0, 8, 1, 1)
         self.mainLayout.addWidget(self.TypeCombo, 0, 9, 1, 1)
         # self.mainLayout.addWidget(VersionLabel, 0, 10, 1, 1)
-        self.mainLayout.addWidget(self.ModuleVersionCombo, 0, 11, 1, 1)
+        self.mainLayout.addWidget(self.VersionCombo, 0, 11, 1, 1)
         
 
     def setType(self):
@@ -120,7 +120,7 @@ class ModuleBox(QWidget):
         return self.TypeCombo.currentText()
     
     def getVersion(self):
-        return self.ModuleVersionCombo.currentText()
+        return self.VersionCombo.currentText()
 
     def getVDDD(self, pChipID):
         return self.VDDD[pChipID]
@@ -290,6 +290,7 @@ class BeBoardBox(QWidget):
     def initList(self):
         ModuleRow = ModuleBox(self.firmware)
         ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
+        ModuleRow.VersionCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(ModuleRow)
 
     def createList(self):
@@ -309,20 +310,31 @@ class BeBoardBox(QWidget):
         serialNumberWidgets = []
         chipIDWidgets = []
 
-        for module in self.ModuleList:
-            chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
-            self.ChipWidgetDict[module] = chipBox
-            module.setMaximumHeight(50)
-
-            serialNumberWidgets.append(module)
-            chipIDWidgets.append(chipBox)
-
         # Clear existing layout
         for i in reversed(range(self.ListLayout.count())):
             widget = self.ListLayout.itemAt(i).widget()
             if widget:
                 self.ListLayout.removeWidget(widget)
                 widget.setParent(None)
+        
+        for index, module in enumerate(self.ModuleList):
+            if index == 0 and "CROC" not in module.TypeCombo.currentText():
+                module.VersionCombo.setCurrentText("v1")
+                module.VersionCombo.setDisabled(True)
+            elif index == 0:
+                module.VersionCombo.setDisabled(False)
+            if index != 0:
+                module.TypeCombo.setCurrentText(self.ModuleList[0].TypeCombo.currentText())
+                module.TypeCombo.setDisabled(True)
+                module.VersionCombo.setCurrentText(self.ModuleList[0].VersionCombo.currentText())
+                module.VersionCombo.setDisabled(True)
+            
+            chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
+            self.ChipWidgetDict[module] = chipBox
+            module.setMaximumHeight(50)
+
+            serialNumberWidgets.append(module)
+            chipIDWidgets.append(chipBox)
 
         # Add serial number widgets
         for index, widget in enumerate(serialNumberWidgets):
@@ -334,6 +346,7 @@ class BeBoardBox(QWidget):
 
         # Add remove and add buttons
         for index, module in enumerate(self.ModuleList):
+            if index == 0: continue #no remove button for the first module
             removeButton = QPushButton("Remove")
             removeButton.setMaximumWidth(150)
             removeButton.clicked.connect(lambda checked, m=module: self.removeModule(m))
@@ -362,6 +375,7 @@ class BeBoardBox(QWidget):
         return self.ModuleList
 
     def getFirmwareDescription(self):
+        module_types = []
         for module in self.ModuleList:
             # Access the currently selected QtBeBoard object
             BeBoard = None
@@ -381,10 +395,10 @@ class BeBoardBox(QWidget):
             if OpticalGroup is None:
                 OpticalGroup = QtOpticalGroup(FMCID=module.getFMCID())
                 OpticalGroup.setBeBoard(BeBoard)  # Ignore this line, see explanation in Firmware.py
-                BeBoard.addOpticalGroup(
-                    FMCID=module.getFMCID(),
-                    OpticalGroup=OpticalGroup,
-                )
+                try:
+                    BeBoard.addOpticalGroup(FMCID=module.getFMCID(), OpticalGroup=OpticalGroup)
+                except KeyError as e:
+                    return None, f"Error while adding Optical Group to BeBoard: {repr(e)}"
             
             # Create a QtModule object based on the input data
             Module = QtModule(
@@ -402,15 +416,28 @@ class BeBoardBox(QWidget):
                 Module.getChips()[chipID].setVDDD(self.ChipWidgetDict[module].getVDDD(chipID))
             
             # Add the QtModule object to the currently selected Optical Group
-            OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
+            try:
+                OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
+            except KeyError as e:
+                return None, f"Error while adding Module to Optical Group: {repr(e)}"
 
+            module_types.append(Module.getModuleType() + " " + Module.getModuleVersion())
+
+        if not all([i == module_types[0] for i in module_types]):
+            #iterate over module_types, if they're not all identical, return None
+            return None, f"All modules must be of the same type! Please ensure you have entered the module data correctly."
+        
+        #only include the board if there are connected modules, otherwise ignore it
         ret = []
         for board in self.firmware:
             if len(board.getAllOpticalGroups()) != 0:  # If modules are connected to the board
                 board.setBoardID(len(ret))
                 ret.append(board)
-        return ret
-
+        
+        if ret == list(): #nothing added to ret -> no connected modules
+            return None, "No valid module found!"
+        else:
+            return ret, "Success"
 
 
     # def getVDDA(self, module):
@@ -538,7 +565,7 @@ class SimpleModuleBox(QWidget):
 
     def getType(self, SerialNumber):
         if "ZH" in SerialNumber:
-            self.Type = "TFPX Quad"
+            self.Type = "TFPX RD53A Quad"
         elif "RH" in SerialNumber:
             self.Type = "TFPX CROC 1x2"
         elif "SH" in SerialNumber:
@@ -709,9 +736,9 @@ class SimpleBeBoardBox(QWidget):
 
     def getModules(self):
         return self.FilledModuleList
-        #return self.FilledModuleList
 
     def getFirmwareDescription(self):
+        module_types = []
         for module in self.ModuleList:
             if module.getSerialNumber() is None: continue #ignore blank entries
             cable_properties = site_settings.CableMapping[module.getID()]
@@ -737,10 +764,10 @@ class SimpleBeBoardBox(QWidget):
             if OpticalGroup is None:
                 OpticalGroup = QtOpticalGroup(FMCID=cable_properties["FMCID"])
                 OpticalGroup.setBeBoard(BeBoard)  # Ignore this line, see explanation in Firmware.py
-                BeBoard.addOpticalGroup(
-                    FMCID=cable_properties["FMCID"],
-                    OpticalGroup=OpticalGroup,
-                )
+                try:
+                    BeBoard.addOpticalGroup(FMCID=cable_properties["FMCID"], OpticalGroup=OpticalGroup)
+                except KeyError as e:
+                    return None, f"Error while adding Optical Group to BeBoard: {repr(e)}"
             
             # Create a QtModule object based on the input data
             Module = QtModule(
@@ -754,15 +781,28 @@ class SimpleBeBoardBox(QWidget):
             #TODO: Pull chip VDDD/VDDA trim values from Panthera and set them here
             
             # Add the QtModule object to the currently selected Optical Group
-            OpticalGroup.addModule(FMCPort=cable_properties["FMCPort"], module=Module)
+            try:
+                OpticalGroup.addModule(FMCPort=cable_properties["FMCPort"], module=Module)
+            except KeyError as e:
+                return None, f"Error while adding Module to Optical Group: {repr(e)}"
+            
+            module_types.append(Module.getModuleType() + " " + Module.getModuleVersion())
 
-        #only return the board if there are connected modules, otherwise return None
+        if not all([i == module_types[0] for i in module_types]):
+            #iterate over module_types, if they're not all identical, return None
+            return None, f"All modules must be of the same type! Please ensure the serial numbers are correct."
+        
+        #only include the board if there are connected modules, otherwise ignore it
         ret = []
         for board in self.firmware:
             if len(board.getAllOpticalGroups()) != 0:  # If modules are connected to the board
                 board.setBoardID(len(ret))
                 ret.append(board)
-        return ret
+        
+        if ret == list(): #nothing added to ret -> no connected modules
+            return None, "No valid module found! If manually entering module number be sure to press 'Enter' on keyboard."
+        else:
+            return ret, "Success"
 
     @QtCore.pyqtSlot()
     def on_TypeChanged(self):
