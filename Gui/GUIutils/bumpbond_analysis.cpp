@@ -63,7 +63,18 @@ void bias(const string& scurve1, const string& scurve2, const string& outputDir,
         TH2F* cloned_hist = static_cast<TH2F*>(h_neg->Clone(insert("d", shortBaseDir, 17).c_str()));
         cloned_hist->SetTitle(("Change in " + histName + " Histograms").c_str());
 
-        cloned_hist->Add(h_pos, -1);
+        // Calculate the absolute value of the difference
+        int nBinsX = cloned_hist->GetNbinsX();
+        int nBinsY = cloned_hist->GetNbinsY();
+
+        for (int binX = 1; binX <= nBinsX; ++binX) {
+            for (int binY = 1; binY <= nBinsY; ++binY) {
+                float negValue = h_neg->GetBinContent(binX, binY);
+                float posValue = h_pos->GetBinContent(binX, binY);
+                float absDiff = abs(negValue - posValue);
+                cloned_hist->SetBinContent(binX, binY, absDiff);
+            }
+        }
 
         TCanvas* c_d2d = new TCanvas(shortBaseDir.c_str(), ("Change in " + histName + " Histograms").c_str());
         c_d2d->SetLogz();
