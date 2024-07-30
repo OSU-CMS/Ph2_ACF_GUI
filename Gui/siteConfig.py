@@ -104,6 +104,11 @@ Monitor_RD53A = "1"
 Monitor_CROC = "0"
 Monitor_SleepTime = "30000"  # time in milliseconds between temperature readings
 
+## Establish thresholds for chip temperature readings. A chip reading above the
+## emergency threshold will abort the test.
+Warning_Threshold = 25
+Emergency_Threshold = 40
+
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
 	"SCC" : 0.6,

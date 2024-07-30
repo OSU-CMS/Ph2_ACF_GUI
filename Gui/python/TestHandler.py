@@ -93,6 +93,8 @@ class TestHandler(QObject):
         
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
         
+        self.numChips = len([chipID for module in self.modules for chipID in module.getEnabledChips().keys()])
+                
         self.ModuleType = self.runwindow.ModuleType
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
@@ -427,7 +429,9 @@ class TestHandler(QObject):
                     voltage=default_hv_voltage, delay=0.3, step_size=10,
                 )
 
+        self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
+        
         self.starttime = None
         self.ProgressingMode = "None"
         self.currentTest = testName
@@ -712,9 +716,22 @@ class TestHandler(QObject):
                         sensor = output[8]
                         sensorMeasure = sensor[3:]
                         
-                        if sensorMeasure != "":
-                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                            self.tempindex += 1
+                        if sensorMeasure != "" or sensorMeasure != "44.086 +/- 1.763 °C":
+                            temp = float(sensorMeasure.split('+')[0].strip())
+                            self.tempHistory[self.tempindex] = temp
+                            if any(num > site_settings.Warning_Threshold for num in self.tempHistory):
+                                self.runwindow.updateTempIndicator("orange")
+                            elif any(num > site_settings.Emergency_Threshold for num in self.tempHistory):
+                                self.runwindow.updateTempIndicator("red")
+                            else:
+                                self.runwindow.updateTempIndicator("green")
+                        else:
+                            #bad reading
+                            self.tempHistory[self.tempindex] = 0.0
+                            if not all(self.tempHistory):
+                                self.runwindow.updateTempIndicator("off")
+                        self.tempindex = self.tempindex+1 % self.numChips
+                                                
                     except Exception as e:
                         print("Failed due to {0}".format(e))
                 elif "INTERNAL_NTC" in textStr:
@@ -726,12 +743,23 @@ class TestHandler(QObject):
                             sensorMeasure0=re.sub(r'[^\d\.\+\- ]', '', sensor)
                             sensorMeasure0 += " °C"
                             sensorMeasure = sensorMeasure0.replace("+-", "+/-")
+                            
                             if sensorMeasure != "" or sensorMeasure != "44.086 +/- 1.763 °C":
-                                self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                                self.tempindex += 1
+                                temp = float(sensorMeasure.split('+')[0].strip())
+                                self.tempHistory[self.tempindex] = temp
+                                if any(num > site_settings.Warning_Threshold for num in self.tempHistory):
+                                    self.runwindow.updateTempIndicator("orange")
+                                elif any(num > site_settings.Emergency_Threshold for num in self.tempHistory):
+                                    self.runwindow.updateTempIndicator("red")
+                                else:
+                                    self.runwindow.updateTempIndicator("green")
                             else:
-                                self.runwindow.updatetemp(self.tempindex, "Bad Reading, Will Retry")
-                                self.tempindex += 1
+                                #bad reading
+                                self.tempHistory[self.tempindex] = 0.0
+                                if not all(self.tempHistory):
+                                    self.runwindow.updateTempIndicator("off")
+                            self.tempindex = (self.tempindex + 1) % self.numChips
+                                                        
                     except Exception as e:
                         print("Failed due to {0}".format(e))
                 text = textStr.encode("ascii")
@@ -1154,3 +1182,4 @@ class TestHandler(QObject):
                     for chipID in module.getEnabledChips().keys():
                         commands.append(command_template.format(boardID, ogID, hybridID, chipID))
         executeCommandSequence(commands)
+

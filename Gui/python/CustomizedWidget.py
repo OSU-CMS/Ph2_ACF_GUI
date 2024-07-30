@@ -706,7 +706,8 @@ class SimpleBeBoardBox(QWidget):
     def clearModule(self):
         self.ModuleList = [SimpleModuleBox()]
         self.FilledModuleList = []
-        self.firmware.removeModules()
+        for beboard in self.firmware:
+            beboard.removeModules()
 
         if str(sys.version).startswith("3.8"):
             self.deleteList()

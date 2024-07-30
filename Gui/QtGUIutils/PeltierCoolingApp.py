@@ -51,7 +51,7 @@ class Peltier(QWidget):
         ).scaled(QtCore.QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.redledpixmap = QtGui.QPixmap.fromImage(redledimage)
         greenledimage = QtGui.QImage(
-            self.Ph2ACFDirectory + "/Gui/icons/green-led-on.png"
+            self.Ph2ACFDirectory + "/Gui/icons/led-green-on.png"
         ).scaled(QtCore.QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         self.greenledpixmap = QtGui.QPixmap.fromImage(greenledimage)
         self.powerStatus.setPixmap(

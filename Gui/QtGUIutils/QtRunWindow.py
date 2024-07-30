@@ -110,6 +110,21 @@ class QtRunWindow(QWidget):
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
 
+        self.ledMap = {
+            "off": QPixmap.fromImage(QImage("icons/led-off.png").scaled(
+                QSize(60, 30), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            ),
+            "green": QPixmap.fromImage(QImage("icons/led-green-on.png").scaled(
+                QSize(60, 30), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            ),
+            "orange": QPixmap.fromImage(QImage("icons/led-amber-on.png").scaled(
+                QSize(60, 30), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            ),
+            "red": QPixmap.fromImage(QImage("icons/led-red-on.png").scaled(
+                QSize(60, 30), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            ),
+        }
+        
         self.setLoginUI()
         # self.initializeRD53Dict()
         self.createHeadLine()
@@ -302,27 +317,17 @@ class QtRunWindow(QWidget):
         self.HistoryLayout.addWidget(self.StatusTable)
         self.HistoryBox.setLayout(self.HistoryLayout)
 
-        self.TempBox = QGroupBox("&Chip Temperature")
+        self.TempBox = QGroupBox()
         TempBoxSP = self.TempBox.sizePolicy()
         TempBoxSP.setVerticalStretch(self.VerticalSegCol1[1])
         self.TempBox.setSizePolicy(TempBoxSP)
         self.TempLayout = QGridLayout()
-        self.LabelList = []
-        self.TempLabelList = []
+        TempLabel = QLabel("Temperature Status:")
+        self.tempIndicator = QLabel()
+        self.tempIndicator.setPixmap(self.ledMap["off"])
 
-        modules = [module for beboard in self.firmware for module in beboard.getModules()]
-        active_chips = [chipID for module in modules for chipID in module.getEnabledChips().keys()]
-        #TODO: figure out how this should be displayed with multiple modules, doesn't crash for now
-        for chip in active_chips:
-            self.Label = QLabel()
-            self.Label.setText("Chip: " + str(chip))
-            self.TempLabel = QLabel()
-            self.LabelList.append(self.Label)
-            self.TempLabelList.append(self.TempLabel)
-
-        for index in range(len(self.LabelList)):
-            self.TempLayout.addWidget(self.LabelList[index], index + 1, 0, 1, 1)
-            self.TempLayout.addWidget(self.TempLabelList[index], index + 1, 1, 1, 1)
+        self.TempLayout.addWidget(TempLabel, 1, 0, 1, 1)
+        self.TempLayout.addWidget(self.tempIndicator, 1, 1, 1, 1)
         self.TempBox.setLayout(self.TempLayout)
 
         LeftColSplitter.addWidget(ControllerBox)
@@ -353,10 +358,10 @@ class QtRunWindow(QWidget):
             self.MainBodyBox, sum(self.GroupBoxSeg[0:1]), 0, self.GroupBoxSeg[1], 1
         )
 
-    def updatetemp(self, index, sensorMeasure):
-        index = index % len(self.TempLabelList)
-        self.TempLabelList[index].setText(sensorMeasure)
-        
+    def updateTempIndicator(self, color: str):
+        self.tempIndicator.setPixmap(self.ledMap[color])
+        if color == "red":
+            self.abortTest()
 
     def destroyMain(self):
         self.MainBodyBox.deleteLater()
