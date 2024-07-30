@@ -85,6 +85,8 @@ icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A,
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve
 
+forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
+
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
 	'fc7.board.1'	:	'192.168.1.80',
@@ -101,6 +103,11 @@ CableMapping = {
 Monitor_RD53A = "1"
 Monitor_CROC = "0"
 Monitor_SleepTime = "30000"  # time in milliseconds between temperature readings
+
+## Establish thresholds for chip temperature readings. A chip reading above the
+## emergency threshold will abort the test.
+Warning_Threshold = 25
+Emergency_Threshold = 40
 
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {
