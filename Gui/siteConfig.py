@@ -59,31 +59,33 @@ defaultPeltierWarningTemp = 40
 manual_powersupply_control = False
 
 icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A, HMP4040, TTI
-                           "lv_resource" : "ASRL/dev/ttyUSBMM::INSTR",
-                           "default_lv_channel" : 1,
-                           "default_lv_voltage" : 1.8, #in volts
-                           "default_lv_current" : 3, #in amps
-                           "hv": "Keithley2410", #Choices are: Keithley2410
-                           "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
-                           "default_hv_voltage": -80, #in volts
-                           "default_hv_compliance_current": 5e-6, #in amps
-                           "default_hv_delay": 1, #in seconds
-                           "default_hv_step_size": 10, #in volts
+                            "lv_resource" : "ASRL/dev/ttyUSBMM::INSTR",
+                        	"default_lv_channel" : 1,
+                            "default_lv_voltage" : 1.8, #in volts
+                            "default_lv_current" : 3, #in amps
+                            "hv": "Keithley2410", #Choices are: Keithley2410
+                            "hv_resource": "ASRL/dev/ttyUSBHV::INSTR",
+                            "default_hv_voltage": -80, #in volts
+                            "default_hv_compliance_current": 5e-6, #in amps
+                            "default_hv_delay": 1, #in seconds
+                            "default_hv_step_size": 10,} #in volts
 #                           "adc_board": "AdcBoard",
 #                           "adc_board_resource": "ASRL/dev/ttyUSB3::INSTR"
- #                          "relay_board": "RelayBoard", #Choices are RelayBoard
- #                          "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
- #                          "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
- #                          "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
-							}
+#                           "relay_board": "RelayBoard", #Choices are RelayBoard
+#                           "relay_board_resource": "ASRL/dev/ttyUSB4::INSTR",
+#                           "multimeter": "HP34401A", #Choices are HP34401A, Keithley2000
+#                           "multimeter_resource": "ASRL/dev/ttyUSB1::INSTR",
+#							}
 
-### This next commented bit is for the new Icicle version that will be updated very soon.
-## Load instrument setup from json file
-#with open('instruments.json', 'r') as file:
-#    icicle_instrument_setup = json.load(file)
+# # This next commented bit is for the new Icicle version that will be updated very soon.
+# # Load instrument setup from json file
+# with open('instruments.json', 'r') as file:
+#   icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve
+
+forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {

@@ -32,6 +32,7 @@ from Gui.GUIutils.guiUtils import (
     isSingleTest,
     formatter,
 )
+from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
 
 # from Gui.QtGUIutils.QtStartWindow import *
@@ -379,7 +380,15 @@ class TestHandler(QObject):
                     voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
-
+            
+            if testName == "SCurveScan_2100_FWD":
+                self.instruments.hv_off()
+                self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
+                testName = "SCurveScan_2100"
+            else:
+                default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
+                self.instruments.hv_on(voltage=default_hv_voltage, delay=0.3, step_size=10)
+        
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
@@ -871,6 +880,9 @@ class TestHandler(QObject):
                 EnableReRun = True
                 if self.autoSave:
                     self.upload_to_Panthera()
+                if self.info == "FWD-RVS Bias" or self.info == "Crosstalk":
+                    self.bumpbond_analysis()
+                    
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1112,20 +1124,62 @@ class TestHandler(QObject):
             self.starttime = None
 
     def upload_to_Panthera(self):
-        if self.master.database_connected:
-            try:
-                print("Uploading to Panthera...")
-                for module in self.modules:
-                    status, message = self.felis.upload_results(
-                        module.getModuleName(),
-                        self.master.username,
-                        self.master.password,
-                    )
-                    if not status:
-                        raise ConnectionError(message)
-            except Exception as e:
-                logger.error(f"There was an error uploading the test results. {str(e)}")
+        try:
+            for module in self.modules:
+                status, message = self.felis.upload_results(
+                    module.getModuleName(),
+                    self.master.username,
+                    self.master.password,
+                )
+                if not status:
+                    raise ConnectionError(message)
+        except Exception as e:
+            if not self.master.database_connected:
+                logger.error("Cannot upload test results, you are not signed in to Panthera.")
+            else:
+                logger.error(f"There was an error uploading the test results. {repr(e)}")
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
-        else:
-            print("You are not connected to Panthera, upload failed.")
+    
+    def bumpbond_analysis(self):
+        
+        runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
+        commands = ['.L /home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/bumpbond_analysis.cpp']
+        command_template = ""
+        
+        if self.info == "FWD-RVS Bias":
+            process = subprocess.run(
+                'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*SCurve.root"',
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            all_root_files = sorted(process.stdout.decode('utf-8').rstrip("\n").split("\n"))
+            relevant_root_files = all_root_files[-2:]
+            
+            save_file = f"Run{runNumber}_FWDRVS-Bias.root"
+            commands.append(f'createROOTFile("{self.output_dir}/{save_file}")')
+            command_template = f'bias("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{self.output_dir}/{save_file}", '+'const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))'
+            
+        elif self.info == "Crosstalk":
+            process = subprocess.run(
+                'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*PixelAlive.root"',
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            all_root_files = sorted(process.stdout.decode('utf-8').rstrip("\n").split("\n"))
+            relevant_root_files = all_root_files[-3:]
+            
+            save_file = f"Run{runNumber}_Crosstalk.root"
+            commands.append(f'createROOTFile("{self.output_dir}/{save_file}")')
+            command_template = f'xtalk("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{relevant_root_files[2]}", "{self.output_dir}/{save_file}",'+'const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))'
+        
+        for beboard in self.firmware:
+            boardID = beboard.getBoardID()
+            for OG in beboard.getAllOpticalGroups().values():
+                ogID = OG.getOpticalGroupID()
+                for module in OG.getAllModules().values():
+                    hybridID = module.getFMCPort()
+                    for chipID in module.getEnabledChips().keys():
+                        commands.append(command_template.format(boardID, ogID, hybridID, chipID))
+        executeCommandSequence(commands)
+
