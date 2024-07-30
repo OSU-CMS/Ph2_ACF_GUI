@@ -92,11 +92,8 @@ class TestHandler(QObject):
         
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
         
-        active_chips = [chipID for module in self.modules for chipID in module.getEnabledChips().keys()]
-        self.numChips = len(active_chips)
-        
-        print(active_chips, self.numChips)
-        
+        self.numChips = len([chipID for module in self.modules for chipID in module.getEnabledChips().keys()])
+                
         self.ModuleType = self.runwindow.ModuleType
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
@@ -426,7 +423,6 @@ class TestHandler(QObject):
         self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
         
-        print(self.tempHistory, self.tempindex)
         self.starttime = None
         self.ProgressingMode = "None"
         self.currentTest = testName
