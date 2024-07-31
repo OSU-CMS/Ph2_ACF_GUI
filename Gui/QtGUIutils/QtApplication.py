@@ -301,8 +301,11 @@ class QtApplication(QWidget):
             }
             
             status, message, data = get_accountInfo(*credentials.values())
-            print(message)
             if not status:
+                msg = QMessageBox()
+                msg.information(
+                    None, "Error", message, QMessageBox.Ok
+                )
                 return
             
             self.username = credentials['username']
