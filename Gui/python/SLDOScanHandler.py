@@ -76,7 +76,7 @@ class SLDOCurveWorker(QThread):
         logger.info("Turned off the LV and HV")
         
         # create the pin list from the pin mapping
-        for key, value in self.PIN_MAPPINGS[self.moduleType].items():
+        for key, value in self.PIN_MAPPINGS['DEFAULT'].items():
             if "VDD" in value:
                 self.pin_list.append(key)
                 print('adding {0} to pin_list'.format(key))
@@ -152,7 +152,7 @@ class SLDOCurveWorker(QThread):
         self.instruments.lv_off()
         self.multimeter.set("SYSTEM_MODE","REM")
         logger.info('turned off the lv and hv')
-        for key in self.relayboard.PIN_MAP['CROC'].keys():
+        for key in self.relayboard.PIN_MAP[self.moduleType].keys():
             if "VDD" in key:
                 self.pin_list.append(key)
                 print('adding {0} to pin_list'.format(key))
