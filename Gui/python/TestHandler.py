@@ -407,10 +407,11 @@ class TestHandler(QObject):
             self.SLDOScanData = []
             self.SLDOProgressValue = 0
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType='DEFAULT', end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType=self.ModuleType[5:], end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
+            self.SLDOScanHandler.abortSignal.connect(self.urgentStop)
             self.outputString.emit("Beginning SLDOScan")
             self.SLDOScanHandler.SLDOScan()
             return
@@ -1068,6 +1069,7 @@ class TestHandler(QObject):
             self.runTest()
 
     def SLDOScanFinished(self):
+        status = self.validateTest()
         self.testIndexTracker += 1
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
