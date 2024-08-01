@@ -79,8 +79,8 @@ icicle_instrument_setup = { "lv":"KeysightE3633A", #Choices are: KeysightE3633A,
 
 ### This next commented bit is for the new Icicle version that will be updated very soon.
 ## Load instrument setup from json file
-#with open('instruments.json', 'r') as file:
-#    icicle_instrument_setup = json.load(file)
+with open('instruments.json', 'r') as file:
+    icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve

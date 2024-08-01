@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <HwDescription>
-  <BeBoard Id="0" boardType="RD53" eventType="VR" configure="1">
+  <BeBoard Id="0" boardType="RD53" eventType="VR" configure="1" comment="">
     <connection id="cmsinnertracker.crate0.slot0" uri="chtcp-2.0://localhost:10203?target=fc7-1:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
     <!---
         <connection id="cmsinnertracker.crate0.slot0" uri="ipbusudp-2.0://fc7-1:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/CMSIT_address_table.xml" />
     -->
 
     <!-- Frontend chip configuration -->
-    <OpticalGroup Id="0" FMCId="L12">
+     <OpticalGroup Id="0" enable="1" FMCId="L12">
       <!--
       <lpGBT_Files path="${PWD}" />
       <lpGBT_ConfigFile fileName="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/lpgbt_calibration.csv" />
@@ -25,7 +25,7 @@
         <RD53_Files path="${PWD}/" />
 
         <!-- Available Comment fields are: 50x50, 25x100origR0C0, 25x100origR1C0, unknown, combined with RD53A, RD53B, dual, quad -->
-        <RD53A Id="0" enable="1" Lane="0" configFile="CMSIT_RD53A.txt" RxGroups="6" RxChannels="0" RxPolarities="0" TxGroups="3" TxChannels="0" TxPolarities="0" Comment="RD53A 50x50">
+        <RD53A Id="0" enable="1" Lane="0" configFile="CMSIT_RD53A.txt" RxGroups="0006" RxPolarity="0" TxGroup="3" TxChannel="0" TxPolarity="0" Comment="RD53A 50x50">
           <!-- Overwrite .txt configuration file settings -->
           <Settings
               PA_IN_BIAS_LIN         =   "350"

@@ -15,7 +15,7 @@
             "default_current": 5e-6
         },
         "lv_2": {
-            "class": "KeysightE3633A",
+            "class": "KeysightE3633A",  
             "resource": "ASRL/dev/ttyUSBMM::INSTR",
             "sim": false,
             "default_voltage": 1.8,

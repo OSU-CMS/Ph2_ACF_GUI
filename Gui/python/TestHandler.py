@@ -694,10 +694,11 @@ class TestHandler(QObject):
                 logger.info("Error occures while parsing running time, {0}".format(err))
 
             if self.ProgressingMode == "Perform":
-                if ">>>> Progress :" in textStr:
+                if "Progress:" in textStr:
                     try:
-                        index = textStr.split().index("Progress") + 2
-                        self.ProgressValue = float(textStr.split()[index].rstrip("%"))
+                        index = textStr.split().index("Progress:") + 2 
+                        #self.ProgressValue = float(textStr.split()[index].rstrip("%"))
+                        self.ProgressValue = float(re.sub(r'\x1b\[\d+m', '', textStr.split()[index].strip("%")))
                         if self.ProgressValue == 100:
                             self.ProgressingMode = "Summary"
                         self.runwindow.ResultWidget.ProgressBar[
@@ -706,6 +707,7 @@ class TestHandler(QObject):
                         ##Added because of Ph2_ACF bug:
                         
                     except:
+                        print('something went wrong in progress')
                         pass
 
                 if self.check_for_end_of_test(textStr):
