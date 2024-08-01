@@ -4,16 +4,19 @@ Class to perform the SLDO curve scanning
 
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from Gui.python.logging_config import logger
-from icicle.icicle.instrument_cluster import DummyInstrument
+from icicle.icicle.adc_board import AdcBoard
+from icicle.icicle.relay_board import RelayBoard
+from icicle.icicle.multiment_cluster import InstrumentNotInstantiated
 import numpy as np
 import matplotlib.pyplot as plt
 import time
+import math
 
 class SLDOCurveWorker(QThread):
     finishedSignal = pyqtSignal()
     progressSignal = pyqtSignal(str, float)
+    stopSignal = pyqtSignal(str)
     measure = pyqtSignal(np.ndarray, str)
-
 
     def __init__(
         self,
@@ -39,22 +42,22 @@ class SLDOCurveWorker(QThread):
         self.exiting = False
         self.moduleType = moduleType
         self.PIN_MAPPINGS = {
-            'DEFAULT': self.instruments._adc_board.PIN_MAP,
+            'DEFAULT': AdcBoard.DEFAULT_PIN_MAP,
         }
+        self.LV_index = -1
 
     def run(self) -> None:
-        adc_present = type(self.instruments._adc_board) is not DummyInstrument
-        relay_present = type(self.instruments._relay_board) is not DummyInstrument
-        dmm_present = type(self.instruments._multimeter) is not DummyInstrument
-        
-        if adc_present:
+        if "adc_board" in self.instruments._instrument_dict.keys():
+            self.adc_board = self.instruments._instrument_dict["adc_board"]
             logger.info("Running with ADC.")
             self.runWithADC()
-        elif relay_present and dmm_present:
+        elif "multimeter" in self.instruments._instrument_dict.keys() and "relay_board" in self.instruments._instrument_dict.keys():
+            self.multimeter = self.instruments._instrument_dict["multimeter"]
+            self.relayboard = self.instruments._instrument_dict["relay_board"]
             logger.info("Running with Relay+DMM.")
             self.runWithRelayDMM()
         else:
-            logger.error("You do not have instruments required to run an SLDOScan connected.\nYou must have an Adc Board or (Relay Board and Multimeter).")
+            logger.error("You do not have instruments required to run an SLDOScan connected.\nYou must have an Adc Board or (Relay Board and Multimeter).")            
 
     def runWithADC(self) -> None:
         """
@@ -69,75 +72,70 @@ class SLDOCurveWorker(QThread):
         # Turn off instruments
         self.instruments.hv_off()
         self.instruments.lv_off()
-        #self.instruments._multimeter.set("SYSTEM_MODE","REM")
-        self.instruments._adc_board.__enter__()
+        self.adc_board.__enter__()
+        logger.info("Turned off the LV and HV")
         
-        
-        logger.info('turned off the lv and hv')
+        # create the pin list from the pin mapping
         for key, value in self.PIN_MAPPINGS[self.moduleType].items():
             if "VDD" in value:
                 self.pin_list.append(key)
                 print('adding {0} to pin_list'.format(key))
+        
+        self.instruments.lv_on(current=self.starting_current, voltage=self.max_voltage)
+        # sweep from the starting current to the target current, preliminary data processing
+        data_up = self.instruments.lv_sweep(
+            target=self.target_current,
+            delay=self.delay,
+            step_size=self.step_size,
+            measure=True,
+            measure_function=self.measureADC,
+            measure_args={},
+            set_property="current",
+        )
+        
+        self.determineLVIndex(data_up)
+        data_up = data_up[self.LV_index][1]
+        
+        # sweep from the target current to the starting current, preliminary data processing
+        data_down = self.instruments.lv_sweep(
+            target=self.starting_current,
+            delay=self.delay,
+            step_size=self.step_size,
+            measure=True,
+            measure_function=self.measureADC,
+            measure_args={},
+            set_property="current",
+        )[self.LV_index][1]
+        self.instruments.lv_off()
+        
+        # extract lv voltage and lv current
+        LV_Voltage_Up = [res[4] for res in data_up]
+        Currents_Up = [res[5] for res in data_up]
+        LV_Voltage_Down = [res[4] for res in data_down]
+        Currents_Down = [res[5] for res in data_down]
+        
+        # Analyze the data from the ADC Board for each pin
         for pin in self.pin_list:
-            # Make label for plot
-            self.labels.append(pin)
-            # Connect to relay pin
             logger.info('made it inside the pin loop')
-            #self.instruments.relay_pin(pin)
-            # ramp up LV
-            self.instruments.lv_on(current=self.starting_current, voltage=self.max_voltage)
-            _, result_ = self.instruments._lv.sweep(
-                "CURRENT",
-                self.instruments._default_lv_channel,
-                self.target_current,
-                delay=self.delay,
-                step_size=self.step_size,
-                measure=True,
-                measure_function=self.measureFunction,
-                #measure_args={"measured_unit":"SLDO", "cycles": self.integration_cycles},
-                log_function=logger.info,
-                #execute_each_step=self.getProgress,
-                break_monitoring=self.breakTest
-            )
+            self.labels.append(pin)
             
-            currentList = [res[1][0] for res in result_]
-            lvVoltageList = [res[1][1] for res in result_]
-            adcVoltageList = [res[2][pin] for res in result_]
+            ADC_Voltage_Up = [res[6][pin-1] for res in data_up]
+            result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
             
-            print(f"Currents: {currentList}\nPower Supply Voltages: {lvVoltageList}\nBoard Voltages: {adcVoltageList}")
+            ADC_Voltage_Down = [res[6][pin-1] for res in data_down]
+            result_down = np.array([Currents_Down, LV_Voltage_Down, ADC_Voltage_Down])
             
-            result_up = np.array([currentList, lvVoltageList, adcVoltageList])
-            # Ramp down LV and measure on the way down
-            _, result_ = self.instruments._lv.sweep(
-                "CURRENT",
-                self.instruments._default_lv_channel,
-                self.starting_current,
-                delay=self.delay,
-                step_size=self.step_size,
-                measure=True,
-                measure_function=self.measureFunction,
-                #measure_args={"measured_unit":"SLDO", "cycles": self.integration_cycles},
-                log_function=logger.info,
-                #execute_each_step=self.getProgress,
-                break_monitoring= self.breakTest
-            )
+            results = np.concatenate((result_up, result_down), axis=0)
+            # 0:up current, 1:up lv voltage, 2: up adc voltage 3: down current, 4: down lv voltage, 5: down adc voltage
+            print('total result for pin {0}: {1}'.format(pin, results))
             
-            currentList = [res[1][0] for res in result_]
-            lvVoltageList = [res[1][1] for res in result_]
-            adcVoltageList = [res[2][pin] for res in result_]
-            
-            result_down = np.array([currentList, lvVoltageList, adcVoltageList])
-            total_result = np.concatenate((result_up, result_down), axis=0)
-            #0:up current, 1:up lv voltage, 2: up adc voltage 3: down current, 4: down lv voltage, 5: down adc voltage
-            print('total result is {0}'.format(total_result))
-            self.instruments.lv_off()
-            
-        # Emit a signal that passees the list of results to the SLDOCurveHandler.  
-            self.getProgress()
-            self.measure.emit(total_result, self.PIN_MAPPINGS[self.moduleType][pin]) 
-        #All pins have been scanned so we emit the finished signal
+            # Emit a signal that passees the list of results to the SLDOCurveHandler
+            self.measure.emit(results, self.PIN_MAPPINGS[self.moduleType][pin])
+        
+        # All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
     
+
     def runWithRelayDMM(self) -> None:
         """
         Run thread that will ramp up the LV while measuring from the multimeter, then ramp down doing the same thing.
@@ -152,94 +150,135 @@ class SLDOCurveWorker(QThread):
         # Turn off instruments
         self.instruments.hv_off()
         self.instruments.lv_off()
-        self.instruments._multimeter.set("SYSTEM_MODE","REM")
+        self.multimeter.set("SYSTEM_MODE","REM")
         logger.info('turned off the lv and hv')
-        for key in self.instruments._relay_board.PIN_MAP.keys():
+        for key in self.relayboard.PIN_MAP['CROC'].keys():
             if "VDD" in key:
                 self.pin_list.append(key)
                 print('adding {0} to pin_list'.format(key))
         for pin in self.pin_list:
+            logger.info('made it inside the pin loop')
+            
             # Make label for plot
             self.labels.append(pin)
             # Connect to relay pin
-            logger.info('made it inside the pin loop')
-            self.instruments.relay_pin(pin)
-            # ramp up LV
+            self.setRelayPin(pin)
+            # turn on LV
             self.instruments.lv_on(current=self.starting_current, voltage=self.max_voltage)
-            _, result_ = self.instruments._lv.sweep(
-                "CURRENT",
-                self.instruments._default_lv_channel,
-                self.target_current,
+            
+            # sweep from the starting current to the target current, preliminary data processing
+            results = self.instruments.lv_sweep(
+                target=self.target_current,
                 delay=self.delay,
                 step_size=self.step_size,
                 measure=True,
-                measure_function=self.instruments.multimeter_measure,
-                measure_args={"measured_unit":"SLDO", "cycles": self.integration_cycles},
-                log_function=logger.info,
-                #execute_each_step=self.getProgress,
-                break_monitoring=self.breakTest
+                measure_function=self.measureMM,
+                measure_args={},
+                set_property="current",
             )
+            
+            self.determineLVIndex(results)
+            results = results[self.LV_index][1]
+            
+            # separate measurements into different lists
+            lvVoltageList = [res[4] for res in results]
+            currentList = [res[5] for res in results]
+            adcVoltageList = [res[6][0] for res in results]
+            
+            result_up = np.array([currentList, lvVoltageList, adcVoltageList])
+            print(f"Currents: {currentList}\nPower Supply Voltages: {lvVoltageList}\nBoard Voltages: {adcVoltageList}")
+            
+            # sweep from the target current to the starting current, preliminary data processing
+            results = self.instruments.lv_sweep(
+                target=self.starting_current,
+                delay=self.delay,
+                step_size=self.step_size,
+                measure=True,
+                measure_function=self.measureMM,
+                measure_args={},
+                set_property="current",
+            )[self.LV_index][1]
+            
+            # separate measurements into different lists
+            lvVoltageList = [res[4] for res in results]
+            currentList = [res[5] for res in results]
+            adcVoltageList = [res[6][0] for res in results]
+            
+            result_down = np.array([currentList, lvVoltageList, adcVoltageList])
+            print(f"Currents: {currentList}\nPower Supply Voltages: {lvVoltageList}\nBoard Voltages: {adcVoltageList}")
 
-            result_up = np.array(result_)
-            # Ramp down LV and measure on the way down
-            _, result_ = self.instruments._lv.sweep(
-                "CURRENT",
-                self.instruments._default_lv_channel,
-                self.starting_current,
-                delay=self.delay,
-                step_size=self.step_size,
-                measure=True,
-                measure_function=self.instruments.multimeter_measure,
-                measure_args={"measured_unit":"SLDO", "cycles": self.integration_cycles},
-                log_function=logger.info,
-                #execute_each_step=self.getProgress,
-                break_monitoring= self.breakTest
-            )
-            result_down = np.array(result_)
             total_result = np.concatenate((result_up, result_down), axis=0)
             print('total result is {0}'.format(total_result))
             self.instruments.lv_off()
             
-        # Emit a signal that passees the list of results to the SLDOCurveHandler.  
-            self.getProgress()  
+            # Emit a signal that passes the list of results to the SLDOCurveHandler.  
             self.measure.emit(total_result, pin)
         #All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
 
-
-    def getProgress(self):
-        self.percentStep = abs(100/len(self.pin_list))
-        #self.percentStep = abs(100*self.step_size/(2*len(self.pin_list)*self.target_current)) #This assumes that the starting_current is zero.
-        self.progressSignal.emit("SLDOScan", self.percentStep)
-
-    def measureFunction(self, settings=None, no_lock=True):
-        #not sure if settings param is needed, the call to the function in instrument.py includes **measure_args as a param
-        module_output_current = self.instruments._lv.query_channel("OUTPUT_CURRENT", channel=self.instruments._default_lv_channel, no_lock=True)
-        module_output_voltage = self.instruments._lv.query_channel("OUTPUT_VOLTAGE", channel=self.instruments._default_lv_channel, no_lock=True)
-        pin_voltages, temperatures = self.instruments._adc_board.query_adc(no_lock=no_lock)
-        return (module_output_current, module_output_voltage), pin_voltages
+    def measureADC(self, no_lock=True, *args, **kwargs):
+        self.updateProgress(1)
+        return [self.adc_board.query_adc(no_lock=no_lock)]
     
-    def updateProgress(self):
-        #lv_voltage_measurement, lv_current_measurement = self.instruments._lv.measure()
-        #self.lv_voltage.append(lv_voltage_measurement)
-        #self.lv_current.append(lv_current_measurement)
-        pass
-
-
-
-    def breakTest(self):
-        """ Use to kill instrument sweep. """
-        if self.exiting:
+    def measureMM(self, no_lock=True, *args, **kwargs):
+        self.updateProgress(len(self.pin_list))        
+        return [self.multimeter.measure(what="VOLT:DC", cycles=self.integration_cycles, no_lock=no_lock)]
+    
+    def updateProgress(self, nLoops):
+        num_steps = math.ceil(abs(self.target_current-self.starting_current)/self.step_size)+1
+        num_sweeps = 2 * nLoops * sum(1 for key in self.instruments._instrument_dict.keys() if "lv" in key) #number of LVs connected, each LV gets its own sweep
+        percentStep = 100/(num_steps * num_sweeps)
+        self.progressSignal.emit("SLDOScan", percentStep)
+    
+    def determineLVIndex(self, data):
+        if self.LV_index == -1:
+            for i, (_, ps) in enumerate(data):
+                if any(abs(reading[5]) > 1e-4 for reading in ps):
+                    self.LV_index = i
+                    break
+            if self.LV_index == -1:
+                self.stopSignal.emit("No current was read from any LV power supply. Please ensure that a module is connected.")
+    
+    def setRelayPin(self, pin):
+        if not isinstance(self.relayboard, RelayBoard):
             return True
-        return False
+        
+        current_pin = self.relayboard.query_pin()
+        if current_pin == pin:
+            return True
+        
+        #Ensures that LV and HV are off
+        for module in self.instruments._module_dict.values():
+            self.instruments.assert_status(
+                lambda: module["lv"].state,
+                0,
+                operation="Changing relay board pin",
+                problem="LV is active",
+                proposed_solution="Turn off LV",
+                solution=lambda: self.instruments._module_off(module["lv"]),
+            )
+        
+        sense_function = self.multimeter.query("SENSE_FUNCTION")
+        if (
+            not isinstance(sense_function, InstrumentNotInstantiated)
+            and "RES" in sense_function
+        ):
+            self.instruments.assert_status(
+                lambda: pin in ("OFF", "NTC"),
+                True,
+                operation="Changing relay board pin",
+                problem="Multimeter is on resistance sensing mode",
+                proposed_solution="Manually change multimeter mode",
+            )
 
-    def abortTest(self):
-        self.exiting = True
+        return self.relayboard.set_pin(pin)
+
 
 class SLDOCurveHandler(QObject):
     finishedSignal = pyqtSignal()
     makeplotSignal = pyqtSignal(np.ndarray, str)
     progressSignal = pyqtSignal(str, float)
+    abortSignal = pyqtSignal()
     #measureSignal = pyqtSignal(str, object)
 
     def __init__(self, instrument_cluster, moduleType, end_current, voltage_limit):
@@ -251,11 +290,11 @@ class SLDOCurveHandler(QObject):
         self.test.measure.connect(self.makePlots)
         self.test.progressSignal.connect(self.transmitProgress)
         self.test.finishedSignal.connect(self.finish)
+        self.test.stopSignal.connect(self.stop)
 
     #This should take the list of results and make plots.  I think we should maybe move this to the TestHandler.
     def makePlots(self, total_result, pin):
         self.makeplotSignal.emit(total_result, pin)
-
 
     def SLDOScan(self):
         if not self.instruments:
@@ -270,11 +309,22 @@ class SLDOCurveHandler(QObject):
         self.instruments.lv_off()
         self.finishedSignal.emit()
 
-    def stop(self):
-        try:
-            self.test.abortTest()
-            self.instruments.hv_off()
-            self.instruments.lv_off()
-            self.test.terminate()
-        except Exception as err:
-            logger.error(f"Failed to stop the SLDO test due to error {err}")
+    def stop(self, reason = None):
+        # Should only have a reason internally where the abort signal is necessary. 
+        # External calls can handle abort themselves. Avoiding accidental recursion.
+        if reason:
+            print(f"Aborting SLDO Scan. Reason: {reason}")
+            try:
+                self.instruments.hv_off()
+                self.instruments.lv_off()
+                self.test.terminate()
+                self.abortSignal.emit()
+            except Exception as err:
+                logger.error(f"Failed to stop the SLDO test due to error {err}")
+        else:
+            try:
+                self.instruments.hv_off()
+                self.instruments.lv_off()
+                self.test.terminate()
+            except Exception as err:
+                logger.error(f"Failed to stop the SLDO test due to error {err}")

@@ -490,9 +490,7 @@ class QtRunWindow(QWidget):
             msg_box.setText(message)
             msg_box.exec_()
         except KeyError as e:
-            if str(e) == 'TestName':
-                pass
-            else:
+            if e.args[0] != 'TestName':
                 raise e
 
     def sendBackSignal(self):
