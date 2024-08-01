@@ -430,18 +430,6 @@ class QtStartWindow(QWidget):
             if module.getFMCPort() == "":
                 QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
                 return
-        for fw in self.firmware:
-            self.checkFwPar(fw.getBoardName())
-        if self.passCheck == False:
-            reply = QMessageBox().question(
-                None,
-                "Error",
-                "Front-End parameter check failed, forced to continue?",
-                QMessageBox.Yes | QMessageBox.No,
-                QMessageBox.No,
-            )
-            if reply == QMessageBox.No:
-                return
 
         self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
         
@@ -453,6 +441,19 @@ class QtStartWindow(QWidget):
                 QMessageBox.Ok,
             )
             return
+
+        for fw in self.firmwareDescription:
+            self.checkFwPar(fw.getBoardName())
+        if self.passCheck == False:
+            reply = QMessageBox().question(
+                None,
+                "Error",
+                "Front-End parameter check failed, forced to continue?",
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+            if reply == QMessageBox.No:
+                return
         
         for beboard in self.firmwareDescription:
             print(beboard)

@@ -110,8 +110,8 @@ def TCanvas2SVG(outputDir, canvas, name=None):
     try:
         canvas.SetBatch(ROOT.kTRUE)
         canvas.Draw()
-        if "SCurve" in name:
-            canvas.SetLogz()
+        #if "SCurve" in name:
+        canvas.SetLogz()
         if "PixelAlive" in name:
             ROOT.gStyle.SetOptStat(0) #no statistics box
         else:
@@ -127,6 +127,12 @@ def TCanvas2SVG(outputDir, canvas, name=None):
 def GetBinary(fileName):
     binaryData = ROOT.TFile(fileName)
     return binaryData
+
+
+#@precondition: commands must be a list of strings representing valid root shell commands
+def executeCommandSequence(commands: list):
+    for command in commands:
+        ROOT.gROOT.ProcessLine(command)
 
 
 if __name__ == "__main__":

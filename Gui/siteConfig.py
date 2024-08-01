@@ -80,10 +80,13 @@ manual_powersupply_control = False
 ### This next commented bit is for the new Icicle version that will be updated very soon.
 ## Load instrument setup from json file
 with open('instruments.json', 'r') as file:
-   icicle_instrument_setup = json.load(file)
+    icicle_instrument_setup = json.load(file)
+
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve
+
+forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
@@ -101,6 +104,11 @@ CableMapping = {
 Monitor_RD53A = "1"
 Monitor_CROC = "0"
 Monitor_SleepTime = "30000"  # time in milliseconds between temperature readings
+
+## Establish thresholds for chip temperature readings. A chip reading above the
+## emergency threshold will abort the test.
+Warning_Threshold = 25
+Emergency_Threshold = 40
 
 ## Configuring the current settings for each module type.  These values are in Amps. 
 ModuleCurrentMap = {

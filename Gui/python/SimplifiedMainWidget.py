@@ -68,7 +68,7 @@ class SimplifiedMainWidget(QWidget):
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         self.redledpixmap = QPixmap.fromImage(redledimage)
-        greenledimage = QImage("icons/green-led-on.png").scaled(
+        greenledimage = QImage("icons/led-green-on.png").scaled(
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         self.greenledpixmap = QPixmap.fromImage(greenledimage)

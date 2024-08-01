@@ -32,6 +32,7 @@ from Gui.GUIutils.guiUtils import (
     isSingleTest,
     formatter,
 )
+from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
 
 # from Gui.QtGUIutils.QtStartWindow import *
@@ -92,6 +93,8 @@ class TestHandler(QObject):
         
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
         
+        self.numChips = len([chipID for module in self.modules for chipID in module.getEnabledChips().keys()])
+                
         self.ModuleType = self.runwindow.ModuleType
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
@@ -377,7 +380,15 @@ class TestHandler(QObject):
                     voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
-
+            
+            if testName == "SCurveScan_2100_FWD":
+                self.instruments.hv_off()
+                self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
+                testName = "SCurveScan_2100"
+            else:
+                default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
+                self.instruments.hv_on(voltage=default_hv_voltage, delay=0.3, step_size=10)
+        
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
@@ -419,7 +430,9 @@ class TestHandler(QObject):
                     voltage=default_hv_voltage, delay=0.3, step_size=10,
                 )
 
+        self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
+        
         self.starttime = None
         self.ProgressingMode = "None"
         self.currentTest = testName
@@ -682,10 +695,11 @@ class TestHandler(QObject):
                 logger.info("Error occures while parsing running time, {0}".format(err))
 
             if self.ProgressingMode == "Perform":
-                if ">>>> Progress :" in textStr:
+                if "Progress:" in textStr:
                     try:
-                        index = textStr.split().index("Progress") + 2
-                        self.ProgressValue = float(textStr.split()[index].rstrip("%"))
+                        index = textStr.split().index("Progress:") + 2 
+                        #self.ProgressValue = float(textStr.split()[index].rstrip("%"))
+                        self.ProgressValue = float(re.sub(r'\x1b\[\d+m', '', textStr.split()[index].strip("%")))
                         if self.ProgressValue == 100:
                             self.ProgressingMode = "Summary"
                         self.runwindow.ResultWidget.ProgressBar[
@@ -694,6 +708,7 @@ class TestHandler(QObject):
                         ##Added because of Ph2_ACF bug:
                         
                     except:
+                        print('something went wrong in progress')
                         pass
 
                 if self.check_for_end_of_test(textStr):
@@ -704,9 +719,22 @@ class TestHandler(QObject):
                         sensor = output[8]
                         sensorMeasure = sensor[3:]
                         
-                        if sensorMeasure != "":
-                            self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                            self.tempindex += 1
+                        if sensorMeasure != "" or sensorMeasure != "44.086 +/- 1.763 °C":
+                            temp = float(sensorMeasure.split('+')[0].strip())
+                            self.tempHistory[self.tempindex] = temp
+                            if any(num > site_settings.Warning_Threshold for num in self.tempHistory):
+                                self.runwindow.updateTempIndicator("orange")
+                            elif any(num > site_settings.Emergency_Threshold for num in self.tempHistory):
+                                self.runwindow.updateTempIndicator("red")
+                            else:
+                                self.runwindow.updateTempIndicator("green")
+                        else:
+                            #bad reading
+                            self.tempHistory[self.tempindex] = 0.0
+                            if not all(self.tempHistory):
+                                self.runwindow.updateTempIndicator("off")
+                        self.tempindex = self.tempindex+1 % self.numChips
+                                                
                     except Exception as e:
                         print("Failed due to {0}".format(e))
                 elif "INTERNAL_NTC" in textStr:
@@ -718,12 +746,23 @@ class TestHandler(QObject):
                             sensorMeasure0=re.sub(r'[^\d\.\+\- ]', '', sensor)
                             sensorMeasure0 += " °C"
                             sensorMeasure = sensorMeasure0.replace("+-", "+/-")
+                            
                             if sensorMeasure != "" or sensorMeasure != "44.086 +/- 1.763 °C":
-                                self.runwindow.updatetemp(self.tempindex, sensorMeasure)
-                                self.tempindex += 1
+                                temp = float(sensorMeasure.split('+')[0].strip())
+                                self.tempHistory[self.tempindex] = temp
+                                if any(num > site_settings.Warning_Threshold for num in self.tempHistory):
+                                    self.runwindow.updateTempIndicator("orange")
+                                elif any(num > site_settings.Emergency_Threshold for num in self.tempHistory):
+                                    self.runwindow.updateTempIndicator("red")
+                                else:
+                                    self.runwindow.updateTempIndicator("green")
                             else:
-                                self.runwindow.updatetemp(self.tempindex, "Bad Reading, Will Retry")
-                                self.tempindex += 1
+                                #bad reading
+                                self.tempHistory[self.tempindex] = 0.0
+                                if not all(self.tempHistory):
+                                    self.runwindow.updateTempIndicator("off")
+                            self.tempindex = (self.tempindex + 1) % self.numChips
+                                                        
                     except Exception as e:
                         print("Failed due to {0}".format(e))
                 text = textStr.encode("ascii")
@@ -844,6 +883,9 @@ class TestHandler(QObject):
                 EnableReRun = True
                 if self.autoSave:
                     self.upload_to_Panthera()
+                if self.info == "FWD-RVS Bias" or self.info == "Crosstalk":
+                    self.bumpbond_analysis()
+                    
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1086,20 +1128,62 @@ class TestHandler(QObject):
             self.starttime = None
 
     def upload_to_Panthera(self):
-        if self.master.database_connected:
-            try:
-                print("Uploading to Panthera...")
-                for module in self.modules:
-                    status, message = self.felis.upload_results(
-                        module.getModuleName(),
-                        self.master.username,
-                        self.master.password,
-                    )
-                    if not status:
-                        raise ConnectionError(message)
-            except Exception as e:
-                logger.error(f"There was an error uploading the test results. {str(e)}")
+        try:
+            for module in self.modules:
+                status, message = self.felis.upload_results(
+                    module.getModuleName(),
+                    self.master.username,
+                    self.master.password,
+                )
+                if not status:
+                    raise ConnectionError(message)
+        except Exception as e:
+            if not self.master.database_connected:
+                logger.error("Cannot upload test results, you are not signed in to Panthera.")
+            else:
+                logger.error(f"There was an error uploading the test results. {repr(e)}")
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
-        else:
-            print("You are not connected to Panthera, upload failed.")
+    
+    def bumpbond_analysis(self):
+        
+        runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
+        commands = ['.L /home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/bumpbond_analysis.cpp']
+        command_template = ""
+        
+        if self.info == "FWD-RVS Bias":
+            process = subprocess.run(
+                'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*SCurve.root"',
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            all_root_files = sorted(process.stdout.decode('utf-8').rstrip("\n").split("\n"))
+            relevant_root_files = all_root_files[-2:]
+            
+            save_file = f"Run{runNumber}_FWDRVS-Bias.root"
+            commands.append(f'createROOTFile("{self.output_dir}/{save_file}")')
+            command_template = f'bias("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{self.output_dir}/{save_file}", '+'const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))'
+            
+        elif self.info == "Crosstalk":
+            process = subprocess.run(
+                'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*PixelAlive.root"',
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            all_root_files = sorted(process.stdout.decode('utf-8').rstrip("\n").split("\n"))
+            relevant_root_files = all_root_files[-3:]
+            
+            save_file = f"Run{runNumber}_Crosstalk.root"
+            commands.append(f'createROOTFile("{self.output_dir}/{save_file}")')
+            command_template = f'xtalk("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{relevant_root_files[2]}", "{self.output_dir}/{save_file}",'+'const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))'
+        
+        for beboard in self.firmware:
+            boardID = beboard.getBoardID()
+            for OG in beboard.getAllOpticalGroups().values():
+                ogID = OG.getOpticalGroupID()
+                for module in OG.getAllModules().values():
+                    hybridID = module.getFMCPort()
+                    for chipID in module.getEnabledChips().keys():
+                        commands.append(command_template.format(boardID, ogID, hybridID, chipID))
+        executeCommandSequence(commands)
+
