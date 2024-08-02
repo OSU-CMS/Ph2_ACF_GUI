@@ -14,15 +14,8 @@
             "default_voltage": 1.8,
             "default_current": 3
         },
-        "multimeter": {
-            "class": "HP34401A",
-            "resource": "ASRL/dev/ttyUSBMM::INSTR",
-            "sim": false,
-            "default_voltage": 0,
-            "default_current": 0
-        },
-        "relay_board": {
-            "class": "RelayBoard",
+        "adc_board": {
+            "class": "AdcBoard",
             "resource": "ASRL/dev/ttyUSB0::INSTR",
             "sim": false,
             "default_voltage": 0,
