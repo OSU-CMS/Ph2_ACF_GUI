@@ -79,7 +79,7 @@ manual_powersupply_control = False
 
 ### This next commented bit is for the new Icicle version that will be updated very soon.
 ## Load instrument setup from json file
-with open('instruments.json', 'r') as file:
+with open('jsonFiles/instruments.json', 'r') as file:
     icicle_instrument_setup = json.load(file)
 
 
