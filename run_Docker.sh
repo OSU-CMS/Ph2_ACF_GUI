@@ -50,7 +50,7 @@ then
 		-v ${PWD}/felis:/home/cmsTkUser/Ph2_ACF_GUI/felis/\
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
-		-v ${PWD}/Gui/instruments.json:/home/cmsTkUser/Ph2_ACF_GUI/Gui/instruments.json\
+		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
 		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
 else
@@ -59,7 +59,7 @@ else
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
-        -v ${PWD}/Gui/instruments.json:/home/cmsTkUser/Ph2_ACF_GUI/Gui/instruments.json\
+        -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
 		-w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_user:latest
+		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
 fi
