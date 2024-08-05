@@ -576,13 +576,16 @@ class QtApplication(QWidget):
 
         #if site_settings.icicle_instrument_setup is not None: 
         if not site_settings.manual_powersupply_control:
-            if 'relay_board' in site_settings.icicle_instrument_setup.keys():
-                self.relay_device_name.setText('{0}'.format(site_settings.icicle_instrument_setup['relay_board']))
+            if 'relay_board' in site_settings.icicle_instrument_setup['instrument_dict'].keys():
+                self.relay_device_name.setText('{0}'.format(
+                    site_settings.icicle_instrument_setup['instrument_dict']['relay_board']['class']
+                ))
+                self.relay_board_port_name.setText('{0}'.format(
+                    site_settings.icicle_instrument_setup['instrument_dict']['relay_board']['resource']
+                ))
+                self.relay_group.setDisabled(False)
             else:
                 self.relay_device_name.setText('No relay board device specified.')
-            if 'relay_board_resource' in site_settings.icicle_instrument_setup.keys():
-                self.relay_board_port_name.setText('{0}'.format(site_settings.icicle_instrument_setup['relay_board_resource']))
-            else:
                 self.relay_board_port_name.setText('No relay board connection specified.')
         else:
             self.relay_device_name.setText("Manual Relay Control")
@@ -630,13 +633,16 @@ class QtApplication(QWidget):
         self.multimeter_device_name = QLabel()
         #if site_settings.icicle_instrument_setup is not None: 
         if not site_settings.manual_powersupply_control:
-            if 'multimeter' in site_settings.icicle_instrument_setup.keys():
-                self.multimeter_device_name.setText('{0}'.format(site_settings.icicle_instrument_setup['multimeter']))
+            if 'multimeter' in site_settings.icicle_instrument_setup['instrument_dict'].keys():
+                self.multimeter_device_name.setText('{0}'.format(
+                    site_settings.icicle_instrument_setup['instrument_dict']['multimeter']['class']
+                ))
+                self.multimeter_port_name.setText('{0}'.format(
+                    site_settings.icicle_instrument_setup['instrument_dict']['multimeter']['resource']
+                ))
+                self.multimeter_group.setDisabled(False)
             else:
                 self.multimeter_device_name.setText('No mulitimeter device specified.')
-            if 'multimeter_resource' in site_settings.icicle_instrument_setup.keys():
-                self.multimeter_port_name.setText('{0}'.format(site_settings.icicle_instrument_setup['multimeter_resource']))
-            else:
                 self.multimeter_port_name.setText('No multimeter connection specified.')
         else:
             self.multimeter_device_name.setText("Manual multimeter control")

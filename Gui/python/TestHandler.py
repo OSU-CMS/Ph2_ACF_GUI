@@ -407,10 +407,11 @@ class TestHandler(QObject):
             self.SLDOScanData = []
             self.SLDOProgressValue = 0
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType='DEFAULT', end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType=self.ModuleType[5:], end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
+            self.SLDOScanHandler.abortSignal.connect(self.urgentStop)
             self.outputString.emit("Beginning SLDOScan")
             self.SLDOScanHandler.SLDOScan()
             return
@@ -694,10 +695,11 @@ class TestHandler(QObject):
                 logger.info("Error occures while parsing running time, {0}".format(err))
 
             if self.ProgressingMode == "Perform":
-                if ">>>> Progress :" in textStr:
+                if "Progress:" in textStr:
                     try:
-                        index = textStr.split().index("Progress") + 2
-                        self.ProgressValue = float(textStr.split()[index].rstrip("%"))
+                        index = textStr.split().index("Progress:") + 2 
+                        #self.ProgressValue = float(textStr.split()[index].rstrip("%"))
+                        self.ProgressValue = float(re.sub(r'\x1b\[\d+m', '', textStr.split()[index].strip("%")))
                         if self.ProgressValue == 100:
                             self.ProgressingMode = "Summary"
                         self.runwindow.ResultWidget.ProgressBar[
@@ -706,6 +708,7 @@ class TestHandler(QObject):
                         ##Added because of Ph2_ACF bug:
                         
                     except:
+                        print('something went wrong in progress')
                         pass
 
                 if self.check_for_end_of_test(textStr):
@@ -1066,6 +1069,7 @@ class TestHandler(QObject):
             self.runTest()
 
     def SLDOScanFinished(self):
+        status = self.validateTest()
         self.testIndexTracker += 1
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run

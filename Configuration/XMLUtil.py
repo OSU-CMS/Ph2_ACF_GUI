@@ -176,7 +176,7 @@ class FE():
     self.laneConfigList = {}
     self.VDDAtrim = "8"
     self.VDDDtrim = "8"
-    self.RxGroups = "6"
+    self.RxGroups = "0006"
     self.RxChannels = "0"
     self.RxPolarities = "0"
     self.TxGroups = "3"
@@ -284,7 +284,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
     # Config front-end Modules
     for OGModule in OpticalGroupList:
       Node_OGModule = ET.SubElement(Node_BeBoard, 'OpticalGroup')
-      Node_OGModule = SetNodeAttribute(Node_OGModule,{'Id':OGModule.Id,'FMCId':OGModule.FMCId})
+      Node_OGModule = SetNodeAttribute(Node_OGModule,{'Id':OGModule.Id, 'enable':"1",'FMCId':OGModule.FMCId})
       if isOpticalLink:
         #FIXME: Add additional stuff for optical link here.
         Node_OpFiles = ET.SubElement(Node_OGModule, 'lqGBT_Files')
@@ -314,7 +314,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
           BeBoard.boardType = boardtype
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
-          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxChannels':FE.RxChannels,'RxPolarities':FE.RxPolarities,'TxGroups':FE.TxGroups,'TxChannels':FE.TxChannels,'TxPolarities':FE.TxPolarities,'Comment':boardtype})
+          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxPolarity':FE.RxPolarities,'TxGroup':FE.TxGroups,'TxChannel':FE.TxChannels,'TxPolarity':FE.TxPolarities,'Comment':boardtype})
           if 'RD53B' in boardtype:
             Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
             Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,FE.laneConfigList)

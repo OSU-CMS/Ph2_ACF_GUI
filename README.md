@@ -36,11 +36,25 @@ git pull --recurse-submodules
 ```
 cd Ph2_ACF_GUI/Gui
 ```
-Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can set the model of LV/HV devices, specify the USB ports, etc.  If there are devices that you do not have connected you should comment out those lines. For examlple, if you do not have a relay board or a digital multimeter you should comment those lines out. Not doing so will cause the GUI to fail when connecting devices. You should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
+Open the file siteConfig.py in your favorite text editor and go to the "Icicle variables" section.  Here you can specify which JSON file you are currently using, set the FC7 ips, and set up the cable mapping (simplified only).
 
-<img width="744" alt="Screenshot 2024-02-09 at 4 23 51 PM" src="https://github.com/OSU-CMS/Ph2_ACF_GUI/assets/19957717/4c1269a3-936c-474b-af7d-ee0aed485c40">
+In the JSON file, you can set the model of LV/HV devices, specify USB ports, etc. You should only include instruments that you have connected. For example, if you do not have a relay board or a digital multimeter, you should not list those in the JSON.
 
+For every instrument you wish to connect, you must make a separate entry in the 'instrument_dict' section of the JSON. In the example below, there is is one LV power supply, one HV power supply, a relay board, and a multimeter. Each of these has a corresponding entry in 'instrument_dict' detailing its model (listed as "class"), resource, default voltage, and default current. There is another attribute, "sim," which represents whether the device is simulated or not. This should be false for nearly all use cases. Devices that do not have a voltage or current, such as a relay board, multimeter, or adc board, should be set to 0 as a default.
 
+The next section in the JSON is titled 'channels_dict.' This category is responsible for linking your power supply channels to the GUI. For each LV/HV pair, you need one entry in this section. For each entry, you need to specify the LV and the HV contained in it. To do this, you set up the dictionary with two keys, one for your LV and the other for the corresponding HV. You then associate that with an 'instrument' and a 'channel.' The 'instrument' tag corresponds to the physical instrument listed in 'instrument_dict.' For example, the LV in our instrument dict is titled "lv_1," so we name our instrument in 'channels_dict' "lv_1." The channel then corresponds the which specific channel on that instrument you are interested in using.
+
+<img width="325" alt="json_relaysldo" src="https://github.com/user-attachments/assets/2a477026-1e4d-4e2f-b506-2595541603cd">
+
+Now, to set up multile LV power supplies, you can simply create another entry in 'instrument_dict' for your new instrument. Next, you must update the channels_dict section with this new power supply. You will need to create a second entry with the new LV power supply. Each key in channels_dict should be an integer, indexed at 0, as shown below. The trick here is that you still need a LV/HV pair, so you can simply reuse the HV power supply you entered before. Below is an example of this JSON fully written out.
+
+<img width="332" alt="json_twoLV" src="https://github.com/user-attachments/assets/46e71d44-8cc5-4487-b151-7e7663755777">
+
+In Gui/jsonFiles, there are example files written that may be modified to suit your purposes.
+
+Returning to Gui/siteConfig.py, you should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
+
+If you scroll down a little further, you will see a dictionary titled "CableMapping." This serves as a mapping of the cable ID you see when adding modules in the simplified GUI to a physical port on your FC7(s). Each cable ID is associated with a dictionary detailing the path to a port. The first key, "FC7," specifies which FC7 that you want that cable ID to be connected to. The FC7 you list should be in the FC7List above. Next, you can name the "FMCID," representing which FMC on the FC7 you wish to use. The possible values for this are "L8" if the FMC is on the left or "L12" if the FMC is on the right. Finally, you can specify which port on that FMC you want to connect to. The leftmost port is "0" and the rightmost port is "3."
 
 3. Start the docker container:
 ```
