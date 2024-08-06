@@ -380,14 +380,6 @@ class TestHandler(QObject):
                     voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
-            
-            if testName == "SCurveScan_2100_FWD":
-                self.instruments.hv_off()
-                self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
-                testName = "SCurveScan_2100"
-            else:
-                default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
-                self.instruments.hv_on(voltage=default_hv_voltage, delay=0.3, step_size=10)
         
         if testName == "IVCurve":
             self.currentTest = testName
@@ -425,6 +417,14 @@ class TestHandler(QObject):
                 if self.instruments.status()[number]["hv"]:
                     hv_on = True
                     break
+            if testName == "SCurveScan_2100_FWD":
+                if hv_on:
+                    self.instruments.hv_off()
+                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
+                else:
+                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
+                testName = "SCurveScan_2100"
+                hv_on = True
             if not hv_on:
                 self.instruments.hv_on(
                     voltage=default_hv_voltage, delay=0.3, step_size=10,
@@ -1042,7 +1042,7 @@ class TestHandler(QObject):
             self.master.instruments.hv_on(
                 voltage=default_hv_voltage,
                 delay=0.3,
-                step_size=-3,
+                step_size=3,
                 measure=False,
             )
 
