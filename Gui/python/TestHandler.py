@@ -387,7 +387,8 @@ class TestHandler(QObject):
                 testName = "SCurveScan_2100"
             else:
                 default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
-                self.instruments.hv_on(voltage=default_hv_voltage, delay=0.3, step_size=10)
+                if 'IVCurve' not in testName:
+                    self.instruments.hv_on(voltage=default_hv_voltage, delay=0.3, step_size=10)
         
         if testName == "IVCurve":
             self.currentTest = testName
@@ -606,11 +607,35 @@ class TestHandler(QObject):
                         )
                         results.append(result)
                         passed.append(list(result.values())[0][0])
-            
+                                                
+                        self.figurelist[module.getModuleName()] = self.collect_plots(module.getModuleName())
+                        
             self.updateValidation.emit(results)
             return all(passed)
         except Exception as err:
             logger.error(err)
+    
+    def collect_plots(self, moduleName):
+        try:
+            plot_paths = []
+            scratch = os.path.join(self.felis.path_scratch, moduleName)
+            test = "{0:02d}_{1}".format(self.testIndexTracker, self.currentTest)
+            directory = os.path.join(scratch, test)
+            
+            for filename in os.listdir(directory):
+                if filename.lower().endswith('.svg'):
+                    plot_paths.append(os.path.join(directory, filename))
+            
+            return plot_paths
+        except Exception as e:
+            if 'IVCurve' in self.currentTest or 'SLDOScan' in self.currentTest:
+                if moduleName in self.figurelist.keys():
+                    return self.figurelist[moduleName]
+                else:
+                    return []
+            else:
+                print('testHandler.collect_plots Exception:', repr(e))
+                return []
 
     def saveTest(self):
         # if self.parent.current_test_grade < 0:
@@ -998,6 +1023,8 @@ class TestHandler(QObject):
             plt.ylabel("Voltage (V)")
             plt.legend()
             plt.savefig(filename)
+            
+            self.figurelist[moduleName] = [filename]
 
 
     def IVCurveFinished(self, test: str, measure: dict):
@@ -1026,6 +1053,8 @@ class TestHandler(QObject):
             filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
             self.IVCurveResult.saveToSVG(filename)
             self.IVCurveResult.saveToSVG(filename2)
+            
+            self.figurelist[moduleName] = [filename]
 
         status = self.validateTest()
         step="IVCurve"
@@ -1103,6 +1132,8 @@ class TestHandler(QObject):
         self.historyRefresh.emit()
         if self.master.expertMode:
             self.updateSLDOResult.emit(self.output_dir)
+        else: 
+            self.updateSLDOResult.emit(("SLDOScan", self.figurelist))  ##Add else statement to add signal in simple mode
         
         if isCompositeTest(self.info):
             self.runTest()

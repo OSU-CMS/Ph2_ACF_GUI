@@ -242,11 +242,8 @@ class ResultTreeWidget(QWidget):
             self.allDisplayed = False
 
     def showNextPlot(self):
-
         self.timer.start(3000)
-        if len(self.displayList) == 0:
-            return
-        else:
+        if len(self.displayList) > 0:
             if self.displayIndex == len(self.displayList):
                 self.allDisplayed = True
             self.displayIndex = self.displayIndex % len(self.displayList)
