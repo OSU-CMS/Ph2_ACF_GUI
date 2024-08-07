@@ -218,6 +218,7 @@ class QtRunWindow(QWidget):
         self.RunButton.setDefault(True)
         self.RunButton.clicked.connect(self.resetConfigTest)
         self.RunButton.clicked.connect(self.initialTest)
+        self.RunButton.clicked.connect(lambda: self.RunButton.setDisabled(True))
         # self.RunButton.clicked.connect(self.runTest)
         # self.ContinueButton = QPushButton("&Continue")
         # self.ContinueButton.clicked.connect(self.sendProceedSignal)
