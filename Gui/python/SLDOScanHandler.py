@@ -43,6 +43,44 @@ class SLDOCurveWorker(QThread):
         self.moduleType = moduleType
         self.PIN_MAPPINGS = {
             'DEFAULT': AdcBoard.DEFAULT_PIN_MAP,
+            'CROC 1x2': {
+                # 0: 'VDDA_ROC2',
+                # 1: 'VDDA_ROC3',
+                # 2: 'VDDD_ROC2',
+                # 3: 'VDDD_ROC3',
+                # 4: 'TP7C', #VOFS OUT
+                # 5: 'TP7D', #VOFS OUT
+                # 6: None,
+                # 7: 'TP8', #VOFS IN
+                # 8: None,
+                # 9: 'TP10', #VIN
+                # 10: None,
+                11: 'VDDA_ROC0',
+                12: 'VDDA_ROC1',
+                13: 'VDDD_ROC0',
+                14: 'VDDD_ROC1',
+                # 15: 'TP7A', #VOFS OUT
+                # 16: 'TP7B', #VOFS OUT
+            },
+            'CROC Quad': {
+                0: 'VDDA_ROC2',
+                1: 'VDDA_ROC3',
+                2: 'VDDD_ROC2',
+                3: 'VDDD_ROC3',
+                # 4: 'TP7C', #VOFS OUT
+                # 5: 'TP7D', #VOFS OUT
+                # 6: None,
+                # 7: 'TP8', #VOFS IN
+                # 8: None,
+                # 9: 'TP10', #VIN
+                # 10: None,
+                11: 'VDDA_ROC0',
+                12: 'VDDA_ROC1',
+                13: 'VDDD_ROC0',
+                14: 'VDDD_ROC1',
+                # 15: 'TP7A', #VOFS OUT
+                # 16: 'TP7B', #VOFS OUT
+            },
         }
         self.LV_index = -1
 
@@ -74,12 +112,6 @@ class SLDOCurveWorker(QThread):
         self.instruments.lv_off()
         self.adc_board.__enter__()
         logger.info("Turned off the LV and HV")
-        
-        # create the pin list from the pin mapping
-        for key, value in self.PIN_MAPPINGS['DEFAULT'].items():
-            if "VDD" in value:
-                self.pin_list.append(key)
-                print('adding {0} to pin_list'.format(key))
         
         self.instruments.lv_on(current=self.starting_current, voltage=self.max_voltage)
         # sweep from the starting current to the target current, preliminary data processing
@@ -114,23 +146,19 @@ class SLDOCurveWorker(QThread):
         LV_Voltage_Down = [res[4] for res in data_down]
         Currents_Down = [res[5] for res in data_down]
         
-        # Analyze the data from the ADC Board for each pin
-        for pin in self.pin_list:
-            logger.info('made it inside the pin loop')
-            self.labels.append(pin)
+        
+        for index, pin in self.PIN_MAPPINGS[self.moduleType].items():
             
-            ADC_Voltage_Up = [res[6][pin-1] for res in data_up]
+            ADC_Voltage_Up = [res[6][index] for res in data_up]
             result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
-            
-            ADC_Voltage_Down = [res[6][pin-1] for res in data_down]
+            ADC_Voltage_Down = [res[6][index] for res in data_down]
             result_down = np.array([Currents_Down, LV_Voltage_Down, ADC_Voltage_Down])
             
             results = np.concatenate((result_up, result_down), axis=0)
             # 0:up current, 1:up lv voltage, 2: up adc voltage 3: down current, 4: down lv voltage, 5: down adc voltage
             print('total result for pin {0}: {1}'.format(pin, results))
             
-            # Emit a signal that passees the list of results to the SLDOCurveHandler
-            self.measure.emit(results, self.PIN_MAPPINGS[self.moduleType][pin])
+            self.measure.emit(results, pin)
         
         # All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
