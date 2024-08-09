@@ -1,7 +1,6 @@
 #include <string>
 #include <iostream>
 #include <vector>
-#include <variant>
 
 using namespace std;
 
@@ -215,16 +214,22 @@ void xtalk(const string& pixelalive1, const string& pixelalive2, const string& p
     textResults->SetFillColor(0);
 	textResults->SetBorderSize(0);
 
-    auto saveCanvas = [&](const variant<TH2F*, TPaveText*>& obj, const string& title) {
+    auto saveCanvasHist = [](TH2F* hist, const string& title) {
         TCanvas* canvas = new TCanvas(title.c_str(), title.c_str());
         canvas->cd();
 
-        if (auto hist = get_if<TH2F*>(&obj)) {
-            gPad->SetLogz();
-            (*hist)->Draw("colz");
-        } else if (auto text = get_if<TPaveText*>(&obj)) {
-            (*text)->Draw();
-        }
+        gPad->SetLogz();
+        hist->Draw("colz");
+
+        canvas->Update();
+        return canvas;
+    };
+
+    auto saveCanvasText = [](TPaveText* text, const string& title) {
+        TCanvas* canvas = new TCanvas(title.c_str(), title.c_str());
+        canvas->cd();
+
+        text->Draw();
 
         canvas->Update();
         return canvas;
@@ -232,12 +237,12 @@ void xtalk(const string& pixelalive1, const string& pixelalive2, const string& p
 
     string nameTemplate = "D_B("+boardID+")_O("+opticalgroupID+")_H("+hybridID+")__Chip("+chipID+")";
 
-    TCanvas* c_pixelalive = saveCanvas(h_pixelalive1, insert("PixelAlive", nameTemplate, 17));
-    TCanvas* c_coupled = saveCanvas(h_pixelalive5, insert("Coupled", nameTemplate, 17));
-    TCanvas* c_uncoupled = saveCanvas(h_pixelalive6, insert("Uncoupled", nameTemplate, 17));
-    TCanvas* c_suspicious = saveCanvas(h_suspicious2D, insert("Suspicious", nameTemplate, 17));
-    TCanvas* c_confirmed = saveCanvas(h_confirmed2D, insert("Confirmed", nameTemplate, 17));
-    TCanvas* c_textResults = saveCanvas(textResults, insert("Results", nameTemplate, 17));
+    TCanvas* c_pixelalive = saveCanvasHist(h_pixelalive1, insert("PixelAlive", nameTemplate, 17));
+    TCanvas* c_coupled = saveCanvasHist(h_pixelalive5, insert("Coupled", nameTemplate, 17));
+    TCanvas* c_uncoupled = saveCanvasHist(h_pixelalive6, insert("Uncoupled", nameTemplate, 17));
+    TCanvas* c_suspicious = saveCanvasHist(h_suspicious2D, insert("Suspicious", nameTemplate, 17));
+    TCanvas* c_confirmed = saveCanvasHist(h_confirmed2D, insert("Confirmed", nameTemplate, 17));
+    TCanvas* c_textResults = saveCanvasText(textResults, insert("Results", nameTemplate, 17));
 
     TFile file(outputDir.c_str(), "UPDATE");
     if (file.IsZombie()) {
