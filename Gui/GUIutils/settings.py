@@ -53,34 +53,6 @@ DBNames = {
 }
 """
 
-# Note: First element of list will be shown as default value
-# Note: The varibale name is same as hostname
-dblist = []
-
-
-class DBServerIP:
-    All = "All"
-    All_list = ["phase2pixel_test", "DBName2", "DBName3"]
-
-    def __init__(self, DBhostname, DBIP, DBName):
-        self.DBhostname = DBhostname
-        self.DBIP = DBIP
-        self.DBName = DBName
-
-
-Central_remote = DBServerIP(
-    "Central_remote", "0.0.0.0", ["phase2pixel_test", "DBName2", "DBName3"]
-)
-dblist.append(Central_remote.DBhostname)
-local = DBServerIP("local", "127.0.0.1", ["SampleDB", "phase2pixel_test"])
-dblist.append(local.DBhostname)
-OSU_remote = DBServerIP("OSU_remote", "128.146.38.1", ["SampleDB", "phase2pixel_test"])
-dblist.append(OSU_remote.DBhostname)
-Purdue_remote = DBServerIP(
-    "Purdue_remote", "cmsfpixdb.physics.purdue.edu", ["cmsfpix_phase2"]
-)
-dblist.append(Purdue_remote.DBhostname)
-
 # Set the IT_uTDC_firmware for test
 FPGAConfigList = {
     "fc7.board.1": "IT-uDTC_L12-KSU-3xQUAD_L8-KSU2xQUAD_x1G28",

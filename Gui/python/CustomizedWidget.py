@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 from Gui.GUIutils.DBConnection import GetTrimClass
-from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -17,6 +17,8 @@ from PyQt5.QtWidgets import (
 )
 
 import sys
+import requests
+from lxml import etree
 
 import Gui.siteSettings as site_settings
 from Gui.python.Firmware import (
@@ -40,6 +42,19 @@ class ClickOnlyComboBox(QComboBox):
     def wheelEvent(self, event):
         event.ignore() 
 
+def debounce(wait):
+    def decorator(fn):
+        timer = None
+        def debounced(*args, **kwargs):
+            nonlocal timer
+            if timer is not None:
+                timer.stop()
+            timer = QTimer()
+            timer.setSingleShot(True)
+            timer.timeout.connect(lambda: fn(*args, **kwargs))
+            timer.start(wait)
+        return debounced
+    return decorator
 
 class ModuleBox(QWidget):
     typechanged = pyqtSignal()
@@ -143,10 +158,32 @@ class ChipBox(QWidget):
         self.VDDAMap = {}
         self.VDDDMap = {}
         self.ChipGroupBoxDict = {}
+        self.trimValues = None
         
-        for chipid in self.ChipList:
-            self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-            
+        if self.master.purdue_connected and self.serialNumber != "":
+            trims = self.fetchTrimFromDB(self.serialNumber)
+            if trims:
+                self.trimValues = trims
+                if set(self.ChipList) != set(trims.keys()):
+                    # msg = QMessageBox()
+                    # msg.information(
+                    #     None,
+                    #     "Error",
+                    #     f"Module {serialNumber} chip layout does not correspond to typical {pChipType} chip layouts. Please modify the trim values manually.",
+                    #     QMessageBox.Ok
+                    # )
+                    print(f"Module {serialNumber} chip layout does not correspond to typical {pChipType} chip layouts. Please modify the trim values manually.")
+                    self.ChipGroupBoxDict.clear()
+                    for chipid in self.ChipList:
+                        self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+                else:
+                    for chipid in self.ChipList:
+                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid, trims[chipid]['VDDA'], trims[chipid]['VDDD'])
+        else:
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+        
         self.makeChipGroupBox(self.ChipGroupBoxDict)
     
         self.setLayout(self.mainLayout)
@@ -160,31 +197,31 @@ class ChipBox(QWidget):
             self.ChipList.append(ModuleLaneMap[self.chipType][lane])
 
     #get trim values from DB
-    # def makeChipBoxWithDB(self, pChipID,VDDA,VDDD):
-    #     self.ChipID = pChipID
-    #     self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
-    #     self.ChipLabel.setChecked(True)
-    #     self.ChipLabel.setObjectName("ChipStatus_{0}".format(pChipID))
-    #     self.ChipVDDDLabel = QLabel("VDDD:")
-    #     self.ChipVDDDEdit = QLineEdit()
-    #     self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
+    def makeChipBoxWithDB(self, pChipID, VDDA, VDDD):
+        self.ChipID = pChipID
+        self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
+        self.ChipLabel.setChecked(True)
+        self.ChipLabel.setObjectName("ChipStatus_{0}".format(pChipID))
+        self.ChipVDDDLabel = QLabel("VDDD:")
+        self.ChipVDDDEdit = QLineEdit()
+        self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         
-    #     if not self.ChipVDDDEdit.text():
-    #         logger.debug("no VDDD text")
-    #     self.ChipVDDALabel = QLabel("VDDA:")
-    #     self.ChipVDDAEdit = QLineEdit() 
-    #     self.ChipVDDDEdit.setText(VDDD)
-    #     self.ChipVDDAEdit.setText(VDDA)
-    #     self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
+        if not self.ChipVDDDEdit.text():
+            logger.debug("no VDDD text")
+        self.ChipVDDALabel = QLabel("VDDA:")
+        self.ChipVDDAEdit = QLineEdit() 
+        self.ChipVDDDEdit.setText(VDDD)
+        self.ChipVDDAEdit.setText(VDDA)
+        self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
 
-    #     self.VChipLayout = QGridLayout()
-    #     self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
-    #     self.VChipLayout.addWidget(self.ChipVDDDLabel, 1, 0, 1, 1)
-    #     self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
-    #     self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
-    #     self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
+        self.VChipLayout = QGridLayout()
+        self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
+        self.VChipLayout.addWidget(self.ChipVDDDLabel, 1, 0, 1, 1)
+        self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
+        self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
+        self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
 
-    #     return self.VChipLayout
+        return self.VChipLayout
 
     def makeChipBox(self, pChipID):    
         self.ChipID = pChipID
@@ -248,11 +285,73 @@ class ChipBox(QWidget):
     def getVDDD(self, pChipID):
         VDDDthing = self.findChild(QLineEdit, "VDDDEdit_{0}".format(pChipID))
         return VDDDthing.text()
+    
+    def getTrimValues(self):
+        return self.trimValues
 
     def getChipStatus(self, pChipID):
         ChipCheckBox = self.findChild(QCheckBox, "ChipStatus_{0}".format(pChipID))
         ChipStatus = ChipCheckBox.isChecked()
         return ChipStatus
+
+    def fetchTrimFromDB(self, moduleName):
+        try:
+            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            
+            response = requests.get(URL)
+            
+            parser = etree.HTMLParser()
+            tree = etree.fromstring(response.content, parser)
+            chip_table = tree.xpath('//body/table')[0]
+
+            values = []
+            for row in chip_table[1:]:
+                for element in row:
+                    if element.text.startswith('U1'):
+                        values.append([])
+                    elif element.text.isdigit():
+                        values[-1].append(element.text)
+
+            data = {}
+            for i in range(len(values)):
+                data[str(i+12)] = {'VDDD': values[i][1], 'VDDA': values[i][2],}
+
+            return data
+        except requests.exceptions.RequestException as req_err:
+            #some sort of connection issue, alert user
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                QMessageBox.Ok
+            )
+            
+            self.master.purdue_connected = False
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
+        except IndexError:
+            #this occurs when an invalid modulename is input, alert user
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"Could not find {moduleName} in the database, using default values.",
+                QMessageBox.Ok
+            )
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
+        except Exception as e:
+            #other issue
+            logger.error(f"Some error occurred while querying the Purdue DB for VDDD/VDDA trim values. \nError: {repr(e)}")
+            self.master.purdue_connected = False
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
 
 
 from PyQt5.QtWidgets import QWidget, QGridLayout, QGroupBox, QPushButton, QVBoxLayout, QScrollArea
@@ -289,10 +388,11 @@ class BeBoardBox(QWidget):
 
     def initList(self):
         ModuleRow = ModuleBox(self.firmware)
+        self.ModuleList.append(ModuleRow)
         ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         ModuleRow.VersionCombo.currentTextChanged.connect(self.updateList)
-        self.ModuleList.append(ModuleRow)
-
+        ModuleRow.SerialEdit.editingFinished.connect(self.createSerialUpdateCallback(ModuleRow))
+        
     def createList(self):
         self.ListLayout = QGridLayout()
         self.ListLayout.setVerticalSpacing(0)
@@ -306,7 +406,8 @@ class BeBoardBox(QWidget):
         self.ListBox.deleteLater()
         self.mainLayout.removeWidget(self.ListBox)
 
-    def updateList(self):
+    @debounce(100)
+    def updateList(self, *args):
         serialNumberWidgets = []
         chipIDWidgets = []
 
@@ -321,13 +422,17 @@ class BeBoardBox(QWidget):
             if index == 0 and "CROC" not in module.TypeCombo.currentText():
                 module.VersionCombo.setCurrentText("v1")
                 module.VersionCombo.setDisabled(True)
+                module.TypeCombo.currentTextChanged.connect(self.updateList)
             elif index == 0:
+                module.TypeCombo.currentTextChanged.connect(self.updateList)
+                module.VersionCombo.currentTextChanged.connect(self.updateList)
                 module.VersionCombo.setDisabled(False)
             if index != 0:
                 module.TypeCombo.setCurrentText(self.ModuleList[0].TypeCombo.currentText())
                 module.TypeCombo.setDisabled(True)
                 module.VersionCombo.setCurrentText(self.ModuleList[0].VersionCombo.currentText())
                 module.VersionCombo.setDisabled(True)
+                module.SerialEdit.editingFinished.connect(self.createSerialUpdateCallback(module))
             
             chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
             self.ChipWidgetDict[module] = chipBox
@@ -357,6 +462,69 @@ class BeBoardBox(QWidget):
         newButton.clicked.connect(self.addModule)
         self.ListLayout.addWidget(newButton, len(self.ModuleList), 1, 1, 1)
         self.update()
+    
+    def createSerialUpdateCallback(self, module):
+        return lambda: self.onSerialNumberUpdate(module)
+    
+    @debounce(500)
+    def onSerialNumberUpdate(self, module):
+        data = self.fetchModuleTypeDB(module.getSerialNumber())
+        if data:
+            if module.TypeCombo.isEnabled():
+                module.TypeCombo.setCurrentText(data['type'])
+            if module.VersionCombo.isEnabled():
+                module.VersionCombo.setCurrentText(data['version'])
+            
+            self.updateList()
+    
+    def fetchModuleTypeDB(self, moduleName):
+        if not self.master.purdue_connected: return None
+        try:
+            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            
+            response = requests.get(URL)
+            
+            moduletype, moduleversion = None, None
+            res = str(response.content).split("\\n")
+            for i in res:
+                if i.startswith("<br>Part = "):
+                    moduletype = i.split("<br>Part = ")[1]
+                elif i.startswith("<br>Version = "):
+                    moduleversion = i.split("<br>Version = ")[1]
+
+            if moduletype.startswith("croc_1x2"):
+                moduletype = "TFPX CROC 1x2"
+            elif moduletype.startswith("croc_2x2"):
+                moduletype = "TFPX CROC Quad"
+            
+            if moduletype == "" or moduleversion == "":
+                msg = QMessageBox()
+                msg.information(
+                    None,
+                    "Error",
+                    f"Could not find {moduleName} in the database.",
+                    QMessageBox.Ok
+                )
+                return None
+            else:
+                return {'type': moduletype, 'version': f"v{moduleversion}"}
+        except requests.exceptions.RequestException as req_err:
+            #some sort of connection issue, alert user
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                QMessageBox.Ok
+            )
+            
+            self.master.purdue_connected = False
+            return None
+        except Exception as e:
+            #other issue
+            logger.error(f"Some error occurred while querying the Purdue DB for module type. \nError: {repr(e)}")
+            self.master.purdue_connected = False
+            return None
 
     def removeModule(self, module):
         self.ModuleList.remove(module)
@@ -603,8 +771,9 @@ class SimpleModuleBox(QWidget):
 class SimpleBeBoardBox(QWidget):
     changed = pyqtSignal()
 
-    def __init__(self, firmware):
+    def __init__(self, master, firmware):
         super(SimpleBeBoardBox, self).__init__()
+        self.master = master
         self.firmware = firmware
         self.ModuleList = []
         self.FilledModuleList = []
@@ -779,7 +948,15 @@ class SimpleBeBoardBox(QWidget):
             )
             Module.setOpticalGroup(OpticalGroup)  # Ignore this line, see explanation in Firmware.py
             
-            #TODO: Pull chip VDDD/VDDA trim values from Panthera and set them here
+            #Fetch the VDDD/VDDA trim values from the Purdue DB, make a ChipBox due to built in error handling
+            chipBox = ChipBox(self.master, module.getType(module.getSerialNumber()), module.getSerialNumber())
+            trims = chipBox.getTrimValues()
+            if trims:
+                for chipID in ModuleLaneMap[module.getType(module.getSerialNumber())].values():
+                    Module.getChips()[chipID].setVDDA(trims[chipID]['VDDA'])
+                    Module.getChips()[chipID].setVDDD(trims[chipID]['VDDD'])
+            else:
+                print("Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values.")
             
             # Add the QtModule object to the currently selected Optical Group
             try:

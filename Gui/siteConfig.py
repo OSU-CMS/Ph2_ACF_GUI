@@ -21,20 +21,8 @@ GPIB_DebugMode = False
 
 ##  The following block sets defaults that are to be used in the simplified (non-expert) mode.  ##
 
-# default FC7 boardName
-defaultFC7 = "fc7.board.1"
-# default IP address of IP address
-defaultFC7IP = '192.168.1.80'
-# default FMC board number
-defaultFMC = 'L12'
 # default mode for LV powering (Direct,SLDO,etc)
 defaultPowerMode = "SLDO"
-#default DBServerIP
-#defaultDBServerIP = '127.0.0.1'
-defaultDBServerIP = 'cmsfpixdb.physics.purdue.edu'
-#default DBName
-#defaultDBName = 'SampleDB'
-defaultDBName = 'cmsfpix_phase2'
 
 ##################################
 
