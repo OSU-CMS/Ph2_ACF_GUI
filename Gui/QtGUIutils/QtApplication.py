@@ -853,7 +853,7 @@ class QtApplication(QWidget):
         self.connected_device_information[key] = info
 
     def connect_devices(self):
-        
+        logger.debug("Inside connect_devices")
         """
         Use defaults set in siteConfig.py to setup instrument cluster.
         If default_checkbox is not checked change this variable to reflect
@@ -861,14 +861,20 @@ class QtApplication(QWidget):
         """
         self.device_settings = site_settings.icicle_instrument_setup
         if not site_settings.manual_powersupply_control :
+            logger.debug("Not using manual power supply control")
             if self.expertMode:
                 if not self.default_checkbox.isChecked():
+                    logger.debug("Not using default device selection")
                     for key, value in self.connected_device_information.items():
+                        logger.debug(" %s, %s ", key, value)
                         self.device_settings[key] = value
             try:
+                logger.debug(f"Setting up instrument cluster with the following device settings: {self.device_settings}") 
+                                
                 self.instruments = InstrumentCluster(**self.device_settings)
                 self.instruments.open()
 
+                logger.debug(f"LV Status:{self.instruments.status(lv_channel=None)['lv']}")
                 if (
                     self.instruments.status(lv_channel=None)["lv"]
                     or self.instruments.status(lv_channel=None)["hv"]
@@ -885,8 +891,10 @@ class QtApplication(QWidget):
                 self.instruments = None
 
         if self.expertMode:                
+            logger.debug("Connecting arduino")
             self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
             self.ArduinoGroup.frozeArduinoPanel()
+            logger.debug("Finished setting up arduino")
 
     def disable_instrument_widgets(self):
         """
