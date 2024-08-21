@@ -52,6 +52,9 @@ defaultPeltierSetTemp = 10
 defaultPeltierWarningTemp = 40
 #################################
 
+# Temperature Chamber Variables
+temp_chamber_resource = "TCPIP::128.146.34.76::5025::SOCKET"
+
 # Icicle variables
 
 # Set this variable to use your powersupplies manually
