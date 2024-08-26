@@ -169,7 +169,7 @@ class QtRunWindow(QWidget):
         )
         HeadLabel.setMaximumHeight(30)
 
-        colorString = "color: green" if self.master.database_connected else "color: red"
+        colorString = "color: green" if self.master.panthera_connected else "color: red"
         StatusLabel = QLabel()
         StatusLabel.setText(self.master.operator_name)
         StatusLabel.setStyleSheet(f"{colorString}; font-size: 14px")
@@ -228,7 +228,7 @@ class QtRunWindow(QWidget):
         # self.SaveButton.clicked.connect(self.saveTest)
         self.saveCheckBox = QCheckBox("&auto-save to Panthera")
         self.saveCheckBox.setMaximumHeight(30)
-        if self.master.database_connected:
+        if self.master.panthera_connected:
             self.saveCheckBox.setChecked(self.testHandler.autoSave)
             self.saveCheckBox.clicked.connect(self.setAutoSave)
         else:
@@ -585,7 +585,7 @@ class QtRunWindow(QWidget):
         if EnableReRun:
             self.RunButton.setText("&Re-run")
             self.RunButton.setDisabled(False)
-            if self.master.database_connected:
+            if self.master.panthera_connected:
                 self.UploadButton.setDisabled(self.testHandler.autoSave)
 
     def updateResult(self, newResult):

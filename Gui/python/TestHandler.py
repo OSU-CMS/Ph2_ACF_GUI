@@ -1168,7 +1168,7 @@ class TestHandler(QObject):
                 if not status:
                     raise ConnectionError(message)
         except Exception as e:
-            if not self.master.database_connected:
+            if not self.master.panthera_connected:
                 logger.error("Cannot upload test results, you are not signed in to Panthera.")
             else:
                 logger.error(f"There was an error uploading the test results. {repr(e)}")

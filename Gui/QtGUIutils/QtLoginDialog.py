@@ -39,7 +39,7 @@ import os
 import subprocess
 from subprocess import Popen, PIPE
 
-from Gui.GUIutils.settings import dblist
+# from Gui.GUIutils.settings import dblist
 from Gui.GUIutils.DBConnection import (
     QtStartConnection,
     isActive,
@@ -84,8 +84,8 @@ class QtLoginDialog(QDialog):
 
         if not self.expertMode:
             self.HostName = QComboBox()
-            self.HostName.addItems(dblist)
-            self.HostName.currentIndexChanged.connect(self.changeDBList)
+            # self.HostName.addItems(dblist)
+            # self.HostName.currentIndexChanged.connect(self.changeDBList)
             HostLabel.setBuddy(self.HostName)
         else:
             self.HostEdit = QLineEdit("128.146.38.1")
