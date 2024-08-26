@@ -414,7 +414,7 @@ class TestHandler(QObject):
             #assumes only 1 HV titled 'hv' in instruments.json
             hv_on = False
             for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["hv"]:
+                if self.instruments.status()[number]["hv"] == 1:
                     hv_on = True
                     break
             if testName == "SCurveScan_2100_FWD":
@@ -1111,7 +1111,7 @@ class TestHandler(QObject):
             self.master.instruments.hv_on(
                 voltage=default_hv_voltage,
                 delay=0.3,
-                step_size=-3,
+                step_size=5,
                 measure=False,
             )
 
