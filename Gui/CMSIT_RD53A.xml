@@ -309,6 +309,7 @@
     <Setting name="StopIfCommFails">       1 </Setting>
 
     <!-- === Expert settings ===
+         ShowRunProgress = 1: show run progress;         ShowRunProgress = 0: do not show run progress
          DoSplitByHybrid = 1: split ROOT file by Hybrid; DoSplitByHybrid = 0: do not split ROOT file by Hybrid
          DataOutputDir:    set the output directory for all data. If not specified files will be saved in ./Results/
          SaveBinaryData  = 0: do not save raw data in binary format; SaveBinaryData = 1: save raw data in binary format
@@ -316,6 +317,7 @@
          InjLatency:       controls the latency of the injection in terms of 100ns period (up to 4095)
          nClkDelays:       controls the delay between two consecutive injections in terms of 100ns period (up to 4095)
     -->
+    <Setting name="ShowRunProgress">       1 </Setting>
     <Setting name="DoSplitByHybrid">       0 </Setting>
     <Setting name="DataOutputDir">           </Setting>
     <Setting name="SaveBinaryData">        0 </Setting>

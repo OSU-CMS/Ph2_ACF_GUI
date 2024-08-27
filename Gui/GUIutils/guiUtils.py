@@ -410,7 +410,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                 FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
                 globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
                 HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
-                FELaneConfig_Dict = FELaneConfig_DictB if "CROC" in moduleType else None
+                FELaneConfig_Dict = FELaneConfig_DictB[module.getModuleType().split(" ")[0]] if "CROC" in moduleType else None
                 boardtype = "RD53B"+module.getModuleVersion() if "CROC" in moduleType else "RD53A"
                 
                 # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
