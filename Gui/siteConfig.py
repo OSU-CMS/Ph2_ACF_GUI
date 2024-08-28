@@ -53,7 +53,10 @@ defaultPeltierWarningTemp = 40
 #################################
 
 # Temperature Chamber Variables
-temp_chamber_resource = "TCPIP::128.146.34.76::5025::SOCKET"
+# Only UIC and OSU should be setting this variable. This is to control
+# the f4t thermal chamber (this is NOT the same as the UIC coldbox used for standard
+# module testing!)
+#temp_chamber_resource = "TCPIP::128.146.34.76::5025::SOCKET"
 
 # Icicle variables
 
