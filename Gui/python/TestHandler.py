@@ -414,7 +414,7 @@ class TestHandler(QObject):
             #assumes only 1 HV titled 'hv' in instruments.json
             hv_on = False
             for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["hv"] == 1:
+                if self.instruments.status()[number]["hv"] == '1':
                     hv_on = True
                     break
             if testName == "SCurveScan_2100_FWD":
@@ -1178,7 +1178,7 @@ class TestHandler(QObject):
     def bumpbond_analysis(self):
         
         runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
-        commands = ['.L /home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/bumpbond_analysis.cpp']
+        commands = ['.L /home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/Analysis/bumpbond_analysis.cpp']
         command_template = ""
         
         if self.info == "FWD-RVS Bias":

@@ -238,11 +238,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmware, RD53Dict):
                     if len(updatedXMLValues[chipKeyName]) > 0:
                         for key in updatedXMLValues[chipKeyName].keys():
                             Node.set(key, str(updatedXMLValues[chipKeyName][key]))
-                            print(
-                                "Node {0} has been set to {1}".format(
-                                    key, updatedXMLValues[chipKeyName][key]
-                                )
-                            )
+                            
 
     except Exception as error:
         print("Failed to set up the XML file, {}".format(error))
@@ -366,7 +362,8 @@ def UpdateXMLValue(pFilename, pAttribute, pValue):
     for Node in root.findall(".//Setting"):
         if Node.attrib["name"] == pAttribute:
             Node.text = pValue
-            print("{0} has been set to {1}.".format(pAttribute, pValue))
+            #The next line should be done using logger, not print.
+            #print("{0} has been set to {1}.".format(pAttribute, pValue))
             tree.write(pFilename)
 
 
@@ -374,6 +371,7 @@ def CheckXMLValue(pFilename, pAttribute):
     root, tree = LoadXML(pFilename)
     for Node in root.findall(".//Setting"):
         if Node.attrib["name"] == pAttribute:
+            #The next line should be done using logger, not print.
             print("{0} is set to {1}.".format(pAttribute, Node.text))
 
 
