@@ -198,3 +198,65 @@ run the command
 ```
 xhost +local:
 ```
+
+# Transferring F4T Temperature Controller Data Logs with TFTP
+The F4T Temperature Controller can transfer its data logs via USB, Samba, or Trivial File Transfer Protocol (TFTP). Here are steps to set up a TFTP server on your Linux machine and have the F4T automatically send data logs to the server. Note this tutorial does not use the commonly used xinetd daemon.
+### Creating the Server
+1. On your hosting machine, install the `tftp-server` and `tftp` packages
+
+`dnf install tftp-server`
+
+`dnf install tftp`
+
+3. You may have to make the TFTP service file or it may already exist `mkdir /etc/systemd/system/tftp.service`
+4. Edit the TFTP service file `nano /etc/systemd/system/tftp.service`
+5. Add the following lines
+```
+[Unit]
+        Description = Tftp Server
+        Requires = tftp.socket
+        Documentation=man:in.tftpd
+
+[Service]
+        ExecStart=/usr/sbin/in.tftpd -c /path/to/data/logs/destination
+        StandardInput=socket
+
+[Install]
+        Also=tftp.socket
+```
+5. You may have to make the TFTP socket file or it may already exist `mkdir /etc/systemd/system/tftp.socket`
+6. Edit the TFTP socket file `nano /etc/systemd/system/tftp.socket`
+7. Add the following lines
+```
+[Unit]
+        Description=TFTP Server Activation Socket
+
+[Socket]
+        ListenDatagram=69
+        SocketMode=0666
+        BindIPv6Only=both
+
+[Install]
+        WantedBy=sockets.target
+```
+8. To employ your changes, run `systemctl daemon-reload`
+9. Now start your tftp server `systemctl start tftp`
+10. You can check the status of your tftp server by running `systemctl status tftp`
+### Sending the Data Logs
+**Note: The default TFTP username is "admin" and the default TFTP password is "1234"**
+1. On the F4T (GUI version 04:07:0012), navigate to Main Menu > Data Logging > Data Log File Transfer
+2. Enter the following credentials:
+
+   Auto Transfer Type: TFTP
+
+   Samba User Name: admin
+
+   Samba Password: 1234
+
+   Samba Path: /path/to/data/logs/destination
+
+   Remote Host Name: TFTP Server host's IPv4
+
+   Remote IP Address: TFTP Server host's IPv4 (same as Remote Host Name)
+
+4. You can test your setup with "Transfer Files Now By" section and selecting "TFTP"
