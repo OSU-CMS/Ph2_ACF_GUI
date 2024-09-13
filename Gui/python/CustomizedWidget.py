@@ -20,6 +20,7 @@ import sys
 import requests
 from lxml import etree
 
+from Gui.python.CentralDBInterface import ExtractChipData
 import Gui.siteSettings as site_settings
 from Gui.python.Firmware import (
     QtChip,
@@ -197,7 +198,7 @@ class ChipBox(QWidget):
             self.ChipList.append(ModuleLaneMap[self.chipType][lane])
 
     #get trim values from DB
-    def makeChipBoxWithDB(self, pChipID, VDDA, VDDD):
+    def makeChipBoxWithDB(self, pChipID, VDDA, VDDD, EfuseID):
         self.ChipID = pChipID
         self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
         self.ChipLabel.setChecked(True)
@@ -213,6 +214,11 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit.setText(VDDD)
         self.ChipVDDAEdit.setText(VDDA)
         self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
+
+        self.ChipEfuseIDLabel = QLabel("Efuse ID:")
+        self.ChipEfuseIDEdit = QLineEdit()
+        self.ChipEfuseIDEdit.setText(EfuseID)
+        self.ChipEfuseIDEdit.setObjectName("EfuseIDEdit_{0}".format(pChipID))
 
         self.VChipLayout = QGridLayout()
         self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
@@ -233,7 +239,11 @@ class ChipBox(QWidget):
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit()
-        
+        self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
+        self.ChipEfuseIDLabel = QLabel("Efuse ID:")
+        self.ChipEfuseIDEdit = QLineEdit()
+        self.ChipEfuseIDEdit.setObjectName("EfuseIDEdit_{0}".format(pChipID))
+
         if "CROC" in self.chipType:
             self.ChipVDDDEdit.setText("8")
             self.ChipVDDAEdit.setText("8")
@@ -241,7 +251,7 @@ class ChipBox(QWidget):
             self.ChipVDDDEdit.setText("16")
             self.ChipVDDAEdit.setText("16")
         
-        self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
+        
         
         self.VChipLayout = QGridLayout()
         self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
@@ -249,6 +259,8 @@ class ChipBox(QWidget):
         self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
         self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
         self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
+        self.VChipLayout.addWidget(self.ChipEfuseIDLabel, 3, 0, 1, 1)
+        self.VChipLayout.addWidget(self.ChipEfuseIDEdit, 3, 1, 1, 1)
 
         return self.VChipLayout
 
@@ -285,6 +297,10 @@ class ChipBox(QWidget):
     def getVDDD(self, pChipID):
         VDDDthing = self.findChild(QLineEdit, "VDDDEdit_{0}".format(pChipID))
         return VDDDthing.text()
+
+    def getEfuseID(self, pChipID):
+        efuseID = self.findChild(QLineEdit, "EfuseIDEdit_{0}".format(pChipID))
+        return efuseID.text()
     
     def getTrimValues(self):
         return self.trimValues
@@ -293,7 +309,67 @@ class ChipBox(QWidget):
         ChipCheckBox = self.findChild(QCheckBox, "ChipStatus_{0}".format(pChipID))
         ChipStatus = ChipCheckBox.isChecked()
         return ChipStatus
+    def fetchChipSerialsFromDB(self, moduleName):
+        try:
+            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            response = requests.get(URL)
 
+            parser = etree.HTMLParser()
+            tree = etree.fromstring(response.content, parser)
+            chip_table = tree.xpath('//body/table')[0]
+            chipsitemap = {}
+            chipsitemap['U1A'] = '12'
+            chipsitemap['U1B'] = '13'
+            chipsitemap['U1C'] = '14'
+            chipsitemap['U1D'] = '15'
+
+            chipvalues = []
+            chipserials = []
+            for row in chip_table[1:]:
+                for element in row:
+                    if element.text and element.text.startswith('U1'):
+                        chipvalues.append(chipsitemap[element.text])
+                    elif element.text and element.text.startswith('N6'):
+                        chipserials.append(element.text)
+            chipdata = dict(zip(chipvalues, chipserials))
+
+            return chipdata
+
+        except requests.exceptions.RequestException as req_err:
+            #some sort of connection issue, alert user
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                QMessageBox.Ok
+            )
+            
+            self.master.purdue_connected = False
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
+        except IndexError:
+            #this occurs when an invalid modulename is input, alert user
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"Could not find {moduleName} in the database, using default values.",
+                QMessageBox.Ok
+            )
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
+        except Exception as e:
+            #other issue
+            logger.error(f"Some error occurred while querying the Purdue DB for chip serial numbers. \nError: {repr(e)}")
+            self.master.purdue_connected = False
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
     def fetchTrimFromDB(self, moduleName):
         try:
             URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
@@ -303,13 +379,14 @@ class ChipBox(QWidget):
             parser = etree.HTMLParser()
             tree = etree.fromstring(response.content, parser)
             chip_table = tree.xpath('//body/table')[0]
-
+            
             values = []
             for row in chip_table[1:]:
                 for element in row:
-                    if element.text.startswith('U1'):
+                    if element.text and element.text.startswith('U1'):
                         values.append([])
-                    elif element.text.isdigit():
+                        
+                    elif element.text and element.text.isdigit():
                         values[-1].append(element.text)
 
             data = {}
