@@ -307,9 +307,9 @@ class ChipBox(QWidget):
             values = []
             for row in chip_table[1:]:
                 for element in row:
-                    if element.text.startswith('U1'):
+                    if element.text and element.text.startswith('U1'):
                         values.append([])
-                    elif element.text.isdigit():
+                    elif element.text and element.text.isdigit():
                         values[-1].append(element.text)
 
             data = {}
