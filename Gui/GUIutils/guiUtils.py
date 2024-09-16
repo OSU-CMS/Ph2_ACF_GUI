@@ -405,9 +405,9 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                 moduleType = module.getModuleType()
                 
                 RxPolarities = None
-		        if "CROC" in moduleType:
+                if "CROC" in moduleType:
                     RxPolarities = "0"
-		        if "CROC" in moduleType and "Quad" in moduleType:
+                if "CROC" in moduleType and "Quad" in moduleType:
                     RxPolarities = "1" 
                 
                 revPolarity = not ("CROC" in moduleType and "1x2" in moduleType)
