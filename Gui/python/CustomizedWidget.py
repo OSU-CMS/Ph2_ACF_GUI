@@ -198,7 +198,7 @@ class ChipBox(QWidget):
             self.ChipList.append(ModuleLaneMap[self.chipType][lane])
 
     #get trim values from DB
-    def makeChipBoxWithDB(self, pChipID, VDDA, VDDD, EfuseID):
+    def makeChipBoxWithDB(self, pChipID, VDDA, VDDD, EfuseID="0"):
         self.ChipID = pChipID
         self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
         self.ChipLabel.setChecked(True)
@@ -226,6 +226,8 @@ class ChipBox(QWidget):
         self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
         self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
         self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
+        self.VChipLayout.addWidget(self.ChipEfuseIDLabel, 3, 0, 1, 1)
+        self.VChipLayout.addWidget(self.ChipEfuseIDEdit, 3, 1, 1, 1)
 
         return self.VChipLayout
 
@@ -659,6 +661,7 @@ class BeBoardBox(QWidget):
                 Module.getChips()[chipID].setStatus(self.ChipWidgetDict[module].getChipStatus(chipID))
                 Module.getChips()[chipID].setVDDA(self.ChipWidgetDict[module].getVDDA(chipID))
                 Module.getChips()[chipID].setVDDD(self.ChipWidgetDict[module].getVDDD(chipID))
+                Module.getChips()[chipID].setEfuseID(self.ChipWidgetDict[module].getEfuseID(chipID))
             
             # Add the QtModule object to the currently selected Optical Group
             try:
