@@ -6,7 +6,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from Gui.python.logging_config import logger
 from icicle.icicle.adc_board import AdcBoard
 from icicle.icicle.relay_board import RelayBoard
-from icicle.icicle.multiment_cluster import InstrumentNotInstantiated
+from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 import numpy as np
 import matplotlib.pyplot as plt
 import time
@@ -43,7 +43,7 @@ class SLDOCurveWorker(QThread):
         self.moduleType = moduleType
         self.PIN_MAPPINGS = {
             'DEFAULT': AdcBoard.DEFAULT_PIN_MAP,
-            'CROC 1x2': {
+            'DOUBLE': {
                 # 0: 'VDDA_ROC2',
                 # 1: 'VDDA_ROC3',
                 # 2: 'VDDD_ROC2',
@@ -62,7 +62,7 @@ class SLDOCurveWorker(QThread):
                 # 15: 'TP7A', #VOFS OUT
                 # 16: 'TP7B', #VOFS OUT
             },
-            'CROC Quad': {
+            'QUAD': {
                 0: 'VDDA_ROC2',
                 1: 'VDDA_ROC3',
                 2: 'VDDD_ROC2',
@@ -147,7 +147,7 @@ class SLDOCurveWorker(QThread):
         Currents_Down = [res[5] for res in data_down]
         
         
-        for index, pin in self.PIN_MAPPINGS[self.moduleType].items():
+        for index, pin in self.PIN_MAPPINGS[self.moduleType.split(" ")[-1].replace("1x2","DOUBLE").upper()].items():
             
             ADC_Voltage_Up = [res[6][index] for res in data_up]
             result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
@@ -180,7 +180,7 @@ class SLDOCurveWorker(QThread):
         self.instruments.lv_off()
         self.multimeter.set("SYSTEM_MODE","REM")
         logger.info('turned off the lv and hv')
-        for key in self.relayboard.PIN_MAP[self.moduleType].keys():
+        for key in self.relayboard.PIN_MAP[self.moduleType.split(" ")[-1].replace("1x2","DOUBLE").upper()].keys():
             if "VDD" in key:
                 self.pin_list.append(key)
                 print('adding {0} to pin_list'.format(key))
@@ -204,7 +204,6 @@ class SLDOCurveWorker(QThread):
                 measure_args={},
                 set_property="current",
             )
-            
             self.determineLVIndex(results)
             results = results[self.LV_index][1]
             
