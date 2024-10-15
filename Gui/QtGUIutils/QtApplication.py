@@ -32,6 +32,7 @@ import Gui.GUIutils.settings as settings
 import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.GUIutils.guiUtils import isActive
+from Gui.QtGUIutils.LaudaApp import LaudaWidget
 from Gui.QtGUIutils.PeltierCoolingApp import Peltier
 from Gui.QtGUIutils.QtFwCheckWindow import QtFwCheckWindow
 from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
@@ -46,7 +47,7 @@ from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 # from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
-from icicle.icicle.multiment_cluster import InstrumentCluster
+from icicle.icicle.instrument_cluster import InstrumentCluster
 
 
 
@@ -705,7 +706,7 @@ class QtApplication(QWidget):
         kMaximumWidth = 150
         kMinimumHeight = 30
         kMaximumHeight = 100
-
+       
         self.SummaryButton = QPushButton("&Status summary")
         if not self.expertMode:
             self.SummaryButton.setDisabled(True)
@@ -777,6 +778,10 @@ class QtApplication(QWidget):
         layout.addWidget(ReviewLabel, 2, 1, 1, 2)
         layout.addWidget(self.ReviewModuleButton, 3, 0, 1, 1)
         layout.addWidget(self.ReviewModuleEdit, 3, 1, 1, 2)
+        
+        self.ChillerOption = QGroupBox("Chiller", self)
+        self.ChillerLayout = QGridLayout()
+        self.ChillerOption.setLayout(self.ChillerLayout)
 
         ####################################################
         # Functions for expert mode
@@ -798,7 +803,7 @@ class QtApplication(QWidget):
         ####################################################
         # Functions for expert mode  (END)
         ####################################################
-
+        
         self.MainOption.setLayout(layout)
 
         self.AppOption = QGroupBox()
@@ -851,17 +856,28 @@ class QtApplication(QWidget):
         #self.mainLayout.addWidget(self.HVPowerRemoteControl, 2, 0, 1, 1)
         self.mainLayout.addWidget(self.HVPowerGroup, 2, 0, 1, 1)
         #self.mainLayout.addWidget(self.LVPowerRemoteControl, 2, 1, 1, 1)
-        self.mainLayout.addWidget(self.LVPowerGroup, 2, 1, 1, 1)
+        self.mainLayout.addWidget(self.LVPowerGroup, 2, 1, 1, 3)
         #self.mainLayout.addWidget(self.relay_remote_control, 4, 0, 1, 1)
         self.mainLayout.addWidget(self.relay_group, 3, 0, 1, 1)
         #self.mainLayout.addWidget(self.multimeter_remote_control, 4, 1, 1, 1)
-        self.mainLayout.addWidget(self.multimeter_group, 3, 1, 1, 1)
-        self.mainLayout.addWidget(self.ArduinoGroup, 5, 1, 1, 1)
-        self.mainLayout.addWidget(self.ArduinoControl, 4, 1, 1, 1)
-        self.mainLayout.addWidget(self.MainOption, 0, 1, 2, 1)
-        self.mainLayout.addWidget(self.PeltierBox, 4, 0, 4, 1)
-        self.mainLayout.addWidget(self.AppOption, 6, 1, 1, 1)
-        self.mainLayout.addWidget(self.LogoGroupBox, 7, 1, 1, 1)
+        self.mainLayout.addWidget(self.multimeter_group, 3, 1, 1, 3)
+        self.mainLayout.addWidget(self.MainOption, 0, 1, 2, 3)
+        self.mainLayout.addWidget(self.PeltierBox, 4, 0, 3, 1)
+        self.mainLayout.addWidget(self.LogoGroupBox, 7, 0, 1, 4)
+        
+        # Placing in try/except to avoid needing to change siteConfig
+        try:
+            self.MyLauda = LaudaWidget(100)
+            self.ChillerLayout.addWidget(self.MyLauda)
+
+            self.mainLayout.addWidget(self.ChillerOption, 4, 1, 3, 2)
+            self.mainLayout.addWidget(self.ArduinoControl, 4, 3, 1, 1)
+            self.mainLayout.addWidget(self.ArduinoGroup, 5, 3, 1, 2)
+            self.mainLayout.addWidget(self.AppOption, 6, 3, 1, 1)
+        except AttributeError:
+            self.mainLayout.addWidget(self.ArduinoControl, 4, 1, 1, 3)
+            self.mainLayout.addWidget(self.ArduinoGroup, 5, 1, 1, 3)
+            self.mainLayout.addWidget(self.AppOption, 6, 1, 1, 3)
 
         self.setDefault()
 
@@ -1001,6 +1017,7 @@ class QtApplication(QWidget):
         self.ArduinoControl.deleteLater()
         self.PeltierBox.deleteLater()
         self.MainOption.deleteLater()
+        self.ChillerOption.deleteLater()
         self.AppOption.deleteLater()
         self.LogoGroupBox.deleteLater()
         self.mainLayout.removeWidget(self.FirmwareStatus)
@@ -1017,6 +1034,7 @@ class QtApplication(QWidget):
         self.mainLayout.removeWidget(self.ArduinoControl)
         self.mainLayout.removeWidget(self.PeltierBox)
         self.mainLayout.removeWidget(self.MainOption)
+        self.mainLayout.removeWidget(self.ChillerOption)
         self.mainLayout.removeWidget(self.AppOption)
         self.mainLayout.removeWidget(self.LogoGroupBox)
         QApplication.closeAllWindows()
@@ -1202,7 +1220,7 @@ class QtApplication(QWidget):
         self.destroyMain()
         self.createMain()
         self.checkFirmware()
-
+    
     ###############################################################
     ##  Global stop signal
     ###############################################################
