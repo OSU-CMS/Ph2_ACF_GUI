@@ -29,7 +29,7 @@ from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.Peltier import PeltierSignalGenerator
 from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings
-from icicle.icicle.multiment_cluster import InstrumentCluster, InstrumentNotInstantiated
+from icicle.icicle.instrument_cluster import InstrumentCluster, InstrumentNotInstantiated
 
 
 

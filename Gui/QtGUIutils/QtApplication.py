@@ -46,7 +46,7 @@ from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 # from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
-from icicle.icicle.multiment_cluster import InstrumentCluster
+from icicle.icicle.instrument_cluster import InstrumentCluster
 
 
 
