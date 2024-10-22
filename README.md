@@ -55,7 +55,23 @@ In Gui/jsonFiles, there are example files written that may be modified to suit y
 Returning to Gui/siteConfig.py, you should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
 
 If you scroll down a little further, you will see a dictionary titled "CableMapping." This serves as a mapping of the cable ID you see when adding modules in the simplified GUI to a physical port on your FC7(s). Each cable ID is associated with a dictionary detailing the path to a port. The first key, "FC7," specifies which FC7 that you want that cable ID to be connected to. The FC7 you list should be in the FC7List above. Next, you can name the "FMCID," representing which FMC on the FC7 you wish to use. The possible values for this are "L8" if the FMC is on the left or "L12" if the FMC is on the right. Finally, you can specify which port on that FMC you want to connect to. The leftmost port is "0" and the rightmost port is "3."
+#### Temperature Chamber
+This section only applies to UIC and OSU who have the f4t thermal
+chamber for thermal cycling of the modules (This is NOT the same thing
+as the UIC coldbox used for standard module testing!). You can add
+control of the thermal chamber to the GUI by adding in
+temp_chamber_resource to the siteConfig.py file. 
 
+``` python
+temp_chamber_resource = "TCPIP::<ip_address>::SOCKET"
+```
+where ip_address is the ip address of your thermal chamber which can
+   be obtained through the settings menu on the f4t controller on the
+   thermal chamber. This will allow you to select your thermal profile
+   from the GUI and to stop the running of the profile from the GUI as
+   well. A thermal profile must be loaded on the thermal chamber prior
+   to using it with the GUI. 
+   
 3. Start the docker container:
 ```
 cd ..
