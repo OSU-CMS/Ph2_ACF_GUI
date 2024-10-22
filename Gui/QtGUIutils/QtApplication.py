@@ -763,7 +763,9 @@ class QtApplication(QWidget):
         self.ReviewModuleEdit.setPlaceholderText("Enter Module ID")
 
         self.ThermalTestButton = QPushButton("&Thermal Test")
+        self.ThermalTestButton.setEnabled(True)
         self.AbortThermalTestButton = QPushButton("&Abort thermal test")
+        self.AbortThermalTestButton.setEnabled(True)
 
         # To avoid people trying to push the button without a configured
         # chamber, check if the resource is defined in siteConfig first.
@@ -771,7 +773,7 @@ class QtApplication(QWidget):
         # If it is not, disable the button
         try:
             site_settings.temp_chamber_resource
-        except NameError:
+        except AttributeError:
             self.ThermalTestButton.setEnabled(False)
             self.AbortThermalTestButton.setEnabled(False)
             
