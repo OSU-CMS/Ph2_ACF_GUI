@@ -110,8 +110,8 @@ def TCanvas2SVG(outputDir, canvas, name=None):
     try:
         canvas.SetBatch(ROOT.kTRUE)
         canvas.Draw()
-        #if "SCurve" in name:
-        canvas.SetLogz()
+        if "SCurve" in name:
+            canvas.SetLogz()
         if "PixelAlive" in name:
             ROOT.gStyle.SetOptStat(0) #no statistics box
         else:

@@ -414,7 +414,7 @@ class TestHandler(QObject):
             #assumes only 1 HV titled 'hv' in instruments.json
             hv_on = False
             for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["hv"]:
+                if self.instruments.status()[number]["hv"] == '1':
                     hv_on = True
                     break
             if testName == "SCurveScan_2100_FWD":
@@ -1111,7 +1111,7 @@ class TestHandler(QObject):
             self.master.instruments.hv_on(
                 voltage=default_hv_voltage,
                 delay=0.3,
-                step_size=-3,
+                step_size=5,
                 measure=False,
             )
 
@@ -1168,7 +1168,7 @@ class TestHandler(QObject):
                 if not status:
                     raise ConnectionError(message)
         except Exception as e:
-            if not self.master.database_connected:
+            if not self.master.panthera_connected:
                 logger.error("Cannot upload test results, you are not signed in to Panthera.")
             else:
                 logger.error(f"There was an error uploading the test results. {repr(e)}")
@@ -1178,7 +1178,7 @@ class TestHandler(QObject):
     def bumpbond_analysis(self):
         
         runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
-        commands = ['.L /home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/bumpbond_analysis.cpp']
+        commands = ['.L /home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/Analysis/bumpbond_analysis.cpp']
         command_template = ""
         
         if self.info == "FWD-RVS Bias":

@@ -49,7 +49,8 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
             password=str(TryPassword),
             host=str(TryHostAddress),
             database=str(TryDatabase),
-            ssl_disabled=True
+            ssl_disabled=True,
+            connection_timeout = 5000,
         )
     except (ValueError, RuntimeError, TypeError, NameError, mysql.connector.Error):
         msg = QMessageBox()

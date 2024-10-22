@@ -115,7 +115,7 @@ bash run_Docker.sh dev
 5. Set up Ph2_ACF and open GUI:
 When you first open the container you should run
 ```
-source prepare_Ph2_ACF
+source prepare_Ph2ACF.sh
 ```
 This will set up the Ph2_ACF environment variables in the container and open the GUI.  If you exit the GUI, it will take you back to the Gui directory.  If you want to open the GUI again while still inside the container, you can just run
 ```

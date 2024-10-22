@@ -25,7 +25,7 @@
         <RD53_Files path="${PWD}/" />
 
         <!-- Available Comment fields are: 50x50, 25x100origR0C0, 25x100origR1C0, unknown, combined with RD53A, RD53B, dual, quad -->
-        <RD53Bv1 Id="15" enable="1" Lane="0" configFile="CMSIT_RD53Bv1.txt" RxGroups="0006" RxPolarity="0" TxGroup="3" TxChannel="0" TxPolarity="0" Comment="RD53B 50x50">
+        <RD53Bv1 Id="15" enable="1" Lane="0" eFuseCode = "0" configFile="CMSIT_RD53Bv1.txt" RxGroups="0006" RxPolarity="0" TxGroup="3" TxChannel="0" TxPolarity="0" Comment="RD53B 50x50">
           <LaneConfig isPrimary="1" masterLane="0" outputLanes="0001" singleChannelInputs="0000" dualChannelInput="0000" />
           <!-- Overwrite .txt configuration file settings -->
           <Settings
@@ -304,6 +304,7 @@
     <Setting name="StopIfCommFails">       1 </Setting>
 
     <!-- === Expert settings ===
+         ShowRunProgress = 1: show run progress;         ShowRunProgress = 0: do not show run progress
          DoSplitByHybrid = 1: split ROOT file by Hybrid; DoSplitByHybrid = 0: do not split ROOT file by Hybrid
          DataOutputDir:    set the output directory for all data. If not specified files will be saved in ./Results/
          SaveBinaryData  = 0: do not save raw data in binary format; SaveBinaryData = 1: save raw data in binary format
@@ -311,6 +312,7 @@
          InjLatency:       controls the latency of the injection in terms of 100ns period (up to 4095)
          nClkDelays:       controls the delay between two consecutive injections in terms of 100ns period (up to 4095)
     -->
+    <Setting name="ShowRunProgress">       1 </Setting>
     <Setting name="DoSplitByHybrid">       0 </Setting>
     <Setting name="DataOutputDir">           </Setting>
     <Setting name="SaveBinaryData">        0 </Setting>

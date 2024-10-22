@@ -29,7 +29,7 @@ from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.Peltier import PeltierSignalGenerator
 from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings
-from icicle.icicle.multiment_cluster import InstrumentCluster, InstrumentNotInstantiated
+from icicle.icicle.instrument_cluster import InstrumentCluster, InstrumentNotInstantiated
 
 
 
@@ -78,7 +78,7 @@ class SimplifiedMainWidget(QWidget):
         #self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
         #logger.debug(f"Default FC7: {site_settings.defaultFC7}")
         logger.debug("Initialized BeBoard in SimplifiedGUI")
-        self.BeBoardWidget = SimpleBeBoardBox(self.firmware)
+        self.BeBoardWidget = SimpleBeBoardBox(self.master, self.firmware)
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
     def setupArduino(self):
@@ -440,7 +440,7 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
         for beboard in self.firmware:
             self.instrument_status[f"fc7_{beboard.getBoardName()}"] = True
-        self.instrument_status["database"] = self.master.database_connected
+        self.instrument_status["database"] = self.master.panthera_connected
 
         # Icicle will deal with the powersupplies, so I will just always set their status to good
         # Technically a false sense of security for the user. 

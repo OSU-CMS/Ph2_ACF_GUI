@@ -24,6 +24,7 @@ from PyQt5.QtWidgets import (
 import sys
 import os
 import pyvisa
+import requests
 from felis.felis_methods import get_accountInfo
 import requests.exceptions as rqx
 
@@ -46,7 +47,7 @@ from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 # from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
-#from icicle.icicle.multiment_cluster import InstrumentCluster
+from icicle.icicle.instrument_cluster import InstrumentCluster
 from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
 
 
@@ -186,8 +187,8 @@ class QtApplication(QWidget):
         if self.expertMode == False:
             self.HostName = QComboBox()
             # self.HostName.addItems(DBServerIP.keys())
-            self.HostName.addItems(settings.dblist)
-            self.HostName.currentIndexChanged.connect(self.changeDBList)
+            # self.HostName.addItems(settings.dblist)
+            # self.HostName.currentIndexChanged.connect(self.changeDBList)
             HostLabel.setBuddy(self.HostName)
         else:
             HostLabel.setText("HostIPAddr")
@@ -271,16 +272,6 @@ class QtApplication(QWidget):
         self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
         self.mainLayout.addWidget(self.LogoGroupBox, 2, 0)
 
-    def changeDBList(self):
-        try:
-            # self.DBNames = DBNames[str(self.HostName.currentText())]
-            self.DBNames = eval(self.HostName.currentText() + ".DBName")
-            self.DatabaseCombo.clear()
-            self.DatabaseCombo.addItems(self.DBNames)
-            self.DatabaseCombo.setCurrentIndex(0)
-        except:
-            print("Unable to change database")
-
     def switchMode(self):
         if self.expertMode:
             self.expertMode = False
@@ -314,7 +305,8 @@ class QtApplication(QWidget):
             self.password = credentials['userpass']
             self.operator_name_first = data['name_first']
             self.operator_name = data['name_first'] + " " + data['name_last']
-            self.database_connected = True
+            self.panthera_connected = True
+            self.purdue_connected = self.checkPurdueConnection()
             
             if data['privilege'] in ['Leader', 'Conductor', 'Admin'] or self.operator_name == "Daniel Ziabicki":
                 if self.UsernameEdit.text().endswith('_*'):
@@ -343,7 +335,8 @@ class QtApplication(QWidget):
             self.password = ""
             self.operator_name = "Local User"
             self.operator_name_first = "Local User"
-            self.database_connected = False
+            self.panthera_connected = False
+            self.purdue_connected = self.checkPurdueConnection()
             
             self.destroyLogin()
             if self.expertMode:
@@ -354,6 +347,29 @@ class QtApplication(QWidget):
                 logger.debug("FwDict: {}".format(self.FwDict))
                 logger.debug("Entering Simplified GUI")
                 self.createSimplifiedMain()
+    
+    def checkPurdueConnection(self):
+        status = False
+        message = ""
+        try:
+            response = requests.get("https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn=")
+            status = response.status_code == 200
+            if not status:
+                message = f"Server responded with status code {response.status_code}"
+        except requests.RequestException as e:
+            logger.error(f"An error occurred: {e}")
+            message = f"An error occurred: {e}"
+            status = False
+        
+        if not status:
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"There was an issue connecting to the Purdue database, please check your internet connection.\nMessage: {message}",
+                QMessageBox.Ok
+            )
+        return status
 
     ###############################################################
     ##  Login page and related functions  (END)
@@ -377,19 +393,16 @@ class QtApplication(QWidget):
     def createMain(self):
         self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name_first))
         self.FirmwareStatus.setDisabled(True)
+        
+        create_status_label = lambda text, is_connected: (
+            QLabel(f"{text}"),
+            (lambda label: (label.setStyleSheet(f"color: {'green' if is_connected else 'red'}"), label)[1])
+            (QLabel("Connected" if is_connected else "Not Connected"))
+        )
 
-        DBStatusLabel = QLabel()
-        DBStatusLabel.setText("Database:")
-        DBStatusValue = QLabel()
-        if self.database_connected:
-            DBStatusValue.setText("Connected")
-            DBStatusValue.setStyleSheet("color: green")
-        else:
-            DBStatusValue.setText("Not Connected")
-            DBStatusValue.setStyleSheet("color: red")
-
-        self.StatusList = []
-        self.StatusList.append([DBStatusLabel, DBStatusValue])
+        self.StatusList = [
+            create_status_label("Panthera DB", self.panthera_connected),
+        ]
 
         try:
             for firmwareName, ipaddress in site_settings.FC7List.items():
