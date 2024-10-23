@@ -214,3 +214,4 @@ run the command
 ```
 xhost +local:
 ```
+* If the GUI doens't launch and an error stating a QT plugin could not be used even though it was found, reboot your computer. This seems to be an issue with the QT framework that the GUI is written with and we have yet to determine a fix. 
