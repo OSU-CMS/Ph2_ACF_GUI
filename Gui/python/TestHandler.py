@@ -462,14 +462,22 @@ class TestHandler(QObject):
         self.info_process.setWorkingDirectory(
             os.environ.get("PH2ACF_BASE_DIR") + "/test/"
         )
-        self.info_process.start(
-            "echo",
-            [
-                "Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(
-                    Test_to_Ph2ACF_Map[self.currentTest]
-                )
-            ],
-        )
+        if self.currentTest == "CommunicationTest":
+            self.info_process.start(
+                "echo",
+                [
+                    "Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -p"
+                ],
+            )
+        else:
+            self.info_process.start(
+                "echo",
+                [
+                    "Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(
+                        Test_to_Ph2ACF_Map[self.currentTest]
+                    )
+                ],
+            )
         self.info_process.waitForFinished()
 
         self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
@@ -527,10 +535,21 @@ class TestHandler(QObject):
             "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")), "DoNSteps"
         )
 
-        self.run_process.start(
-            "CMSITminiDAQ",
-            ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
-        )
+        if self.currentTest == "CommunicationTest":
+            self.run_process.start(
+                "CMSITminiDAQ",
+                ["-f", "CMSIT.xml", "-p"],
+            )
+        else:
+            self.run_process.start(
+                "CMSITminiDAQ",
+                ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
+            )
+
+        #self.run_process.start(
+        #    "CMSITminiDAQ",
+        #    ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
+        #)
         if Test_to_Ph2ACF_Map[self.currentTest] == "threqu":
             self.isTDACtuned = True
 
@@ -717,7 +736,8 @@ class TestHandler(QObject):
 
             except Exception as err:
                 logger.info("Error occures while parsing running time, {0}".format(err))
-
+            if '@@@ End of CMSIT miniDAQ @@@' in textStr:
+                self.ProgressingMode = "Summary"
             if self.ProgressingMode == "Perform":
                 if "Progress:" in textStr:
                     try:
@@ -854,6 +874,8 @@ class TestHandler(QObject):
                 return True
             elif "New injection delay" in textStr:
                 return True
+        elif "CommunicationTest" == self.currentTest:
+            return True
         return False
 
     # Reads data that is normally printed to the terminal and saves it to the output file
