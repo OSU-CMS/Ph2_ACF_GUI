@@ -52,7 +52,7 @@ import time
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 #from Gui.QtGUIutils.QtApplication import *
-from Gui.python.CustomizedWidget import BeBoardBox
+from Gui.python.CustomizedWidget import BeBoardBox, debounce
 #from Gui.python.Firmware import *
 #from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import FEPowerUpVD
@@ -62,7 +62,7 @@ from Gui.siteSettings import (
     ModuleCurrentMap,
 )
 
-from InnerTrackerTests.TestSequences import TestList
+from InnerTrackerTests.TestSequences import TestDict
 from siteSettings import icicle_instrument_setup
 
 # from Gui.QtGUIutils.QtProductionTestWindow import *
@@ -283,7 +283,8 @@ class QtStartWindow(QWidget):
         TestLabel = QLabel("Test:")
         self.TestCombo = QComboBox()
         #self.TestList = getAllTests(self.master.connection)
-        self.TestList = TestList
+        self.TestList = TestDict["Default"]
+
         if not self.master.instruments:
             if "AllScan" in self.TestList:
                 self.TestList.remove("AllScan")
@@ -304,6 +305,7 @@ class QtStartWindow(QWidget):
             beboard.removeAllOpticalGroups()
         
         self.BeBoardWidget = BeBoardBox(self.master, self.firmware)  # FLAG
+        self.BeBoardWidget.ModuleRow.SerialEdit.editingFinished.connect(self.createSerialUpdateCallback(self.BeBoardWidget))
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
         self.mainLayout.addWidget(self.BeBoardWidget, 1, 0)
@@ -501,3 +503,21 @@ class QtStartWindow(QWidget):
                     logger.error(e)
             else:
                 event.ignore()
+
+    def createSerialUpdateCallback(self, widget):
+        return lambda: self.onSerialNumberUpdate(widget)
+    
+    @debounce(500)
+    def onSerialNumberUpdate(self,widget):
+        data = widget.fetchModuleTypeDB(widget.ModuleRow.getSerialNumber())
+        if data:
+            if self.TestCombo.isEnabled() and data['type'] in TestDict.keys():
+                self.TestCombo.clear()
+                self.TestCombo.addItems(TestDict[data['type']])
+            if widget.ModuleRow.TypeCombo.isEnabled():
+                widget.ModuleRow.TypeCombo.setCurrentText(data['type'])
+            if widget.ModuleRow.VersionCombo.isEnabled():
+                widget.ModuleRow.VersionCombo.setCurrentText(data['version'])
+
+            widget.updateList()
+            

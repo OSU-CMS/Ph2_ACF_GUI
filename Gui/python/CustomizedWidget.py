@@ -111,10 +111,11 @@ class ModuleBox(QWidget):
         
 
     def setType(self):
-        #this method is created to set moudle type under online mode and comboBox is hidden
+        #this method is created to set module type under online mode and comboBox is hidden
         if self.SerialEdit.text().startswith("RH"):
             chipType = "CROC 1x2"
             self.TypeCombo.setCurrentText(chipType)
+
 
         if self.SerialEdit.text().startswith("SH"):
             chipType = "TFPX CROC Quad"
@@ -443,6 +444,7 @@ class BeBoardBox(QWidget):
         self.master = master
         self.firmware = firmware
         self.ModuleList = []
+        self.ModuleRow = ModuleBox(self.firmware)
         self.ChipWidgetDict = {}
         self.mainLayout = QVBoxLayout()  # Use QVBoxLayout for vertical layout
 
@@ -466,11 +468,10 @@ class BeBoardBox(QWidget):
         self.setMinimumSize(900, 300)  # Set minimum size (width, height)
 
     def initList(self):
-        ModuleRow = ModuleBox(self.firmware)
-        self.ModuleList.append(ModuleRow)
-        ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
-        ModuleRow.VersionCombo.currentTextChanged.connect(self.updateList)
-        ModuleRow.SerialEdit.editingFinished.connect(self.createSerialUpdateCallback(ModuleRow))
+        self.ModuleList.append(self.ModuleRow)
+        self.ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
+        self.ModuleRow.VersionCombo.currentTextChanged.connect(self.updateList)
+        #self.ModuleRow.SerialEdit.editingFinished.connect(self.createSerialUpdateCallback(self.ModuleRow))
         
     def createList(self):
         self.ListLayout = QGridLayout()
@@ -542,7 +543,9 @@ class BeBoardBox(QWidget):
         self.ListLayout.addWidget(newButton, len(self.ModuleList), 1, 1, 1)
         self.update()
     
-    def createSerialUpdateCallback(self, module):
+    #Put this functionality in QtStartWindow.py. Need to see if
+    #it affects simplified version.
+    '''def createSerialUpdateCallback(self, module):
         return lambda: self.onSerialNumberUpdate(module)
     
     @debounce(500)
@@ -554,7 +557,7 @@ class BeBoardBox(QWidget):
             if module.VersionCombo.isEnabled():
                 module.VersionCombo.setCurrentText(data['version'])
             
-            self.updateList()
+            self.updateList()'''
     
     def fetchModuleTypeDB(self, moduleName):
         if not self.master.purdue_connected: return None
