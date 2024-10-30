@@ -5,11 +5,12 @@ from Gui.python.logging_config import logger
 
 
 class QtChip:
-    def __init__(self, chipID = "", chipLane = "", chipVDDA = 0, chipVDDD = 0, chipStatus = True):
+    def __init__(self, chipID = "", chipLane = "", chipVDDA = 0, chipVDDD = 0, chipEfuseID = 0, chipStatus = True):
         self.__chipID = chipID
         self.__chipLane = chipLane
         self.__chipVDDA = chipVDDA
         self.__chipVDDD = chipVDDD
+        self.__chipEfuseID = chipEfuseID
         self.__chipStatus = chipStatus
 
     def setID(self, id: str):
@@ -35,6 +36,12 @@ class QtChip:
     
     def getVDDD(self):
         return self.__chipVDDD
+
+    def setEfuseID(self, pEfuseID: int):
+        self.__chipEfuseID = pEfuseID
+        
+    def getEfuseID(self):
+        return self.__chipEfuseID
 
     def setStatus(self, pStatus: bool):
         self.__chipStatus = pStatus

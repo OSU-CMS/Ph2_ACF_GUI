@@ -4,6 +4,7 @@ from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QColor
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
+    QSpinBox,
     QComboBox,
     QDialog,
     QGridLayout,
@@ -32,6 +33,7 @@ import Gui.GUIutils.settings as settings
 import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.GUIutils.guiUtils import isActive
+from Gui.QtGUIutils.LaudaApp import LaudaWidget
 from Gui.QtGUIutils.PeltierCoolingApp import Peltier
 from Gui.QtGUIutils.QtFwCheckWindow import QtFwCheckWindow
 from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
@@ -46,7 +48,9 @@ from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 # from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
-from icicle.icicle.multiment_cluster import InstrumentCluster
+from icicle.icicle.instrument_cluster import InstrumentCluster
+from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
+
 
 
 
@@ -705,7 +709,7 @@ class QtApplication(QWidget):
         kMaximumWidth = 150
         kMinimumHeight = 30
         kMaximumHeight = 100
-
+       
         self.SummaryButton = QPushButton("&Status summary")
         if not self.expertMode:
             self.SummaryButton.setDisabled(True)
@@ -760,6 +764,38 @@ class QtApplication(QWidget):
         self.ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
         self.ReviewModuleEdit.setPlaceholderText("Enter Module ID")
 
+        self.ThermalTestButton = QPushButton("&Thermal Test")
+        self.ThermalTestButton.setEnabled(True)
+        self.AbortThermalTestButton = QPushButton("&Abort thermal test")
+        self.AbortThermalTestButton.setEnabled(True)
+
+        # To avoid people trying to push the button without a configured
+        # chamber, check if the resource is defined in siteConfig first.
+        # Maybe catching an error isn't the prettiest way to do this
+        # If it is not, disable the button
+        try:
+            site_settings.temp_chamber_resource
+        except AttributeError:
+            self.ThermalTestButton.setEnabled(False)
+            self.AbortThermalTestButton.setEnabled(False)
+            
+        
+        self.AbortThermalTestButton.setMinimumWidth(kMinimumWidth)
+        self.AbortThermalTestButton.setMaximumWidth(kMaximumWidth)
+        self.AbortThermalTestButton.setMinimumHeight(kMinimumHeight)
+        self.AbortThermalTestButton.setMaximumHeight(kMaximumHeight)
+        self.AbortThermalTestButton.clicked.connect(self.abortThermalTest)
+
+        self.ThermalTestButton.setMinimumWidth(kMinimumWidth)
+        self.ThermalTestButton.setMaximumWidth(kMaximumWidth)
+        self.ThermalTestButton.setMinimumHeight(kMinimumHeight)
+        self.ThermalTestButton.setMaximumHeight(kMaximumHeight)
+        self.ThermalTestButton.clicked.connect(self.runThermalTest)
+
+        self.ThermalProfileEdit = QLineEdit("")
+        self.ThermalProfileEdit.setEchoMode(QLineEdit.Normal)
+        self.ThermalProfileEdit.setPlaceholderText("Enter Profile Number")
+        
         self.PeltierCooling = Peltier(100)
         self.PeltierBox = QGroupBox("Peltier Controller", self)
         self.PeltierLayout = QGridLayout()
@@ -777,6 +813,15 @@ class QtApplication(QWidget):
         layout.addWidget(ReviewLabel, 2, 1, 1, 2)
         layout.addWidget(self.ReviewModuleButton, 3, 0, 1, 1)
         layout.addWidget(self.ReviewModuleEdit, 3, 1, 1, 2)
+
+        
+        self.ChillerOption = QGroupBox("Chiller", self)
+        self.ChillerLayout = QGridLayout()
+        self.ChillerOption.setLayout(self.ChillerLayout)
+
+        layout.addWidget(self.ThermalTestButton, 4, 0, 1, 1)
+        layout.addWidget(self.ThermalProfileEdit, 4, 1, 1, 1)
+        layout.addWidget(self.AbortThermalTestButton, 5, 0, 1, 1)
 
         ####################################################
         # Functions for expert mode
@@ -798,7 +843,7 @@ class QtApplication(QWidget):
         ####################################################
         # Functions for expert mode  (END)
         ####################################################
-
+        
         self.MainOption.setLayout(layout)
 
         self.AppOption = QGroupBox()
@@ -851,17 +896,28 @@ class QtApplication(QWidget):
         #self.mainLayout.addWidget(self.HVPowerRemoteControl, 2, 0, 1, 1)
         self.mainLayout.addWidget(self.HVPowerGroup, 2, 0, 1, 1)
         #self.mainLayout.addWidget(self.LVPowerRemoteControl, 2, 1, 1, 1)
-        self.mainLayout.addWidget(self.LVPowerGroup, 2, 1, 1, 1)
+        self.mainLayout.addWidget(self.LVPowerGroup, 2, 1, 1, 3)
         #self.mainLayout.addWidget(self.relay_remote_control, 4, 0, 1, 1)
         self.mainLayout.addWidget(self.relay_group, 3, 0, 1, 1)
         #self.mainLayout.addWidget(self.multimeter_remote_control, 4, 1, 1, 1)
-        self.mainLayout.addWidget(self.multimeter_group, 3, 1, 1, 1)
-        self.mainLayout.addWidget(self.ArduinoGroup, 5, 1, 1, 1)
-        self.mainLayout.addWidget(self.ArduinoControl, 4, 1, 1, 1)
-        self.mainLayout.addWidget(self.MainOption, 0, 1, 2, 1)
-        self.mainLayout.addWidget(self.PeltierBox, 4, 0, 4, 1)
-        self.mainLayout.addWidget(self.AppOption, 6, 1, 1, 1)
-        self.mainLayout.addWidget(self.LogoGroupBox, 7, 1, 1, 1)
+        self.mainLayout.addWidget(self.multimeter_group, 3, 1, 1, 3)
+        self.mainLayout.addWidget(self.MainOption, 0, 1, 2, 3)
+        self.mainLayout.addWidget(self.PeltierBox, 4, 0, 3, 1)
+        self.mainLayout.addWidget(self.LogoGroupBox, 7, 0, 1, 4)
+        
+        # Placing in try/except to avoid needing to change siteConfig
+        try:
+            self.MyLauda = LaudaWidget(100)
+            self.ChillerLayout.addWidget(self.MyLauda)
+
+            self.mainLayout.addWidget(self.ChillerOption, 4, 1, 3, 2)
+            self.mainLayout.addWidget(self.ArduinoControl, 4, 3, 1, 1)
+            self.mainLayout.addWidget(self.ArduinoGroup, 5, 3, 1, 2)
+            self.mainLayout.addWidget(self.AppOption, 6, 3, 1, 1)
+        except AttributeError:
+            self.mainLayout.addWidget(self.ArduinoControl, 4, 1, 1, 3)
+            self.mainLayout.addWidget(self.ArduinoGroup, 5, 1, 1, 3)
+            self.mainLayout.addWidget(self.AppOption, 6, 1, 1, 3)
 
         self.setDefault()
 
@@ -1001,6 +1057,7 @@ class QtApplication(QWidget):
         self.ArduinoControl.deleteLater()
         self.PeltierBox.deleteLater()
         self.MainOption.deleteLater()
+        self.ChillerOption.deleteLater()
         self.AppOption.deleteLater()
         self.LogoGroupBox.deleteLater()
         self.mainLayout.removeWidget(self.FirmwareStatus)
@@ -1017,10 +1074,62 @@ class QtApplication(QWidget):
         self.mainLayout.removeWidget(self.ArduinoControl)
         self.mainLayout.removeWidget(self.PeltierBox)
         self.mainLayout.removeWidget(self.MainOption)
+        self.mainLayout.removeWidget(self.ChillerOption)
         self.mainLayout.removeWidget(self.AppOption)
         self.mainLayout.removeWidget(self.LogoGroupBox)
         QApplication.closeAllWindows()
 
+    def abortThermalTest(self):
+        """Stop the current profile running on thermal chamber"""
+        temp_chamber = F4TTempChamber(resource = site_settings.temp_chamber_resource)
+        with temp_chamber:
+            temp_chamber.set('CONTROL_PROFILE', 'STOP') 
+        message_box = QMessageBox()
+        message_box.setText("Profile Aborted")
+        message_box.setStandardButtons(QMessageBox.Ok)
+        message_box.exec()
+
+    def runThermalTest(self):
+        # Verify input of input data:
+        profile_number = self.ThermalProfileEdit.text()
+
+        # Check if this value is an int
+        try:
+            profile_number = int(profile_number)
+        except ValueError:
+            QMessageBox.information(
+                None, "Error", "Please enter a valid profile number"
+                ". It must be an integer", QMessageBox.Ok
+            )
+            return
+        # Import icicle module for temperature chamber
+        print(site_settings.temp_chamber_resource)
+        temp_chamber = F4TTempChamber(resource = site_settings.temp_chamber_resource)
+
+        #
+        with temp_chamber:
+            temp_chamber.set('SELECT_PROFILE', profile_number)
+            profile_name = temp_chamber.query('SELECT_PROFILE')
+
+        message_box = QMessageBox()
+        message_box.setText("Temperature chamber"
+                            f"profile \"{profile_name}\" has been chosen")
+        message_box.setInformativeText("Is this the correct profile?")
+        message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        message_box.setDefaultButton(QMessageBox.Yes)
+        response = message_box.exec()
+
+        if response == QMessageBox.Yes:
+            with temp_chamber:
+                temp_chamber.set('CONTROL_PROFILE', 'START')
+
+        if response == QMessageBox.No:
+            return 
+            
+                                    
+        
+
+        
     def openNewProductionTest(self):
         self.ProdTestPage = QtProductionTestWindow(
             self, instrumentCluster=self.instruments
@@ -1202,7 +1311,7 @@ class QtApplication(QWidget):
         self.destroyMain()
         self.createMain()
         self.checkFirmware()
-
+    
     ###############################################################
     ##  Global stop signal
     ###############################################################

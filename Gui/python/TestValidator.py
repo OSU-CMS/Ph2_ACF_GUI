@@ -11,8 +11,8 @@ def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, mod
         module_name = module_data['module'].getModuleName()
         module_type = module_data['module'].getModuleType()
         module_version = module_data['module'].getModuleVersion()
-        if 'IVCurve' in testName or 'SLDOScan' in testName:
-            explanation = 'No grading currently available for IVCurve or SLDOScan.'
+        if 'IVCurve' in testName or 'SLDOScan' in testName or 'CommunicationTest' in testName:
+            explanation = 'No grading currently available for IVCurve, SLDOScan, or CommunicationTest.'
             return {module_name:(True, explanation)}
         
         root_file_name = testName.split('_')[0]

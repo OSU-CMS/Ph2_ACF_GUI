@@ -429,6 +429,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                     FEChip.ConfigureLaneConfig(FELaneConfig_Dict[testName][int(chip.getLane())])
                     FEChip.VDDAtrim = chip.getVDDA()
                     FEChip.VDDDtrim = chip.getVDDD()
+                    FEChip.EfuseID = chip.getEfuseID()
                     HyBridModule0.AddFE(FEChip)
                 HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
                 OpticalGroupModule0.AddHyBrid(HyBridModule0)
