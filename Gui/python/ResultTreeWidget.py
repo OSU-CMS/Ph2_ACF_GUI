@@ -141,8 +141,15 @@ class ResultTreeWidget(QWidget):
             self.TreeRoot.setText(0, "Files..")
         else:
             self.TestLabel = QLabel("Test")
+
             self.ControlButtom = QPushButton("Pause")
             self.ControlButtom.clicked.connect(self.controlDisplay)
+
+            self.rightArrow = QPushButton("->")
+            self.rightArrow.clicked.connect(self.rightArrowFunc)
+            self.leftArrow = QPushButton("<-")
+            self.leftArrow.clicked.connect(self.leftArrowFunc)
+
             self.SVGWidget = QtSvg.QSvgWidget()
             minHeight = 400
             ratio = 1.5
@@ -163,7 +170,9 @@ class ResultTreeWidget(QWidget):
             self.mainLayout.addWidget(self.OutputTree, 0, 2, 10, 2)
         else:
             self.mainLayout.addWidget(self.TestLabel, 0, 2, 1, 2)
-            self.mainLayout.addWidget(self.ControlButtom, 0, 4, 1, 1)
+            self.mainLayout.addWidget(self.ControlButtom, 0, 5, 1, 1)
+            self.mainLayout.addWidget(self.rightArrow, 0, 4, 1, 1)
+            self.mainLayout.addWidget(self.leftArrow, 0, 3, 1, 1)
             self.mainLayout.addWidget(self.SVGWidget, 1, 2, 9, 3)
 
         if not self.master.expertMode:
@@ -244,13 +253,28 @@ class ResultTreeWidget(QWidget):
     def showNextPlot(self):
         self.timer.start(3000)
         if len(self.displayList) > 0:
-            if self.displayIndex == len(self.displayList):
-                self.allDisplayed = True
-            self.displayIndex = self.displayIndex % len(self.displayList)
-            step, displayPlot = self.displayList[self.displayIndex]
-            self.TestLabel.setText("Step{}".format(step))
-            self.SVGWidget.load(displayPlot)
+            self.showPlot()
             self.displayIndex += 1
+
+    def showPlot(self):
+        if self.displayIndex == len(self.displayList):
+            self.allDisplayed = True
+        self.displayIndex = self.displayIndex % len(self.displayList)
+        step, displayPlot = self.displayList[self.displayIndex]
+        self.TestLabel.setText("Step{}".format(step))
+        self.SVGWidget.load(displayPlot)
+
+    def rightArrowFunc(self):
+        self.timer.start(3000)
+        if len(self.displayList) > 0:
+            self.displayIndex += 1
+            self.showPlot()
+    
+    def leftArrowFunc(self):
+        self.timer.start(3000)
+        if len(self.displayList) > 0:
+            self.displayIndex -= 1
+            self.showPlot()
 
     def controlDisplay(self):
         if self.ControlButtom.text() == "Pause":
@@ -261,7 +285,7 @@ class ResultTreeWidget(QWidget):
             self.timer.start()
             self.timerFrozen = False
             self.ControlButtom.setText("Pause")
-
+            
     def updateResult(self, sourceFolder):
         process = subprocess.run(
             'find {0} -type f -name "*.root" '.format(sourceFolder),
