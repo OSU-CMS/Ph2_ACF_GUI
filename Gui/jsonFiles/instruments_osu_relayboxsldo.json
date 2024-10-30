@@ -23,7 +23,7 @@
         },
         "relay_board": {
             "class": "RelayBoard",
-            "resource": "ASRL/dev/ttyUSB0::INSTR",
+            "resource": "ASRL/dev/ttyUSB3::INSTR",
             "sim": false,
             "default_voltage": 0,
             "default_current": 0
