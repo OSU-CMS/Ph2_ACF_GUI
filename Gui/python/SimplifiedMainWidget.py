@@ -219,9 +219,12 @@ class SimplifiedMainWidget(QWidget):
         self.TestGroupLayout = QVBoxLayout()
         self.FunctionTestButton = QRadioButton("&Functional Test")
         self.AssemblyTestButton = QRadioButton("&Assembly QC Test")
-        self.AssemblyTestButton.setChecked(True)
-        self.TestGroupLayout.addWidget(self.AssemblyTestButton)
+        self.FullPerformanceTestButton = QRadioButton("&Full Performance Test")
+        self.FunctionTestButton.setChecked(True)
         self.TestGroupLayout.addWidget(self.FunctionTestButton)
+        self.TestGroupLayout.addWidget(self.AssemblyTestButton)
+        self.TestGroupLayout.addWidget(self.FullPerformanceTestButton)
+       
 
         self.TestGroup.setLayout(self.TestGroupLayout)
         logger.debug("Added Boxes/Layouts to Simplified GUI")
@@ -356,6 +359,8 @@ class SimplifiedMainWidget(QWidget):
             self.info = "TFPX_Functional_Test"
         elif self.AssemblyTestButton.isChecked():
             self.info = "TFPX_Assembly_QC"
+        elif self.FullPerformanceTestButton.isChecked():
+            self.info = "TFPX_FullPerformance_Test"
         self.runFlag = True
         self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
         self.RunButton.setDisabled(True)

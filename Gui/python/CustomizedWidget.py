@@ -160,12 +160,14 @@ class ChipBox(QWidget):
         self.VDDDMap = {}
         self.ChipGroupBoxDict = {}
         self.trimValues = None
+        self.chipData = None
         
         if self.master.purdue_connected and self.serialNumber != "":
-            trims = self.fetchTrimFromDB(self.serialNumber)
-            if trims:
-                self.trimValues = trims
-                if set(self.ChipList) != set(trims.keys()):
+            #trims = self.fetchTrimFromDB(self.serialNumber)
+            modulechipdata = self.fetchChipDataFromDB(self.serialNumber)
+            if modulechipdata:
+                self.chipData = modulechipdata
+                if set(self.ChipList) != set(modulechipdata.keys()):
                     # msg = QMessageBox()
                     # msg.information(
                     #     None,
@@ -179,7 +181,7 @@ class ChipBox(QWidget):
                         self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
                 else:
                     for chipid in self.ChipList:
-                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid, trims[chipid]['VDDA'], trims[chipid]['VDDD'])
+                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(chipid, modulechipdata[chipid]['VDDA'], modulechipdata[chipid]['VDDD'], modulechipdata[chipid]['EFUSE'])
         else:
             self.ChipGroupBoxDict.clear()
             for chipid in self.ChipList:
@@ -304,6 +306,8 @@ class ChipBox(QWidget):
         efuseID = self.findChild(QLineEdit, "EfuseIDEdit_{0}".format(pChipID))
         return efuseID.text()
     
+    def getChipData(self):
+        return self.chipData
     def getTrimValues(self):
         return self.trimValues
 
@@ -311,6 +315,76 @@ class ChipBox(QWidget):
         ChipCheckBox = self.findChild(QCheckBox, "ChipStatus_{0}".format(pChipID))
         ChipStatus = ChipCheckBox.isChecked()
         return ChipStatus
+    
+    ## This function returns a list of dictionaries.  Each element of the list is a chip dictinary.
+    ## For example, chipdata[0]['EFUSE'] is the efuse ID of the first chip
+    def fetchChipDataFromDB(self, moduleName):
+        try:
+            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            response = requests.get(URL)
+
+            parser = etree.HTMLParser()
+            tree = etree.fromstring(response.content, parser)
+            chip_table = tree.xpath('//body/table')[0]
+            #chipsitemap = {}
+            #chipsitemap['U1A'] = '12'
+            #chipsitemap['U1B'] = '13'
+            #chipsitemap['U1C'] = '14'
+            #chipsitemap['U1D'] = '15'
+            chipidmap = {}
+            chipidmap['0'] = '12'
+            chipidmap['1'] = '13'
+            chipidmap['2'] = '14'
+            chipidmap['3'] = '15'
+
+            chipdatalist = []
+            for row in chip_table:
+                elementdata = []
+                for element in row:
+                    elementdata.append(element.text)
+                chipdatalist.append(elementdata)
+            chipdatadicts = [dict(zip(chipdatalist[0], values)) for values in chipdatalist[1:]]
+            chipdata = {}
+            for i, chip in enumerate(chipdatadicts):
+                chipdata[chipidmap[str(i)]] = chip
+            return chipdata
+        
+        except requests.exceptions.RequestException as req_err:
+            #some sort of connection issue, alert user
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                QMessageBox.Ok
+            )
+            
+            self.master.purdue_connected = False
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
+        except IndexError:
+            #this occurs when an invalid modulename is input, alert user
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"Could not find {moduleName} in the database, using default values.",
+                QMessageBox.Ok
+            )
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
+        except Exception as e:
+            #other issue
+            logger.error(f"Some error occurred while querying the Purdue DB for VDDD/VDDA trim values. \nError: {repr(e)}")
+            self.master.purdue_connected = False
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+            return None
+
     def fetchChipSerialsFromDB(self, moduleName):
         try:
             URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
@@ -327,12 +401,15 @@ class ChipBox(QWidget):
 
             chipvalues = []
             chipserials = []
+            chipefuseids = []
             for row in chip_table[1:]:
                 for element in row:
                     if element.text and element.text.startswith('U1'):
                         chipvalues.append(chipsitemap[element.text])
                     elif element.text and element.text.startswith('N6'):
                         chipserials.append(element.text)
+                    elif len(element.text) == 4 and element.text.isdigit():
+                        chipefuseids.append(element.text)
             chipdata = dict(zip(chipvalues, chipserials))
 
             return chipdata
@@ -1030,13 +1107,22 @@ class SimpleBeBoardBox(QWidget):
             
             #Fetch the VDDD/VDDA trim values from the Purdue DB, make a ChipBox due to built in error handling
             chipBox = ChipBox(self.master, module.getType(module.getSerialNumber()), module.getSerialNumber())
-            trims = chipBox.getTrimValues()
-            if trims:
+            chipData = chipBox.getChipData()
+            if chipData:
                 for chipID in ModuleLaneMap[module.getType(module.getSerialNumber())].values():
-                    Module.getChips()[chipID].setVDDA(trims[chipID]['VDDA'])
-                    Module.getChips()[chipID].setVDDD(trims[chipID]['VDDD'])
+                    Module.getChips()[chipID].setVDDA(chipData[chipID]['VDDA'])
+                    Module.getChips()[chipID].setVDDD(chipData[chipID]['VDDD'])
+                    Module.getChips()[chipID].setEfuseID(chipData[chipID]['EFUSE'])
             else:
                 print("Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values.")
+
+            #trims = chipBox.getTrimValues()
+            #if trims:
+            #    for chipID in ModuleLaneMap[module.getType(module.getSerialNumber())].values():
+            #        Module.getChips()[chipID].setVDDA(trims[chipID]['VDDA'])
+            #        Module.getChips()[chipID].setVDDD(trims[chipID]['VDDD'])
+            #else:
+            #    print("Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values.")
             
             # Add the QtModule object to the currently selected Optical Group
             try:

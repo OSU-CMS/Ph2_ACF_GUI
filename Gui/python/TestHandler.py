@@ -125,7 +125,7 @@ class TestHandler(QObject):
         self.outputFile = ""
         self.errorFile = ""
 
-        self.autoSave = True
+        self.autoSave = False
         self.backSignal = False
         self.halt = False
         self.finishSignal = False

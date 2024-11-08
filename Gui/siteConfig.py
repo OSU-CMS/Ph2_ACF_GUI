@@ -76,7 +76,7 @@ CableMapping = {
 ## Specify whether of not you want to monitor chip temperature during the tests ##
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
-Monitor_CROC = "0"
+Monitor_CROC = "1"
 Monitor_SleepTime = "30000"  # time in milliseconds between temperature readings
 
 ## Establish thresholds for chip temperature readings. A chip reading above the
