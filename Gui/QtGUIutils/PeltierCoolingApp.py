@@ -114,6 +114,14 @@ class Peltier(QWidget):
                 )
             )[1]: raise Exception("Could not communicate with Peltier")  # Set proportional bandwidth
 
+
+            # Ensure the Peltier cannot heat up/change polarity to maintain setpoint
+            if not self.pelt.sendCommand(
+                self.pelt.createCommand(
+                    "Heat Multiplier Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
+                )
+            )[1]: raise Exception("Could not communicate with Peltier")
+
             message, _ = self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Control Output Polarity Read",

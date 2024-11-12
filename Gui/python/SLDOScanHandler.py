@@ -4,9 +4,9 @@ Class to perform the SLDO curve scanning
 
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from Gui.python.logging_config import logger
-from icicle.icicle.adc_board import AdcBoard
+#from icicle.icicle.adc_board import AdcBoard
 from icicle.icicle.relay_board import RelayBoard
-from icicle.icicle.multiment_cluster import InstrumentNotInstantiated
+#from icicle.icicle.multiment_cluster import InstrumentNotInstantiated
 import numpy as np
 import matplotlib.pyplot as plt
 import time

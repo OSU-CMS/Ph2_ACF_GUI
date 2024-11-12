@@ -36,6 +36,10 @@ class PeltierSignalGenerator:
             "Over Current Continuous Read": ["4", "d"],
             "Control Output Polarity Write": ["2", "c"],
             "Control Output Polarity Read": ["4", "5"],
+            "Heat Multiplier Write": ["0", "c"],
+            "Heat Multiplier Read": ["5", "c"],
+            "Cool Multiplier Write": ["0", "d"],
+            "Cool Multiplier Read": ["5", "d"]
         }
         self.checksumError = [
             "*",
