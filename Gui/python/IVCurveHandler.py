@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import QThread, QObject, pyqtSignal
+from PyQt5.QtCore import QThread, QObject, pyqtSignal, QProcess
 
 import time
 import numpy
@@ -54,6 +54,18 @@ class IVCurveThread(QThread):
     def run(self):
         try:
             self.instruments.hv_off()
+            self.run_process = QProcess(self)
+            self.run_process.SetProcessChannelMode(QProcess.MergedChannels)
+            self.run_process.setWorkingDirectory(
+                os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+
+            self.run_process.start(
+                "CMSITminiDAQ",
+                ["-f", "CMSIT.xml", "-c",
+                 "physics"],
+            )
+            self.run_process.waitForStarted(1000)
+            
             _, measurements = self.instruments.hv_on(
                 voltage= self.stopVal,
                 step_size= self.stepLength,
