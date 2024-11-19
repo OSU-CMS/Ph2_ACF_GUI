@@ -1,6 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, QProcess
 
+import os
 import time
 import numpy
 from Gui.python.logging_config import logger
@@ -86,8 +87,10 @@ class IVCurveThread(QThread):
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
+            self.run_process.write("\n")
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
+            self.run_process.write("\n")
 
 
 class IVCurveHandler(QObject):
