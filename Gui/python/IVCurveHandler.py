@@ -74,6 +74,10 @@ class IVCurveThread(QThread):
                 #break_monitoring=self.breakTest,
                 execute_each_step=self.getProgress,
             )[0]
+
+            # The physics test can be stopped by pressing enter
+            self.run_process.write(b"\n") 
+
             measurementStr = {
                 "voltage": [value[4] for value in measurements],
                 "current": [value[5] for value in measurements],
