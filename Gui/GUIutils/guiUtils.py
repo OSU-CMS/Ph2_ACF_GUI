@@ -403,8 +403,9 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                 HyBridModule0.SetHyBridName(module.getModuleName())
         
                 moduleType = module.getModuleType()
-                RxPolarities = "1" if "CROC" and "Quad" in moduleType else "0" if "CROC" in moduleType else None        
-                revPolarity = not ("CROC" and "1x2" in moduleType)
+                RxPolarities = "1" if "CROC" and "Quad" and "TFPX"in moduleType else "0" if "CROC" in moduleType else None        
+                #revPolarity = not ("CROC" and "1x2" in moduleType)
+                revPolarity = bool(int(RxPolarities))
                 FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
                 globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
                 HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
