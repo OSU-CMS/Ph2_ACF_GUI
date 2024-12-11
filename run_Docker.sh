@@ -81,5 +81,5 @@ else
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
 		-w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-		-e XAUTHORITY=$XAUTH --net host local/testimagedec11user #majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
+		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
 fi
