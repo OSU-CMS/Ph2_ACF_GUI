@@ -34,6 +34,7 @@ from Gui.GUIutils.guiUtils import (
 )
 from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
+from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
@@ -1055,8 +1056,15 @@ class TestHandler(QObject):
         self.outputString.emit(f"Voltages: {measure['voltage']}")
         self.outputString.emit(f"Currents: {measure['current']}")
 
-        for module in self.modules: #Only one HV and IVCurve works by sweeping HV. Ask about this.
+                        
+#        for module in self.modules: #Only one HV and IVCurve works by sweeping HV. Ask about this.
+#            moduleName = module.getModuleName()
+
+        for module in self.modules:
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
             moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
 
             self.IVCurveResult = ScanCanvas(
                 self,
@@ -1069,7 +1077,13 @@ class TestHandler(QObject):
 
             csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, timestamp)
             np.savetxt(csvfilename, (measure["voltage"], measure["current"]), delimiter=',')
+            module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
+                boardID=beboardId, 
+                ogID=ogId, 
+                hybridID=hybridId)
             
+            IVCurve_CSV_to_ROOT(moduleName, module_canvas_path, csvfilename, self.output_dir)
+
             filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, timestamp)
             filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
             self.IVCurveResult.saveToSVG(filename)
@@ -1181,6 +1195,7 @@ class TestHandler(QObject):
 
     def upload_to_Panthera(self):
         try:
+            self.runwindow.UploadButton.setDisabled(True)
             for module in self.modules:
                 status, message = self.felis.upload_results(
                     module.getModuleName(),

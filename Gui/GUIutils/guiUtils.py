@@ -403,8 +403,9 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
                 HyBridModule0.SetHyBridName(module.getModuleName())
         
                 moduleType = module.getModuleType()
-                RxPolarities = "1" if "CROC" and "Quad" in moduleType else "0" if "CROC" in moduleType else None        
-                revPolarity = not ("CROC" and "1x2" in moduleType)
+                RxPolarities = "1" if "CROC" in moduleType and "Quad" in moduleType and "TFPX" in moduleType else "0" if "CROC" in moduleType else None        
+                #revPolarity = not ("CROC" and "1x2" in moduleType)
+                revPolarity = bool(int(RxPolarities))
                 FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
                 globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
                 HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
@@ -436,8 +437,9 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
             
             BeBoardModule0.AddOGModule(OpticalGroupModule0)
         
-        if revPolarity:
-            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = 11
+        if revPolarity == True:
+            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = '0xbbb'
+            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l8'] = '0x44'
         
         BeBoardModule0.SetURI(BeBoard.getIPAddress())
         BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")

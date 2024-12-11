@@ -48,9 +48,9 @@ DAC_KRUM_CURR_LIN         0x1D          0d70                    0d70            
 DAC_REF_KRUM_LIN          0x1E          0d360                   0d360                              10
 DAC_COMP_LIN              0x1F          0d80                    0d80                               10
 DAC_COMP_TA_LIN           0x20          0d900                   0d900                              10
-DAC_GDAC_L_LIN            0x21          0d900                   0d900                              10
-DAC_GDAC_R_LIN            0x22          0d900                   0d900                              10
-DAC_GDAC_M_LIN            0x23          0d900                   0d900                              10
+DAC_GDAC_L_LIN            0x21          0d450                   0d450                              10
+DAC_GDAC_R_LIN            0x22          0d450                   0d450                              10
+DAC_GDAC_M_LIN            0x23          0d450                   0d450                              10
 DAC_LDAC_LIN              0x24          0d140                   0d140                              10
 
 *-------------------------------------------------------------------------------------------------------
@@ -80,7 +80,7 @@ EN_CORE_COL_RESET_0       0x2E          0b0                     0b0             
 *-------------------------------------------------------------------------------------------------------
 * RegName                 Addr          Defval                  Value                           BitSize
 *-------------------------------------------------------------------------------------------------------
-TriggerConfig             0x2F          0b0111110100            0b0111110100                       10
+TriggerConfig             0x2F          0b0010000100            0b0010000100                       10
 SelfTriggerConfig_1       0x30          0b010001                0b010001                            6
 SelfTriggerConfig_0       0x31          0b000110010000001       0b000110010000001                  15
 HitOrPatternLUT           0x32          0b0                     0b0                                16

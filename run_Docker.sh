@@ -41,6 +41,7 @@ then
 		-v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
+		-v ${PWD}/Ph2_ACF/settings/RD53Files:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/settings/RD53Files\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
 		-v ${PWD}/Gui/QtGUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/\
 		-v ${PWD}/Gui/GUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/\
@@ -55,7 +56,24 @@ then
 		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
 else
     echo "running as user"
-    docker run --pull=always --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
+	IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
+
+	LOCAL_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_NAME" | cut -d'@' -f2)
+	REMOTE_DIGEST=$(skopeo inspect docker://$IMAGE_NAME | jq -r '.Digest')
+
+	if [[ "$LOCAL_DIGEST" == "$REMOTE_DIGEST" ]]; then
+  		echo "The image is already up to date."
+	else
+  		echo "A newer image is available. Do you want to pull it? (y/n)"
+  		read -r response
+  		if [[ $response == "y" ]]; then
+    		docker pull $IMAGE_NAME
+    		echo "Image pulled successfully."
+  		else
+    		echo "Image pull canceled."
+  		fi
+	fi
+    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
@@ -63,5 +81,5 @@ else
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
 		-w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
+		-e XAUTHORITY=$XAUTH --net host local/testimagedec11user #majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
 fi
