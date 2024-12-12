@@ -58,13 +58,30 @@ else
     echo "running as user"
 	IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
 
+        # Check if skopleo is installed, if not prompt user to install
+        if ! which skopeo > /dev/null 2>&1; then
+            echo -e "\e[31mPlease install skopeo. This allows us to check whether you are
+using the latest version of the docker image for the Ph2_ACF_GUI.
+To install on Alma Linux please run:\e[0m
+\e[1;0msudo dnf -y install skopeo\e[0m"
+            echo "We cannot ensure you are running the latest docker image. Continue at your own risk.
+                  Would you like to continue? (y/n)" 
+            read -r response
+            if [[ "$response" =~ ^[Yy]$ ]]; then
+                echo "Continuing with the script..."
+            else
+                echo "Exiting the script."
+                exit 1
+            fi
+        fi
+        
 	LOCAL_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$IMAGE_NAME" | cut -d'@' -f2)
 	REMOTE_DIGEST=$(skopeo inspect docker://$IMAGE_NAME | jq -r '.Digest')
 
 	if [[ "$LOCAL_DIGEST" == "$REMOTE_DIGEST" ]]; then
   		echo "The image is already up to date."
 	else
-  		echo "A newer image is available. Do you want to pull it? (y/n)"
+  		echo "A newer image is available (this may be untrue if skopeo is not installed). Do you want to pull it? (y/n)"
   		read -r response
   		if [[ $response == "y" ]]; then
     		docker pull $IMAGE_NAME
