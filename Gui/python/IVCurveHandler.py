@@ -1,6 +1,7 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import QThread, QObject, pyqtSignal
+from PyQt5.QtCore import QThread, QObject, pyqtSignal, QProcess
 
+import os
 import time
 import numpy
 from Gui.python.logging_config import logger
@@ -54,6 +55,18 @@ class IVCurveThread(QThread):
     def run(self):
         try:
             self.instruments.hv_off()
+            self.run_process = QProcess(self)
+            self.run_process.setProcessChannelMode(QProcess.MergedChannels)
+            self.run_process.setWorkingDirectory(
+                os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+
+            self.run_process.start(
+                "CMSITminiDAQ",
+                ["-f", "CMSIT.xml", "-c",
+                 "physics"],
+            )
+            self.run_process.waitForStarted(1000)
+            
             _, measurements = self.instruments.hv_on(
                 voltage= self.stopVal,
                 step_size= self.stepLength,
@@ -62,6 +75,10 @@ class IVCurveThread(QThread):
                 #break_monitoring=self.breakTest,
                 execute_each_step=self.getProgress,
             )[0]
+
+            # The physics test can be stopped by pressing enter
+            self.run_process.write("\n".encode()) 
+
             measurementStr = {
                 "voltage": [value[4] for value in measurements],
                 "current": [value[5] for value in measurements],
@@ -70,8 +87,10 @@ class IVCurveThread(QThread):
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
+            self.run_process.write("\n")
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
+            self.run_process.write("\n")
 
 
 class IVCurveHandler(QObject):
