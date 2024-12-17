@@ -163,7 +163,6 @@ class SLDOCurveWorker(QThread):
         # All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
     
-
     def runWithRelayDMM(self) -> None:
         """
         Run thread that will ramp up the LV while measuring from the multimeter, then ramp down doing the same thing.
