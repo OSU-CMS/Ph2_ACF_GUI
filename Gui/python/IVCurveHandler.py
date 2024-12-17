@@ -56,7 +56,7 @@ class IVCurveThread(QThread):
         try:
             self.instruments.hv_off()
             self.run_process = QProcess(self)
-            self.run_process.SetProcessChannelMode(QProcess.MergedChannels)
+            self.run_process.setProcessChannelMode(QProcess.MergedChannels)
             self.run_process.setWorkingDirectory(
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
@@ -77,7 +77,7 @@ class IVCurveThread(QThread):
             )[0]
 
             # The physics test can be stopped by pressing enter
-            self.run_process.write(b"\n") 
+            self.run_process.write("\n".encode()) 
 
             measurementStr = {
                 "voltage": [value[4] for value in measurements],
