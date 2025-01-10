@@ -12,7 +12,6 @@ from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
 import hashlib
-import traceback
 
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
@@ -1198,9 +1197,9 @@ class TestHandler(QObject):
         self.runwindow.UploadButton.setDisabled(True)
         counter = 0
         nummodules = len(self.modules)
-        self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"=="*8+"] "+str(counter)+"/"+str(nummodules))
         try:
             for module in self.modules:
+                self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules))
                 QApplication.processEvents() #not ideal. May need to fix later.
                 status, message = self.felis.upload_results(
                     module.getModuleName(),
@@ -1210,11 +1209,9 @@ class TestHandler(QObject):
                 if not status:
                     raise ConnectionError(message)
                 counter+=1
-                self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules))
             self.runwindow.ProgressBarLabel.setText("Upload successful!")
 
         except Exception as e:
-            traceback.print_exc()
             if not self.master.panthera_connected:
                 error_message = "Cannot upload test results, you are not signed in to Panthera."
                 logger.error(error_message)
