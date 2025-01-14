@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QMessageBox
 
 import sys
 import os
+import glob
 import re
 import subprocess
 import threading
@@ -440,7 +441,6 @@ class TestHandler(QObject):
         self.updateOptimizedXMLValues()
         self.configTest()
 
-        
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
 
@@ -572,29 +572,18 @@ class TestHandler(QObject):
         # self.finishSingal = False
 
     def abortTest(self):
-        reply = QMessageBox.question(
-            None,
-            "Abort",
-            "Are you sure to abort?",
-            QMessageBox.No | QMessageBox.Yes,
-            QMessageBox.No,
-        )
+        self.halt = True
+        self.run_process.kill()
 
-        if reply == QMessageBox.Yes:
-            self.halt = True
-            self.run_process.kill()
+        self.haltSignal.emit(self.halt)
 
-            self.haltSignal.emit(self.halt)
-
-            self.starttime = None
-            if self.IVCurveHandler:
-                self.outputString.emit("Aborting IVCurve")
-                self.IVCurveHandler.stop()
-            if self.SLDOScanHandler:
-                self.outputString.emit("Aborting SLDOScan")
-                self.SLDOScanHandler.stop()
-        else:
-            return
+        self.starttime = None
+        if self.IVCurveHandler:
+            self.outputString.emit("Aborting IVCurve")
+            self.IVCurveHandler.stop()
+        if self.SLDOScanHandler:
+            self.outputString.emit("Aborting SLDOScan")
+            self.SLDOScanHandler.stop()
 
     def urgentStop(self):
         self.run_process.kill()
@@ -655,6 +644,23 @@ class TestHandler(QObject):
             else:
                 print('testHandler.collect_plots Exception:', repr(e))
                 return []
+    
+    #For root files with the same RunNumber in the PH2ACF directory, this function only copies over to
+    #self.output_dir the .root file modified most recently. This will copy over the wrong file if somebody
+    #manually edits the .root file in the PH2ACF directory, so there may be a better way to do this
+    def copyMostRecentRootFile(self,RunNumber,base_dir,output_dir):
+        # Construct the search pattern for files
+        search_pattern = f"{base_dir}/Run{RunNumber}*.root"
+
+        # Find all matching files
+        matching_files = glob.glob(search_pattern)
+        print(matching_files)
+
+        # Sort files by modification time (newest first)
+        latest_file = max(matching_files, key=os.path.getmtime)
+        
+        # Copy the most recent file to the output directory
+        os.system(f"cp {latest_file} {output_dir}/")
 
     def saveTest(self):
         # if self.parent.current_test_grade < 0:
@@ -664,21 +670,12 @@ class TestHandler(QObject):
 
         try:
             if self.RunNumber == "-1":
-                os.system(
-                    "cp {0}/test/Results/Run000000*.root {1}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
-                    )
-                )
+
+                self.copyMostRecentRootFile(000000,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir)
                 # os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
                 # os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
             else:
-                os.system(
-                    "cp {0}/test/Results/Run{1}*.root {2}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        self.output_dir,
-                    )
-                )
+                self.copyMostRecentRootFile(self.RunNumber,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir)
                 # os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
                 # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
         except:
@@ -900,6 +897,7 @@ class TestHandler(QObject):
     def on_finish(self):
         self.outputfile.close()
         # While the process is killed:
+
         if self.halt == True:
             self.haltSignal.emit(True)
             return

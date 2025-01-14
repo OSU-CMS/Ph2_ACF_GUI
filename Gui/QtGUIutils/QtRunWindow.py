@@ -443,7 +443,8 @@ class QtRunWindow(QWidget):
         self.master.ProcessingTest = True
 
     def release(self):
-        self.abortTest()
+        self.j = 0 #deprecated?
+        self.testhandler.abortTest()
         self.master.ProcessingTest = False
         if self.master.expertMode == True:
             self.master.NewTestButton.setDisabled(False)
@@ -541,8 +542,19 @@ class QtRunWindow(QWidget):
         self.testHandler.runTest(isReRun)
 
     def abortTest(self):
-        self.j = 0
-        self.testHandler.abortTest()
+        reply = QMessageBox.question(
+            None,
+            "Abort",
+            "Are you sure to abort?",
+            QMessageBox.No | QMessageBox.Yes,
+            QMessageBox.No,
+        )
+
+        if reply == QMessageBox.Yes:
+            self.j = 0 #deprecated?
+            self.testHandler.abortTest()
+        else:
+            return
 
     def urgentStop(self):
         self.testHandler.urgentStop()
