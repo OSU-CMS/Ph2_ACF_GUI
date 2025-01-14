@@ -51,6 +51,7 @@ from InnerTrackerTests.HWSettings import (
 from InnerTrackerTests.MonitoringSettings import (
     MonitoringListA,
     MonitoringListB,
+    Monitoring_DictB,
 )
 from InnerTrackerTests.RegisterSettings import RegisterSettings
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
@@ -452,7 +453,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
     if "RD53A" in boardtype:
         MonitoringModule0.SetMonitoringList(MonitoringListA)
     else:
-        MonitoringModule0.SetMonitoringList(MonitoringListB)
+        MonitoringModule0.SetMonitoringList(Monitoring_DictB[testName])
     HWDescription0.AddMonitoring(MonitoringModule0)
     GenerateHWDescriptionXML(HWDescription0, outputFile, boardtype)
 
