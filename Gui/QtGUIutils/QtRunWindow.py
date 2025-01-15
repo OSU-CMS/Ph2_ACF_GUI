@@ -218,6 +218,7 @@ class QtRunWindow(QWidget):
         self.ResetButton.clicked.connect(self.resetConfigTest)
         self.RunButton = QPushButton("&Run")
         self.RunButton.setDefault(True)
+        self.RunButton.clicked.connect(lambda: self.ProgressBarLabel.setText(""))
         self.RunButton.clicked.connect(self.resetConfigTest)
         self.RunButton.clicked.connect(self.initialTest)
         self.RunButton.clicked.connect(lambda: self.RunButton.setDisabled(True))
@@ -374,6 +375,8 @@ class QtRunWindow(QWidget):
         self.AppOption = QGroupBox()
         self.StartLayout = QHBoxLayout()
 
+        self.ProgressBarLabel = QLabel("")
+
         self.UploadButton = QPushButton("&Upload Results")
         self.UploadButton.clicked.connect(self.testHandler.upload_to_Panthera)
         self.UploadButton.setDisabled(True)
@@ -388,9 +391,11 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
+
         #if self.master.expertMode == True:
         #    self.StartLayout.addWidget(self.UploadButton)
         self.StartLayout.addWidget(self.UploadButton)
+
         self.StartLayout.addWidget(self.BackButton)
         self.StartLayout.addWidget(self.FinishButton)
         self.AppOption.setLayout(self.StartLayout)
@@ -674,4 +679,3 @@ class QtRunWindow(QWidget):
             else:
                 self.backSignal = False
                 event.ignore()
-

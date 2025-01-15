@@ -1277,9 +1277,13 @@ class TestHandler(QObject):
             self.starttime = None
 
     def upload_to_Panthera(self):
+        self.runwindow.UploadButton.setDisabled(True)
+        counter = 0
+        nummodules = len(self.modules)
         try:
-            self.runwindow.UploadButton.setDisabled(True)
             for module in self.modules:
+                self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules))
+                QApplication.processEvents() #not ideal. May need to fix later.
                 status, message = self.felis.upload_results(
                     module.getModuleName(),
                     self.master.username,
@@ -1289,13 +1293,20 @@ class TestHandler(QObject):
                 )
                 if not status:
                     raise ConnectionError(message)
+                counter+=1
+            self.runwindow.ProgressBarLabel.setText("Upload successful!")
+
         except Exception as e:
             if not self.master.panthera_connected:
-                logger.error("Cannot upload test results, you are not signed in to Panthera.")
+                error_message = "Cannot upload test results, you are not signed in to Panthera."
+                logger.error(error_message)
             else:
-                logger.error(f"There was an error uploading the test results. {repr(e)}")
+                error_message = "There was an error uploading the test results."
+                logger.error(f"{error_message} {repr(e)}")
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
+
+            self.runwindow.ProgressBarLabel.setText(error_message)
     
     def bumpbond_analysis(self):
         
@@ -1338,4 +1349,3 @@ class TestHandler(QObject):
                     for chipID in module.getEnabledChips().keys():
                         commands.append(command_template.format(boardID, ogID, hybridID, chipID))
         executeCommandSequence(commands)
-
