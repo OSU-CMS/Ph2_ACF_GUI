@@ -42,16 +42,22 @@ def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, mod
 
             relevant_files = [outputDir+"/"+os.fsdecode(file) for file in os.listdir(outputDir)]
             _1, _2 = felis.set_module(
-                module_name, module_type.split(" ")[2].replace("Quad","2x2"), module_type.split(" ")[0], module_version.strip('v'), True, "link"
+                module_name, module_type.split(" ")[0], module_type.split(" ")[2].replace("Quad","2x2"), module_version.strip('v'), True, "link"
             )
             module_canvases = [module_canvas_path]
+            #status, message, sanity, explanation = felis.set_result(
+            #    ROOT_file_path,
+            #    module_canvases,
+            #    relevant_files,
+            #    module_name,
+            #    f"{testIndexInSequence:02d}_{testName}",
+            #    'ivcurve',
+            #)
             status, message, sanity, explanation = felis.set_result(
-                ROOT_file_path,
-                module_canvases,
                 relevant_files,
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
-                Test_to_Ph2ACF_Map[testName],
+                'ivcurve',
             )
         else:
             ROOT_file_path = "{0}/Run{1}_{2}.root".format(
@@ -70,12 +76,12 @@ def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, mod
             ]
             relevant_files = [outputDir+"/"+os.fsdecode(file) for file in os.listdir(outputDir)]
             _1, _2 = felis.set_module(
-                module_name, module_type.split(" ")[2].replace("Quad","2x2"), module_type.split(" ")[0], module_version.strip('v'), True, "link"
+                module_name, module_type.split(" ")[0], module_type.split(" ")[2].replace("Quad","2x2"), module_version.strip('v'), True, "link"
             )
 
             status, message, sanity, explanation = felis.set_result(
-                ROOT_file_path,
-                chip_canvases,
+                #ROOT_file_path,
+                #chip_canvases,
                 relevant_files,
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
