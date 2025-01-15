@@ -391,9 +391,11 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
-        self.StartLayout.addWidget(self.ProgressBarLabel)
-        if self.master.expertMode == True:
-            self.StartLayout.addWidget(self.UploadButton)
+
+        #if self.master.expertMode == True:
+        #    self.StartLayout.addWidget(self.UploadButton)
+        self.StartLayout.addWidget(self.UploadButton)
+
         self.StartLayout.addWidget(self.BackButton)
         self.StartLayout.addWidget(self.FinishButton)
         self.AppOption.setLayout(self.StartLayout)

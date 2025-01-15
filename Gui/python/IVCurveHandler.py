@@ -55,17 +55,17 @@ class IVCurveThread(QThread):
     def run(self):
         try:
             self.instruments.hv_off()
-            self.run_process = QProcess(self)
-            self.run_process.setProcessChannelMode(QProcess.MergedChannels)
-            self.run_process.setWorkingDirectory(
-                os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+            #self.run_process = QProcess(self)
+            #self.run_process.setProcessChannelMode(QProcess.MergedChannels)
+            #self.run_process.setWorkingDirectory(
+            #    os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
-            self.run_process.start(
-                "CMSITminiDAQ",
-                ["-f", "CMSIT.xml", "-c",
-                 "physics"],
-            )
-            self.run_process.waitForStarted(1000)
+            #self.run_process.start(
+            #    "CMSITminiDAQ",
+            #    ["-f", "CMSIT.xml", "-c",
+            #     "physics"],
+            #)
+            #self.run_process.waitForStarted(1000)
             
             _, measurements = self.instruments.hv_on(
                 voltage= self.stopVal,
@@ -77,7 +77,7 @@ class IVCurveThread(QThread):
             )[0]
 
             # The physics test can be stopped by pressing enter
-            self.run_process.write("\n".encode()) 
+            #self.run_process.write(b"\r\n") 
 
             measurementStr = {
                 "voltage": [value[4] for value in measurements],
@@ -87,10 +87,10 @@ class IVCurveThread(QThread):
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
-            self.run_process.write("\n")
+            #self.run_process.write(b"\r\n")
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
-            self.run_process.write("\n")
+            #self.run_process.write(b"\r\n")
 
 
 class IVCurveHandler(QObject):
@@ -98,6 +98,7 @@ class IVCurveHandler(QObject):
     stopSignal = pyqtSignal(object)
     finished = pyqtSignal(str, dict)
     progressSignal = pyqtSignal(str, float)
+    startSignal = pyqtSignal()
 
     def __init__(self, instrument_cluster):
         super(IVCurveHandler, self).__init__()
@@ -116,7 +117,7 @@ class IVCurveHandler(QObject):
         if not self.isValid():
             return
         self.test.start()
-
+        self.startSignal.emit()
     def transitMeasurment(self, measure):
         self.measureSignal.emit("IVCurve", measure)
 
@@ -126,6 +127,7 @@ class IVCurveHandler(QObject):
     def finish(self, test: str, measure: dict):
         self.instruments.hv_off()
         self.finished.emit(test, measure)
+
 
     def stop(self):
         try:
