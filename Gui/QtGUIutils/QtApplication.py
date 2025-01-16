@@ -109,35 +109,12 @@ class QtApplication(QWidget):
             or sys.platform.startswith("win")
             or sys.platform.startswith("darwin")
         ):
-            darkPalette = QPalette()
-            darkPalette.setColor(QPalette.Window, QColor(53, 53, 53))
-            darkPalette.setColor(QPalette.WindowText, Qt.white)
-            darkPalette.setColor(QPalette.Base, QColor(25, 25, 25))
-            darkPalette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
-            darkPalette.setColor(QPalette.ToolTipBase, Qt.darkGray)
-            darkPalette.setColor(QPalette.ToolTipText, Qt.white)
-            darkPalette.setColor(QPalette.Text, Qt.white)
-            darkPalette.setColor(QPalette.Button, QColor(53, 53, 53))
-            darkPalette.setColor(QPalette.ButtonText, Qt.white)
-            darkPalette.setColor(QPalette.BrightText, Qt.red)
-            darkPalette.setColor(QPalette.Link, QColor(42, 130, 218))
-            darkPalette.setColor(QPalette.Highlight, QColor(42, 130, 218))
-            darkPalette.setColor(QPalette.HighlightedText, Qt.black)
-
-            darkPalette.setColor(QPalette.Disabled, QPalette.Window, Qt.lightGray)
-            darkPalette.setColor(QPalette.Disabled, QPalette.WindowText, Qt.gray)
-            darkPalette.setColor(QPalette.Disabled, QPalette.Base, Qt.darkGray)
-            darkPalette.setColor(QPalette.Disabled, QPalette.ToolTipBase, Qt.darkGray)
-            darkPalette.setColor(QPalette.Disabled, QPalette.ToolTipText, Qt.white)
-            darkPalette.setColor(QPalette.Disabled, QPalette.Text, Qt.gray)
-            darkPalette.setColor(QPalette.Disabled, QPalette.Button, QColor(73, 73, 73))
-            darkPalette.setColor(QPalette.Disabled, QPalette.ButtonText, Qt.lightGray)
-            darkPalette.setColor(QPalette.Disabled, QPalette.BrightText, Qt.lightGray)
-            darkPalette.setColor(QPalette.Disabled, QPalette.Highlight, Qt.lightGray)
-            darkPalette.setColor(QPalette.Disabled, QPalette.HighlightedText, Qt.gray)
-
-            QApplication.setStyle(QStyleFactory.create("Fusion"))
-            QApplication.setPalette(darkPalette)
+            try:
+                with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
+                    self.setStyleSheet(f.read())
+            except Exception as e:
+                print(e)
+                logger.warning("Could not open style sheet")
         else:
             print("This GUI supports Win/Linux/MacOS only")
         self.show()
