@@ -727,8 +727,14 @@ class TestHandler(QObject):
                         os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
                     )
                 )
-                # os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
-                # os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
+            elif "IVCurve" in self.currentTest:
+                os.system(
+                    "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.output_dir,
+                    )
+                )
             else:
                 os.system(
                     "cp {0}/test/Results/Run{1}*.root {2}/".format(
@@ -968,6 +974,7 @@ class TestHandler(QObject):
                 print('process would not terminate, so killing it now...')
                 self.run_process.kill()
         if "IVCurve" in self.currentTest:
+            self.saveTest()
             return
         # To be removed
         # if isCompositeTest(self.info):
@@ -1281,6 +1288,11 @@ class TestHandler(QObject):
         counter = 0
         nummodules = len(self.modules)
         try:
+
+            self.runwindow.UploadButton.setDisabled(True)
+            counter = 0
+            nummodules = len(self.modules)
+
             for module in self.modules:
                 self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules))
                 QApplication.processEvents() #not ideal. May need to fix later.
@@ -1294,7 +1306,9 @@ class TestHandler(QObject):
                 if not status:
                     raise ConnectionError(message)
                 counter+=1
+
             self.runwindow.ProgressBarLabel.setText("Upload successful!")
+
 
         except Exception as e:
             if not self.master.panthera_connected:
@@ -1307,7 +1321,8 @@ class TestHandler(QObject):
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
 
             self.runwindow.ProgressBarLabel.setText(error_message)
-    
+            
+
     def bumpbond_analysis(self):
         
         runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
