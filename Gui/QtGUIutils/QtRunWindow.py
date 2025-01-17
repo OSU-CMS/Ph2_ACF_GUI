@@ -376,7 +376,7 @@ class QtRunWindow(QWidget):
         self.StartLayout = QHBoxLayout()
 
         self.ProgressBarLabel = QLabel("")
-        
+
         self.UploadButton = QPushButton("&Upload Results")
         self.UploadButton.clicked.connect(self.testHandler.upload_to_Panthera)
         self.UploadButton.setDisabled(True)
@@ -391,10 +391,13 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
+
         self.StartLayout.addWidget(self.ProgressBarLabel)
+
         #if self.master.expertMode == True:
         #    self.StartLayout.addWidget(self.UploadButton)
         self.StartLayout.addWidget(self.UploadButton)
+
         self.StartLayout.addWidget(self.BackButton)
         self.StartLayout.addWidget(self.FinishButton)
         self.AppOption.setLayout(self.StartLayout)
@@ -678,4 +681,3 @@ class QtRunWindow(QWidget):
             else:
                 self.backSignal = False
                 event.ignore()
-
