@@ -581,8 +581,11 @@ class QtApplication(QWidget):
         self.LVPowerGroup.setLayout(self.LVPowerLayout)
         logger.debug("setup LV and HV devices")
         
-        self.relay_group = QGroupBox("Relay Box")
         if "relay_board" in site_settings.icicle_instrument_setup["instrument_dict"].keys():
+
+            self.relay = True
+
+            self.relay_group = QGroupBox("Relay Box")
             self.relay_group.setDisabled(True)
             relay_layout = QGridLayout()
             self.relay_board_port_label = QLabel()
@@ -640,8 +643,11 @@ class QtApplication(QWidget):
 
             self.mainLayout.addWidget(self.relay_group, 3, 0, 1, 1)
 
-        self.multimeter_group = QGroupBox("Multimeter")
         if "multimeter" in site_settings.icicle_instrument_setup["instrument_dict"].keys():
+
+            self.multimeter = True
+
+            self.multimeter_group = QGroupBox("Multimeter")
             self.multimeter_group.setDisabled(True)
             multimeter_layout = QGridLayout()
             self.multimeter_port_label = QLabel()
@@ -803,9 +809,8 @@ class QtApplication(QWidget):
         self.ThermalProfileEdit.setEchoMode(QLineEdit.Normal)
         self.ThermalProfileEdit.setPlaceholderText("Enter Profile Number")
         
-        self.PeltierBox = QGroupBox("Peltier Controller", self)
-        self.TessieBox = QGroupBox("Tessie Controller", self)
         if site_settings.usePeltier:
+            self.PeltierBox = QGroupBox("Peltier Controller", self)
             self.PeltierCooling = Peltier(100)
             self.PeltierLayout = QGridLayout()
             self.PeltierLayout.addWidget(self.PeltierCooling)
@@ -813,6 +818,7 @@ class QtApplication(QWidget):
 
             self.mainLayout.addWidget(self.PeltierBox, 4, 0, 3, 1)
         else:
+            self.TessieBox = QGroupBox("Tessie Controller", self)
             self.TessieCooling = Tessie(100)
             self.TessieLayout = QGridLayout()
             self.TessieLayout.addWidget(self.TessieCooling)
@@ -1067,14 +1073,16 @@ class QtApplication(QWidget):
         # self.HVPowerRemoteControl.deleteLater()
         self.LVPowerGroup.deleteLater()
         # self.LVPowerRemoteControl.deleteLater()
-        self.relay_group.deleteLater()
+        if self.relay: self.relay_group.deleteLater()
         #self.relay_remote_control.deleteLater()
-        self.multimeter_group.deleteLater()
+        if self.multimeter: self.multimeter_group.deleteLater()
         #self.multimeter_remote_control.deleteLater()
         self.ArduinoGroup.deleteLater()
         self.ArduinoControl.deleteLater()
-        self.PeltierBox.deleteLater()
-        self.TessieBox.deleteLater()
+        if site_settings.usePeltier:
+            self.PeltierBox.deleteLater()
+        else:
+            self.TessieBox.deleteLater()
         self.MainOption.deleteLater()
         self.ChillerOption.deleteLater()
         self.AppOption.deleteLater()
@@ -1085,9 +1093,9 @@ class QtApplication(QWidget):
         # self.mainLayout.removeWidget(self.HVPowerRemoteControl)
         self.mainLayout.removeWidget(self.LVPowerGroup)
         # self.mainLayout.removeWidget(self.LVPowerRemoteControl)
-        self.mainLayout.removeWidget(self.relay_group)
+        if self.relay: self.mainLayout.removeWidget(self.relay_group)
         #self.mainLayout.removeWidget(self.relay_remote_control)
-        self.mainLayout.removeWidget(self.multimeter_group)
+        if self.multimeter: self.mainLayout.removeWidget(self.multimeter_group)
         #self.mainLayout.removeWidget(self.multimeter_remote_control)
         self.mainLayout.removeWidget(self.ArduinoGroup)
         self.mainLayout.removeWidget(self.ArduinoControl)
