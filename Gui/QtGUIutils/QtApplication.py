@@ -35,6 +35,7 @@ from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.GUIutils.guiUtils import isActive
 from Gui.QtGUIutils.LaudaApp import LaudaWidget
 from Gui.QtGUIutils.PeltierCoolingApp import Peltier
+from Gui.QtGUIutils.TessieCoolingApp import Tessie
 from Gui.QtGUIutils.QtFwCheckWindow import QtFwCheckWindow
 from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
 from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
@@ -581,121 +582,127 @@ class QtApplication(QWidget):
         logger.debug("setup LV and HV devices")
         
         self.relay_group = QGroupBox("Relay Box")
-        self.relay_group.setDisabled(True)
-        relay_layout = QGridLayout()
-        self.relay_board_port_label = QLabel()
-        self.relay_board_port_label.setText("Relay Port:")
-        self.relay_board_port_name = QLabel()
+        if "relay_board" in site_settings.icicle_instrument_setup["instrument_dict"].keys():
+            self.relay_group.setDisabled(True)
+            relay_layout = QGridLayout()
+            self.relay_board_port_label = QLabel()
+            self.relay_board_port_label.setText("Relay Port:")
+            self.relay_board_port_name = QLabel()
         
-        self.relay_device_label = QLabel()
-        self.relay_device_label.setText("Relay Device:")
-        self.relay_device_name = QLabel()
+            self.relay_device_label = QLabel()
+            self.relay_device_label.setText("Relay Device:")
+            self.relay_device_name = QLabel()
 
-        #if site_settings.icicle_instrument_setup is not None: 
-        if not site_settings.manual_powersupply_control:
-            if 'relay_board' in site_settings.icicle_instrument_setup['instrument_dict'].keys():
-                self.relay_device_name.setText('{0}'.format(
-                    site_settings.icicle_instrument_setup['instrument_dict']['relay_board']['class']
-                ))
-                self.relay_board_port_name.setText('{0}'.format(
-                    site_settings.icicle_instrument_setup['instrument_dict']['relay_board']['resource']
-                ))
-                self.relay_group.setDisabled(False)
+            #if site_settings.icicle_instrument_setup is not None: 
+            if not site_settings.manual_powersupply_control:
+                if 'relay_board' in site_settings.icicle_instrument_setup['instrument_dict'].keys():
+                    self.relay_device_name.setText('{0}'.format(
+                        site_settings.icicle_instrument_setup['instrument_dict']['relay_board']['class']
+                    ))
+                    self.relay_board_port_name.setText('{0}'.format(
+                        site_settings.icicle_instrument_setup['instrument_dict']['relay_board']['resource']
+                    ))
+                    self.relay_group.setDisabled(False)
+                else:
+                    self.relay_device_name.setText('No relay board device specified.')
+                    self.relay_board_port_name.setText('No relay board connection specified.')
             else:
-                self.relay_device_name.setText('No relay board device specified.')
-                self.relay_board_port_name.setText('No relay board connection specified.')
-        else:
-            self.relay_device_name.setText("Manual Relay Control")
-            self.relay_board_port_name.setText("")
+                self.relay_device_name.setText("Manual Relay Control")
+                self.relay_board_port_name.setText("")
 
-        self.relay_model_status = QLabel()
-        #self.relay_remote_control = QCheckBox("Use relay")
-        #self.relay_remote_control.setChecked(False)
-        #self.relay_remote_control.toggled.connect(lambda: self.enableDevice("relay"))
-        #self.relay_port_combobox.activated.connect(
-        #    lambda: self.update_instrument_info(
-        #        "relay_board_resource", self.relay_port_combobox.currentText()
-        #    )
-        #)
-        #self.relay_model_combo.activated.connect(
-        #    lambda: self.update_instrument_info(
-        #        "relay_board", self.relay_model_combo.currentText()
-        #    )
-        #)
-        #self.relay_remote_control.toggled.connect(
-        #    lambda: self.relay_group.setDisabled(False)
-        #    if self.relay_remote_control.isChecked()
-        #    else self.relay_group.setDisabled(True)
-        #)
+            self.relay_model_status = QLabel()
+            #self.relay_remote_control = QCheckBox("Use relay")
+            #self.relay_remote_control.setChecked(False)
+            #self.relay_remote_control.toggled.connect(lambda: self.enableDevice("relay"))
+            #self.relay_port_combobox.activated.connect(
+            #    lambda: self.update_instrument_info(
+            #        "relay_board_resource", self.relay_port_combobox.currentText()
+            #    )
+            #)
+            #self.relay_model_combo.activated.connect(
+            #    lambda: self.update_instrument_info(
+            #        "relay_board", self.relay_model_combo.currentText()
+            #    )
+            #)
+            #self.relay_remote_control.toggled.connect(
+            #    lambda: self.relay_group.setDisabled(False)
+            #    if self.relay_remote_control.isChecked()
+            #    else self.relay_group.setDisabled(True)
+            #)
 
-        relay_layout.addWidget(self.relay_board_port_label,1,0,1,1)
-        relay_layout.addWidget(self.relay_board_port_name,1,1,1,1)
-        relay_layout.addWidget(self.relay_device_label,0,0,1,1)
-        relay_layout.addWidget(self.relay_device_name,0,1,1,1)
-        #relay_layout.addWidget(self.relay_model_status)
-        #relay_layout.addStretch(1)
-        self.relay_group.setLayout(relay_layout)
+            relay_layout.addWidget(self.relay_board_port_label,1,0,1,1)
+            relay_layout.addWidget(self.relay_board_port_name,1,1,1,1)
+            relay_layout.addWidget(self.relay_device_label,0,0,1,1)
+            relay_layout.addWidget(self.relay_device_name,0,1,1,1)
+            #relay_layout.addWidget(self.relay_model_status)
+            #relay_layout.addStretch(1)
+            self.relay_group.setLayout(relay_layout)
+
+            self.mainLayout.addWidget(self.relay_group, 3, 0, 1, 1)
 
         self.multimeter_group = QGroupBox("Multimeter")
-        self.multimeter_group.setDisabled(True)
-        multimeter_layout = QGridLayout()
-        self.multimeter_port_label = QLabel()
-        self.multimeter_port_label.setText("Multimeter Port")
-        self.multimeter_port_name = QLabel()
-        
-        #self.multimeter_port_combobox = QComboBox()
-        #self.multimeter_port_combobox.addItems(self.available_visa_resources)
-        self.multimeter_device_label = QLabel()
-        self.multimeter_device_label.setText("Multimeter Device:")
-        self.multimeter_device_name = QLabel()
-        #if site_settings.icicle_instrument_setup is not None: 
-        if not site_settings.manual_powersupply_control:
-            if 'multimeter' in site_settings.icicle_instrument_setup['instrument_dict'].keys():
-                self.multimeter_device_name.setText('{0}'.format(
-                    site_settings.icicle_instrument_setup['instrument_dict']['multimeter']['class']
-                ))
-                self.multimeter_port_name.setText('{0}'.format(
-                    site_settings.icicle_instrument_setup['instrument_dict']['multimeter']['resource']
-                ))
-                self.multimeter_group.setDisabled(False)
+        if "multimeter" in site_settings.icicle_instrument_setup["instrument_dict"].keys():
+            self.multimeter_group.setDisabled(True)
+            multimeter_layout = QGridLayout()
+            self.multimeter_port_label = QLabel()
+            self.multimeter_port_label.setText("Multimeter Port")
+            self.multimeter_port_name = QLabel()
+            
+            #self.multimeter_port_combobox = QComboBox()
+            #self.multimeter_port_combobox.addItems(self.available_visa_resources)
+            self.multimeter_device_label = QLabel()
+            self.multimeter_device_label.setText("Multimeter Device:")
+            self.multimeter_device_name = QLabel()
+            #if site_settings.icicle_instrument_setup is not None: 
+            if not site_settings.manual_powersupply_control:
+                if 'multimeter' in site_settings.icicle_instrument_setup['instrument_dict'].keys():
+                    self.multimeter_device_name.setText('{0}'.format(
+                        site_settings.icicle_instrument_setup['instrument_dict']['multimeter']['class']
+                    ))
+                    self.multimeter_port_name.setText('{0}'.format(
+                        site_settings.icicle_instrument_setup['instrument_dict']['multimeter']['resource']
+                    ))
+                    self.multimeter_group.setDisabled(False)
+                else:
+                    self.multimeter_device_name.setText('No mulitimeter device specified.')
+                    self.multimeter_port_name.setText('No multimeter connection specified.')
             else:
-                self.multimeter_device_name.setText('No mulitimeter device specified.')
-                self.multimeter_port_name.setText('No multimeter connection specified.')
-        else:
-            self.multimeter_device_name.setText("Manual multimeter control")
-            self.multimeter_port_name.setText("")
+                self.multimeter_device_name.setText("Manual multimeter control")
+                self.multimeter_port_name.setText("")
 
-        #self.multimeter_model_combo = QComboBox()
-        #self.multimeter_model_combo.addItems(InstrumentCluster.package_map.keys())
-        self.multimeter_status = QLabel()
-        #self.multimeter_remote_control = QCheckBox("Use Multimeter")
-        #self.multimeter_remote_control.setChecked(False)
-        #self.multimeter_remote_control.toggled.connect(
-        #    lambda: self.enableDevice("multimeter")
-        #)
-        #self.multimeter_port_combobox.activated.connect(
-        #    lambda: self.update_instrument_info(
-        #        "multimeter_resource", self.multimeter_port_combobox.currentText()
-        #    )
-        #)
-        #self.multimeter_model_combo.activated.connect(
-        #    lambda: self.update_instrument_info(
-        #        "multimeter", self.multimeter_model_combo.currentText()
-        #    )
-        #)
-        #self.multimeter_remote_control.toggled.connect(
-        #    lambda: self.multimeter_group.setDisabled(False)
-        #    if self.multimeter_remote_control.isChecked()
-        #    else self.multimeter_group.setDisabled(True)
-        #)
+            #self.multimeter_model_combo = QComboBox()
+            #self.multimeter_model_combo.addItems(InstrumentCluster.package_map.keys())
+            self.multimeter_status = QLabel()
+            #self.multimeter_remote_control = QCheckBox("Use Multimeter")
+            #self.multimeter_remote_control.setChecked(False)
+            #self.multimeter_remote_control.toggled.connect(
+            #    lambda: self.enableDevice("multimeter")
+            #)
+            #self.multimeter_port_combobox.activated.connect(
+            #    lambda: self.update_instrument_info(
+            #        "multimeter_resource", self.multimeter_port_combobox.currentText()
+            #    )
+            #)
+            #self.multimeter_model_combo.activated.connect(
+            #    lambda: self.update_instrument_info(
+            #        "multimeter", self.multimeter_model_combo.currentText()
+            #    )
+            #)
+            #self.multimeter_remote_control.toggled.connect(
+            #    lambda: self.multimeter_group.setDisabled(False)
+            #    if self.multimeter_remote_control.isChecked()
+            #    else self.multimeter_group.setDisabled(True)
+            #)
 
-        multimeter_layout.addWidget(self.multimeter_port_label,1,0,1,1)
-        multimeter_layout.addWidget(self.multimeter_port_name,1,1,1,1)
-        multimeter_layout.addWidget(self.multimeter_device_label,0,0,1,1)
-        multimeter_layout.addWidget(self.multimeter_device_name,0,1,1,1)
-        #multimeter_layout.addWidget(self.multimeter_status)
-        #multimeter_layout.addStretch(1)
-        self.multimeter_group.setLayout(multimeter_layout)
+            multimeter_layout.addWidget(self.multimeter_port_label,1,0,1,1)
+            multimeter_layout.addWidget(self.multimeter_port_name,1,1,1,1)
+            multimeter_layout.addWidget(self.multimeter_device_label,0,0,1,1)
+            multimeter_layout.addWidget(self.multimeter_device_name,0,1,1,1)
+            #multimeter_layout.addWidget(self.multimeter_status)
+            #multimeter_layout.addStretch(1)
+            self.multimeter_group.setLayout(multimeter_layout)
+
+            self.mainLayout.addWidget(self.multimeter_group, 3, 1, 1, 3)
 
         self.ArduinoGroup = ArduinoWidget()
         self.ArduinoGroup.stop.connect(self.GlobalStop)
@@ -796,11 +803,22 @@ class QtApplication(QWidget):
         self.ThermalProfileEdit.setEchoMode(QLineEdit.Normal)
         self.ThermalProfileEdit.setPlaceholderText("Enter Profile Number")
         
-        self.PeltierCooling = Peltier(100)
         self.PeltierBox = QGroupBox("Peltier Controller", self)
-        self.PeltierLayout = QGridLayout()
-        self.PeltierLayout.addWidget(self.PeltierCooling)
-        self.PeltierBox.setLayout(self.PeltierLayout)
+        self.TessieBox = QGroupBox("Tessie Controller", self)
+        if site_settings.usePeltier:
+            self.PeltierCooling = Peltier(100)
+            self.PeltierLayout = QGridLayout()
+            self.PeltierLayout.addWidget(self.PeltierCooling)
+            self.PeltierBox.setLayout(self.PeltierLayout)
+
+            self.mainLayout.addWidget(self.PeltierBox, 4, 0, 3, 1)
+        else:
+            self.TessieCooling = Tessie(100)
+            self.TessieLayout = QGridLayout()
+            self.TessieLayout.addWidget(self.TessieCooling)
+            self.TessieBox.setLayout(self.TessieLayout)
+
+            self.mainLayout.addWidget(self.TessieBox, 4, 0, 3, 1)
 
         layout = QGridLayout()
         layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
@@ -898,11 +916,11 @@ class QtApplication(QWidget):
         #self.mainLayout.addWidget(self.LVPowerRemoteControl, 2, 1, 1, 1)
         self.mainLayout.addWidget(self.LVPowerGroup, 2, 1, 1, 3)
         #self.mainLayout.addWidget(self.relay_remote_control, 4, 0, 1, 1)
-        self.mainLayout.addWidget(self.relay_group, 3, 0, 1, 1)
-        #self.mainLayout.addWidget(self.multimeter_remote_control, 4, 1, 1, 1)
-        self.mainLayout.addWidget(self.multimeter_group, 3, 1, 1, 3)
+        #self.mainLayout.addWidget(self.relay_group, 3, 0, 1, 1) # moved to if statement above
+        #self.mainLayout.addWidget(self.multimeter_remote_control, 4, 1, 1, 1) # moved to if statement above
+        #self.mainLayout.addWidget(self.multimeter_group, 3, 1, 1, 3)
         self.mainLayout.addWidget(self.MainOption, 0, 1, 2, 3)
-        self.mainLayout.addWidget(self.PeltierBox, 4, 0, 3, 1)
+
         self.mainLayout.addWidget(self.LogoGroupBox, 7, 0, 1, 4)
         
         # Placing in try/except to avoid needing to change siteConfig
@@ -1056,6 +1074,7 @@ class QtApplication(QWidget):
         self.ArduinoGroup.deleteLater()
         self.ArduinoControl.deleteLater()
         self.PeltierBox.deleteLater()
+        self.TessieBox.deleteLater()
         self.MainOption.deleteLater()
         self.ChillerOption.deleteLater()
         self.AppOption.deleteLater()
@@ -1073,6 +1092,7 @@ class QtApplication(QWidget):
         self.mainLayout.removeWidget(self.ArduinoGroup)
         self.mainLayout.removeWidget(self.ArduinoControl)
         self.mainLayout.removeWidget(self.PeltierBox)
+        self.mainLayout.removeWidget(self.TessieBox)
         self.mainLayout.removeWidget(self.MainOption)
         self.mainLayout.removeWidget(self.ChillerOption)
         self.mainLayout.removeWidget(self.AppOption)
