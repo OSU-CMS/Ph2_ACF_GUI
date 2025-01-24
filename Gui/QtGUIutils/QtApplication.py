@@ -111,10 +111,20 @@ class QtApplication(QWidget):
         ):
             try:
                 with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
-                    self.setStyleSheet(f.read())
-            except Exception as e:
-                print(e)
-                logger.warning("Could not open style sheet")
+                    style_sheet = f.read()
+
+            except NameError:
+                logging.info("Using default theme")
+                with open(os.path.realpath("Assets/ElegantDark.qss") as f:
+                    style_sheet = f.read()
+
+            except FileNotFoundError:
+                logging.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
+                with open(os.path.realpath("Assets/ElegantDark.qss") as f:
+                    style_sheet = f.read()
+            finally:
+                self.setStyleSheet(style_sheet)
+
         else:
             print("This GUI supports Win/Linux/MacOS only")
         self.show()
