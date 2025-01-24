@@ -109,22 +109,60 @@ class QtApplication(QWidget):
             or sys.platform.startswith("win")
             or sys.platform.startswith("darwin")
         ):
-            try:
-                with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
-                    style_sheet = f.read()
+            # Check if Assets directory exists/is bound
+            if os.path.isdir("Gui/Assets"):
+                logging.debug("The Assets directory is bound correctly") 
+                try:
+                    with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
+                        style_sheet = f.read()
 
-            except NameError:
-                logging.info("Using default theme")
-                with open(os.path.realpath("Assets/ElegantDark.qss") as f:
-                    style_sheet = f.read()
+                # If theme variable is not defined then use default theme
+                except NameError:
+                    logging.info("Using default theme")
+                    with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
+                        style_sheet = f.read()
 
-            except FileNotFoundError:
-                logging.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
-                with open(os.path.realpath("Assets/ElegantDark.qss") as f:
-                    style_sheet = f.read()
-            finally:
-                self.setStyleSheet(style_sheet)
+                # If there is a typo or user attempts to use theme that is not defined, set default theme
+                except FileNotFoundError:
+                    logging.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
+                    with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
+                        style_sheet = f.read()
+                finally:
+                    self.setStyleSheet(style_sheet)
 
+            # If Assets directory is not bound (ie. someone has not edited their
+            # run_docker script) then manually set theme to dark mode. 
+            else:
+                logging.info("Theming capablitities not available, using default theme")
+                darkPalette = QPalette()
+                darkPalette.setColor(QPalette.Window, QColor(53, 53, 53))
+                darkPalette.setColor(QPalette.WindowText, Qt.white)
+                darkPalette.setColor(QPalette.Base, QColor(25, 25, 25))
+                darkPalette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
+                darkPalette.setColor(QPalette.ToolTipBase, Qt.darkGray)
+                darkPalette.setColor(QPalette.ToolTipText, Qt.white)
+                darkPalette.setColor(QPalette.Text, Qt.white)
+                darkPalette.setColor(QPalette.Button, QColor(53, 53, 53))
+                darkPalette.setColor(QPalette.ButtonText, Qt.white)
+                darkPalette.setColor(QPalette.BrightText, Qt.red)
+                darkPalette.setColor(QPalette.Link, QColor(42, 130, 218))
+                darkPalette.setColor(QPalette.Highlight, QColor(42, 130, 218))
+                darkPalette.setColor(QPalette.HighlightedText, Qt.black)
+
+                darkPalette.setColor(QPalette.Disabled, QPalette.Window, Qt.lightGray)
+                darkPalette.setColor(QPalette.Disabled, QPalette.WindowText, Qt.gray)
+                darkPalette.setColor(QPalette.Disabled, QPalette.Base, Qt.darkGray)
+                darkPalette.setColor(QPalette.Disabled, QPalette.ToolTipBase, Qt.darkGray)
+                darkPalette.setColor(QPalette.Disabled, QPalette.ToolTipText, Qt.white)
+                darkPalette.setColor(QPalette.Disabled, QPalette.Text, Qt.gray)
+                darkPalette.setColor(QPalette.Disabled, QPalette.Button, QColor(73, 73, 73))
+                darkPalette.setColor(QPalette.Disabled, QPalette.ButtonText, Qt.lightGray)
+                darkPalette.setColor(QPalette.Disabled, QPalette.BrightText, Qt.lightGray)
+                darkPalette.setColor(QPalette.Disabled, QPalette.Highlight, Qt.lightGray)
+                darkPalette.setColor(QPalette.Disabled, QPalette.HighlightedText, Qt.gray)
+
+                QApplication.setStyle(QStyleFactory.create("Fusion"))
+                QApplication.setPalette(darkPalette)
         else:
             print("This GUI supports Win/Linux/MacOS only")
         self.show()
