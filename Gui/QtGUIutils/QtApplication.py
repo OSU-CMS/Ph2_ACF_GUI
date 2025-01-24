@@ -110,21 +110,21 @@ class QtApplication(QWidget):
             or sys.platform.startswith("darwin")
         ):
             # Check if Assets directory exists/is bound
-            if os.path.isdir("Gui/Assets"):
-                logging.debug("The Assets directory is bound correctly") 
+            if os.path.isdir("Assets"):
+                logger.debug("The Assets directory is bound correctly") 
                 try:
                     with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
                         style_sheet = f.read()
 
                 # If theme variable is not defined then use default theme
-                except NameError:
-                    logging.info("Using default theme")
+                except AttributeError:
+                    logger.info("Using default theme")
                     with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
                         style_sheet = f.read()
 
                 # If there is a typo or user attempts to use theme that is not defined, set default theme
                 except FileNotFoundError:
-                    logging.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
+                    logger.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
                     with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
                         style_sheet = f.read()
                 finally:
@@ -133,7 +133,7 @@ class QtApplication(QWidget):
             # If Assets directory is not bound (ie. someone has not edited their
             # run_docker script) then manually set theme to dark mode. 
             else:
-                logging.info("Theming capablitities not available, using default theme")
+                logger.info("Theming capablitities not available, using default theme")
                 darkPalette = QPalette()
                 darkPalette.setColor(QPalette.Window, QColor(53, 53, 53))
                 darkPalette.setColor(QPalette.WindowText, Qt.white)
