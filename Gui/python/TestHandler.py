@@ -36,6 +36,7 @@ from Gui.GUIutils.guiUtils import (
 from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
+from InnerTrackerTests.RootFilesDict import root_files
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
@@ -648,19 +649,21 @@ class TestHandler(QObject):
     #For root files with the same RunNumber in the PH2ACF directory, this function only copies over to
     #self.output_dir the .root file modified most recently. This will copy over the wrong file if somebody
     #manually edits the .root file in the PH2ACF directory, so there may be a better way to do this
-    def copyMostRecentRootFile(self,RunNumber,base_dir,output_dir):
-        # Construct the search pattern for files
-        search_pattern = f"{base_dir}/Run{RunNumber}*.root"
-
-        # Find all matching files
-        matching_files = glob.glob(search_pattern)
-        print(matching_files)
-
-        # Sort files by modification time (newest first)
-        latest_file = max(matching_files, key=os.path.getmtime)
+    def copyMostRecentRootFile(self,RunNumber,base_dir,output_dir,test):
         
-        # Copy the most recent file to the output directory
-        os.system(f"cp {latest_file} {output_dir}/")
+        files = root_files[test] if test in root_files.keys() else (test)
+        for name in files:
+            # Construct the search pattern for files
+            search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
+
+            # Find all matching files
+            matching_files = glob.glob(search_pattern)
+
+            # Sort files by modification time (newest first)
+            latest_file = max(matching_files, key=os.path.getmtime)
+
+            # Copy the most recent file to the output directory
+            os.system(f"cp {latest_file} {output_dir}/")
 
     def saveTest(self):
         # if self.parent.current_test_grade < 0:
@@ -671,11 +674,12 @@ class TestHandler(QObject):
         try:
             if self.RunNumber == "-1":
 
-                self.copyMostRecentRootFile(000000,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir)
+                self.copyMostRecentRootFile(000000,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
+
                 # os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
                 # os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
             else:
-                self.copyMostRecentRootFile(self.RunNumber,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir)
+                self.copyMostRecentRootFile(self.RunNumber,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
                 # os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
                 # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
         except:
@@ -913,7 +917,7 @@ class TestHandler(QObject):
         EnableReRun = False
 
         # Save the output ROOT file to output_dir
-        self.saveTest()
+        self.saveTest(self.currentTest)
 
         # validate the results
         status = self.validateTest()
