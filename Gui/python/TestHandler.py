@@ -36,7 +36,7 @@ from Gui.GUIutils.guiUtils import (
 from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
-from InnerTrackerTests.RootFilesDict import root_files
+from Gui.RootFilesDict import root_files
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
