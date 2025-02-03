@@ -1,11 +1,6 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QMessageBox
+from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QPainter, QPen
-import sys
-from Gui.python.logging_config import logger
-from icicle.icicle.instrument_cluster import InstrumentCluster
-import Gui.GUIutils.settings as settings
-import Gui.siteSettings as site_settings
 
 class LoadingThread(QThread):
     finished_signal = pyqtSignal()
