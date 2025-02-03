@@ -28,6 +28,8 @@ import requests
 from felis.felis_methods import get_accountInfo
 import requests.exceptions as rqx
 
+from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
+
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
 import Gui.siteSettings as site_settings
@@ -50,9 +52,6 @@ from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 # from icicle.icicle.instrument_cluster import BadStatusForOperationError, InstrumentCluster
 from icicle.icicle.instrument_cluster import InstrumentCluster
 from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
-
-
-
 
 from Gui.python.logging_config import logger
 
@@ -489,7 +488,9 @@ class QtApplication(QWidget):
         if site_settings.icicle_instrument_setup is None:
             self.DefaultButton.setEnabled(False)
 
-        self.DefaultButton.clicked.connect(self.connect_devices)
+        self.Wheel = LoadingWheel()
+
+        self.DefaultButton.clicked.connect(self.connect_devices_starter)
 
         self.reset_devices = QPushButton("&Reconnect all devices")
         self.reset_devices.clicked.connect(self.reconnectDevices)
@@ -497,6 +498,8 @@ class QtApplication(QWidget):
         self.default_checkbox.setChecked(True)
 
         self.DefaultLayout.addWidget(self.DefaultButton)
+        self.Wheel.setVisible(False)
+        self.DefaultLayout.addWidget(self.Wheel)
         self.DefaultLayout.addStretch(1)
         self.UseDefaultGroup.setLayout(self.DefaultLayout)
         
@@ -941,8 +944,19 @@ class QtApplication(QWidget):
     def update_instrument_info(self, key, info):
         self.connected_device_information[key] = info
 
+    def connect_devices_starter(self):
+        self.Wheel.setVisible(True)
+        self.connect_devices_thread = LoadingThread(self)
+        self.connect_devices_thread.finished.connect(self.connect_devices_onFinish)
+        self.connect_devices_thread.timer.timeout.connect(self.Wheel.update_spinner)
+        self.connect_devices_thread.timer.start()
+        self.connect_devices_thread.start()  # Start the thread
+
+    def connect_devices_onFinish(self):
+        self.connect_devices_thread.timer.stop()
+        self.Wheel.setVisible(False)
+    
     def connect_devices(self):
-        
         """
         Use defaults set in siteConfig.py to setup instrument cluster.
         If default_checkbox is not checked change this variable to reflect
@@ -989,7 +1003,7 @@ class QtApplication(QWidget):
         if self.expertMode:                
             self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
             self.ArduinoGroup.frozeArduinoPanel()
-
+            
     def disable_instrument_widgets(self):
         """
         Use to disable the groupbox of LV, HV, relay board, and multimeter
