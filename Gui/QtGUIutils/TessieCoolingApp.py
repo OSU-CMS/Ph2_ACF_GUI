@@ -1,23 +1,10 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import pyqtSignal, Qt, QTimer
-import time
-import os
-from Gui.python.logging_config import logger
-
+from PyQt5.QtCore import Qt
 
 class Tessie(QWidget):
-    # Defining Signals that will be used
-    buttonEnable = pyqtSignal()
-    polaritySignal = pyqtSignal(list)
-    tempReading = pyqtSignal(float)
-    tempReading2 = pyqtSignal(float)
-    powerReading = pyqtSignal(int)
-    setTempSignal = pyqtSignal(float)
-
     def __init__(self, dimension):
         super(Tessie, self).__init__()
-        self.Ph2ACFDirectory = os.getenv("GUI_dir")
         self.setupUi()
         self.show()
 

@@ -71,6 +71,9 @@ class QtApplication(QWidget):
         self.module_in_use = None
         self.instruments = None
 
+        self.relay = False
+        self.multimeter = False
+
         self.FwDict = {}
         self.FwStatusVerboseDict = {}
         self.FPGAConfigDict = {}
@@ -948,10 +951,10 @@ class QtApplication(QWidget):
         # create a dictionary to easily disable groupboxes later
         self.groupbox_mapping = {
             "hv": self.HVPowerGroup,
-            "lv": self.LVPowerGroup,
-            "relay": self.relay_group,
-            "multimeter": self.multimeter_group,
+            "lv": self.LVPowerGroup
         }
+        if self.relay: self.groupbox_mapping["relay"] = self.relay_group
+        if self.multimeter: self.groupbox_mpaping["multimeter"] = self.multimeter_group
 
     def setDefault(self):
         if self.expertMode is False:
@@ -1099,8 +1102,10 @@ class QtApplication(QWidget):
         #self.mainLayout.removeWidget(self.multimeter_remote_control)
         self.mainLayout.removeWidget(self.ArduinoGroup)
         self.mainLayout.removeWidget(self.ArduinoControl)
-        self.mainLayout.removeWidget(self.PeltierBox)
-        self.mainLayout.removeWidget(self.TessieBox)
+        if site_settings.usePeltier:
+            self.mainLayout.removeWidget(self.PeltierBox)
+        else:
+            self.mainLayout.removeWidget(self.TessieBox)
         self.mainLayout.removeWidget(self.MainOption)
         self.mainLayout.removeWidget(self.ChillerOption)
         self.mainLayout.removeWidget(self.AppOption)
