@@ -617,31 +617,11 @@ class QtApplication(QWidget):
                 self.relay_board_port_name.setText("")
 
             self.relay_model_status = QLabel()
-            #self.relay_remote_control = QCheckBox("Use relay")
-            #self.relay_remote_control.setChecked(False)
-            #self.relay_remote_control.toggled.connect(lambda: self.enableDevice("relay"))
-            #self.relay_port_combobox.activated.connect(
-            #    lambda: self.update_instrument_info(
-            #        "relay_board_resource", self.relay_port_combobox.currentText()
-            #    )
-            #)
-            #self.relay_model_combo.activated.connect(
-            #    lambda: self.update_instrument_info(
-            #        "relay_board", self.relay_model_combo.currentText()
-            #    )
-            #)
-            #self.relay_remote_control.toggled.connect(
-            #    lambda: self.relay_group.setDisabled(False)
-            #    if self.relay_remote_control.isChecked()
-            #    else self.relay_group.setDisabled(True)
-            #)
 
             relay_layout.addWidget(self.relay_board_port_label,1,0,1,1)
             relay_layout.addWidget(self.relay_board_port_name,1,1,1,1)
             relay_layout.addWidget(self.relay_device_label,0,0,1,1)
             relay_layout.addWidget(self.relay_device_name,0,1,1,1)
-            #relay_layout.addWidget(self.relay_model_status)
-            #relay_layout.addStretch(1)
             self.relay_group.setLayout(relay_layout)
 
             self.mainLayout.addWidget(self.relay_group, 3, 0, 1, 1)
@@ -657,11 +637,10 @@ class QtApplication(QWidget):
             self.multimeter_port_label.setText("Multimeter Port")
             self.multimeter_port_name = QLabel()
             
-            #self.multimeter_port_combobox = QComboBox()
-            #self.multimeter_port_combobox.addItems(self.available_visa_resources)
             self.multimeter_device_label = QLabel()
             self.multimeter_device_label.setText("Multimeter Device:")
             self.multimeter_device_name = QLabel()
+
             #if site_settings.icicle_instrument_setup is not None: 
             if not site_settings.manual_powersupply_control:
                 if 'multimeter' in site_settings.icicle_instrument_setup['instrument_dict'].keys():
@@ -679,36 +658,12 @@ class QtApplication(QWidget):
                 self.multimeter_device_name.setText("Manual multimeter control")
                 self.multimeter_port_name.setText("")
 
-            #self.multimeter_model_combo = QComboBox()
-            #self.multimeter_model_combo.addItems(InstrumentCluster.package_map.keys())
             self.multimeter_status = QLabel()
-            #self.multimeter_remote_control = QCheckBox("Use Multimeter")
-            #self.multimeter_remote_control.setChecked(False)
-            #self.multimeter_remote_control.toggled.connect(
-            #    lambda: self.enableDevice("multimeter")
-            #)
-            #self.multimeter_port_combobox.activated.connect(
-            #    lambda: self.update_instrument_info(
-            #        "multimeter_resource", self.multimeter_port_combobox.currentText()
-            #    )
-            #)
-            #self.multimeter_model_combo.activated.connect(
-            #    lambda: self.update_instrument_info(
-            #        "multimeter", self.multimeter_model_combo.currentText()
-            #    )
-            #)
-            #self.multimeter_remote_control.toggled.connect(
-            #    lambda: self.multimeter_group.setDisabled(False)
-            #    if self.multimeter_remote_control.isChecked()
-            #    else self.multimeter_group.setDisabled(True)
-            #)
 
             multimeter_layout.addWidget(self.multimeter_port_label,1,0,1,1)
             multimeter_layout.addWidget(self.multimeter_port_name,1,1,1,1)
             multimeter_layout.addWidget(self.multimeter_device_label,0,0,1,1)
             multimeter_layout.addWidget(self.multimeter_device_name,0,1,1,1)
-            #multimeter_layout.addWidget(self.multimeter_status)
-            #multimeter_layout.addStretch(1)
             self.multimeter_group.setLayout(multimeter_layout)
 
             self.mainLayout.addWidget(self.multimeter_group, 3, 1, 1, 3)
