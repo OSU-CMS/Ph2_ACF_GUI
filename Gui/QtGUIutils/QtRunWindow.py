@@ -136,20 +136,6 @@ class QtRunWindow(QWidget):
 
         self.resized.connect(self.rescaleImage)
 
-        # added from Bowen
-        #self.j = 0
-        # stepWiseGlobalValue[0]['TargetThr'] = defaultTargetThr[0]
-        # if len(runTestList)>1:
-        #for i in range(len(runTestList)):
-        #    if runTestList[i] == "ThresholdAdjustment":
-        #        self.j += 1
-        #    if self.j == 0:
-        #        stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j]
-        #    else:
-        #        stepWiseGlobalValue[i]["TargetThr"] = defaultTargetThr[self.j - 1]
-
-        #logger.info(stepWiseGlobalValue)
-
     def setLoginUI(self):
         X = self.master.dimension.width() / 10
         Y = self.master.dimension.height() / 10
@@ -443,7 +429,6 @@ class QtRunWindow(QWidget):
         self.master.ProcessingTest = True
 
     def release(self):
-        self.j = 0 #deprecated?
         self.testhandler.abortTest()
         self.master.ProcessingTest = False
         if self.master.expertMode == True:
@@ -551,7 +536,6 @@ class QtRunWindow(QWidget):
         )
 
         if reply == QMessageBox.Yes:
-            self.j = 0 #deprecated?
             self.testHandler.abortTest()
         else:
             return

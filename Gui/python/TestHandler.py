@@ -36,7 +36,7 @@ from Gui.GUIutils.guiUtils import (
 from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
-from Gui.RootFilesDict import root_files
+from InnerTrackerTests.RootFilesDict import root_files
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
@@ -917,7 +917,7 @@ class TestHandler(QObject):
         EnableReRun = False
 
         # Save the output ROOT file to output_dir
-        self.saveTest(self.currentTest)
+        self.saveTest()
 
         # validate the results
         status = self.validateTest()
