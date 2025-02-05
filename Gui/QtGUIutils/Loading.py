@@ -4,14 +4,15 @@ from PyQt5.QtGui import QPainter, QPen
 
 class LoadingThread(QThread):
     finished_signal = pyqtSignal()
-    def __init__(self,qtApp):
+    def __init__(self,function,interval,*args):
         super(LoadingThread, self).__init__()
-        self.qtApp = qtApp
+        self.function = function
+        self.args = args
         self.timer = QTimer()
-        self.timer.setInterval(50)  # 100ms interval (10 updates per second)
+        self.timer.setInterval(interval)
 
     def run(self):
-        self.qtApp.connect_devices()
+        self.function(*self.args)
         self.finished_signal.emit()
 
 class LoadingWheel(QWidget):
