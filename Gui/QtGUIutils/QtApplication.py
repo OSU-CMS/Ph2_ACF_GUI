@@ -28,6 +28,8 @@ import requests
 from felis.felis_methods import get_accountInfo
 import requests.exceptions as rqx
 
+from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
+
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
 import Gui.siteSettings as site_settings
@@ -461,7 +463,9 @@ class QtApplication(QWidget):
         if site_settings.icicle_instrument_setup is None:
             self.DefaultButton.setEnabled(False)
 
-        self.DefaultButton.clicked.connect(self.connect_devices)
+        self.Wheel = LoadingWheel()
+
+        self.DefaultButton.clicked.connect(self.connect_devices_starter)
 
         self.reset_devices = QPushButton("&Reconnect all devices")
         self.reset_devices.clicked.connect(self.reconnectDevices)
@@ -469,6 +473,8 @@ class QtApplication(QWidget):
         self.default_checkbox.setChecked(True)
 
         self.DefaultLayout.addWidget(self.DefaultButton)
+        self.Wheel.setVisible(False)
+        self.DefaultLayout.addWidget(self.Wheel)
         self.DefaultLayout.addStretch(1)
         self.UseDefaultGroup.setLayout(self.DefaultLayout)
         
@@ -869,6 +875,18 @@ class QtApplication(QWidget):
 
     def update_instrument_info(self, key, info):
         self.connected_device_information[key] = info
+
+    def connect_devices_starter(self):
+        self.Wheel.setVisible(True)
+        self.connect_devices_thread = LoadingThread(self.connect_devices,50)
+        self.connect_devices_thread.finished.connect(self.connect_devices_onFinish)
+        self.connect_devices_thread.timer.timeout.connect(self.Wheel.update_spinner)
+        self.connect_devices_thread.timer.start()
+        self.connect_devices_thread.start()  # Start the thread
+
+    def connect_devices_onFinish(self):
+        self.connect_devices_thread.timer.stop()
+        self.Wheel.setVisible(False)
 
     def connect_devices(self):
         
