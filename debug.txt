@@ -1,0 +1,650 @@
+device loaded /dev/bus/usb/
+device loaded /dev/ttyACM0
+device loaded /dev/ttyUSB1
+device loaded /dev/ttyUSB3
+device loaded /dev/ttyUSB0
+device loaded /dev/ttyUSB2
+device loaded /dev/ttyUSBHV
+device loaded /dev/ttyUSBLV
+device loaded /dev/ttyUSBMM
+device loaded /dev/ttyUSBPeltier
+--device=/dev/bus/usb/ --device=/dev/ttyACM0 --device=/dev/ttyUSB1 --device=/dev/ttyUSB3 --device=/dev/ttyUSB0 --device=/dev/ttyUSB2 --device=/dev/ttyUSBHV --device=/dev/ttyUSBLV --device=/dev/ttyUSBMM --device=/dev/ttyUSBPeltier
+running as user
+The image is already up to date.
+=== DONE: you can now run cmake ===
+--2025-01-30 22:14:36--  https://gitlab.cern.ch/cms-ph2-database/resthub-dev/-/raw/master/clients/python/src/main/python/rhapi.py
+Resolving gitlab.cern.ch (gitlab.cern.ch)... 188.185.35.37, 188.185.34.83, 188.185.15.160, ...
+Connecting to gitlab.cern.ch (gitlab.cern.ch)|188.185.35.37|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 38533 (38K) [text/plain]
+Saving to: 'rhapi.py'
+
+rhapi.py              0%[                    ]       0  --.-KB/s               rhapi.py            100%[===================>]  37.63K  --.-KB/s    in 0.09s   
+
+2025-01-30 22:14:37 (399 KB/s) - 'rhapi.py' saved [38533/38533]
+
+You can now open the GUI by doing 'python3 QtApplication.py'.
+QStandardPaths: XDG_RUNTIME_DIR not set, defaulting to '/tmp/runtime-root'
+/usr/local/lib/python3.9/site-packages/pyvisa_py/tcpip.py:122: UserWarning: TCPIP::hislip resource discovery requires the zeroconf package to be installed... try 'pip install zeroconf'
+  warnings.warn(
+2025-01-30 22:14:39,432 - Gui.python.logging_config - WARNING - Initialized variables for QtApplication
+Initialized variables for QtApplication
+MESA-LOADER: failed to open iris: /usr/lib64/dri/iris_dri.so: cannot open shared object file: No such file or directory (search paths /usr/lib64/dri, suffix _dri)
+failed to load driver: iris
+MESA-LOADER: failed to open zink: /usr/lib64/dri/zink_dri.so: cannot open shared object file: No such file or directory (search paths /usr/lib64/dri, suffix _dri)
+MESA-LOADER: failed to open iris: /usr/lib64/dri/iris_dri.so: cannot open shared object file: No such file or directory (search paths /usr/lib64/dri, suffix _dri)
+failed to load driver: iris
+MESA-LOADER: failed to open swrast: /usr/lib64/dri/swrast_dri.so: cannot open shared object file: No such file or directory (search paths /usr/lib64/dri, suffix _dri)
+('ASRL/dev/ttyUSBPeltier::INSTR', 'ASRL/dev/ttyUSBMM::INSTR', 'ASRL/dev/ttyUSBLV::INSTR', 'ASRL/dev/ttyUSBHV::INSTR', 'ASRL/dev/ttyUSB2::INSTR', 'ASRL/dev/ttyUSB0::INSTR', 'ASRL/dev/ttyUSB3::INSTR', 'ASRL/dev/ttyUSB1::INSTR', 'ASRL/dev/ttyACM0::INSTR')
+True
+FwModule is: ['fc7.board.1']
+board type is: RD53B
+The fc7 ip is: 192.168.1.80
+updated the uri value
+checking if firmware is on the SD card for QUAD_ELE_CROC_v4-9.bit
+firmwarelist is 30.01.2025 22:15:26: |140705548487808|I| 9 firmware images on SD card:
+30.01.2025 22:15:26: |140705548487808|I|  - GoldenImage.bin
+30.01.2025 22:15:26: |140705548487808|I|  - QUAD_ELE_CROC_v4-6.bit
+30.01.2025 22:15:26: |140705548487808|I|  - QUAD_ELE_CROC_v4-8.bit
+30.01.2025 22:15:26: |140705548487808|I|  - SCC_ELE_RD53A_v4-8.bit
+30.01.2025 22:15:26: |140705548487808|I|  - QUAD_ELE_RD53A_v4-8.bit
+30.01.2025 22:15:26: |140705548487808|I|  - SCC_ELE_CROC_v4-8.bit
+30.01.2025 22:15:26: |140705548487808|I|  - QUAD_ELE_CROC_v4-9.bit
+30.01.2025 22:15:26: |140705548487808|I|  - SCC_ELE_RD53A_v4-9.bit
+30.01.2025 22:15:26: |140705548487808|I|  - SCC_ELE_CROC_v4-9.bit
+
+firmwareImage is QUAD_ELE_CROC_v4-9.bit
+firmware found
+Loading FW image
+30.01.2025 22:15:26: |140625844427904|I| [1m[34mLoading QUAD_ELE_CROC_v4-9.bit into the FPGA...[0m
+30.01.2025 22:15:30: |140625844427904|I| Firmware image: QUAD_ELE_CROC_v4-9.bit loaded on FPGA
+30.01.2025 22:15:30: |140625844427904|I| [1m[34m>>> Done <<<[0m
+
+resetting beboard
+command: CMSITminiDAQ -f /home/cmsTkUser/Ph2_ACF_GUI/Gui/CMSIT_RD53B.xml -r
+|10:15:30|I|[1m[32m       ____  _     ____         _    ____ _____[0m
+|10:15:30|I|[1m[32m      |  _ \| |__ |___ \       / \  / ___|  ___|[0m
+|10:15:30|I|[1m[32m      | |_) | '_ \  __) |____ / _ \| |   | |_[0m
+|10:15:30|I|[1m[32m      |  __/| | | |/ __/_____/ ___ \ |___|  _|[0m
+|10:15:30|I|[1m[32m      |_|   |_| |_|_____|   /_/   \_\____|_|
+[0m
+|10:15:30|I|[1m[32m  ____ __  __ ____ ___ _____          _       _ ____    _    ___[0m
+|10:15:30|I|[1m[32m / ___|  \/  / ___|_ _|_   _| __ ___ (_)_ __ (_)  _ \  / \  / _ \[0m
+|10:15:30|I|[1m[32m| |   | |\/| \___ \| |  | || '_ ` _ \| | '_ \| | | | |/ _ \| | | |[0m
+|10:15:30|I|[1m[32m| |___| |  | |___) | |  | || | | | | | | | | | | |_| / ___ \ |_| |[0m
+|10:15:30|I|[1m[32m \____|_|  |_|____/___| |_||_| |_| |_|_|_| |_|_|____/_/   \_\__\_\
+[0m
+|10:15:30|I|[32mBootstrapping TCP Server...[0m
+|10:15:31|I|[32mTrying to connect to the Power Supply Server...[0m
+|10:15:31|I|[1m[34m	--> Operation completed[0m
+|10:15:31|I|[1m[35mResetting the backend board... it may take a while[0m
+|10:15:31|I|[33mWaiting for DDR3 calibration...[0m
+|10:15:31|I|[1m[34m	--> DDR3 calibration done[0m
+|10:15:31|I|[1m[35mNow you can start using the DAQ ... enjoy![0m
+
+
+Firmware image is now loaded
+BoardName: fc7.board.1, BoardID: 0, IPAddress: 192.168.1.80
+OpticalGroups:
+  L12:   FMCID: L12, OGID: 0
+  Modules:
+    0:   ModuleName: RH0016, ModuleType: TFPX CROC 1x2 v1, FMCPort: 0
+    Chips:
+      12:     ChipID: 12, LaneID: 0, ChipVDDD: 12, ChipVDDA: 13, ChipStatus: True
+      13:     ChipID: 13, LaneID: 2, ChipVDDD: 9, ChipVDDA: 8, ChipStatus: True
+Using version Dev of Ph2_ACF
+Firmware version is QUAD_ELE_CROC_v4-9.bit
+module map is 0_0_0:RH0016
+module map is 0_0_0:RH0016
+Executing Single Step test...
+OUTPUT_DIR: /home/cmsTkUser/Ph2_ACF_GUI/data/TestResults/Test_IVCurve/Test_ModuleRH0016_IVCurve_2025-01-30T22:15:36_UTC
+Getting config file /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/settings/RD53Files/CMSIT_RD53Bv1.txt
+Getting config file /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/settings/RD53Files/CMSIT_RD53Bv1.txt
+Setting HWDescription
+chip 12 status is True
+chip 13 status is True
+beboard ip is chtcp-2.0://localhost:10203?target=192.168.1.80:50001
+This is the Hybrid Type:  RD53
+This is the board type:  RD53Bv1
+This is the board type:  RD53Bv1
+2025-01-30 22:15:36,092 - Gui.python.logging_config - INFO - defaultdict(<function <lambda> at 0x7f0efd6694c0>, {})
+module map is 0_0_0:RH0016
+Traceback (most recent call last):
+  File "/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/QtRunWindow.py", line 542, in initialTest
+    self.testHandler.runTest(isReRun)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/TestHandler.py", line 350, in runTest
+    self.runSingleTest(testName)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/TestHandler.py", line 391, in runSingleTest
+    self.IVCurveHandler = IVCurveHandler(self.instruments)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/IVCurveHandler.py", line 109, in __init__
+    self.test = IVCurveThread(self, instrument_cluster=self.instruments)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/IVCurveHandler.py", line 35, in __init__
+    self.turnOn()
+  File "/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/IVCurveHandler.py", line 39, in turnOn
+    self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument_cluster.py", line 735, in hv_on
+    self.hv_on_module(
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument.py", line 251, in wrapper
+    rval = function(self, *args, **kwargs)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument_cluster.py", line 796, in hv_on_module
+    return module["hv"].sweep(
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument.py", line 743, in sweep
+    self.measure_voltage.value,
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/keithley2410.py", line 457, in value
+    return self._instrument.measure_single(self._measure_type)[
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/keithley2410.py", line 672, in measure_single
+    return self.measure(
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument.py", line 251, in wrapper
+    rval = function(self, *args, **kwargs)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/keithley2410.py", line 619, in measure
+    self.set("TRIGGER_COUNT", repetitions, no_lock=True)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument.py", line 251, in wrapper
+    rval = function(self, *args, **kwargs)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument.py", line 315, in wrapper
+    return function(self, *args, **kwargs)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/scpi_instrument.py", line 333, in set
+    ret = self.query(setting, *value, no_lock=True, attempts=1)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument.py", line 251, in wrapper
+    rval = function(self, *args, **kwargs)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/instrument.py", line 304, in wrapper
+    return function(self, *args, **kwargs)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/scpi_instrument.py", line 389, in query
+    ret = setting_["parser"](ret, setting_)
+  File "/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle/utils/parser_utils.py", line 84, in numeric_int
+    return int(value)
+ValueError: invalid literal for int() with base 10: '0.000000E+00'
+ *** Break *** abort
+
+
+
+===========================================================
+There was a crash.
+This is the entire stack trace of all threads:
+===========================================================
+
+Thread 11 (Thread 0x7f0ef8804640 (LWP 94) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 10 (Thread 0x7f0ef9005640 (LWP 93) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 9 (Thread 0x7f0ef9806640 (LWP 92) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 8 (Thread 0x7f0efa007640 (LWP 91) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 7 (Thread 0x7f0efa808640 (LWP 90) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 6 (Thread 0x7f0efb009640 (LWP 89) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 5 (Thread 0x7f0f1de0c640 (LWP 81) "libusb_event"):
+#0  0x00007f0f2771a96f in poll () from /lib64/libc.so.6
+#1  0x00007f0efdc0a3b2 in linux_udev_event_thread_main () from /lib64/libusb-1.0.so.0
+#2  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#3  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 4 (Thread 0x7f0f1960b640 (LWP 62) "QXcbEventQueue"):
+#0  0x00007f0f2771a96f in poll () from /lib64/libc.so.6
+#1  0x00007f0f228c1f42 in _xcb_conn_wait.part.0 () from /lib64/libxcb.so.1
+#2  0x00007f0f228c390c in xcb_wait_for_event () from /lib64/libxcb.so.1
+#3  0x00007f0f1e1113f7 in QXcbEventQueue::run() () from /lib64/libQt5XcbQpa.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 3 (Thread 0x7f0f18e0a640 (LWP 54) "QDBusConnection"):
+#0  0x00007f0f2771a96f in poll () from /lib64/libc.so.6
+#1  0x00007f0f25f1550c in g_main_context_iterate.constprop () from /lib64/libglib-2.0.so.0
+#2  0x00007f0f25ebe5f3 in g_main_context_iteration () from /lib64/libglib-2.0.so.0
+#3  0x00007f0f26c177d8 in QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26bc4362 in QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f26a06a0a in QThread::exec() () from /lib64/libQt5Core.so.5
+#6  0x00007f0f1dfd8b8b in QDBusConnectionManager::run() () from /lib64/libQt5DBus.so.5
+#7  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#8  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#9  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 2 (Thread 0x7f0efc006640 (LWP 53) "python3"):
+#0  0x00007f0f2771d0cd in select () from /lib64/libc.so.6
+#1  0x00007f0f279dbc6d in time_sleep () from /lib64/libpython3.9.so.1.0
+#2  0x00007f0f278fd2f7 in cfunction_vectorcall_O () from /lib64/libpython3.9.so.1.0
+#3  0x00007f0f278f605b in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#4  0x00007f0f278eff75 in _PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#5  0x00007f0f278fdc45 in _PyFunction_Vectorcall () from /lib64/libpython3.9.so.1.0
+#6  0x00007f0f278f4c26 in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#7  0x00007f0f278fded3 in function_code_fastcall () from /lib64/libpython3.9.so.1.0
+#8  0x00007f0f278f1683 in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#9  0x00007f0f278fded3 in function_code_fastcall () from /lib64/libpython3.9.so.1.0
+#10 0x00007f0f278f1683 in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#11 0x00007f0f278fded3 in function_code_fastcall () from /lib64/libpython3.9.so.1.0
+#12 0x00007f0f27906412 in method_vectorcall () from /lib64/libpython3.9.so.1.0
+#13 0x00007f0f279b82ca in t_bootstrap () from /lib64/libpython3.9.so.1.0
+#14 0x00007f0f279b8278 in pythread_wrapper () from /lib64/libpython3.9.so.1.0
+#15 0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#16 0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 1 (Thread 0x7f0f274fbb80 (LWP 19) "python3"):
+#0  0x00007f0f276f02df in wait4 () from /lib64/libc.so.6
+#1  0x00007f0f2763995b in do_system () from /lib64/libc.so.6
+#2  0x00007f0f113136f4 in TUnixSystem::StackTrace() () from /usr/lib64/root/libCore.so.6.28
+#3  0x00007f0f114ba0b3 in (anonymous namespace)::TExceptionHandlerImp::HandleException(int) () from /usr/lib64/root/libcppyy_backend3_9.so.6.28
+#4  0x00007f0f11310499 in TUnixSystem::DispatchSignals(ESignals) () from /usr/lib64/root/libCore.so.6.28
+#5  <signal handler called>
+#6  0x00007f0f2767954c in __pthread_kill_implementation () from /lib64/libc.so.6
+#7  0x00007f0f2762cd46 in raise () from /lib64/libc.so.6
+#8  0x00007f0f276007f3 in abort () from /lib64/libc.so.6
+#9  0x00007f0f269cf4b1 in QMessageLogger::fatal(char const*, ...) const () from /lib64/libQt5Core.so.5
+#10 0x00007f0f26f67477 in pyqt5_err_print() [clone .cold] () from /usr/lib64/python3.9/site-packages/PyQt5/QtCore.abi3.so
+#11 0x00007f0f270c97ad in PyQtSlotProxy::qt_metacall(QMetaObject::Call, int, void**) () from /usr/lib64/python3.9/site-packages/PyQt5/QtCore.abi3.so
+#12 0x00007f0f26bf9bc0 in void doActivate<false>(QObject*, int, void**) () from /lib64/libQt5Core.so.5
+#13 0x00007f0f2367f566 in QAbstractButton::clicked(bool) () from /lib64/libQt5Widgets.so.5
+#14 0x00007f0f2367f7ee in QAbstractButtonPrivate::emitClicked() () from /lib64/libQt5Widgets.so.5
+#15 0x00007f0f23681414 in QAbstractButtonPrivate::click() () from /lib64/libQt5Widgets.so.5
+#16 0x00007f0f23681637 in QAbstractButton::mouseReleaseEvent(QMouseEvent*) () from /lib64/libQt5Widgets.so.5
+#17 0x00007f0f23e66453 in sipQPushButton::mouseReleaseEvent(QMouseEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#18 0x00007f0f235cc81e in QWidget::event(QEvent*) () from /lib64/libQt5Widgets.so.5
+#19 0x00007f0f23e66ffb in sipQPushButton::event(QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#20 0x00007f0f23589533 in QApplicationPrivate::notify_helper(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#21 0x00007f0f23591174 in QApplication::notify(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#22 0x00007f0f23e92766 in sipQApplication::notify(QObject*, QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#23 0x00007f0f26bc5958 in QCoreApplication::notifyInternal2(QObject*, QEvent*) () from /lib64/libQt5Core.so.5
+#24 0x00007f0f2358fc57 in QApplicationPrivate::sendMouseEvent(QWidget*, QMouseEvent*, QWidget*, QWidget*, QWidget**, QPointer<QWidget>&, bool, bool) () from /lib64/libQt5Widgets.so.5
+#25 0x00007f0f235e5ddb in QWidgetWindow::handleMouseEvent(QMouseEvent*) () from /lib64/libQt5Widgets.so.5
+#26 0x00007f0f235e9135 in QWidgetWindow::event(QEvent*) () from /lib64/libQt5Widgets.so.5
+#27 0x00007f0f23589533 in QApplicationPrivate::notify_helper(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#28 0x00007f0f23e92766 in sipQApplication::notify(QObject*, QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#29 0x00007f0f26bc5958 in QCoreApplication::notifyInternal2(QObject*, QEvent*) () from /lib64/libQt5Core.so.5
+#30 0x00007f0f22f02d88 in QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent*) () from /lib64/libQt5Gui.so.5
+#31 0x00007f0f22ee1e0c in QWindowSystemInterface::sendWindowSystemEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Gui.so.5
+#32 0x00007f0f1e11243e in xcbSourceDispatch(_GSource*, int (*)(void*), void*) () from /lib64/libQt5XcbQpa.so.5
+#33 0x00007f0f25ec0d6f in g_main_context_dispatch () from /lib64/libglib-2.0.so.0
+#34 0x00007f0f25f15578 in g_main_context_iterate.constprop () from /lib64/libglib-2.0.so.0
+#35 0x00007f0f25ebe5f3 in g_main_context_iteration () from /lib64/libglib-2.0.so.0
+#36 0x00007f0f26c177d8 in QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#37 0x00007f0f26bc4362 in QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#38 0x00007f0f26bcc894 in QCoreApplication::exec() () from /lib64/libQt5Core.so.5
+#39 0x00007f0f23e8e85e in meth_QApplication_exec_.lto_priv.0 () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#40 0x00007f0f27907838 in cfunction_call () from /lib64/libpython3.9.so.1.0
+#41 0x00007f0f278f9774 in _PyObject_MakeTpCall () from /lib64/libpython3.9.so.1.0
+#42 0x00007f0f278f665e in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#43 0x00007f0f278eff75 in _PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#44 0x00007f0f2796aaa5 in _PyEval_EvalCodeWithName () from /lib64/libpython3.9.so.1.0
+#45 0x00007f0f2796aa3d in PyEval_EvalCodeEx () from /lib64/libpython3.9.so.1.0
+#46 0x00007f0f2796a9ef in PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#47 0x00007f0f2799ab34 in run_eval_code_obj () from /lib64/libpython3.9.so.1.0
+#48 0x00007f0f27996996 in run_mod () from /lib64/libpython3.9.so.1.0
+#49 0x00007f0f2786bd6c in pyrun_file.cold () from /lib64/libpython3.9.so.1.0
+#50 0x00007f0f279906e3 in PyRun_SimpleFileExFlags () from /lib64/libpython3.9.so.1.0
+#51 0x00007f0f2798cf48 in Py_RunMain () from /lib64/libpython3.9.so.1.0
+#52 0x00007f0f2795d3dd in Py_BytesMain () from /lib64/libpython3.9.so.1.0
+#53 0x00007f0f27617eb0 in __libc_start_call_main () from /lib64/libc.so.6
+#54 0x00007f0f27617f60 in __libc_start_main_impl () from /lib64/libc.so.6
+#55 0x0000558051781095 in _start ()
+===========================================================
+
+
+The lines below might hint at the cause of the crash. If you see question
+marks as part of the stack trace, try to recompile with debugging information
+enabled and export CLING_DEBUG=1 environment variable before running.
+You may get help by asking at the ROOT forum https://root.cern/forum
+Only if you are really convinced it is a bug in ROOT then please submit a
+report at https://root.cern/bugs Please post the ENTIRE stack trace
+from above as an attachment in addition to anything else
+that might help us fixing this issue.
+===========================================================
+#6  0x00007f0f2767954c in __pthread_kill_implementation () from /lib64/libc.so.6
+#7  0x00007f0f2762cd46 in raise () from /lib64/libc.so.6
+#8  0x00007f0f276007f3 in abort () from /lib64/libc.so.6
+#9  0x00007f0f269cf4b1 in QMessageLogger::fatal(char const*, ...) const () from /lib64/libQt5Core.so.5
+#10 0x00007f0f26f67477 in pyqt5_err_print() [clone .cold] () from /usr/lib64/python3.9/site-packages/PyQt5/QtCore.abi3.so
+#11 0x00007f0f270c97ad in PyQtSlotProxy::qt_metacall(QMetaObject::Call, int, void**) () from /usr/lib64/python3.9/site-packages/PyQt5/QtCore.abi3.so
+#12 0x00007f0f26bf9bc0 in void doActivate<false>(QObject*, int, void**) () from /lib64/libQt5Core.so.5
+#13 0x00007f0f2367f566 in QAbstractButton::clicked(bool) () from /lib64/libQt5Widgets.so.5
+#14 0x00007f0f2367f7ee in QAbstractButtonPrivate::emitClicked() () from /lib64/libQt5Widgets.so.5
+#15 0x00007f0f23681414 in QAbstractButtonPrivate::click() () from /lib64/libQt5Widgets.so.5
+#16 0x00007f0f23681637 in QAbstractButton::mouseReleaseEvent(QMouseEvent*) () from /lib64/libQt5Widgets.so.5
+#17 0x00007f0f23e66453 in sipQPushButton::mouseReleaseEvent(QMouseEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#18 0x00007f0f235cc81e in QWidget::event(QEvent*) () from /lib64/libQt5Widgets.so.5
+#19 0x00007f0f23e66ffb in sipQPushButton::event(QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#20 0x00007f0f23589533 in QApplicationPrivate::notify_helper(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#21 0x00007f0f23591174 in QApplication::notify(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#22 0x00007f0f23e92766 in sipQApplication::notify(QObject*, QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#23 0x00007f0f26bc5958 in QCoreApplication::notifyInternal2(QObject*, QEvent*) () from /lib64/libQt5Core.so.5
+#24 0x00007f0f2358fc57 in QApplicationPrivate::sendMouseEvent(QWidget*, QMouseEvent*, QWidget*, QWidget*, QWidget**, QPointer<QWidget>&, bool, bool) () from /lib64/libQt5Widgets.so.5
+#25 0x00007f0f235e5ddb in QWidgetWindow::handleMouseEvent(QMouseEvent*) () from /lib64/libQt5Widgets.so.5
+#26 0x00007f0f235e9135 in QWidgetWindow::event(QEvent*) () from /lib64/libQt5Widgets.so.5
+#27 0x00007f0f23589533 in QApplicationPrivate::notify_helper(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#28 0x00007f0f23e92766 in sipQApplication::notify(QObject*, QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#29 0x00007f0f26bc5958 in QCoreApplication::notifyInternal2(QObject*, QEvent*) () from /lib64/libQt5Core.so.5
+#30 0x00007f0f22f02d88 in QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent*) () from /lib64/libQt5Gui.so.5
+#31 0x00007f0f22ee1e0c in QWindowSystemInterface::sendWindowSystemEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Gui.so.5
+#32 0x00007f0f1e11243e in xcbSourceDispatch(_GSource*, int (*)(void*), void*) () from /lib64/libQt5XcbQpa.so.5
+#33 0x00007f0f25ec0d6f in g_main_context_dispatch () from /lib64/libglib-2.0.so.0
+#34 0x00007f0f25f15578 in g_main_context_iterate.constprop () from /lib64/libglib-2.0.so.0
+#35 0x00007f0f25ebe5f3 in g_main_context_iteration () from /lib64/libglib-2.0.so.0
+#36 0x00007f0f26c177d8 in QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#37 0x00007f0f26bc4362 in QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#38 0x00007f0f26bcc894 in QCoreApplication::exec() () from /lib64/libQt5Core.so.5
+#39 0x00007f0f23e8e85e in meth_QApplication_exec_.lto_priv.0 () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#40 0x00007f0f27907838 in cfunction_call () from /lib64/libpython3.9.so.1.0
+#41 0x00007f0f278f9774 in _PyObject_MakeTpCall () from /lib64/libpython3.9.so.1.0
+#42 0x00007f0f278f665e in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#43 0x00007f0f278eff75 in _PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#44 0x00007f0f2796aaa5 in _PyEval_EvalCodeWithName () from /lib64/libpython3.9.so.1.0
+#45 0x00007f0f2796aa3d in PyEval_EvalCodeEx () from /lib64/libpython3.9.so.1.0
+#46 0x00007f0f2796a9ef in PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#47 0x00007f0f2799ab34 in run_eval_code_obj () from /lib64/libpython3.9.so.1.0
+#48 0x00007f0f27996996 in run_mod () from /lib64/libpython3.9.so.1.0
+#49 0x00007f0f2786bd6c in pyrun_file.cold () from /lib64/libpython3.9.so.1.0
+#50 0x00007f0f279906e3 in PyRun_SimpleFileExFlags () from /lib64/libpython3.9.so.1.0
+#51 0x00007f0f2798cf48 in Py_RunMain () from /lib64/libpython3.9.so.1.0
+#52 0x00007f0f2795d3dd in Py_BytesMain () from /lib64/libpython3.9.so.1.0
+#53 0x00007f0f27617eb0 in __libc_start_call_main () from /lib64/libc.so.6
+#54 0x00007f0f27617f60 in __libc_start_main_impl () from /lib64/libc.so.6
+#55 0x0000558051781095 in _start ()
+===========================================================
+
+
+ *** Break *** abort
+
+
+
+===========================================================
+There was a crash.
+This is the entire stack trace of all threads:
+===========================================================
+
+Thread 11 (Thread 0x7f0ef8804640 (LWP 94) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 10 (Thread 0x7f0ef9005640 (LWP 93) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 9 (Thread 0x7f0ef9806640 (LWP 92) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 8 (Thread 0x7f0efa007640 (LWP 91) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 7 (Thread 0x7f0efa808640 (LWP 90) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 6 (Thread 0x7f0efb009640 (LWP 89) "Thread (pooled)"):
+#0  0x00007f0f2767439a in __futex_abstimed_wait_common () from /lib64/libc.so.6
+#1  0x00007f0f27676ea4 in pthread_cond_timedwait
+
+GLIBC_2.3.2 () from /lib64/libc.so.6
+#2  0x00007f0f26a0d7da in QWaitCondition::wait(QMutex*, QDeadlineTimer) () from /lib64/libQt5Core.so.5
+#3  0x00007f0f26a0afb4 in QThreadPoolThread::run() () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 5 (Thread 0x7f0f1de0c640 (LWP 81) "libusb_event"):
+#0  0x00007f0f2771a96f in poll () from /lib64/libc.so.6
+#1  0x00007f0efdc0a3b2 in linux_udev_event_thread_main () from /lib64/libusb-1.0.so.0
+#2  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#3  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 4 (Thread 0x7f0f1960b640 (LWP 62) "QXcbEventQueue"):
+#0  0x00007f0f2771a96f in poll () from /lib64/libc.so.6
+#1  0x00007f0f228c1f42 in _xcb_conn_wait.part.0 () from /lib64/libxcb.so.1
+#2  0x00007f0f228c390c in xcb_wait_for_event () from /lib64/libxcb.so.1
+#3  0x00007f0f1e1113f7 in QXcbEventQueue::run() () from /lib64/libQt5XcbQpa.so.5
+#4  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#6  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 3 (Thread 0x7f0f18e0a640 (LWP 54) "QDBusConnection"):
+#0  0x00007f0f2771a96f in poll () from /lib64/libc.so.6
+#1  0x00007f0f25f1550c in g_main_context_iterate.constprop () from /lib64/libglib-2.0.so.0
+#2  0x00007f0f25ebe5f3 in g_main_context_iteration () from /lib64/libglib-2.0.so.0
+#3  0x00007f0f26c177d8 in QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#4  0x00007f0f26bc4362 in QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#5  0x00007f0f26a06a0a in QThread::exec() () from /lib64/libQt5Core.so.5
+#6  0x00007f0f1dfd8b8b in QDBusConnectionManager::run() () from /lib64/libQt5DBus.so.5
+#7  0x00007f0f26a07ced in QThreadPrivate::start(void*) () from /lib64/libQt5Core.so.5
+#8  0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#9  0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 2 (Thread 0x7f0efc006640 (LWP 53) "python3"):
+#0  0x00007f0f2771d0cd in select () from /lib64/libc.so.6
+#1  0x00007f0f279dbc6d in time_sleep () from /lib64/libpython3.9.so.1.0
+#2  0x00007f0f278fd2f7 in cfunction_vectorcall_O () from /lib64/libpython3.9.so.1.0
+#3  0x00007f0f278f605b in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#4  0x00007f0f278eff75 in _PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#5  0x00007f0f278fdc45 in _PyFunction_Vectorcall () from /lib64/libpython3.9.so.1.0
+#6  0x00007f0f278f4c26 in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#7  0x00007f0f278fded3 in function_code_fastcall () from /lib64/libpython3.9.so.1.0
+#8  0x00007f0f278f1683 in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#9  0x00007f0f278fded3 in function_code_fastcall () from /lib64/libpython3.9.so.1.0
+#10 0x00007f0f278f1683 in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#11 0x00007f0f278fded3 in function_code_fastcall () from /lib64/libpython3.9.so.1.0
+#12 0x00007f0f27906412 in method_vectorcall () from /lib64/libpython3.9.so.1.0
+#13 0x00007f0f279b82ca in t_bootstrap () from /lib64/libpython3.9.so.1.0
+#14 0x00007f0f279b8278 in pythread_wrapper () from /lib64/libpython3.9.so.1.0
+#15 0x00007f0f27677802 in start_thread () from /lib64/libc.so.6
+#16 0x00007f0f27617314 in clone () from /lib64/libc.so.6
+
+Thread 1 (Thread 0x7f0f274fbb80 (LWP 19) "python3"):
+#0  0x00007f0f276f02df in wait4 () from /lib64/libc.so.6
+#1  0x00007f0f2763995b in do_system () from /lib64/libc.so.6
+#2  0x00007f0f113136f4 in TUnixSystem::StackTrace() () from /usr/lib64/root/libCore.so.6.28
+#3  0x00007f0f114b9f37 in (anonymous namespace)::TExceptionHandlerImp::HandleException(int) () from /usr/lib64/root/libcppyy_backend3_9.so.6.28
+#4  0x00007f0f11310499 in TUnixSystem::DispatchSignals(ESignals) () from /usr/lib64/root/libCore.so.6.28
+#5  <signal handler called>
+#6  0x00007f0f2767954c in __pthread_kill_implementation () from /lib64/libc.so.6
+#7  0x00007f0f2762cd46 in raise () from /lib64/libc.so.6
+#8  0x00007f0f276007f3 in abort () from /lib64/libc.so.6
+#9  0x00007f0f269cf4b1 in QMessageLogger::fatal(char const*, ...) const () from /lib64/libQt5Core.so.5
+#10 0x00007f0f26f67477 in pyqt5_err_print() [clone .cold] () from /usr/lib64/python3.9/site-packages/PyQt5/QtCore.abi3.so
+#11 0x00007f0f270c97ad in PyQtSlotProxy::qt_metacall(QMetaObject::Call, int, void**) () from /usr/lib64/python3.9/site-packages/PyQt5/QtCore.abi3.so
+#12 0x00007f0f26bf9bc0 in void doActivate<false>(QObject*, int, void**) () from /lib64/libQt5Core.so.5
+#13 0x00007f0f2367f566 in QAbstractButton::clicked(bool) () from /lib64/libQt5Widgets.so.5
+#14 0x00007f0f2367f7ee in QAbstractButtonPrivate::emitClicked() () from /lib64/libQt5Widgets.so.5
+#15 0x00007f0f23681414 in QAbstractButtonPrivate::click() () from /lib64/libQt5Widgets.so.5
+#16 0x00007f0f23681637 in QAbstractButton::mouseReleaseEvent(QMouseEvent*) () from /lib64/libQt5Widgets.so.5
+#17 0x00007f0f23e66453 in sipQPushButton::mouseReleaseEvent(QMouseEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#18 0x00007f0f235cc81e in QWidget::event(QEvent*) () from /lib64/libQt5Widgets.so.5
+#19 0x00007f0f23e66ffb in sipQPushButton::event(QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#20 0x00007f0f23589533 in QApplicationPrivate::notify_helper(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#21 0x00007f0f23591174 in QApplication::notify(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#22 0x00007f0f23e92766 in sipQApplication::notify(QObject*, QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#23 0x00007f0f26bc5958 in QCoreApplication::notifyInternal2(QObject*, QEvent*) () from /lib64/libQt5Core.so.5
+#24 0x00007f0f2358fc57 in QApplicationPrivate::sendMouseEvent(QWidget*, QMouseEvent*, QWidget*, QWidget*, QWidget**, QPointer<QWidget>&, bool, bool) () from /lib64/libQt5Widgets.so.5
+#25 0x00007f0f235e5ddb in QWidgetWindow::handleMouseEvent(QMouseEvent*) () from /lib64/libQt5Widgets.so.5
+#26 0x00007f0f235e9135 in QWidgetWindow::event(QEvent*) () from /lib64/libQt5Widgets.so.5
+#27 0x00007f0f23589533 in QApplicationPrivate::notify_helper(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#28 0x00007f0f23e92766 in sipQApplication::notify(QObject*, QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#29 0x00007f0f26bc5958 in QCoreApplication::notifyInternal2(QObject*, QEvent*) () from /lib64/libQt5Core.so.5
+#30 0x00007f0f22f02d88 in QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent*) () from /lib64/libQt5Gui.so.5
+#31 0x00007f0f22ee1e0c in QWindowSystemInterface::sendWindowSystemEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Gui.so.5
+#32 0x00007f0f1e11243e in xcbSourceDispatch(_GSource*, int (*)(void*), void*) () from /lib64/libQt5XcbQpa.so.5
+#33 0x00007f0f25ec0d6f in g_main_context_dispatch () from /lib64/libglib-2.0.so.0
+#34 0x00007f0f25f15578 in g_main_context_iterate.constprop () from /lib64/libglib-2.0.so.0
+#35 0x00007f0f25ebe5f3 in g_main_context_iteration () from /lib64/libglib-2.0.so.0
+#36 0x00007f0f26c177d8 in QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#37 0x00007f0f26bc4362 in QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#38 0x00007f0f26bcc894 in QCoreApplication::exec() () from /lib64/libQt5Core.so.5
+#39 0x00007f0f23e8e85e in meth_QApplication_exec_.lto_priv.0 () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#40 0x00007f0f27907838 in cfunction_call () from /lib64/libpython3.9.so.1.0
+#41 0x00007f0f278f9774 in _PyObject_MakeTpCall () from /lib64/libpython3.9.so.1.0
+#42 0x00007f0f278f665e in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#43 0x00007f0f278eff75 in _PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#44 0x00007f0f2796aaa5 in _PyEval_EvalCodeWithName () from /lib64/libpython3.9.so.1.0
+#45 0x00007f0f2796aa3d in PyEval_EvalCodeEx () from /lib64/libpython3.9.so.1.0
+#46 0x00007f0f2796a9ef in PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#47 0x00007f0f2799ab34 in run_eval_code_obj () from /lib64/libpython3.9.so.1.0
+#48 0x00007f0f27996996 in run_mod () from /lib64/libpython3.9.so.1.0
+#49 0x00007f0f2786bd6c in pyrun_file.cold () from /lib64/libpython3.9.so.1.0
+#50 0x00007f0f279906e3 in PyRun_SimpleFileExFlags () from /lib64/libpython3.9.so.1.0
+#51 0x00007f0f2798cf48 in Py_RunMain () from /lib64/libpython3.9.so.1.0
+#52 0x00007f0f2795d3dd in Py_BytesMain () from /lib64/libpython3.9.so.1.0
+#53 0x00007f0f27617eb0 in __libc_start_call_main () from /lib64/libc.so.6
+#54 0x00007f0f27617f60 in __libc_start_main_impl () from /lib64/libc.so.6
+#55 0x0000558051781095 in _start ()
+===========================================================
+
+
+The lines below might hint at the cause of the crash. If you see question
+marks as part of the stack trace, try to recompile with debugging information
+enabled and export CLING_DEBUG=1 environment variable before running.
+You may get help by asking at the ROOT forum https://root.cern/forum
+Only if you are really convinced it is a bug in ROOT then please submit a
+report at https://root.cern/bugs Please post the ENTIRE stack trace
+from above as an attachment in addition to anything else
+that might help us fixing this issue.
+===========================================================
+#6  0x00007f0f2767954c in __pthread_kill_implementation () from /lib64/libc.so.6
+#7  0x00007f0f2762cd46 in raise () from /lib64/libc.so.6
+#8  0x00007f0f276007f3 in abort () from /lib64/libc.so.6
+#9  0x00007f0f269cf4b1 in QMessageLogger::fatal(char const*, ...) const () from /lib64/libQt5Core.so.5
+#10 0x00007f0f26f67477 in pyqt5_err_print() [clone .cold] () from /usr/lib64/python3.9/site-packages/PyQt5/QtCore.abi3.so
+#11 0x00007f0f270c97ad in PyQtSlotProxy::qt_metacall(QMetaObject::Call, int, void**) () from /usr/lib64/python3.9/site-packages/PyQt5/QtCore.abi3.so
+#12 0x00007f0f26bf9bc0 in void doActivate<false>(QObject*, int, void**) () from /lib64/libQt5Core.so.5
+#13 0x00007f0f2367f566 in QAbstractButton::clicked(bool) () from /lib64/libQt5Widgets.so.5
+#14 0x00007f0f2367f7ee in QAbstractButtonPrivate::emitClicked() () from /lib64/libQt5Widgets.so.5
+#15 0x00007f0f23681414 in QAbstractButtonPrivate::click() () from /lib64/libQt5Widgets.so.5
+#16 0x00007f0f23681637 in QAbstractButton::mouseReleaseEvent(QMouseEvent*) () from /lib64/libQt5Widgets.so.5
+#17 0x00007f0f23e66453 in sipQPushButton::mouseReleaseEvent(QMouseEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#18 0x00007f0f235cc81e in QWidget::event(QEvent*) () from /lib64/libQt5Widgets.so.5
+#19 0x00007f0f23e66ffb in sipQPushButton::event(QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#20 0x00007f0f23589533 in QApplicationPrivate::notify_helper(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#21 0x00007f0f23591174 in QApplication::notify(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#22 0x00007f0f23e92766 in sipQApplication::notify(QObject*, QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#23 0x00007f0f26bc5958 in QCoreApplication::notifyInternal2(QObject*, QEvent*) () from /lib64/libQt5Core.so.5
+#24 0x00007f0f2358fc57 in QApplicationPrivate::sendMouseEvent(QWidget*, QMouseEvent*, QWidget*, QWidget*, QWidget**, QPointer<QWidget>&, bool, bool) () from /lib64/libQt5Widgets.so.5
+#25 0x00007f0f235e5ddb in QWidgetWindow::handleMouseEvent(QMouseEvent*) () from /lib64/libQt5Widgets.so.5
+#26 0x00007f0f235e9135 in QWidgetWindow::event(QEvent*) () from /lib64/libQt5Widgets.so.5
+#27 0x00007f0f23589533 in QApplicationPrivate::notify_helper(QObject*, QEvent*) () from /lib64/libQt5Widgets.so.5
+#28 0x00007f0f23e92766 in sipQApplication::notify(QObject*, QEvent*) () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#29 0x00007f0f26bc5958 in QCoreApplication::notifyInternal2(QObject*, QEvent*) () from /lib64/libQt5Core.so.5
+#30 0x00007f0f22f02d88 in QGuiApplicationPrivate::processMouseEvent(QWindowSystemInterfacePrivate::MouseEvent*) () from /lib64/libQt5Gui.so.5
+#31 0x00007f0f22ee1e0c in QWindowSystemInterface::sendWindowSystemEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Gui.so.5
+#32 0x00007f0f1e11243e in xcbSourceDispatch(_GSource*, int (*)(void*), void*) () from /lib64/libQt5XcbQpa.so.5
+#33 0x00007f0f25ec0d6f in g_main_context_dispatch () from /lib64/libglib-2.0.so.0
+#34 0x00007f0f25f15578 in g_main_context_iterate.constprop () from /lib64/libglib-2.0.so.0
+#35 0x00007f0f25ebe5f3 in g_main_context_iteration () from /lib64/libglib-2.0.so.0
+#36 0x00007f0f26c177d8 in QEventDispatcherGlib::processEvents(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#37 0x00007f0f26bc4362 in QEventLoop::exec(QFlags<QEventLoop::ProcessEventsFlag>) () from /lib64/libQt5Core.so.5
+#38 0x00007f0f26bcc894 in QCoreApplication::exec() () from /lib64/libQt5Core.so.5
+#39 0x00007f0f23e8e85e in meth_QApplication_exec_.lto_priv.0 () from /usr/lib64/python3.9/site-packages/PyQt5/QtWidgets.abi3.so
+#40 0x00007f0f27907838 in cfunction_call () from /lib64/libpython3.9.so.1.0
+#41 0x00007f0f278f9774 in _PyObject_MakeTpCall () from /lib64/libpython3.9.so.1.0
+#42 0x00007f0f278f665e in _PyEval_EvalFrameDefault () from /lib64/libpython3.9.so.1.0
+#43 0x00007f0f278eff75 in _PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#44 0x00007f0f2796aaa5 in _PyEval_EvalCodeWithName () from /lib64/libpython3.9.so.1.0
+#45 0x00007f0f2796aa3d in PyEval_EvalCodeEx () from /lib64/libpython3.9.so.1.0
+#46 0x00007f0f2796a9ef in PyEval_EvalCode () from /lib64/libpython3.9.so.1.0
+#47 0x00007f0f2799ab34 in run_eval_code_obj () from /lib64/libpython3.9.so.1.0
+#48 0x00007f0f27996996 in run_mod () from /lib64/libpython3.9.so.1.0
+#49 0x00007f0f2786bd6c in pyrun_file.cold () from /lib64/libpython3.9.so.1.0
+#50 0x00007f0f279906e3 in PyRun_SimpleFileExFlags () from /lib64/libpython3.9.so.1.0
+#51 0x00007f0f2798cf48 in Py_RunMain () from /lib64/libpython3.9.so.1.0
+#52 0x00007f0f2795d3dd in Py_BytesMain () from /lib64/libpython3.9.so.1.0
+#53 0x00007f0f27617eb0 in __libc_start_call_main () from /lib64/libc.so.6
+#54 0x00007f0f27617f60 in __libc_start_main_impl () from /lib64/libc.so.6
+#55 0x0000558051781095 in _start ()
+===========================================================
+
+
+Exception in thread Thread-2:
+Traceback (most recent call last):
+  File "/usr/lib64/python3.9/threading.py", line 980, in _bootstrap_inner
+    self.run()
+  File "/usr/lib64/python3.9/threading.py", line 917, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/lib64/python3.9/site-packages/ROOT/_application.py", line 91, in _process_root_events
+    gSystem.ProcessEvents()
+ReferenceError: attempt to access a null-pointer

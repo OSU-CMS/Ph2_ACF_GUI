@@ -51,11 +51,7 @@ from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 from icicle.icicle.instrument_cluster import InstrumentCluster
 from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
 
-
-
-
 from Gui.python.logging_config import logger
-
 
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
