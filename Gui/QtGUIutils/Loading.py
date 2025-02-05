@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QPainter, QPen
 
+#class
 class LoadingThread(QThread):
     finished_signal = pyqtSignal()
     def __init__(self,function,interval,*args):
