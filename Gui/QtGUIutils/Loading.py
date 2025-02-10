@@ -32,7 +32,7 @@ class LoadingWheel(QWidget):
         painter.translate(self.width() / 2, self.height() / 2)  # Center rotation
         painter.rotate(self.angle)
 
-        pen = QPen(Qt.white, 2, Qt.SolidLine, Qt.RoundCap)
+        pen = QPen(Qt.blue, 2, Qt.SolidLine, Qt.RoundCap)
         painter.setPen(pen)
 
         # Draw arc as spinner

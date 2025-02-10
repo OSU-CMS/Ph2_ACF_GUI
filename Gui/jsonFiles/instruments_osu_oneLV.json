@@ -12,7 +12,8 @@
             "resource": "ASRL/dev/ttyUSBHV::INSTR",
             "sim": false,
             "default_voltage": -80,
-            "default_current": 5e-6
+            "default_current": 5e-6,
+            "default_step_size": 6
         }
     },
     "channels_dict":{
