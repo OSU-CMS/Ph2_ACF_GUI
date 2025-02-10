@@ -128,7 +128,9 @@ class QtApplication(QWidget):
                     with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
                         style_sheet = f.read()
                 finally:
-                    self.setStyleSheet(style_sheet)
+                    logger.debug("Setting StyleSheetPropagation")
+                    QApplication.setAttribute(Qt.AA_UseStyleSheetPropagationInWidgetStyles)
+                    QApplication.instance().setStyleSheet(style_sheet)
 
             # If Assets directory is not bound (ie. someone has not edited their
             # run_docker script) then manually set theme to dark mode. 
