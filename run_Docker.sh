@@ -52,7 +52,6 @@ then
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
-		-v ${PWD}/Gui/Assets/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/Assets/\
 		-w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
 		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
 else
@@ -98,7 +97,6 @@ To install on Alma Linux please run:\e[0m
         -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
-		-v ${PWD}/Gui/Assets/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/Assets/\
 		-w $PWD  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
 		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
 fi
