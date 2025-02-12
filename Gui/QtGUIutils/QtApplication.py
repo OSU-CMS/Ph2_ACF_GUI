@@ -108,28 +108,29 @@ class QtApplication(QWidget):
             or sys.platform.startswith("win")
             or sys.platform.startswith("darwin")
         ):
-            # Check if Assets directory exists/is bound
-            if os.path.isdir("Assets"):
-                logger.debug("The Assets directory is bound correctly") 
-                try:
-                    with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
-                        style_sheet = f.read()
+            if site_settings.use_custom_theme: 
+                # Check if Assets directory exists/is bound
+                if os.path.isdir("Assets"):
+                    logger.debug("The Assets directory is bound correctly") 
+                    try:
+                        with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
+                            style_sheet = f.read()
 
-                # If theme variable is not defined then use default theme
-                except AttributeError:
-                    logger.info("Using default theme")
-                    with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
-                        style_sheet = f.read()
+                    # If theme variable is not defined then use default theme
+                    except AttributeError:
+                        logger.info("Using default theme")
+                        with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
+                            style_sheet = f.read()
 
-                # If there is a typo or user attempts to use theme that is not defined, set default theme
-                except FileNotFoundError:
-                    logger.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
-                    with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
-                        style_sheet = f.read()
-                finally:
-                    logger.debug("Setting StyleSheetPropagation")
-                    QApplication.setAttribute(Qt.AA_UseStyleSheetPropagationInWidgetStyles)
-                    QApplication.instance().setStyleSheet(style_sheet)
+                    # If there is a typo or user attempts to use theme that is not defined, set default theme
+                    except FileNotFoundError:
+                        logger.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
+                        with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
+                            style_sheet = f.read()
+                    finally:
+                        logger.debug("Setting StyleSheetPropagation")
+                        QApplication.setAttribute(Qt.AA_UseStyleSheetPropagationInWidgetStyles)
+                        QApplication.instance().setStyleSheet(style_sheet)
 
             # If Assets directory is not bound (ie. someone has not edited their
             # run_docker script) then manually set theme to dark mode. 
