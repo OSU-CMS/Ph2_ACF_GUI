@@ -854,6 +854,8 @@ class SimpleModuleBox(QWidget):
         if "SH" in SerialNumber or "RH" in SerialNumber:
             if numpart.isdigit() and int(numpart) > 49:
                 self.version = "v2"
+            else:
+                self.version = "v1"
         
         else:
             self.version = "v1"
