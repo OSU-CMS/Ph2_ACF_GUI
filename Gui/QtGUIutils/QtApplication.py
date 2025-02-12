@@ -108,9 +108,20 @@ class QtApplication(QWidget):
             or sys.platform.startswith("win")
             or sys.platform.startswith("darwin")
         ):
+            # Check if use_custom_theme is defined
+            try:
+                site_settings.use_custom_theme
+            except AttributeError:
+                site_settings.use_custom_theme = False
+
+            # If the Assets directory is not bound, then you can't use a custom theme
+            if not os.path.isdir("Assets"):
+                logger.info("The Assets directory is not bound, cannot use custom themes,"
+                            "default theme will be used.") 
+                site_settings.use_custom_theme = False
+
             if site_settings.use_custom_theme: 
                 # Check if Assets directory exists/is bound
-                if os.path.isdir("Assets"):
                     logger.debug("The Assets directory is bound correctly") 
                     try:
                         with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
@@ -135,7 +146,7 @@ class QtApplication(QWidget):
             # If Assets directory is not bound (ie. someone has not edited their
             # run_docker script) then manually set theme to dark mode. 
             else:
-                logger.info("Theming capablitities not available, using default theme")
+                logger.info("Using default theme")
                 darkPalette = QPalette()
                 darkPalette.setColor(QPalette.Window, QColor(53, 53, 53))
                 darkPalette.setColor(QPalette.WindowText, Qt.white)
