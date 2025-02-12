@@ -986,8 +986,9 @@ class TestHandler(QObject):
             self.saveTest()
             return
 
-        if "PixelAlive_uncoupled" in self.currentTest:
-            self.bumpbond_analysis()
+        #Might need this if statment if we do the bumpbond analysis in the GUI.  If done in felis we can remove this.
+        #if "PixelAlive_uncoupled" in self.currentTest:
+        #    self.bumpbond_analysis()
 
         # To be removed
         # if isCompositeTest(self.info):
