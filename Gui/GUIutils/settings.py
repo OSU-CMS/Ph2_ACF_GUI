@@ -193,7 +193,7 @@ optimizationTestMap = {
         'KRUM_CURR_LIN',
     ],
     'injdelay':[
-        'TriggerConfig',
+        #'TriggerConfig',
         'LATENCY_CONFIG',
         'CAL_EDGE_FINE_DELAY',
     ],
