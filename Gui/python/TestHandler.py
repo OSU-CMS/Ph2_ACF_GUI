@@ -185,7 +185,6 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
 
     def initializeRD53Dict(self):
-        self.rd53_file = {}
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
@@ -731,12 +730,29 @@ class TestHandler(QObject):
 
         try:
             if self.RunNumber == "-1":
+                if os.path.exists("{0}/test/Results/Run000000*.root {1}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
+                    ))==False or os.path.getsize("{0}/test/Results/Run000000*.root {1}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
+                    ))==0:
+                
                 os.system(
                     "cp {0}/test/Results/Run000000*.root {1}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
                     )
                 )
+
             elif "IVCurve" in self.currentTest:
+                if os.path.exists("{0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.output_dir,
+                    ))==False or os.path.getsize("{{0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.output_dir,
+                    ))==0:
+                
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
@@ -745,6 +761,16 @@ class TestHandler(QObject):
                     )
                 )
             else:
+                if os.path.exists("{0}/test/Results/Run{1}*.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.output_dir,
+                    ))==False or os.path.getsize("{0}/test/Results/Run{1}*.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.output_dir,
+                    ))==0:
+                
                 os.system(
                     "cp {0}/test/Results/Run{1}*.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
@@ -1329,7 +1355,7 @@ class TestHandler(QObject):
                 error_message = "Cannot upload test results, you are not signed in to Panthera."
                 logger.error(error_message)
             else:
-                error_message = "There was an error uploading the test results."
+                error_message = "There was an error uploading test results."
                 logger.error(f"{error_message} {repr(e)}")
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
