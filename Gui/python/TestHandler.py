@@ -187,7 +187,6 @@ class TestHandler(QObject):
         self.updateValidation.connect(self.runwindow.updateValidation)
         self.updateFinishedTests.connect(self.runwindow.updateFinishedTests)
 
-        self.finished_tests = []
 
         self.initializeRD53Dict()
 
@@ -374,6 +373,15 @@ class TestHandler(QObject):
         #    updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
         self.runSingleTest(testName)
 
+    def ramp_down_progress_bar(self):
+        stepLength = self.instruments.default_step_size
+        range = np.abs(int(site_settings.IVcurve_range/stepLength))
+        progressNum = int(30*self.ramp_down_counter/range)
+        loading_bar = f"Ramping Down: [{'#'*progressNum}{'='*(30-progressNum)}]"
+        self.runwindow.ConsoleView.setPlainText(f'{self.console_body}\n{loading_bar}')
+        QApplication.processEvents() #may not be ideal
+        self.ramp_down_counter += 1
+
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
         self.outputString.emit("Executing Single Step test...")
@@ -403,7 +411,9 @@ class TestHandler(QObject):
             self.configTest()
             self.IVCurveData = []
             self.IVProgressValue = 0
-            self.IVCurveHandler = IVCurveHandler(self.instruments)
+            self.console_body = self.runwindow.ConsoleView.toPlainText()
+            self.ramp_down_counter = 1
+            self.IVCurveHandler = IVCurveHandler(self.instruments, self.ramp_down_progress_bar)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.startSignal.connect(self.setupQProcess)
@@ -1354,7 +1364,9 @@ class TestHandler(QObject):
 
             self.runwindow.ProgressBarLabel.setText("Upload successful!")
 
-
+        except ConnectionError as e:
+            error_message = repr(e) if len(repr(e))<100 else repr(e)[:100]+"..."
+       
         except Exception as e:
             if not self.master.panthera_connected:
                 error_message = "Cannot upload test results, you are not signed in to Panthera."
