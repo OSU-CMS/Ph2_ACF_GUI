@@ -319,7 +319,7 @@ class SimplifiedMainWidget(QWidget):
 
         self.setupLogFile() 
         self.setupArduino()
-        if site_settings.usePeltier:
+        if site_settings.cooler == "Peltier":
             self.setupPeltier()
         else:
             self.Peltier = None
@@ -417,7 +417,7 @@ class SimplifiedMainWidget(QWidget):
             "database": False,
             "hv": False,
             "lv": False,
-            "peltier": site_settings.usePeltier
+            "peltier": True if site_settings.cooler == "Peltier" else False
         }
         #logger.debug(f"Instrument status is {self.instrument_status}")
         
@@ -458,7 +458,7 @@ class SimplifiedMainWidget(QWidget):
         self.worker = Worker_Polling()
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
-        if site_settings.usePeltier:
+        if site_settings.cooler == "Peltier":
             self.worker.temp.connect(self.updatePeltierTemp)
         self.worker.temp.connect(self.updateArduinoIndicator)
         self.thread.start()
@@ -466,7 +466,9 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Setting up instrument_status")
         logger.debug("instrument_status: {}".format(self.instrument_status))
         logger.debug("instruments: ".format(self.instruments))
-       
+
+        self.firmware = self.firmware[:-1]
+        print(self.firmware)
         self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
         self.instrument_status["database"] = self.master.panthera_connected
 
@@ -479,10 +481,14 @@ class SimplifiedMainWidget(QWidget):
         # Technically a false sense of security for the user. 
         self.instrument_status["hv"] = True
         self.instrument_status["lv"] = True
-        if site_settings.usePeltier:
+        if site_settings.cooler == "Peltier":
             self.instrument_status["peltier"] = False
 
-        # ↓↓↓↓↓ Original (FC7 et al) code from SimplifiedMainWidget.py ↓↓↓↓↓ #
+
+        print(f'instruments: {self.instruments}')
+        print(f'instrument_info: {self.instrument_info}')
+        print(f'instrument_status: {self.instrument_status}')    
+
         if self.instruments:
             logger.debug(f'{__name__} Setup instrument status {self.instrument_status}')
             for key, value in self.instrument_info.items():
@@ -595,7 +601,7 @@ class Worker_Polling(QObject):
         self.delay = 0.5
         self.abort = False
     def run(self):
-        while not self.abort and site_settings.usePeltier: 
+        while not self.abort and site_settings.cooler == "Peltier": 
             self.Peltier = PeltierSignalGenerator()
             peltier_power_status = 1 if int(self.Peltier.sendCommand(self.Peltier.createCommand("Power On/Off Read", ["0", "0"]))[-1]) == 1 else 0
             peltier_temp_message, temp_message_pass = self.Peltier.sendCommand(self.Peltier.createCommand("Input1",  ["0", "0", "0", "0", "0", "0", "0", "0"]))
