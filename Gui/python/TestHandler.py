@@ -666,25 +666,42 @@ class TestHandler(QObject):
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
 
+        class DisconnectionError(Exception): pass
+
         try:
             if self.RunNumber == "-1":
-                os.system(
-                    "cp {0}/test/Results/Run000000*.root {1}/".format(
+                path="{0}/test/Results/Run000000*.root {1}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
                     )
-                )
-                # os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
-                # os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
-            else:
-                os.system(
-                    "cp {0}/test/Results/Run{1}*.root {2}/".format(
+            elif "IVCurve" in self.currentTest:
+                path ="{0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
                         self.output_dir,
                     )
-                )
+            else:
+                path = "{0}/test/Results/Run{1}*.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.output_dir,
+                    )
+            if os.path.exists(path)==False:
+                message=f"Module disconnection detected because felis didn't create {path}."
+                logger.error(message)
+                self.forceContinue()
+                raise DisconnectionError(message)
+            elif os.path.getsize(path)==0:
+                message = f"Module disconnection detected because {path} is empty."
+                logger.error(message)
+                self.forceContinue()
+                raise DisconnectionError(message)
+            
+            os.system("cp "+path)
                 # os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
                 # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
+                # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
+        except DisconnectionError as e:
+            print(e)
         except:
             print("Failed to copy file to output directory")
 
@@ -1285,4 +1302,3 @@ class TestHandler(QObject):
                     for chipID in module.getEnabledChips().keys():
                         commands.append(command_template.format(boardID, ogID, hybridID, chipID))
         executeCommandSequence(commands)
-
