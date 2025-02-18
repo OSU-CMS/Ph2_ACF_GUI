@@ -438,7 +438,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
             BeBoardModule0.AddOGModule(OpticalGroupModule0)
         
         if revPolarity == True:
-            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = '0xbbb'
+            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = '0b1101'
             RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l8'] = '0x44'
         
         BeBoardModule0.SetURI(BeBoard.getIPAddress())

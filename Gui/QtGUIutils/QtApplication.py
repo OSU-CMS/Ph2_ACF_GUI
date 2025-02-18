@@ -797,7 +797,7 @@ class QtApplication(QWidget):
 
             self.mainLayout.addWidget(self.PeltierBox, 4, 0, 3, 1)
         else:
-            self.TessieBox = QGroupBox("Tessie Controller", self)
+            self.TessieBox = QGroupBox("Fake Tessie Controller", self)
             self.TessieCooling = Tessie(100)
             self.TessieLayout = QGridLayout()
             self.TessieLayout.addWidget(self.TessieCooling)
@@ -989,8 +989,8 @@ class QtApplication(QWidget):
         """
         self.HVPowerGroup.setDisabled(True)
         self.LVPowerGroup.setDisabled(True)
-        self.relay_group.setDisabled(True)
-        self.multimeter_group.setDisabled(True)
+        if self.relay: self.relay_group.setDisabled(True)
+        if self.multimeter: self.multimeter_group.setDisabled(True)
 
     def reconnectDevices(self):
         if self.instruments and not site_settings.manual_powersupply_control:
