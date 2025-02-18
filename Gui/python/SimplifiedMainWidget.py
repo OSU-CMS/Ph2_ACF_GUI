@@ -59,6 +59,14 @@ class SimplifiedMainWidget(QWidget):
                     """
             )
             self.close()
+        
+        # ↓↓↓↓↓ New FC7 code from QtApplication ↓↓↓↓↓ #
+        self.LogList = {}
+        self.FwDict = {}
+        self.FwStatusVerboseDict = {}
+        self.ActiveFC7s = {}
+        self.initLog()
+        # ↑↑↑↑↑ New FC7 code from QtApplication ↑↑↑↑↑ #
 
         self.instrument_info = {}
 
@@ -412,19 +420,36 @@ class SimplifiedMainWidget(QWidget):
             "peltier": True if site_settings.cooler == "Peltier" else False
         }
         #logger.debug(f"Instrument status is {self.instrument_status}")
-
+        
         logger.debug("Getting FC7 Comment")
+        # ↓↓↓↓↓ New FC7 code from QtApplication ↓↓↓↓↓ #
+        self.StatusList = [] #Panthera is NOT in here
         self.firmware = []
-        for firmwareName, ipaddress in site_settings.FC7List.items():
-            LogFileName = "{0}/Gui/.{1}.log".format(os.environ.get("GUI_dir"), firmwareName)
-            BeBoard = QtBeBoard(
-                BeBoardID=str(len(self.firmware)),
-                boardName=firmwareName,
-                ipAddress=ipaddress
-            )
-            FwStatusComment, _, _ = fwStatusParser(BeBoard, LogFileName)
-            if FwStatusComment == "Connected":
-                self.firmware.append(BeBoard)
+        try:
+            for firmwareName, ipaddress in site_settings.FC7List.items():
+                self.StatusList.append( [firmwareName, "Not Connected"] )
+                self.FwStatusVerboseDict[str(firmwareName)] = {}
+                BeBoard = QtBeBoard(
+                    BeBoardID=str(len(self.FwDict)),
+                    boardName=firmwareName,
+                    ipAddress=ipaddress
+                )
+                self.FwDict[firmwareName] = BeBoard
+        except Exception as err:
+            print("Failed to list the firmware: {}".format(repr(err)))
+        logger.debug("Setup FC7s with the following FC7:\n"
+                     f"{self.FwDict}")
+        
+        self.UseButtons = [] #Not a list of buttons but serves same function as in QtApplication.py
+        for i in self.StatusList:
+            self.UseButtons.append(False)
+
+        if self.ActiveFC7s != {}:
+            for index in self.ActiveFC7s.keys():
+                self.occupyFw("{0}".format(index))
+
+        self.checkFirmware()
+        # ↑↑↑↑↑ New FC7 code from QtApplication ↑↑↑↑↑ #
         
         logger.debug("Checking DB Connection")
 
@@ -445,9 +470,12 @@ class SimplifiedMainWidget(QWidget):
         self.firmware = self.firmware[:-1]
         print(self.firmware)
         self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
+        self.instrument_status["database"] = self.master.panthera_connected
+
+        # ↓↓↓↓↓ Original FC7 code from SimplifiedMainWidget.py ↓↓↓↓↓ #
         for beboard in self.firmware:
             self.instrument_status[f"fc7_{beboard.getBoardName()}"] = True
-        self.instrument_status["database"] = self.master.panthera_connected
+        # ↑↑↑↑↑ Original FC7 code from SimplifiedMainWidget.py ↑↑↑↑↑ #
 
         # Icicle will deal with the powersupplies, so I will just always set their status to good
         # Technically a false sense of security for the user. 
@@ -456,9 +484,11 @@ class SimplifiedMainWidget(QWidget):
         if site_settings.cooler == "Peltier":
             self.instrument_status["peltier"] = False
 
+
         print(f'instruments: {self.instruments}')
         print(f'instrument_info: {self.instrument_info}')
         print(f'instrument_status: {self.instrument_status}')    
+
         if self.instruments:
             logger.debug(f'{__name__} Setup instrument status {self.instrument_status}')
             for key, value in self.instrument_info.items():
@@ -470,6 +500,47 @@ class SimplifiedMainWidget(QWidget):
             for key, value in self.instrument_info.items():
                 value["Value"].setPixmap(self.redledpixmap)
         logger.debug(f'{__name__} Setup led labels')
+        # ↑↑↑↑↑ Original (FC7 et al) code from SimplifiedMainWidget.py ↑↑↑↑↑ #
+
+    # ↓↓↓↓↓ New FC7 methods from QtApplication ↓↓↓↓↓ #
+    def checkFirmware(self):
+        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
+            fileName = self.LogList[index]
+            if firmwareName not in self.ActiveFC7s:
+                FwStatusComment, _, FwStatusVerbose = fwStatusParser(
+                    self.FwDict[firmwareName], fileName
+                )
+                self.StatusList[index][1] = FwStatusComment
+                if FwStatusComment=="Connected":
+                    self.firmware.append(self.FwDict[firmwareName])
+                self.FwStatusVerboseDict[str(firmwareName)] = FwStatusVerbose
+        if self.ActiveFC7s != {}:
+            for index in self.ActiveFC7s.keys():
+                self.StatusList[index][1] = "Connected"
+                self.firmware.append(self.FwDict[firmwareName])
+                self.occupyFw("{0}".format(index))
+
+    def occupyFw(self, index):
+        for i in range(len(self.UseButtons)):
+            if i == int(index):
+                self.UseButtons[i]=True
+                self.ActiveFC7s[i] = self.StatusList[i][0]
+
+    def initLog(self):
+        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
+
+            LogFileName = "{0}/Gui/.{1}.log".format(
+                os.environ.get("GUI_dir"), firmwareName
+            )
+            try:
+                logFile = open(LogFileName, "w")
+                self.LogList[index] = LogFileName
+                logFile.close()
+            except:
+                QMessageBox(
+                    None, "Error", "Can not create log files: {}".format(LogFileName)
+                )
+    # ↑↑↑↑↑ New FC7 methods from QtApplication ↑↑↑↑↑ #
 
     def check_icicle_devices(self) ->Optional[dict[str, int]]:
         """

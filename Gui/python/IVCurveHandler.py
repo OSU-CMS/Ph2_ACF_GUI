@@ -100,9 +100,10 @@ class IVCurveHandler(QObject):
     progressSignal = pyqtSignal(str, float)
     startSignal = pyqtSignal()
 
-    def __init__(self, instrument_cluster):
+    def __init__(self, instrument_cluster, execute_each_step):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
+        self.execute_each_step = execute_each_step
 
         assert self.instruments is not None, logger.debug("Error instantiating instrument cluster")
 
@@ -125,7 +126,7 @@ class IVCurveHandler(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
-        self.instruments.hv_off()
+        self.instruments.hv_off(execute_each_step=self.execute_each_step)
         self.finished.emit(test, measure)
 
 
