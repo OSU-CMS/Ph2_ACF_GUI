@@ -1,6 +1,7 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, QObject, QProcess
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QTableWidget, QTableWidgetItem
+from PyQt5.QtGui import QFont
 
 import sys
 import os
@@ -94,6 +95,7 @@ class TestHandler(QObject):
         self.ModuleMap = dict()
         
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
+        self.inactive_module_indices = []
         
         self.numChips = len([chipID for module in self.modules for chipID in module.getEnabledChips().keys()])
                 
@@ -604,6 +606,32 @@ class TestHandler(QObject):
         self.haltSignal.emit(self.halt)
         self.starttime = None
 
+    def errorPopup(self, module_name, explanation):
+        if hasattr(self, "failed_tests_message"):
+            self.failed_tests_message += f'\nModule {module_name} failed {self.currentTest} with explanation: {explanation}'
+            self.fail_label.setText(self.failed_tests_message)
+        else:
+            # Create the QDialog instance here directly
+            self.table = QTableWidget(self)
+            self.table.setColumnCount(3)
+            self.table.setShowGrid(False)
+            self.table.setItem(0, 0, QTableWidgetItem("Module").setFont(QFont().setBold(True)))
+            self.table.setItem(0, 1, QTableWidgetItem("Test").setFont(QFont().setBold(True)))
+            self.table.setItem(0, 2, QTableWidgetItem("Explanation").setFont(QFont().setBold(True)))
+
+            self.failed_tests_message = f'Module {module_name} failed {self.currentTest} with explanation: {explanation}'
+            self.dialog = QDialog()
+            self.dialog.setWindowTitle("Failed Tests")
+
+            self.fail_label = QLabel(self.failed_tests_message, self.dialog)
+            button = QPushButton("OK", self.dialog)
+            button.clicked.connect(self.dialog.accept)  # Close the dialog when clicked
+            dialog_layout = QVBoxLayout(self.dialog)
+            dialog_layout.addWidget(self.fail_label)
+            dialog_layout.addWidget(button)
+            self.dialog.setLayout(dialog_layout)
+            self.dialog.show()  # Open the dialog and wait for interaction
+
     def validateTest(self):
         self.finished_tests.append(self.currentTest)
         try:
@@ -627,6 +655,12 @@ class TestHandler(QObject):
                             self.felis, self.output_dir, self.currentTest,
                             self.testIndexTracker, runNumber, module_data
                         )
+                        
+                        print(f'result: {result}')
+                        print(next(iter(result.values())))
+                        if list(result.values())[0][0]==False:
+                            self.errorPopup(list(result.keys())[0],list(result.values())[0][1])
+
                         results.append(result)
                         passed.append(list(result.values())[0][0])
                                                 
@@ -636,7 +670,7 @@ class TestHandler(QObject):
             self.updateFinishedTests.emit(self.finished_tests)
             return all(passed)
         except Exception as err:
-            logger.error(err)
+            logger.debug(err)
     
     def collect_plots(self, moduleName):
         try:
@@ -685,14 +719,17 @@ class TestHandler(QObject):
                         self.RunNumber,
                         self.output_dir,
                     )
+
             if os.path.exists(path)==False:
                 message=f"Module disconnection detected because felis didn't create {path}."
                 logger.error(message)
+                self.inactive_module_indices.append(int(self.RunNumber))
                 self.forceContinue()
                 raise DisconnectionError(message)
             elif os.path.getsize(path)==0:
-                message = f"Module disconnection detected because {path} is empty."
+                message = f"Module disconnection detected because {path} created by felis is empty."
                 logger.error(message)
+                self.inactive_module_indices.append(int(self.RunNumber))
                 self.forceContinue()
                 raise DisconnectionError(message)
             
@@ -702,8 +739,9 @@ class TestHandler(QObject):
                 # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
         except DisconnectionError as e:
             print(e)
-        except:
+        except Exception as e:
             print("Failed to copy file to output directory")
+
 
     #######################################################################
     ##  For real-time terminal display
@@ -937,10 +975,10 @@ class TestHandler(QObject):
 
         # Save the output ROOT file to output_dir
         self.saveTest()
-
+        
         # validate the results
         status = self.validateTest()
-        
+
         if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
             self.testIndexTracker += 1
 
@@ -972,14 +1010,6 @@ class TestHandler(QObject):
             self.updateResult.emit((step, self.figurelist))
 
         # self.update()
-            
-
-        if (
-            status == False
-            and isCompositeTest(self.info)
-            and self.testIndexTracker < len(CompositeTests[self.info])
-        ):
-            self.forceContinue()
 
         if isCompositeTest(self.info):
             self.runTest()
@@ -1151,13 +1181,6 @@ class TestHandler(QObject):
         else: 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
-        if (
-            status == False
-            and isCompositeTest(self.info)
-            and self.testIndexTracker < len(CompositeTests[self.info])
-        ):
-            self.forceContinue()
-
         if isCompositeTest(self.info):
             self.runTest()
 
@@ -1199,13 +1222,6 @@ class TestHandler(QObject):
             self.updateSLDOResult.emit(self.output_dir)
         else: 
             self.updateSLDOResult.emit(("SLDOScan", self.figurelist))  ##Add else statement to add signal in simple mode
-
-        if (
-            status == False
-            and isCompositeTest(self.info)
-            and self.testIndexTracker < len(CompositeTests[self.info])
-        ):
-            self.forceContinue()
 
         if isCompositeTest(self.info):
             self.runTest()
