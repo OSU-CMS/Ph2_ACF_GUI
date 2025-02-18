@@ -177,10 +177,10 @@ class FE():
     self.laneConfigList = {}
     self.VDDAtrim = "8"
     self.VDDDtrim = "8"
-    self.RxGroups = "0006"
+    self.RxGroups = "0001"
     self.RxChannels = "0"
     self.RxPolarities = "0"
-    self.TxGroups = "3"
+    self.TxGroups = "2"
     self.TxChannels = "0"
     self.TxPolarities = "0"
     

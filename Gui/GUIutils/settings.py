@@ -76,58 +76,37 @@ ModuleType = {
 firmware_image = {
     "SCC": {
         "Dev": "SCC_ELE_RD53A_v4-9.bit",
-        "v4-13": "SCC_ELE_RD53A_v4-6.bit",
-        "v4-14": "SCC_ELE_RD53A_v4-6.bit",
     },
     "TFPX RD53A Quad": {
         "Dev": "QUAD_ELE_RD53A_v4-9.bit",
-        "v4-13": "QUAD_ELE_RD53A_v4-6.bit",
-        "v4-14": "QUAD_ELE_RD53A_v4-6.bit",
     },
     "TEPX RD53A Quad": {
         "Dev": "QUAD_ELE_RD53A_v4-9.bit",
-        "v4-13": "QUAD_ELE_RD53A_v4-6.bit",
-        "v4-14": "QUAD_ELE_RD53A_v4-6.bit",
     },
     "TBPX RD53A Quad": {
         "Dev": "QUAD_ELE_RD53A_v4-9.bit",
-        "v4-13": "QUAD_ELE_RD53A_v4-6.bit",
-        "v4-14": "QUAD_ELE_RD53A_v4-6.bit",
     },
     "CROC SCC": {
-        "Dev": "SCC_ELE_CROC_v4-9.bit",
-        "v4-13": "SCC_ELE_CROC_v4-6.bit",
-        "v4-14": "SCC_ELE_CROC_v4-6.bit",
+        "Dev": "SCC_ELE_CROC_v5-0.bit",
     },
     "TFPX CROC 1x2": {
-        "Dev": "QUAD_ELE_CROC_v4-9.bit",
-        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
-        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+        "Dev": "QUAD_ELE_CROC_v5-0.bit",
     },
     "TFPX CROC Quad": {
-        "Dev": "QUAD_ELE_CROC_v4-9.bit",
-        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
-        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+        "Dev": "QUAD_ELE_CROC_v5-0.bit",
     },
     "TEPX CROC 1x2": {
-        "Dev": "QUAD_ELE_CROC_v4-9.bit",
-        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
-        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+        "Dev": "QUAD_ELE_CROC_v5-0.bit",
+
     },
     "TEPX CROC Quad": {
-        "Dev": "QUAD_ELE_CROC_v4-9.bit",
-        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
-        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+        "Dev": "QUAD_ELE_CROC_v5-0.bit",
     },
     "TBPX CROC 1x2": {
-        "Dev": "QUAD_ELE_CROC_v4-9.bit",
-        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
-        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+        "Dev": "QUAD_ELE_CROC_v5-0.bit",
     },
     "TBPX CROC Quad": {
-        "Dev": "QUAD_ELE_CROC_v4-9.bit",
-        "v4-13": "QUAD_ELE_CROC_v4-6.bit",
-        "v4-14": "QUAD_ELE_CROC_v4-6.bit",
+        "Dev": "QUAD_ELE_CROC_v5-0.bit",
     },
 }
 
@@ -193,7 +172,7 @@ optimizationTestMap = {
         'KRUM_CURR_LIN',
     ],
     'injdelay':[
-        'TriggerConfig',
+        #'TriggerConfig',
         'LATENCY_CONFIG',
         'CAL_EDGE_FINE_DELAY',
     ],

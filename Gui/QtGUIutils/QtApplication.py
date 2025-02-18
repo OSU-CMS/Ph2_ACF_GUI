@@ -28,6 +28,8 @@ import requests
 from felis.felis_methods import get_accountInfo
 import requests.exceptions as rqx
 
+from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
+
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
 import Gui.siteSettings as site_settings
@@ -108,33 +110,45 @@ class QtApplication(QWidget):
             or sys.platform.startswith("win")
             or sys.platform.startswith("darwin")
         ):
-            # Check if Assets directory exists/is bound
-            if os.path.isdir("Assets"):
-                logger.debug("The Assets directory is bound correctly") 
-                try:
-                    with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
-                        style_sheet = f.read()
+            # Check if use_custom_theme is defined
+            try:
+                site_settings.use_custom_theme
+            except AttributeError:
+                site_settings.use_custom_theme = False
 
-                # If theme variable is not defined then use default theme
-                except AttributeError:
-                    logger.info("Using default theme")
-                    with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
-                        style_sheet = f.read()
+            # If the Assets directory is not bound, then you can't use a custom theme
+            if not os.path.isdir("Assets"):
+                logger.info("The Assets directory is not bound, cannot use custom themes,"
+                            "default theme will be used.") 
+                site_settings.use_custom_theme = False
 
-                # If there is a typo or user attempts to use theme that is not defined, set default theme
-                except FileNotFoundError:
-                    logger.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
-                    with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
-                        style_sheet = f.read()
-                finally:
-                    logger.debug("Setting StyleSheetPropagation")
-                    QApplication.setAttribute(Qt.AA_UseStyleSheetPropagationInWidgetStyles)
-                    QApplication.instance().setStyleSheet(style_sheet)
+            if site_settings.use_custom_theme: 
+                # Check if Assets directory exists/is bound
+                    logger.debug("The Assets directory is bound correctly") 
+                    try:
+                        with open(os.path.realpath(f"Assets/{site_settings.theme}"), "r") as f:
+                            style_sheet = f.read()
+
+                    # If theme variable is not defined then use default theme
+                    except AttributeError:
+                        logger.info("Using default theme")
+                        with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
+                            style_sheet = f.read()
+
+                    # If there is a typo or user attempts to use theme that is not defined, set default theme
+                    except FileNotFoundError:
+                        logger.warning("Theme file not found, please confirm theme is in the Gui/Assets directory")
+                        with open(os.path.realpath("Assets/ElegantDark.qss"), "r") as f:
+                            style_sheet = f.read()
+                    finally:
+                        logger.debug("Setting StyleSheetPropagation")
+                        QApplication.setAttribute(Qt.AA_UseStyleSheetPropagationInWidgetStyles)
+                        QApplication.instance().setStyleSheet(style_sheet)
 
             # If Assets directory is not bound (ie. someone has not edited their
             # run_docker script) then manually set theme to dark mode. 
             else:
-                logger.info("Theming capablitities not available, using default theme")
+                logger.info("Using default theme")
                 darkPalette = QPalette()
                 darkPalette.setColor(QPalette.Window, QColor(53, 53, 53))
                 darkPalette.setColor(QPalette.WindowText, Qt.white)
@@ -511,7 +525,9 @@ class QtApplication(QWidget):
         if site_settings.icicle_instrument_setup is None:
             self.DefaultButton.setEnabled(False)
 
-        self.DefaultButton.clicked.connect(self.connect_devices)
+        self.Wheel = LoadingWheel()
+
+        self.DefaultButton.clicked.connect(self.connect_devices_starter)
 
         self.reset_devices = QPushButton("&Reconnect all devices")
         self.reset_devices.clicked.connect(self.reconnectDevices)
@@ -519,6 +535,8 @@ class QtApplication(QWidget):
         self.default_checkbox.setChecked(True)
 
         self.DefaultLayout.addWidget(self.DefaultButton)
+        self.Wheel.setVisible(False)
+        self.DefaultLayout.addWidget(self.Wheel)
         self.DefaultLayout.addStretch(1)
         self.UseDefaultGroup.setLayout(self.DefaultLayout)
         
@@ -785,7 +803,7 @@ class QtApplication(QWidget):
 
             self.mainLayout.addWidget(self.PeltierBox, 4, 0, 3, 1)
         else:
-            self.TessieBox = QGroupBox("Tessie Controller", self)
+            self.TessieBox = QGroupBox("Fake Tessie Controller", self)
             self.TessieCooling = Tessie(100)
             self.TessieLayout = QGridLayout()
             self.TessieLayout.addWidget(self.TessieCooling)
@@ -920,6 +938,18 @@ class QtApplication(QWidget):
     def update_instrument_info(self, key, info):
         self.connected_device_information[key] = info
 
+    def connect_devices_starter(self):
+        self.Wheel.setVisible(True)
+        self.connect_devices_thread = LoadingThread(self.connect_devices,50)
+        self.connect_devices_thread.finished.connect(self.connect_devices_onFinish)
+        self.connect_devices_thread.timer.timeout.connect(self.Wheel.update_spinner)
+        self.connect_devices_thread.timer.start()
+        self.connect_devices_thread.start()  # Start the thread
+
+    def connect_devices_onFinish(self):
+        self.connect_devices_thread.timer.stop()
+        self.Wheel.setVisible(False)
+
     def connect_devices(self):
         
         """
@@ -977,8 +1007,8 @@ class QtApplication(QWidget):
         """
         self.HVPowerGroup.setDisabled(True)
         self.LVPowerGroup.setDisabled(True)
-        self.relay_group.setDisabled(True)
-        self.multimeter_group.setDisabled(True)
+        if self.relay: self.relay_group.setDisabled(True)
+        if self.multimeter: self.multimeter_group.setDisabled(True)
 
     def reconnectDevices(self):
         if self.instruments and not site_settings.manual_powersupply_control:
