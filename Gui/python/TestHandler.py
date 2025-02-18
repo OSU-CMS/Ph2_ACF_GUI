@@ -36,7 +36,10 @@ from Gui.GUIutils.guiUtils import (
 from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
+
 from InnerTrackerTests.RootFilesDict import root_files
+from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT
+
 
 # from Gui.QtGUIutils.QtStartWindow import *
 #from Gui.QtGUIutils.QtCustomizeWindow import *
@@ -73,6 +76,7 @@ class TestHandler(QObject):
     updateIVResult = pyqtSignal(object)
     updateSLDOResult = pyqtSignal(object)
     updateValidation = pyqtSignal(object)
+    updateFinishedTests = pyqtSignal(object)
     powerSignal = pyqtSignal()
 
     def __init__(self, runwindow, master, info, firmware):
@@ -91,7 +95,7 @@ class TestHandler(QObject):
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
-        self.info = info
+        self.info = info # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
         
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
@@ -116,7 +120,7 @@ class TestHandler(QObject):
         self.SLDOScanHandler = None
 
         self.processingFlag = False
-        self.ProgressBarList = []
+        self.ProgresBarList = []
         self.input_dir = ""
         self.output_dir = ""
         self.config_file = (
@@ -181,7 +185,9 @@ class TestHandler(QObject):
         self.updateIVResult.connect(self.runwindow.updateIVResult)
         self.updateSLDOResult.connect(self.runwindow.updateSLDOResult)
         self.updateValidation.connect(self.runwindow.updateValidation)
+        self.updateFinishedTests.connect(self.runwindow.updateFinishedTests)
 
+        self.finished_tests = []
 
         self.initializeRD53Dict()
 
@@ -309,7 +315,6 @@ class TestHandler(QObject):
         self.config_file = ""
         return
 
-
     def saveConfigs(self):
         for key in self.rd53_file.keys():
             try:
@@ -352,7 +357,7 @@ class TestHandler(QObject):
         else:
             QMessageBox.information(None, "Warning", "Not a valid test", QMessageBox.Ok)
             return
-
+        
     # This loops over all the tests by using the on_finish pyqt decorator defined below
     def runCompositeTest(self, testName):
         if self.halt:
@@ -383,7 +388,16 @@ class TestHandler(QObject):
                     voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
-        
+        #if testName == "Analyze_Bumpbonds":
+        #    self.currentTest = testName
+        #    self.configTest()
+        #    self.outputString.emit("Beginning Bumpbond Analysis")
+        #    self.analyze_bumpbonds()
+        #    self.outputString.emit("Bumpbond Analysis Complete")
+        #    self.on_finish()
+        #    return
+
+
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
@@ -392,6 +406,7 @@ class TestHandler(QObject):
             self.IVCurveHandler = IVCurveHandler(self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
+            self.IVCurveHandler.startSignal.connect(self.setupQProcess)
             self.outputString.emit("Beginning IVCurve")
             self.IVCurveHandler.IVCurve()
             return
@@ -400,6 +415,7 @@ class TestHandler(QObject):
             self.currentTest = testName
             self.configTest()
             self.SLDOScanData = []
+            self.SLDOfilelist = []
             self.SLDOProgressValue = 0
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
             self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType=self.ModuleType[5:], end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
@@ -460,6 +476,9 @@ class TestHandler(QObject):
             self.outputfile = open(self.outputFile, "w")
         # self.ContinueButton.setDisabled(True)
         # self.run_process.setProgram()
+        self.setupQProcess()
+
+        """
         self.info_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
         self.info_process.setWorkingDirectory(
             os.environ.get("PH2ACF_BASE_DIR") + "/test/"
@@ -493,8 +512,8 @@ class TestHandler(QObject):
         self.fw_process.setWorkingDirectory(
             os.environ.get("PH2ACF_BASE_DIR") + "/test/"
         )
-
-        self.FWisPresent = True
+        """
+        #self.FWisPresent = True
         """
 		if not self.FWisPresent:
 			print("checking if firmware is on the SD card")
@@ -522,21 +541,18 @@ class TestHandler(QObject):
 			self.FWisLoaded = True
 			print('Firmware image is now loaded')
 		"""
-        # self.run_process.start("python", ["signal_generator.py"])
-        # self.run_process.start("tail" , ["-n","6000", "/Users/czkaiweb/Research/Ph2_ACF_GUI/Gui/forKai.txt"])
-        # self.run_process.start("./SignalGenerator")
 
-        if self.isTDACtuned:
-            UpdateXMLValue(
-                "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")),
-                "DoNSteps",
-                "2",
-            )
+        #if self.isTDACtuned:
+        #    UpdateXMLValue(
+        #        "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")),
+        #        "DoNSteps",
+        #        "2",
+        #    )
 
-        CheckXMLValue(
-            "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")), "DoNSteps"
-        )
-
+        #CheckXMLValue(
+        #    "{0}/test/CMSIT.xml".format(os.environ.get("PH2ACF_BASE_DIR")), "DoNSteps"
+        #)
+        """
         if self.currentTest == "CommunicationTest":
             self.run_process.start(
                 "CMSITminiDAQ",
@@ -571,6 +587,61 @@ class TestHandler(QObject):
         # 	self.haltSignal = True
         # self.refreshHistory()
         # self.finishSingal = False
+        """
+    def setupQProcess(self):
+        self.tempHistory = [0.0] * self.numChips
+        self.tempindex = 0
+        self.outputFile = self.output_dir + "/output.txt"
+        self.errorFile = self.output_dir + "/error.txt"
+        if os.path.exists(self.outputFile):
+            self.outputfile = open(self.outputFile, "a")
+        else:
+            self.outputfile = open(self.outputFile, "w")
+        self.info_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        self.info_process.setWorkingDirectory(
+            os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+        )
+        if self.currentTest == "CommunicationTest":
+            self.info_process.start(
+                "echo",
+                [
+                    "Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -p"
+                ],
+            )
+        else:
+            self.info_process.start(
+                "echo",
+                [
+                    "Running COMMAND: CMSITminiDAQ  -f  CMSIT.xml  -c  {}".format(
+                        Test_to_Ph2ACF_Map[self.currentTest]
+                    )
+                ],
+            )
+        self.info_process.waitForFinished()
+
+        self.run_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        self.run_process.setWorkingDirectory(
+            os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+        )
+        # self.run_process.setStandardOutputFile(self.outputFile)
+        # self.run_process.setStandardErrorFile(self.errorFile)
+
+        self.fw_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        self.fw_process.setWorkingDirectory(
+            os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+        )
+        
+        if self.currentTest == "CommunicationTest":
+            self.run_process.start(
+                "CMSITminiDAQ",
+                ["-f", "CMSIT.xml", "-p"],
+            )
+        else:
+            self.run_process.start(
+                "CMSITminiDAQ",
+                ["-f", "CMSIT.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
+            )
+
 
     def abortTest(self):
         self.halt = True
@@ -593,6 +664,7 @@ class TestHandler(QObject):
         self.starttime = None
 
     def validateTest(self):
+        self.finished_tests.append(self.currentTest)
         try:
             passed = []
             results = []
@@ -618,8 +690,9 @@ class TestHandler(QObject):
                         passed.append(list(result.values())[0][0])
                                                 
                         self.figurelist[module.getModuleName()] = self.collect_plots(module.getModuleName())
-                        
+            
             self.updateValidation.emit(results)
+            self.updateFinishedTests.emit(self.finished_tests)
             return all(passed)
         except Exception as err:
             logger.error(err)
@@ -678,6 +751,7 @@ class TestHandler(QObject):
 
                 # os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
                 # os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
+
             else:
                 self.copyMostRecentRootFile(self.RunNumber,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
                 # os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
@@ -905,6 +979,19 @@ class TestHandler(QObject):
         if self.halt == True:
             self.haltSignal.emit(True)
             return
+        if self.run_process.state() == QProcess.Running:
+            print("process is still running...  Attempting to terminate before next test.")
+            self.run_process.terminate()
+            if not self.run_process.waitForFinished(3000):
+                print('process would not terminate, so killing it now...')
+                self.run_process.kill()
+        if "IVCurve" in self.currentTest:
+            self.saveTest()
+            return
+
+        #Might need this if statment if we do the bumpbond analysis in the GUI.  If done in felis we can remove this.
+        #if "PixelAlive_uncoupled" in self.currentTest:
+        #    self.bumpbond_analysis()
 
         # To be removed
         # if isCompositeTest(self.info):
@@ -920,6 +1007,7 @@ class TestHandler(QObject):
         self.saveTest()
 
         # validate the results
+        
         status = self.validateTest()
         
         if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
@@ -927,14 +1015,14 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            if self.testIndexTracker == len(CompositeTests[self.info]):
+            if self.testIndexTracker == len(CompositeTests[self.info]): # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
                     self.upload_to_Panthera()
-                if self.info == "FWD-RVS Bias" or self.info == "Crosstalk":
+                if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
-                    
+        
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
@@ -953,6 +1041,7 @@ class TestHandler(QObject):
             self.updateResult.emit((step, self.figurelist))
 
         # self.update()
+            
 
         if (
             status == False
@@ -1032,6 +1121,7 @@ class TestHandler(QObject):
             moduleName = module.getModuleName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, pin)
             csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, pin)
+            self.SLDOfilelist.append(csvfilename)
             #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
             total_result_stacked = np.vstack(total_result)
             np.savetxt(csvfilename, total_result_stacked, delimiter=',')
@@ -1054,14 +1144,17 @@ class TestHandler(QObject):
     def IVCurveFinished(self, test: str, measure: dict):
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        
+        self.run_process.write(b"\n")
+        self.run_process.waitForBytesWritten()
+        self.run_process.waitForFinished()
         self.outputString.emit(f"Voltages: {measure['voltage']}")
         self.outputString.emit(f"Currents: {measure['current']}")
 
                         
 #        for module in self.modules: #Only one HV and IVCurve works by sweeping HV. Ask about this.
 #            moduleName = module.getModuleName()
-
+#        self.run_process.terminate()
+#        self.run_process.waitForFinished()
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
@@ -1087,17 +1180,17 @@ class TestHandler(QObject):
             IVCurve_CSV_to_ROOT(moduleName, module_canvas_path, csvfilename, self.output_dir)
 
             filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, timestamp)
-            filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
+            #filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
             self.IVCurveResult.saveToSVG(filename)
-            self.IVCurveResult.saveToSVG(filename2)
+            #self.IVCurveResult.saveToSVG(filename2)
             
             self.figurelist[moduleName] = [filename]
 
         status = self.validateTest()
+
         step="IVCurve"
 
         self.testIndexTracker += 1
-
 
         EnableReRun = False
 
@@ -1131,12 +1224,33 @@ class TestHandler(QObject):
         else: 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
+        if (
+            status == False
+            and isCompositeTest(self.info)
+            and self.testIndexTracker < len(CompositeTests[self.info])
+        ):
+            self.forceContinue()
+
         if isCompositeTest(self.info):
             self.runTest()
 
     def SLDOScanFinished(self):
+
+        for module in self.modules:
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+            module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
+                    boardID=beboardId, 
+                    ogID=ogId, 
+                    hybridID=hybridId)
+        
+            SLDO_CSV_to_ROOT(moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir)
+
         status = self.validateTest()
         self.testIndexTracker += 1
+
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
@@ -1171,7 +1285,14 @@ class TestHandler(QObject):
             self.updateSLDOResult.emit(self.output_dir)
         else: 
             self.updateSLDOResult.emit(("SLDOScan", self.figurelist))  ##Add else statement to add signal in simple mode
-        
+
+        if (
+            status == False
+            and isCompositeTest(self.info)
+            and self.testIndexTracker < len(CompositeTests[self.info])
+        ):
+            self.forceContinue()
+
         if isCompositeTest(self.info):
             self.runTest()
 
@@ -1179,27 +1300,44 @@ class TestHandler(QObject):
         pass
 
     def forceContinue(self):
-        reply = QMessageBox.question(
-            None,
-            "Abort following tests",
-            "Failed component detected, continue to following test?",
-            QMessageBox.No | QMessageBox.Yes,
-            QMessageBox.No,
-        )
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Failed Component Detected")
+        msg_box.setText("Failed component detected. What would you like to do?")
 
-        if reply == QMessageBox.Yes:
-            return
-        else:
+        # Add custom buttons
+        exit_button = msg_box.addButton("Exit", QMessageBox.RejectRole)
+        retry_button = msg_box.addButton("Retry", QMessageBox.ActionRole)
+        continue_button = msg_box.addButton("Continue", QMessageBox.AcceptRole)
+        msg_box.setDefaultButton(exit_button)
+
+        # Show the message box and wait for the user's choice
+        msg_box.exec()
+
+        # Check which button was clicked
+        if msg_box.clickedButton() == exit_button:
             self.run_process.kill()
             self.halt = True
             self.haltSignal.emit(self.halt)
             self.starttime = None
+        elif msg_box.clickedButton() == retry_button:
+            self.outputString.emit(f'Retrying {self.currentTest}...')
+            self.testIndexTracker = CompositeTests[self.info].index(self.currentTest)
+            self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText("")
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(0)
+            QApplication.processEvents() #not ideal. May need to fix later.
+        elif msg_box.clickedButton() == continue_button:
+            return
 
     def upload_to_Panthera(self):
         self.runwindow.UploadButton.setDisabled(True)
         counter = 0
         nummodules = len(self.modules)
         try:
+
+            self.runwindow.UploadButton.setDisabled(True)
+            counter = 0
+            nummodules = len(self.modules)
+
             for module in self.modules:
                 self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules))
                 QApplication.processEvents() #not ideal. May need to fix later.
@@ -1207,11 +1345,15 @@ class TestHandler(QObject):
                     module.getModuleName(),
                     self.master.username,
                     self.master.password,
+                    type_sequence = self.info,
+                    version_ph2acf = os.environ.get("PH2ACF_VERSION"),
                 )
                 if not status:
                     raise ConnectionError(message)
                 counter+=1
+
             self.runwindow.ProgressBarLabel.setText("Upload successful!")
+
 
         except Exception as e:
             if not self.master.panthera_connected:
@@ -1224,7 +1366,8 @@ class TestHandler(QObject):
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
 
             self.runwindow.ProgressBarLabel.setText(error_message)
-    
+            
+
     def bumpbond_analysis(self):
         
         runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber

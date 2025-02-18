@@ -44,6 +44,7 @@ In the JSON file, you can set the model of LV/HV devices, specify USB ports, etc
 > We highly suggest setting up udev rules for your hardware devices. This provides two benefits. One is that you will be able to easily refer to each of your devices
 > in the json file. The second, is that linux does not guarantee that your devices are always mounted to the same path upon reboot without the use of udev rules. This means that without udev rules after a computer reboot, the GUI is liable
 > to stop working and will require a manual change of your hardware pathing. For a guide on how to setup udev rules for your hardware, please see the following tutorial given at one of our IT-DAQ collaborations: [udev rules](https://codimd.web.cern.ch/s/HvKK3gQCp#).
+>NOTE: The alias needs to begin with ttyUSB in order to work with the GUI correctly. 
 
 For every instrument you wish to connect, you must make a separate entry in the 'instrument_dict' section of the JSON. In the example below, there is is one LV power supply, one HV power supply, a relay board, and a multimeter. Each of these has a corresponding entry in 'instrument_dict' detailing its model (listed as "class"), resource, default voltage, and default current. There is another attribute, "sim," which represents whether the device is simulated or not. This should be false for nearly all use cases. Devices that do not have a voltage or current, such as a relay board, multimeter, or adc board, should be set to 0 as a default.
 

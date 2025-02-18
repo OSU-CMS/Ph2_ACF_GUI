@@ -1,0 +1,98 @@
+/* General Application Background */
+QWidget {
+    background-color: #000000; /* Black background for high contrast */
+    color: #FFFFFF;           /* White text for maximum readability */
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+/* Buttons */
+QPushButton {
+    background-color: #1E90FF; /* Bright blue background */
+    color: #FFFFFF;            /* White text */
+    border: 2px solid #FFFFFF; /* White border for clear distinction */
+    border-radius: 6px;
+    padding: 8px 16px;
+}
+QPushButton:hover {
+    background-color: #104E8B; /* Darker blue on hover */
+}
+QPushButton:pressed {
+    background-color: #0A2F5A; /* Even darker blue when pressed */
+}
+
+/* Labels */
+QLabel {
+    color: #FFD700; /* Gold text for emphasis */
+    font-weight: bold;
+}
+
+/* Line Edit */
+QLineEdit {
+    background-color: #333333; /* Dark gray input field */
+    color: #FFFFFF;            /* White text */
+    border: 2px solid #FFD700; /* Gold border for visibility */
+    padding: 4px;
+    border-radius: 4px;
+}
+
+/* Combo Box */
+QComboBox {
+    background-color: #1E90FF; /* Bright blue dropdown */
+    color: #FFFFFF;            /* White text */
+    border: 2px solid #FFFFFF; /* White border */
+    padding: 4px;
+    border-radius: 4px;
+}
+QComboBox QAbstractItemView {
+    background-color: #333333; /* Dark gray dropdown menu */
+    color: #FFFFFF;            /* White text */
+}
+
+/* Scroll Bars */
+QScrollBar:vertical, QScrollBar:horizontal {
+    background: #333333;       /* Dark gray background */
+    border: 1px solid #FFFFFF; /* White border */
+    width: 14px;
+    height: 14px;
+}
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    background: #1E90FF;       /* Bright blue handle */
+    border: 1px solid #FFFFFF; /* White border */
+    border-radius: 7px;
+}
+QScrollBar::add-line, QScrollBar::sub-line {
+    background: #0A2F5A;       /* Dark blue arrows */
+    border: 1px solid #FFFFFF; /* White border */
+}
+
+/* Table Views */
+QTableView {
+    background-color: #000000; /* Black background */
+    color: #FFFFFF;            /* White text */
+    gridline-color: #FFD700;   /* Gold grid lines */
+    border: 2px solid #FFFFFF; /* White border */
+}
+QHeaderView::section {
+    background-color: #1E90FF; /* Bright blue headers */
+    color: #FFFFFF;            /* White text */
+    padding: 6px;
+    border: 1px solid #FFFFFF; /* White border */
+}
+
+/* Checkboxes */
+QCheckBox {
+    color: #FFD700; /* Gold text */
+}
+QCheckBox::indicator {
+    width: 16px;
+    height: 16px;
+}
+QCheckBox::indicator:checked {
+    background-color: #1E90FF; /* Bright blue checkmark */
+    border: 2px solid #FFFFFF; /* White border */
+}
+QCheckBox::indicator:unchecked {
+    background-color: #333333; /* Dark gray background */
+    border: 2px solid #FFFFFF; /* White border */
+}
