@@ -382,7 +382,16 @@ class TestHandler(QObject):
                     voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
-        
+        #if testName == "Analyze_Bumpbonds":
+        #    self.currentTest = testName
+        #    self.configTest()
+        #    self.outputString.emit("Beginning Bumpbond Analysis")
+        #    self.analyze_bumpbonds()
+        #    self.outputString.emit("Bumpbond Analysis Complete")
+        #    self.on_finish()
+        #    return
+
+
         if testName == "IVCurve":
             self.currentTest = testName
             self.configTest()
@@ -976,6 +985,11 @@ class TestHandler(QObject):
         if "IVCurve" in self.currentTest:
             self.saveTest()
             return
+
+        #Might need this if statment if we do the bumpbond analysis in the GUI.  If done in felis we can remove this.
+        #if "PixelAlive_uncoupled" in self.currentTest:
+        #    self.bumpbond_analysis()
+
         # To be removed
         # if isCompositeTest(self.info):
         # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info][self.testIndexTracker-1]))
@@ -998,14 +1012,14 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            if self.testIndexTracker == len(CompositeTests[self.info]):
+            if self.testIndexTracker == len(CompositeTests[self.info]): # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
                     self.upload_to_Panthera()
-                if self.info == "FWD-RVS Bias" or self.info == "Crosstalk":
+                if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
-                    
+        
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
