@@ -107,6 +107,7 @@ class QtRunWindow(QWidget):
         # Fixme: QTimer to be added to update the page automatically
         self.grades = []
         self.modulestatus = []
+        self.finished_tests = []
         self.autoSave = False
 
         self.mainLayout = QGridLayout()
@@ -466,12 +467,12 @@ class QtRunWindow(QWidget):
         print("attempting to update status in history")
         self.HistoryLayout.removeWidget(self.StatusTable)
         self.StatusTable.setRowCount(0)
-        for index, test_results in enumerate(self.modulestatus):
+        for test, test_results in zip(self.finished_tests, self.modulestatus):
             row = self.StatusTable.rowCount()
             self.StatusTable.setRowCount(row + 1)
             if isCompositeTest(self.info):
                 self.StatusTable.setItem(
-                    row, 0, QTableWidgetItem(CompositeTests[self.info][index % len(CompositeTests[self.info])])
+                    row, 0, QTableWidgetItem(test)
                 )
             else:
                 self.StatusTable.setItem(row, 0, QTableWidgetItem(self.info))
@@ -625,6 +626,12 @@ class QtRunWindow(QWidget):
     def updateValidation(self, results:list):
         try:
             self.modulestatus.append(results)
+        except Exception as err:
+            logger.error(err)
+
+    def updateFinishedTests(self, tests:list):
+        try:
+            self.finished_tests = tests
         except Exception as err:
             logger.error(err)
 

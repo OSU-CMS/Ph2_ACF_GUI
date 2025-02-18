@@ -72,6 +72,7 @@ class TestHandler(QObject):
     updateIVResult = pyqtSignal(object)
     updateSLDOResult = pyqtSignal(object)
     updateValidation = pyqtSignal(object)
+    updateFinishedTests = pyqtSignal(object)
     powerSignal = pyqtSignal()
 
     def __init__(self, runwindow, master, info, firmware):
@@ -115,7 +116,7 @@ class TestHandler(QObject):
         self.SLDOScanHandler = None
 
         self.processingFlag = False
-        self.ProgressBarList = []
+        self.ProgresBarList = []
         self.input_dir = ""
         self.output_dir = ""
         self.config_file = (
@@ -180,7 +181,9 @@ class TestHandler(QObject):
         self.updateIVResult.connect(self.runwindow.updateIVResult)
         self.updateSLDOResult.connect(self.runwindow.updateSLDOResult)
         self.updateValidation.connect(self.runwindow.updateValidation)
+        self.updateFinishedTests.connect(self.runwindow.updateFinishedTests)
 
+        self.finished_tests = []
 
         self.initializeRD53Dict()
 
@@ -308,7 +311,6 @@ class TestHandler(QObject):
         self.config_file = ""
         return
 
-
     def saveConfigs(self):
         for key in self.rd53_file.keys():
             try:
@@ -351,7 +353,7 @@ class TestHandler(QObject):
         else:
             QMessageBox.information(None, "Warning", "Not a valid test", QMessageBox.Ok)
             return
-
+        
     # This loops over all the tests by using the on_finish pyqt decorator defined below
     def runCompositeTest(self, testName):
         if self.halt:
@@ -670,6 +672,7 @@ class TestHandler(QObject):
         self.starttime = None
 
     def validateTest(self):
+        self.finished_tests.append(self.currentTest)
         try:
             passed = []
             results = []
@@ -695,8 +698,9 @@ class TestHandler(QObject):
                         passed.append(list(result.values())[0][0])
                                                 
                         self.figurelist[module.getModuleName()] = self.collect_plots(module.getModuleName())
-                        
+            
             self.updateValidation.emit(results)
+            self.updateFinishedTests.emit(self.finished_tests)
             return all(passed)
         except Exception as err:
             logger.error(err)
@@ -1038,6 +1042,7 @@ class TestHandler(QObject):
             self.updateResult.emit((step, self.figurelist))
 
         # self.update()
+            
 
         if (
             status == False
@@ -1183,10 +1188,10 @@ class TestHandler(QObject):
             self.figurelist[moduleName] = [filename]
 
         status = self.validateTest()
+
         step="IVCurve"
 
         self.testIndexTracker += 1
-
 
         EnableReRun = False
 
@@ -1220,6 +1225,13 @@ class TestHandler(QObject):
         else: 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
+        if (
+            status == False
+            and isCompositeTest(self.info)
+            and self.testIndexTracker < len(CompositeTests[self.info])
+        ):
+            self.forceContinue()
+
         if isCompositeTest(self.info):
             self.runTest()
 
@@ -1239,6 +1251,7 @@ class TestHandler(QObject):
 
         status = self.validateTest()
         self.testIndexTracker += 1
+
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
@@ -1273,7 +1286,14 @@ class TestHandler(QObject):
             self.updateSLDOResult.emit(self.output_dir)
         else: 
             self.updateSLDOResult.emit(("SLDOScan", self.figurelist))  ##Add else statement to add signal in simple mode
-        
+
+        if (
+            status == False
+            and isCompositeTest(self.info)
+            and self.testIndexTracker < len(CompositeTests[self.info])
+        ):
+            self.forceContinue()
+
         if isCompositeTest(self.info):
             self.runTest()
 
@@ -1281,21 +1301,33 @@ class TestHandler(QObject):
         pass
 
     def forceContinue(self):
-        reply = QMessageBox.question(
-            None,
-            "Abort following tests",
-            "Failed component detected, continue to following test?",
-            QMessageBox.No | QMessageBox.Yes,
-            QMessageBox.No,
-        )
+        msg_box = QMessageBox()
+        msg_box.setWindowTitle("Failed Component Detected")
+        msg_box.setText("Failed component detected. What would you like to do?")
 
-        if reply == QMessageBox.Yes:
-            return
-        else:
+        # Add custom buttons
+        exit_button = msg_box.addButton("Exit", QMessageBox.RejectRole)
+        retry_button = msg_box.addButton("Retry", QMessageBox.ActionRole)
+        continue_button = msg_box.addButton("Continue", QMessageBox.AcceptRole)
+        msg_box.setDefaultButton(exit_button)
+
+        # Show the message box and wait for the user's choice
+        msg_box.exec()
+
+        # Check which button was clicked
+        if msg_box.clickedButton() == exit_button:
             self.run_process.kill()
             self.halt = True
             self.haltSignal.emit(self.halt)
             self.starttime = None
+        elif msg_box.clickedButton() == retry_button:
+            self.outputString.emit(f'Retrying {self.currentTest}...')
+            self.testIndexTracker = CompositeTests[self.info].index(self.currentTest)
+            self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText("")
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(0)
+            QApplication.processEvents() #not ideal. May need to fix later.
+        elif msg_box.clickedButton() == continue_button:
+            return
 
     def upload_to_Panthera(self):
         self.runwindow.UploadButton.setDisabled(True)
