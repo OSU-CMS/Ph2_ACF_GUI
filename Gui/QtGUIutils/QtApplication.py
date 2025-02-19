@@ -28,6 +28,8 @@ import requests
 from felis.felis_methods import get_accountInfo
 import requests.exceptions as rqx
 
+from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
+
 from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
 import Gui.GUIutils.settings as settings
 import Gui.siteSettings as site_settings
@@ -523,7 +525,9 @@ class QtApplication(QWidget):
         if site_settings.icicle_instrument_setup is None:
             self.DefaultButton.setEnabled(False)
 
-        self.DefaultButton.clicked.connect(self.connect_devices)
+        self.Wheel = LoadingWheel()
+
+        self.DefaultButton.clicked.connect(self.connect_devices_starter)
 
         self.reset_devices = QPushButton("&Reconnect all devices")
         self.reset_devices.clicked.connect(self.reconnectDevices)
@@ -531,6 +535,8 @@ class QtApplication(QWidget):
         self.default_checkbox.setChecked(True)
 
         self.DefaultLayout.addWidget(self.DefaultButton)
+        self.Wheel.setVisible(False)
+        self.DefaultLayout.addWidget(self.Wheel)
         self.DefaultLayout.addStretch(1)
         self.UseDefaultGroup.setLayout(self.DefaultLayout)
         
@@ -788,23 +794,35 @@ class QtApplication(QWidget):
         self.ThermalProfileEdit.setEchoMode(QLineEdit.Normal)
         self.ThermalProfileEdit.setPlaceholderText("Enter Profile Number")
         
-        if site_settings.usePeltier:
-            self.PeltierBox = QGroupBox("Peltier Controller", self)
-            self.PeltierCooling = Peltier(100)
-            self.PeltierLayout = QGridLayout()
-            self.PeltierLayout.addWidget(self.PeltierCooling)
-            self.PeltierBox.setLayout(self.PeltierLayout)
+        self.CoolerBox = QGroupBox(f"{site_settings.cooler} Controller", self)
+        self.CoolerLayout = QGridLayout()
+        if site_settings.cooler=="Peltier":
+            self.CoolerLayout.addWidget(Peltier(100))
+        elif site_settings.cooler=="Tessie":
+            self.CoolerLayout.addWidget(Tessie(100))
+        elif site_settings.cooler=="Manual":
+            # Title label (Manual Cooling)
+            title_label = QLabel("MANUAL COOLING")
+            title_label.setFont(QFont("Arial", 16, QFont.Bold))
+            title_label.setStyleSheet("color: gold;")  # Gold text
+            title_label.setAlignment(Qt.AlignCenter)
 
-            self.mainLayout.addWidget(self.PeltierBox, 4, 0, 3, 1)
+            # Warning subtitle (Proceed at risk)
+            subtitle_label = QLabel("⚠ Proceed at risk ⚠")
+            subtitle_label.setFont(QFont("Arial", 12, QFont.Bold))
+            subtitle_label.setStyleSheet("color: red;")  # Red warning text
+            subtitle_label.setAlignment(Qt.AlignCenter)
+
+            self.CoolerLayout.setRowStretch(0, 1)  # Add stretch at the top
+            self.CoolerLayout.addWidget(title_label, 1, 0, Qt.AlignCenter)  # Centered title
+            self.CoolerLayout.addWidget(subtitle_label, 2, 0, Qt.AlignCenter)  # Centered warning
+            self.CoolerLayout.setRowStretch(3, 1)  # Add stretch at the bottom
         else:
-            self.TessieBox = QGroupBox("Fake Tessie Controller", self)
-            self.TessieCooling = Tessie(100)
-            self.TessieLayout = QGridLayout()
-            self.TessieLayout.addWidget(self.TessieCooling)
-            self.TessieBox.setLayout(self.TessieLayout)
 
-            self.mainLayout.addWidget(self.TessieBox, 4, 0, 3, 1)
-
+            logger.error('site_settings.cooler is invalid string. Must be "Peltier", "Tessie", or "Manual"')
+       
+        self.CoolerBox.setLayout(self.CoolerLayout)
+        self.mainLayout.addWidget(self.CoolerBox, 4, 0, 3, 1)
         layout = QGridLayout()
         layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
         layout.addWidget(NewTestLabel, 0, 1, 1, 2)
@@ -932,6 +950,18 @@ class QtApplication(QWidget):
     def update_instrument_info(self, key, info):
         self.connected_device_information[key] = info
 
+    def connect_devices_starter(self):
+        self.Wheel.setVisible(True)
+        self.connect_devices_thread = LoadingThread(self.connect_devices,50)
+        self.connect_devices_thread.finished.connect(self.connect_devices_onFinish)
+        self.connect_devices_thread.timer.timeout.connect(self.Wheel.update_spinner)
+        self.connect_devices_thread.timer.start()
+        self.connect_devices_thread.start()  # Start the thread
+
+    def connect_devices_onFinish(self):
+        self.connect_devices_thread.timer.stop()
+        self.Wheel.setVisible(False)
+
     def connect_devices(self):
         
         """
@@ -1035,12 +1065,7 @@ class QtApplication(QWidget):
         if self.multimeter: self.multimeter_group.deleteLater()
         self.ArduinoGroup.deleteLater()
         self.ArduinoControl.deleteLater()
-        
-        if site_settings.usePeltier:
-            self.PeltierBox.deleteLater()
-        else:
-            self.TessieBox.deleteLater()
-            
+        self.CoolerBox.deleteLater()
         self.MainOption.deleteLater()
         self.ChillerOption.deleteLater()
         self.AppOption.deleteLater()
@@ -1053,10 +1078,8 @@ class QtApplication(QWidget):
         if self.multimeter: self.mainLayout.removeWidget(self.multimeter_group)
         self.mainLayout.removeWidget(self.ArduinoGroup)
         self.mainLayout.removeWidget(self.ArduinoControl)
-        if site_settings.usePeltier:
-            self.mainLayout.removeWidget(self.PeltierBox)
-        else:
-            self.mainLayout.removeWidget(self.TessieBox)
+        self.mainLayout.removeWidget(self.CoolerBox)
+
         self.mainLayout.removeWidget(self.MainOption)
         self.mainLayout.removeWidget(self.ChillerOption)
         self.mainLayout.removeWidget(self.AppOption)
