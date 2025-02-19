@@ -39,8 +39,21 @@ then
     echo "running as $mode"
     docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:/home/cmsTkUser/Ph2_ACF_GUI\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
-		-w /home/cmsTkUser/Ph2_ACF_GUI  -e DISPLAY=$DISPLAY -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH\
-		-e XAUTHORITY=$XAUTH --net host majoyce2/ph2_acf_gui_dev:latest
+		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
+		-v ${PWD}/Ph2_ACF/settings/RD53Files:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/settings/RD53Files\
+		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
+		-v ${PWD}/Gui/QtGUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/\
+		-v ${PWD}/Gui/GUIutils/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/GUIutils/\
+		-v ${PWD}/Gui/python/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/\
+		-v ${PWD}/InnerTrackerTests/:/home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/\
+		-v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
+		-v ${PWD}/felis:/home/cmsTkUser/Ph2_ACF_GUI/felis/\
+		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
+		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
+		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
+		-w $PWD  -e DISPLAY=$DISPLAY\
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host majoyce2/ph2_acf_gui_dev:latest 
+
 else
     echo "running as user"
 	IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"

@@ -1374,6 +1374,7 @@ class TestHandler(QObject):
             else:
                 error_message = "There was an error uploading the test results."
                 logger.error(f"{error_message} {repr(e)}")
+                self.runwindow.UploadButton.setDisabled(False)
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
 
