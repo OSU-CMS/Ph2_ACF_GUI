@@ -346,7 +346,7 @@ class QtApplication(QWidget):
             self.panthera_connected = True
             self.purdue_connected = self.checkPurdueConnection()
             
-            if data['privilege'] in ['Leader', 'Conductor', 'Admin'] or self.operator_name == "Daniel Ziabicki":
+            if data['privilege'] in ['Leader', 'Conductor', 'Admin', 'Shifter'] or self.operator_name == "Daniel Ziabicki": #FIXME 'Shifter' needs to be removed from this list once the TEPX and TBPX databases exist.
                 if self.UsernameEdit.text().endswith('_*'):
                     self.expertMode = False
                 else:
