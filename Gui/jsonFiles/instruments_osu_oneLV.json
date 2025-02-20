@@ -9,7 +9,7 @@
         },
         "hv": {
             "class": "Keithley2410",
-            "resource": "ASRL/dev/ttyUSBHV::INSTR",
+            "resource": "ASRL/dev/ttyUSB2::INSTR",
             "sim": false,
             "default_voltage": -80,
             "default_current": 5e-6
