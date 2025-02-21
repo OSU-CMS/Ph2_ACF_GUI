@@ -50,7 +50,7 @@ import subprocess
 import time
 
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
-from Gui.QtGUIutils.Loading import LoadingThread, LoadingThread
+from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 #from Gui.QtGUIutils.QtApplication import *
 from Gui.python.CustomizedWidget import BeBoardBox
@@ -454,9 +454,7 @@ class QtStartWindow(QWidget):
 
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
-                QMessageBox.information(
-                    self.errorMessageBoxSignal.emit("No valid serial number!",)
-                )
+                self.errorMessageBoxSignal.emit("No valid serial number!",) #Needs to be in a signal or QThread throws an error
                 return
             if module.getFMCPort() == "":
                 self.errorMessageBoxSignal.emit("No valid ID!")
@@ -471,7 +469,7 @@ class QtStartWindow(QWidget):
         for fw in self.firmwareDescription:
             self.checkFwPar(fw.getBoardName())
         if self.passCheck == False:
-            reply = QMessageBox().question(
+            reply = QMessageBox().question( #For some reason this isn't an issue for QThread
                 None,
                 "Error",
                 "Front-End parameter check failed, forced to continue?",
@@ -488,8 +486,8 @@ class QtStartWindow(QWidget):
         
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
-        #self.openRunWindowSignal.emit()
-        #self.close()
+        self.openRunWindowSignal.emit()
+        self.close()
 
     def closeEvent(self, event):
         if self.runFlag == True:
