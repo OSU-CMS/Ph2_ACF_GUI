@@ -5,6 +5,7 @@ from PyQt5.QtGui import QFont
 
 import sys
 import os
+import glob
 import re
 import subprocess
 import threading
@@ -51,6 +52,7 @@ from Gui.python.SLDOScanHandler import SLDOCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
+from InnerTrackerTests.RootFilesDict import root_files
 
 import logging
 
@@ -605,34 +607,62 @@ class TestHandler(QObject):
         self.halt = True
         self.haltSignal.emit(self.halt)
         self.starttime = None
+    
+    def getExplanation(self,rowNum):
+        n=0
+        moduleName = self.failtable.item(rowNum,0).text()
+        for test_results in self.runwindow.modulestatus:
+            for module_result in test_results:
+                if module_result[moduleName][0]==False:
+                    n+=1
+                    if n==rowNum:
+                        return module_result[moduleName][1]
+        return "Could not retrieve additional information."
 
-    def errorPopup(self, module_name, explanation):
-        if hasattr(self, "failed_tests_message"):
-            self.failed_tests_message += f'\nModule {module_name} failed {self.currentTest} with explanation: {explanation}'
-            self.fail_label.setText(self.failed_tests_message)
-        else:
-            # Create the QDialog instance here directly
-            self.table = QTableWidget(self)
-            self.table.setColumnCount(3)
-            self.table.setShowGrid(False)
-            self.table.setItem(0, 0, QTableWidgetItem("Module").setFont(QFont().setBold(True)))
-            self.table.setItem(0, 1, QTableWidgetItem("Test").setFont(QFont().setBold(True)))
-            self.table.setItem(0, 2, QTableWidgetItem("Explanation").setFont(QFont().setBold(True)))
+    def errorPopup(self, module_name):
+        if hasattr(self, "fail_window")==False:
+            self.fail_window = QWidget()  # Create a regular window instead of QDialog
+            self.fail_window.setWindowTitle("Failed Tests")
+            self.fail_window.setGeometry(150, 150, 400, 250)
 
-            self.failed_tests_message = f'Module {module_name} failed {self.currentTest} with explanation: {explanation}'
-            self.dialog = QDialog()
-            self.dialog.setWindowTitle("Failed Tests")
+            self.failtable = QTableWidget(1, 2)  # Ensure at least 1 row
+            self.failtable.itemClicked.connect(lambda : QMessageBox.information(
+                None, "Additional Information", self.getExplanation(item.row())
+                , QMessageBox.Ok))
+            #Should instead connect itemClicked to runwindow.displayTestResultPopup
 
-            self.fail_label = QLabel(self.failed_tests_message, self.dialog)
-            button = QPushButton("OK", self.dialog)
-            button.clicked.connect(self.dialog.accept)  # Close the dialog when clicked
-            dialog_layout = QVBoxLayout(self.dialog)
-            dialog_layout.addWidget(self.fail_label)
-            dialog_layout.addWidget(button)
-            self.dialog.setLayout(dialog_layout)
-            self.dialog.show()  # Open the dialog and wait for interaction
+            self.failtable.setShowGrid(False)
 
-    def validateTest(self):
+            # Set bold font for headers
+            bold_font = QFont()
+            bold_font.setBold(True)
+
+            headers = ["Module", "Test"]
+            for col, text in enumerate(headers):
+                item = QTableWidgetItem(text)
+                item.setFont(bold_font)
+                self.failtable.setItem(0, col, item)
+
+            button = QPushButton("OK", self.fail_window)
+            button.clicked.connect(self.fail_window.close)  # Close window when clicked
+
+            layout = QVBoxLayout()
+            layout.addWidget(self.failtable)
+            layout.addWidget(button)
+            self.fail_window.setLayout(layout)
+
+            self.fail_window.show()
+        
+        row_num=self.failtable.rowCount()
+        self.failtable.insertRow(row_num)
+        self.failtable.setItem(row_num,0,QTableWidgetItem(module_name))
+        self.failtable.setItem(row_num,1,QTableWidgetItem(self.currentTest))
+        item = self.failtable.item(row_num,0)
+        self.failtable.resizeColumnsToContents()
+        self.fail_window.resize(
+            sum((self.failtable.columnWidth(i) for i in range(self.failtable.columnCount())))+50,self.fail_window.height())
+
+    def validateTest(self, connectionFail):
         self.finished_tests.append(self.currentTest)
         try:
             passed = []
@@ -656,10 +686,8 @@ class TestHandler(QObject):
                             self.testIndexTracker, runNumber, module_data
                         )
                         
-                        print(f'result: {result}')
-                        print(next(iter(result.values())))
-                        if list(result.values())[0][0]==False:
-                            self.errorPopup(list(result.keys())[0],list(result.values())[0][1])
+                        if list(result.values())[0][0]==False and connectionFail==False:
+                            self.errorPopup(list(result.keys())[0])
 
                         results.append(result)
                         passed.append(list(result.values())[0][0])
@@ -694,53 +722,57 @@ class TestHandler(QObject):
                 print('testHandler.collect_plots Exception:', repr(e))
                 return []
 
+    def copyMostRecentRootFile(self,RunNumber,base_dir,output_dir,test):
+        
+        files = root_files[test] if test in root_files.keys() else (test)
+        for name in files:
+            # Construct the search pattern for files
+            search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
+
+            # Find all matching files
+            matching_files = glob.glob(search_pattern)
+
+            if len(matching_files)==0:
+                raise Exception(f"Failed to copy root file to output directory. \
+Module disconnection detected because felis didn't \
+create {search_pattern}.")
+
+            # Sort files by modification time (newest first)
+            latest_file = max(matching_files, key=os.path.getmtime)
+
+            if os.path.getsize(latest_file)==0:
+                raise Exception(f"Failed to copy root file to output directory. \
+Module disconnection detected because {latest_file} \
+created by felis is empty.")
+
+            # Copy the most recent file to the output directory
+            os.system(f"cp {latest_file} {output_dir}/")
+
     def saveTest(self):
         # if self.parent.current_test_grade < 0:
         if self.run_process.state() == QProcess.Running:
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
 
-        class DisconnectionError(Exception): pass
-
         try:
             if self.RunNumber == "-1":
-                path="{0}/test/Results/Run000000*.root {1}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
-                    )
-            elif "IVCurve" in self.currentTest:
-                path ="{0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        self.output_dir,
-                    )
+                self.copyMostRecentRootFile('000000',os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
+                # os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
+                # os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
             else:
-                path = "{0}/test/Results/Run{1}*.root {2}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        self.output_dir,
-                    )
-
-            if os.path.exists(path)==False:
-                message=f"Module disconnection detected because felis didn't create {path}."
-                logger.error(message)
-                self.inactive_module_indices.append(int(self.RunNumber))
-                self.forceContinue()
-                raise DisconnectionError(message)
-            elif os.path.getsize(path)==0:
-                message = f"Module disconnection detected because {path} created by felis is empty."
-                logger.error(message)
-                self.inactive_module_indices.append(int(self.RunNumber))
-                self.forceContinue()
-                raise DisconnectionError(message)
-            
-            os.system("cp "+path)
+                self.copyMostRecentRootFile(self.RunNumber,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
                 # os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
                 # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
-                # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
-        except DisconnectionError as e:
-            print(e)
+
         except Exception as e:
-            print("Failed to copy file to output directory")
+            if str(e).startswith("Failed to copy root file to output directory."):
+                print(e)
+                logger.error(str(e))
+                self.forceContinue()
+                return True #if fail is due to connection issues
+            else:
+                print("Failed to copy file to output directory")
+                return False #if fail is due to connection issues
 
 
     #######################################################################
@@ -974,14 +1006,13 @@ class TestHandler(QObject):
         EnableReRun = False
 
         # Save the output ROOT file to output_dir
-        self.saveTest()
+        connectionFail = self.saveTest()
         
         # validate the results
-        status = self.validateTest()
+        self.validateTest(connectionFail)
 
-        if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
-            self.testIndexTracker += 1
-
+        self.testIndexTracker += 1 
+       
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
             if self.testIndexTracker == len(CompositeTests[self.info]):
@@ -1251,10 +1282,9 @@ class TestHandler(QObject):
             self.starttime = None
         elif msg_box.clickedButton() == retry_button:
             self.outputString.emit(f'Retrying {self.currentTest}...')
-            self.testIndexTracker = CompositeTests[self.info].index(self.currentTest)
-            self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText("")
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(0)
-            QApplication.processEvents() #not ideal. May need to fix later.
+            self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText("") #may need to .update()
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(0) #may need to .update(). Automatically adds "0%" text on Progress bar.
+            self.testIndexTracker -= 1
         elif msg_box.clickedButton() == continue_button:
             return
 
