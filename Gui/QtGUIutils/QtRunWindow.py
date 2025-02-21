@@ -681,6 +681,7 @@ class QtRunWindow(QWidget):
                                             "instruments manually",
                                             QMessageBox.Ok)
                 event.accept()
+                if hasattr(self.testHandler, "fail_window"): self.testHandler.fail_window.close()
             else:
                 self.backSignal = False
                 event.ignore()
