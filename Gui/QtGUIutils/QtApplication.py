@@ -60,7 +60,7 @@ from Gui.python.logging_config import logger
 
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
-
+    errorMessageBoxSignal = pyqtSignal(str)
     def __init__(self, dimension):
         super(QtApplication, self).__init__()
         self.mainLayout = QGridLayout()
@@ -100,6 +100,15 @@ class QtApplication(QWidget):
         self.setLoginUI()
         self.initLog()
         self.createLogin()
+
+        self.errorMessageBoxSignal.connect( lambda message :
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+        )
 
     def setLoginUI(self):
         self.setGeometry(300, 300, 400, 500)
@@ -998,9 +1007,7 @@ class QtApplication(QWidget):
 
             except Exception as e:
                 print("Error:", e)
-                QMessageBox.information(
-                    None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
-                )
+                self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
 
         if self.expertMode:                
