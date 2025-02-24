@@ -729,7 +729,7 @@ class TestHandler(QObject):
         self.fail_window.resize(
             sum((self.failtable.columnWidth(i) for i in range(self.failtable.columnCount())))+50,self.fail_window.height())
 
-    def validateTest(self, connectionFail): #ATOC = At time of commit
+    def validateTest(self): #ATOC = At time of commit
         self.finished_tests.append(self.currentTest)
         try:
             passed = []
@@ -753,7 +753,7 @@ class TestHandler(QObject):
                             self.testIndexTracker, runNumber, module_data
                         )
 
-                        if list(result.values())[0][0]==False and connectionFail==False:
+                        if list(result.values())[0][0]==False: #Need to check that it didnt disconnect
                             self.errorPopup(list(result.keys())[0])
 
                         results.append(result)
@@ -838,10 +838,8 @@ created by felis is empty.")
                 print(e)
                 logger.error(str(e))
                 self.forceContinue()
-                return True #if fail is due to connection issues
             else:
                 print("Failed to copy file to output directory")
-        return False #if fail is due to connection issues
 
     #######################################################################
     ##  For real-time terminal display
@@ -1088,11 +1086,11 @@ created by felis is empty.")
         EnableReRun = False
 
         # Save the output ROOT file to output_dir
-        connectionFail = self.saveTest()
+        self.saveTest()
 
         # validate the results
         
-        self.validateTest(connectionFail)
+        self.validateTest()
         
         self.testIndexTracker += 1
 
