@@ -1039,7 +1039,7 @@ class QtApplication(QWidget):
                     self.groupbox_mapping[instrument].setDisabled(False)
             
         else:
-            logger.info(" You are running in manual mode, reconnecting"
+            logger.info("You are running in manual mode. Reconnecting"
                         "does nothing")
 
     def reCreateMain(self):
