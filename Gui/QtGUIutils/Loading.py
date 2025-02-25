@@ -2,13 +2,13 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal
 from PyQt5.QtGui import QPainter, QPen
 
-#class
 class LoadingThread(QThread):
     finished_signal = pyqtSignal()
     def __init__(self,function,interval,*args):
         super(LoadingThread, self).__init__()
         self.function = function
         self.args = args
+        self.finished_signal.connect(lambda : self.timer.stop())
         self.timer = QTimer()
         self.timer.setInterval(interval)
 
@@ -23,7 +23,7 @@ class LoadingWheel(QWidget):
         self.angle = 0
 
     def update_spinner(self):
-        self.angle = (self.angle + 10) % 360  # Rotate by 10 degrees
+        self.angle = (self.angle + 10) % 360  # Rotate by 10 degrees'
         self.update()  # Trigger repaint
 
     def paintEvent(self, event):
@@ -32,7 +32,7 @@ class LoadingWheel(QWidget):
         painter.translate(self.width() / 2, self.height() / 2)  # Center rotation
         painter.rotate(self.angle)
 
-        pen = QPen(Qt.blue, 2, Qt.SolidLine, Qt.RoundCap)
+        pen = QPen(Qt.white, 2, Qt.SolidLine, Qt.RoundCap)
         painter.setPen(pen)
 
         # Draw arc as spinner

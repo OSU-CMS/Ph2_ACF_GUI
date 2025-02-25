@@ -434,7 +434,7 @@ class QtRunWindow(QWidget):
         self.master.ProcessingTest = True
 
     def release(self):
-        self.testhandler.abortTest()
+        self.testHandler.abortTest()
         self.master.ProcessingTest = False
         if self.master.expertMode == True:
             self.master.NewTestButton.setDisabled(False)

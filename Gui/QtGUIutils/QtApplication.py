@@ -60,7 +60,7 @@ from Gui.python.logging_config import logger
 
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
-
+    errorMessageBoxSignal = pyqtSignal(str)
     def __init__(self, dimension):
         super(QtApplication, self).__init__()
         self.mainLayout = QGridLayout()
@@ -100,6 +100,15 @@ class QtApplication(QWidget):
         self.setLoginUI()
         self.initLog()
         self.createLogin()
+
+        self.errorMessageBoxSignal.connect( lambda message :
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+        )
 
     def setLoginUI(self):
         self.setGeometry(300, 300, 400, 500)
@@ -807,8 +816,8 @@ class QtApplication(QWidget):
             title_label.setStyleSheet("color: gold;")  # Gold text
             title_label.setAlignment(Qt.AlignCenter)
 
-            # Warning subtitle (Proceed at risk)
-            subtitle_label = QLabel("⚠ Proceed at risk ⚠")
+            # Warning subtitle (Proceed with caution)
+            subtitle_label = QLabel("⚠ Proceed with Caution ⚠")
             subtitle_label.setFont(QFont("Arial", 12, QFont.Bold))
             subtitle_label.setStyleSheet("color: red;")  # Red warning text
             subtitle_label.setAlignment(Qt.AlignCenter)
@@ -953,14 +962,10 @@ class QtApplication(QWidget):
     def connect_devices_starter(self):
         self.Wheel.setVisible(True)
         self.connect_devices_thread = LoadingThread(self.connect_devices,50)
-        self.connect_devices_thread.finished.connect(self.connect_devices_onFinish)
+        self.connect_devices_thread.finished.connect(lambda : self.Wheel.close())
         self.connect_devices_thread.timer.timeout.connect(self.Wheel.update_spinner)
         self.connect_devices_thread.timer.start()
         self.connect_devices_thread.start()  # Start the thread
-
-    def connect_devices_onFinish(self):
-        self.connect_devices_thread.timer.stop()
-        self.Wheel.setVisible(False)
 
     def connect_devices(self):
         
@@ -1002,9 +1007,7 @@ class QtApplication(QWidget):
 
             except Exception as e:
                 print("Error:", e)
-                QMessageBox.information(
-                    None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
-                )
+                self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
 
         if self.expertMode:                
