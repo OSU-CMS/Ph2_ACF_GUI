@@ -13,7 +13,7 @@ class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
     progressSignal = pyqtSignal(str, float)
 
-    def __init__(self, parent, instrument_cluster=None):
+    def __init__(self, parent, testName, instrument_cluster=None):
         super(IVCurveThread, self).__init__()
         self.instruments = instrument_cluster
         self.parent = parent
@@ -25,8 +25,9 @@ class IVCurveThread(QThread):
         self.startVal = 0
         self.target = 0
         #Making sure IVcurve peak is a negative voltage
-        if IVcurve_range < 0:
-            self.stopVal = IVcurve_range
+        if IVcurve_range[testName] < 0:
+            self.stopVal = IVcurve_range[testName]
+            print("IVcurve range: ", self.stopVal)
         else:
             self.stopVal = -80
         self.stepLength = 2
@@ -100,13 +101,13 @@ class IVCurveHandler(QObject):
     progressSignal = pyqtSignal(str, float)
     startSignal = pyqtSignal()
 
-    def __init__(self, instrument_cluster):
+    def __init__(self, testName, instrument_cluster):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
 
         assert self.instruments is not None, logger.debug("Error instantiating instrument cluster")
 
-        self.test = IVCurveThread(self, instrument_cluster=self.instruments)
+        self.test = IVCurveThread(self, testName, instrument_cluster=self.instruments)
         self.test.progressSignal.connect(self.transmitProgress)
         self.test.measureSignal.connect(self.finish)
 
