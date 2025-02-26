@@ -382,22 +382,13 @@ class TestHandler(QObject):
                     voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
-        #if testName == "Analyze_Bumpbonds":
-        #    self.currentTest = testName
-        #    self.configTest()
-        #    self.outputString.emit("Beginning Bumpbond Analysis")
-        #    self.analyze_bumpbonds()
-        #    self.outputString.emit("Bumpbond Analysis Complete")
-        #    self.on_finish()
-        #    return
-
-
-        if testName == "IVCurve":
+        
+        if "IVCurve" in testName:
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
             self.IVProgressValue = 0
-            self.IVCurveHandler = IVCurveHandler(self.instruments)
+            self.IVCurveHandler = IVCurveHandler(self.currentTest, self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.startSignal.connect(self.setupQProcess)
@@ -736,6 +727,7 @@ class TestHandler(QObject):
                         os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
                     )
                 )
+
             elif "IVCurve" in self.currentTest:
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
