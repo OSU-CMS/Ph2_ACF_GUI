@@ -126,3 +126,9 @@ defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 20
 defaultPeltierWarningTemp = 40
+
+# Theme to be used for the GUI that may help with visibility for some users
+# Possible themes can be found inside the Gui/Assets directory
+use_custom_theme = False
+theme = "ElegantDark.qss"
+

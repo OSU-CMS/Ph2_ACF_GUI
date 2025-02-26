@@ -112,6 +112,7 @@ class ModuleBox(QWidget):
 
     def setType(self):
         #this method is created to set moudle type under online mode and comboBox is hidden
+        # This method is actually never used as far as I can tell. ~MJ 2025-01-16
         if self.SerialEdit.text().startswith("RH"):
             chipType = "CROC 1x2"
             self.TypeCombo.setCurrentText(chipType)
@@ -119,6 +120,11 @@ class ModuleBox(QWidget):
         if self.SerialEdit.text().startswith("SH"):
             chipType = "TFPX CROC Quad"
             self.TypeCombo.setCurrentText(chipType)
+            numpart = ''.join(filter(str.isdigit, self.SerialEdit.text()))
+            if numpart.isdigit() and int(numpart) > 49:
+                self.VersionCombo.setCurrentText(2)
+            else:
+                self.VersionCombo.setCurrentText(1)
 
     def getSerialNumber(self):
         return self.SerialEdit.text()
@@ -517,6 +523,13 @@ class BeBoardBox(QWidget):
                 module.TypeCombo.currentTextChanged.connect(self.updateList)
             elif index == 0:
                 module.TypeCombo.currentTextChanged.connect(self.updateList)
+                if "SH" in module.getSerialNumber() or "RH" in module.getSerialNumber():
+                    numpart = ''.join(filter(str.isdigit, module.getSerialNumber()))
+                    if numpart.isdigit() and int(numpart) > 49:
+                        module.VersionCombo.setCurrentText("v2")
+                    else:
+                        module.VersionCombo.setCurrentText("v1")
+                
                 module.VersionCombo.currentTextChanged.connect(self.updateList)
                 module.VersionCombo.setDisabled(False)
             if index != 0:
@@ -837,8 +850,13 @@ class SimpleModuleBox(QWidget):
         self.version = versionStr
     
     def getVersion(self, SerialNumber):
-        if "TH" in SerialNumber:
-            self.version = "v2"
+        numpart = ''.join(filter(str.isdigit, SerialNumber))
+        if "SH" in SerialNumber or "RH" in SerialNumber:
+            if numpart.isdigit() and int(numpart) > 49:
+                self.version = "v2"
+            else:
+                self.version = "v1"
+        
         else:
             self.version = "v1"
         return self.version

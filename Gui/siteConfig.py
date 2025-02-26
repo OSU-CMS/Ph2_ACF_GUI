@@ -32,8 +32,9 @@ defaultPowerMode = "SLDO"
 defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
-#UIC coldbox variables
-usePeltier = False
+#Coldbox variables
+cooler = "Tessie" # "Pelter", "Tessie", or "Manual"
+usePeltier = False #The "cooler" variable will be used in the future, but this line is needed for the current version of the GUI
 defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 10

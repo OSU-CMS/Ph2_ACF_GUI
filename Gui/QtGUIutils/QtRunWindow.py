@@ -392,6 +392,8 @@ class QtRunWindow(QWidget):
 
         self.StartLayout.addStretch(1)
 
+        self.StartLayout.addWidget(self.ProgressBarLabel)
+
         #if self.master.expertMode == True:
         #    self.StartLayout.addWidget(self.UploadButton)
         self.StartLayout.addWidget(self.UploadButton)

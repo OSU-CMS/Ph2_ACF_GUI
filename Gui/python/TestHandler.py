@@ -727,8 +727,7 @@ class TestHandler(QObject):
                         os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
                     )
                 )
-                # os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
-                # os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
+
             elif "IVCurve" in self.currentTest:
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
@@ -978,6 +977,11 @@ class TestHandler(QObject):
         if "IVCurve" in self.currentTest:
             self.saveTest()
             return
+
+        #Might need this if statment if we do the bumpbond analysis in the GUI.  If done in felis we can remove this.
+        #if "PixelAlive_uncoupled" in self.currentTest:
+        #    self.bumpbond_analysis()
+
         # To be removed
         # if isCompositeTest(self.info):
         # 	self.ListWidget.insertItem(self.listWidgetIndex, "{}_Module_0_Chip_0".format(CompositeList[self.info][self.testIndexTracker-1]))
@@ -1000,14 +1004,14 @@ class TestHandler(QObject):
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            if self.testIndexTracker == len(CompositeTests[self.info]):
+            if self.testIndexTracker == len(CompositeTests[self.info]): # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
                     self.upload_to_Panthera()
-                if self.info == "FWD-RVS Bias" or self.info == "Crosstalk":
+                if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
-                    
+        
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
@@ -1290,6 +1294,11 @@ class TestHandler(QObject):
         counter = 0
         nummodules = len(self.modules)
         try:
+
+            self.runwindow.UploadButton.setDisabled(True)
+            counter = 0
+            nummodules = len(self.modules)
+
             for module in self.modules:
                 self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules))
                 QApplication.processEvents() #not ideal. May need to fix later.
@@ -1303,7 +1312,9 @@ class TestHandler(QObject):
                 if not status:
                     raise ConnectionError(message)
                 counter+=1
+
             self.runwindow.ProgressBarLabel.setText("Upload successful!")
+
 
         except Exception as e:
             if not self.master.panthera_connected:
@@ -1316,7 +1327,8 @@ class TestHandler(QObject):
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
 
             self.runwindow.ProgressBarLabel.setText(error_message)
-    
+            
+
     def bumpbond_analysis(self):
         
         runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
