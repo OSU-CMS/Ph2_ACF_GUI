@@ -37,7 +37,8 @@ echo $mydevices | xargs
 if [[ $mode == "dev" ]] 
 then
     echo "running as $mode"
-    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:/home/cmsTkUser/Ph2_ACF_GUI\
+    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
+		-v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/Ph2_ACF/settings/RD53Files:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/settings/RD53Files\
@@ -51,9 +52,8 @@ then
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
-		-w $PWD  -e DISPLAY=$DISPLAY\
+		-w ${PWD} -e DISPLAY=$DISPLAY\
 		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host majoyce2/ph2_acf_gui_dev:latest 
-
 else
     echo "running as user"
 	IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
@@ -90,13 +90,15 @@ To install on Alma Linux please run:\e[0m
     		echo "Image pull canceled."
   		fi
 	fi
-    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices\
+    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
-    -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
-		-w /home/cmsTkUser/Ph2_ACF_GUI  -e DISPLAY=$DISPLAY\
-    --volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
+        -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
+		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
+        -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
+		-w $PWD  -e DISPLAY=$DISPLAY\
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
 		#Before, the docker run command had the options -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH. We were having trouble
 		#running the GUI through SSH connections, so we removed those options and added --volume="$HOME/.Xauthority:/root/.Xauthority:rw"
 		#which seemed to fix the issue of running the GUI from SSH connections. At the time of this commit, we have no idea why this fixed it

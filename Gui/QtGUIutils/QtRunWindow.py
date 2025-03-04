@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMessageBox,
     QSplitter,
+    QProgressBar
 )
 
 import os
@@ -71,7 +72,8 @@ class QtRunWindow(QWidget):
             assert self.master.instruments is not None, logger.error("Unable to setup instruments")
             self.testHandler.powerSignal.connect(
                 lambda: self.master.instruments.off(
-                    hv_delay=0.3, hv_step_size=10, measure=False
+                    hv_delay=0.3, hv_step_size=10, measure=False,
+                    execute_each_step=lambda:self.testHandler.ramp_progress_bar(False,10,None)
                 )
             )
 
@@ -131,8 +133,8 @@ class QtRunWindow(QWidget):
         self.setLoginUI()
         # self.initializeRD53Dict()
         self.createHeadLine()
-        self.createMain()
         self.createApp()
+        self.createMain()
         self.occupied()
 
         self.resized.connect(self.rescaleImage)
@@ -270,6 +272,7 @@ class QtRunWindow(QWidget):
         # self.ConsoleView.setCenterOnScroll(True)
         self.ConsoleView.ensureCursorVisible()
         self.ConsoleView.setReadOnly(True)
+        self.ConsoleView_html = ""
 
         ConsoleLayout.addWidget(self.ConsoleView)
         TerminalBox.setLayout(ConsoleLayout)
@@ -321,11 +324,24 @@ class QtRunWindow(QWidget):
         self.TempLayout.addWidget(self.tempIndicator, 1, 1, 1, 1)
         self.TempBox.setLayout(self.TempLayout)
 
+        self.RampBox = QGroupBox()
+        self.RampLayout = QGridLayout()
+        self.RampProgressBars = [QProgressBar()]*len(self.master.instruments._module_dict.values())
+        RampProgressLabels = [QLabel("Bias Voltage:")]*len(self.master.instruments._module_dict.values())
+        for label in RampProgressLabels: label.setStyleSheet("font-weight: bold;")
+        
+        for i in range(len(self.master.instruments._module_dict.values())):
+            self.RampLayout.addWidget(RampProgressLabels[i], i, 0, 1, 1)
+            self.RampLayout.addWidget(self.RampProgressBars[i], i, 1, 1, 1)
+        self.RampBox.setLayout(self.RampLayout)
+
         LeftColSplitter.addWidget(ControllerBox)
         LeftColSplitter.addWidget(TerminalBox)
+        LeftColSplitter.addWidget(self.RampBox)
         LeftColSplitter.addWidget(self.TempBox)
         RightColSplitter.addWidget(OutputBox)
         RightColSplitter.addWidget(self.HistoryBox)
+        RightColSplitter.addWidget(self.AppOption)
 
         LeftColSplitterSP = LeftColSplitter.sizePolicy()
         LeftColSplitterSP.setHorizontalStretch(self.HorizontalSeg[0])
@@ -363,6 +379,8 @@ class QtRunWindow(QWidget):
         self.StartLayout = QHBoxLayout()
 
         self.ProgressBarLabel = QLabel("")
+        self.testHandler.uploadBarSignal.connect(lambda counter, nummodules:self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules)))
+
 
         self.UploadButton = QPushButton("&Upload Results")
         self.UploadButton.clicked.connect(self.testHandler.upload_to_Panthera)
@@ -412,16 +430,14 @@ class QtRunWindow(QWidget):
 
         self.LogoGroupBox.setLayout(self.LogoLayout)
 
-        self.mainLayout.addWidget(
-            self.AppOption, sum(self.GroupBoxSeg[0:2]), 0, self.GroupBoxSeg[2], 1
-        )
+        #self.mainLayout.addWidget(self.AppOption, sum(self.GroupBoxSeg[0:2]), 0, self.GroupBoxSeg[2], )
         self.mainLayout.addWidget(
             self.LogoGroupBox, sum(self.GroupBoxSeg[0:3]), 0, self.GroupBoxSeg[2], 1
         )
 
     def destroyApp(self):
         self.AppOption.deleteLater()
-        self.mainLayout.removeWidget(self.AppOption)
+        #self.mainLayout.removeWidget(self.AppOption)
 
     def closeWindow(self):
         self.close()
@@ -434,7 +450,19 @@ class QtRunWindow(QWidget):
         self.master.ProcessingTest = True
 
     def release(self):
-        self.testHandler.abortTest()
+        self.testHandler.halt = False
+        print(0)
+        self.testHandler.run_process.kill()
+        print(1)
+
+        self.testHandler.starttime = None
+        if self.testHandler.IVCurveHandler:
+            self.testHandler.outputString.emit("Aborting IVCurve")
+            self.testHandler.IVCurveHandler.stop()
+        if self.testHandler.SLDOScanHandler:
+            self.testHandler.outputString.emit("Aborting SLDOScan")
+            self.testHandler.SLDOScanHandler.stop()
+
         self.master.ProcessingTest = False
         if self.master.expertMode == True:
             self.master.NewTestButton.setDisabled(False)
@@ -631,6 +659,10 @@ class QtRunWindow(QWidget):
         except Exception as err:
             logger.error(err)
 
+    def updateRampBar(self, bar:QProgressBar, value:int, text:str):
+        bar.setFormat(text)
+        bar.setValue(value)
+
     #######################################################################
     ##  For real-time terminal display
     #######################################################################
@@ -665,7 +697,7 @@ class QtRunWindow(QWidget):
             reply = QMessageBox.question(
                 self,
                 "Window Close",
-                "Are you sure you want to quit the test?",
+                "Are you sure you want to quit the test? runwin",
                 QMessageBox.No | QMessageBox.Yes,
                 QMessageBox.No,
             )
@@ -674,14 +706,14 @@ class QtRunWindow(QWidget):
                 self.release()
                 if self.master.instruments:
                     self.master.instruments.off(
-                        hv_delay=0.3, hv_step_size=10
+                        hv_delay=0.3, hv_step_size=10, execute_each_step=lambda:self.testHandler.ramp_progress_bar(False,10,None)
                     )
                 else:
                     QMessageBox.information(self, "Info", "You must turn off "
                                             "instruments manually",
                                             QMessageBox.Ok)
+                #if hasattr(self.testHandler, "fail_window"): self.testHandler.fail_window.close()
                 event.accept()
-                if hasattr(self.testHandler, "fail_window"): self.testHandler.fail_window.close()
             else:
                 self.backSignal = False
                 event.ignore()
