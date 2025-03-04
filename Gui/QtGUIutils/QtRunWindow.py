@@ -134,7 +134,7 @@ class QtRunWindow(QWidget):
 
     
     def onPowerSignal(self):
-        starting_voltages = [int(np.abs(int(getattr(module["hv"], "voltage")))) for module in self.master.instruments._module_dict.values()]
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.master.instruments._module_dict.values()]
         self.master.instruments.off(
                 hv_delay=0.3, hv_step_size=10, measure=False,
                 execute_each_step=lambda:self.testHandler.ramp_progress_bar(starting_voltages)
@@ -452,9 +452,9 @@ class QtRunWindow(QWidget):
 
     def release(self):
         self.testHandler.halt = False
-        print('err1')
+
         self.testHandler.run_process.kill()
-        print('err2')
+
 
         self.testHandler.starttime = None
         if self.testHandler.IVCurveHandler:
@@ -707,7 +707,6 @@ class QtRunWindow(QWidget):
                 self.release()
                 if self.master.instruments:
                     starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.master.instruments._module_dict.values()]
-                    print(1)
                     self.master.instruments.off(
                         hv_delay=0.3, hv_step_size=10, execute_each_step=lambda:self.testHandler.ramp_progress_bar(starting_voltages)
                     )
