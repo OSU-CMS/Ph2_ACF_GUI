@@ -1,9 +1,6 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import QThread, QObject, pyqtSignal, QProcess
+from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
-import os
-import time
-import numpy
+import numpy as np
 from Gui.python.logging_config import logger
 from Gui.siteSettings import IVcurve_range
 
@@ -36,7 +33,8 @@ class IVCurveThread(QThread):
         self.turnOn()
 
     def turnOn(self):
-        self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(False, None, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+        self.instruments.hv_off(execute_each_step=lambda:self.execute_each_step(starting_voltages))
         self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
         self.instruments.hv_set_ocp(0.00001)
 
@@ -56,7 +54,8 @@ class IVCurveThread(QThread):
 
     def run(self):
         try:
-            self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+            self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
             #self.run_process = QProcess(self)
             #self.run_process.setProcessChannelMode(QProcess.MergedChannels)
             #self.run_process.setWorkingDirectory(
@@ -102,11 +101,10 @@ class IVCurveHandler(QObject):
     progressSignal = pyqtSignal(str, float)
     startSignal = pyqtSignal()
 
-    def __init__(self, instrument_cluster, execute_each_step, ramp_down_step_size=5):
+    def __init__(self, instrument_cluster, execute_each_step):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.execute_each_step = execute_each_step
-        self.step_size = ramp_down_step_size
 
         assert self.instruments is not None, logger.debug("Error instantiating instrument cluster")
 
@@ -129,14 +127,15 @@ class IVCurveHandler(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
-        self.instruments.hv_off(step_size=self.step_size, execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+        self.instruments.hv_off(step_size=5, execute_each_step=lambda : self.execute_each_step(starting_voltages))
         self.finished.emit(test, measure)
-
 
     def stop(self):
         try:
             self.test.abortTest()
-            self.instruments.hv_off(no_lock=True, step_size=self.step_size, execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values())))
+            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+            self.instruments.hv_off(no_lock=True, step_size=5, execute_each_step=lambda : self.execute_each_step(starting_voltages))
             self.test.terminate()
         except Exception as err:
             print(f"Failed to stop the IV test due to error {err}")

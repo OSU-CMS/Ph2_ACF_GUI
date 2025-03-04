@@ -87,7 +87,6 @@ class TestHandler(QObject):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
-        print(self.instruments)
         self.mod_dict={}
         self.fused_dict_index=[-1,-1]
         # self.LVpowersupply.Reset()
@@ -195,8 +194,6 @@ class TestHandler(QObject):
         self.updateRampBar.connect(self.runwindow.updateRampBar)
 
         self.finished_tests = []
-        self.ramp_counter=1
-        self.current_bar=0
 
         self.initializeRD53Dict()
 
@@ -383,24 +380,17 @@ class TestHandler(QObject):
         #    updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
         self.runSingleTest(testName)
 
-    def ramp_progress_bar(self, rampUp, step_size, voltage): #might be a more elegant way to do this
-        
-        if self.ramp_counter==1 and self.current_bar==0:
-            if rampUp==False: self.sweep_distances = [getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()]
+    def ramp_progress_bar(self, max): #might be a more elegant way to do this
 
-        step_size = list(self.instruments._module_dict.values())[self.current_bar]["hv"].default_step_size if step_size==None else step_size
-        sweep_distance = voltage if rampUp else self.sweep_distances[self.current_bar]
-        range = np.abs(int(sweep_distance/step_size))
+        voltages = [getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()]
 
-        if self.ramp_counter>range:
-            self.current_bar = (self.current_bar + 1)%len(self.instruments._module_dict.values())
-            self.ramp_counter = 1
-            return
+        for i in range(len(self.runwindow.RampProgressBars)):
 
-        value = int(100*self.ramp_counter/range if rampUp else 100*(1- (self.ramp_counter/range)))
-        text = f'{step_size*self.ramp_counter} V' if rampUp else f'{np.abs(self.sweep_distances[self.current_bar])-step_size*self.ramp_counter} V'
-        self.updateRampBar.emit(self.runwindow.RampProgressBars[self.current_bar], value, text)
-        self.ramp_counter += 1
+            text = f'{np.abs(voltages[i])} V'          
+            value = 100*np.abs(voltages[i]/max[i]) if max[i]!=0 else 0
+
+            self.updateRampBar.emit(self.runwindow.RampProgressBars[i], value, text)
+            QApplication.processEvents()
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
@@ -470,18 +460,19 @@ class TestHandler(QObject):
 
             if testName == "SCurveScan_2100_FWD":
                 if hv_on:
-                    self.instruments.hv_off(step_size=self.step_size, execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+                    starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+                    self.instruments.hv_off(execute_each_step=lambda : self.ramp_progress_bar(starting_voltages))
                     self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10,
-                                           execute_each_step=lambda:self.ramp_progress_bar(True, 10, site_settings.forward_bias_voltage))
+                                           execute_each_step=lambda:self.ramp_progress_bar([site_settings.forward_bias_voltage]*len(self.instruments._module_dict.values())))
                 else:
                     self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10,
-                                           execute_each_step=lambda:self.ramp_progress_bar(True, 10, site_settings.forward_bias_voltage))
+                                           execute_each_step=lambda:self.ramp_progress_bar([site_settings.forward_bias_voltage]*len(self.instruments._module_dict.values())))
                 testName = "SCurveScan_2100"
                 hv_on = True
             if not hv_on:
                 self.instruments.hv_on(
                     voltage=default_hv_voltage, delay=0.3, step_size=10,
-                    execute_each_step=lambda:self.ramp_progress_bar(True, 10, default_hv_voltage)
+                    execute_each_step=lambda:self.ramp_progress_bar([default_hv_voltage]*len(self.instruments._module_dict.values()))
                 )
 
         self.tempHistory = [0.0] * self.numChips
@@ -698,60 +689,6 @@ class TestHandler(QObject):
         self.haltSignal.emit(self.halt)
         self.starttime = None
 
-    def getExplanation(self,rowNum):
-        n=0
-        moduleName = self.failtable.item(rowNum,0).text()
-        for test_results in self.runwindow.modulestatus:
-            for module_result in test_results:
-                if module_result[moduleName][0]==False:
-                    n+=1
-                    if n==rowNum:
-                        return module_result[moduleName][1]
-        return "Could not retrieve additional information."
-
-    def errorPopup(self, module_name):
-        if hasattr(self, "fail_window")==False:
-            self.fail_window = QWidget()  # Create a regular window instead of QDialog
-            self.fail_window.setWindowTitle("Failed Tests")
-            self.fail_window.setGeometry(150, 150, 400, 250)
-
-            self.failtable = QTableWidget(1, 2)  # Ensure at least 1 row
-            self.failtable.itemClicked.connect(lambda : QMessageBox.information(
-                None, "Additional Information", self.getExplanation(item.row())
-                , QMessageBox.Ok))
-            #Should instead connect itemClicked to runwindow.displayTestResultPopup
-
-            self.failtable.setShowGrid(False)
-
-            # Set bold font for headers
-            bold_font = QFont()
-            bold_font.setBold(True)
-
-            headers = ["Module", "Test"]
-            for col, text in enumerate(headers):
-                item = QTableWidgetItem(text)
-                item.setFont(bold_font)
-                self.failtable.setItem(0, col, item)
-
-            button = QPushButton("OK", self.fail_window)
-            button.clicked.connect(self.fail_window.close)  # Close window when clicked
-
-            layout = QVBoxLayout()
-            layout.addWidget(self.failtable)
-            layout.addWidget(button)
-            self.fail_window.setLayout(layout)
-
-            self.fail_window.show()
-        
-        row_num=self.failtable.rowCount()
-        self.failtable.insertRow(row_num)
-        self.failtable.setItem(row_num,0,QTableWidgetItem(module_name))
-        self.failtable.setItem(row_num,1,QTableWidgetItem(self.currentTest))
-        item = self.failtable.item(row_num,0)
-        self.failtable.resizeColumnsToContents()
-        self.fail_window.resize(
-            sum((self.failtable.columnWidth(i) for i in range(self.failtable.columnCount())))+50,self.fail_window.height())
-
     def validateTest(self): #ATOC = At time of commit
         self.finished_tests.append(self.currentTest)
         try:
@@ -776,17 +713,13 @@ class TestHandler(QObject):
                             self.testIndexTracker, runNumber, module_data
                         )
 
-                        #Checks if the test failed and that test sequence hasn't already been quit
-                        if list(result.values())[0][0]==False and self.halt==False: #Need to check that it didnt disconnect
-                            self.errorPopup(list(result.keys())[0])
-
                         results.append(result)
                         passed.append(list(result.values())[0][0])
                                                 
                         self.figurelist[module.getModuleName()] = self.collect_plots(module.getModuleName())
             
             self.updateValidation.emit(results)
-            self.updateFinishedTests.emit(self.finished_tests) #Obsolete ATOC: return all(passed)
+            self.updateFinishedTests.emit(self.finished_tests) #Obsolete ATOC: "return all(passed)"
         except Exception as err:
             logger.error(err)
     
@@ -881,8 +814,6 @@ created by felis is empty.")
         textline = alltext.split("\n")
         # fileLines = open(self.outputFile,"r")
         # textline = fileLines.readlines()
-
-        print(alltext)
 
         for textStr in textline:
             import re
@@ -1082,24 +1013,21 @@ created by felis is empty.")
         self.outputfile.close()
         # While the process is killed:
 
-        print(2)
         if self.halt == True:
             self.haltSignal.emit(True)
             return
-        print(3)
+
         if self.run_process.state() == QProcess.Running:
             print("process is still running...  Attempting to terminate before next test.")
             self.run_process.terminate()
             if not self.run_process.waitForFinished(3000):
                 print('process would not terminate, so killing it now...')
                 self.run_process.kill()
-        print(4)
+
         if "IVCurve" in self.currentTest:
             self.saveTest()
             return
         
-        print(5)
-
         #Might need this if statment if we do the bumpbond analysis in the GUI.  If done in felis we can remove this.
         #if "PixelAlive_uncoupled" in self.currentTest:
         #    self.bumpbond_analysis()
@@ -1157,11 +1085,10 @@ created by felis is empty.")
         if measurementType=='IVCurve':
             self.IVProgressValue += stepSize/2.0
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
-            self.runwindow.RampProgressBars[self.current_bar].setValue(self.IVProgressValue) #may run into issues if multiple hv's
+            self.ramp_progress_bar([site_settings.IVcurve_range if site_settings.IVcurve_range<0 else 80]*len(self.instruments._module_dict.values()))
         if 'SLDO' in measurementType:
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
-            self.runwindow.RampProgressBars[self.current_bar].setValue(self.SLDOProgressValue) #may run into issues if multiple hv's
 
     # def updateMeasurement(self, measureType, measure):
     #     """
@@ -1306,7 +1233,7 @@ created by felis is empty.")
                 delay=0.3,
                 step_size=3,
                 measure=False,
-                execute_each_step=lambda:self.ramp_progress_bar(True, 3, default_hv_voltage)
+                execute_each_step=lambda:self.ramp_progress_bar([default_hv_voltage]*len(self.instruments._module_dict.values()))
             )
 
             if self.testIndexTracker == len(CompositeTests[self.info]):
@@ -1362,7 +1289,7 @@ created by felis is empty.")
                 delay=0.3,
                 step_size=5,
                 measure=False,
-                execute_each_step=lambda:self.ramp_progress_bar(True, 5, default_hv_voltage)
+                execute_each_step=lambda:self.ramp_progress_bar([default_hv_voltage]*len(self.instruments._module_dict.values()))
             )
 
             if self.testIndexTracker == len(CompositeTests[self.info]):
@@ -1447,7 +1374,6 @@ created by felis is empty.")
 
         # Define button handlers
         def handle_close(event):
-            print(f'self.force_continue_window.abort {self.force_continue_window.abort}')
             if self.force_continue_window.abort==True:
                 self.run_process.kill()
                 self.halt = True
@@ -1476,9 +1402,7 @@ created by felis is empty.")
         retry_button.clicked.connect(handle_retry)
         continue_button.clicked.connect(handle_continue)
 
-        
         self.force_continue_window.closeEvent = handle_close
-        self.force_continue_window.show()
         self.force_continue_window.exec_()  # This will block until the window is closed
 
     def upload_to_Panthera(self):

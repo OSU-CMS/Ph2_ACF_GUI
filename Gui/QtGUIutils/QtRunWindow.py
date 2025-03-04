@@ -3,7 +3,6 @@ from PyQt5.QtGui import QPixmap, QColor, QImage
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QCheckBox,
-    QDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -19,10 +18,8 @@ from PyQt5.QtWidgets import (
     QProgressBar
 )
 
-import os
+import os, numpy as np
 import threading
-import time
-import logging
 import Gui.siteSettings as site_settings
 
 from Gui.GUIutils.DBConnection import checkDBConnection
@@ -70,12 +67,8 @@ class QtRunWindow(QWidget):
         self.testHandler = TestHandler(self, master, info, firmware)
         if not site_settings.manual_powersupply_control:
             assert self.master.instruments is not None, logger.error("Unable to setup instruments")
-            self.testHandler.powerSignal.connect(
-                lambda: self.master.instruments.off(
-                    hv_delay=0.3, hv_step_size=10, measure=False,
-                    execute_each_step=lambda:self.testHandler.ramp_progress_bar(False,10,None)
-                )
-            )
+
+            self.testHandler.powerSignal.connect(lambda: self.onPowerSignal)
 
         self.GroupBoxSeg = [1, 10, 1]
         self.HorizontalSeg = [3, 5]
@@ -138,6 +131,14 @@ class QtRunWindow(QWidget):
         self.occupied()
 
         self.resized.connect(self.rescaleImage)
+
+    
+    def onPowerSignal(self):
+        starting_voltages = [int(np.abs(int(getattr(module["hv"], "voltage")))) for module in self.master.instruments._module_dict.values()]
+        self.master.instruments.off(
+                hv_delay=0.3, hv_step_size=10, measure=False,
+                execute_each_step=lambda:self.testHandler.ramp_progress_bar(starting_voltages)
+            )
 
     def setLoginUI(self):
         X = self.master.dimension.width() / 10
@@ -451,9 +452,9 @@ class QtRunWindow(QWidget):
 
     def release(self):
         self.testHandler.halt = False
-        print(0)
+        print('err1')
         self.testHandler.run_process.kill()
-        print(1)
+        print('err2')
 
         self.testHandler.starttime = None
         if self.testHandler.IVCurveHandler:
@@ -705,8 +706,10 @@ class QtRunWindow(QWidget):
             if reply == QMessageBox.Yes:
                 self.release()
                 if self.master.instruments:
+                    starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.master.instruments._module_dict.values()]
+                    print(1)
                     self.master.instruments.off(
-                        hv_delay=0.3, hv_step_size=10, execute_each_step=lambda:self.testHandler.ramp_progress_bar(False,10,None)
+                        hv_delay=0.3, hv_step_size=10, execute_each_step=lambda:self.testHandler.ramp_progress_bar(starting_voltages)
                     )
                 else:
                     QMessageBox.information(self, "Info", "You must turn off "

@@ -380,8 +380,9 @@ def CheckXMLValue(pFilename, pAttribute):
 ##########################################################################
 
 
-def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
+def GenerateXMLConfig(firmwareList, testName, outputDir, statuses, **arg):
     outputFile = outputDir + "/CMSIT_" + testName + ".xml"
+    print(outputFile)
     
     boardtype = "RD53A"
     RegisterSettingsList = RegisterSettings #TODO: Investigate whether this actually matters (ie deep vs shallow copy)
@@ -400,7 +401,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
             # Set up each module within the optical group
             for module in og.getAllModules().values():
                 HyBridModule0 = HyBridModule()
-                HyBridModule0.SetHyBridModule(module.getFMCPort(), "1")
+                HyBridModule0.SetHyBridModule(module.getFMCPort(), statuses[module.getModuleName()])
                 HyBridModule0.SetHyBridName(module.getModuleName())
         
                 moduleType = module.getModuleType()

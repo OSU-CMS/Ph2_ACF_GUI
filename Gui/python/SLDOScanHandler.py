@@ -108,7 +108,7 @@ class SLDOCurveWorker(QThread):
         # Initialize a list to store the results
         self.labels = []
         # Turn off instruments
-        self.instruments.hv_off(step_size=self.step_size, execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+        self.instruments.hv_off()
         self.instruments.lv_off()
         self.adc_board.__enter__()
         logger.info("Turned off the LV and HV")
@@ -175,7 +175,7 @@ class SLDOCurveWorker(QThread):
         self.result_list = []
         self.labels = []
         # Turn off instruments
-        self.instruments.hv_off(step_size=self.step_size, execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+        self.instruments.hv_off()
         self.instruments.lv_off()
         self.multimeter.set("SYSTEM_MODE","REM")
         logger.info('turned off the lv and hv')
@@ -331,7 +331,7 @@ class SLDOCurveHandler(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self):
-        self.instruments.hv_off(step_size=self.step_size, execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+        self.instruments.hv_off()
         self.instruments.lv_off()
         self.finishedSignal.emit()
 
@@ -341,7 +341,7 @@ class SLDOCurveHandler(QObject):
         if reason:
             print(f"Aborting SLDO Scan. Reason: {reason}")
             try:
-                self.instruments.hv_off(step_size=self.step_size, execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+                self.instruments.hv_off()
                 self.instruments.lv_off()
                 self.test.terminate()
                 self.abortSignal.emit()
@@ -349,7 +349,7 @@ class SLDOCurveHandler(QObject):
                 logger.error(f"Failed to stop the SLDO test due to error {err}")
         else:
             try:
-                self.instruments.hv_off(step_size=self.step_size, execute_each_step=lambda : self.execute_each_step(False, self.step_size, (getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()) ))
+                self.instruments.hv_off()
                 self.instruments.lv_off()
                 self.test.terminate()
             except Exception as err:
