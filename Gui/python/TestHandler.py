@@ -1063,7 +1063,7 @@ created by felis is empty.")
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
-                    self.upload_to_Panthera()
+                    self.runwindow.upload_to_Panthera_starter()
                 if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
         
@@ -1071,7 +1071,7 @@ created by felis is empty.")
             EnableReRun = True
             self.powerSignal.emit()
             if self.autoSave:
-                self.upload_to_Panthera()
+                self.runwindow.upload_to_Panthera_starter()
 
         self.stepFinished.emit(EnableReRun)
 
@@ -1248,12 +1248,12 @@ created by felis is empty.")
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
-                    self.upload_to_Panthera()
+                    self.runwindow.upload_to_Panthera_starter()
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
             if self.autoSave:
-                self.upload_to_Panthera()
+                self.runwindow.upload_to_Panthera_starter()
 
         self.stepFinished.emit(EnableReRun)
 
@@ -1304,12 +1304,12 @@ created by felis is empty.")
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
-                    self.upload_to_Panthera()
+                    self.runwindow.upload_to_Panthera_starter()
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
             if self.autoSave:
-                self.upload_to_Panthera()
+                self.runwindow.upload_to_Panthera_starter()
 
         self.stepFinished.emit(EnableReRun)
 
@@ -1432,7 +1432,7 @@ created by felis is empty.")
                 )
                 if not status:
                     raise ConnectionError(message)
-                
+
                 counter+=1
                 self.updateProgressBar.emit(self.runwindow.UploadProgressBar,
                                         100*counter/len(self.modules),
@@ -1445,7 +1445,7 @@ created by felis is empty.")
             if not self.master.panthera_connected:
                 error_message = "Cannot upload test results, you are not signed in to Panthera."
             else:
-                error_message = repr(e)
+                error_message = "Failed to upload to felis."
                 self.runwindow.UploadButton.setDisabled(False)
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
