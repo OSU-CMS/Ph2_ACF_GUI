@@ -22,22 +22,14 @@ import os, numpy as np
 import threading
 import Gui.siteSettings as site_settings
 
-from Gui.GUIutils.DBConnection import checkDBConnection
-from Gui.GUIutils.guiUtils import isActive, isCompositeTest
+from Gui.GUIutils.guiUtils import isCompositeTest
 
-# from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtCustomizeWindow import QtCustomizeWindow
-#from Gui.QtGUIutils.QtTableWidget import *
-#from Gui.QtGUIutils.QtMatplotlibUtils import *
-from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
+from Gui.QtGUIutils.Loading import LoadingThread, LoadingWheel
 from Gui.python.ResultTreeWidget import ResultTreeWidget
-#from Gui.python.TestValidator import *
-#from Gui.python.ANSIColoringParser import *
 from Gui.python.TestHandler import TestHandler
-from Gui.GUIutils.settings import ModuleLaneMap
 from Gui.python.logging_config import logger
-from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
-
+from InnerTrackerTests.TestSequences import CompositeTests
 
 class QtRunWindow(QWidget):
     resized = pyqtSignal()
@@ -208,7 +200,6 @@ class QtRunWindow(QWidget):
         self.ResetButton.clicked.connect(self.resetConfigTest)
         self.RunButton = QPushButton("&Run")
         self.RunButton.setDefault(True)
-        self.RunButton.clicked.connect(lambda: self.ProgressBarLabel.setText(""))
         self.RunButton.clicked.connect(self.resetConfigTest)
         self.RunButton.clicked.connect(self.initialTest)
         self.RunButton.clicked.connect(lambda: self.RunButton.setDisabled(True))
@@ -375,16 +366,26 @@ class QtRunWindow(QWidget):
         self.MainBodyBox.deleteLater()
         self.mainLayout.removeWidget(self.MainBodyBox)
 
+    def upload_to_Panthera_starter(self):
+        self.UploadProgressBar = QProgressBar()
+        self.UploadWheel = LoadingWheel()
+        self.UploadProgressBar.setFormat(f'0/{len(self.testHandler.modules)} uploaded')
+        self.StartLayout.insertWidget(1,self.UploadProgressBar)
+        self.StartLayout.insertWidget(1,self.UploadWheel)
+        self.AppOption.repaint()
+
+        self.Panthera_thread = LoadingThread(self.testHandler.upload_to_Panthera,50)
+        self.Panthera_thread.finished.connect(lambda : self.UploadWheel.close())
+        self.Panthera_thread.timer.timeout.connect(self.UploadWheel.update_spinner)
+        self.Panthera_thread.timer.start()
+        self.Panthera_thread.start()  # Start the thread
+
     def createApp(self):
         self.AppOption = QGroupBox()
         self.StartLayout = QHBoxLayout()
 
-        self.ProgressBarLabel = QLabel("")
-        self.testHandler.uploadBarSignal.connect(lambda counter, nummodules:self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules)))
-
-
         self.UploadButton = QPushButton("&Upload Results")
-        self.UploadButton.clicked.connect(self.testHandler.upload_to_Panthera)
+        self.UploadButton.clicked.connect(self.upload_to_Panthera_starter)
         self.UploadButton.setDisabled(True)
 
         self.BackButton = QPushButton("&Back")
@@ -397,8 +398,6 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
-
-        self.StartLayout.addWidget(self.ProgressBarLabel)
 
         #if self.master.expertMode == True:
         #    self.StartLayout.addWidget(self.UploadButton)
@@ -660,7 +659,7 @@ class QtRunWindow(QWidget):
         except Exception as err:
             logger.error(err)
 
-    def updateRampBar(self, bar:QProgressBar, value:int, text:str):
+    def updateProgressBar(self, bar:QProgressBar, value:int, text:str):
         bar.setFormat(text)
         bar.setValue(value)
 
@@ -698,7 +697,7 @@ class QtRunWindow(QWidget):
             reply = QMessageBox.question(
                 self,
                 "Window Close",
-                "Are you sure you want to quit the test? runwin",
+                "Are you sure you want to quit the test?",
                 QMessageBox.No | QMessageBox.Yes,
                 QMessageBox.No,
             )
@@ -714,7 +713,6 @@ class QtRunWindow(QWidget):
                     QMessageBox.information(self, "Info", "You must turn off "
                                             "instruments manually",
                                             QMessageBox.Ok)
-                #if hasattr(self.testHandler, "fail_window"): self.testHandler.fail_window.close()
                 event.accept()
             else:
                 self.backSignal = False

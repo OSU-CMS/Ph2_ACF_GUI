@@ -80,8 +80,8 @@ class TestHandler(QObject):
     updateValidation = pyqtSignal(object)
     updateFinishedTests = pyqtSignal(object)
     powerSignal = pyqtSignal()
-    updateRampBar = pyqtSignal(QProgressBar, int, str)
-    uploadBarSignal = pyqtSignal(int, int)
+    updateProgressBar = pyqtSignal(QProgressBar, int, str)
+    uploadErrorSignal = pyqtSignal(str)
 
     def __init__(self, runwindow, master, info, firmware):
         super(TestHandler, self).__init__()
@@ -191,7 +191,15 @@ class TestHandler(QObject):
         self.updateSLDOResult.connect(self.runwindow.updateSLDOResult)
         self.updateValidation.connect(self.runwindow.updateValidation)
         self.updateFinishedTests.connect(self.runwindow.updateFinishedTests)
-        self.updateRampBar.connect(self.runwindow.updateRampBar)
+        self.updateProgressBar.connect(self.runwindow.updateProgressBar)
+        self.uploadErrorSignal.connect(lambda message :
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+        )
 
         self.finished_tests = []
 
@@ -389,8 +397,7 @@ class TestHandler(QObject):
             text = f'{np.abs(voltages[i])} V'          
             value = 100*np.abs(voltages[i]/max[i]) if max[i]!=0 else 0
 
-            self.updateRampBar.emit(self.runwindow.RampProgressBars[i], value, text)
-            QApplication.processEvents()
+            self.updateProgressBar.emit(self.runwindow.RampProgressBars[i], value, text)
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
@@ -439,7 +446,8 @@ class TestHandler(QObject):
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
             self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType=self.ModuleType[5:],
                                                     end_current=site_settings.ModuleCurrentMap[self.master.module_in_use],
-                                                    voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
+                                                    voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                                                    execute_each_step=self.ramp_progress_bar)
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
@@ -1406,17 +1414,15 @@ created by felis is empty.")
         self.force_continue_window.exec_()  # This will block until the window is closed
 
     def upload_to_Panthera(self):
-        self.runwindow.UploadButton.setDisabled(True)
-        counter = 0
-        nummodules = len(self.modules)
+        self.updateProgressBar.emit(self.runwindow.UploadProgressBar,
+                                        0,
+                                        f'{0}/{len(self.modules)} uploaded')
         try:
 
             self.runwindow.UploadButton.setDisabled(True)
             counter = 0
-            nummodules = len(self.modules)
 
             for module in self.modules:
-                self.uploadBarSignal.emit(counter, nummodules)
                 status, message = self.felis.upload_results(
                     module.getModuleName(),
                     self.master.username,
@@ -1426,27 +1432,27 @@ created by felis is empty.")
                 )
                 if not status:
                     raise ConnectionError(message)
+                
                 counter+=1
-
-            self.runwindow.ProgressBarLabel.setText("Upload successful!")
+                self.updateProgressBar.emit(self.runwindow.UploadProgressBar,
+                                        100*counter/len(self.modules),
+                                        f'{counter}/{len(self.modules)} uploaded')
 
         except ConnectionError as e:
-            error_message = repr(e) if len(repr(e))<100 else repr(e)[:100]+"..."
+            error_message = repr(e)
        
         except Exception as e:
             if not self.master.panthera_connected:
                 error_message = "Cannot upload test results, you are not signed in to Panthera."
-                logger.error(error_message)
             else:
-                error_message = "There was an error uploading the test results."
-                logger.error(f"{error_message} {repr(e)}")
+                error_message = repr(e)
                 self.runwindow.UploadButton.setDisabled(False)
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
 
-            self.runwindow.ProgressBarLabel.setText(error_message)
+        logger.error(error_message)
+        self.uploadErrorSignal.emit(error_message)
             
-
     def bumpbond_analysis(self):
         
         runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber

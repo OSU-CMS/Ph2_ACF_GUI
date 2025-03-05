@@ -497,7 +497,7 @@ class QtStartWindow(QWidget):
             reply = QMessageBox.question(
                 self,
                 "Window Close",
-                "Are you sure you want to quit the test? startwin",
+                "Are you sure you want to quit the test?",
                 QMessageBox.Yes | QMessageBox.No,
                 QMessageBox.No,
             )

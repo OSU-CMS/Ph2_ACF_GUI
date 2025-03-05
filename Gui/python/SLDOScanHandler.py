@@ -29,6 +29,7 @@ class SLDOCurveWorker(QThread):
         starting_current=1,
         max_voltage=1.8,
         pin_list=[],
+        execute_each_step=lambda:None
     ):
         super().__init__()
         self.instruments = instrument_cluster
@@ -79,10 +80,11 @@ class SLDOCurveWorker(QThread):
                 13: 'VDDD_ROC0',
                 14: 'VDDD_ROC1',
                 # 15: 'TP7A', #VOFS OUT
-                # 16: 'TP7B', #VOFS OUT
+                # 16: 'TP7B', #VOFShv_off OUT
             },
         }
         self.LV_index = -1
+        self.execute_each_step = execute_each_step
 
     def run(self) -> None:
         if "adc_board" in self.instruments._instrument_dict.keys():
@@ -108,7 +110,8 @@ class SLDOCurveWorker(QThread):
         # Initialize a list to store the results
         self.labels = []
         # Turn off instruments
-        self.instruments.hv_off()
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+        self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
         self.instruments.lv_off()
         self.adc_board.__enter__()
         logger.info("Turned off the LV and HV")
@@ -175,7 +178,8 @@ class SLDOCurveWorker(QThread):
         self.result_list = []
         self.labels = []
         # Turn off instruments
-        self.instruments.hv_off()
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+        self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
         self.instruments.lv_off()
         self.multimeter.set("SYSTEM_MODE","REM")
         logger.info('turned off the lv and hv')
@@ -307,12 +311,13 @@ class SLDOCurveHandler(QObject):
     abortSignal = pyqtSignal()
     #measureSignal = pyqtSignal(str, object)
 
-    def __init__(self, instrument_cluster, moduleType, end_current, voltage_limit):
+    def __init__(self, instrument_cluster, moduleType, end_current, voltage_limit, execute_each_step):
         super(SLDOCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.end_current = end_current
         self.voltage_limit = voltage_limit
-        self.test = SLDOCurveWorker(self.instruments, moduleType=moduleType, target_current=self.end_current, max_voltage=self.voltage_limit)
+        self.execute_each_step = execute_each_step
+        self.test = SLDOCurveWorker(self.instruments, moduleType=moduleType, target_current=self.end_current, max_voltage=self.voltage_limit, execute_each_step=self.execute_each_step)
         self.test.measure.connect(self.makePlots)
         self.test.progressSignal.connect(self.transmitProgress)
         self.test.finishedSignal.connect(self.finish)
@@ -331,7 +336,8 @@ class SLDOCurveHandler(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self):
-        self.instruments.hv_off()
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+        self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
         self.instruments.lv_off()
         self.finishedSignal.emit()
 
@@ -341,7 +347,8 @@ class SLDOCurveHandler(QObject):
         if reason:
             print(f"Aborting SLDO Scan. Reason: {reason}")
             try:
-                self.instruments.hv_off()
+                starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+                self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
                 self.instruments.lv_off()
                 self.test.terminate()
                 self.abortSignal.emit()
@@ -349,7 +356,8 @@ class SLDOCurveHandler(QObject):
                 logger.error(f"Failed to stop the SLDO test due to error {err}")
         else:
             try:
-                self.instruments.hv_off()
+                starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+                self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
                 self.instruments.lv_off()
                 self.test.terminate()
             except Exception as err:
