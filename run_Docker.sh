@@ -37,7 +37,7 @@ echo $mydevices | xargs
 if [[ $mode == "dev" ]] 
 then
     echo "running as $mode"
-    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:/home/cmsTkUser/Ph2_ACF_GUI\
+    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/Ph2_ACF/settings/RD53Files:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/settings/RD53Files\
