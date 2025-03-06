@@ -1171,9 +1171,6 @@ class QtApplication(QWidget):
                 None, "Error", "Please enter a valid module ID", QMessageBox.Ok
             )
 
-    def openDBConsole(self): #Method may be deprecated?
-        self.StartDBConsole = QtDBConsoleWindow(self) #QtDBConsoleWindow is not imported
-
     def releaseHVPowerPanel(self):
         if self.instruments:
             self.instruments.hv_off()
