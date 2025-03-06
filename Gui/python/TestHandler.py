@@ -1,18 +1,16 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, QObject, QProcess
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtWidgets import QMessageBox, QTableWidget, QTableWidgetItem
+from PyQt5.QtGui import QFont
 
-import sys
 import os
 import glob
-import re
 import subprocess
 import threading
 import time
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-import hashlib
 
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
@@ -22,16 +20,12 @@ from Gui.GUIutils.settings import (
 )
 from Gui.GUIutils.guiUtils import (
     ConfigureTest,
-    isActive,
     SetupXMLConfigfromFile,
     SetupRD53Config,
     SetupRD53ConfigfromFile,
-    UpdateXMLValue,
-    CheckXMLValue,
     GenerateXMLConfig,
     isCompositeTest,
     isSingleTest,
-    formatter,
 )
 from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
@@ -48,7 +42,6 @@ from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
 from Gui.QtGUIutils.QtLoginDialog import *
 #from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import ResultGrader
-from Gui.python.QResultDialog import QResultDialog
 from Gui.python.ANSIColoringParser import parseANSI
 from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
@@ -78,6 +71,8 @@ class TestHandler(QObject):
     updateValidation = pyqtSignal(object)
     updateFinishedTests = pyqtSignal(object)
     powerSignal = pyqtSignal()
+    updateProgressBar = pyqtSignal(QProgressBar, int, str)
+    uploadErrorSignal = pyqtSignal(str)
 
     def __init__(self, runwindow, master, info, firmware):
         super(TestHandler, self).__init__()
@@ -99,7 +94,8 @@ class TestHandler(QObject):
         self.ModuleMap = dict()
         
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
-        
+        self.statuses = {module.getModuleName():"1" for module in self.modules}
+
         self.numChips = len([chipID for module in self.modules for chipID in module.getEnabledChips().keys()])
                 
         self.ModuleType = self.runwindow.ModuleType
@@ -187,6 +183,17 @@ class TestHandler(QObject):
         self.updateValidation.connect(self.runwindow.updateValidation)
         self.updateFinishedTests.connect(self.runwindow.updateFinishedTests)
 
+        self.updateProgressBar.connect(self.runwindow.updateProgressBar)
+        self.uploadErrorSignal.connect(lambda message :
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+        )
+
+        self.finished_tests = []
 
         self.initializeRD53Dict()
 
@@ -373,14 +380,16 @@ class TestHandler(QObject):
         #    updatedGlobalValue[1] = stepWiseGlobalValue[self.testIndexTracker]
         self.runSingleTest(testName)
 
-    def ramp_down_progress_bar(self):
-        stepLength = self.instruments.default_step_size
-        range = np.abs(int(site_settings.IVcurve_range/stepLength))
-        progressNum = int(30*self.ramp_down_counter/range)
-        loading_bar = f"Ramping Down: [{'#'*progressNum}{'='*(30-progressNum)}]"
-        self.runwindow.ConsoleView.setPlainText(f'{self.console_body}\n{loading_bar}')
-        QApplication.processEvents() #may not be ideal
-        self.ramp_down_counter += 1
+    def ramp_progress_bar(self, max): #might be a more elegant way to do this
+
+        voltages = [getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()]
+
+        for i in range(len(self.runwindow.RampProgressBars)):
+
+            text = f'{np.abs(voltages[i])} V'          
+            value = 100*np.abs(voltages[i]/max[i]) if max[i]!=0 else 0
+
+            self.updateProgressBar.emit(self.runwindow.RampProgressBars[i], value, text)
 
     def runSingleTest(self, testName):
         print("Executing Single Step test...")
@@ -411,9 +420,7 @@ class TestHandler(QObject):
             self.configTest()
             self.IVCurveData = []
             self.IVProgressValue = 0
-            self.console_body = self.runwindow.ConsoleView.toPlainText()
-            self.ramp_down_counter = 1
-            self.IVCurveHandler = IVCurveHandler(self.instruments, self.ramp_down_progress_bar)
+            self.IVCurveHandler = IVCurveHandler(self.instruments, self.ramp_progress_bar)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.startSignal.connect(self.setupQProcess)
@@ -428,7 +435,10 @@ class TestHandler(QObject):
             self.SLDOfilelist = []
             self.SLDOProgressValue = 0
             #self.SLDOScanResult = ScanCanvas(self, xlabel="Voltage (V)", ylabel="I (A)")
-            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType=self.ModuleType[5:], end_current=site_settings.ModuleCurrentMap[self.master.module_in_use], voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use])
+            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType=self.ModuleType[5:],
+                                                    end_current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                                                    voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                                                    execute_each_step=self.ramp_progress_bar)
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
@@ -448,15 +458,17 @@ class TestHandler(QObject):
                     break
             if testName == "SCurveScan_2100_FWD":
                 if hv_on:
-                    self.instruments.hv_off()
-                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
+                    starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+                    self.instruments.hv_off(execute_each_step=lambda : self.ramp_progress_bar(starting_voltages))
+                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10,
+                                           execute_each_step=lambda:self.ramp_progress_bar([site_settings.forward_bias_voltage]*len(self.instruments._module_dict.values())))
                 else:
-                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
-                testName = "SCurveScan_2100"
-                hv_on = True
+                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10,
+                                           execute_each_step=lambda:self.ramp_progress_bar([site_settings.forward_bias_voltage]*len(self.instruments._module_dict.values())))
             if not hv_on:
                 self.instruments.hv_on(
                     voltage=default_hv_voltage, delay=0.3, step_size=10,
+                    execute_each_step=lambda:self.ramp_progress_bar([default_hv_voltage]*len(self.instruments._module_dict.values()))
                 )
 
         self.tempHistory = [0.0] * self.numChips
@@ -703,7 +715,7 @@ class TestHandler(QObject):
             
             self.updateValidation.emit(results)
             self.updateFinishedTests.emit(self.finished_tests)
-            return all(passed)
+            #return all(passed) <- obsolete at time of commit
         except Exception as err:
             logger.error(err)
     
@@ -1018,10 +1030,13 @@ class TestHandler(QObject):
 
         # validate the results
         
+        # validate the results
+
         status = self.validateTest()
-        
+
         if self.ProgressValue > 90:  #FIXME: This is a hack to get around the progress bar not updating.  Need to make this == 100 eventually
             self.testIndexTracker += 1
+        self.validateTest()
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
@@ -1029,7 +1044,7 @@ class TestHandler(QObject):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
-                    self.upload_to_Panthera()
+                    self.runwindow.upload_to_Panthera_starter()
                 if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
         
@@ -1037,7 +1052,7 @@ class TestHandler(QObject):
             EnableReRun = True
             self.powerSignal.emit()
             if self.autoSave:
-                self.upload_to_Panthera()
+                self.runwindow.upload_to_Panthera_starter()
 
         self.stepFinished.emit(EnableReRun)
 
@@ -1051,14 +1066,6 @@ class TestHandler(QObject):
             self.updateResult.emit((step, self.figurelist))
 
         # self.update()
-            
-
-        if (
-            status == False
-            and isCompositeTest(self.info)
-            and self.testIndexTracker < len(CompositeTests[self.info])
-        ):
-            self.forceContinue()
 
         if isCompositeTest(self.info):
             self.runTest()
@@ -1067,6 +1074,7 @@ class TestHandler(QObject):
         if measurementType=='IVCurve':
             self.IVProgressValue += stepSize/2.0
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
+            self.ramp_progress_bar([site_settings.IVcurve_range if site_settings.IVcurve_range<0 else 80]*len(self.instruments._module_dict.values()))        
         if 'SLDO' in measurementType:
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
@@ -1196,7 +1204,7 @@ class TestHandler(QObject):
             
             self.figurelist[moduleName] = [filename]
 
-        status = self.validateTest()
+        self.validateTest()
 
         step="IVCurve"
 
@@ -1234,13 +1242,6 @@ class TestHandler(QObject):
         else: 
             self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
 
-        if (
-            status == False
-            and isCompositeTest(self.info)
-            and self.testIndexTracker < len(CompositeTests[self.info])
-        ):
-            self.forceContinue()
-
         if isCompositeTest(self.info):
             self.runTest()
 
@@ -1258,7 +1259,7 @@ class TestHandler(QObject):
         
             SLDO_CSV_to_ROOT(moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir)
 
-        status = self.validateTest()
+        self.validateTest()
         self.testIndexTracker += 1
 
         EnableReRun = False
@@ -1275,18 +1276,19 @@ class TestHandler(QObject):
                 delay=0.3,
                 step_size=5,
                 measure=False,
+                execute_each_step=lambda:self.ramp_progress_bar([default_hv_voltage]*len(self.instruments._module_dict.values()))
             )
 
             if self.testIndexTracker == len(CompositeTests[self.info]):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
-                    self.upload_to_Panthera()
+                    self.runwindow.upload_to_Panthera_starter()
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
             if self.autoSave:
-                self.upload_to_Panthera()
+                self.runwindow.upload_to_Panthera_starter()
 
         self.stepFinished.emit(EnableReRun)
 
@@ -1296,61 +1298,105 @@ class TestHandler(QObject):
         else: 
             self.updateSLDOResult.emit(("SLDOScan", self.figurelist))  ##Add else statement to add signal in simple mode
 
-        if (
-            status == False
-            and isCompositeTest(self.info)
-            and self.testIndexTracker < len(CompositeTests[self.info])
-        ):
-            self.forceContinue()
-
         if isCompositeTest(self.info):
             self.runTest()
 
     def interactiveCheck(self, plot):
         pass
 
-    def forceContinue(self):
-        msg_box = QMessageBox()
-        msg_box.setWindowTitle("Failed Component Detected")
-        msg_box.setText("Failed component detected. What would you like to do?")
+    def forceContinue(self): #Runs when module disconnection is suspected.
+        # Create the main widget
+        self.force_continue_window = QDialog()
+        self.force_continue_window.setWindowTitle("Failed Component Detected")
+        # Create layout
+        self.force_continue_window.layout = QVBoxLayout(self.force_continue_window)
 
-        # Add custom buttons
-        exit_button = msg_box.addButton("Exit", QMessageBox.RejectRole)
-        retry_button = msg_box.addButton("Retry", QMessageBox.ActionRole)
-        continue_button = msg_box.addButton("Continue", QMessageBox.AcceptRole)
-        msg_box.setDefaultButton(exit_button)
+        exit_button = QPushButton("Exit")
+        retry_button = QPushButton("Retry")
+        continue_button = QPushButton("Continue")
 
-        # Show the message box and wait for the user's choice
-        msg_box.exec()
+        self.force_continue_window.layout.addWidget(exit_button)
+        self.force_continue_window.layout.addWidget(retry_button)
+        self.force_continue_window.layout.addWidget(continue_button)
 
-        # Check which button was clicked
-        if msg_box.clickedButton() == exit_button:
-            self.run_process.kill()
-            self.halt = True
-            self.haltSignal.emit(self.halt)
-            self.starttime = None
-        elif msg_box.clickedButton() == retry_button:
-            self.outputString.emit(f'Retrying {self.currentTest}...')
-            self.testIndexTracker = CompositeTests[self.info].index(self.currentTest)
-            self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText("")
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(0)
-            QApplication.processEvents() #not ideal. May need to fix later.
-        elif msg_box.clickedButton() == continue_button:
-            return
+        # Create table for modules with checkboxes
+        self.force_continue_window.table = QTableWidget(len(self.modules), 2)
+        self.force_continue_window.table.setHorizontalHeaderLabels(["Module", "Enabled"])
+
+        for row, module in enumerate(self.modules):
+            # Set the module name in the first column
+            module_name = module.getModuleName()
+            self.force_continue_window.table.setItem(row, 0, QTableWidgetItem(module_name))
+
+            # Create a QTableWidgetItem for the checkbox in the second column
+            checkbox_item = QTableWidgetItem()
+            checkbox_item.setCheckState(Qt.Checked) if self.statuses[module_name]=="1" else checkbox_item.setCheckState(Qt.Unchecked)
+            self.force_continue_window.table.setItem(row, 1, checkbox_item)
+
+        self.force_continue_window.layout.addWidget(self.force_continue_window.table)
+        self.force_continue_window.setLayout(self.force_continue_window.layout)
+
+        self.force_continue_window.abort = True
+
+        def check_enabledModules():
+            temp_statuses = {}
+            for row in range(self.force_continue_window.table.rowCount()):
+                if self.force_continue_window.table.item(row,1).checkState()==False:
+                    temp_statuses[self.force_continue_window.table.item(row,0).text()]="0"
+                else:
+                    temp_statuses[self.force_continue_window.table.item(row,0).text()]="1"
+
+            if "1" not in temp_statuses.values():
+                if hasattr(self.force_continue_window, "label")==False:
+                    self.force_continue_window.label = QLabel("At least one module must be enabled.")
+                    self.force_continue_window.label.setStyleSheet('color: red;')
+                    self.force_continue_window.layout.insertWidget(3,self.force_continue_window.label)
+                return False
+            else:
+                self.statuses = temp_statuses
+                self.force_continue_window.abort = False
+                return True
+
+        # Define button handlers
+        def handle_close(event):
+            if self.force_continue_window.abort==True:
+                self.run_process.kill()
+                self.halt = True
+                self.haltSignal.emit(self.halt)
+                self.starttime = None
+
+            for row in range(self.force_continue_window.table.rowCount()):
+                if self.force_continue_window.table.item(row,1).checkState()==False:
+                    self.statuses[self.force_continue_window.table.item(row,0).text()]="0"
+
+            event.accept()
+
+        def handle_retry():
+            if check_enabledModules():
+                self.outputString.emit(f'Retrying {self.currentTest}...')
+                self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText("") #may need to .update()
+                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(0) #may need to .update(). Automatically adds "0%" text on Progress bar.
+                self.testIndexTracker -= 1
+                self.force_continue_window.close()
+
+        def handle_continue():
+            if check_enabledModules(): self.force_continue_window.close()
+
+        # Connect buttons to handlers
+        exit_button.clicked.connect(lambda : self.force_continue_window.close())
+        retry_button.clicked.connect(handle_retry)
+        continue_button.clicked.connect(handle_continue)
+
+        self.force_continue_window.closeEvent = handle_close
+        self.force_continue_window.exec_()  # This will block until the window is closed
 
     def upload_to_Panthera(self):
         self.runwindow.UploadButton.setDisabled(True)
-        counter = 0
-        nummodules = len(self.modules)
+        self.updateProgressBar.emit(self.runwindow.UploadProgressBar,
+                                        0,
+                                        f'{0}/{len(self.modules)} uploaded')
         try:
-
-            self.runwindow.UploadButton.setDisabled(True)
-            counter = 0
-            nummodules = len(self.modules)
-
             for module in self.modules:
-                self.runwindow.ProgressBarLabel.setText("Uploading modules: ["+"##"*int(counter)+"=="*int(nummodules-counter)+"] "+str(counter)+"/"+str(nummodules))
-                QApplication.processEvents() #not ideal. May need to fix later.
                 status, message = self.felis.upload_results(
                     module.getModuleName(),
                     self.master.username,
@@ -1360,25 +1406,27 @@ class TestHandler(QObject):
                 )
                 if not status:
                     raise ConnectionError(message)
-                counter+=1
 
-            self.runwindow.ProgressBarLabel.setText("Upload successful!")
+                counter+=1
+                self.updateProgressBar.emit(self.runwindow.UploadProgressBar,
+                                        100*counter/len(self.modules),
+                                        f'{counter}/{len(self.modules)} uploaded')
 
         except ConnectionError as e:
-            error_message = repr(e) if len(repr(e))<100 else repr(e)[:100]+"..."
+            error_message = repr(e)
        
         except Exception as e:
             if not self.master.panthera_connected:
                 error_message = "Cannot upload test results, you are not signed in to Panthera."
                 logger.error(error_message)
             else:
-                error_message = "There was an error uploading the test results."
-                logger.error(f"{error_message} {repr(e)}")
+                error_message = "Failed to upload to Panthera."
                 self.runwindow.UploadButton.setDisabled(False)
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
 
-            self.runwindow.ProgressBarLabel.setText(error_message)
+        logger.error(error_message)
+        self.uploadErrorSignal.emit(error_message)
             
 
     def bumpbond_analysis(self):
