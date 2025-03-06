@@ -51,7 +51,7 @@ then
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
-		-w $PWD  -e DISPLAY=$DISPLAY\
+		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
 		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host majoyce2/ph2_acf_gui_dev:latest 
 
 else

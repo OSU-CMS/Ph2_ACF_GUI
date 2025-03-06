@@ -24,11 +24,9 @@ import os
 import pyvisa
 import requests
 from felis.felis_methods import get_accountInfo
-import requests.exceptions as rqx
 
 from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
 
-from Gui.GUIutils.DBConnection import QtDBConsoleWindow
 import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.QtGUIutils.LaudaApp import LaudaWidget
@@ -1173,8 +1171,8 @@ class QtApplication(QWidget):
                 None, "Error", "Please enter a valid module ID", QMessageBox.Ok
             )
 
-    def openDBConsole(self):
-        self.StartDBConsole = QtDBConsoleWindow(self)
+    def openDBConsole(self): #Method may be deprecated?
+        self.StartDBConsole = QtDBConsoleWindow(self) #QtDBConsoleWindow is not imported
 
     def releaseHVPowerPanel(self):
         if self.instruments:
