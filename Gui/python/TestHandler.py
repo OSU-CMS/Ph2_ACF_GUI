@@ -72,7 +72,6 @@ class TestHandler(QObject):
     updateFinishedTests = pyqtSignal(object)
     powerSignal = pyqtSignal()
     updateProgressBar = pyqtSignal(QProgressBar, int, str)
-    uploadErrorSignal = pyqtSignal(str)
 
     def __init__(self, runwindow, master, info, firmware):
         super(TestHandler, self).__init__()
@@ -184,14 +183,6 @@ class TestHandler(QObject):
         self.updateFinishedTests.connect(self.runwindow.updateFinishedTests)
 
         self.updateProgressBar.connect(self.runwindow.updateProgressBar)
-        self.uploadErrorSignal.connect(lambda message :
-            QMessageBox.information(
-                None,
-                "Error",
-                message,
-                QMessageBox.Ok,
-            )
-        )
 
         self.finished_tests = []
 
@@ -1438,7 +1429,7 @@ created by felis is empty.")
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
 
         logger.error(error_message)
-        self.uploadErrorSignal.emit(error_message)
+        self.master.errorMessageBoxSignal.emit(error_message)
             
 
     def bumpbond_analysis(self):
