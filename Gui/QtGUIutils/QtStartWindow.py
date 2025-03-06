@@ -260,7 +260,6 @@ class SummaryBox(QWidget):
 
 class QtStartWindow(QWidget):
     openRunWindowSignal = pyqtSignal()
-    errorMessageBoxSignal = pyqtSignal(str)
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -276,15 +275,6 @@ class QtStartWindow(QWidget):
         self.occupied()
         self.loading_counter = 0
         self.openRunWindowSignal.connect(self.openRunWindowGUI)
-
-        self.errorMessageBoxSignal.connect( lambda message :
-            QMessageBox.information(
-                None,
-                "Error",
-                message,
-                QMessageBox.Ok,
-            )
-        )
 
     def openRunWindowGUI(self):
         self.master.RunNewTest = QtRunWindow(
@@ -454,16 +444,16 @@ class QtStartWindow(QWidget):
 
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
-                self.errorMessageBoxSignal.emit("No valid serial number!",) #Needs to be in a signal or QThread throws an error
+                self.master.errorMessageBoxSignal.emit("No valid serial number!",) #Needs to be in a signal or QThread throws an error
                 return
             if module.getFMCPort() == "":
-                self.errorMessageBoxSignal.emit("No valid ID!")
+                self.master.errorMessageBoxSignal.emit("No valid ID!")
                 return
 
         self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
         
         if not self.firmwareDescription: #firmware description returns none if no modules are entered
-            self.errorMessageBoxSignal.emit(message)
+            self.master.errorMessageBoxSignal.emit(message)
             return
 
         for fw in self.firmwareDescription:
