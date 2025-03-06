@@ -9,17 +9,8 @@
 
 import sys
 import os
-import re
-import operator
-import math
-import hashlib
-from queue import Queue, Empty
-from threading import Thread
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
-from itertools import islice
-from textwrap import dedent
-from functools import partial
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -55,7 +46,6 @@ from InnerTrackerTests.MonitoringSettings import (
 )
 from InnerTrackerTests.RegisterSettings import RegisterSettings
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
-from Gui.siteSettings import FC7List
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 ##########################################################################
@@ -380,7 +370,7 @@ def CheckXMLValue(pFilename, pAttribute):
 ##########################################################################
 
 
-def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
+def GenerateXMLConfig(firmwareList, testName, outputDir, statuses, **arg):
     outputFile = outputDir + "/CMSIT_" + testName + ".xml"
     
     boardtype = "RD53A"
@@ -400,7 +390,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
             # Set up each module within the optical group
             for module in og.getAllModules().values():
                 HyBridModule0 = HyBridModule()
-                HyBridModule0.SetHyBridModule(module.getFMCPort(), "1")
+                HyBridModule0.SetHyBridModule(module.getFMCPort(), statuses[module.getModuleName()])
                 HyBridModule0.SetHyBridName(module.getModuleName())
         
                 moduleType = module.getModuleType()

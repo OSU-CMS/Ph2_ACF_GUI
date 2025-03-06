@@ -276,7 +276,7 @@ class TestHandler(QObject):
                     except:
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
-                config_file = GenerateXMLConfig(self.firmware, self.currentTest, tmpDir)
+                config_file = GenerateXMLConfig(self.firmware, self.currentTest, tmpDir, self.statuses)
 
                 # config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
                 if config_file:
@@ -303,7 +303,7 @@ class TestHandler(QObject):
                         logger.info("Creating " + tmpDir)
                     except:
                         logger.warning("Failed to create " + tmpDir)
-                config_file = GenerateXMLConfig(self.firmware, self.currentTest, tmpDir)
+                config_file = GenerateXMLConfig(self.firmware, self.currentTest, tmpDir, self.statuses)
                 # config_file = os.environ.get('GUI_dir')+ConfigFiles.get(testName, "None")
                 if config_file:
                     SetupXMLConfigfromFile(
@@ -746,7 +746,7 @@ class TestHandler(QObject):
     #manually edits the .root file in the PH2ACF directory, so there may be a better way to do this
     def copyMostRecentRootFile(self,RunNumber,base_dir,output_dir,test):
         
-        files = root_files[test] if test in root_files.keys() else (test)
+        files = root_files[test] if test in root_files.keys() else [test]
         for name in files:
             # Construct the search pattern for files
             search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
@@ -754,8 +754,18 @@ class TestHandler(QObject):
             # Find all matching files
             matching_files = glob.glob(search_pattern)
 
+            if len(matching_files)==0:
+                raise Exception(f"Failed to copy root file to output directory. \
+Module disconnection detected because felis didn't \
+create {search_pattern}.")
+
             # Sort files by modification time (newest first)
             latest_file = max(matching_files, key=os.path.getmtime)
+
+            if os.path.getsize(latest_file)==0:
+                raise Exception(f"Failed to copy root file to output directory. \
+Module disconnection detected because {latest_file} \
+created by felis is empty.")
 
             # Copy the most recent file to the output directory
             os.system(f"cp {latest_file} {output_dir}/")
@@ -769,7 +779,7 @@ class TestHandler(QObject):
         try:
             if self.RunNumber == "-1":
 
-                self.copyMostRecentRootFile(000000,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
+                self.copyMostRecentRootFile('000000',os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
 
                 # os.system("cp {0}/test/Results/Run000000*.txt {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
                 # os.system("cp {0}/test/Results/Run000000*.xml {1}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.output_dir))
@@ -778,8 +788,10 @@ class TestHandler(QObject):
                 self.copyMostRecentRootFile(self.RunNumber,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
                 # os.system("cp {0}/test/Results/Run{1}*.txt {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
                 # os.system("cp {0}/test/Results/Run{1}*.xml {2}/".format(os.environ.get("PH2ACF_BASE_DIR"),self.RunNumber,self.output_dir))
-        except:
-            print("Failed to copy file to output directory")
+
+        except Exception as e:
+            logger.error(e)
+            self.forceContinue()
 
     #######################################################################
     ##  For real-time terminal display
