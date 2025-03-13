@@ -979,7 +979,7 @@ class TestHandler(QObject):
             return
 
         #Might need this if statment if we do the bumpbond analysis in the GUI.  If done in felis we can remove this.
-        #if "PixelAlive_uncoupled" in self.currentTest:
+        #if "PixelAlive_uncoupled_xtalk" in self.currentTest:
         #    self.bumpbond_analysis()
 
         # To be removed
