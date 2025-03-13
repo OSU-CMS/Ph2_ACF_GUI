@@ -439,7 +439,7 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, **arg):
         
         if revPolarity == True:
             RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = '0b1101'
-            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l8'] = '0x44'
+            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l8'] = '0x22'
         
         BeBoardModule0.SetURI(BeBoard.getIPAddress())
         BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")
