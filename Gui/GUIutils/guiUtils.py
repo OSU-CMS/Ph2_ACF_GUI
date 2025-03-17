@@ -77,7 +77,6 @@ def iter_except(function, exception):
 ##########################################################################
 ##########################################################################
 
-
 def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
     if not Output_Dir:
         test_dir = os.environ.get("DATA_dir") + "/Test_" + str(Test)
@@ -142,21 +141,21 @@ def isActive(dbconnection):
 ##########################################################################
 
 
-def SetupXMLConfig(Input_Dir, Output_Dir):
+def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
     try:
-        os.system("cp {0}/CMSIT.xml {1}/CMSIT.xml".format(Input_Dir, Output_Dir))
+        os.system("cp {0}/CMSIT_{2}.xml {1}/CMSIT_2.xml".format(Input_Dir, Output_Dir, BeBoardName))
     except OSError:
         print("Can not copy the XML files to {0}".format(Output_Dir))
     try:
         os.system(
-            "cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(
-                Output_Dir, os.environ.get("PH2ACF_BASE_DIR")
+            "cp {0}/CMSIT_{2}.xml  {1}/test/CMSIT_{2}.xml".format(
+                Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
             )
         )
     except OSError:
         print(
-            "Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(
-                Output_Dir, os.environ.get("PH2ACF_BASE_DIR")
+            "Can not copy {0}/CMSIT_{2}.xml to {1}/test/CMSIT_{2}.xml".format(
+                Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
             )
         )
 
@@ -165,7 +164,7 @@ def SetupXMLConfig(Input_Dir, Output_Dir):
 ##########################################################################
 
 
-def SetupXMLConfigfromFile(InputFile, Output_Dir, firmware, RD53Dict):
+def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
     changeMade = False
     try:
         root, tree = LoadXML(InputFile)
@@ -265,19 +264,19 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, firmware, RD53Dict):
         print("Failed to set up the XML file, {}".format(error))
 
     try:
-        os.system("cp {0} {1}/CMSIT.xml".format(InputFile, Output_Dir))
+        os.system("cp {0} {1}/CMSIT_{2}.xml".format(InputFile, Output_Dir, BeBoardName))
     except OSError:
         print("Can not copy the XML files {0} to {1}".format(InputFile, Output_Dir))
     try:
         os.system(
-            "cp {0}/CMSIT.xml  {1}/test/CMSIT.xml".format(
-                Output_Dir, os.environ.get("PH2ACF_BASE_DIR")
+            "cp {0}/CMSIT_{1}.xml  {2}/test/CMSIT_{1}.xml".format(
+                Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
             )
         )
     except OSError:
         print(
-            "Can not copy {0}/CMSIT.xml to {1}/test/CMSIT.xml".format(
-                Output_Dir, os.environ.get("PH2ACF_BASE_DIR")
+            "Can not copy {0}/CMSIT_{1}.xml to {2}/test/CMSIT_{1}.xml".format(
+                Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
             )
         )
 
@@ -369,9 +368,9 @@ def CheckXMLValue(pFilename, pAttribute):
 ##########################################################################
 ##########################################################################
 
-
-def GenerateXMLConfig(firmwareList, testName, outputDir, statuses, **arg):
-    outputFile = outputDir + "/CMSIT_" + testName + ".xml"
+def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
+    outputFile = f'{outputDir}/CMSIT_{BeBoard.getBoardName()}_{testName}.xml'
+    print(outputFile)
     
     boardtype = "RD53A"
     RegisterSettingsList = RegisterSettings #TODO: Investigate whether this actually matters (ie deep vs shallow copy)
@@ -379,53 +378,53 @@ def GenerateXMLConfig(firmwareList, testName, outputDir, statuses, **arg):
     
     # Get Hardware discription and a list of the modules
     HWDescription0 = HWDescription()
-    for BeBoard in firmwareList:
-        BeBoardModule0 = BeBoardModule()
+    
+    BeBoardModule0 = BeBoardModule()
 
-        #Set up Optical Groups
-        for og in BeBoard.getAllOpticalGroups().values():
-            OpticalGroupModule0 = OGModule()
-            OpticalGroupModule0.SetOpticalGrp(og.getOpticalGroupID(), og.getFMCID())
-            
-            # Set up each module within the optical group
-            for module in og.getAllModules().values():
-                HyBridModule0 = HyBridModule()
-                HyBridModule0.SetHyBridModule(module.getFMCPort(), statuses[module.getModuleName()])
-                HyBridModule0.SetHyBridName(module.getModuleName())
+    #Set up Optical Groups
+    for og in BeBoard.getAllOpticalGroups().values():
+        OpticalGroupModule0 = OGModule()
+        OpticalGroupModule0.SetOpticalGrp(og.getOpticalGroupID(), og.getFMCID())
         
-                moduleType = module.getModuleType()
-                RxPolarities = "1" if "CROC" in moduleType and "Quad" in moduleType and "TFPX" in moduleType else "0" if "CROC" in moduleType else None
-                revPolarity = bool(int(RxPolarities))
-                FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
-                globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
-                HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
-                FELaneConfig_Dict = FELaneConfig_DictB[module.getModuleType().split(" ")[0]] if "CROC" in moduleType else None
-                boardtype = "RD53B"+module.getModuleVersion() if "CROC" in moduleType else "RD53A"
-                
-                # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
-                for chip in module.getChips().values():
-                    print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
-                    FEChip = FE()
-                    FEChip.SetFE(
-                        chip.getID(),
-                        "1" if chip.getStatus() else "0",
-                        chip.getLane(),
-                        RxPolarities,
-                        "CMSIT_RD53_{0}_{1}_{2}.txt".format(
-                            module.getModuleName(), module.getFMCPort(), chip.getID()
-                        ),
-                    )
-                    
-                    FEChip.ConfigureFE(FESettings_Dict[testName])
-                    FEChip.ConfigureLaneConfig(FELaneConfig_Dict[testName][int(chip.getLane())])
-                    FEChip.VDDAtrim = chip.getVDDA()
-                    FEChip.VDDDtrim = chip.getVDDD()
-                    FEChip.EfuseID = chip.getEfuseID()
-                    HyBridModule0.AddFE(FEChip)
-                HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
-                OpticalGroupModule0.AddHyBrid(HyBridModule0)
+        # Set up each module within the optical group
+        for module in og.getAllModules().values():
+            HyBridModule0 = HyBridModule()
+            HyBridModule0.SetHyBridModule(module.getFMCPort(), "1")
+            HyBridModule0.SetHyBridName(module.getModuleName())
+    
+            moduleType = module.getModuleType()
+            RxPolarities = "1" if "CROC" in moduleType and "Quad" in moduleType and "TFPX" in moduleType else "0" if "CROC" in moduleType else None
+            revPolarity = bool(int(RxPolarities))
+            FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
+            globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
+            HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
+            FELaneConfig_Dict = FELaneConfig_DictB[module.getModuleType().split(" ")[0]] if "CROC" in moduleType else None
+            boardtype = "RD53B"+module.getModuleVersion() if "CROC" in moduleType else "RD53A"
             
-            BeBoardModule0.AddOGModule(OpticalGroupModule0)
+            # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
+            for chip in module.getChips().values():
+                print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
+                FEChip = FE()
+                FEChip.SetFE(
+                    chip.getID(),
+                    "1" if chip.getStatus() else "0",
+                    chip.getLane(),
+                    RxPolarities,
+                    "CMSIT_RD53_{0}_{1}_{2}.txt".format(
+                        module.getModuleName(), module.getFMCPort(), chip.getID()
+                    ),
+                )
+                
+                FEChip.ConfigureFE(FESettings_Dict[testName])
+                FEChip.ConfigureLaneConfig(FELaneConfig_Dict[testName][int(chip.getLane())])
+                FEChip.VDDAtrim = chip.getVDDA()
+                FEChip.VDDDtrim = chip.getVDDD()
+                FEChip.EfuseID = chip.getEfuseID()
+                HyBridModule0.AddFE(FEChip)
+            HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
+            OpticalGroupModule0.AddHyBrid(HyBridModule0)
+        
+        BeBoardModule0.AddOGModule(OpticalGroupModule0)
         
         if revPolarity == True:
             RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = '0b1101'

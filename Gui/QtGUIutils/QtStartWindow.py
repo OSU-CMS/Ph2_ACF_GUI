@@ -10,7 +10,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtCore import QSize, Qt, pyqtSignal
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QApplication,
@@ -260,6 +260,7 @@ class SummaryBox(QWidget):
 
 class QtStartWindow(QWidget):
     openRunWindowSignal = pyqtSignal()
+    errorMessageBoxSignal = pyqtSignal(str)
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -275,6 +276,15 @@ class QtStartWindow(QWidget):
         self.occupied()
         self.loading_counter = 0
         self.openRunWindowSignal.connect(self.openRunWindowGUI)
+
+        self.errorMessageBoxSignal.connect( lambda message :
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+        )
 
     def openRunWindowGUI(self):
         self.master.RunNewTest = QtRunWindow(
@@ -428,7 +438,7 @@ class QtStartWindow(QWidget):
         self.run_window_thread.finished.connect(lambda : self.NextButton.setText("&Next"))
         self.run_window_thread.timer.timeout.connect(self.loader)
         self.run_window_thread.timer.start()
-        self.run_window_thread.start()  # Start the thread
+        self.run_window_thread.start()
 
     def openRunWindow(self):
         # if not os.access(os.environ.get('GUI_dir'),os.W_OK):

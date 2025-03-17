@@ -55,7 +55,6 @@ from Gui.python.logging_config import logger
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
     errorMessageBoxSignal = pyqtSignal(str)
-
     def __init__(self, dimension):
         super(QtApplication, self).__init__()
         self.mainLayout = QGridLayout()
@@ -956,7 +955,7 @@ class QtApplication(QWidget):
     def connect_devices_starter(self):
         self.Wheel.setVisible(True)
         self.connect_devices_thread = LoadingThread(self.connect_devices,50)
-        self.connect_devices_thread.finished.connect(lambda:self.Wheel.close())
+        self.connect_devices_thread.finished.connect(self.Wheel.close)
         self.connect_devices_thread.timer.timeout.connect(self.Wheel.update_spinner)
         self.connect_devices_thread.timer.start()
         self.connect_devices_thread.start()  # Start the thread

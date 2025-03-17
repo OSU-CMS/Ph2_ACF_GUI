@@ -7,7 +7,7 @@ from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
 
-def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, module_data):
+def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, module_data, BBanalysis_root_files):
     try:
         module_name = module_data['module'].getModuleName()
         module_type = module_data['module'].getModuleType()
@@ -15,15 +15,6 @@ def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, mod
         if 'SLDOScan' in testName or 'CommunicationTest' in testName:
             explanation = 'No grading currently available for SLDOScan or CommunicationTest.'
             return {module_name:(True, explanation)}
-        
-        #if 'IVCurve' in testName:
-        #    module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
-        #        boardID=module_data['boardID'], 
-        #        ogID=module_data['ogID'], 
-        #        hybridID=module_data['hybridID'])
-        #    relevant_files = [outputDir+"/"+os.fsdecode(file) for file in os.listdir(outputDir)]
-
-   
 
         root_file_name = testName.split('_')[0]
         if 'SCurveScan' in root_file_name:
@@ -40,19 +31,14 @@ def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, mod
                 hybridID=module_data['hybridID'])
             ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
 
+            if root_file_name in ("PixelAlive_highcharge_xtalk","PixelAlive_coupled_xtalk","PixelAlive_uncoupled_xtalk"):
+                BBanalysis_root_files.append(ROOT_file_path)
+
             relevant_files = [outputDir+"/"+os.fsdecode(file) for file in os.listdir(outputDir)]
             _1, _2 = felis.set_module(
                 module_name, module_type.split(" ")[0], module_type.split(" ")[2].replace("Quad","2x2"), module_version.strip('v'), True, "link"
             )
             module_canvases = [module_canvas_path]
-            #status, message, sanity, explanation = felis.set_result(
-            #    ROOT_file_path,
-            #    module_canvases,
-            #    relevant_files,
-            #    module_name,
-            #    f"{testIndexInSequence:02d}_{testName}",
-            #    'ivcurve',
-            #)
             status, message, sanity, explanation = felis.set_result(
                 relevant_files,
                 module_name,
@@ -63,6 +49,8 @@ def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, mod
             ROOT_file_path = "{0}/Run{1}_{2}.root".format(
                 outputDir, runNumber, root_file_name
             )
+            if root_file_name in ("PixelAlive_highcharge_xtalk","PixelAlive_coupled_xtalk","PixelAlive_uncoupled_xtalk"):
+                BBanalysis_root_files.append(ROOT_file_path)
             chip_canvas_path_template = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/Chip_{chipID:02d}"
             active_chips = [chip.getID() for chip in module_data['module'].getChips().values() if chip.getStatus()]
             chip_canvases = [
@@ -80,8 +68,6 @@ def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, mod
             )
 
             status, message, sanity, explanation = felis.set_result(
-                #ROOT_file_path,
-                #chip_canvases,
                 relevant_files,
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
@@ -90,8 +76,7 @@ def ResultGrader(felis, outputDir, testName, testIndexInSequence, runNumber, mod
         if not status:
             raise RuntimeError(message)
                 
-        #return {module_name:(sanity, explanation)}
-        return {module_name:(True, explanation)}
+        return {module_name:(True, explanation)}, BBanalysis_root_files
     except Exception as err:
         #logger.error("An error was thrown while grading: {}".format(repr(err)))
-        return {module_name:(False, repr(err))}
+        return {module_name:(False, repr(err))}, BBanalysis_root_files

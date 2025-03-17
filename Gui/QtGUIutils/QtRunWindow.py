@@ -25,17 +25,14 @@ import Gui.siteSettings as site_settings
 from Gui.GUIutils.guiUtils import isCompositeTest
 from Gui.QtGUIutils.Loading import LoadingThread, LoadingWheel
 
-# from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtCustomizeWindow import QtCustomizeWindow
 #from Gui.QtGUIutils.QtTableWidget import *
 #from Gui.QtGUIutils.QtMatplotlibUtils import *
+from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
 from Gui.python.ResultTreeWidget import ResultTreeWidget
-#from Gui.python.TestValidator import *
-#from Gui.python.ANSIColoringParser import *
 from Gui.python.TestHandler import TestHandler
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests
-
 
 class QtRunWindow(QWidget):
     resized = pyqtSignal()
@@ -75,7 +72,6 @@ class QtRunWindow(QWidget):
         self.DisplayW = self.width() * 3.0 / 7
 
         self.processingFlag = False
-        self.ProgressBarList = []
         self.input_dir = ""
         self.output_dir = ""
         self.config_file = (
@@ -129,6 +125,7 @@ class QtRunWindow(QWidget):
 
         self.resized.connect(self.rescaleImage)
 
+    
     def onPowerSignal(self):
         starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.master.instruments._module_dict.values()]
         self.master.instruments.off(
@@ -202,13 +199,8 @@ class QtRunWindow(QWidget):
         self.RunButton.clicked.connect(self.resetConfigTest)
         self.RunButton.clicked.connect(self.initialTest)
         self.RunButton.clicked.connect(lambda: self.RunButton.setDisabled(True))
-        # self.RunButton.clicked.connect(self.runTest)
-        # self.ContinueButton = QPushButton("&Continue")
-        # self.ContinueButton.clicked.connect(self.sendProceedSignal)
         self.AbortButton = QPushButton("&Abort")
         self.AbortButton.clicked.connect(self.abortTest)
-        # self.SaveButton = QPushButton("&Save")
-        # self.SaveButton.clicked.connect(self.saveTest)
         self.saveCheckBox = QCheckBox("&auto-save to Panthera")
         self.saveCheckBox.setMaximumHeight(30)
         if self.master.panthera_connected:
@@ -218,20 +210,7 @@ class QtRunWindow(QWidget):
             self.testHandler.autoSave = False
             self.saveCheckBox.setChecked(False)
             self.saveCheckBox.setDisabled(True)
-        # if not isActive(self.connection):
-        #     self.saveCheckBox.setChecked(False)
-        #     self.testHandler.autoSave = False
-        #     self.saveCheckBox.setDisabled(True)
-        
-        ##### previous layout ##########
-        """
 
-		self.ControlLayout.addWidget(self.CustomizedButton,0,0,1,2)
-		self.ControlLayout.addWidget(self.ResetButton,0,2,1,1)
-		self.ControlLayout.addWidget(self.RunButton,1,0,1,1)
-		self.ControlLayout.addWidget(self.AbortButton,1,1,1,1)
-		self.ControlLayout.addWidget(self.saveCheckBox,1,2,1,1)
-		"""
         if self.master.expertMode == True:
             self.ControlLayout.addWidget(self.RunButton, 0, 0, 1, 1)
             self.ControlLayout.addWidget(self.AbortButton, 0, 1, 1, 1)
@@ -240,14 +219,10 @@ class QtRunWindow(QWidget):
 
         else:
             pass
-        # 	self.ControlLayout.addWidget(self.RunButton,0,0,1,1)
-        # 	self.ControlLayout.addWidget(self.AbortButton,0,1,1,1)
-        # 	self.saveCheckBox.setDisabled(True)
-        # 	self.ControlLayout.addWidget(self.saveCheckBox,0,2,1,1)
 
         ControllerBox.setLayout(self.ControlLayout)
 
-        # Group Box for ternimal display
+        # Group Box for terminal display
         TerminalBox = QGroupBox("&Terminal")
         TerminalSP = TerminalBox.sizePolicy()
         TerminalSP.setVerticalStretch(self.VerticalSegCol0[1])
@@ -256,15 +231,16 @@ class QtRunWindow(QWidget):
 
         ConsoleLayout = QGridLayout()
 
-        self.ConsoleView = QPlainTextEdit()
-        self.ConsoleView.setStyleSheet(
-            "QTextEdit { background-color: rgb(10, 10, 10); color : white; }"
-        )
-        # self.ConsoleView.setCenterOnScroll(True)
-        self.ConsoleView.ensureCursorVisible()
-        self.ConsoleView.setReadOnly(True)
+        self.ConsoleViews = [QPlainTextEdit() for i in range(len(self.firmware))]
+        for i in range(len(self.ConsoleViews)):
+            self.ConsoleViews[i].setStyleSheet(
+                "QTextEdit { background-color: rgb(10, 10, 10); color : white; }"
+            )
+            self.ConsoleViews[i].ensureCursorVisible()
+            self.ConsoleViews[i].setReadOnly(True)
+            ConsoleLayout.addWidget(QLabel(self.firmware[i].getBoardName()),0,i)
+            ConsoleLayout.addWidget(self.ConsoleViews[i],1,i)
 
-        ConsoleLayout.addWidget(self.ConsoleView)
         TerminalBox.setLayout(ConsoleLayout)
 
         # Group Box for output display
@@ -319,7 +295,7 @@ class QtRunWindow(QWidget):
         self.RampProgressBars = [QProgressBar()]*len(self.master.instruments._module_dict.values())
         RampProgressLabels = [QLabel("Bias Voltage:")]*len(self.master.instruments._module_dict.values())
         for label in RampProgressLabels: label.setStyleSheet("font-weight: bold;")
-
+        
         for i in range(len(self.master.instruments._module_dict.values())):
             self.RampLayout.addWidget(RampProgressLabels[i], i, 0, 1, 1)
             self.RampLayout.addWidget(self.RampProgressBars[i], i, 1, 1, 1)
@@ -345,10 +321,6 @@ class QtRunWindow(QWidget):
         MainSplitter.addWidget(RightColSplitter)
 
         mainbodylayout.addWidget(MainSplitter)
-        # mainbodylayout.addWidget(ControllerBox, sum(self.VerticalSegCol0[:0]), sum(self.HorizontalSeg[:0]), self.VerticalSegCol0[0], self.HorizontalSeg[0])
-        # mainbodylayout.addWidget(TerminalBox, sum(self.VerticalSegCol0[:1]), sum(self.HorizontalSeg[:0]), self.VerticalSegCol0[1], self.HorizontalSeg[0])
-        # mainbodylayout.addWidget(OutputBox, sum(self.VerticalSegCol1[:0]), sum(self.HorizontalSeg[:1]), self.VerticalSegCol1[0], self.HorizontalSeg[1])
-        # mainbodylayout.addWidget(HistoryBox, sum(self.VerticalSegCol1[:1]), sum(self.HorizontalSeg[:1]), self.VerticalSegCol1[1], self.HorizontalSeg[1])
 
         self.MainBodyBox.setLayout(mainbodylayout)
         self.mainLayout.addWidget(
@@ -373,7 +345,7 @@ class QtRunWindow(QWidget):
         self.AppOption.repaint()
 
         self.Panthera_thread = LoadingThread(self.testHandler.upload_to_Panthera,50)
-        self.Panthera_thread.finished.connect(lambda : self.UploadWheel.close())
+        self.Panthera_thread.finished.connect(self.UploadWheel.close)
         self.Panthera_thread.timer.timeout.connect(self.UploadWheel.update_spinner)
         self.Panthera_thread.timer.start()
         self.Panthera_thread.start()  # Start the thread
@@ -381,8 +353,6 @@ class QtRunWindow(QWidget):
     def createApp(self):
         self.AppOption = QGroupBox()
         self.StartLayout = QHBoxLayout()
-
-        self.ProgressBarLabel = QLabel("")
 
         self.UploadButton = QPushButton("&Upload Results")
         self.UploadButton.clicked.connect(self.upload_to_Panthera_starter)
@@ -448,7 +418,7 @@ class QtRunWindow(QWidget):
         self.master.ProcessingTest = True
 
     def release(self):
-        self.testhandler.abortTest()
+        self.testHandler.abortTest()
         self.master.ProcessingTest = False
         if self.master.expertMode == True:
             self.master.NewTestButton.setDisabled(False)
@@ -494,6 +464,7 @@ class QtRunWindow(QWidget):
                             QColor(Qt.red)
                         )
 
+        self.StatusTable.resizeColumnsToContents()
         self.HistoryLayout.addWidget(self.StatusTable)
 
     def displayTestResultPopup(self, item):
@@ -597,10 +568,10 @@ class QtRunWindow(QWidget):
     ##  For real-time terminal display
     #######################################################################
 
-    def updateConsoleInfo(self, text):
-        textCursor = self.ConsoleView.textCursor()
-        self.ConsoleView.setTextCursor(textCursor)
-        self.ConsoleView.appendHtml(text)
+    def updateConsoleInfo(self, text:str, console:QPlainTextEdit):
+        textCursor = console.textCursor()
+        console.setTextCursor(textCursor)
+        console.appendHtml(text)
 
     def finish(self, EnableReRun):
         self.RunButton.setDisabled(True)
@@ -614,16 +585,13 @@ class QtRunWindow(QWidget):
                 self.UploadButton.setDisabled(self.testHandler.autoSave)
 
     def updateResult(self, newResult):
-        # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
         if self.master.expertMode:
             self.ResultWidget.updateResult(newResult)
         else:
-            #self.ResultWidget.updateResult(newResult)
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
 
     def updateIVResult(self, newResult):
-        # self.ResultWidget.updateResult("/Users/czkaiweb/Research/data")
         if self.master.expertMode:
             self.ResultWidget.updateIVResult(newResult)
         else:
@@ -648,6 +616,10 @@ class QtRunWindow(QWidget):
             self.finished_tests = tests
         except Exception as err:
             logger.error(err)
+
+    def updateProgressBar(self, bar:QProgressBar, value:int, text:str):
+        bar.setFormat(text)
+        bar.setValue(value)
 
     #######################################################################
     ##  For real-time terminal display

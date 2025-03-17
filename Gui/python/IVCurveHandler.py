@@ -47,14 +47,14 @@ class IVCurveThread(QThread):
     def getProgress(self):
         self.percentStep = abs(100*self.stepLength/self.stopVal)
         self.progressSignal.emit("IVCurve", self.percentStep)
+        
 
     def abortTest(self):
         self.exiting = True
 
     def run(self):
         try:
-            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
-            self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
+            self.instruments.hv_off()
             #self.run_process = QProcess(self)
             #self.run_process.setProcessChannelMode(QProcess.MergedChannels)
             #self.run_process.setWorkingDirectory(
@@ -68,16 +68,14 @@ class IVCurveThread(QThread):
             #self.run_process.waitForStarted(1000)
             
             _, measurements = self.instruments.hv_on(
-                voltage= self.stopVal,
+                voltage=self.stopVal,
                 step_size= self.stepLength,
                 delay=0.2,
                 measure=True,
-                #break_monitoring=self.breakTest,
                 execute_each_step=self.getProgress,
             )[0]
 
             # The physics test can be stopped by pressing enter
-            #self.run_process.write(b"\r\n") 
 
             measurementStr = {
                 "voltage": [value[4] for value in measurements],
@@ -87,11 +85,8 @@ class IVCurveThread(QThread):
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
-            #self.run_process.write(b"\r\n")
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
-            #self.run_process.write(b"\r\n")
-
 
 class IVCurveHandler(QObject):
     measureSignal = pyqtSignal(str, object)
@@ -126,16 +121,13 @@ class IVCurveHandler(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
-        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
-        self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
+        self.instruments.hv_off(execute_each_step=self.execute_each_step)
         self.finished.emit(test, measure)
-
 
     def stop(self):
         try:
             self.test.abortTest()
-            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
-            self.instruments.hv_off(no_lock=True, execute_each_step=lambda : self.execute_each_step(starting_voltages))
+            self.instruments.hv_off(no_lock=True)
             self.test.terminate()
         except Exception as err:
             print(f"Failed to stop the IV test due to error {err}")

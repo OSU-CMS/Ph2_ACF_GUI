@@ -27,7 +27,7 @@ class SLDOCurveWorker(QThread):
         starting_current=1,
         max_voltage=1.8,
         pin_list=[],
-        execute_each_step=None
+        execute_each_step=lambda:None
     ):
         super().__init__()
         self.instruments = instrument_cluster
@@ -78,7 +78,7 @@ class SLDOCurveWorker(QThread):
                 13: 'VDDD_ROC0',
                 14: 'VDDD_ROC1',
                 # 15: 'TP7A', #VOFS OUT
-                # 16: 'TP7B', #VOFS OUT
+                # 16: 'TP7B', #VOFShv_off OUT
             },
         }
         self.LV_index = -1
