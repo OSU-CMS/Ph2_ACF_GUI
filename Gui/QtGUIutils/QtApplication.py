@@ -977,9 +977,10 @@ class QtApplication(QWidget):
                 )
                 self.instruments = None
 
-        if self.expertMode:                
-            self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
-            self.ArduinoGroup.frozeArduinoPanel()
+        if self.expertMode:
+            if self.ArduinoControl.isChecked():                
+                self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+                self.ArduinoGroup.frozeArduinoPanel()
 
     def disable_instrument_widgets(self):
         """
