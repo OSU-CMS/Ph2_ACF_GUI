@@ -416,7 +416,7 @@ class TestHandler(QObject):
             self.configTest()
             self.IVCurveData = []
             self.IVProgressValue = 0
-            self.IVCurveHandler = IVCurveHandler(self.currentTest, self.instruments)
+            self.IVCurveHandler = IVCurveHandler(self.currentTest, self.instruments,execute_each_step=self.ramp_progress_bar)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.startSignal.connect(self.setupQProcess)
