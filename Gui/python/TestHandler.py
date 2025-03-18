@@ -1278,7 +1278,7 @@ created by Ph2_ACF is empty.")
             counter = 0
 
             for module in self.modules:
-                '''status, message = self.felis.upload_results(
+                status, message = self.felis.upload_results(
                     module.getModuleName(),
                     self.master.username,
                     self.master.password,
@@ -1286,7 +1286,7 @@ created by Ph2_ACF is empty.")
                     version_ph2acf = os.environ.get("PH2ACF_VERSION"),
                 )
                 if not status:
-                    raise ConnectionError(message)'''
+                    raise ConnectionError(message)
 
                 counter+=1
                 self.updateProgressBar.emit(self.runwindow.UploadProgressBar,

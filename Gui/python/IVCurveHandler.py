@@ -10,7 +10,7 @@ class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
     progressSignal = pyqtSignal(str, float)
 
-    def __init__(self, parent, instrument_cluster=None, execute_each_step=lambda:None):
+    def __init__(self, parent, testName, instrument_cluster=None, execute_each_step=lambda:None):
         super(IVCurveThread, self).__init__()
         self.instruments = instrument_cluster
         self.parent = parent
@@ -86,14 +86,14 @@ class IVCurveHandler(QObject):
     progressSignal = pyqtSignal(str, float)
     startSignal = pyqtSignal()
 
-    def __init__(self, instrument_cluster, execute_each_step):
+    def __init__(self, testName, instrument_cluster, execute_each_step):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.execute_each_step = execute_each_step
 
         assert self.instruments is not None, logger.debug("Error instantiating instrument cluster")
 
-        self.test = IVCurveThread(self, instrument_cluster=self.instruments, execute_each_step=self.execute_each_step)
+        self.test = IVCurveThread(self, testName, instrument_cluster=self.instruments, execute_each_step=self.execute_each_step)
         self.test.progressSignal.connect(self.transmitProgress)
         self.test.measureSignal.connect(self.finish)
 
