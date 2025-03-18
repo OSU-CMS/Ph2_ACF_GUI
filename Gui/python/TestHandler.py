@@ -998,7 +998,7 @@ created by Ph2_ACF is empty.")
         if measurementType=='IVCurve':
             self.IVProgressValue += stepSize/2.0
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
-            self.ramp_progress_bar([site_settings.IVcurve_range if site_settings.IVcurve_range<0 else 80]*len(self.instruments._module_dict.values()))
+            self.ramp_progress_bar([site_settings.IVcurve_range[self.currentTest] if site_settings.IVcurve_range[self.currentTest]<0 else 80]*len(self.instruments._module_dict.values()))
         if 'SLDO' in measurementType:
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
