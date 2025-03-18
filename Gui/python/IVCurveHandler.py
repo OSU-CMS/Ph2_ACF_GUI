@@ -54,18 +54,8 @@ class IVCurveThread(QThread):
 
     def run(self):
         try:
-            self.instruments.hv_off()
-            #self.run_process = QProcess(self)
-            #self.run_process.setProcessChannelMode(QProcess.MergedChannels)
-            #self.run_process.setWorkingDirectory(
-            #    os.environ.get("PH2ACF_BASE_DIR") + "/test/")
-
-            #self.run_process.start(
-            #    "CMSITminiDAQ",
-            #    ["-f", "CMSIT.xml", "-c",
-            #     "physics"],
-            #)
-            #self.run_process.waitForStarted(1000)
+            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+            self.instruments.hv_off(execute_each_step=lambda:self.execute_each_step(starting_voltages))
             
             _, measurements = self.instruments.hv_on(
                 voltage=self.stopVal,
@@ -121,13 +111,15 @@ class IVCurveHandler(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
-        self.instruments.hv_off(execute_each_step=self.execute_each_step)
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+        self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
         self.finished.emit(test, measure)
 
     def stop(self):
         try:
             self.test.abortTest()
-            self.instruments.hv_off(no_lock=True)
+            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+            self.instruments.hv_off(no_lock=True, execute_each_step=lambda : self.execute_each_step(starting_voltages))
             self.test.terminate()
         except Exception as err:
             print(f"Failed to stop the IV test due to error {err}")

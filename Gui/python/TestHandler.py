@@ -379,11 +379,13 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName):
 
-        if "analyze" in testName.lower(): #This could could maybe be made like 1% more efficient.
-
+        if "analyze" in testName.lower():
+            
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
-            self.onFinalTest()
+
+            EnableReRun = self.onFinalTest(self.testIndexTracker+1)
+            self.stepFinished.emit(EnableReRun)
 
             if self.master.expertMode:
                 self.updateResult.emit(self.output_dir)
@@ -418,7 +420,7 @@ class TestHandler(QObject):
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.startSignal.connect(self.setupQProcess)
-            for console in self.consoles: self.outputString.emit("Beginning IVCurve", console)
+            for console in self.runwindow.ConsoleViews: self.outputString.emit("Beginning IVCurve", console)
             self.IVCurveHandler.IVCurve()
             return
 
@@ -436,7 +438,7 @@ class TestHandler(QObject):
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
             self.SLDOScanHandler.abortSignal.connect(self.urgentStop)
-            for console in self.consoles: self.outputString.emit("Beginning SLDOScan", console)
+            for console in self.runwindow.ConsoleViews: self.outputString.emit("Beginning SLDOScan", console)
             self.SLDOScanHandler.SLDOScan()
             return
 
@@ -565,10 +567,10 @@ class TestHandler(QObject):
 
         self.starttime = None
         if self.IVCurveHandler:
-            for console in self.consoles: self.outputString.emit("Aborting IVCurve", console)
+            for console in self.runwindow.ConsoleViews: self.outputString.emit("Aborting IVCurve", console)
             self.IVCurveHandler.stop()
         if self.SLDOScanHandler:
-            for console in self.consoles: self.outputString.emit("Aborting SLDOScan", console)
+            for console in self.runwindow.ConsoleViews: self.outputString.emit("Aborting SLDOScan", console)
             self.SLDOScanHandler.stop()
 
     def urgentStop(self):
@@ -919,7 +921,7 @@ created by Ph2_ACF is empty.")
         # validate the results
         self.validateTest()
 
-        EnableReRun = self.onFinalTest()
+        EnableReRun = self.onFinalTest(self.testIndexTracker)
 
         self.stepFinished.emit(EnableReRun)
 
@@ -936,11 +938,11 @@ created by Ph2_ACF is empty.")
         if isCompositeTest(self.info):
             self.runTest()
 
-    def onFinalTest(self):
+    def onFinalTest(self, index):
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            if self.testIndexTracker == len(CompositeTests[self.info]): # Checks that this was the last test in the sequence.
+            if index == len(CompositeTests[self.info]): # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
@@ -966,7 +968,7 @@ created by Ph2_ACF is empty.")
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
                                     module_data['module'].getModuleName(),
-                                    f"{self.testIndexTracker:02d}_{self.currentTest}",
+                                    f"{index:02d}_{self.currentTest}",
                                     Test_to_Ph2ACF_Map[self.currentTest],
                                 )
                                 self.figurelist[module.getModuleName()] = self.collect_plots(module.getModuleName())
@@ -1020,8 +1022,13 @@ created by Ph2_ACF is empty.")
             process.write(b"\n")
             process.waitForBytesWritten()
             process.waitForFinished()
-        self.outputString.emit(f"Voltages: {measure['voltage']}")
-        self.outputString.emit(f"Currents: {measure['current']}")
+
+        #3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
+        #IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
+        #to output the results only to the console of the fc7 that each module is connnected to.
+        for console in self.runwindow.ConsoleViews:
+            self.outputString.emit(f"Voltages: {measure['voltage']}", console)
+            self.outputString.emit(f"Currents: {measure['current']}", console)
 
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
@@ -1258,7 +1265,7 @@ created by Ph2_ACF is empty.")
             counter = 0
 
             for module in self.modules:
-                status, message = self.felis.upload_results(
+                '''status, message = self.felis.upload_results(
                     module.getModuleName(),
                     self.master.username,
                     self.master.password,
@@ -1266,7 +1273,7 @@ created by Ph2_ACF is empty.")
                     version_ph2acf = os.environ.get("PH2ACF_VERSION"),
                 )
                 if not status:
-                    raise ConnectionError(message)
+                    raise ConnectionError(message)'''
 
                 counter+=1
                 self.updateProgressBar.emit(self.runwindow.UploadProgressBar,
@@ -1275,6 +1282,8 @@ created by Ph2_ACF is empty.")
 
         except ConnectionError as e:
             error_message = repr(e)
+            logger.error(error_message)
+            self.master.errorMessageBoxSignal.emit(error_message)
        
         except Exception as e:
             if not self.master.panthera_connected:
@@ -1285,8 +1294,8 @@ created by Ph2_ACF is empty.")
                 if self.autoSave:
                     self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
 
-        logger.error(error_message)
-        self.master.errorMessageBoxSignal.emit(error_message)
+            logger.error(error_message)
+            self.master.errorMessageBoxSignal.emit(error_message)
             
 
     def bumpbond_analysis(self):

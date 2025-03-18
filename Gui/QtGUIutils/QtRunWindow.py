@@ -15,7 +15,8 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMessageBox,
     QSplitter,
-    QProgressBar
+    QProgressBar,
+    QApplication
 )
 
 import os, numpy as np
@@ -369,8 +370,6 @@ class QtRunWindow(QWidget):
 
         self.StartLayout.addStretch(1)
 
-        #if self.master.expertMode == True:
-        #    self.StartLayout.addWidget(self.UploadButton)
         self.StartLayout.addWidget(self.UploadButton)
 
         self.StartLayout.addWidget(self.BackButton)
@@ -620,6 +619,10 @@ class QtRunWindow(QWidget):
     def updateProgressBar(self, bar:QProgressBar, value:int, text:str):
         bar.setFormat(text)
         bar.setValue(value)
+        QApplication.processEvents() #So the "window not responding" popup doesn't appear
+        #QApplication.processEvents() is unideal though. It would have been better to
+        #run tests in a QThread, so we don't have to keep pinging the GUI.
+        #But ion finna make that happen.
 
     #######################################################################
     ##  For real-time terminal display

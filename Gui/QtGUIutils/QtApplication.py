@@ -719,7 +719,7 @@ class QtApplication(QWidget):
         self.SummaryButton.setMinimumHeight(kMinimumHeight)
         self.SummaryButton.setMaximumHeight(kMaximumHeight)
         self.SummaryButton.clicked.connect(self.openSummaryWindow)
-        SummaryLabel = QLabel("Statistics of test status")
+        if self.expertMode: self.SummaryButton.setDisabled(False)
 
         self.NewTestButton = QPushButton("&New")
         self.NewTestButton.setDefault(True)
@@ -842,27 +842,6 @@ class QtApplication(QWidget):
         layout.addWidget(self.ThermalTestButton, 4, 0, 1, 1)
         layout.addWidget(self.ThermalProfileEdit, 4, 1, 1, 1)
         layout.addWidget(self.AbortThermalTestButton, 5, 0, 1, 1)
-
-        ####################################################
-        # Functions for expert mode
-        ####################################################
-
-        if self.expertMode:
-            self.SummaryButton.setDisabled(False)
-            self.DBConsoleButton = QPushButton("&DB Console")
-            self.DBConsoleButton.setMinimumWidth(kMinimumWidth)
-            self.DBConsoleButton.setMaximumWidth(kMaximumWidth)
-            self.DBConsoleButton.setMinimumHeight(kMinimumHeight)
-            self.DBConsoleButton.setMaximumHeight(kMaximumHeight)
-            self.DBConsoleButton.clicked.connect(self.openDBConsole)
-            self.DBConsoleButton.setDisabled(True)
-            DBConsoleLabel = QLabel("Console for database")
-            layout.addWidget(self.DBConsoleButton, 1, 0, 1, 1)
-            layout.addWidget(DBConsoleLabel, 1, 1, 1, 2)
-
-        ####################################################
-        # Functions for expert mode  (END)
-        ####################################################
         
         self.MainOption.setLayout(layout)
 
