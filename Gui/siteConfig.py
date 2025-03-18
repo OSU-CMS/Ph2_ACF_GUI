@@ -59,7 +59,10 @@ with open('jsonFiles/instruments_osu_oneLV.json', 'r') as file:
     icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
-IVcurve_range = -80 #Maximum voltage in Volts to be used in IVcurve
+IVcurve_range = {
+    "IVCurve" 		: 	-80, #Maximum voltage in Volts to be used in IVcurve prior to Parylene coating
+	"IVCurve_300"	:	-20 #Maximum voltage in Volts to be used in IVcurve after Parylene coating
+}
 
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
 

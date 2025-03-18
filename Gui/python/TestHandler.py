@@ -410,13 +410,13 @@ class TestHandler(QObject):
                     voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
-
-        if testName == "IVCurve":
+        
+        if "IVCurve" in testName:
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
             self.IVProgressValue = 0
-            self.IVCurveHandler = IVCurveHandler(self.instruments, self.ramp_progress_bar)
+            self.IVCurveHandler = IVCurveHandler(self.currentTest, self.instruments)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.startSignal.connect(self.setupQProcess)
@@ -673,7 +673,20 @@ created by Ph2_ACF is empty.")
 
         try:
             if self.RunNumber == "-1":
-                self.copyMostRecentRootFile('000000',os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
+                os.system(
+                    "cp {0}/test/Results/Run000000*.root {1}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
+                    )
+                )
+
+            elif "IVCurve" in self.currentTest:
+                os.system(
+                    "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.output_dir,
+                    )
+                )
             else:
                 self.copyMostRecentRootFile(self.RunNumber,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
 

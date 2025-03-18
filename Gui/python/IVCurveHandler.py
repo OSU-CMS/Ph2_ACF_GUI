@@ -23,8 +23,9 @@ class IVCurveThread(QThread):
         self.startVal = 0
         self.target = 0
         #Making sure IVcurve peak is a negative voltage
-        if IVcurve_range < 0:
-            self.stopVal = IVcurve_range
+        if IVcurve_range[testName] < 0:
+            self.stopVal = IVcurve_range[testName]
+            print("IVcurve range: ", self.stopVal)
         else:
             self.stopVal = -80
         self.stepLength = 2
