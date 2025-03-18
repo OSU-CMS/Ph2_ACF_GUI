@@ -416,7 +416,7 @@ class TestHandler(QObject):
             self.configTest()
             self.IVCurveData = []
             self.IVProgressValue = 0
-            self.IVCurveHandler = IVCurveHandler(self.currentTest, self.instruments)
+            self.IVCurveHandler = IVCurveHandler(self.currentTest, self.instruments, execute_each_step=self.ramp_progress_bar)
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.startSignal.connect(self.setupQProcess)
@@ -998,7 +998,7 @@ created by Ph2_ACF is empty.")
         if measurementType=='IVCurve':
             self.IVProgressValue += stepSize/2.0
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
-            self.ramp_progress_bar([site_settings.IVcurve_range if site_settings.IVcurve_range<0 else 80]*len(self.instruments._module_dict.values()))
+            self.ramp_progress_bar([site_settings.IVcurve_range[self.currentTest] if site_settings.IVcurve_range[self.currentTest]<0 else 80]*len(self.instruments._module_dict.values()))
         if 'SLDO' in measurementType:
             self.SLDOProgressValue += stepSize
             self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
