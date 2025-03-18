@@ -38,10 +38,10 @@ class Tessie(QWidget):
         self.upperGridLayout.addWidget(self.runtimeLabel, 3,0,1,1)
         self.upperGridLayout.addWidget(self.statusLabel, 4,0,1,1)
 
-        self.CANbus_errors_edit = QtWidgets.QLineEdit("0")
-        self.I2C_errors_edit = QtWidgets.QLineEdit("0")
-        self.runtimeEdit = QtWidgets.QLineEdit("10346")
-        self.statusEdit = QtWidgets.QLineEdit("no problem")
+        self.CANbus_errors_edit = QtWidgets.QLabel("0")
+        self.I2C_errors_edit = QtWidgets.QLabel("0")
+        self.runtimeEdit = QtWidgets.QLabel("10346")
+        self.statusEdit = QtWidgets.QLabel("no problem")
 
         self.upperGridLayout.addWidget(self.CANbus_errors_edit, 1,1,1,1)
         self.upperGridLayout.addWidget(self.I2C_errors_edit, 2,1,1,1)
@@ -58,13 +58,13 @@ class Tessie(QWidget):
         self.upperGridLayout.addWidget(self.waterLabel, 2,2,1,1)
         self.upperGridLayout.addWidget(self.lid_status_label, 3,2,1,1)
 
-        self.airEdit = QtWidgets.QLineEdit("23.25")
-        self.waterEdit = QtWidgets.QLineEdit("21.34")
-        self.lid_status_edit = QtWidgets.QLineEdit("locked")
+        self.airEdit = QtWidgets.QLabel("23.25")
+        self.waterEdit = QtWidgets.QLabel("21.34")
+        self.lid_status_edit = QtWidgets.QLabel("locked")
 
-        self.airEdit.setStyleSheet("QLineEdit { background-color: green; color: black; }")
-        self.waterEdit.setStyleSheet("QLineEdit { background-color: green; color: black; }")
-        self.lid_status_edit.setStyleSheet("QLineEdit { background-color: green; color: black; }")
+        self.airEdit.setStyleSheet("QLabel { background-color: green; color: black; }")
+        self.waterEdit.setStyleSheet("QLabel { background-color: green; color: black; }")
+        self.lid_status_edit.setStyleSheet("QLabel { background-color: green; color: black; }")
 
         self.upperGridLayout.addWidget(self.airEdit, 1,3,1,1)
         self.upperGridLayout.addWidget(self.waterEdit, 2,3,1,1)
@@ -77,11 +77,11 @@ class Tessie(QWidget):
         self.upperGridLayout.addWidget(self.ref_hum_label, 1,4,1,1)
         self.upperGridLayout.addWidget(self.dew_point_label, 2,4,1,1)
 
-        self.ref_hum_edit = QtWidgets.QLineEdit("51.92")
-        self.dew_point_edit = QtWidgets.QLineEdit("12.83")
+        self.ref_hum_edit = QtWidgets.QLabel("51.92")
+        self.dew_point_edit = QtWidgets.QLabel("12.83")
 
-        self.ref_hum_edit.setStyleSheet("QLineEdit { background-color: yellow; color: black; }")
-        self.dew_point_edit.setStyleSheet("QLineEdit { background-color: green; color: black; }")
+        self.ref_hum_edit.setStyleSheet("QLabel { background-color: yellow; color: black; }")
+        self.dew_point_edit.setStyleSheet("QLabel { background-color: green; color: black; }")
 
         self.upperGridLayout.addWidget(self.ref_hum_edit, 1,5,1,1)
         self.upperGridLayout.addWidget(self.dew_point_edit, 2,5,1,1)
@@ -99,7 +99,7 @@ class Tessie(QWidget):
 
         self.setTemperatures = [1]*8
         self.TEC_labels = [QtWidgets.QLabel(f'TEC {i}:') for i in range(1,9)]
-        self.TEC_edits = [QtWidgets.QLineEdit(f'{self.setTemperatures[i]}') for i in range(8)]
+        self.TEC_edits = [QtWidgets.QLabel(f'{self.setTemperatures[i]}') for i in range(8)]
 
         for i in range(4):
             self.lowerGridLayout.addWidget(self.TEC_labels[8-i-1],0,2*i+1,1,1,Qt.AlignRight)
