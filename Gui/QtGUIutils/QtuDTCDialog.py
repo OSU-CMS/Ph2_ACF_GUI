@@ -94,7 +94,7 @@ class QtuDTCDialog(QDialog):
 
     def fetchFPGAConfigs(self):
         try:
-            InputFile = os.environ.get("PH2ACF_BASE_DIR") + "/settings/CMSIT.xml"
+            InputFile = os.environ.get("PH2ACF_BASE_DIR") + f"/settings/CMSIT_{self.module[1].getBoardName()}.xml"
             root, tree = LoadXML(InputFile)
             fwIP = self.module.getIPAddress()
             changeMade = False
@@ -157,7 +157,7 @@ class QtuDTCDialog(QDialog):
             [
                 "fpgaconfig",
                 "-c",
-                os.environ.get("PH2ACF_BASE_DIR") + "/settings/CMSIT.xml.gui",
+                os.environ.get("PH2ACF_BASE_DIR") + f"/settings/CMSIT_{self.module[1].getBoardName()}.xml.gui",
                 "-i",
                 self.uDTCFile,
             ],

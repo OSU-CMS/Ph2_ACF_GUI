@@ -13,16 +13,18 @@ class Tessie(QWidget):
         self.gridLayout = QtWidgets.QGridLayout(self)
 
         self.upperWidget = QWidget()
-        self.upperGridLayout = QtWidgets.QGridLayout(self)
+        self.upperGridLayout = QtWidgets.QGridLayout(self.upperWidget)  # Set layout here
         self.upperWidget.setLayout(self.upperGridLayout)
 
         self.lowerWidget = QWidget()
-        self.lowerGridLayout = QtWidgets.QGridLayout(self)
+        self.lowerGridLayout = QtWidgets.QGridLayout(self.lowerWidget)  # Set layout here
         self.lowerWidget.setLayout(self.lowerGridLayout)
 
         self.gridLayout.addWidget(self.upperWidget, 0, 0)
         self.upperGridLayout.addItem(QtWidgets.QSpacerItem(0, 10))
         self.gridLayout.addWidget(self.lowerWidget, 1, 0)
+
+        self.setLayout(self.gridLayout)  # Set layout for the main window
 
         self.TessieLabel = QtWidgets.QLabel("TESSIE (2024/06/19-06)")
         self.CANbus_errors_label = QtWidgets.QLabel("CANbus errors")

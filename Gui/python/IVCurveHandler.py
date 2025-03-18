@@ -1,9 +1,6 @@
-from PyQt5 import QtCore
-from PyQt5.QtCore import QThread, QObject, pyqtSignal, QProcess
+from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
-import os
-import time
-import numpy
+import numpy as np
 from Gui.python.logging_config import logger
 from Gui.siteSettings import IVcurve_range
 
@@ -13,7 +10,7 @@ class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
     progressSignal = pyqtSignal(str, float)
 
-    def __init__(self, parent, instrument_cluster=None):
+    def __init__(self, parent, testName, instrument_cluster=None, execute_each_step=lambda:None):
         super(IVCurveThread, self).__init__()
         self.instruments = instrument_cluster
         self.parent = parent
@@ -21,12 +18,14 @@ class IVCurveThread(QThread):
         self.progressSignal.connect(self.parent.transmitProgress) #FIXME add slot function
         self.exiting = False
         self.setTerminationEnabled(True)
+        self.execute_each_step = execute_each_step
 
         self.startVal = 0
         self.target = 0
         #Making sure IVcurve peak is a negative voltage
-        if IVcurve_range < 0:
-            self.stopVal = IVcurve_range
+        if IVcurve_range[testName] < 0:
+            self.stopVal = IVcurve_range[testName]
+            print("IVcurve range: ", self.stopVal)
         else:
             self.stopVal = -80
         self.stepLength = 2
@@ -35,7 +34,8 @@ class IVCurveThread(QThread):
         self.turnOn()
 
     def turnOn(self):
-        self.instruments.hv_off()
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+        self.instruments.hv_off(execute_each_step=lambda:self.execute_each_step(starting_voltages))
         self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
         self.instruments.hv_set_ocp(0.00001)
 
@@ -48,36 +48,25 @@ class IVCurveThread(QThread):
     def getProgress(self):
         self.percentStep = abs(100*self.stepLength/self.stopVal)
         self.progressSignal.emit("IVCurve", self.percentStep)
+        
 
     def abortTest(self):
         self.exiting = True
 
     def run(self):
         try:
-            self.instruments.hv_off()
-            #self.run_process = QProcess(self)
-            #self.run_process.setProcessChannelMode(QProcess.MergedChannels)
-            #self.run_process.setWorkingDirectory(
-            #    os.environ.get("PH2ACF_BASE_DIR") + "/test/")
-
-            #self.run_process.start(
-            #    "CMSITminiDAQ",
-            #    ["-f", "CMSIT.xml", "-c",
-            #     "physics"],
-            #)
-            #self.run_process.waitForStarted(1000)
+            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+            self.instruments.hv_off(execute_each_step=lambda:self.execute_each_step(starting_voltages))
             
             _, measurements = self.instruments.hv_on(
-                voltage= self.stopVal,
+                voltage=self.stopVal,
                 step_size= self.stepLength,
                 delay=0.2,
                 measure=True,
-                #break_monitoring=self.breakTest,
                 execute_each_step=self.getProgress,
             )[0]
 
             # The physics test can be stopped by pressing enter
-            #self.run_process.write(b"\r\n") 
 
             measurementStr = {
                 "voltage": [value[4] for value in measurements],
@@ -87,11 +76,8 @@ class IVCurveThread(QThread):
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
-            #self.run_process.write(b"\r\n")
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
-            #self.run_process.write(b"\r\n")
-
 
 class IVCurveHandler(QObject):
     measureSignal = pyqtSignal(str, object)
@@ -100,14 +86,14 @@ class IVCurveHandler(QObject):
     progressSignal = pyqtSignal(str, float)
     startSignal = pyqtSignal()
 
-    def __init__(self, instrument_cluster, execute_each_step):
+    def __init__(self, testName, instrument_cluster, execute_each_step):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.execute_each_step = execute_each_step
 
         assert self.instruments is not None, logger.debug("Error instantiating instrument cluster")
 
-        self.test = IVCurveThread(self, instrument_cluster=self.instruments)
+        self.test = IVCurveThread(self, testName, instrument_cluster=self.instruments, execute_each_step=self.execute_each_step)
         self.test.progressSignal.connect(self.transmitProgress)
         self.test.measureSignal.connect(self.finish)
 
@@ -126,14 +112,15 @@ class IVCurveHandler(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
-        self.instruments.hv_off(execute_each_step=self.execute_each_step)
+        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+        self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
         self.finished.emit(test, measure)
-
 
     def stop(self):
         try:
             self.test.abortTest()
-            self.instruments.hv_off(no_lock=True)
+            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
+            self.instruments.hv_off(no_lock=True, execute_each_step=lambda : self.execute_each_step(starting_voltages))
             self.test.terminate()
         except Exception as err:
             print(f"Failed to stop the IV test due to error {err}")

@@ -54,12 +54,14 @@ class QtChip:
 
 
 class QtModule:
-    def __init__(self, moduleName = "", moduleType = "", moduleVersion = "", FMCPort = ""):
+    def __init__(self, moduleName = "", moduleType = "", moduleVersion = "", FMCPort = "", enabled = "1", Fc7 = None):
         self.__moduleName = moduleName
         self.__moduleType = moduleType
         self.__moduleVersion = moduleVersion
         self.__FMCPort = FMCPort
         self.__chipDict = {} #{ChipID : QtChip()}, deviates from pattern to make usage easier, laneID is not commonly used
+        self.__enabled = enabled
+        self.__Fc7 = Fc7
         
         if self.__moduleType != "":
             #if module type was specified, initialize chips to default
@@ -112,6 +114,18 @@ class QtModule:
     
     def getEnabledChips(self):
         return {chipID : chip for chipID, chip in self.__chipDict.items() if chip.getStatus()}
+    
+    def setEnabled(self, enabled:str):
+        self.__enabled = enabled
+
+    def getEnabled(self) -> str:
+        return self.__enabled
+    
+    def setFc7(self, Fc7) -> None:
+        self.__Fc7 = Fc7
+    
+    def getFc7(self):
+        return self.__Fc7
     
     """
     These two functions define the parent object accessible from the current object. It's a shortcut

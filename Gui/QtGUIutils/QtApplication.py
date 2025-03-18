@@ -4,7 +4,6 @@ from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QColor
 from PyQt5.QtWidgets import (
     QApplication,
     QCheckBox,
-    QSpinBox,
     QComboBox,
     QDialog,
     QGridLayout,
@@ -15,7 +14,6 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QStyleFactory,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
     QMessageBox,
 )
@@ -26,15 +24,11 @@ import os
 import pyvisa
 import requests
 from felis.felis_methods import get_accountInfo
-import requests.exceptions as rqx
 
 from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
 
-from Gui.GUIutils.DBConnection import QtStartConnection, checkDBConnection
-import Gui.GUIutils.settings as settings
 import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
-from Gui.GUIutils.guiUtils import isActive
 from Gui.QtGUIutils.LaudaApp import LaudaWidget
 from Gui.QtGUIutils.PeltierCoolingApp import Peltier
 from Gui.QtGUIutils.TessieCoolingApp import Tessie
@@ -60,7 +54,7 @@ from Gui.python.logging_config import logger
 
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
-
+    errorMessageBoxSignal = pyqtSignal(str)
     def __init__(self, dimension):
         super(QtApplication, self).__init__()
         self.mainLayout = QGridLayout()
@@ -100,6 +94,15 @@ class QtApplication(QWidget):
         self.setLoginUI()
         self.initLog()
         self.createLogin()
+
+        self.errorMessageBoxSignal.connect( lambda message :
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+        )
 
     def setLoginUI(self):
         self.setGeometry(300, 300, 400, 500)
@@ -716,7 +719,7 @@ class QtApplication(QWidget):
         self.SummaryButton.setMinimumHeight(kMinimumHeight)
         self.SummaryButton.setMaximumHeight(kMaximumHeight)
         self.SummaryButton.clicked.connect(self.openSummaryWindow)
-        SummaryLabel = QLabel("Statistics of test status")
+        if self.expertMode: self.SummaryButton.setDisabled(False)
 
         self.NewTestButton = QPushButton("&New")
         self.NewTestButton.setDefault(True)
@@ -807,8 +810,7 @@ class QtApplication(QWidget):
             title_label.setStyleSheet("color: gold;")  # Gold text
             title_label.setAlignment(Qt.AlignCenter)
 
-            # Warning subtitle (Proceed at risk)
-            subtitle_label = QLabel("⚠ Proceed at risk ⚠")
+            subtitle_label = QLabel("⚠ Proceed with Caution ⚠")
             subtitle_label.setFont(QFont("Arial", 12, QFont.Bold))
             subtitle_label.setStyleSheet("color: red;")  # Red warning text
             subtitle_label.setAlignment(Qt.AlignCenter)
@@ -840,27 +842,6 @@ class QtApplication(QWidget):
         layout.addWidget(self.ThermalTestButton, 4, 0, 1, 1)
         layout.addWidget(self.ThermalProfileEdit, 4, 1, 1, 1)
         layout.addWidget(self.AbortThermalTestButton, 5, 0, 1, 1)
-
-        ####################################################
-        # Functions for expert mode
-        ####################################################
-
-        if self.expertMode:
-            self.SummaryButton.setDisabled(False)
-            self.DBConsoleButton = QPushButton("&DB Console")
-            self.DBConsoleButton.setMinimumWidth(kMinimumWidth)
-            self.DBConsoleButton.setMaximumWidth(kMaximumWidth)
-            self.DBConsoleButton.setMinimumHeight(kMinimumHeight)
-            self.DBConsoleButton.setMaximumHeight(kMaximumHeight)
-            self.DBConsoleButton.clicked.connect(self.openDBConsole)
-            self.DBConsoleButton.setDisabled(True)
-            DBConsoleLabel = QLabel("Console for database")
-            layout.addWidget(self.DBConsoleButton, 1, 0, 1, 1)
-            layout.addWidget(DBConsoleLabel, 1, 1, 1, 2)
-
-        ####################################################
-        # Functions for expert mode  (END)
-        ####################################################
         
         self.MainOption.setLayout(layout)
 
@@ -953,14 +934,10 @@ class QtApplication(QWidget):
     def connect_devices_starter(self):
         self.Wheel.setVisible(True)
         self.connect_devices_thread = LoadingThread(self.connect_devices,50)
-        self.connect_devices_thread.finished.connect(self.connect_devices_onFinish)
+        self.connect_devices_thread.finished.connect(self.Wheel.close)
         self.connect_devices_thread.timer.timeout.connect(self.Wheel.update_spinner)
         self.connect_devices_thread.timer.start()
         self.connect_devices_thread.start()  # Start the thread
-
-    def connect_devices_onFinish(self):
-        self.connect_devices_thread.timer.stop()
-        self.Wheel.setVisible(False)
 
     def connect_devices(self):
         
@@ -1002,14 +979,13 @@ class QtApplication(QWidget):
 
             except Exception as e:
                 print("Error:", e)
-                QMessageBox.information(
-                    None, "Error", "Please Check Instrument Connections", QMessageBox.Ok
-                )
+                self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
 
-        if self.expertMode:                
-            self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
-            self.ArduinoGroup.frozeArduinoPanel()
+        if self.expertMode:
+            if self.ArduinoControl.isChecked():                
+                self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+                self.ArduinoGroup.frozeArduinoPanel()
 
     def disable_instrument_widgets(self):
         """
@@ -1173,9 +1149,6 @@ class QtApplication(QWidget):
             QMessageBox.information(
                 None, "Error", "Please enter a valid module ID", QMessageBox.Ok
             )
-
-    def openDBConsole(self):
-        self.StartDBConsole = QtDBConsoleWindow(self)
 
     def releaseHVPowerPanel(self):
         if self.instruments:

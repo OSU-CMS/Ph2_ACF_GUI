@@ -10,7 +10,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtCore import QSize, Qt, pyqtSignal
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QApplication,
@@ -260,6 +260,7 @@ class SummaryBox(QWidget):
 
 class QtStartWindow(QWidget):
     openRunWindowSignal = pyqtSignal()
+    errorMessageBoxSignal = pyqtSignal(str)
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -275,6 +276,15 @@ class QtStartWindow(QWidget):
         self.occupied()
         self.loading_counter = 0
         self.openRunWindowSignal.connect(self.openRunWindowGUI)
+
+        self.errorMessageBoxSignal.connect( lambda message :
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+        )
 
     def openRunWindowGUI(self):
         self.master.RunNewTest = QtRunWindow(
@@ -425,9 +435,10 @@ class QtStartWindow(QWidget):
     def openRunWindow_starter(self):
         self.NextButton.setText(". . .")
         self.run_window_thread = LoadingThread(self.openRunWindow,500)
+        self.run_window_thread.finished.connect(lambda : self.NextButton.setText("&Next"))
         self.run_window_thread.timer.timeout.connect(self.loader)
         self.run_window_thread.timer.start()
-        self.run_window_thread.start()  # Start the thread
+        self.run_window_thread.start()
 
     def openRunWindow(self):
         # if not os.access(os.environ.get('GUI_dir'),os.W_OK):
@@ -443,29 +454,22 @@ class QtStartWindow(QWidget):
 
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
-                QMessageBox.information(
-                    None, "Error", "No valid serial number!", QMessageBox.Ok
-                )
+                self.master.errorMessageBoxSignal.emit("No valid serial number!",) #Needs to be in a signal or QThread throws an error
                 return
             if module.getFMCPort() == "":
-                QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
+                self.master.errorMessageBoxSignal.emit("No valid ID!")
                 return
 
         self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
         
         if not self.firmwareDescription: #firmware description returns none if no modules are entered
-            QMessageBox.information(
-                None,
-                "Error",
-                message,
-                QMessageBox.Ok,
-            )
+            self.master.errorMessageBoxSignal.emit(message)
             return
 
         for fw in self.firmwareDescription:
             self.checkFwPar(fw.getBoardName())
         if self.passCheck == False:
-            reply = QMessageBox().question(
+            reply = QMessageBox().question( #For some reason this isn't an issue for QThread
                 None,
                 "Error",
                 "Front-End parameter check failed, forced to continue?",
@@ -483,7 +487,6 @@ class QtStartWindow(QWidget):
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
         self.openRunWindowSignal.emit()
-        self.run_window_thread.timer.stop()
         self.close()
 
     def closeEvent(self, event):
