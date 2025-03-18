@@ -77,19 +77,19 @@ class Tessie(QWidget):
         self.upperGridLayout.addWidget(self.lid_status_value, 3,3,1,1)
         self.upperGridLayout.setColumnMinimumWidth(3, 50)
 
-        self.ref_hum_label = QtWidgets.QLabel("Ref. Hum.")
+        self.rel_hum_label = QtWidgets.QLabel("Ref. Hum.")
         self.dew_point_label = QtWidgets.QLabel("Dew Point")
 
-        self.upperGridLayout.addWidget(self.ref_hum_label, 1,4,1,1)
+        self.upperGridLayout.addWidget(self.rel_hum_label, 1,4,1,1)
         self.upperGridLayout.addWidget(self.dew_point_label, 2,4,1,1)
 
-        self.ref_hum_value = QtWidgets.QLabel("51.92")
+        self.rel_hum_value = QtWidgets.QLabel("51.92")
         self.dew_point_value = QtWidgets.QLabel("12.83")
 
-        self.ref_hum_value.setStyleSheet("QLabel { background-color: yellow; color: black; }")
+        self.rel_hum_value.setStyleSheet("QLabel { background-color: yellow; color: black; }")
         self.dew_point_value.setStyleSheet("QLabel { background-color: green; color: black; }")
 
-        self.upperGridLayout.addWidget(self.ref_hum_value, 1,5,1,1)
+        self.upperGridLayout.addWidget(self.rel_hum_value, 1,5,1,1)
         self.upperGridLayout.addWidget(self.dew_point_value, 2,5,1,1)
         self.upperGridLayout.setColumnMinimumWidth(5, 50)
 
@@ -105,30 +105,35 @@ class Tessie(QWidget):
 
         self.setTemperatures = [1]*8
         self.TEC_labels = [QtWidgets.QLabel(f'TEC {i}:') for i in range(1,9)]
-        self.TEC_edits = [QtWidgets.QLabel(f'{self.setTemperatures[i]}') for i in range(8)]
+        self.TEC_values = [QtWidgets.QLabel(f'{self.setTemperatures[i]}') for i in range(8)]
 
         for i in range(4):
             self.lowerGridLayout.addWidget(self.TEC_labels[8-i-1],0,2*i+1,1,1,Qt.AlignRight)
-            self.lowerGridLayout.addWidget(self.TEC_edits[8-i-1],0,2*i+2)
+            self.lowerGridLayout.addWidget(self.TEC_values[8-i-1],0,2*i+2)
             self.lowerGridLayout.addWidget(self.TEC_labels[i], 1, 2*i+1,1,1,Qt.AlignRight)
-            self.lowerGridLayout.addWidget(self.TEC_edits[i], 1, 2*i+2)
+            self.lowerGridLayout.addWidget(self.TEC_values[i], 1, 2*i+2)
 
         self.setLayout(self.gridLayout)
 
     def udpate_values():
         var = coldbox.get_monitor_data("VAR", timeout)
 
-        can_errors = var["can_errors"]
-        i2c_errors = var["i2c_errors"]
-        runtime = var["runtime"]
-        status = var["valve0_status"]
+        self.canbus_errors_value.setText(var["can_errors"])
+        self.I2C_errors_value.setText(var["i2c_errors"])
+        self.runtime_value.setText(var["runtime"])
 
-        air_temp = coldbox.get_air_temperature()
-        water_temp = coldbox.get_water_temperature()
-        rel_humidity = coldbox.get_relative_humidity()
-        dew_point = coldbox.get_dewpoint()
-        lid_status = coldbox.get_lid_status() 
+        # TODO Check that this is referencing the correct value
+        self.status_value.setText(var["valve0_status"])
+
+        self.air_value.setText(coldbox.get_air_temperature())
+        self.water_value.setText(coldbox.get_water_temperature())
+        self.rel_hum_value.setText(coldbox.get_relative_humidity())
+        self.dew_point_value.setText(coldbox.get_dewpoint())
+        self.lid_status_value.setText(coldbox.get_lid_status()) 
+
         tec_temperatures = coldbox.get_tec_temperature(channel="all")
+        for temp, label in zip(tec_temperatures, self.TEC_values):
+            label.setText(temp)
 
 
 
