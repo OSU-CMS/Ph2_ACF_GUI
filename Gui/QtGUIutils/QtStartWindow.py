@@ -10,7 +10,7 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QThread
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QApplication,
@@ -50,6 +50,7 @@ import subprocess
 import time
 
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
+from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 #from Gui.QtGUIutils.QtApplication import *
 from Gui.python.CustomizedWidget import BeBoardBox
@@ -258,6 +259,8 @@ class SummaryBox(QWidget):
 
 
 class QtStartWindow(QWidget):
+    openRunWindowSignal = pyqtSignal()
+    errorMessageBoxSignal = pyqtSignal(str)
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -271,6 +274,22 @@ class QtStartWindow(QWidget):
         self.createMain()
         self.createApp()
         self.occupied()
+        self.loading_counter = 0
+        self.openRunWindowSignal.connect(self.openRunWindowGUI)
+
+        self.errorMessageBoxSignal.connect( lambda message :
+            QMessageBox.information(
+                None,
+                "Error",
+                message,
+                QMessageBox.Ok,
+            )
+        )
+
+    def openRunWindowGUI(self):
+        self.master.RunNewTest = QtRunWindow(
+            self.master, self.info, self.firmwareDescription
+        )
 
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
@@ -346,7 +365,7 @@ class QtStartWindow(QWidget):
         self.NextButton = QPushButton("&Next")
         self.NextButton.setDefault(True)
         # self.NextButton.setDisabled(True)
-        self.NextButton.clicked.connect(self.openRunWindow)
+        self.NextButton.clicked.connect(self.openRunWindow_starter)
 
         self.StartLayout.addStretch(1)
         self.StartLayout.addWidget(self.CancelButton)
@@ -409,6 +428,18 @@ class QtStartWindow(QWidget):
         # Setup the BeBoard
         pass
 
+    def loader(self):
+        self.NextButton.setText(". "*(self.loading_counter+1))
+        self.loading_counter = (self.loading_counter + 1)%3
+
+    def openRunWindow_starter(self):
+        self.NextButton.setText(". . .")
+        self.run_window_thread = LoadingThread(self.openRunWindow,500)
+        self.run_window_thread.finished.connect(lambda : self.NextButton.setText("&Next"))
+        self.run_window_thread.timer.timeout.connect(self.loader)
+        self.run_window_thread.timer.start()
+        self.run_window_thread.start()
+
     def openRunWindow(self):
         # if not os.access(os.environ.get('GUI_dir'),os.W_OK):
         # 	QMessageBox.warning(None, "Error",'write access to GUI_dir is {0}'.format(os.access(os.environ.get('GUI_dir'),os.W_OK)), QMessageBox.Ok)
@@ -423,29 +454,22 @@ class QtStartWindow(QWidget):
 
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
-                QMessageBox.information(
-                    None, "Error", "No valid serial number!", QMessageBox.Ok
-                )
+                self.master.errorMessageBoxSignal.emit("No valid serial number!",) #Needs to be in a signal or QThread throws an error
                 return
             if module.getFMCPort() == "":
-                QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
+                self.master.errorMessageBoxSignal.emit("No valid ID!")
                 return
 
         self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
         
         if not self.firmwareDescription: #firmware description returns none if no modules are entered
-            QMessageBox.information(
-                None,
-                "Error",
-                message,
-                QMessageBox.Ok,
-            )
+            self.master.errorMessageBoxSignal.emit(message)
             return
 
         for fw in self.firmwareDescription:
             self.checkFwPar(fw.getBoardName())
         if self.passCheck == False:
-            reply = QMessageBox().question(
+            reply = QMessageBox().question( #For some reason this isn't an issue for QThread
                 None,
                 "Error",
                 "Front-End parameter check failed, forced to continue?",
@@ -462,9 +486,7 @@ class QtStartWindow(QWidget):
         
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
-        self.master.RunNewTest = QtRunWindow(
-            self.master, self.info, self.firmwareDescription
-        )
+        self.openRunWindowSignal.emit()
         self.close()
 
     def closeEvent(self, event):
