@@ -374,14 +374,14 @@ class TestHandler(QObject):
         if self.instruments:
             lv_on = False
             for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["lv"]:
+                if self.instruments.status()[number]["lv"]:                   
                     lv_on = True
-                    break
-            if not lv_on:
-                self.instruments.lv_on(
-                    voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
-                    current=site_settings.ModuleCurrentMap[self.master.module_in_use],
-                )
+                    continue
+                if not lv_on:               
+                    self.instruments.lv_on(
+                        voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                        current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                    )
         
         if "IVCurve" in testName:
             self.currentTest = testName
@@ -416,22 +416,23 @@ class TestHandler(QObject):
         if self.instruments:
             default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
             #assumes only 1 HV titled 'hv' in instruments.json
-            hv_on = False
+            hv_on_module = False
+            mod_dict = self.instruments.get_modules()           
             for number in self.instruments.get_modules().keys():
                 if self.instruments.status()[number]["hv"] == '1':
-                    hv_on = True
+                    hv_on_module = True
                     break
-            if testName == "SCurveScan_2100_FWD":
-                if hv_on:
-                    self.instruments.hv_off()
-                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
-                else:
-                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
-                testName = "SCurveScan_2100"
-                hv_on = True
-            if not hv_on:
-                self.instruments.hv_on(
-                    voltage=default_hv_voltage, delay=0.3, step_size=10,
+                if testName == "SCurveScan_2100_FWD":
+                    if hv_on_module:
+                        self.instruments.hv_off()
+                        self.instruments.hv_on_module(module=mod_dict[number], voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
+                    else:
+                        self.instruments.hv_on_module(module=mod_dict[number], voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10)
+                    testName = "SCurveScan_2100"
+                    hv_on_module = True
+                if not hv_on_module:
+                    self.instruments.hv_on_module( module = mod_dict[number],
+                        voltage=default_hv_voltage, delay=0.3, step_size=10,
                 )
 
         self.tempHistory = [0.0] * self.numChips
