@@ -6,7 +6,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/ruff-action@v3
-      - run: ruff check --fix Gui
-      - run: ruff format --check --diff Gui
-
-                
+        with:
+          args: "check"
+          src: "./Gui"
+      -uses: astral-sh/ruff-action@v3
+        with:
+          args: "format --check --diff"
+          src: "./Gui"
