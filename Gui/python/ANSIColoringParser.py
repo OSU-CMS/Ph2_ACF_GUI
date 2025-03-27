@@ -1,6 +1,3 @@
-import re
-from Gui.python.logging_config import logger
-
 ConvertForSpan = {
     b"<": b"&#60;",
     b">": b"&#62;",

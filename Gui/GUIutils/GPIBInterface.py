@@ -1,19 +1,18 @@
 import pyvisa as visa
-import importlib
 import subprocess
 import logging
 import os
 import time
 
 
-#from Gui.GUIutils.settings import *
-#from Configuration.XMLUtil import *
-#from Gui.python.TCP_Interface import *
+# from Gui.GUIutils.settings import *
+# from Configuration.XMLUtil import *
+# from Gui.python.TCP_Interface import *
 from Gui.siteSettings import (
     ModuleVoltageMapSLDO,
     ModuleVoltageMap,
     ModuleCurrentMap,
-    GPIB_DebugMode
+    GPIB_DebugMode,
 )
 from keysightE3633A import KeysightE3633A
 from keithley2410 import Keithley2410
@@ -259,7 +258,7 @@ class PowerSupply:
         try:
             HVoutputstatus = self.Instrument.status()
             return str(HVoutputstatus)
-        except Exception as err:
+        except Exception:
             return None
 
     def ReadVoltage(self):
@@ -269,7 +268,7 @@ class PowerSupply:
             elif self.PowerType == "HV":
                 voltage = self.Instrument.query("VOLTAGE")
             return voltage
-        except Exception as err:
+        except Exception:
             return None
 
     def SetVoltage(self, voltage=0.0):
@@ -278,7 +277,7 @@ class PowerSupply:
 
         try:
             self.Instrument.set("VOLTAGE1", voltage)
-        except Exception as err:
+        except Exception:
             logging.err(
                 "Failed to set {} voltage to {}".format(self.PowerType, voltage)
             )
@@ -299,7 +298,7 @@ class PowerSupply:
             return
         try:
             self.Instrument.set("CURRENT1", current)
-        except Exception as err:
+        except Exception:
             logging.error(
                 "Failed to set {} current to {}".format(self.PowerType, current)
             )
@@ -412,7 +411,7 @@ class PowerSupply:
                     print("doing turnOffHV in rampingUP")  # debug
                 # self.Instrument.set('SENSE_CURRENT_RANGE', 10e-6)
                 # self.Instrument.set('VOLTAGE_MODE', 'FIX')
-               # self.SetHVComplianceLimit(default_hv_compliance_current)
+                # self.SetHVComplianceLimit(default_hv_compliance_current)
                 self.SetHVVoltage(0)
                 self.TurnOn()
 
@@ -440,7 +439,7 @@ class PowerSupply:
             cmd = "K2410:" + cmd
 
     def Status(self):
-        if not "KeySight" in self.Model:
+        if "KeySight" not in self.Model:
             return -1
 
         try:
@@ -451,7 +450,7 @@ class PowerSupply:
             return None
 
     def Reset(self):
-        if not "KeySight" in self.Model:
+        if "KeySight" not in self.Model:
             return -1
         try:
             reply = self.Instrument.reset()

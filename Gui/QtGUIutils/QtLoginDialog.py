@@ -1,50 +1,24 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-#from PyQt5.QtGui import QPixmap
+
+# from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
     QCheckBox,
     QComboBox,
-    QDateTimeEdit,
-    QDial,
     QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
     QMessageBox,
-    QSplitter,
 )
 
-import sys
-import os
-import subprocess
-from subprocess import Popen, PIPE
 
 # from Gui.GUIutils.settings import dblist
 from Gui.GUIutils.DBConnection import (
     QtStartConnection,
     isActive,
 )
-from Gui.python.logging_config import logger
 
 
 class QtLoginDialog(QDialog):

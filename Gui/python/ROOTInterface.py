@@ -113,9 +113,9 @@ def TCanvas2SVG(outputDir, canvas, name=None):
         if "SCurve" in name:
             canvas.SetLogz()
         if "PixelAlive" in name:
-            ROOT.gStyle.SetOptStat(0) #no statistics box
+            ROOT.gStyle.SetOptStat(0)  # no statistics box
         else:
-            ROOT.gStyle.SetOptStat(1111) #default statistics box
+            ROOT.gStyle.SetOptStat(1111)  # default statistics box
         canvas.Print(outputFile)
         # canvas.Close()
         logger.info(outputFile + " is saved")
@@ -129,7 +129,7 @@ def GetBinary(fileName):
     return binaryData
 
 
-#@precondition: commands must be a list of strings representing valid root shell commands
+# @precondition: commands must be a list of strings representing valid root shell commands
 def executeCommandSequence(commands: list):
     for command in commands:
         ROOT.gROOT.ProcessLine(command)

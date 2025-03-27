@@ -1,49 +1,27 @@
 from PyQt5.QtCore import Qt, QDateTime
-#from PyQt5.QtGui import QFont, QPixmap
+
+# from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
     QDateTimeEdit,
-    QDial,
-    QDialog,
     QFileDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
     QMessageBox,
 )
 
-import sys
 import os
-import numpy
 
 from Gui.GUIutils.DBConnection import (
     describeTable,
     insertGenericTable,
 )
-#from Gui.GUIutils.guiUtils import *
-#from Gui.QtGUIutils.QtDBTableWidget import *
-#from Gui.QtGUIutils.QtFileDialogPreview import *
-from Gui.python.logging_config import logger
+# from Gui.GUIutils.guiUtils import *
+# from Gui.QtGUIutils.QtDBTableWidget import *
+# from Gui.QtGUIutils.QtFileDialogPreview import *
 
 
 class QtImageInsertionTab(QWidget):

@@ -4,7 +4,6 @@ from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from Gui.python.Peltier import PeltierSignalGenerator
 import time
 import os
-from Gui.python.logging_config import logger
 
 
 class Peltier(QWidget):
@@ -92,35 +91,45 @@ class Peltier(QWidget):
                 self.pelt.createCommand(
                     "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
-            )[1]: raise Exception("Could not communicate with Peltier")
+            )[1]:
+                raise Exception("Could not communicate with Peltier")
 
                 # Allows set point to be set by computer software
             if not self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                 )
-            )[1]: raise Exception("Could not communicate with Peltier") # Temperature should be PID controlled
+            )[1]:
+                raise Exception(
+                    "Could not communicate with Peltier"
+                )  # Temperature should be PID controlled
 
             if not self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
-            )[1]: raise Exception("Could not communicate with Peltier")   # Turn off power to Peltier in case it is on at the start
+            )[1]:
+                raise Exception(
+                    "Could not communicate with Peltier"
+                )  # Turn off power to Peltier in case it is on at the start
 
             if not self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Proportional Bandwidth Write",
                     ["0", "0", "0", "0", "0", "0", "c", "8"],
                 )
-            )[1]: raise Exception("Could not communicate with Peltier")  # Set proportional bandwidth
-
+            )[1]:
+                raise Exception(
+                    "Could not communicate with Peltier"
+                )  # Set proportional bandwidth
 
             # Ensure the Peltier cannot heat up/change polarity to maintain setpoint
             if not self.pelt.sendCommand(
                 self.pelt.createCommand(
                     "Heat Multiplier Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
-            )[1]: raise Exception("Could not communicate with Peltier")
+            )[1]:
+                raise Exception("Could not communicate with Peltier")
 
             message, _ = self.pelt.sendCommand(
                 self.pelt.createCommand(
@@ -150,7 +159,6 @@ class Peltier(QWidget):
 
         except Exception as e:
             print("Error while attempting to setup Peltier Controller: ", e)
-            
 
     def enableButtons(self):
         self.powerButton.setEnabled(True)
@@ -187,7 +195,7 @@ class Peltier(QWidget):
                 )
             except Exception as e:
                 print("Could not turn off controller due to error: ", e)
-                
+
     def setPolarityStatus(self, polarity):
         if polarity[8] == "0":
             self.polarityValue = "HEAT WP1+ and WP2-"

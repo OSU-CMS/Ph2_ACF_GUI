@@ -1,26 +1,24 @@
 """
-  DBConnection.py
-  brief                 Setting up connection to database
-  author                Kai Wei
-  version               0.1
-  date                  30/09/20
-  Support:              email to wei.856@osu.edu
+DBConnection.py
+brief                 Setting up connection to database
+author                Kai Wei
+version               0.1
+date                  30/09/20
+Support:              email to wei.856@osu.edu
 """
 
 import mysql.connector
-from mysql.connector import Error
 import subprocess
 import os
 from itertools import compress
 
-from subprocess import Popen, PIPE
 from PyQt5.QtWidgets import QMessageBox
-#from Gui.GUIutils.settings import *
+
+# from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import (
     isActive,
     formatter,
 )
-from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
 DB_TestResult_Schema = [
@@ -28,8 +26,6 @@ DB_TestResult_Schema = [
 ]
 
 # mySQL databse server as test, may need to extend to other DB format
-
-
 
 
 def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
@@ -50,7 +46,7 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
             host=str(TryHostAddress),
             database=str(TryDatabase),
             ssl_disabled=True,
-            connection_timeout = 5000,
+            connection_timeout=5000,
         )
     except (ValueError, RuntimeError, TypeError, NameError, mysql.connector.Error):
         msg = QMessageBox()
@@ -103,7 +99,7 @@ def getAllTests(dbconnection):
     localList = list(Test_to_Ph2ACF_Map.keys())
     remoteList = [remoteList[i][0] for i in range(len(remoteList))]
     for test in remoteList:
-        if not test in localList:
+        if test not in localList:
             localList.append(test)
     return sorted(set(localList), key=localList.index)
 
@@ -144,9 +140,7 @@ def retrieveModuleLastTest(dbconnection, module_id):
 						from results_test T WHERE Module_ID = {0}
 						group by Module_ID
 					) LATEST ON T.Module_ID = LATEST.Module_ID AND T.ExecutionTime = LATEST.MaxDate
-				""".format(
-        str(module_id)
-    )
+				""".format(str(module_id))
     cur = dbconnection.cursor()
     cur.execute(sql_query)
     return cur.fetchall()
@@ -155,9 +149,7 @@ def retrieveModuleLastTest(dbconnection, module_id):
 def insertTestResult(dbconnection, record):
     sql_query = """ INSERT INTO results_test ({},{},{},{},{},{})
 					VALUES ({},{},{},{},{},{})
-				""".format(
-        *DB_TestResult_Schema, *record
-    )
+				""".format(*DB_TestResult_Schema, *record)
     cur = dbconnection.cursor()
     cur.execute(sql_query)
     dbconnection.commit()
@@ -512,77 +504,85 @@ def getByColumnName(column_name, header, databody):
 ##########################################################################
 
 
-
-
-
 ##########################################################################
 ##  Functions for getting trim value (Begin)
 ##########################################################################
-class GetTrimClass():
-	def __init__(self):
-		self.connection = []
-	def get_connection(self):
-		return self.connection
-	def GetTrim(self,serialNumber,debug = False):
-		connection = self.connection
-		if connection == "Offline" or connection == []:
-			print("DB is offline")
-			return [],[]
-		connection.connect()
-		cursor = connection.cursor()
-		cursor.execute(f"select component.id from component where component.serial_number='{serialNumber}';")
-		results = cursor.fetchall()
-		#handle the error of can't find the data
-		if results == []:
-			return [],[]
-		if debug == True:
-			print("raw ID:"+str(result))# it should look like [(778,)]
-		parenetNum = results[0][0]
+class GetTrimClass:
+    def __init__(self):
+        self.connection = []
 
-		cursor.execute(f"select component.description from component where component.serial_number='{serialNumber}';")
-		results = cursor.fetchall() #[('TFPX CROC 1x2 HPK sensor module',)]
-		if debug == True:
-			print("raw description"+str(results))
+    def get_connection(self):
+        return self.connection
 
-		if "sensor" in str(results[0][0]):
-			cursor.execute(f"select component.id from component where component.parent='{parenetNum}';")
-			chipSensorResult=cursor.fetchall()
-			secondParent=chipSensorResult[0][0]
-			if debug == True:
-				print("it is sensor module")
-				print("secondParent" + str(secondParent))
-			parenetNum = secondParent
+    def GetTrim(self, serialNumber, debug=False):
+        connection = self.connection
+        if connection == "Offline" or connection == []:
+            print("DB is offline")
+            return [], []
+        connection.connect()
+        cursor = connection.cursor()
+        cursor.execute(
+            f"select component.id from component where component.serial_number='{serialNumber}';"
+        )
+        results = cursor.fetchall()
+        # handle the error of can't find the data
+        if results == []:
+            return [], []
+        if debug == True:
+            print("raw ID:" + str(result))  # it should look like [(778,)]
+        parenetNum = results[0][0]
+
+        cursor.execute(
+            f"select component.description from component where component.serial_number='{serialNumber}';"
+        )
+        results = cursor.fetchall()  # [('TFPX CROC 1x2 HPK sensor module',)]
+        if debug == True:
+            print("raw description" + str(results))
+
+        if "sensor" in str(results[0][0]):
+            cursor.execute(
+                f"select component.id from component where component.parent='{parenetNum}';"
+            )
+            chipSensorResult = cursor.fetchall()
+            secondParent = chipSensorResult[0][0]
+            if debug == True:
+                print("it is sensor module")
+                print("secondParent" + str(secondParent))
+            parenetNum = secondParent
+
+        # get VDDA value
+        VDDAList = []
+        cursor.execute(
+            f"SELECT component.serial_number,component.parent,measurement.name,type,component.site,ival from component,measurements,measurement where component.parent = {parenetNum} and measurements.name=measurement.name and component.id=measurement.part_id and measurement.name='TRIM_VDDA';"
+        )
+        results = cursor.fetchall()
+        for result in results:
+            VDDA = result[-1]
+            siteNum = result[-2]
+            VDDAList.append([siteNum, VDDA])
+        sorted_VDDAlist = sorted(VDDAList, key=lambda x: x[0])
+        if debug == True:
+            print("sorted_VDDAlist:" + str(sorted_VDDAlist))
+
+        VDDDList = []
+        cursor.execute(
+            f"SELECT component.serial_number,component.parent,measurement.name,type,component.site,ival from component,measurements,measurement where component.parent = {parenetNum} and measurements.name=measurement.name and component.id=measurement.part_id and measurement.name='TRIM_VDDD';"
+        )
+        results = cursor.fetchall()
+        for result in results:
+            VDDD = result[-1]
+            siteNum = result[-2]
+            VDDDList.append([siteNum, VDDD])
+
+        sorted_VDDDlist = sorted(
+            VDDDList, key=lambda x: x[0]
+        )  # make sure the we can get VDDD value base on the order of rising chip no
+        if debug == True:
+            print("sorted_VDDDlist:" + str(sorted_VDDDlist))
+        connection.close()
+        return sorted_VDDAlist, sorted_VDDDlist
 
 
-		#get VDDA value
-		VDDAList = []
-		cursor.execute(f"SELECT component.serial_number,component.parent,measurement.name,type,component.site,ival from component,measurements,measurement where component.parent = {parenetNum} and measurements.name=measurement.name and component.id=measurement.part_id and measurement.name='TRIM_VDDA';")
-		results = cursor.fetchall()
-		for result in results:
-			VDDA = result[-1]
-			siteNum = result[-2]
-			VDDAList.append([siteNum,VDDA])
-		sorted_VDDAlist = sorted(VDDAList, key=lambda x: x[0])
-		if debug == True:
-			print("sorted_VDDAlist:"+str(sorted_VDDAlist))
-
-
-
-		VDDDList = []
-		cursor.execute(f"SELECT component.serial_number,component.parent,measurement.name,type,component.site,ival from component,measurements,measurement where component.parent = {parenetNum} and measurements.name=measurement.name and component.id=measurement.part_id and measurement.name='TRIM_VDDD';")
-		results = cursor.fetchall()
-		for result in results:
-			VDDD = result[-1]
-			siteNum = result[-2]
-			VDDDList.append([siteNum,VDDD])
-
-		sorted_VDDDlist = sorted(VDDDList, key=lambda x: x[0]) #make sure the we can get VDDD value base on the order of rising chip no
-		if debug == True:
-			print("sorted_VDDDlist:" + str(sorted_VDDDlist))
-		connection.close()
-		return sorted_VDDAlist,sorted_VDDDlist
 ##########################################################################
 ##  Functions for getting trim value (END)
 ##########################################################################
-
-

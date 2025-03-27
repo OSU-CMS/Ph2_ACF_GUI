@@ -1,45 +1,23 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QDateTime
-from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
     QAction,
-    QApplication,
-    QCheckBox,
     QComboBox,
     QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMenuBar,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
     QTableView,
-    QTableWidget,
     QTabWidget,
     QTextEdit,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
     QMainWindow,
     QMessageBox,
-    QSplitter,
 )
 
-import sys
-import os
-import subprocess
-from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import (
     QtStartConnection,
@@ -52,14 +30,14 @@ from Gui.GUIutils.DBConnection import (
     describeInstitute,
     retrieveAllInstitute,
     updateGenericTable,
-    getByColumnName
+    getByColumnName,
 )
 from Gui.GUIutils.guiUtils import isActive
 from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
 from Gui.QtGUIutils.QtViewTableTab import QtViewTableTab
 from Gui.QtGUIutils.QtImageInsertionTab import QtImageInsertionTab
 from Gui.QtGUIutils.QtImageViewerTab import QtImageViewerTab
-from Gui.python.logging_config import logger
+
 
 class QtDBConsoleWindow(QMainWindow):
     def __init__(self, master):
@@ -1169,7 +1147,9 @@ class QtDBConsoleWindow(QMainWindow):
         pass
 
     def changeDBList(self):
-        self.DBNames = DBNames[str(self.HostName.currentText())] #only reference to DBNames I could find is commented out in Gui/GUIutils/settings.py
+        self.DBNames = DBNames[
+            str(self.HostName.currentText())
+        ]  # only reference to DBNames I could find is commented out in Gui/GUIutils/settings.py
         self.DatabaseCombo.clear()
         self.DatabaseCombo.addItems(self.DBNames)
         self.DatabaseCombo.setCurrentIndex(0)

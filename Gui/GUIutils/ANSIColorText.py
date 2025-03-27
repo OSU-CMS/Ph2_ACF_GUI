@@ -1,14 +1,14 @@
 """
-  ANSIColorText.py
-  brief                 Text handler for Ph2 ACF GUI
-  author                Kai Wei
-  version               0.1
-  date                  09/24/20
-  Support:              email to wei.856@osu.edu
+ANSIColorText.py
+brief                 Text handler for Ph2 ACF GUI
+author                Kai Wei
+version               0.1
+date                  09/24/20
+Support:              email to wei.856@osu.edu
 """
+
 import tkinter as tk
 import re
-from Gui.python.logging_config import logger
 
 
 class AnsiColorText(tk.Text):

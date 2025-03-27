@@ -1,40 +1,17 @@
-#from PyQt5.QtCore import *
-#from PyQt5.QtGui import QFont, QPixmap
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
-    QApplication,
-    QCheckBox,
     QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
     QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
 )
 
-import sys
-import os
-import numpy
 
 from Gui.GUIutils.DBConnection import (
     getTableList,
@@ -43,9 +20,9 @@ from Gui.GUIutils.DBConnection import (
     retrieveGenericTable,
 )
 import mysql.connector
-#from Gui.GUIutils.guiUtils import *
+
+# from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
-from Gui.python.logging_config import logger
 
 
 class QtViewTableTab(QWidget):

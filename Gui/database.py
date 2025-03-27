@@ -1,33 +1,31 @@
-
 import logging
 
 # Customize the logging configuration
 logging.basicConfig(
-   level=logging.INFO,
-   format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-   filename='my_project.log',  # Specify a log file
-   filemode='w'  # 'w' for write, 'a' for append
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    filename="my_project.log",  # Specify a log file
+    filemode="w",  # 'w' for write, 'a' for append
 )
 
 logger = logging.getLogger(__name__)
 
-'''
+"""
   database.py
   brief                 Functions for database interfacing
   author                Brandon Manley
   version               0.1
   date                  06/08/20
   Support:               email to manley.329@osu.edu
-'''
+"""
 
 import config
 import sqlite3
-from sqlite3 import Error
 
 
 def createDatabaseConnection(db_file):
     conn = None
-    try:    
+    try:
         conn = sqlite3.connect(db_file)
     except:
         pass
@@ -35,16 +33,15 @@ def createDatabaseConnection(db_file):
 
 
 def createTestsTable():
-
     conn = createDatabaseConnection(config.database)
-    sql = '''   CREATE TABLE IF NOT EXISTS tests (
+    sql = """   CREATE TABLE IF NOT EXISTS tests (
                     id integer PRIMARY KEY,
                     module_id integer,
                     user_name text,
                     test_name text,
                     date text,
                     grade integer
-                ); '''
+                ); """
     try:
         c = conn.cursor()
         c.execute(sql)
@@ -53,8 +50,8 @@ def createTestsTable():
 
 
 def createTestEntry(runInfo):
-    sql = '''   INSERT INTO tests(module_id,user_name,test_name,date,grade)
-                VALUES(?,?,?,?,?)  '''
+    sql = """   INSERT INTO tests(module_id,user_name,test_name,date,grade)
+                VALUES(?,?,?,?,?)  """
     conn = createDatabaseConnection(config.database)
     cur = conn.cursor()
     cur.execute(sql, runInfo)
@@ -63,13 +60,13 @@ def createTestEntry(runInfo):
 
 
 def updateTestEntry(newInfo):
-    sql = '''   UPDATE tests
+    sql = """   UPDATE tests
                 SET module_id = ?,
                     user_name = ?,
                     test_name = ?,
                     date = ?,
                     grade = ?
-                WHERE id = ?    '''
+                WHERE id = ?    """
     conn = createDatabaseConnection(config.database)
     cur = conn.cursor()
     cur.execute(sql, newInfo)
@@ -77,7 +74,7 @@ def updateTestEntry(newInfo):
 
 
 def deleteTestEntry(id):
-    sql = 'DELETE FROM tests WHERE id=?'
+    sql = "DELETE FROM tests WHERE id=?"
     conn = createDatabaseConnection(config.database)
     cur = conn.cursor()
     cur.execute(sql, (id,))
@@ -86,18 +83,17 @@ def deleteTestEntry(id):
 
 def retrieveAllTestTasks():
     conn = createDatabaseConnection(config.database)
-    cur = conn.cursor() 
-    cur.execute('SELECT * FROM tests')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM tests")
     return cur.fetchall()
 
 
 def createModesTable():
-
     conn = createDatabaseConnection(config.database)
-    sql = '''   CREATE TABLE IF NOT EXISTS modes (
+    sql = """   CREATE TABLE IF NOT EXISTS modes (
                     id integer PRIMARY KEY,
                     mode_name text
-                ); '''
+                ); """
     try:
         c = conn.cursor()
         c.execute(sql)
@@ -106,8 +102,8 @@ def createModesTable():
 
 
 def createModeEntry(modeInfo):
-    sql = '''   INSERT INTO modes(mode_name)
-                VALUES(?)  '''
+    sql = """   INSERT INTO modes(mode_name)
+                VALUES(?)  """
     conn = createDatabaseConnection(config.database)
     cur = conn.cursor()
     cur.execute(sql, modeInfo)
@@ -117,38 +113,38 @@ def createModeEntry(modeInfo):
 
 def retrieveAllModes():
     conn = createDatabaseConnection(config.database)
-    cur = conn.cursor() 
-    cur.execute('SELECT * FROM modes')
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM modes")
     return cur.fetchall()
 
 
 def deleteAllModes():
-    sql = 'DELETE FROM modes'
+    sql = "DELETE FROM modes"
     conn = createDatabaseConnection(config.database)
-    cur = conn.cursor() 
+    cur = conn.cursor()
     cur.execute(sql)
     conn.commit()
 
 
 def retrieveModuleTests(module_id):
-	sql = 'SELECT * FROM tests WHERE module_id=?'
-	conn = createDatabaseConnection(config.database)
-	cur = conn.cursor() 
-	cur.execute(sql, (module_id,))
-	return cur.fetchall()
+    sql = "SELECT * FROM tests WHERE module_id=?"
+    conn = createDatabaseConnection(config.database)
+    cur = conn.cursor()
+    cur.execute(sql, (module_id,))
+    return cur.fetchall()
 
 
 def retrieveModuleTest(row_id):
-	sql = 'SELECT * FROM tests WHERE id=?'
-	conn = createDatabaseConnection(config.database)
-	cur = conn.cursor() 
-	cur.execute(sql, (row_id,))
-	return cur.fetchall()
+    sql = "SELECT * FROM tests WHERE id=?"
+    conn = createDatabaseConnection(config.database)
+    cur = conn.cursor()
+    cur.execute(sql, (row_id,))
+    return cur.fetchall()
 
 
 def deleteAllTests():
-    sql = 'DELETE FROM tests'
+    sql = "DELETE FROM tests"
     conn = createDatabaseConnection(config.database)
-    cur = conn.cursor() 
+    cur = conn.cursor()
     cur.execute(sql)
     conn.commit()

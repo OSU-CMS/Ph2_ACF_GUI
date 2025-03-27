@@ -1,47 +1,11 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSortFilterProxyModel, pyqtSignal
-from PyQt5.QtGui import QBrush, QColor, QPixmap, QStandardItemModel, QStandardItem
-from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
-    QMessageBox,
-    QSplitter,
-)
+from PyQt5.QtGui import QBrush, QColor, QStandardItemModel, QStandardItem
 
-import sys
-import os
-import subprocess
-from subprocess import Popen, PIPE
 
-#from Gui.GUIutils.DBConnection import *
-#from Gui.GUIutils.guiUtils import *
-#from Gui.GUIutils.settings import *
-from Gui.python.logging_config import logger
+# from Gui.GUIutils.DBConnection import *
+# from Gui.GUIutils.guiUtils import *
+# from Gui.GUIutils.settings import *
 
 Color = {
     "Local": QColor(255, 0, 0),

@@ -5,24 +5,27 @@ from Gui.python.logging_config import logger
 from Gui.siteSettings import IVcurve_range
 
 
-
 class IVCurveThread(QThread):
     measureSignal = pyqtSignal(str, object)
     progressSignal = pyqtSignal(str, float)
 
-    def __init__(self, parent, testName, instrument_cluster=None, execute_each_step=lambda:None):
+    def __init__(
+        self, parent, testName, instrument_cluster=None, execute_each_step=lambda: None
+    ):
         super(IVCurveThread, self).__init__()
         self.instruments = instrument_cluster
         self.parent = parent
         self.measureSignal.connect(self.parent.transitMeasurment)
-        self.progressSignal.connect(self.parent.transmitProgress) #FIXME add slot function
+        self.progressSignal.connect(
+            self.parent.transmitProgress
+        )  # FIXME add slot function
         self.exiting = False
         self.setTerminationEnabled(True)
         self.execute_each_step = execute_each_step
 
         self.startVal = 0
         self.target = 0
-        #Making sure IVcurve peak is a negative voltage
+        # Making sure IVcurve peak is a negative voltage
         if IVcurve_range[testName] < 0:
             self.stopVal = IVcurve_range[testName]
             print("IVcurve range: ", self.stopVal)
@@ -34,8 +37,13 @@ class IVCurveThread(QThread):
         self.turnOn()
 
     def turnOn(self):
-        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
-        self.instruments.hv_off(execute_each_step=lambda:self.execute_each_step(starting_voltages))
+        starting_voltages = [
+            np.abs(getattr(module["hv"], "voltage"))
+            for module in self.instruments._module_dict.values()
+        ]
+        self.instruments.hv_off(
+            execute_each_step=lambda: self.execute_each_step(starting_voltages)
+        )
         self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
         self.instruments.hv_set_ocp(0.00001)
 
@@ -46,21 +54,25 @@ class IVCurveThread(QThread):
         return False
 
     def getProgress(self):
-        self.percentStep = abs(100*self.stepLength/self.stopVal)
+        self.percentStep = abs(100 * self.stepLength / self.stopVal)
         self.progressSignal.emit("IVCurve", self.percentStep)
-        
 
     def abortTest(self):
         self.exiting = True
 
     def run(self):
         try:
-            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
-            self.instruments.hv_off(execute_each_step=lambda:self.execute_each_step(starting_voltages))
-            
+            starting_voltages = [
+                np.abs(getattr(module["hv"], "voltage"))
+                for module in self.instruments._module_dict.values()
+            ]
+            self.instruments.hv_off(
+                execute_each_step=lambda: self.execute_each_step(starting_voltages)
+            )
+
             _, measurements = self.instruments.hv_on(
                 voltage=self.stopVal,
-                step_size= self.stepLength,
+                step_size=self.stepLength,
                 delay=0.2,
                 measure=True,
                 execute_each_step=self.getProgress,
@@ -79,6 +91,7 @@ class IVCurveThread(QThread):
         except Exception as e:
             print("IV Curve scan failed with {}".format(e))
 
+
 class IVCurveHandler(QObject):
     measureSignal = pyqtSignal(str, object)
     stopSignal = pyqtSignal(object)
@@ -91,9 +104,16 @@ class IVCurveHandler(QObject):
         self.instruments = instrument_cluster
         self.execute_each_step = execute_each_step
 
-        assert self.instruments is not None, logger.debug("Error instantiating instrument cluster")
+        assert self.instruments is not None, logger.debug(
+            "Error instantiating instrument cluster"
+        )
 
-        self.test = IVCurveThread(self, testName, instrument_cluster=self.instruments, execute_each_step=self.execute_each_step)
+        self.test = IVCurveThread(
+            self,
+            testName,
+            instrument_cluster=self.instruments,
+            execute_each_step=self.execute_each_step,
+        )
         self.test.progressSignal.connect(self.transmitProgress)
         self.test.measureSignal.connect(self.finish)
 
@@ -105,6 +125,7 @@ class IVCurveHandler(QObject):
             return
         self.test.start()
         self.startSignal.emit()
+
     def transitMeasurment(self, measure):
         self.measureSignal.emit("IVCurve", measure)
 
@@ -112,15 +133,26 @@ class IVCurveHandler(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
-        starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
-        self.instruments.hv_off(execute_each_step=lambda : self.execute_each_step(starting_voltages))
+        starting_voltages = [
+            np.abs(getattr(module["hv"], "voltage"))
+            for module in self.instruments._module_dict.values()
+        ]
+        self.instruments.hv_off(
+            execute_each_step=lambda: self.execute_each_step(starting_voltages)
+        )
         self.finished.emit(test, measure)
 
     def stop(self):
         try:
             self.test.abortTest()
-            starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
-            self.instruments.hv_off(no_lock=True, execute_each_step=lambda : self.execute_each_step(starting_voltages))
+            starting_voltages = [
+                np.abs(getattr(module["hv"], "voltage"))
+                for module in self.instruments._module_dict.values()
+            ]
+            self.instruments.hv_off(
+                no_lock=True,
+                execute_each_step=lambda: self.execute_each_step(starting_voltages),
+            )
             self.test.terminate()
         except Exception as err:
             print(f"Failed to stop the IV test due to error {err}")

@@ -1,45 +1,20 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QFileDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMainWindow,
     QMessageBox,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QSplitter,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QVBoxLayout,
     QWidget,
 )
 
-import sys
-import os
-import subprocess
-from subprocess import Popen, PIPE
 
-#from Gui.GUIutils.DBConnection import *
-#from Gui.GUIutils.guiUtils import *
-from Gui.python.logging_config import logger
+# from Gui.GUIutils.DBConnection import *
+# from Gui.GUIutils.guiUtils import *
 
 
 class RD53Widget(QWidget):

@@ -1,49 +1,27 @@
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QImage, QFont, QPixmap
+from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
-    QApplication,
-    QCheckBox,
     QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
     QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
     QMessageBox,
 )
 
-import sys
-import os
-import numpy
 
 from Gui.GUIutils.DBConnection import (
     mysql,
     retrieveWithConstraint,
-    )
-#from Gui.GUIutils.guiUtils import *
+)
+
+# from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
-#from Gui.QtGUIutils.QtImageViewer import *
-from Gui.python.logging_config import logger
+# from Gui.QtGUIutils.QtImageViewer import *
 
 
 class QtImageViewerTab(QWidget):
@@ -111,9 +89,8 @@ class QtImageViewerTab(QWidget):
             for row in range(len(self.proxy.dataBody)):
                 DetailButton = QPushButton("&Show...")
                 DetailButton.clicked.connect(
-                    lambda state, x="{0}".format(
-                        self.proxy.dataBody[row][0]
-                    ): self.openImage(x)
+                    lambda state,
+                    x="{0}".format(self.proxy.dataBody[row][0]): self.openImage(x)
                 )
                 self.view.setIndexWidget(self.proxy.index(row, 0), DetailButton)
 

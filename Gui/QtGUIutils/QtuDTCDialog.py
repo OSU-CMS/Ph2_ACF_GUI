@@ -2,47 +2,23 @@
 # from PyQt5.QtCore import *
 # from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
     QComboBox,
-    QDateTimeEdit,
-    QDial,
     QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
-    QMessageBox,
-    QSplitter,
 )
 
-import sys
 import os
 import subprocess
-from subprocess import Popen, PIPE
+from subprocess import PIPE
 
 from Gui.python.logging_config import logger
-#from Gui.GUIutils.settings import *
+
+# from Gui.GUIutils.settings import *
 from Configuration.XMLUtil import LoadXML
-#from Gui.python.Firmware import *
+# from Gui.python.Firmware import *
 
 
 class QtuDTCDialog(QDialog):
@@ -94,7 +70,10 @@ class QtuDTCDialog(QDialog):
 
     def fetchFPGAConfigs(self):
         try:
-            InputFile = os.environ.get("PH2ACF_BASE_DIR") + f"/settings/CMSIT_{self.module[1].getBoardName()}.xml"
+            InputFile = (
+                os.environ.get("PH2ACF_BASE_DIR")
+                + f"/settings/CMSIT_{self.module[1].getBoardName()}.xml"
+            )
             root, tree = LoadXML(InputFile)
             fwIP = self.module.getIPAddress()
             changeMade = False
@@ -157,7 +136,8 @@ class QtuDTCDialog(QDialog):
             [
                 "fpgaconfig",
                 "-c",
-                os.environ.get("PH2ACF_BASE_DIR") + f"/settings/CMSIT_{self.module[1].getBoardName()}.xml.gui",
+                os.environ.get("PH2ACF_BASE_DIR")
+                + f"/settings/CMSIT_{self.module[1].getBoardName()}.xml.gui",
                 "-i",
                 self.uDTCFile,
             ],

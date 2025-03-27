@@ -1,14 +1,14 @@
 """
-  FirmwareUtil.py
-  brief                 utility functions for firmware 
-  author                Kai Wei
-  version               0.1
-  date                  03/11/20
-  Support:              email to wei.856@osu.edu
+FirmwareUtil.py
+brief                 utility functions for firmware
+author                Kai Wei
+version               0.1
+date                  03/11/20
+Support:              email to wei.856@osu.edu
 """
+
 import subprocess
 from datetime import datetime
-from Gui.python.logging_config import logger
 
 
 def firmwarePingCheck(firmware, fileName):

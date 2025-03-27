@@ -36,11 +36,12 @@ from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT
 
 
 # from Gui.QtGUIutils.QtStartWindow import *
-#from Gui.QtGUIutils.QtCustomizeWindow import *
-#from Gui.QtGUIutils.QtTableWidget import *
+# from Gui.QtGUIutils.QtCustomizeWindow import *
+# from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
 from Gui.QtGUIutils.QtLoginDialog import *
-#from Gui.python.ResultTreeWidget import *
+
+# from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
 from Gui.python.IVCurveHandler import IVCurveHandler
@@ -77,8 +78,8 @@ class TestHandler(QObject):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
-        self.mod_dict={}
-        self.fused_dict_index=[-1,-1]
+        self.mod_dict = {}
+        self.fused_dict_index = [-1, -1]
         # self.LVpowersupply.Reset()
 
         # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
@@ -89,20 +90,30 @@ class TestHandler(QObject):
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
-        self.info = info # This is the name of the test sequence or just the name of the test if it is a single test
+        self.info = info  # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
-        
-        self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
-        
+
+        self.modules = [
+            module for beboard in self.firmware for module in beboard.getModules()
+        ]
+
         self.finished_tests = []
         self.BBanalysis_root_files = []
-        
-        self.numChips = len([chipID for module in self.modules for chipID in module.getEnabledChips().keys()])
-                
+
+        self.numChips = len(
+            [
+                chipID
+                for module in self.modules
+                for chipID in module.getEnabledChips().keys()
+            ]
+        )
+
         self.ModuleType = self.runwindow.ModuleType
         if "CROC" in self.ModuleType:
             self.boardType = "RD53B"
-            self.moduleVersion = self.firmware[0].getModuleData()['version'] #module types/versions should be identical for all modules
+            self.moduleVersion = self.firmware[0].getModuleData()[
+                "version"
+            ]  # module types/versions should be identical for all modules
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
@@ -140,7 +151,7 @@ class TestHandler(QObject):
         self.listWidgetIndex = 0
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
-        
+
         felisScratchDir = "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch"
         if not os.path.isdir(felisScratchDir):
             try:
@@ -148,18 +159,18 @@ class TestHandler(QObject):
                 logger.info("New Felis scratch directory created.")
             except OSError as e:
                 logger.error(f"Error making Felis scratch directory: {e.strerror}")
-        
+
         self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
         self.grades = []
-        
+
         self.figurelist = {}
 
         self.run_processes = [QProcess(self) for i in range(len(self.firmware))]
         for i in range(len(self.run_processes)):
             self.run_processes[i].readyReadStandardOutput.connect(
-                lambda:self.on_readyReadStandardOutput(i)
+                lambda: self.on_readyReadStandardOutput(i)
             )
-            self.run_processes[i].finished.connect(lambda:self.on_finish(i))
+            self.run_processes[i].finished.connect(lambda: self.on_finish(i))
         self.readingOutput = False
         self.ProgressingMode = "None"
         self.ProgressValue = 0
@@ -169,7 +180,7 @@ class TestHandler(QObject):
         self.info_processes = [QProcess(self) for i in range(len(self.firmware))]
         for i in range(len(self.info_processes)):
             self.info_processes[i].readyReadStandardOutput.connect(
-                lambda:self.on_readyReadStandardOutput_info(i)
+                lambda: self.on_readyReadStandardOutput_info(i)
             )
 
         ##---Adding firmware setting-----
@@ -252,7 +263,9 @@ class TestHandler(QObject):
             if self.rd53_file[key] == None:
                 self.rd53_file[key] = os.environ.get(
                     "PH2ACF_BASE_DIR"
-                ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(self.boardType, self.moduleVersion)
+                ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(
+                    self.boardType, self.moduleVersion
+                )
                 print("Getting config file {0}".format(self.rd53_file[key]))
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
@@ -353,7 +366,7 @@ class TestHandler(QObject):
         else:
             QMessageBox.information(None, "Warning", "Not a valid test", QMessageBox.Ok)
             return
-        
+
     # This loops over all the tests by using the on_finish pyqt decorator defined below
     def runCompositeTest(self, testName):
         if self.halt:
@@ -367,24 +380,23 @@ class TestHandler(QObject):
         self.runSingleTest(testName)
 
     def ramp_progress_bar(self, max):
-
-        voltages = [getattr(module["hv"], "voltage") for module in self.instruments._module_dict.values()]
+        voltages = [
+            getattr(module["hv"], "voltage")
+            for module in self.instruments._module_dict.values()
+        ]
 
         for i in range(len(self.runwindow.RampProgressBars)):
-
-            text = f'{np.abs(voltages[i])} V'          
-            value = 100*np.abs(voltages[i]/max[i]) if max[i]!=0 else 0
+            text = f"{np.abs(voltages[i])} V"
+            value = 100 * np.abs(voltages[i] / max[i]) if max[i] != 0 else 0
 
             self.updateProgressBar.emit(self.runwindow.RampProgressBars[i], value, text)
 
     def runSingleTest(self, testName):
-
         if "analyze" in testName.lower():
-            
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
 
-            EnableReRun = self.onFinalTest(self.testIndexTracker+1)
+            EnableReRun = self.onFinalTest(self.testIndexTracker + 1)
             self.stepFinished.emit(EnableReRun)
 
             if self.master.expertMode:
@@ -407,20 +419,27 @@ class TestHandler(QObject):
                     break
             if not lv_on:
                 self.instruments.lv_on(
-                    voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                    voltage=site_settings.ModuleVoltageMapSLDO[
+                        self.master.module_in_use
+                    ],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
-        
+
         if "IVCurve" in testName:
             self.currentTest = testName
             self.configTest()
             self.IVCurveData = []
             self.IVProgressValue = 0
-            self.IVCurveHandler = IVCurveHandler(self.currentTest, self.instruments,execute_each_step=self.ramp_progress_bar)
+            self.IVCurveHandler = IVCurveHandler(
+                self.currentTest,
+                self.instruments,
+                execute_each_step=self.ramp_progress_bar,
+            )
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
             self.IVCurveHandler.progressSignal.connect(self.updateProgress)
             self.IVCurveHandler.startSignal.connect(self.setupQProcess)
-            for console in self.runwindow.ConsoleViews: self.outputString.emit("Beginning IVCurve", console)
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit("Beginning IVCurve", console)
             self.IVCurveHandler.IVCurve()
             return
 
@@ -430,48 +449,82 @@ class TestHandler(QObject):
             self.SLDOScanData = []
             self.SLDOfilelist = []
             self.SLDOProgressValue = 0
-            self.SLDOScanHandler = SLDOCurveHandler(self.instruments, moduleType=self.ModuleType[5:],
-                                                    end_current=site_settings.ModuleCurrentMap[self.master.module_in_use],
-                                                    voltage_limit=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
-                                                    execute_each_step=self.ramp_progress_bar)
+            self.SLDOScanHandler = SLDOCurveHandler(
+                self.instruments,
+                moduleType=self.ModuleType[5:],
+                end_current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                voltage_limit=site_settings.ModuleVoltageMapSLDO[
+                    self.master.module_in_use
+                ],
+                execute_each_step=self.ramp_progress_bar,
+            )
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
             self.SLDOScanHandler.abortSignal.connect(self.urgentStop)
-            for console in self.runwindow.ConsoleViews: self.outputString.emit("Beginning SLDOScan", console)
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit("Beginning SLDOScan", console)
             self.SLDOScanHandler.SLDOScan()
             return
 
-        #If the HV is not already on, turn it on.
+        # If the HV is not already on, turn it on.
         if self.instruments:
-            default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
-            #assumes only 1 HV titled 'hv' in instruments.json
+            default_hv_voltage = site_settings.icicle_instrument_setup[
+                "instrument_dict"
+            ]["hv"]["default_voltage"]
+            # assumes only 1 HV titled 'hv' in instruments.json
             hv_on = False
             for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["hv"] == '1':
+                if self.instruments.status()[number]["hv"] == "1":
                     hv_on = True
                     break
 
             if testName == "SCurveScan_2100_FWD":
                 if hv_on:
-                    starting_voltages = [np.abs(getattr(module["hv"], "voltage")) for module in self.instruments._module_dict.values()]
-                    self.instruments.hv_off(execute_each_step=lambda : self.ramp_progress_bar(starting_voltages))
-                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10,
-                                           execute_each_step=lambda:self.ramp_progress_bar([site_settings.forward_bias_voltage]*len(self.instruments._module_dict.values())))
+                    starting_voltages = [
+                        np.abs(getattr(module["hv"], "voltage"))
+                        for module in self.instruments._module_dict.values()
+                    ]
+                    self.instruments.hv_off(
+                        execute_each_step=lambda: self.ramp_progress_bar(
+                            starting_voltages
+                        )
+                    )
+                    self.instruments.hv_on(
+                        voltage=site_settings.forward_bias_voltage,
+                        delay=0.3,
+                        step_size=10,
+                        execute_each_step=lambda: self.ramp_progress_bar(
+                            [site_settings.forward_bias_voltage]
+                            * len(self.instruments._module_dict.values())
+                        ),
+                    )
                 else:
-                    self.instruments.hv_on(voltage=site_settings.forward_bias_voltage, delay=0.3, step_size=10,
-                                           execute_each_step=lambda:self.ramp_progress_bar([site_settings.forward_bias_voltage]*len(self.instruments._module_dict.values())))
+                    self.instruments.hv_on(
+                        voltage=site_settings.forward_bias_voltage,
+                        delay=0.3,
+                        step_size=10,
+                        execute_each_step=lambda: self.ramp_progress_bar(
+                            [site_settings.forward_bias_voltage]
+                            * len(self.instruments._module_dict.values())
+                        ),
+                    )
                 testName = "SCurveScan_2100"
                 hv_on = True
             if not hv_on:
                 self.instruments.hv_on(
-                    voltage=default_hv_voltage, delay=0.3, step_size=10,
-                    execute_each_step=lambda:self.ramp_progress_bar([default_hv_voltage]*len(self.instruments._module_dict.values()))
+                    voltage=default_hv_voltage,
+                    delay=0.3,
+                    step_size=10,
+                    execute_each_step=lambda: self.ramp_progress_bar(
+                        [default_hv_voltage]
+                        * len(self.instruments._module_dict.values())
+                    ),
                 )
 
         self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
-        
+
         self.starttime = None
         self.ProgressingMode = "None"
         self.currentTest = testName
@@ -506,12 +559,10 @@ class TestHandler(QObject):
             self.outputfile = open(self.outputFile, "a")
         else:
             self.outputfile = open(self.outputFile, "w")
-        
+
         for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(
-                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
-            )
+            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
         if self.currentTest == "CommunicationTest":
             for i in range(len(self.firmware)):
@@ -527,24 +578,24 @@ class TestHandler(QObject):
                     "echo",
                     [
                         "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -c  {1}".format(
-                            self.firmware[i].getBoardName(), Test_to_Ph2ACF_Map[self.currentTest]
+                            self.firmware[i].getBoardName(),
+                            Test_to_Ph2ACF_Map[self.currentTest],
                         )
                     ],
                 )
-                    
-        for process in self.info_processes: process.waitForFinished()
+
+        for process in self.info_processes:
+            process.waitForFinished()
 
         for process in self.run_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(
-                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
-            )
+            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
         self.fw_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
         self.fw_process.setWorkingDirectory(
             os.environ.get("PH2ACF_BASE_DIR") + "/test/"
         )
-        
+
         if self.currentTest == "CommunicationTest":
             for i in range(len(self.firmware)):
                 self.run_processes[i].start(
@@ -555,37 +606,45 @@ class TestHandler(QObject):
             for i in range(len(self.firmware)):
                 self.run_processes[i].start(
                     "CMSITminiDAQ",
-                    ["-f", f"CMSIT_{self.firmware[i].getBoardName()}.xml", "-c", "{}".format(Test_to_Ph2ACF_Map[self.currentTest])],
+                    [
+                        "-f",
+                        f"CMSIT_{self.firmware[i].getBoardName()}.xml",
+                        "-c",
+                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                    ],
                 )
-
 
     def abortTest(self):
         self.halt = True
-        for process in self.run_processes: process.kill()
+        for process in self.run_processes:
+            process.kill()
 
         self.haltSignal.emit(self.halt)
 
         self.starttime = None
         if self.IVCurveHandler:
-            for console in self.runwindow.ConsoleViews: self.outputString.emit("Aborting IVCurve", console)
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit("Aborting IVCurve", console)
             self.IVCurveHandler.stop()
         if self.SLDOScanHandler:
-            for console in self.runwindow.ConsoleViews: self.outputString.emit("Aborting SLDOScan", console)
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit("Aborting SLDOScan", console)
             self.SLDOScanHandler.stop()
 
     def urgentStop(self):
-        for process in self.run_processes: process.kill()
+        for process in self.run_processes:
+            process.kill()
         self.halt = True
         self.haltSignal.emit(self.halt)
         self.starttime = None
 
-    def validateTest(self): #ATOC = At time of commit
+    def validateTest(self):  # ATOC = At time of commit
         self.finished_tests.append(self.currentTest)
         try:
             passed = []
             results = []
             runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
-            
+
             for beboard in self.firmware:
                 boardID = beboard.getBoardID()
                 for OG in beboard.getAllOpticalGroups().values():
@@ -593,53 +652,63 @@ class TestHandler(QObject):
                     for module in OG.getAllModules().values():
                         hybridID = module.getFMCPort()
                         module_data = {
-                            'boardID':boardID,
-                            'ogID':ogID,
-                            'hybridID':hybridID,
-                            'module':module
+                            "boardID": boardID,
+                            "ogID": ogID,
+                            "hybridID": hybridID,
+                            "module": module,
                         }
                         result, self.BBanalysis_root_files = ResultGrader(
-                            self.felis, self.output_dir, self.currentTest,
-                            self.testIndexTracker, runNumber, module_data, self.BBanalysis_root_files
+                            self.felis,
+                            self.output_dir,
+                            self.currentTest,
+                            self.testIndexTracker,
+                            runNumber,
+                            module_data,
+                            self.BBanalysis_root_files,
                         )
 
                         results.append(result)
                         passed.append(list(result.values())[0][0])
-                                                
-                        self.figurelist[module.getModuleName()] = self.collect_plots(module.getModuleName())
-            
+
+                        self.figurelist[module.getModuleName()] = self.collect_plots(
+                            module.getModuleName()
+                        )
+
             self.updateValidation.emit(results)
-            self.updateFinishedTests.emit(self.finished_tests) #Obsolete ATOC: "return all(passed)"
+            self.updateFinishedTests.emit(
+                self.finished_tests
+            )  # Obsolete ATOC: "return all(passed)"
         except Exception as err:
             logger.error(err)
-    
+
     def collect_plots(self, moduleName):
         try:
             plot_paths = []
             scratch = os.path.join(self.felis.path_scratch, moduleName)
             test = "{0:02d}_{1}".format(self.testIndexTracker, self.currentTest)
             directory = os.path.join(scratch, test)
-            
+
             for filename in os.listdir(directory):
-                if filename.lower().endswith('.svg') or filename.lower().endswith('.png'):
+                if filename.lower().endswith(".svg") or filename.lower().endswith(
+                    ".png"
+                ):
                     plot_paths.append(os.path.join(directory, filename))
-            
+
             return plot_paths
         except Exception as e:
-            if 'IVCurve' in self.currentTest or 'SLDOScan' in self.currentTest:
+            if "IVCurve" in self.currentTest or "SLDOScan" in self.currentTest:
                 if moduleName in self.figurelist.keys():
                     return self.figurelist[moduleName]
                 else:
                     return []
             else:
-                print('testHandler.collect_plots Exception:', repr(e))
+                print("testHandler.collect_plots Exception:", repr(e))
                 return []
-    
-    #For root files with the same RunNumber in the PH2ACF directory, this function only copies over to
-    #self.output_dir the .root file modified most recently. This will copy over the wrong file if somebody
-    #manually edits the .root file in the PH2ACF directory, so there may be a better way to do this
-    def copyMostRecentRootFile(self,RunNumber,base_dir,output_dir,test):
-        
+
+    # For root files with the same RunNumber in the PH2ACF directory, this function only copies over to
+    # self.output_dir the .root file modified most recently. This will copy over the wrong file if somebody
+    # manually edits the .root file in the PH2ACF directory, so there may be a better way to do this
+    def copyMostRecentRootFile(self, RunNumber, base_dir, output_dir, test):
         files = root_files[test] if test in root_files.keys() else (test,)
         for name in files:
             # Construct the search pattern for files
@@ -650,23 +719,27 @@ class TestHandler(QObject):
             # Find all matching files
             matching_files = glob.glob(search_pattern)
 
-            if len(matching_files)==0:
-                raise Exception(f"Failed to copy root file to output directory. \
+            if len(matching_files) == 0:
+                raise Exception(
+                    f"Failed to copy root file to output directory. \
 Module disconnection detected because Ph2_ACF didn't \
-create {search_pattern}.")
+create {search_pattern}."
+                )
 
             # Sort files by modification time (newest first)
             latest_file = max(matching_files, key=os.path.getmtime)
 
-            if os.path.getsize(latest_file)==0:
-                raise Exception(f"Failed to copy root file to output directory. \
+            if os.path.getsize(latest_file) == 0:
+                raise Exception(
+                    f"Failed to copy root file to output directory. \
 Module disconnection detected because {latest_file} \
-created by Ph2_ACF is empty.")
+created by Ph2_ACF is empty."
+                )
 
             # Copy the most recent file to the output directory
             os.system(f"cp {latest_file} {output_dir}/")
 
-    def saveTest(self, processIndex:int):
+    def saveTest(self, processIndex: int):
         if self.run_processes[processIndex].state() == QProcess.Running:
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
@@ -688,7 +761,12 @@ created by Ph2_ACF is empty.")
                     )
                 )
             else:
-                self.copyMostRecentRootFile(self.RunNumber,os.environ.get("PH2ACF_BASE_DIR")+"/test/Results",self.output_dir,self.currentTest)
+                self.copyMostRecentRootFile(
+                    self.RunNumber,
+                    os.environ.get("PH2ACF_BASE_DIR") + "/test/Results",
+                    self.output_dir,
+                    self.currentTest,
+                )
 
         except Exception as e:
             logger.error(e)
@@ -699,15 +777,17 @@ created by Ph2_ACF is empty.")
     #######################################################################
 
     @QtCore.pyqtSlot()
-    def on_readyReadStandardOutput(self, processIndex:int):
+    def on_readyReadStandardOutput(self, processIndex: int):
         if self.readingOutput == True:
             print("Thread competition detected")
             return
         self.readingOutput = True
 
-        alltext = self.run_processes[processIndex].readAllStandardOutput().data().decode()
+        alltext = (
+            self.run_processes[processIndex].readAllStandardOutput().data().decode()
+        )
         self.outputfile.write(alltext)
-    #print(alltext)
+        # print(alltext)
         # outputfile.close()
         textline = alltext.split("\n")
         # fileLines = open(self.outputFile,"r")
@@ -715,26 +795,29 @@ created by Ph2_ACF is empty.")
 
         for textStr in textline:
             import re
+
             try:
                 if "Configuring chips of hybrid" in textStr:
-                    ansi_escape = re.compile(r'\x1b\[.*?m')
-                    clean_text = ansi_escape.sub('', textStr)
+                    ansi_escape = re.compile(r"\x1b\[.*?m")
+                    clean_text = ansi_escape.sub("", textStr)
                     hybrid_id = clean_text.split("hybrid: ")[-1].strip()
                     self.mod_dict[hybrid_id] = {}
                     self.fused_dict_index[0] = hybrid_id
 
                 if "Configuring RD53" in textStr:
-                    ansi_escape = re.compile(r'\x1b\[.*?m')
-                    clean_text = ansi_escape.sub('', textStr)
-                    chip_number= clean_text.split("RD53: ")[-1].strip()
-                    self.fused_dict_index[1]= chip_number
+                    ansi_escape = re.compile(r"\x1b\[.*?m")
+                    clean_text = ansi_escape.sub("", textStr)
+                    chip_number = clean_text.split("RD53: ")[-1].strip()
+                    self.fused_dict_index[1] = chip_number
 
                 if "Fused ID" in textStr:
-                    ansi_escape = re.compile(r'\x1b\[.*?m')
-                    clean_text = ansi_escape.sub('', textStr)
-                    fuse_id =clean_text.split("Fused ID: ")[-1].strip()
-                    self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]]= fuse_id
-                    
+                    ansi_escape = re.compile(r"\x1b\[.*?m")
+                    clean_text = ansi_escape.sub("", textStr)
+                    fuse_id = clean_text.split("Fused ID: ")[-1].strip()
+                    self.mod_dict[self.fused_dict_index[0]][
+                        self.fused_dict_index[1]
+                    ] = fuse_id
+
                 if self.starttime != None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
@@ -747,88 +830,119 @@ created by Ph2_ACF is empty.")
 
             except Exception as err:
                 logger.info("Error occures while parsing running time, {0}".format(err))
-            if '@@@ End of CMSIT miniDAQ @@@' in textStr:
+            if "@@@ End of CMSIT miniDAQ @@@" in textStr:
                 self.ProgressingMode = "Summary"
             if self.ProgressingMode == "Perform":
                 if "Progress:" in textStr:
                     try:
-                        index = textStr.split().index("Progress:") + 2 
-                        #self.ProgressValue = float(textStr.split()[index].rstrip("%"))
-                        self.ProgressValue = float(re.sub(r'\x1b\[\d+m', '', textStr.split()[index].strip("%")))
+                        index = textStr.split().index("Progress:") + 2
+                        # self.ProgressValue = float(textStr.split()[index].rstrip("%"))
+                        self.ProgressValue = float(
+                            re.sub(r"\x1b\[\d+m", "", textStr.split()[index].strip("%"))
+                        )
                         if self.ProgressValue == 100:
                             self.ProgressingMode = "Summary"
                         self.runwindow.ResultWidget.ProgressBar[
                             self.testIndexTracker
                         ].setValue(self.ProgressValue)
                         ##Added because of Ph2_ACF bug:
-                        
+
                     except:
-                        print('something went wrong in progress')
+                        print("something went wrong in progress")
                         pass
 
                 if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
+                    self.runwindow.ResultWidget.ProgressBar[
+                        self.testIndexTracker
+                    ].setValue(100)
                 elif "TEMPSENS_" in textStr:
                     try:
                         output = textStr.split("[")
                         sensor = output[8]
                         sensorMeasure = sensor[3:]
-                        
-                        if sensorMeasure != "" or sensorMeasure != "44.086 +/- 1.763 °C":
-                            temp = float(sensorMeasure.split('+')[0].strip())
+
+                        if (
+                            sensorMeasure != ""
+                            or sensorMeasure != "44.086 +/- 1.763 °C"
+                        ):
+                            temp = float(sensorMeasure.split("+")[0].strip())
                             self.tempHistory[self.tempindex] = temp
-                            if any(num > site_settings.Warning_Threshold for num in self.tempHistory):
+                            if any(
+                                num > site_settings.Warning_Threshold
+                                for num in self.tempHistory
+                            ):
                                 self.runwindow.updateTempIndicator("orange")
-                            elif any(num > site_settings.Emergency_Threshold for num in self.tempHistory):
+                            elif any(
+                                num > site_settings.Emergency_Threshold
+                                for num in self.tempHistory
+                            ):
                                 self.runwindow.updateTempIndicator("red")
                             else:
                                 self.runwindow.updateTempIndicator("green")
                         else:
-                            #bad reading
+                            # bad reading
                             self.tempHistory[self.tempindex] = 0.0
                             if not all(self.tempHistory):
                                 self.runwindow.updateTempIndicator("off")
-                        self.tempindex = self.tempindex+1 % self.numChips
-                                                
+                        self.tempindex = self.tempindex + 1 % self.numChips
+
                     except Exception as e:
                         print("Failed due to {0}".format(e))
                 elif "INTERNAL_NTC" in textStr:
                     try:
-                        ansi_pattern = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
-                        clean_text=ansi_pattern.sub('', textStr)
+                        ansi_pattern = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]")
+                        clean_text = ansi_pattern.sub("", textStr)
                         if "INTERNAL_NTC" in clean_text:
-                            sensor=clean_text.split("INTERNAL_NTC:")[1].strip().split("C")[0].strip()
-                            sensorMeasure0=re.sub(r'[^\d\.\+\- ]', '', sensor)
+                            sensor = (
+                                clean_text.split("INTERNAL_NTC:")[1]
+                                .strip()
+                                .split("C")[0]
+                                .strip()
+                            )
+                            sensorMeasure0 = re.sub(r"[^\d\.\+\- ]", "", sensor)
                             sensorMeasure0 += " °C"
                             sensorMeasure = sensorMeasure0.replace("+-", "+/-")
-                            
-                            if sensorMeasure != "" or sensorMeasure != "44.086 +/- 1.763 °C":
-                                temp = float(sensorMeasure.split('+')[0].strip())
+
+                            if (
+                                sensorMeasure != ""
+                                or sensorMeasure != "44.086 +/- 1.763 °C"
+                            ):
+                                temp = float(sensorMeasure.split("+")[0].strip())
                                 self.tempHistory[self.tempindex] = temp
-                                if any(num > site_settings.Warning_Threshold for num in self.tempHistory):
+                                if any(
+                                    num > site_settings.Warning_Threshold
+                                    for num in self.tempHistory
+                                ):
                                     self.runwindow.updateTempIndicator("orange")
-                                elif any(num > site_settings.Emergency_Threshold for num in self.tempHistory):
+                                elif any(
+                                    num > site_settings.Emergency_Threshold
+                                    for num in self.tempHistory
+                                ):
                                     self.runwindow.updateTempIndicator("red")
                                 else:
                                     self.runwindow.updateTempIndicator("green")
                             else:
-                                #bad reading
+                                # bad reading
                                 self.tempHistory[self.tempindex] = 0.0
                                 if not all(self.tempHistory):
                                     self.runwindow.updateTempIndicator("off")
                             self.tempindex = (self.tempindex + 1) % self.numChips
-                                                        
+
                     except Exception as e:
                         print("Failed due to {0}".format(e))
                 text = textStr.encode("ascii")
                 _, text = parseANSI(text)
-                self.outputString.emit(text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex])
+                self.outputString.emit(
+                    text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
+                )
                 continue
-            #This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
-            
+            # This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
+
             elif self.ProgressingMode == "Summary":
                 if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
+                    self.runwindow.ResultWidget.ProgressBar[
+                        self.testIndexTracker
+                    ].setValue(100)
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
@@ -836,22 +950,31 @@ created by Ph2_ACF is empty.")
                 self.outputString.emit(
                     '<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(
                         self.currentTest
-                    ),self.runwindow.ConsoleViews[processIndex]
+                    ),
+                    self.runwindow.ConsoleViews[processIndex],
                 )
 
             text = textStr.encode("ascii")
             _, text = parseANSI(text)
-            self.outputString.emit(text.decode("utf-8"),self.runwindow.ConsoleViews[processIndex])
+            self.outputString.emit(
+                text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
+            )
 
         self.readingOutput = False
 
     def updateOptimizedXMLValues(self):
-        print('trying to update the xml value')
+        print("trying to update the xml value")
         try:
             if Test_to_Ph2ACF_Map[self.currentTest] in optimizationTestMap.keys():
-                updatedFEKeys = optimizationTestMap[Test_to_Ph2ACF_Map[self.currentTest]]
+                updatedFEKeys = optimizationTestMap[
+                    Test_to_Ph2ACF_Map[self.currentTest]
+                ]
                 for module in self.modules:
-                    chipIDs = [chip.getID() for chip in module.getChips().values() if chip.getStatus()]
+                    chipIDs = [
+                        chip.getID()
+                        for chip in module.getChips().values()
+                        if chip.getStatus()
+                    ]
 
                     hybridID = module.getFMCPort()
                     print("HybridID {0}".format(hybridID))
@@ -861,18 +984,25 @@ created by Ph2_ACF is empty.")
                         updatedXMLValues[f"{hybridID}/{chipID}"] = {}
                         for updatedFEKey in updatedFEKeys:
                             if CROC:
-                                if updatedFEKey in ["LATENCY_CONFIG", "Vthreshold_LIN"]: # registers not on CROC modules
+                                if updatedFEKey in [
+                                    "LATENCY_CONFIG",
+                                    "Vthreshold_LIN",
+                                ]:  # registers not on CROC modules
                                     continue
                             elif not CROC:
-                                if updatedFEKey in ["TriggerConfig", "DAC_GDAC_", "CAL_EDGE_FINE_DELAY"]: # registers only on CROC modules
+                                if updatedFEKey in [
+                                    "TriggerConfig",
+                                    "DAC_GDAC_",
+                                    "CAL_EDGE_FINE_DELAY",
+                                ]:  # registers only on CROC modules
                                     continue
                             updatedXMLValues[f"{hybridID}/{chipID}"][updatedFEKey] = ""
         except Exception as err:
             logger.error(f"Failed to update, {err}")
-    
+
     def check_for_end_of_test(self, textStr):
-        #function to support the quick fix in on_readyReadStandardOutput() where
-        #the progress bar doesn't always reach 100%.
+        # function to support the quick fix in on_readyReadStandardOutput() where
+        # the progress bar doesn't always reach 100%.
         currentTest = Test_to_Ph2ACF_Map[self.currentTest]
         if currentTest in ["thradj", "thrmin"] and "Global threshold for" in textStr:
             return True
@@ -891,22 +1021,24 @@ created by Ph2_ACF is empty.")
 
     # Reads data that is normally printed to the terminal and saves it to the output file
     @QtCore.pyqtSlot()
-    def on_readyReadStandardOutput_info(self, processIndex:int):
+    def on_readyReadStandardOutput_info(self, processIndex: int):
         if os.path.exists(self.outputFile):
             outputfile = open(self.outputFile, "a")
         else:
             outputfile = open(self.outputFile, "w")
 
-        alltext = self.info_processes[processIndex].readAllStandardOutput().data().decode()
+        alltext = (
+            self.info_processes[processIndex].readAllStandardOutput().data().decode()
+        )
         outputfile.write(alltext)
         outputfile.close()
         textline = alltext.split("\n")
 
         for textStr in textline:
-            self.outputString.emit(textStr,self.runwindow.ConsoleViews[processIndex])
+            self.outputString.emit(textStr, self.runwindow.ConsoleViews[processIndex])
 
     @QtCore.pyqtSlot()
-    def on_finish(self, processIndex:int):
+    def on_finish(self, processIndex: int):
         self.outputfile.close()
         # While the process is killed:
 
@@ -915,10 +1047,12 @@ created by Ph2_ACF is empty.")
             return
 
         if self.run_processes[processIndex].state() == QProcess.Running:
-            print("process is still running...  Attempting to terminate before next test.")
+            print(
+                "process is still running...  Attempting to terminate before next test."
+            )
             self.run_processes[processIndex].terminate()
             if not self.run_processes[processIndex].waitForFinished(3000):
-                print('process would not terminate, so killing it now...')
+                print("process would not terminate, so killing it now...")
                 self.run_processes[processIndex].kill()
 
         if "IVCurve" in self.currentTest:
@@ -955,7 +1089,9 @@ created by Ph2_ACF is empty.")
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            if index == len(CompositeTests[self.info]): # Checks that this was the last test in the sequence.
+            if index == len(
+                CompositeTests[self.info]
+            ):  # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
@@ -963,7 +1099,7 @@ created by Ph2_ACF is empty.")
                 if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
 
-                if len(self.BBanalysis_root_files)>0:
+                if len(self.BBanalysis_root_files) > 0:
                     for beboard in self.firmware:
                         boardID = beboard.getBoardID()
                         for OG in beboard.getAllOpticalGroups().values():
@@ -971,21 +1107,23 @@ created by Ph2_ACF is empty.")
                             for module in OG.getAllModules().values():
                                 hybridID = module.getFMCPort()
                                 module_data = {
-                                    'boardID':boardID,
-                                    'ogID':ogID,
-                                    'hybridID':hybridID,
-                                    'module':module
+                                    "boardID": boardID,
+                                    "ogID": ogID,
+                                    "hybridID": hybridID,
+                                    "module": module,
                                 }
 
                                 "This works"
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
-                                    module_data['module'].getModuleName(),
+                                    module_data["module"].getModuleName(),
                                     f"{index:02d}_{self.currentTest}",
                                     Test_to_Ph2ACF_Map[self.currentTest],
                                 )
-                                self.figurelist[module.getModuleName()] = self.collect_plots(module.getModuleName())
-        
+                                self.figurelist[module.getModuleName()] = (
+                                    self.collect_plots(module.getModuleName())
+                                )
+
         elif isSingleTest(self.info):
             EnableReRun = True
             self.powerSignal.emit()
@@ -995,38 +1133,72 @@ created by Ph2_ACF is empty.")
         return EnableReRun
 
     def updateProgress(self, measurementType, stepSize):
-        if measurementType=='IVCurve':
-            self.IVProgressValue += stepSize/2.0
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.IVProgressValue)
-            self.ramp_progress_bar([site_settings.IVcurve_range[self.currentTest] if site_settings.IVcurve_range[self.currentTest]<0 else 80]*len(self.instruments._module_dict.values()))
-        if 'SLDO' in measurementType:
+        if measurementType == "IVCurve":
+            self.IVProgressValue += stepSize / 2.0
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+                self.IVProgressValue
+            )
+            self.ramp_progress_bar(
+                [
+                    site_settings.IVcurve_range[self.currentTest]
+                    if site_settings.IVcurve_range[self.currentTest] < 0
+                    else 80
+                ]
+                * len(self.instruments._module_dict.values())
+            )
+        if "SLDO" in measurementType:
             self.SLDOProgressValue += stepSize
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(self.SLDOProgressValue)
+            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+                self.SLDOProgressValue
+            )
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for module in self.modules:
             moduleName = module.getModuleName()
-            filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, pin)
-            csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, pin)
+            filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(
+                self.output_dir, moduleName, pin
+            )
+            csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(
+                self.output_dir, moduleName, pin
+            )
             self.SLDOfilelist.append(csvfilename)
-            #The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
+            # The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
             total_result_stacked = np.vstack(total_result)
-            np.savetxt(csvfilename, total_result_stacked, delimiter=',')
+            np.savetxt(csvfilename, total_result_stacked, delimiter=",")
 
-            #Make the actual graph
+            # Make the actual graph
             plt.figure()
-            plt.plot(total_result_stacked[0], total_result_stacked[1], '-x', label="module input voltage (up)")
-            plt.plot(total_result_stacked[0], total_result_stacked[2], '-x', label=f"{pin} (up)")
-            plt.plot(total_result_stacked[3], total_result_stacked[4], '-x', label="module input voltage (down)")
-            plt.plot(total_result_stacked[3], total_result_stacked[5], '-x', label=f"{pin} (down)")
+            plt.plot(
+                total_result_stacked[0],
+                total_result_stacked[1],
+                "-x",
+                label="module input voltage (up)",
+            )
+            plt.plot(
+                total_result_stacked[0],
+                total_result_stacked[2],
+                "-x",
+                label=f"{pin} (up)",
+            )
+            plt.plot(
+                total_result_stacked[3],
+                total_result_stacked[4],
+                "-x",
+                label="module input voltage (down)",
+            )
+            plt.plot(
+                total_result_stacked[3],
+                total_result_stacked[5],
+                "-x",
+                label=f"{pin} (down)",
+            )
             plt.grid(True)
             plt.xlabel("Current (A)")
             plt.ylabel("Voltage (V)")
             plt.legend()
             plt.savefig(filename)
-            
-            self.figurelist[moduleName] = [filename]
 
+            self.figurelist[moduleName] = [filename]
 
     def IVCurveFinished(self, test: str, measure: dict):
         # Get the current timestamp
@@ -1036,9 +1208,9 @@ created by Ph2_ACF is empty.")
             process.waitForBytesWritten()
             process.waitForFinished()
 
-        #3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
-        #IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
-        #to output the results only to the console of the fc7 that each module is connnected to.
+        # 3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
+        # IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
+        # to output the results only to the console of the fc7 that each module is connnected to.
         for console in self.runwindow.ConsoleViews:
             self.outputString.emit(f"Voltages: {measure['voltage']}", console)
             self.outputString.emit(f"Currents: {measure['current']}", console)
@@ -1058,25 +1230,32 @@ created by Ph2_ACF is empty.")
                 invert=True,
             )
 
-            csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(self.output_dir, moduleName, timestamp)
-            np.savetxt(csvfilename, (measure["voltage"], measure["current"]), delimiter=',')
+            csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(
+                self.output_dir, moduleName, timestamp
+            )
+            np.savetxt(
+                csvfilename, (measure["voltage"], measure["current"]), delimiter=","
+            )
             module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
-                boardID=beboardId, 
-                ogID=ogId, 
-                hybridID=hybridId)
-            
-            IVCurve_CSV_to_ROOT(moduleName, module_canvas_path, csvfilename, self.output_dir)
+                boardID=beboardId, ogID=ogId, hybridID=hybridId
+            )
 
-            filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(self.output_dir, moduleName, timestamp)
-            #filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
+            IVCurve_CSV_to_ROOT(
+                moduleName, module_canvas_path, csvfilename, self.output_dir
+            )
+
+            filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(
+                self.output_dir, moduleName, timestamp
+            )
+            # filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
             self.IVCurveResult.saveToSVG(filename)
-            #self.IVCurveResult.saveToSVG(filename2)
-            
+            # self.IVCurveResult.saveToSVG(filename2)
+
             self.figurelist[moduleName] = [filename]
 
         self.validateTest()
 
-        step="IVCurve"
+        step = "IVCurve"
 
         self.testIndexTracker += 1
 
@@ -1084,15 +1263,19 @@ created by Ph2_ACF is empty.")
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
-            #assumes only 1 HV titled 'hv' in instruments.json
+            default_hv_voltage = site_settings.icicle_instrument_setup[
+                "instrument_dict"
+            ]["hv"]["default_voltage"]
+            # assumes only 1 HV titled 'hv' in instruments.json
 
             self.master.instruments.hv_on(
                 voltage=default_hv_voltage,
                 delay=0.3,
                 step_size=3,
                 measure=False,
-                execute_each_step=lambda:self.ramp_progress_bar([default_hv_voltage]*len(self.instruments._module_dict.values()))
+                execute_each_step=lambda: self.ramp_progress_bar(
+                    [default_hv_voltage] * len(self.instruments._module_dict.values())
+                ),
             )
 
             if self.testIndexTracker == len(CompositeTests[self.info]):
@@ -1111,25 +1294,29 @@ created by Ph2_ACF is empty.")
         self.historyRefresh.emit()
         if self.master.expertMode:
             self.updateIVResult.emit(self.output_dir)
-        else: 
-            self.updateIVResult.emit((step, self.figurelist))  ##Add else statement to add signal in simple mode
+        else:
+            self.updateIVResult.emit(
+                (step, self.figurelist)
+            )  ##Add else statement to add signal in simple mode
 
         if isCompositeTest(self.info):
             self.runTest()
 
     def SLDOScanFinished(self):
-
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
             moduleName = module.getModuleName()
             hybridId = module.getFMCPort()
-            module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
-                    boardID=beboardId, 
-                    ogID=ogId, 
-                    hybridID=hybridId)
-        
-            SLDO_CSV_to_ROOT(moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir)
+            module_canvas_path = (
+                "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
+                    boardID=beboardId, ogID=ogId, hybridID=hybridId
+                )
+            )
+
+            SLDO_CSV_to_ROOT(
+                moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir
+            )
 
         self.validateTest()
         self.testIndexTracker += 1
@@ -1141,14 +1328,18 @@ created by Ph2_ACF is empty.")
                 voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                 current=site_settings.ModuleCurrentMap[self.master.module_in_use],
             )
-            default_hv_voltage = site_settings.icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
-            #assumes only 1 HV titled 'hv' in instruments.json
+            default_hv_voltage = site_settings.icicle_instrument_setup[
+                "instrument_dict"
+            ]["hv"]["default_voltage"]
+            # assumes only 1 HV titled 'hv' in instruments.json
             self.master.instruments.hv_on(
                 voltage=default_hv_voltage,
                 delay=0.3,
                 step_size=5,
                 measure=False,
-                execute_each_step=lambda:self.ramp_progress_bar([default_hv_voltage]*len(self.instruments._module_dict.values()))
+                execute_each_step=lambda: self.ramp_progress_bar(
+                    [default_hv_voltage] * len(self.instruments._module_dict.values())
+                ),
             )
 
             if self.testIndexTracker == len(CompositeTests[self.info]):
@@ -1167,23 +1358,28 @@ created by Ph2_ACF is empty.")
         self.historyRefresh.emit()
         if self.master.expertMode:
             self.updateSLDOResult.emit(self.output_dir)
-        else: 
-            self.updateSLDOResult.emit(("SLDOScan", self.figurelist))  ##Add else statement to add signal in simple mode
+        else:
+            self.updateSLDOResult.emit(
+                ("SLDOScan", self.figurelist)
+            )  ##Add else statement to add signal in simple mode
 
         if isCompositeTest(self.info):
             self.runTest()
 
     def interactiveCheck(self, plot):
         pass
-        
-    def forceContinue(self, board): #board:QtBeBoard. Runs when module disconnection is suspected.
-        
+
+    def forceContinue(
+        self, board
+    ):  # board:QtBeBoard. Runs when module disconnection is suspected.
         fc7modules = board.getModules()
 
         # Create the main widget
         self.force_continue_window = QDialog()
         self.force_continue_window.setMaximumWidth(375)
-        self.force_continue_window.setWindowTitle(f"{board.getBoardName()}: Failed Component Detected")
+        self.force_continue_window.setWindowTitle(
+            f"{board.getBoardName()}: Failed Component Detected"
+        )
 
         # Create layout
         self.force_continue_window.layout = QVBoxLayout(self.force_continue_window)
@@ -1199,16 +1395,24 @@ created by Ph2_ACF is empty.")
 
         # Create table for modules with checkboxes
         self.force_continue_window.table = QTableWidget(len(fc7modules), 2)
-        self.force_continue_window.table.setHorizontalHeaderLabels(["Module", "Enabled"])
-        
+        self.force_continue_window.table.setHorizontalHeaderLabels(
+            ["Module", "Enabled"]
+        )
+
         for row, module in enumerate(fc7modules):
             # Set the module name in the first column
             module_name = module.getModuleName()
-            self.force_continue_window.table.setItem(row, 0, QTableWidgetItem(module_name))
-            
+            self.force_continue_window.table.setItem(
+                row, 0, QTableWidgetItem(module_name)
+            )
+
             # Create a QTableWidgetItem for the checkbox in the second column
             checkbox_item = QTableWidgetItem()
-            checkbox_item.setCheckState(Qt.Checked) if module.getEnabled()=="1" else checkbox_item.setCheckState(Qt.Unchecked)
+            checkbox_item.setCheckState(
+                Qt.Checked
+            ) if module.getEnabled() == "1" else checkbox_item.setCheckState(
+                Qt.Unchecked
+            )
             self.force_continue_window.table.setItem(row, 1, checkbox_item)
 
         self.force_continue_window.layout.addWidget(self.force_continue_window.table)
@@ -1216,52 +1420,69 @@ created by Ph2_ACF is empty.")
 
         self.force_continue_window.abort = True
 
-        def check_enabledModules(): #Not sure if this is maximally efficient
+        def check_enabledModules():  # Not sure if this is maximally efficient
             for row in range(len(fc7modules)):
-                if self.force_continue_window.table.item(row,1).checkState()==Qt.Checked:
-                    
+                if (
+                    self.force_continue_window.table.item(row, 1).checkState()
+                    == Qt.Checked
+                ):
                     for row in range(len(fc7modules)):
-                        if self.force_continue_window.table.item(row,1).checkState()==Qt.Checked:
+                        if (
+                            self.force_continue_window.table.item(row, 1).checkState()
+                            == Qt.Checked
+                        ):
                             fc7modules[row].setEnabled("1")
                         else:
                             fc7modules[row].setEnabled("0")
 
                     self.force_continue_window.abort = False
                     return True
-                
-            if hasattr(self.force_continue_window, "label")==False:
-                self.force_continue_window.label = QLabel("At least one module must be enabled.")
-                self.force_continue_window.label.setStyleSheet('color: red;')
-                self.force_continue_window.layout.insertWidget(3,self.force_continue_window.label)
+
+            if hasattr(self.force_continue_window, "label") == False:
+                self.force_continue_window.label = QLabel(
+                    "At least one module must be enabled."
+                )
+                self.force_continue_window.label.setStyleSheet("color: red;")
+                self.force_continue_window.layout.insertWidget(
+                    3, self.force_continue_window.label
+                )
             return False
 
         # Define button handlers
         def handle_close(event):
-            if self.force_continue_window.abort==True:
-                for process in self.run_processes: process.kill()
+            if self.force_continue_window.abort == True:
+                for process in self.run_processes:
+                    process.kill()
                 self.halt = True
                 self.haltSignal.emit(self.halt)
                 self.starttime = None
 
             for row in range(self.force_continue_window.table.rowCount()):
-                if self.force_continue_window.table.item(row,1).checkState()==False:
-                    self.statuses[self.force_continue_window.table.item(row,0).text()]="0"
+                if self.force_continue_window.table.item(row, 1).checkState() == False:
+                    self.statuses[
+                        self.force_continue_window.table.item(row, 0).text()
+                    ] = "0"
 
             event.accept()
 
         def handle_retry():
             if check_enabledModules():
-                self.outputString.emit(f'Retrying {self.currentTest}...')
-                self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText("") #may need to .update()
-                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(0) #may need to .update(). Automatically adds "0%" text on Progress bar.
+                self.outputString.emit(f"Retrying {self.currentTest}...")
+                self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText(
+                    ""
+                )  # may need to .update()
+                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
+                    0
+                )  # may need to .update(). Automatically adds "0%" text on Progress bar.
                 self.testIndexTracker -= 1
                 self.force_continue_window.close()
-            
+
         def handle_continue():
-            if check_enabledModules(): self.force_continue_window.close()
+            if check_enabledModules():
+                self.force_continue_window.close()
 
         # Connect buttons to handlers
-        exit_button.clicked.connect(lambda : self.force_continue_window.close())
+        exit_button.clicked.connect(lambda: self.force_continue_window.close())
         retry_button.clicked.connect(handle_retry)
         continue_button.clicked.connect(handle_continue)
 
@@ -1269,11 +1490,10 @@ created by Ph2_ACF is empty.")
         self.force_continue_window.exec_()  # This will block until the window is closed
 
     def upload_to_Panthera(self):
-        self.updateProgressBar.emit(self.runwindow.UploadProgressBar,
-                                        0,
-                                        f'{0}/{len(self.modules)} uploaded')
+        self.updateProgressBar.emit(
+            self.runwindow.UploadProgressBar, 0, f"{0}/{len(self.modules)} uploaded"
+        )
         try:
-
             self.runwindow.UploadButton.setDisabled(True)
             counter = 0
 
@@ -1282,67 +1502,83 @@ created by Ph2_ACF is empty.")
                     module.getModuleName(),
                     self.master.username,
                     self.master.password,
-                    type_sequence = self.info,
-                    version_ph2acf = os.environ.get("PH2ACF_VERSION"),
+                    type_sequence=self.info,
+                    version_ph2acf=os.environ.get("PH2ACF_VERSION"),
                 )
                 if not status:
                     raise ConnectionError(message)
 
-                counter+=1
-                self.updateProgressBar.emit(self.runwindow.UploadProgressBar,
-                                        100*counter/len(self.modules),
-                                        f'{counter}/{len(self.modules)} uploaded')
+                counter += 1
+                self.updateProgressBar.emit(
+                    self.runwindow.UploadProgressBar,
+                    100 * counter / len(self.modules),
+                    f"{counter}/{len(self.modules)} uploaded",
+                )
 
         except ConnectionError as e:
             error_message = repr(e)
             logger.error(error_message)
             self.master.errorMessageBoxSignal.emit(error_message)
-       
-        except Exception as e:
+
+        except Exception:
             if not self.master.panthera_connected:
-                error_message = "Cannot upload test results, you are not signed in to Panthera."
+                error_message = (
+                    "Cannot upload test results, you are not signed in to Panthera."
+                )
             else:
                 error_message = "Failed to upload to Panthera."
                 self.runwindow.UploadButton.setDisabled(False)
                 if self.autoSave:
-                    self.runwindow.UploadButton.setDisabled(False) #if autosave fails, allow manual
+                    self.runwindow.UploadButton.setDisabled(
+                        False
+                    )  # if autosave fails, allow manual
 
             logger.error(error_message)
             self.master.errorMessageBoxSignal.emit(error_message)
-            
 
     def bumpbond_analysis(self):
-        
         runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
-        commands = ['.L /home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/Analysis/bumpbond_analysis.cpp']
+        commands = [
+            ".L /home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/Analysis/bumpbond_analysis.cpp"
+        ]
         command_template = ""
-        
+
         if self.info == "FWD-RVS Bias":
             process = subprocess.run(
                 'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*SCurve.root"',
                 shell=True,
                 stdout=subprocess.PIPE,
             )
-            all_root_files = sorted(process.stdout.decode('utf-8').rstrip("\n").split("\n"))
+            all_root_files = sorted(
+                process.stdout.decode("utf-8").rstrip("\n").split("\n")
+            )
             relevant_root_files = all_root_files[-2:]
-            
+
             save_file = f"Run{runNumber}_FWDRVS-Bias.root"
             commands.append(f'createROOTFile("{self.output_dir}/{save_file}")')
-            command_template = f'bias("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{self.output_dir}/{save_file}", '+'const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))'
-            
+            command_template = (
+                f'bias("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{self.output_dir}/{save_file}", '
+                + "const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))"
+            )
+
         elif self.info == "Crosstalk":
             process = subprocess.run(
                 'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*PixelAlive.root"',
                 shell=True,
                 stdout=subprocess.PIPE,
             )
-            all_root_files = sorted(process.stdout.decode('utf-8').rstrip("\n").split("\n"))
+            all_root_files = sorted(
+                process.stdout.decode("utf-8").rstrip("\n").split("\n")
+            )
             relevant_root_files = all_root_files[-3:]
-            
+
             save_file = f"Run{runNumber}_Crosstalk.root"
             commands.append(f'createROOTFile("{self.output_dir}/{save_file}")')
-            command_template = f'xtalk("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{relevant_root_files[2]}", "{self.output_dir}/{save_file}",'+'const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))'
-        
+            command_template = (
+                f'xtalk("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{relevant_root_files[2]}", "{self.output_dir}/{save_file}",'
+                + "const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))"
+            )
+
         for beboard in self.firmware:
             boardID = beboard.getBoardID()
             for OG in beboard.getAllOpticalGroups().values():
@@ -1350,5 +1586,7 @@ created by Ph2_ACF is empty.")
                 for module in OG.getAllModules().values():
                     hybridID = module.getFMCPort()
                     for chipID in module.getEnabledChips().keys():
-                        commands.append(command_template.format(boardID, ogID, hybridID, chipID))
+                        commands.append(
+                            command_template.format(boardID, ogID, hybridID, chipID)
+                        )
         executeCommandSequence(commands)

@@ -1,47 +1,23 @@
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QTimer
-#from PyQt5.QtGui import QPixmap
+
+# from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QListWidget,
     QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
     QScrollArea,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QTreeWidget,
     QTreeWidgetItem,
     QWidget,
-    QMainWindow,
 )
 from PyQt5 import QtSvg
 
-import sys
 import os
 import subprocess
-import logging
 
-from functools import partial
-#from Gui.GUIutils.settings import *
+# from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import isCompositeTest
 from Gui.python.ROOTInterface import (
     GetDirectory,
@@ -50,6 +26,7 @@ from Gui.python.ROOTInterface import (
 from Gui.QtGUIutils.QtTCanvasWidget import QtTCanvasWidget
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests
+
 
 class ResultTreeWidget(QWidget):
     def __init__(self, info, width, height, master):
@@ -197,13 +174,13 @@ class ResultTreeWidget(QWidget):
             temp = item.clone()
             while item.parent().text(0) != "Files..":
                 item = item.parent()
-            runNumber = item.text(0).split('_')[0]
-            #print("the test is {0}".format(item.text(0)))
-            #print("This item is a TCanvas")
+            runNumber = item.text(0).split("_")[0]
+            # print("the test is {0}".format(item.text(0)))
+            # print("This item is a TCanvas")
             canvas = temp.data(0, Qt.UserRole)
             canvasname = str(temp.text(0))
             canvasname = canvasname.split(";")[0]
-            #print("The canvas is {0}".format(canvas))
+            # print("The canvas is {0}".format(canvas))
             self.displayResult(canvas, canvasname, runNumber)
         elif "svg" in str(item.data(0, Qt.UserRole)):
             canvas = item.data(0, Qt.UserRole)
@@ -269,7 +246,7 @@ class ResultTreeWidget(QWidget):
         if len(self.displayList) > 0:
             self.displayIndex += 1
             self.showPlot()
-    
+
     def leftArrowFunc(self):
         self.timer.start(3000)
         if len(self.displayList) > 0:
@@ -285,7 +262,7 @@ class ResultTreeWidget(QWidget):
             self.timer.start()
             self.timerFrozen = False
             self.ControlButtom.setText("Pause")
-            
+
     def updateResult(self, sourceFolder):
         process = subprocess.run(
             'find {0} -type f -name "*.root" '.format(sourceFolder),
@@ -306,9 +283,8 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
             self.getResult(CurrentNode, File)
-    
-    def updateIVResult(self, sourceFolder):
 
+    def updateIVResult(self, sourceFolder):
         process2 = subprocess.run(
             'find {0} -type f -name "*IVCurve_Module_*.svg" '.format(sourceFolder),
             shell=True,
@@ -317,9 +293,9 @@ class ResultTreeWidget(QWidget):
         stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
 
         if stepFiles2 == [""]:
-            #print("No IV files found.")  # Debugging output if no IV files are found
+            # print("No IV files found.")  # Debugging output if no IV files are found
             return
-        #print("IV files found:", stepFiles2)  # Debugging output to show the found IV files
+        # print("IV files found:", stepFiles2)  # Debugging output to show the found IV files
 
         self.IVFileList += stepFiles2
 
@@ -328,7 +304,7 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
-        #print("IV files processed.")  # Debugging output to indicate IV files processing is done
+        # print("IV files processed.")  # Debugging output to indicate IV files processing is done
 
     def updateSLDOResult(self, sourceFolder):
         process2 = subprocess.run(
@@ -342,7 +318,9 @@ class ResultTreeWidget(QWidget):
             print("No SLD files found.")  # Debugging output if no SLD files are found
             return
 
-        print("SLD files found:", stepFiles2)  # Debugging output to show the found SLD files
+        print(
+            "SLD files found:", stepFiles2
+        )  # Debugging output to show the found SLD files
 
         self.SLDOFileList += stepFiles2
 
@@ -351,11 +329,13 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
-        print("SLD files processed.")  # Debugging output to indicate SLD files processing is done
+        print(
+            "SLD files processed."
+        )  # Debugging output to indicate SLD files processing is done
 
     def displayResult(self, canvas, name=None, runNumber=""):
         tmpDir = os.environ.get("GUI_dir") + f"/Gui/.tmp/{runNumber}"
-        #tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
+        # tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
         if not os.path.isdir(tmpDir) and os.environ.get("GUI_dir"):
             try:
                 os.mkdir(tmpDir)

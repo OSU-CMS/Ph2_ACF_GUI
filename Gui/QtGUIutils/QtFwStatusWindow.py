@@ -1,37 +1,13 @@
-import sys
-import os
-#from PyQt5 import QtCore
-#from PyQt5.QtCore import *
+# from PyQt5 import QtCore
+# from PyQt5.QtCore import *
 from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
 )
-from Gui.python.logging_config import logger
 
 
 class QtFwStatusWindow(QWidget):

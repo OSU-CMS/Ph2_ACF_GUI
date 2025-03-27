@@ -2,7 +2,6 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QPushButton,
     QHBoxLayout,
     QWidget,
@@ -11,10 +10,9 @@ from PyQt5.QtWidgets import (
 import math
 
 from Gui.python.CustomizedWidget import StatusBox
-#from Gui.GUIutils.DBConnection import *
-#from Gui.GUIutils.FirmwareUtil import *
-#from Gui.GUIutils.settings import *
-from Gui.python.logging_config import logger
+# from Gui.GUIutils.DBConnection import *
+# from Gui.GUIutils.FirmwareUtil import *
+# from Gui.GUIutils.settings import *
 
 
 class QtFwCheckDetails(QWidget):

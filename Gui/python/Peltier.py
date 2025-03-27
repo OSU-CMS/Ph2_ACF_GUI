@@ -1,19 +1,26 @@
 #!/usr/bin/env python3
 import serial
 from Gui.siteSettings import defaultPeltierPort, defaultPeltierBaud
-#from PyQt5 import QtCore
-#from PyQt5.QtCore import *
-#from PyQt5 import QtSerialPort
-#from PyQt5.QtWidgets import QMessageBox
+
+# from PyQt5 import QtCore
+# from PyQt5.QtCore import *
+# from PyQt5 import QtSerialPort
+# from PyQt5.QtWidgets import QMessageBox
 import time
 from Gui.python.logging_config import logger
 
 
 class PeltierSignalGenerator:
     def __init__(self):
-        #print("Connecting Peltier Port")
-        self.ser = serial.Serial(defaultPeltierPort, defaultPeltierBaud, timeout=5, write_timeout=5, inter_byte_timeout=5)
-        #print("Peltier connected")
+        # print("Connecting Peltier Port")
+        self.ser = serial.Serial(
+            defaultPeltierPort,
+            defaultPeltierBaud,
+            timeout=5,
+            write_timeout=5,
+            inter_byte_timeout=5,
+        )
+        # print("Peltier connected")
         self.commandDict = {
             "Input1": ["0", "1"],
             "Desired Control Value": ["0", "3"],
@@ -39,7 +46,7 @@ class PeltierSignalGenerator:
             "Heat Multiplier Write": ["0", "c"],
             "Heat Multiplier Read": ["5", "c"],
             "Cool Multiplier Write": ["0", "d"],
-            "Cool Multiplier Read": ["5", "d"]
+            "Cool Multiplier Read": ["5", "d"],
         }
         self.checksumError = [
             "*",
@@ -95,7 +102,7 @@ class PeltierSignalGenerator:
 
     # Used for all other commands that are not setTemp
     # Currently you need to format dd yourself which is the input value you want to send
-    def createCommand(self, command:str , dd:list[str]):
+    def createCommand(self, command: str, dd: list[str]):
         stx = ["*"]
         aa = ["0", "0"]
         cc = self.commandDict[command]
@@ -157,7 +164,7 @@ class PeltierSignalGenerator:
     def convertSetTempListToValue(self, temp: list) -> float:
         """
         Convienience function to convert return value from peltier to a decimal temperature. The input to this
-        function should be the output of sendCommand() after sending a command to read some temperature. 
+        function should be the output of sendCommand() after sending a command to read some temperature.
         """
         temp = temp[1:9]
         temp = "".join(temp)

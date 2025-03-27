@@ -1,44 +1,22 @@
-#from PyQt5 import QtCore
-#from PyQt5.QtCore import *
-#from PyQt5.QtGui import QPixmap
+# from PyQt5 import QtCore
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
-    QApplication,
-    QCheckBox,
     QComboBox,
-    QDateTimeEdit,
-    QDial,
     QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
     QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
-    QSplitter,
 )
 
-import sys
-import os
 import subprocess
 import hashlib
-from subprocess import Popen, PIPE
 
 from Gui.GUIutils.DBConnection import (
     checkDBConnection,
@@ -50,10 +28,12 @@ from Gui.GUIutils.guiUtils import (
     isActive,
     GetTBrowser,
 )
-#from Gui.QtGUIutils.QtStartWindow import *
+
+# from Gui.QtGUIutils.QtStartWindow import *
 from Gui.QtGUIutils.QtTableWidget import QtTableWidget
 from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
-#from Gui.python.ROOTInterface import *
+
+# from Gui.python.ROOTInterface import *
 from Gui.python.logging_config import logger
 
 
@@ -180,7 +160,8 @@ class QtModuleReviewWindow(QWidget):
         for row in range(self.proxy.rowCount()):
             DetailButton = QPushButton("&Show...")
             DetailButton.clicked.connect(
-                lambda state, x="{0}".format(
+                lambda state,
+                x="{0}".format(
                     self.proxy.data(self.proxy.index(row, len(self.proxy.dataHeader)))
                 ): self.openDQM(x)
             )
