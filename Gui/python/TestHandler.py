@@ -45,8 +45,6 @@ import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
-import logging
-
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)

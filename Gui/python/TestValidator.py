@@ -1,9 +1,10 @@
 import os
 import ROOT
 
+from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
+
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
-from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
 
 def ResultGrader(
@@ -34,13 +35,16 @@ def ResultGrader(
             root_file_name = root_file_name.replace("Threshold", "Thr")
         if "IVCurve" in testName:
             root_file_name = testName.split("_")[0] + "_" + module_name
-            module_canvas_path = (
-                "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
-                    boardID=module_data["boardID"],
-                    ogID=module_data["ogID"],
-                    hybridID=module_data["hybridID"],
-                )
-            )
+
+            # NOTE: This may be useful
+            # module_canvas_path = (
+            #     "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
+            #         boardID=module_data["boardID"],
+            #         ogID=module_data["ogID"],
+            #         hybridID=module_data["hybridID"],
+            #     )
+            # )
+
             ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
 
             if root_file_name in (
@@ -77,12 +81,16 @@ def ResultGrader(
                 "PixelAlive_uncoupled_xtalk",
             ):
                 BBanalysis_root_files.append(ROOT_file_path)
-            chip_canvas_path_template = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/Chip_{chipID:02d}"
-            active_chips = [
-                chip.getID()
-                for chip in module_data["module"].getChips().values()
-                if chip.getStatus()
-            ]
+
+            # Note: This may be useful
+            # chip_canvas_path_template = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/Chip_{chipID:02d}"
+
+            # active_chips = [
+            #     chip.getID()
+            #     for chip in module_data["module"].getChips().values()
+            #     if chip.getStatus()
+            # ]
+
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]

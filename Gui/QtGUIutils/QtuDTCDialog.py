@@ -76,7 +76,6 @@ class QtuDTCDialog(QDialog):
             )
             root, tree = LoadXML(InputFile)
             fwIP = self.module.getIPAddress()
-            changeMade = False
             for Node in root.findall(".//connection"):
                 if fwIP not in Node.attrib["uri"]:
                     Node.set(

@@ -12,8 +12,9 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QHBoxLayout,
     QWidget,
+    QVBoxLayout,
+    QScrollArea
 )
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea
 
 import sys
 import requests

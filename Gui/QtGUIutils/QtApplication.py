@@ -450,7 +450,7 @@ class QtApplication(QWidget):
     ###############################################################
     ##  Main page and related functions
     ###############################################################
-    def create_status_label(text, is_connected):
+    def create_status_label(self, text, is_connected):
         label = QLabel(f"{text}")
         status_label = QLabel("Connected" if is_connected else "Not Connected")
         status_label.setStyleSheet(f"color: {'green' if is_connected else 'red'}")
@@ -461,7 +461,7 @@ class QtApplication(QWidget):
         self.FirmwareStatus.setDisabled(True)
 
         self.StatusList = [
-            create_status_label("Panthera DB", self.panthera_connected),
+            self.create_status_label("Panthera DB", self.panthera_connected),
         ]
 
         try:
