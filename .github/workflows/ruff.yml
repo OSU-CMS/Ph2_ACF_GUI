@@ -9,7 +9,7 @@ jobs:
         with:
           args: "check"
           src: "./Gui"
-      -uses: astral-sh/ruff-action@v3
+      - uses: astral-sh/ruff-action@v3
         with:
           args: "format --check --diff"
           src: "./Gui"
