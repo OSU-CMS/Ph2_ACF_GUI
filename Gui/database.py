@@ -1,6 +1,7 @@
 import logging
 import config
 import sqlite3
+
 # Customize the logging configuration
 logging.basicConfig(
     level=logging.INFO,
@@ -19,7 +20,6 @@ logger = logging.getLogger(__name__)
   date                  06/08/20
   Support:               email to manley.329@osu.edu
 """
-
 
 
 def createDatabaseConnection(db_file):

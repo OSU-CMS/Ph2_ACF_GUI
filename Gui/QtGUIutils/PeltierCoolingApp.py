@@ -315,7 +315,7 @@ class Peltier(QWidget):
 
     def tempLimit(self, temp):
         if temp >= 35:
-            self.closeEvent()   #Will change this to take effect if the code runs
+            self.closeEvent()  # Will change this to take effect if the code runs
             print("Temperature too high")
         return
 

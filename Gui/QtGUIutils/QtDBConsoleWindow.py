@@ -797,7 +797,7 @@ class QtDBConsoleWindow(QMainWindow):
             TimeZone = getByColumnName(
                 "timezone", describeTable(self.connection, "institute"), InstituteInfo
             )
-        except Exception as e: 
+        except Exception as e:
             self.AUFeedBackLabel.setText(
                 f"Failed to extract institute info, try to reconnect to DB due to error: {e}"
             )
@@ -1127,7 +1127,7 @@ class QtDBConsoleWindow(QMainWindow):
             self.TryDatabase = self.DatabaseEdit.text()
 
             msg = QMessageBox()
-            
+
             if self.TryUsername == "":
                 msg.information(
                     None, "Error", "Please enter a valid username", QMessageBox.Ok

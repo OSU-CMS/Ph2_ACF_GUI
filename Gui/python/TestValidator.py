@@ -6,7 +6,6 @@ from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
 
-
 def ResultGrader(
     felis,
     outputDir,

@@ -148,7 +148,10 @@ class QtImageViewerTab(QWidget):
             )
         except Exception as e:
             QMessageBox().information(
-                None, "Warning", f"Database connection broken due to error {e}", QMessageBox.Ok
+                None,
+                "Warning",
+                f"Database connection broken due to error {e}",
+                QMessageBox.Ok,
             )
 
         try:

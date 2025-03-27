@@ -790,7 +790,7 @@ class QtApplication(QWidget):
             True
         )  # FIXME This is to temporarily disable the test until LV can be added.
         self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
-        #NewProductionTestLabel = QLabel("Open production test")
+        # NewProductionTestLabel = QLabel("Open production test")
 
         self.ReviewButton = QPushButton("&Review")
         self.ReviewButton.setMinimumWidth(kMinimumWidth)

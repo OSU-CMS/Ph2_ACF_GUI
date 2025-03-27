@@ -41,9 +41,6 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-
-
-
 # from Gui.QtGUIutils.QtApplication import *
 
 # from Gui.python.Firmware import *

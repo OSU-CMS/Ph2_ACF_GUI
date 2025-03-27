@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QWidget,
     QVBoxLayout,
-    QScrollArea
+    QScrollArea,
 )
 
 import sys
@@ -469,8 +469,6 @@ class ChipBox(QWidget):
             for chipid in self.ChipList:
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
             return None
-
-
 
 
 class BeBoardBox(QWidget):
