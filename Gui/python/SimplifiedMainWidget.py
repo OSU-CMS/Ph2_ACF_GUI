@@ -464,14 +464,15 @@ class SimplifiedMainWidget(QWidget):
         # self.instrument_status = self.check_icicle_devices()
         self.instrument_status = {
             "arduino": False,
-            "fc7_1": False,
-            "fc7_2": False,
             "database": False,
             "hv": False,
             "lv": False,
             "peltier": True if site_settings.cooler == "Peltier" else False,
         }
-        # logger.debug(f"Instrument status is {self.instrument_status}")
+
+        for firmwareName in site_settings.FC7List.keys():
+            self.instrument_status[f"fc7_{firmwareName}"] = False
+            # logger.debug(f"Instrument status is {self.instrument_status}")
 
         logger.debug("Getting FC7 Comment")
         # ↓↓↓↓↓ New FC7 code from QtApplication ↓↓↓↓↓ #
