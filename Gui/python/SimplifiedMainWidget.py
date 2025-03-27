@@ -21,15 +21,13 @@ from PyQt5.QtWidgets import (
 
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.GUIutils.FirmwareUtil import fwStatusParser
-from Gui.python.CustomizedWidget import SimpleBeBoardBox, SimpleModuleBox
+from Gui.python.CustomizedWidget import SimpleBeBoardBox
 from Gui.python.Firmware import QtBeBoard
-from Gui.GUIutils.DBConnection import checkDBConnection
-import Gui.GUIutils.settings as default_settings
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.Peltier import PeltierSignalGenerator
 from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings
-from icicle.icicle.instrument_cluster import InstrumentCluster, InstrumentNotInstantiated
+from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 
 
 
@@ -119,7 +117,8 @@ class SimplifiedMainWidget(QWidget):
                 self.Peltier.createCommand(
                     "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
-            )[1]: raise Exception("Could not communicate with Peltier")
+            )[1]:
+                raise Exception("Could not communicate with Peltier")
             logger.debug("Execute Peltier write command")
 
             # Allows set point to be set by computer software
@@ -127,7 +126,8 @@ class SimplifiedMainWidget(QWidget):
                 self.Peltier.createCommand(
                     "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                 )
-            )[1]: raise Exception("Could not communicate with Peltier") # Temperature should be PID controlled
+            )[1]:
+                raise Exception("Could not communicate with Peltier") # Temperature should be PID controlled
             logger.debug("Executed Peltier PID command")
 
             message = self.Peltier.convertSetTempValueToList(site_settings.defaultPeltierSetTemp)
@@ -140,14 +140,16 @@ class SimplifiedMainWidget(QWidget):
                 self.Peltier.createCommand(
                     "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                 )
-            )[1]: raise Exception("Could not communicate with Peltier")   # Turn on Peltier
+            )[1]:
+                raise Exception("Could not communicate with Peltier")   # Turn on Peltier
             logger.debug("Turned off Peltier")
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
                     "Proportional Bandwidth Write",
                     ["0", "0", "0", "0", "0", "0", "c", "8"],
                 )
-            )[1]: raise Exception("Could not communicate with Peltier")  # Set proportional bandwidth
+            )[1]:
+                raise Exception("Could not communicate with Peltier")  # Set proportional bandwidth
             logger.debug("Set Peltier Bandwidth")
             time.sleep(0.5)
 
@@ -378,7 +380,7 @@ class SimplifiedMainWidget(QWidget):
         
         print("Firmware Check")
         for beboard in self.firmwareDescription:
-            fw_check = SummaryBox.checkFwPar(beboard.getBoardName(), module_type, beboard.getIPAddress())
+            SummaryBox.checkFwPar(beboard.getBoardName(), module_type, beboard.getIPAddress())
         
         self.RunTest.initialTest()
         # self.RunTest.runTest()
@@ -442,7 +444,7 @@ class SimplifiedMainWidget(QWidget):
 
         logger.debug("Setting up instrument_status")
         logger.debug("instrument_status: {}".format(self.instrument_status))
-        logger.debug("instruments: ".format(self.instruments))
+        logger.debug("instruments: ")
        
         self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
         for beboard in self.firmware:
@@ -498,7 +500,7 @@ class SimplifiedMainWidget(QWidget):
         for key, value in status.items():
             if value == 0:
                 return_status[key] = 1
-            elif type(value) == InstrumentNotInstantiated:
+            elif type(value) is InstrumentNotInstantiated:
                 return_status[key] = 0
         return return_status        
 
