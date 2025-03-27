@@ -118,7 +118,7 @@ class IVCurveHandler(QObject):
         self.test.measureSignal.connect(self.finish)
 
     def isValid(self):
-        return self.instruments != None
+        return self.instruments is not None
 
     def IVCurve(self):
         if not self.isValid():

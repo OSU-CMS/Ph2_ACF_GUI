@@ -21,7 +21,7 @@ from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
 # from Gui.python.ResultTreeWidget import *
 # from Gui.python.TestValidator import *
 from Gui.python.IVCurveHandler import IVCurveHandler
-# from Gui.python.SLDOScanHandler import *
+from Gui.python.SLDOScanHandler import SLDOScanHandler
 
 
 class QtProductionTestWindow(QWidget):
@@ -206,7 +206,6 @@ class QtProductionTestWindow(QWidget):
             self.SLDOScanData.append([Voltage, Current])
             self.SLDOScanResult.updatePlots(self.SLDOScanData)
             self.SLDOScanResult.update()
-            index = self.MainTabs.indexOf(self.SLDOScanResult)
             self.MainTabs.clear()
             self.MainTabs.addTab(self.SLDOScanResult, "SLDO scan")
             self.MainTabs.setCurrentWidget(self.SLDOScanResult)

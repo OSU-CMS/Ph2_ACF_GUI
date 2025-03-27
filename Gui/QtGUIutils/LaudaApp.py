@@ -61,7 +61,7 @@ class LaudaWidget(QWidget):
         self.setLayout(self.ChillerLayout)
 
     def resourceExists(self):
-        return False if self.lauda_resource == None else True
+        return False if self.lauda_resource is None else True
 
     def startChiller(self):
         self.StartChillerButton.setChecked(True)

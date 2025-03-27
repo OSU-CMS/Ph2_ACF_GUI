@@ -211,7 +211,7 @@ class QtApplication(QWidget):
                 logFile = open(LogFileName, "w")
                 self.LogList[index] = LogFileName
                 logFile.close()
-            except:
+            except OSError:
                 QMessageBox(
                     None, "Error", "Can not create log files: {}".format(LogFileName)
                 )
@@ -245,7 +245,7 @@ class QtApplication(QWidget):
 
         HostLabel = QLabel("HostName:")
 
-        if self.expertMode == False:
+        if not self.expertMode:
             self.HostName = QComboBox()
             HostLabel.setBuddy(self.HostName)
         else:
@@ -256,8 +256,7 @@ class QtApplication(QWidget):
             self.HostEdit.setMaximumWidth(260)
             self.HostEdit.setMaximumHeight(30)
 
-        DatabaseLabel = QLabel("Database:")
-        if self.expertMode == False:
+        if not self.expertMode:
             self.DatabaseCombo = QComboBox()
             self.DBNames = self.HostName.currentText() + ".All_list"
             self.DatabaseCombo.addItem(self.DBNames)
@@ -451,20 +450,15 @@ class QtApplication(QWidget):
     ###############################################################
     ##  Main page and related functions
     ###############################################################
+    def create_status_label(text, is_connected):
+        label = QLabel(f"{text}")
+        status_label = QLabel("Connected" if is_connected else "Not Connected")
+        status_label.setStyleSheet(f"color: {'green' if is_connected else 'red'}")
+        return label, status_label
 
     def createMain(self):
         self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name_first))
         self.FirmwareStatus.setDisabled(True)
-
-        create_status_label = lambda text, is_connected: (
-            QLabel(f"{text}"),
-            (
-                lambda label: (
-                    label.setStyleSheet(f"color: {'green' if is_connected else 'red'}"),
-                    label,
-                )[1]
-            )(QLabel("Connected" if is_connected else "Not Connected")),
-        )
 
         self.StatusList = [
             create_status_label("Panthera DB", self.panthera_connected),
@@ -783,7 +777,7 @@ class QtApplication(QWidget):
         self.NewTestButton.setDisabled(True)
         if self.ActiveFC7s != {}:
             self.NewTestButton.setDisabled(False)
-        if self.ProcessingTest == True:
+        if self.ProcessingTest:
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
 
@@ -796,7 +790,7 @@ class QtApplication(QWidget):
             True
         )  # FIXME This is to temporarily disable the test until LV can be added.
         self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
-        NewProductionTestLabel = QLabel("Open production test")
+        #NewProductionTestLabel = QLabel("Open production test")
 
         self.ReviewButton = QPushButton("&Review")
         self.ReviewButton.setMinimumWidth(kMinimumWidth)
@@ -1354,7 +1348,7 @@ class QtApplication(QWidget):
         print("Critical status detected: Emitting Global Stop signal")
         self.globalStop.emit()
         self.instruments.off()
-        if self.expertMode == True:
+        if self.expertMode:
             self.releaseHVPowerPanel()
             self.releaseLVPowerPanel()
 

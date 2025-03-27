@@ -146,9 +146,9 @@ class QtImageViewerTab(QWidget):
             data = retrieveWithConstraint(
                 self.connection, "images", id=int(id), columns=columns
             )
-        except:
+        except Exception as e:
             QMessageBox().information(
-                None, "Warning", "Database connection broken", QMessageBox.Ok
+                None, "Warning", f"Database connection broken due to error {e}", QMessageBox.Ok
             )
 
         try:

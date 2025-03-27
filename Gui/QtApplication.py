@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QApplication
 
 import sys
 
-from Gui.QtGUIutils.QtApplication import *
+from Gui.QtGUIutils.QtApplication import QtApplication
 
 if __name__ == "__main__":
     app = QApplication([])

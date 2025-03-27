@@ -436,7 +436,7 @@ class SimplifiedMainWidget(QWidget):
 
         print("Firmware Check")
         for beboard in self.firmwareDescription:
-            fw_check = SummaryBox.checkFwPar(
+            SummaryBox.checkFwPar(
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
@@ -585,7 +585,7 @@ class SimplifiedMainWidget(QWidget):
                 logFile = open(LogFileName, "w")
                 self.LogList[index] = LogFileName
                 logFile.close()
-            except:
+            except OSError:
                 QMessageBox(
                     None, "Error", "Can not create log files: {}".format(LogFileName)
                 )
@@ -623,7 +623,7 @@ class SimplifiedMainWidget(QWidget):
         for key, value in status.items():
             if value == 0:
                 return_status[key] = 1
-            elif type(value) == InstrumentNotInstantiated:
+            elif type(value) is InstrumentNotInstantiated:
                 return_status[key] = 0
         return return_status
 

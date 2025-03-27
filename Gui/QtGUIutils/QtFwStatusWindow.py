@@ -34,7 +34,7 @@ class QtFwStatusWindow(QWidget):
 
         SummaryLayout = QGridLayout()
 
-        if type(self.verboseInfo) == type({}):
+        if type(self.verboseInfo) is type({}):
             for index, key in enumerate(self.verboseInfo):
                 KeyLabel = QLabel("{}".format(key))
                 ValueLabel = QLabel("{}".format(self.verboseInfo[key]))

@@ -314,16 +314,10 @@ class Peltier(QWidget):
             return
 
     def tempLimit(self, temp):
-        try:
-            if temp >= 35:
-                # self.closeEvent()   #Will change this to take effect if the code runs
-                print("Temperature too high")
-            return
-        except:
-            return
-
-    def setBandwidth(self):
-        signalworker = signalWorker("Proportional Bandwidth Write", message)
+        if temp >= 35:
+            self.closeEvent()   #Will change this to take effect if the code runs
+            print("Temperature too high")
+        return
 
 
 if __name__ == "__main__":

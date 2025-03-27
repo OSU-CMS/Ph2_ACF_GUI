@@ -105,7 +105,7 @@ def getAllTests(dbconnection):
 
 
 def retrieveAllTests(dbconnection):
-    if dbconnection.is_connected() == False:
+    if not dbconnection.is_connected():
         return
     cur = dbconnection.cursor()
     cur.execute("SELECT * FROM calibrationlist")
@@ -207,7 +207,7 @@ def getLocalTests(module_id, columns=[]):
 
 def getLocalRemoteTests(dbconnection, module_id=None, columns=[]):
     if isActive(dbconnection):
-        if module_id == None:
+        if module_id is None:
             remoteTests = retrieveGenericTable(
                 dbconnection, "module_tests", columns=columns
             )  # changed table name
@@ -224,7 +224,7 @@ def getLocalRemoteTests(dbconnection, module_id=None, columns=[]):
     # localTests = []
     try:
         timeIndex = columns.index("date")
-    except:
+    except ValueError:
         timeIndex = -1
 
     if remoteTests != [] and timeIndex != -1:
@@ -315,7 +315,7 @@ def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
         values = []
         columnList = []
         for key, value in kwargs.items():
-            if key == "columns" and type(value) == type(columnList):
+            if key == "columns" and type(value) is type(columnList):
                 columnList = value
             else:
                 values.append(value)
@@ -347,7 +347,7 @@ def retrieveWithConstraintSyntax(dbconnection, table, syntax, **kwargs):
     try:
         columnList = []
         for key, value in kwargs.items():
-            if key == "columns" and type(value) == type(columnList):
+            if key == "columns" and type(value) is type(columnList):
                 columnList = value
         if len(columnList) > 0:
             sql_query = (
@@ -375,7 +375,7 @@ def retrieveGenericTable(dbconnection, table, **kwargs):
     try:
         columnList = []
         for key, value in kwargs.items():
-            if key == "columns" and type(value) == type(columnList):
+            if key == "columns" and type(value) is type(columnList):
                 columnList = value
         if len(columnList) > 0:
             sql_query = (
@@ -493,7 +493,7 @@ def updateGenericTable(dbconnection, table, column, data, **kwargs):
 def getByColumnName(column_name, header, databody):
     try:
         index = header.index(column_name)
-    except:
+    except ValueError:
         print("column_name not found")
     output = list(map(lambda x: databody[x][index], range(0, len(databody))))
     return output
@@ -528,15 +528,13 @@ class GetTrimClass:
         # handle the error of can't find the data
         if results == []:
             return [], []
-        if debug == True:
-            print("raw ID:" + str(result))  # it should look like [(778,)]
         parenetNum = results[0][0]
 
         cursor.execute(
             f"select component.description from component where component.serial_number='{serialNumber}';"
         )
         results = cursor.fetchall()  # [('TFPX CROC 1x2 HPK sensor module',)]
-        if debug == True:
+        if debug:
             print("raw description" + str(results))
 
         if "sensor" in str(results[0][0]):
@@ -545,7 +543,7 @@ class GetTrimClass:
             )
             chipSensorResult = cursor.fetchall()
             secondParent = chipSensorResult[0][0]
-            if debug == True:
+            if debug:
                 print("it is sensor module")
                 print("secondParent" + str(secondParent))
             parenetNum = secondParent
@@ -561,7 +559,7 @@ class GetTrimClass:
             siteNum = result[-2]
             VDDAList.append([siteNum, VDDA])
         sorted_VDDAlist = sorted(VDDAList, key=lambda x: x[0])
-        if debug == True:
+        if debug:
             print("sorted_VDDAlist:" + str(sorted_VDDAlist))
 
         VDDDList = []
@@ -577,7 +575,7 @@ class GetTrimClass:
         sorted_VDDDlist = sorted(
             VDDDList, key=lambda x: x[0]
         )  # make sure the we can get VDDD value base on the order of rising chip no
-        if debug == True:
+        if debug:
             print("sorted_VDDDlist:" + str(sorted_VDDDlist))
         connection.close()
         return sorted_VDDAlist, sorted_VDDDlist

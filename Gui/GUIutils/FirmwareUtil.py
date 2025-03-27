@@ -59,8 +59,6 @@ def fwStatusParser(firmware, fileName, **kwargs):
         verboseInfo["FPGA configuration"] = "Unknown"
         return "FPGA configuration failed", "color:red", verboseInfo
 
-    ## Dummy test
-    test3ReturnCode = fpgaConfigCheck(firmware, fileName)
     if fpgaReturnCode == 1:
         verboseInfo["Fw test3"] = "Failed"
         return "Fw test3 failed", "color:red", verboseInfo
@@ -70,7 +68,6 @@ def fwStatusParser(firmware, fileName, **kwargs):
         verboseInfo["Fw test3"] = "Unknown"
         return "Fw test3 failed", "color:red", verboseInfo
 
-    test4ReturnCode = fpgaConfigCheck(firmware, fileName)
     if fpgaReturnCode == 1:
         verboseInfo["Fw test4"] = "Failed"
         return "Fw test4 failed", "color:red", verboseInfo
@@ -80,7 +77,6 @@ def fwStatusParser(firmware, fileName, **kwargs):
         verboseInfo["Fw test4"] = "Unknown"
         return "Fw test4 failed", "color:red", verboseInfo
 
-    test5ReturnCode = fpgaConfigCheck(firmware, fileName)
     if fpgaReturnCode == 1:
         verboseInfo["Fw test5"] = "Failed"
         return "Fw test5 failed", "color:red", verboseInfo

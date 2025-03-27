@@ -1,8 +1,8 @@
+import os
 import ROOT
 
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
-import os
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
 
@@ -61,7 +61,6 @@ def ResultGrader(
                 True,
                 "link",
             )
-            module_canvases = [module_canvas_path]
             status, message, sanity, explanation = felis.set_result(
                 relevant_files,
                 module_name,
@@ -83,15 +82,6 @@ def ResultGrader(
                 chip.getID()
                 for chip in module_data["module"].getChips().values()
                 if chip.getStatus()
-            ]
-            chip_canvases = [
-                chip_canvas_path_template.format(
-                    boardID=module_data["boardID"],
-                    ogID=module_data["ogID"],
-                    hybridID=module_data["hybridID"],
-                    chipID=int(chipID),
-                )
-                for chipID in active_chips
             ]
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)

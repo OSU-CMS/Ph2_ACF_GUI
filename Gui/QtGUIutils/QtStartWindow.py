@@ -1,14 +1,7 @@
+import os
+import math
+import subprocess
 import logging
-
-# Customize the logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    filename="my_project.log",  # Specify a log file
-    filemode="w",  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
 
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage
@@ -22,21 +15,10 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMessageBox,
 )
-
-
-import os
-import math
-import subprocess
-
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
-
-# from Gui.QtGUIutils.QtApplication import *
 from Gui.python.CustomizedWidget import BeBoardBox
-
-# from Gui.python.Firmware import *
-# from Gui.GUIutils.DBConnection import *
 from Gui.GUIutils.FirmwareUtil import FEPowerUpVD
 from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
@@ -46,6 +28,26 @@ from Gui.siteSettings import (
 
 from InnerTrackerTests.TestSequences import TestList
 from siteSettings import icicle_instrument_setup
+
+
+# Customize the logging configuration
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    filename="my_project.log",  # Specify a log file
+    filemode="w",  # 'w' for write, 'a' for append
+)
+
+logger = logging.getLogger(__name__)
+
+
+
+
+
+# from Gui.QtGUIutils.QtApplication import *
+
+# from Gui.python.Firmware import *
+# from Gui.GUIutils.DBConnection import *
 
 # from Gui.QtGUIutils.QtProductionTestWindow import *
 
@@ -126,7 +128,7 @@ class SummaryBox(QWidget):
             uricmd = "sed -i -e 's/fc7-1/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )
-            updateuri = subprocess.call([uricmd], shell=True)
+            subprocess.call([uricmd], shell=True)
             print("updated the uri value")
             firmwareImage = firmware_image[module_type][
                 os.environ.get("Ph2_ACF_VERSION")
@@ -180,12 +182,12 @@ class SummaryBox(QWidget):
                     # self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
                     print(fwsave.stdout.decode("UTF-8"))
                     FWisPresent = True
-                except:
+                except OSError:
                     print(
                         "unable to save {0} to FC7 SD card".format(
                             os.environ.get("GUI_dir")
                             + "/FirmwareImages/"
-                            + self.firmwareImage
+                            + firmwareImage
                         )
                     )
 
@@ -470,7 +472,7 @@ class QtStartWindow(QWidget):
 
         for fw in self.firmwareDescription:
             self.checkFwPar(fw.getBoardName())
-        if self.passCheck == False:
+        if not self.passCheck:
             reply = QMessageBox().question(  # For some reason this isn't an issue for QThread
                 None,
                 "Error",
@@ -492,7 +494,7 @@ class QtStartWindow(QWidget):
         self.close()
 
     def closeEvent(self, event):
-        if self.runFlag == True:
+        if self.runFlag:
             event.accept()
 
         else:

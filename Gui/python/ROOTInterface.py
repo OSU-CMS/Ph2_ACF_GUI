@@ -78,7 +78,6 @@ def DirectoryVLR(node, depth):
 
 def showDirectory(nodes):
     for node in nodes:
-        keyName = node.getKeyName()
         DirectoryVLR(node, 0)
 
 
@@ -95,7 +94,7 @@ def TCanvas2JPG(outputDir, canvas, name=None):
         canvas.Print(outputFile)
         # canvas.Close()
         logger.info(outputFile + " is saved")
-    except:
+    except OSError:
         logger.warning("Failed to save " + outputFile)
     return outputFile
 

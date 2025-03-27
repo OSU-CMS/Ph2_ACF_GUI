@@ -83,10 +83,8 @@ class QtuDTCDialog(QDialog):
                         "uri",
                         "chtcp-2.0://localhost:10203?target={}:50001".format(fwIP),
                     )
-                    changeMade = True
             for Node in root.findall(".//RD53"):
                 Node.set("configfile", "../Configuration/CMSIT_RD53.txt")
-                changeMode = True
             # if changeMode:
             # xml_output = ET.tostring(root,pretty_print=True)
             # print(xml_output)

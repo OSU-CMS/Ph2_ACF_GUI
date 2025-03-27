@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 import serial
 from Gui.siteSettings import defaultPeltierPort, defaultPeltierBaud
-
-# from PyQt5 import QtCore
-# from PyQt5.QtCore import *
-# from PyQt5 import QtSerialPort
-# from PyQt5.QtWidgets import QMessageBox
 import time
 from Gui.python.logging_config import logger
 
@@ -77,14 +72,14 @@ class PeltierSignalGenerator:
 
     @staticmethod
     def convertToHex(val):
-        if type(val) != list:
+        if type(val) is not list:
             return hex(val)
         for i, item in enumerate(val):
             val[i] = hex(ord(item))
         return val
 
     def convertHexToDec(self, hex):
-        if type(hex) != list:
+        if type(hex) is not list:
             return int(hex, 16)
         else:
             for i, val in enumerate(hex):
@@ -106,7 +101,6 @@ class PeltierSignalGenerator:
         stx = ["*"]
         aa = ["0", "0"]
         cc = self.commandDict[command]
-        check = aa + cc + dd
         ss = self.checksum(aa + cc + dd)
         etx = ["\r"]
         command = stx + aa + cc + dd + ss + etx
@@ -121,7 +115,8 @@ class PeltierSignalGenerator:
             message, passed = self.recieveMessage()
             logger.debug(f"Recieved message: {message}")
             return message, passed
-        except:
+        except Exception as e:
+            print(f"Failed to send command to Peltier due to error: {e}")
             return None, False
 
     # Will recieve message but will only check if the command gave an error, will not decode the message

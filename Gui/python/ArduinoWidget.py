@@ -140,7 +140,7 @@ class ArduinoWidget(QWidget):
                     usbInfo.decode("UTF-8").split(deviceId)[-1].lstrip(" ").rstrip("\n")
                 )
 
-                if deviceName == None:
+                if deviceName is None:
                     logger.warning("No device name found for {}:".format(device))
                     # self.deviceMap[device] = device
                 elif "Arduino" in deviceName:

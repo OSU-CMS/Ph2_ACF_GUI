@@ -307,8 +307,8 @@ class QtDBConsoleWindow(QMainWindow):
                 SubmitArgs.append(arg)
         try:
             insertGenericTable(self.connection, "shipment", SubmitArgs, Data)
-        except:
-            print("Failed to submit the shipment record")
+        except Exception as e:
+            print(f"Failed to submit the shipment record due to error: {e}")
             return
 
         self.SPSenderLabel.deleteLater()
@@ -487,7 +487,8 @@ class QtDBConsoleWindow(QMainWindow):
             shipmentInfo = retrieveWithConstraint(
                 self.connection, "shipment", id=self.RPIDEdit.text()
             )
-        except:
+        except Exception as e:
+            print(f"Failed to Retrieve Shipment Information Due to Error: {e}")
             return
         if len(shipmentInfo) > 0 and len(header) == len(shipmentInfo[0]):
             self.RPFeedBackLabel.setText("Delivery Record found")
@@ -564,8 +565,8 @@ class QtDBConsoleWindow(QMainWindow):
                 Data,
                 id=int(self.RPIDEdit.text()),
             )
-        except:
-            print("Failed to submit the shipment record")
+        except Exception as e:
+            print(f"Failed to submit the shipment record due to error: {e}")
             return
 
         self.RPIDLabel.deleteLater()
@@ -796,9 +797,9 @@ class QtDBConsoleWindow(QMainWindow):
             TimeZone = getByColumnName(
                 "timezone", describeTable(self.connection, "institute"), InstituteInfo
             )
-        except:
+        except Exception as e: 
             self.AUFeedBackLabel.setText(
-                "Failed to extract institute info, try to reconnect to DB"
+                f"Failed to extract institute info, try to reconnect to DB due to error: {e}"
             )
         Args = describeTable(self.connection, "people")
         Data = []
@@ -815,8 +816,8 @@ class QtDBConsoleWindow(QMainWindow):
             self.AUFeedBackLabel.setText("Query submitted")
             self.AUFeedBackLabel.setStyleSheet("color:green")
             return
-        except:
-            print("submitFailed")
+        except Exception as e:
+            print(f"submitFailed due to error: {e}")
             return
 
     def updateProfile(self):
@@ -938,8 +939,8 @@ class QtDBConsoleWindow(QMainWindow):
         # print(Data)
         try:
             insertGenericTable(self.connection, "complaint", Args, Data)
-        except:
-            print("Failed to submit the text")
+        except Exception as e:
+            print(f"Failed to submit the text due to error: {e}")
             return
         self.FCNameLabel.deleteLater()
         self.FCNameEdit.deleteLater()
@@ -1125,6 +1126,8 @@ class QtDBConsoleWindow(QMainWindow):
             self.TryHostAddress = self.HostEdit.text()
             self.TryDatabase = self.DatabaseEdit.text()
 
+            msg = QMessageBox()
+            
             if self.TryUsername == "":
                 msg.information(
                     None, "Error", "Please enter a valid username", QMessageBox.Ok
@@ -1145,14 +1148,6 @@ class QtDBConsoleWindow(QMainWindow):
 
     def syncDB(self):
         pass
-
-    def changeDBList(self):
-        self.DBNames = DBNames[
-            str(self.HostName.currentText())
-        ]  # only reference to DBNames I could find is commented out in Gui/GUIutils/settings.py
-        self.DatabaseCombo.clear()
-        self.DatabaseCombo.addItems(self.DBNames)
-        self.DatabaseCombo.setCurrentIndex(0)
 
     def closeTab(self, index):
         self.releaseAction(self.MainTabs.tabText(index))

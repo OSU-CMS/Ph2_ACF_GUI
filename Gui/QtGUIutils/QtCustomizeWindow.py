@@ -27,8 +27,6 @@ class RD53Widget(QWidget):
 
     def createBody(self):
         kMinimumWidth = 120
-        kMaximumWidth = 150
-        kMinimumHeight = 30
         kMaximumHeight = 80
 
         RD53Label = QLabel("RD53 ID: {}".format(self.id))
@@ -118,8 +116,6 @@ class QtCustomizeWindow(QWidget):
         mainbodylayout = QGridLayout()
 
         kMinimumWidth = 120
-        kMaximumWidth = 150
-        kMinimumHeight = 30
         kMaximumHeight = 80
 
         XMLLabel = QLabel("CMSIT XML:")
@@ -199,7 +195,7 @@ class QtCustomizeWindow(QWidget):
                 None, "Warning", "Not a valid XML file", QMessageBox.Ok
             )
 
-        if self.validateXML() != True:
+        if not self.validateXML():
             QMessageBox.information(
                 None, "Warning", "XML file failed the validation", QMessageBox.Ok
             )

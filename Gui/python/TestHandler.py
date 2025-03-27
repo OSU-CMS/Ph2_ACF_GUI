@@ -1,6 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, QObject, QProcess
-from PyQt5.QtWidgets import QMessageBox, QTableWidget, QTableWidgetItem, QPlainTextEdit
+from PyQt5.QtCore import pyqtSignal, QObject, QProcess, Qt
+from PyQt5.QtWidgets import QMessageBox, QTableWidget, QTableWidgetItem, QPlainTextEdit, QProgressBar, QDialog, QVBoxLayout, QPushButton, QLabel
 
 import os
 import glob
@@ -35,13 +35,8 @@ from InnerTrackerTests.RootFilesDict import root_files
 from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT
 
 
-# from Gui.QtGUIutils.QtStartWindow import *
-# from Gui.QtGUIutils.QtCustomizeWindow import *
-# from Gui.QtGUIutils.QtTableWidget import *
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
-from Gui.QtGUIutils.QtLoginDialog import *
 
-# from Gui.python.ResultTreeWidget import *
 from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
 from Gui.python.IVCurveHandler import IVCurveHandler
@@ -51,11 +46,6 @@ from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 import logging
-
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
 
 
 class TestHandler(QObject):
@@ -80,10 +70,6 @@ class TestHandler(QObject):
         self.instruments = self.master.instruments
         self.mod_dict = {}
         self.fused_dict_index = [-1, -1]
-        # self.LVpowersupply.Reset()
-
-        # self.LVpowersupply.setCompCurrent(compcurrent = 1.05) # Fixed for different chip
-        # self.LVpowersupply.TurnOn()
         self.FWisPresent = False
         self.FWisLoaded = False
 
@@ -244,13 +230,13 @@ class TestHandler(QObject):
                 runNumberText = runNumberFile.readlines()
                 self.RunNumber = runNumberText[0].split("\n")[0]
                 logger.info("RunNumber: {}".format(self.RunNumber))
-        except:
-            logger.warning("Failed to retrieve RunNumber")
+        except OSError:
+            logger.warning("Failed to retrieve RunNumber due to OSError")
 
         # If currentTest is not set check if it's a compositeTest and if so set testname accordingly, otherwise set it based off the test set in info[1]
         if self.currentTest == "" and isCompositeTest(self.info):
             testName = CompositeTests[self.info][0]
-        elif self.currentTest == None:
+        elif self.currentTest is None:
             testName = self.info
         else:
             testName = self.currentTest
@@ -260,7 +246,7 @@ class TestHandler(QObject):
         # FIXME Fix rd53_file[key] so that it reads the correct txt file depending on what module is connected. -> Done!
 
         for key in self.rd53_file.keys():
-            if self.rd53_file[key] == None:
+            if self.rd53_file[key] is None:
                 self.rd53_file[key] = os.environ.get(
                     "PH2ACF_BASE_DIR"
                 ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(
@@ -282,7 +268,7 @@ class TestHandler(QObject):
                     try:
                         os.mkdir(tmpDir)
                         logger.info("Creating " + tmpDir)
-                    except:
+                    except OSError:
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
@@ -312,7 +298,7 @@ class TestHandler(QObject):
                     try:
                         os.mkdir(tmpDir)
                         logger.info("Creating " + tmpDir)
-                    except:
+                    except OSError:
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
@@ -337,7 +323,7 @@ class TestHandler(QObject):
                         os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
                     )
                 )
-            except:
+            except OSError:
                 print(
                     "Failed to copy {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(
                         os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
@@ -778,7 +764,7 @@ created by Ph2_ACF is empty."
 
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput(self, processIndex: int):
-        if self.readingOutput == True:
+        if self.readingOutput:
             print("Thread competition detected")
             return
         self.readingOutput = True
@@ -818,7 +804,7 @@ created by Ph2_ACF is empty."
                         self.fused_dict_index[1]
                     ] = fuse_id
 
-                if self.starttime != None:
+                if self.starttime is not None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
                     self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText(
@@ -847,8 +833,8 @@ created by Ph2_ACF is empty."
                         ].setValue(self.ProgressValue)
                         ##Added because of Ph2_ACF bug:
 
-                    except:
-                        print("something went wrong in progress")
+                    except Exception as e:
+                        print(f"Error while updating progress bar {e}")
                         pass
 
                 if self.check_for_end_of_test(textStr):
@@ -1042,7 +1028,7 @@ created by Ph2_ACF is empty."
         self.outputfile.close()
         # While the process is killed:
 
-        if self.halt == True:
+        if self.halt:
             self.haltSignal.emit(True)
             return
 
@@ -1438,7 +1424,7 @@ created by Ph2_ACF is empty."
                     self.force_continue_window.abort = False
                     return True
 
-            if hasattr(self.force_continue_window, "label") == False:
+            if not hasattr(self.force_continue_window, "label"):
                 self.force_continue_window.label = QLabel(
                     "At least one module must be enabled."
                 )
@@ -1450,7 +1436,7 @@ created by Ph2_ACF is empty."
 
         # Define button handlers
         def handle_close(event):
-            if self.force_continue_window.abort == True:
+            if self.force_continue_window.abort:
                 for process in self.run_processes:
                     process.kill()
                 self.halt = True
@@ -1458,7 +1444,7 @@ created by Ph2_ACF is empty."
                 self.starttime = None
 
             for row in range(self.force_continue_window.table.rowCount()):
-                if self.force_continue_window.table.item(row, 1).checkState() == False:
+                if not self.force_continue_window.table.item(row, 1).checkState():
                     self.statuses[
                         self.force_continue_window.table.item(row, 0).text()
                     ] = "0"

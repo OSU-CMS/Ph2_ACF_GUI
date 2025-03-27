@@ -107,8 +107,8 @@ class QtViewTableTab(QWidget):
             self.ViewLayout.addWidget(comboBox, 0, 2, 1, 1)
             self.ViewLayout.addWidget(label, 0, 0, 1, 1)
 
-        except:
-            print("Error: failed to create viewBox")
+        except Exception as e:
+            print(f"Error: failed to create viewBox due to error: {e}")
 
         self.ViewBox.setLayout(self.ViewLayout)
         self.mainlayout.addWidget(self.ViewBox, 1, 0, 2, 1)

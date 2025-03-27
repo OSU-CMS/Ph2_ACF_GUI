@@ -391,8 +391,8 @@ class QtModuleReviewWindow(QWidget):
                                 self.connection, "module_tests", SubmitArgs, Value
                             )
                             print("trying to insert table")
-                        except:
-                            print("Failed to insert")
+                        except Exception as e:
+                            print(f"Failed to insert due to error {e}")
             except Exception as err:
                 print("Error: {}".format(repr(err)))
 

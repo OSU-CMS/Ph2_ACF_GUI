@@ -284,7 +284,6 @@ class Tessie:
         self.broker = broker
         self.port = 1883
         self.topic = topic
-        client_id = "Python Tessie Client"
         self._client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2)
         Tessie.waiting = []
         Tessie.found = []

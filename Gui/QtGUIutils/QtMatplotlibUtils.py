@@ -45,7 +45,7 @@ class ScanCanvas(FigureCanvas):
         self.compute_initial_figure()
         FigureCanvas.__init__(self, self.fig)
         self.setMinimumHeight(100)
-        if type(parent) == type(QWidget()):
+        if type(parent) is type(QWidget()):
             self.setParent(parent)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)

@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QWidget,
 )
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea
 
 import sys
 import requests
@@ -469,7 +470,6 @@ class ChipBox(QWidget):
             return None
 
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QScrollArea
 
 
 class BeBoardBox(QWidget):

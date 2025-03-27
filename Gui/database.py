@@ -1,5 +1,6 @@
 import logging
-
+import config
+import sqlite3
 # Customize the logging configuration
 logging.basicConfig(
     level=logging.INFO,
@@ -19,15 +20,14 @@ logger = logging.getLogger(__name__)
   Support:               email to manley.329@osu.edu
 """
 
-import config
-import sqlite3
 
 
 def createDatabaseConnection(db_file):
     conn = None
     try:
         conn = sqlite3.connect(db_file)
-    except:
+    except Exception as e:
+        print(f"Failed to connect to database due to error: {e}")
         pass
     return conn
 
@@ -45,7 +45,8 @@ def createTestsTable():
     try:
         c = conn.cursor()
         c.execute(sql)
-    except:
+    except Exception as e:
+        print(f"Failed to create test table due to error: {e}")
         pass
 
 
@@ -97,7 +98,8 @@ def createModesTable():
     try:
         c = conn.cursor()
         c.execute(sql)
-    except:
+    except Exception as e:
+        print(f"Failed to create modes table due to error {e}")
         pass
 
 

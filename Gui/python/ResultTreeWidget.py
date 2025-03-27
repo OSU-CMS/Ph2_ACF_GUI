@@ -340,7 +340,7 @@ class ResultTreeWidget(QWidget):
             try:
                 os.mkdir(tmpDir)
                 logger.info("Creating " + tmpDir)
-            except:
+            except OSError:
                 logger.warning("Failed to create " + tmpDir)
 
         if "svg" in str(canvas):
@@ -355,6 +355,6 @@ class ResultTreeWidget(QWidget):
             # self.update
             self.Plot.append(QtTCanvasWidget(self.master, svgFile))
             logger.info("Displaying " + svgFile)
-        except:
-            logger.error("Failed to display " + svgFile)
+        except Exception as e:
+            logger.error("Failed to display " + svgFile + f"due to error {e}")
         pass

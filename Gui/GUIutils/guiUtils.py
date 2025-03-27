@@ -70,7 +70,8 @@ def iter_except(function, exception):
     try:
         while True:
             yield function()
-    except:
+    except Exception as e:
+        logger.error(e)
         return
 
 
@@ -455,7 +456,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
 
         BeBoardModule0.AddOGModule(OpticalGroupModule0)
 
-        if revPolarity == True:
+        if revPolarity:
             RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l12"] = "0b1101"
             RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l8"] = "0x22"
 
@@ -506,7 +507,7 @@ class LogParser:
 
 
 def GetTBrowser(DQMFile):
-    process = Popen(
+    Popen(
         "{0}/Gui/GUIUtils/runBrowser.sh {1} {2}".format(
             os.environ.get("GUI_dir"),
             os.environ.get("GUI_dir") + "/Gui/GUIUtils",
@@ -570,7 +571,7 @@ def formatter(DirName, columns, **kwargs):
             ReturnList.append(dirName.split("_")[-3])
             ReturnDict.update({"test_name": dirName.split("_")[-3]})
         if column == "test_grade":
-            if Module_ID != None:
+            if Module_ID is not None:
                 gradeFileName = "{}/Grade_Module{}.txt".format(DirName, Module_ID)
                 if os.path.isfile(gradeFileName):
                     gradeFile = open(gradeFileName, "r")

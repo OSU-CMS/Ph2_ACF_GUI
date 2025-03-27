@@ -134,7 +134,7 @@ class QtImageInsertionTab(QWidget):
             self.FeedBackLabel.setText("Failed: Submission is unsuccessful")
             self.InsertButton().setDisabled(False)
             return
-        if self.Inserted == False:
+        if not self.Inserted:
             self.FeedBackLabel.setStyleSheet("color:red")
             self.FeedBackLabel.setText("Failed: Submission is unsuccessful")
             self.InsertButton().setDisabled(False)

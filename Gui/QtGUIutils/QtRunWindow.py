@@ -227,7 +227,7 @@ class QtRunWindow(QWidget):
             self.saveCheckBox.setChecked(False)
             self.saveCheckBox.setDisabled(True)
 
-        if self.master.expertMode == True:
+        if self.master.expertMode:
             self.ControlLayout.addWidget(self.RunButton, 0, 0, 1, 1)
             self.ControlLayout.addWidget(self.AbortButton, 0, 1, 1, 1)
             self.ControlLayout.addWidget(self.ResetButton, 0, 2, 1, 1)
@@ -430,7 +430,7 @@ class QtRunWindow(QWidget):
         self.close()
 
     def creatStartWindow(self):
-        if self.backSignal == True and self.master.expertMode == True:
+        if self.backSignal and self.master.expertMode:
             self.master.openNewTest()
 
     def occupied(self):
@@ -439,7 +439,7 @@ class QtRunWindow(QWidget):
     def release(self):
         self.testHandler.abortTest()
         self.master.ProcessingTest = False
-        if self.master.expertMode == True:
+        if self.master.expertMode:
             self.master.NewTestButton.setDisabled(False)
             self.master.LogoutButton.setDisabled(False)
             self.master.ExitButton.setDisabled(False)
@@ -577,10 +577,6 @@ class QtRunWindow(QWidget):
             )
             self.ReferLabel.setPixmap(self.ReferView)
 
-    def updateProgressBar(self, bar: QProgressBar, value: int, text: str):
-        bar.setFormat(text)
-        bar.setValue(value)
-
     #######################################################################
     ##  For real-time terminal display
     #######################################################################
@@ -669,7 +665,7 @@ class QtRunWindow(QWidget):
         self.saveCheckBox.setChecked(self.testHandler.autoSave)
 
     def closeEvent(self, event):
-        if self.processingFlag == True:
+        if self.processingFlag:
             event.ignore()
 
         else:
