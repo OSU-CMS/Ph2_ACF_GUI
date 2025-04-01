@@ -471,7 +471,10 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
     if "RD53A" in boardtype:
         MonitoringModule0.SetMonitoringList(MonitoringListA)
     else:
-        MonitoringModule0.SetMonitoringList(Monitoring_DictB[testName])
+        if testName in Monitoring_DictB:
+            MonitoringModule0.SetMonitoringList(Monitoring_DictB[testName])
+        else:
+            MonitoringModule0.SetMonitoringList({})
     HWDescription0.AddMonitoring(MonitoringModule0)
     GenerateHWDescriptionXML(HWDescription0, outputFile, boardtype)
 
