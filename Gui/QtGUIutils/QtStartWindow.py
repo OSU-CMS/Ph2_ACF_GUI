@@ -1,4 +1,34 @@
+import os
+import math
+import subprocess
 import logging
+
+from PyQt5.QtCore import QSize, Qt, pyqtSignal
+from PyQt5.QtGui import QPixmap, QImage
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QPushButton,
+    QHBoxLayout,
+    QWidget,
+    QMessageBox,
+)
+from Gui.QtGUIutils.QtRunWindow import QtRunWindow
+from Gui.QtGUIutils.Loading import LoadingThread
+from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
+from Gui.python.CustomizedWidget import BeBoardBox
+from Gui.GUIutils.FirmwareUtil import FEPowerUpVD
+from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
+from Gui.siteSettings import (
+    FC7List,
+    ModuleCurrentMap,
+)
+
+from InnerTrackerTests.TestSequences import TestList
+from siteSettings import icicle_instrument_setup
+
 
 # Customize the logging configuration
 logging.basicConfig(
@@ -10,61 +40,11 @@ logging.basicConfig(
 
 logger = logging.getLogger(__name__)
 
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QThread
-from PyQt5.QtGui import QPixmap, QImage
-from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
-    QMessageBox,
-)
 
+# from Gui.QtGUIutils.QtApplication import *
 
-import sys
-import os
-import math
-import subprocess
-import time
-
-from Gui.QtGUIutils.QtRunWindow import QtRunWindow
-from Gui.QtGUIutils.Loading import LoadingThread
-from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
-#from Gui.QtGUIutils.QtApplication import *
-from Gui.python.CustomizedWidget import BeBoardBox
-#from Gui.python.Firmware import *
-#from Gui.GUIutils.DBConnection import *
-from Gui.GUIutils.FirmwareUtil import FEPowerUpVD
-from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
-from Gui.siteSettings import (
-    FC7List,
-    ModuleCurrentMap,
-)
-
-from InnerTrackerTests.TestSequences import TestList
-from siteSettings import icicle_instrument_setup
+# from Gui.python.Firmware import *
+# from Gui.GUIutils.DBConnection import *
 
 # from Gui.QtGUIutils.QtProductionTestWindow import *
 
@@ -80,7 +60,7 @@ class SummaryBox(QWidget):
         self.chipSwitches = {}
 
         self.mainLayout = QGridLayout()
-       
+
         self.initResult()
         self.createBody()
         if icicle_instrument_setup is not None:
@@ -104,7 +84,7 @@ class SummaryBox(QWidget):
         # self.ChipBoxWidget = ChipBox(self.module.getType())
 
         self.CheckLabel = QLabel()
-        
+
         self.mainLayout.addWidget(PowerModeLabel, 1, 0, 1, 1)
         self.mainLayout.addWidget(self.PowerModeCombo, 1, 1, 1, 1)
         self.mainLayout.addWidget(self.CheckLabel, 2, 0, 1, 1)
@@ -118,33 +98,35 @@ class SummaryBox(QWidget):
                 "Set LV Current (A)",
             ]
             for item in measureList:
-                if 'LV Current' in item:
+                if "LV Current" in item:
                     value[item] = ModuleCurrentMap[self.module.getType()]
-                if 'Bias Voltage' in item:
-                    value[item] = icicle_instrument_setup['instrument_dict']['hv']['default_voltage']
-                    #assumes only 1 HV titled 'hv' in instruments.json
+                if "Bias Voltage" in item:
+                    value[item] = icicle_instrument_setup["instrument_dict"]["hv"][
+                        "default_voltage"
+                    ]
+                    # assumes only 1 HV titled 'hv' in instruments.json
             self.verboseResult[key] = value
 
     @staticmethod
     def checkFwPar(pfirmwareName, module_type, fc7_ip):
         # To be finished
         try:
-            #self.result = True
+            # self.result = True
             FWisPresent = False
             boardtype = "RD53B"
             if "CROC" in module_type:
                 boardtype = "RD53B"
             else:
                 boardtype = "RD53A"
-            print('board type is: {0}'.format(boardtype))
+            print("board type is: {0}".format(boardtype))
             # updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
-            #fc7_ip = site_settings.FC7List[pfirmwareName] #Commented because I don't think we need it.  Remove line after test.
-            print('The fc7 ip is: {0}'.format(fc7_ip))
-            uricmd = "sed -i -e 's/fc7-1/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(    
+            # fc7_ip = site_settings.FC7List[pfirmwareName] #Commented because I don't think we need it.  Remove line after test.
+            print("The fc7 ip is: {0}".format(fc7_ip))
+            uricmd = "sed -i -e 's/fc7-1/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )
-            updateuri = subprocess.call([uricmd], shell=True)
-            print('updated the uri value')
+            subprocess.call([uricmd], shell=True)
+            print("updated the uri value")
             firmwareImage = firmware_image[module_type][
                 os.environ.get("Ph2_ACF_VERSION")
             ]
@@ -180,7 +162,8 @@ class SummaryBox(QWidget):
                         [
                             "fpgaconfig",
                             "-c",
-                            os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype),
+                            os.environ.get("GUI_dir")
+                            + "/Gui/CMSIT_{}.xml".format(boardtype),
                             "-f",
                             "{}".format(
                                 os.environ.get("GUI_dir")
@@ -196,12 +179,12 @@ class SummaryBox(QWidget):
                     # self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
                     print(fwsave.stdout.decode("UTF-8"))
                     FWisPresent = True
-                except:
+                except OSError:
                     print(
                         "unable to save {0} to FC7 SD card".format(
                             os.environ.get("GUI_dir")
                             + "/FirmwareImages/"
-                            + self.firmwareImage
+                            + firmwareImage
                         )
                     )
 
@@ -211,7 +194,8 @@ class SummaryBox(QWidget):
                     [
                         "fpgaconfig",
                         "-c",
-                        os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype),
+                        os.environ.get("GUI_dir")
+                        + "/Gui/CMSIT_{}.xml".format(boardtype),
                         "-i",
                         "{}".format(firmwareImage),
                     ],
@@ -220,9 +204,17 @@ class SummaryBox(QWidget):
                 )
                 print(fwload.stdout.decode("UTF-8"))
                 print("resetting beboard")
-                print(f'command: CMSITminiDAQ -f {os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype)} -r')
+                print(
+                    f"command: CMSITminiDAQ -f {os.environ.get('GUI_dir') + '/Gui/CMSIT_{}.xml'.format(boardtype)} -r"
+                )
                 fwreset = subprocess.run(
-                    ["CMSITminiDAQ", "-f", os.environ.get("GUI_dir") + "/Gui/CMSIT_{}.xml".format(boardtype), "-r"],
+                    [
+                        "CMSITminiDAQ",
+                        "-f",
+                        os.environ.get("GUI_dir")
+                        + "/Gui/CMSIT_{}.xml".format(boardtype),
+                        "-r",
+                    ],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )
@@ -233,9 +225,9 @@ class SummaryBox(QWidget):
             logging.debug("Made it to turn on LV")
             return True
         except Exception as err:
-            #self.result = False
-            #self.CheckLabel.setText("No measurement")
-            #self.CheckLabel.setStyleSheet("color:red")
+            # self.result = False
+            # self.CheckLabel.setText("No measurement")
+            # self.CheckLabel.setStyleSheet("color:red")
             print(err)
             return False
 
@@ -261,6 +253,7 @@ class SummaryBox(QWidget):
 class QtStartWindow(QWidget):
     openRunWindowSignal = pyqtSignal()
     errorMessageBoxSignal = pyqtSignal(str)
+
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -277,8 +270,8 @@ class QtStartWindow(QWidget):
         self.loading_counter = 0
         self.openRunWindowSignal.connect(self.openRunWindowGUI)
 
-        self.errorMessageBoxSignal.connect( lambda message :
-            QMessageBox.information(
+        self.errorMessageBoxSignal.connect(
+            lambda message: QMessageBox.information(
                 None,
                 "Error",
                 message,
@@ -301,7 +294,7 @@ class QtStartWindow(QWidget):
         testlayout = QGridLayout()
         TestLabel = QLabel("Test:")
         self.TestCombo = QComboBox()
-        #self.TestList = getAllTests(self.master.connection)
+        # self.TestList = getAllTests(self.master.connection)
         self.TestList = TestList
         if not self.master.instruments:
             if "AllScan" in self.TestList:
@@ -321,7 +314,7 @@ class QtStartWindow(QWidget):
         for beboard in self.firmware:
             beboard.removeModules()
             beboard.removeAllOpticalGroups()
-        
+
         self.BeBoardWidget = BeBoardBox(self.master, self.firmware)  # FLAG
 
         self.mainLayout.addWidget(self.TestBox, 0, 0)
@@ -369,8 +362,8 @@ class QtStartWindow(QWidget):
 
         self.StartLayout.addStretch(1)
         self.StartLayout.addWidget(self.CancelButton)
-        #self.StartLayout.addWidget(self.ResetButton)
-        #self.StartLayout.addWidget(self.CheckButton)
+        # self.StartLayout.addWidget(self.ResetButton)
+        # self.StartLayout.addWidget(self.CheckButton)
         self.StartLayout.addWidget(self.NextButton)
         self.AppOption.setLayout(self.StartLayout)
 
@@ -418,9 +411,11 @@ class QtStartWindow(QWidget):
     def checkFwPar(self, pfirmwareName):
         GlobalCheck = True
         for item in self.ModuleList:
-            #item.checkFwPar(pfirmwareName, item.module.getType())
-            GlobalCheck = GlobalCheck and item.checkFwPar(pfirmwareName, item.module.getType(), FC7List[pfirmwareName])
-            #GlobalCheck = GlobalCheck and item.getResult()
+            # item.checkFwPar(pfirmwareName, item.module.getType())
+            GlobalCheck = GlobalCheck and item.checkFwPar(
+                pfirmwareName, item.module.getType(), FC7List[pfirmwareName]
+            )
+            # GlobalCheck = GlobalCheck and item.getResult()
         self.passCheck = GlobalCheck
         return GlobalCheck
 
@@ -429,13 +424,15 @@ class QtStartWindow(QWidget):
         pass
 
     def loader(self):
-        self.NextButton.setText(". "*(self.loading_counter+1))
-        self.loading_counter = (self.loading_counter + 1)%3
+        self.NextButton.setText(". " * (self.loading_counter + 1))
+        self.loading_counter = (self.loading_counter + 1) % 3
 
     def openRunWindow_starter(self):
         self.NextButton.setText(". . .")
-        self.run_window_thread = LoadingThread(self.openRunWindow,500)
-        self.run_window_thread.finished.connect(lambda : self.NextButton.setText("&Next"))
+        self.run_window_thread = LoadingThread(self.openRunWindow, 500)
+        self.run_window_thread.finished.connect(
+            lambda: self.NextButton.setText("&Next")
+        )
         self.run_window_thread.timer.timeout.connect(self.loader)
         self.run_window_thread.timer.start()
         self.run_window_thread.start()
@@ -454,22 +451,26 @@ class QtStartWindow(QWidget):
 
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
-                self.master.errorMessageBoxSignal.emit("No valid serial number!",) #Needs to be in a signal or QThread throws an error
+                self.master.errorMessageBoxSignal.emit(
+                    "No valid serial number!",
+                )  # Needs to be in a signal or QThread throws an error
                 return
             if module.getFMCPort() == "":
                 self.master.errorMessageBoxSignal.emit("No valid ID!")
                 return
 
         self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
-        
-        if not self.firmwareDescription: #firmware description returns none if no modules are entered
+
+        if (
+            not self.firmwareDescription
+        ):  # firmware description returns none if no modules are entered
             self.master.errorMessageBoxSignal.emit(message)
             return
 
         for fw in self.firmwareDescription:
             self.checkFwPar(fw.getBoardName())
-        if self.passCheck == False:
-            reply = QMessageBox().question( #For some reason this isn't an issue for QThread
+        if not self.passCheck:
+            reply = QMessageBox().question(  # For some reason this isn't an issue for QThread
                 None,
                 "Error",
                 "Front-End parameter check failed, forced to continue?",
@@ -478,19 +479,19 @@ class QtStartWindow(QWidget):
             )
             if reply == QMessageBox.No:
                 return
-        
+
         for beboard in self.firmwareDescription:
             print(beboard)
-        
+
         self.info = self.TestCombo.currentText()
-        
+
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
         self.openRunWindowSignal.emit()
         self.close()
 
     def closeEvent(self, event):
-        if self.runFlag == True:
+        if self.runFlag:
             event.accept()
 
         else:
@@ -508,14 +509,14 @@ class QtStartWindow(QWidget):
                 # This line was previosly commented
                 try:
                     if self.master.instruments:
-                        self.master.instruments.off(
-                            hv_delay=0.5, hv_step_size=10
-                        )
+                        self.master.instruments.off(hv_delay=0.5, hv_step_size=10)
 
                         print("Window closed")
                     else:
-                        logger.info(" You are running in manual mode."
-                                    " You must turn off powers supplies yourself.")
+                        logger.info(
+                            " You are running in manual mode."
+                            " You must turn off powers supplies yourself."
+                        )
                 except Exception as e:
                     print(
                         "Waring: Incident detected while trying to turn of power supply, please check power status"

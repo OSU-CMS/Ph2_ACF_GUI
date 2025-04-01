@@ -78,7 +78,6 @@ def DirectoryVLR(node, depth):
 
 def showDirectory(nodes):
     for node in nodes:
-        keyName = node.getKeyName()
         DirectoryVLR(node, 0)
 
 
@@ -95,7 +94,7 @@ def TCanvas2JPG(outputDir, canvas, name=None):
         canvas.Print(outputFile)
         # canvas.Close()
         logger.info(outputFile + " is saved")
-    except:
+    except OSError:
         logger.warning("Failed to save " + outputFile)
     return outputFile
 
@@ -113,9 +112,9 @@ def TCanvas2SVG(outputDir, canvas, name=None):
         if "SCurve" in name:
             canvas.SetLogz()
         if "PixelAlive" in name:
-            ROOT.gStyle.SetOptStat(0) #no statistics box
+            ROOT.gStyle.SetOptStat(0)  # no statistics box
         else:
-            ROOT.gStyle.SetOptStat(1111) #default statistics box
+            ROOT.gStyle.SetOptStat(1111)  # default statistics box
         canvas.Print(outputFile)
         # canvas.Close()
         logger.info(outputFile + " is saved")
@@ -129,7 +128,7 @@ def GetBinary(fileName):
     return binaryData
 
 
-#@precondition: commands must be a list of strings representing valid root shell commands
+# @precondition: commands must be a list of strings representing valid root shell commands
 def executeCommandSequence(commands: list):
     for command in commands:
         ROOT.gROOT.ProcessLine(command)

@@ -1,33 +1,8 @@
-#from PyQt5.QtCore import *
-#from PyQt5.QtGui import QFont, QPixmap
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
-    QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
     QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
 )
 
 import matplotlib
@@ -38,12 +13,11 @@ from matplotlib.figure import Figure
 
 import numpy
 
-#from Gui.GUIutils.settings import *
+# from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import (
     isCompositeTest,
     isSingleTest,
 )
-from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 
 
@@ -71,7 +45,7 @@ class ScanCanvas(FigureCanvas):
         self.compute_initial_figure()
         FigureCanvas.__init__(self, self.fig)
         self.setMinimumHeight(100)
-        if type(parent) == type(QWidget()):
+        if type(parent) is type(QWidget()):
             self.setParent(parent)
         FigureCanvas.setSizePolicy(self, QSizePolicy.Expanding, QSizePolicy.Expanding)
         FigureCanvas.updateGeometry(self)
@@ -80,35 +54,41 @@ class ScanCanvas(FigureCanvas):
         self.axes.cla()
         self.axes.set_xlabel(self.xlabel)
         self.axes.set_ylabel(self.ylabel)
-        self.axes.plot(self.X, self.Y, '-x')
-#        self.axes.plot(self.X, self.Y, color="green", linestyle="dashed", linewidth=3)
-        
+        self.axes.plot(self.X, self.Y, "-x")
+        #        self.axes.plot(self.X, self.Y, color="green", linestyle="dashed", linewidth=3)
 
         if len(self.X) > 1 and len(self.Y) > 1:
-        
             filtered_X = self.X[self.X < -20]
             filtered_Y = self.Y[self.X < -20]
-            
+
             if len(filtered_X) > 1 and len(filtered_Y) > 1:
-                
                 coeffs = numpy.polyfit(filtered_X, filtered_Y, 1)
                 best_fit_line = numpy.poly1d(coeffs)
-                
-                
+
                 min_x = min(filtered_X)
                 max_x = max(filtered_X)
                 plot_range = numpy.linspace(min_x, max_x, 100)
-                self.axes.plot(plot_range, best_fit_line(plot_range), color="red", linestyle="dashed")
+                self.axes.plot(
+                    plot_range,
+                    best_fit_line(plot_range),
+                    color="red",
+                    linestyle="dashed",
+                )
 
                 slope, intercept = coeffs
-                textbox_text = f'Slope: {slope:.2e} A/V'
-                self.axes.text(0.05, 0.95, textbox_text, transform=self.axes.transAxes, fontsize=10, 
-                            verticalalignment='top', bbox=dict(boxstyle='round,pad=0.5', facecolor='white', alpha=0.5))
+                textbox_text = f"Slope: {slope:.2e} A/V"
+                self.axes.text(
+                    0.05,
+                    0.95,
+                    textbox_text,
+                    transform=self.axes.transAxes,
+                    fontsize=10,
+                    verticalalignment="top",
+                    bbox=dict(boxstyle="round,pad=0.5", facecolor="white", alpha=0.5),
+                )
         if self.invert:
             self.axes.invert_xaxis()
             self.axes.invert_yaxis()
-        
-
 
     def updatePlots(self, points):
         self.coordinates = points
@@ -124,6 +104,7 @@ class ScanCanvas(FigureCanvas):
     def saveToSVG(self, output):
         self.fig.savefig(output, format="svg", dpi=1200)
         return output
+
 
 ## Class for Module testing Summary
 class SummaryCanvas(FigureCanvas):
@@ -153,7 +134,9 @@ class RunStatusCanvas(FigureCanvas):
 
         if isCompositeTest(self.parent.info[1]):
             for i in range(len(CompositeTests[self.parent.info[1]])):
-                self.xticks.append(Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]])
+                self.xticks.append(
+                    Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]]
+                )
         if isSingleTest(self.parent.info[1]):
             self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
         self.grades = self.parent.grades
@@ -226,7 +209,9 @@ class RunStatusCanvas(FigureCanvas):
         self.xticks = [""]
         if isCompositeTest(self.parent.info[1]):
             for i in range(len(CompositeTests[self.parent.info[1]])):
-                self.xticks.append(Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]])
+                self.xticks.append(
+                    Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]]
+                )
         if isSingleTest(self.parent.info[1]):
             self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
         self.grades = self.parent.grades

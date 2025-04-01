@@ -1,44 +1,13 @@
-#from PyQt5 import QtCore
-#from PyQt5.QtCore import *
-#from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QIcon
+# from PyQt5 import QtCore
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QIcon
 from PyQt5.QtWidgets import (
-    QApplication,
-    QButtonGroup,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
     QDialog,
-    QFormLayout,
-    QFrame,
     QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QMainWindow,
-    QMessageBox,
 )
 from PyQt5 import QtSvg
-
-import sys
-import os
-import re
-from Gui.python.logging_config import logger
 
 
 class QResultDialog(QDialog):

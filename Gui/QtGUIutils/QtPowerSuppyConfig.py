@@ -1,43 +1,18 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
 )
 
-import sys
-import os
 import math
 
 from Gui.python.CustomizedWidget import StatusBox
-#from Gui.GUIutils.DBConnection import *
-#from Gui.GUIutils.FirmwareUtil import *
-#from Gui.GUIutils.settings import *
-from Gui.python.logging_config import logger
+# from Gui.GUIutils.DBConnection import *
+# from Gui.GUIutils.FirmwareUtil import *
+# from Gui.GUIutils.settings import *
 
 
 #!!!!!!!!!!!!!!!!!!!!DEVELOPMENT required!!!!!!!!!!!!!!!!!!!!

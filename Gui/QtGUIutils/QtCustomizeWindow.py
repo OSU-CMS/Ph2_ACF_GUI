@@ -1,45 +1,20 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QFont
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QFileDialog,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
-    QMainWindow,
     QMessageBox,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QSplitter,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QVBoxLayout,
     QWidget,
 )
 
-import sys
-import os
-import subprocess
-from subprocess import Popen, PIPE
 
-#from Gui.GUIutils.DBConnection import *
-#from Gui.GUIutils.guiUtils import *
-from Gui.python.logging_config import logger
+# from Gui.GUIutils.DBConnection import *
+# from Gui.GUIutils.guiUtils import *
 
 
 class RD53Widget(QWidget):
@@ -52,8 +27,6 @@ class RD53Widget(QWidget):
 
     def createBody(self):
         kMinimumWidth = 120
-        kMaximumWidth = 150
-        kMinimumHeight = 30
         kMaximumHeight = 80
 
         RD53Label = QLabel("RD53 ID: {}".format(self.id))
@@ -143,8 +116,6 @@ class QtCustomizeWindow(QWidget):
         mainbodylayout = QGridLayout()
 
         kMinimumWidth = 120
-        kMaximumWidth = 150
-        kMinimumHeight = 30
         kMaximumHeight = 80
 
         XMLLabel = QLabel("CMSIT XML:")
@@ -224,7 +195,7 @@ class QtCustomizeWindow(QWidget):
                 None, "Warning", "Not a valid XML file", QMessageBox.Ok
             )
 
-        if self.validateXML() != True:
+        if not self.validateXML():
             QMessageBox.information(
                 None, "Warning", "XML file failed the validation", QMessageBox.Ok
             )

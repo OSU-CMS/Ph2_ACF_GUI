@@ -6,9 +6,7 @@ import os
 
 
 class LaudaWidget(QWidget):
-
     def __init__(self, dimension):
-        
         self.myLauda = Lauda(resource=site_settings.lauda_resource)
 
         super(LaudaWidget, self).__init__()
@@ -50,24 +48,26 @@ class LaudaWidget(QWidget):
         self.SetTempEdit.setMinimumWidth(140)
         self.SetTempEdit.setEchoMode(QtWidgets.QLineEdit.Normal)
         self.SetTempEdit.setPlaceholderText("Set Temperature")
-        self.SetTempEdit.textChanged.connect(lambda : self.SetTempButton.setChecked(False))
+        self.SetTempEdit.textChanged.connect(
+            lambda: self.SetTempButton.setChecked(False)
+        )
 
         self.ChillerLayout = QtWidgets.QGridLayout(self)
         self.ChillerLayout.addWidget(self.StartChillerButton, 0, 0, 1, 1)
-        self.ChillerLayout.addWidget(self.StopChillerButton,1,0,1,1)
-        self.ChillerLayout.addWidget(self.SetTempButton,2,0,1,1)
-        self.ChillerLayout.addWidget(self.SetTempEdit,2,1,1,2)
+        self.ChillerLayout.addWidget(self.StopChillerButton, 1, 0, 1, 1)
+        self.ChillerLayout.addWidget(self.SetTempButton, 2, 0, 1, 1)
+        self.ChillerLayout.addWidget(self.SetTempEdit, 2, 1, 1, 2)
 
         self.setLayout(self.ChillerLayout)
 
     def resourceExists(self):
-        return False if self.lauda_resource == None else True
+        return False if self.lauda_resource is None else True
 
     def startChiller(self):
         self.StartChillerButton.setChecked(True)
         self.StopChillerButton.setChecked(False)
 
-        self.myLauda.set("START","START")
+        self.myLauda.set("START", "START")
 
     def stopChiller(self):
         self.StartChillerButton.setChecked(False)
@@ -77,11 +77,12 @@ class LaudaWidget(QWidget):
 
     def setTemperature(self):
         self.SetTempButton.setChecked(True)
-        
+
         try:
-            self.myLauda.set("TEMPERATURE_TARGET",float(self.setTempEdit.text()))
+            self.myLauda.set("TEMPERATURE_TARGET", float(self.setTempEdit.text()))
         except ValueError:
             print("Temperature target must be a float.")
+
 
 if __name__ == "__main__":
     import sys

@@ -1,10 +1,10 @@
 """
-  gui.py
-  brief                 Interface classes for pixel grading gui
-  author                Kai Wei
-  version               1.0
-  date                  04/27/21
-  Support:              email to wei.856@osu.edu
+gui.py
+brief                 Interface classes for pixel grading gui
+author                Kai Wei
+version               1.0
+date                  04/27/21
+Support:              email to wei.856@osu.edu
 """
 
 import sys
@@ -16,7 +16,8 @@ from Gui.GUIutils.settings import (
     updatedGlobalValue,
     updatedXMLValues,
 )
-#from Gui.GUIutils.DBConnection import *
+
+# from Gui.GUIutils.DBConnection import *
 from Configuration.XMLUtil import (
     HWDescription,
     BeBoardModule,
@@ -25,7 +26,7 @@ from Configuration.XMLUtil import (
     FE,
     MonitoringModule,
     LoadXML,
-    GenerateHWDescriptionXML
+    GenerateHWDescriptionXML,
 )
 from InnerTrackerTests.GlobalSettings import (
     globalSettings_DictA,
@@ -41,7 +42,6 @@ from InnerTrackerTests.HWSettings import (
 )
 from InnerTrackerTests.MonitoringSettings import (
     MonitoringListA,
-    MonitoringListB,
     Monitoring_DictB,
 )
 from InnerTrackerTests.RegisterSettings import RegisterSettings
@@ -70,12 +70,14 @@ def iter_except(function, exception):
     try:
         while True:
             yield function()
-    except:
+    except Exception as e:
+        logger.error(e)
         return
 
 
 ##########################################################################
 ##########################################################################
+
 
 def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
     if not Output_Dir:
@@ -143,7 +145,11 @@ def isActive(dbconnection):
 
 def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
     try:
-        os.system("cp {0}/CMSIT_{2}.xml {1}/CMSIT_2.xml".format(Input_Dir, Output_Dir, BeBoardName))
+        os.system(
+            "cp {0}/CMSIT_{2}.xml {1}/CMSIT_2.xml".format(
+                Input_Dir, Output_Dir, BeBoardName
+            )
+        )
     except OSError:
         print("Can not copy the XML files to {0}".format(Output_Dir))
     try:
@@ -228,7 +234,6 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
                     if len(updatedXMLValues[chipKeyName]) > 0:
                         for key in updatedXMLValues[chipKeyName].keys():
                             Node.set(key, str(updatedXMLValues[chipKeyName][key]))
-                            
 
     except Exception as error:
         print("Failed to set up the XML file, {}".format(error))
@@ -247,7 +252,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
                                 updatedGlobalValue[1]["TargetThr"]
                             )
                         )
-    except Exception as error:
+    except Exception:
         print(
             "Failed to update the TargetThr value, {0}".format(
                 updatedGlobalValue[1]["TargetThr"]
@@ -352,8 +357,8 @@ def UpdateXMLValue(pFilename, pAttribute, pValue):
     for Node in root.findall(".//Setting"):
         if Node.attrib["name"] == pAttribute:
             Node.text = pValue
-            #The next line should be done using logger, not print.
-            #print("{0} has been set to {1}.".format(pAttribute, pValue))
+            # The next line should be done using logger, not print.
+            # print("{0} has been set to {1}.".format(pAttribute, pValue))
             tree.write(pFilename)
 
 
@@ -361,46 +366,69 @@ def CheckXMLValue(pFilename, pAttribute):
     root, tree = LoadXML(pFilename)
     for Node in root.findall(".//Setting"):
         if Node.attrib["name"] == pAttribute:
-            #The next line should be done using logger, not print.
+            # The next line should be done using logger, not print.
             print("{0} is set to {1}.".format(pAttribute, Node.text))
 
 
 ##########################################################################
 ##########################################################################
 
+
 def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
-    outputFile = f'{outputDir}/CMSIT_{BeBoard.getBoardName()}_{testName}.xml'
+    outputFile = f"{outputDir}/CMSIT_{BeBoard.getBoardName()}_{testName}.xml"
     print(outputFile)
-    
+
     boardtype = "RD53A"
-    RegisterSettingsList = RegisterSettings #TODO: Investigate whether this actually matters (ie deep vs shallow copy)
-    revPolarity = False #Flag to determine whether or not to reverse the Aurora lane polarity
-    
+    RegisterSettingsList = RegisterSettings  # TODO: Investigate whether this actually matters (ie deep vs shallow copy)
+    revPolarity = (
+        False  # Flag to determine whether or not to reverse the Aurora lane polarity
+    )
+
     # Get Hardware discription and a list of the modules
     HWDescription0 = HWDescription()
-    
+
     BeBoardModule0 = BeBoardModule()
 
-    #Set up Optical Groups
+    # Set up Optical Groups
     for og in BeBoard.getAllOpticalGroups().values():
         OpticalGroupModule0 = OGModule()
         OpticalGroupModule0.SetOpticalGrp(og.getOpticalGroupID(), og.getFMCID())
-        
+
         # Set up each module within the optical group
         for module in og.getAllModules().values():
             HyBridModule0 = HyBridModule()
             HyBridModule0.SetHyBridModule(module.getFMCPort(), "1")
             HyBridModule0.SetHyBridName(module.getModuleName())
-    
+
             moduleType = module.getModuleType()
-            RxPolarities = "1" if "CROC" in moduleType and "Quad" in moduleType and "TFPX" in moduleType else "0" if "CROC" in moduleType else None
+            RxPolarities = (
+                "1"
+                if "CROC" in moduleType
+                and "Quad" in moduleType
+                and "TFPX" in moduleType
+                else "0"
+                if "CROC" in moduleType
+                else None
+            )
             revPolarity = bool(int(RxPolarities))
-            FESettings_Dict = FESettings_DictB if "CROC" in moduleType else FESettings_DictA
-            globalSettings_Dict = globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
-            HWSettings_Dict = HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
-            FELaneConfig_Dict = FELaneConfig_DictB[module.getModuleType().split(" ")[0]] if "CROC" in moduleType else None
-            boardtype = "RD53B"+module.getModuleVersion() if "CROC" in moduleType else "RD53A"
-            
+            FESettings_Dict = (
+                FESettings_DictB if "CROC" in moduleType else FESettings_DictA
+            )
+            globalSettings_Dict = (
+                globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
+            )
+            HWSettings_Dict = (
+                HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
+            )
+            FELaneConfig_Dict = (
+                FELaneConfig_DictB[module.getModuleType().split(" ")[0]]
+                if "CROC" in moduleType
+                else None
+            )
+            boardtype = (
+                "RD53B" + module.getModuleVersion() if "CROC" in moduleType else "RD53A"
+            )
+
             # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
             for chip in module.getChips().values():
                 print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
@@ -414,29 +442,31 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
                         module.getModuleName(), module.getFMCPort(), chip.getID()
                     ),
                 )
-                
+
                 FEChip.ConfigureFE(FESettings_Dict[testName])
-                FEChip.ConfigureLaneConfig(FELaneConfig_Dict[testName][int(chip.getLane())])
+                FEChip.ConfigureLaneConfig(
+                    FELaneConfig_Dict[testName][int(chip.getLane())]
+                )
                 FEChip.VDDAtrim = chip.getVDDA()
                 FEChip.VDDDtrim = chip.getVDDD()
                 FEChip.EfuseID = chip.getEfuseID()
                 HyBridModule0.AddFE(FEChip)
             HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
             OpticalGroupModule0.AddHyBrid(HyBridModule0)
-        
+
         BeBoardModule0.AddOGModule(OpticalGroupModule0)
-        
-        if revPolarity == True:
-            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l12'] = '0b1101'
-            RegisterSettingsList['user.ctrl_regs.gtx_rx_polarity.fmc_l8'] = '0x22'
-        
+
+        if revPolarity:
+            RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l12"] = "0b1101"
+            RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l8"] = "0x22"
+
         BeBoardModule0.SetURI(BeBoard.getIPAddress())
         BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")
-        
+
         BeBoardModule0.SetRegisterValue(RegisterSettingsList)
         HWDescription0.AddBeBoard(BeBoardModule0)
-    
-    HWDescription0.AddSettings(HWSettings_Dict[testName])  
+
+    HWDescription0.AddSettings(HWSettings_Dict[testName])
     MonitoringModule0 = MonitoringModule(boardtype)
     if "RD53A" in boardtype:
         MonitoringModule0.SetMonitoringList(MonitoringListA)
@@ -477,7 +507,7 @@ class LogParser:
 
 
 def GetTBrowser(DQMFile):
-    process = Popen(
+    Popen(
         "{0}/Gui/GUIUtils/runBrowser.sh {1} {2}".format(
             os.environ.get("GUI_dir"),
             os.environ.get("GUI_dir") + "/Gui/GUIUtils",
@@ -541,7 +571,7 @@ def formatter(DirName, columns, **kwargs):
             ReturnList.append(dirName.split("_")[-3])
             ReturnDict.update({"test_name": dirName.split("_")[-3]})
         if column == "test_grade":
-            if Module_ID != None:
+            if Module_ID is not None:
                 gradeFileName = "{}/Grade_Module{}.txt".format(DirName, Module_ID)
                 if os.path.isfile(gradeFileName):
                     gradeFile = open(gradeFileName, "r")
@@ -587,7 +617,7 @@ def formatter(DirName, columns, **kwargs):
                     ReturnList[indexGrade] = Grade
                 else:
                     ReturnList[indexGrade] = -1
-            except Exception as err:
+            except Exception:
                 print("recheck failed")
         else:
             pass

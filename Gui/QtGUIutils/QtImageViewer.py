@@ -1,41 +1,13 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage
+from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
 )
-
-import sys
-import os
-import io
-from PIL.ImageQt import ImageQt
-from Gui.python.logging_config import logger
 
 
 class QtImageViewer(QWidget):

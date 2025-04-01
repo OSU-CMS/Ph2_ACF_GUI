@@ -1,62 +1,27 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QPixmap, QTextCursor, QColor, QFont
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QListWidget,
-    QPlainTextEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTableWidgetItem,
     QTabWidget,
-    QTextEdit,
-    QTreeWidget,
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
-    QMainWindow,
     QMessageBox,
-    QSplitter,
 )
 
-import sys
-import os
-import re
-import subprocess
-import threading
-import time
-from datetime import datetime
-import random
-from subprocess import Popen, PIPE
 
-#from Gui.GUIutils.DBConnection import *
-#from Gui.GUIutils.guiUtils import *
+# from Gui.GUIutils.DBConnection import *
+# from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
-#from Gui.QtGUIutils.QtLoginDialog import *
-#from Gui.python.ResultTreeWidget import *
-#from Gui.python.TestValidator import *
+
+# from Gui.QtGUIutils.QtLoginDialog import *
+# from Gui.python.ResultTreeWidget import *
+# from Gui.python.TestValidator import *
 from Gui.python.IVCurveHandler import IVCurveHandler
-#from Gui.python.SLDOScanHandler import *
-from Gui.python.logging_config import logger
+from Gui.python.SLDOScanHandler import SLDOScanHandler
 
 
 class QtProductionTestWindow(QWidget):
@@ -241,7 +206,6 @@ class QtProductionTestWindow(QWidget):
             self.SLDOScanData.append([Voltage, Current])
             self.SLDOScanResult.updatePlots(self.SLDOScanData)
             self.SLDOScanResult.update()
-            index = self.MainTabs.indexOf(self.SLDOScanResult)
             self.MainTabs.clear()
             self.MainTabs.addTab(self.SLDOScanResult, "SLDO scan")
             self.MainTabs.setCurrentWidget(self.SLDOScanResult)

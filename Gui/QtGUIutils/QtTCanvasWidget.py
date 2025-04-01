@@ -1,43 +1,10 @@
-from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QPixmap, QTextCursor
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
-    QApplication,
-    QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
-    QGroupBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QListWidget,
-    QPlainTextEdit,
-    QProgressBar,
-    QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QTreeWidget,
-    QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
-    QSplitter,
 )
 from PyQt5 import QtSvg
-from Gui.python.logging_config import logger
 
 
 class QtTCanvasWidget(QWidget):

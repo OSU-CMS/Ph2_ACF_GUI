@@ -1,40 +1,17 @@
-#from PyQt5.QtCore import *
-#from PyQt5.QtGui import QFont, QPixmap
+# from PyQt5.QtCore import *
+# from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
     QAbstractItemView,
-    QApplication,
-    QCheckBox,
     QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
     QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
     QTableView,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
-    QHBoxLayout,
-    QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
 )
 
-import sys
-import os
-import numpy
 
 from Gui.GUIutils.DBConnection import (
     getTableList,
@@ -43,9 +20,9 @@ from Gui.GUIutils.DBConnection import (
     retrieveGenericTable,
 )
 import mysql.connector
-#from Gui.GUIutils.guiUtils import *
+
+# from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
-from Gui.python.logging_config import logger
 
 
 class QtViewTableTab(QWidget):
@@ -130,8 +107,8 @@ class QtViewTableTab(QWidget):
             self.ViewLayout.addWidget(comboBox, 0, 2, 1, 1)
             self.ViewLayout.addWidget(label, 0, 0, 1, 1)
 
-        except:
-            print("Error: failed to create viewBox")
+        except Exception as e:
+            print(f"Error: failed to create viewBox due to error: {e}")
 
         self.ViewBox.setLayout(self.ViewLayout)
         self.mainlayout.addWidget(self.ViewBox, 1, 0, 2, 1)

@@ -1,41 +1,18 @@
-#from PyQt5.QtCore import *
-from PyQt5.QtGui import QFont, QPixmap
+# from PyQt5.QtCore import *
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (
-    QApplication,
     QCheckBox,
-    QComboBox,
-    QDateTimeEdit,
-    QDial,
-    QDialog,
     QGridLayout,
     QGroupBox,
-    QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QProgressBar,
     QPushButton,
-    QRadioButton,
-    QScrollBar,
-    QSizePolicy,
-    QSlider,
-    QSpinBox,
-    QStyleFactory,
-    QTableWidget,
-    QTabWidget,
-    QTextEdit,
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
-    QMainWindow,
-    QMessageBox,
 )
 
-import sys
-import os
-import numpy
 
 from Gui.QtGUIutils.QtMatplotlibUtils import SummaryCanvas
-from Gui.python.logging_config import logger
 
 
 class QtSummaryWindow(QWidget):
@@ -89,7 +66,9 @@ class QtSummaryWindow(QWidget):
         self.OptionBox = QGroupBox()
         CheckBoxLayout = QHBoxLayout()
 
-        for site in self.SiteList: #this is the only accessible SiteList reference I could find
+        for site in (
+            self.SiteList
+        ):  # this is the only accessible SiteList reference I could find
             checkBox = QCheckBox("&{0}".format(site))
             self.checkboxs.append(checkBox)
             CheckBoxLayout.addWidget(checkBox)
