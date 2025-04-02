@@ -21,8 +21,6 @@ from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
 # from Gui.python.ResultTreeWidget import *
 # from Gui.python.TestValidator import *
 from Gui.python.IVCurveHandler import IVCurveHandler
-from Gui.python.SLDOScanHandler import SLDOScanHandler
-
 
 class QtProductionTestWindow(QWidget):
     resized = pyqtSignal()
