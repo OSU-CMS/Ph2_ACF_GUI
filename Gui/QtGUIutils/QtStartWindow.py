@@ -249,9 +249,6 @@ class SummaryBox(QWidget):
 
 
 class QtStartWindow(QWidget):
-    openRunWindowSignal = pyqtSignal()
-    errorMessageBoxSignal = pyqtSignal(str)
-
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -266,21 +263,6 @@ class QtStartWindow(QWidget):
         self.createApp()
         self.occupied()
         self.loading_counter = 0
-        self.openRunWindowSignal.connect(self.openRunWindowGUI)
-
-        self.errorMessageBoxSignal.connect(
-            lambda message: QMessageBox.information(
-                None,
-                "Error",
-                message,
-                QMessageBox.Ok,
-            )
-        )
-
-    def openRunWindowGUI(self):
-        self.master.RunNewTest = QtRunWindow(
-            self.master, self.info, self.firmwareDescription
-        )
 
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
@@ -485,7 +467,7 @@ class QtStartWindow(QWidget):
 
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
-        self.openRunWindowSignal.emit()
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription)
         self.close()
 
     def closeEvent(self, event):
