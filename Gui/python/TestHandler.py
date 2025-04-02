@@ -482,12 +482,21 @@ class TestHandler(QObject):
 
                 if testName == "SCurveScan_2100_FWD":
                     if hv_on_module:
-                        self.instruments.hv_off()
+                        starting_voltages = [
+                            np.abs(getattr(module["hv"], "voltage"))
+                            for module in self.instruments._module_dict.values()
+                        ]
+                        self.instruments.hv_off(
+                            execute_each_step=lambda: self.execute_each_step(starting_voltages)
+                        )
                         self.instruments.hv_on_module(
                             module=mod_dict[number],
                             voltage=site_settings.forward_bias_voltage,
                             delay=0.3,
                             step_size=10,
+                            execute_each_step=lambda: self.ramp_progress_bar(
+                            [site_settings.forward_bias_voltage] * len(self.instruments._module_dict.values())
+                            )
                         )
                     else:
                         self.instruments.hv_on_module(
@@ -495,6 +504,9 @@ class TestHandler(QObject):
                             voltage=site_settings.forward_bias_voltage,
                             delay=0.3,
                             step_size=10,
+                            execute_each_step=lambda: self.ramp_progress_bar(
+                            [site_settings.forward_bias_voltage] * len(self.instruments._module_dict.values())
+                            )
                         )
                     testName = "SCurveScan_2100"
                     hv_on_module = True
@@ -504,6 +516,9 @@ class TestHandler(QObject):
                         voltage=default_hv_voltage,
                         delay=0.3,
                         step_size=10,
+                        execute_each_step=lambda: self.ramp_progress_bar(
+                            [default_hv_voltage] * len(self.instruments._module_dict.values())
+                            )
                     )
 
         self.tempHistory = [0.0] * self.numChips
@@ -715,7 +730,7 @@ class TestHandler(QObject):
                 raise Exception(
                     f"Failed to copy root file to output directory. \
 Module disconnection detected because Ph2_ACF didn't \
-create {search_pattern}."
+create {search_pattern}"
                 )
 
             # Sort files by modification time (newest first)
