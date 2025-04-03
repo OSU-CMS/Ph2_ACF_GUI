@@ -29,9 +29,11 @@ from InnerTrackerTests.TestSequences import CompositeTests
 
 
 class ResultTreeWidget(QWidget):
-    def __init__(self, info, width, height, master):
+    def __init__(self, info, width, height, master, firmware):
         super(ResultTreeWidget, self).__init__()
         self.master = master
+        self.firmware = firmware
+        self.firmware.append("weenus")
         self.DisplayW = width
         self.DisplayH = height
         self.FileList = []
@@ -74,38 +76,30 @@ class ResultTreeWidget(QWidget):
             self.runtime[index] = runtime
 
     def setupUi(self):
-        # self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
-        # self.DisplayLabel = QLabel()
-        # self.DisplayLabel.setScaledContents(True)
-        # self.displayingImage = 'test_plots/test_best1.png'
-        # self.DisplayView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        # self.DisplayLabel.setPixmap(self.DisplayView)
-        # self.ReferTitle = QLabel('<font size="6"> Reference: </font>')
-        # self.ReferLabel = QLabel()
-        # self.ReferLabel.setScaledContents(True)
-        # self.ReferView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        # self.ReferLabel.setPixmap(self.ReferView)
+        self.ScrollAreas = [QScrollArea() for i in range(len(self.firmware))]
+        self.ProgressWidgets = [QWidget() for i in range(len(self.firmware))]
 
-        self.ScrollArea = QScrollArea()
-        self.ProgressWidget = QWidget()
-        self.ProgressWidget.setMinimumWidth(400)
-        self.ProgressLayout = QGridLayout()
-        self.ProgressLayout.setAlignment(Qt.AlignTop)
+        for i in range(len(self.firmware)):
+            self.ProgressWidgets[i].setMinimumWidth(400)
+            layout = QGridLayout()
+            layout.setAlignment(Qt.AlignTop)
 
-        for index, key in enumerate(self.ProgressBar.keys()):
-            testLabel = QLabel("<b>{}</b>".format(self.ProgressBarList[index]))
-            testProgress = self.ProgressBar[key]
-            statusLabel = QLabel()
+            for index, key in enumerate(self.ProgressBar.keys()):
+                testLabel = QLabel("<b>{}</b>".format(self.ProgressBarList[index]))
+                testProgress = self.ProgressBar[key]
+                statusLabel = QLabel()
 
-            self.ProgressLayout.addWidget(testLabel, index, 0, 1, 1, Qt.AlignTop)
-            self.ProgressLayout.addWidget(testProgress, index, 1, 1, 4, Qt.AlignTop)
-            self.ProgressLayout.addWidget(statusLabel, index, 6, 1, 1, Qt.AlignTop)
-            self.ProgressLayout.addWidget(
-                self.runtime[index], index, 5, 1, 1, Qt.AlignTop
-            )
-            self.StatusLabel[index] = statusLabel
+                layout.addWidget(testLabel, index, 0, 1, 1, Qt.AlignTop)
+                layout.addWidget(testProgress, index, 1, 1, 4, Qt.AlignTop)
+                layout.addWidget(statusLabel, index, 6, 1, 1, Qt.AlignTop)
+                layout.addWidget(
+                    self.runtime[index], index, 5, 1, 1, Qt.AlignTop
+                )
+                self.StatusLabel[index] = statusLabel
 
-        self.ProgressWidget.setLayout(self.ProgressLayout)
+            self.ProgressWidgets[i].setLayout(layout)
+            self.ScrollAreas[i].setWidget(self.ProgressWidgets[i])
+            self.mainLayout.addWidget(self.ScrollAreas[i], 0, i, 10, 2)
 
         if self.master.expertMode:
             self.OutputTree = QTreeWidget()
@@ -133,24 +127,14 @@ class ResultTreeWidget(QWidget):
             self.SVGWidget.setMinimumHeight(minHeight)
             self.SVGWidget.setMinimumWidth(minHeight * ratio)
 
-        self.ScrollArea.setWidget(self.ProgressWidget)
-
-        ## Old display: To be removed
-        # self.mainLayout.addWidget(self.DisplayTitle,0,0,1,2)
-        # self.mainLayout.addWidget(self.DisplayLabel,1,0,1,2)
-        # self.mainLayout.addWidget(self.ReferTitle,0,2,1,2)
-        # self.mainLayout.addWidget(self.ReferLabel,1,2,1,2)
-        # self.mainLayout.addWidget(self.OutputTree,0,4,2,1)
-
-        self.mainLayout.addWidget(self.ScrollArea, 0, 0, 10, 2)
         if self.master.expertMode:
-            self.mainLayout.addWidget(self.OutputTree, 0, 2, 10, 2)
+            self.mainLayout.addWidget(self.OutputTree, 0, 1+len(self.firmware), 10, 2)
         else:
-            self.mainLayout.addWidget(self.TestLabel, 0, 2, 1, 2)
-            self.mainLayout.addWidget(self.ControlButtom, 0, 5, 1, 1)
-            self.mainLayout.addWidget(self.rightArrow, 0, 4, 1, 1)
-            self.mainLayout.addWidget(self.leftArrow, 0, 3, 1, 1)
-            self.mainLayout.addWidget(self.SVGWidget, 1, 2, 9, 3)
+            self.mainLayout.addWidget(self.TestLabel, 0, 1+len(self.firmware), 1, 2)
+            self.mainLayout.addWidget(self.ControlButtom, 0, 4+len(self.firmware), 1, 1)
+            self.mainLayout.addWidget(self.rightArrow, 0, 3+len(self.firmware), 1, 1)
+            self.mainLayout.addWidget(self.leftArrow, 0, 2+len(self.firmware), 1, 1)
+            self.mainLayout.addWidget(self.SVGWidget, 1, 1+len(self.firmware), 9, 3)
 
         if not self.master.expertMode:
             # Initialize timer:
