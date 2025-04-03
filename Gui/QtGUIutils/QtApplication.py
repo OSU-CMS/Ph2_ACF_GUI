@@ -789,15 +789,6 @@ class QtApplication(QWidget):
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
 
-        self.NewProductionTestButton = QPushButton("&Production Test")
-        self.NewProductionTestButton.setMinimumWidth(kMinimumWidth)
-        self.NewProductionTestButton.setMaximumWidth(kMaximumWidth)
-        self.NewProductionTestButton.setMinimumHeight(kMinimumHeight)
-        self.NewProductionTestButton.setMaximumHeight(kMaximumHeight)
-        self.NewProductionTestButton.setDisabled(
-            True
-        )  # FIXME This is to temporarily disable the test until LV can be added.
-
         self.ReviewButton = QPushButton("&Review")
         self.ReviewButton.setMinimumWidth(kMinimumWidth)
         self.ReviewButton.setMaximumWidth(kMaximumWidth)
@@ -1167,7 +1158,6 @@ class QtApplication(QWidget):
 
         if response == QMessageBox.No:
             return
-
     def openNewTest(self):
         FwModule = [
             board_object
@@ -1323,10 +1313,6 @@ class QtApplication(QWidget):
 
         self.checkFirmware()
 
-    def releaseProdTestButton(self):
-        self.NewProductionTestButton.setDisabled(False)
-        self.LogoutButton.setDisabled(False)
-        self.ExitButton.setDisabled(False)
 
     def goExpert(self):
         self.expertMode = True
