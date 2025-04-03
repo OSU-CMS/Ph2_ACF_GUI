@@ -1149,6 +1149,7 @@ class QtApplication(QWidget):
 
         if response == QMessageBox.No:
             return
+        
     def openNewTest(self):
         FwModule = [
             board_object
@@ -1303,7 +1304,6 @@ class QtApplication(QWidget):
             firmware.setFPGAConfig(changeuDTCDialog.uDTCFile)
 
         self.checkFirmware()
-
 
     def goExpert(self):
         self.expertMode = True
