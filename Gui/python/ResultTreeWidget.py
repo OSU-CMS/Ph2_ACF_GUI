@@ -33,14 +33,14 @@ class ResultTreeWidget(QWidget):
         super(ResultTreeWidget, self).__init__()
         self.master = master
         self.firmware = firmware
-        self.firmware.append("weenus")
         self.DisplayW = width
         self.DisplayH = height
         self.FileList = []
         self.IVFileList = []
         self.SLDOFileList = []
         self.info = info
-        self.ProgressBarList = []
+        self.runtimeList = {}
+        self.ProgressBarList = {}
         self.ProgressBar = {}
         self.StatusLabel = {}
         self.displayingImage = ""
@@ -53,27 +53,28 @@ class ResultTreeWidget(QWidget):
         self.runtime = {}
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
+        print(self.firmware)
         self.initializeProgressBar()
         self.setupUi()
 
-        # For test:
-        # self.updateResult("/Users/czkaiweb/Research/data")
-
     def initializeProgressBar(self):
         if isCompositeTest(self.info):
-            self.ProgressBarList = CompositeTests[self.info]
-            self.runtimeList = CompositeTests[self.info]
+            for firmware in self.firmware:
+                self.ProgressBarList[firmware] = CompositeTests[self.info]
+                self.runtimeList[firmware] = CompositeTests[self.info]
         else:
-            self.ProgressBarList = [self.info]
-            self.runtimeList = [self.info]
+            for firmware in self.firmware:
+                self.ProgressBarList[firmware] = [self.info]
+                self.runtimeList[firmware] = [self.info]
 
-        for index, obj in enumerate(self.ProgressBarList):
-            ProgressBar = QProgressBar()
-            ProgressBar.setMinimum(0)
-            ProgressBar.setMaximum(100)
-            self.ProgressBar[index] = ProgressBar
-            runtime = QLabel()
-            self.runtime[index] = runtime
+        for index in range(len(self.ProgressBarList)):
+            for firmware in self.firmware:
+                ProgressBar = QProgressBar()
+                ProgressBar.setMinimum(0)
+                ProgressBar.setMaximum(100)
+                self.ProgressBar[index, firmware] = ProgressBar
+                runtime = QLabel()
+                self.runtime[index, firmware] = runtime
 
     def setupUi(self):
         self.ScrollAreas = [QScrollArea() for i in range(len(self.firmware))]
@@ -84,18 +85,20 @@ class ResultTreeWidget(QWidget):
             layout = QGridLayout()
             layout.setAlignment(Qt.AlignTop)
 
-            for index, key in enumerate(self.ProgressBar.keys()):
-                testLabel = QLabel("<b>{}</b>".format(self.ProgressBarList[index]))
-                testProgress = self.ProgressBar[key]
-                statusLabel = QLabel()
+            for firmware in self.firmware:
+                for index in range(len(self.ProgressBarList[self.firmware[0]])):
 
-                layout.addWidget(testLabel, index, 0, 1, 1, Qt.AlignTop)
-                layout.addWidget(testProgress, index, 1, 1, 4, Qt.AlignTop)
-                layout.addWidget(statusLabel, index, 6, 1, 1, Qt.AlignTop)
-                layout.addWidget(
-                    self.runtime[index], index, 5, 1, 1, Qt.AlignTop
-                )
-                self.StatusLabel[index] = statusLabel
+                    testLabel = QLabel("<b>{}</b>".format(self.ProgressBarList[firmware][index]))
+                    testProgress = self.ProgressBar[index,firmware]
+                    statusLabel = QLabel()
+
+                    layout.addWidget(testLabel, index, 0, 1, 1, Qt.AlignTop)
+                    layout.addWidget(testProgress, index, 1, 1, 4, Qt.AlignTop)
+                    layout.addWidget(statusLabel, index, 6, 1, 1, Qt.AlignTop)
+                    layout.addWidget(
+                        self.runtime[index, firmware], index, 5, 1, 1, Qt.AlignTop
+                    )
+                    self.StatusLabel[index, firmware] = statusLabel
 
             self.ProgressWidgets[i].setLayout(layout)
             self.ScrollAreas[i].setWidget(self.ProgressWidgets[i])
