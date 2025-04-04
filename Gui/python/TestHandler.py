@@ -84,6 +84,7 @@ class TestHandler(QObject):
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
+        print(f'test firmware {firmware}')
         self.info = info  # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
 
@@ -280,7 +281,9 @@ class TestHandler(QObject):
                     except OSError:
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
+                print(self.firmware)
                 for firmware in self.firmware:
+                    print(firmware)
                     config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir)
 
                     if config_file:
@@ -403,7 +406,8 @@ class TestHandler(QObject):
             else:
                 step = "{}:{}".format(self.testIndexTracker, self.currentTest)
                 self.updateResult.emit((step, self.figurelist))
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
+            for firmware in self.firmware:
+                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker, firmware].setValue(100)
             return
 
         print("Executing Single Step test...")
@@ -828,7 +832,7 @@ created by Ph2_ACF is empty."
                 if self.starttime is not None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
-                    self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText(
+                    self.runwindow.ResultWidget.runtime[self.testIndexTracker, self.firmware[processIndex]].setText(
                         "{0} s".format(round(runningTime, 1))
                     )
                 else:
@@ -850,7 +854,7 @@ created by Ph2_ACF is empty."
                         if self.ProgressValue == 100:
                             self.ProgressingMode = "Summary"
                         self.runwindow.ResultWidget.ProgressBar[
-                            self.testIndexTracker
+                            self.testIndexTracker, self.firmware[processIndex]
                         ].setValue(self.ProgressValue)
                         ##Added because of Ph2_ACF bug:
 
@@ -860,7 +864,7 @@ created by Ph2_ACF is empty."
 
                 if self.check_for_end_of_test(textStr):
                     self.runwindow.ResultWidget.ProgressBar[
-                        self.testIndexTracker
+                        self.testIndexTracker, self.firmware[processIndex]
                     ].setValue(100)
                 elif "TEMPSENS_" in textStr:
                     try:
@@ -948,7 +952,7 @@ created by Ph2_ACF is empty."
             elif self.ProgressingMode == "Summary":
                 if self.check_for_end_of_test(textStr):
                     self.runwindow.ResultWidget.ProgressBar[
-                        self.testIndexTracker
+                        self.testIndexTracker, self.firmware[processIndex]
                     ].setValue(100)
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
@@ -1142,9 +1146,10 @@ created by Ph2_ACF is empty."
     def updateProgress(self, measurementType, stepSize):
         if measurementType == "IVCurve":
             self.IVProgressValue += stepSize / 2.0
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                self.IVProgressValue
-            )
+            for firmware in self.firmware:
+                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker, firmware].setValue(
+                    self.IVProgressValue
+                )
             self.ramp_progress_bar(
                 [
                     site_settings.IVcurve_range[self.currentTest]
@@ -1155,9 +1160,10 @@ created by Ph2_ACF is empty."
             )
         if "SLDO" in measurementType:
             self.SLDOProgressValue += stepSize
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                self.SLDOProgressValue
-            )
+            for firmware in self.firmware:
+                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker, firmware].setValue(
+                    self.SLDOProgressValue
+                )
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for module in self.modules:
@@ -1460,12 +1466,13 @@ created by Ph2_ACF is empty."
         def handle_retry():
             if check_enabledModules():
                 self.outputString.emit(f"Retrying {self.currentTest}...")
-                self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText(
-                    ""
-                )  # may need to .update()
-                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                    0
-                )  # may need to .update(). Automatically adds "0%" text on Progress bar.
+                for firmware in self.firmware:
+                    self.runwindow.ResultWidget.runtime[self.testIndexTracker, firmware].setText(
+                        ""
+                    )  # may need to .update()
+                    self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker, firmware].setValue(
+                        0
+                    )  # may need to .update(). Automatically adds "0%" text on Progress bar.
                 self.testIndexTracker -= 1
                 self.force_continue_window.close()
 
