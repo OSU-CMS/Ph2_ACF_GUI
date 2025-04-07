@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
     QTreeWidget,
     QTreeWidgetItem,
     QWidget,
+    QSizePolicy
 )
 from PyQt5 import QtSvg
 
@@ -39,10 +40,12 @@ class ResultTreeWidget(QWidget):
         self.IVFileList = []
         self.SLDOFileList = []
         self.info = info
-        self.runtimeList = {}
-        self.ProgressBarList = {}
-        self.ProgressBar = {}
-        self.StatusLabel = {}
+
+        self.ProgressBarLists = [[] for fw in firmware]
+        self.ProgressBars = [{} for fw in firmware]
+        self.runtimes = [{} for fw in firmware]
+        self.runtimeLists = [[] for fw in firmware]
+
         self.displayingImage = ""
         self.displayList = []
         self.displayIndex = 0
@@ -50,69 +53,63 @@ class ResultTreeWidget(QWidget):
         self.timerFrozen = False
         self.Plot = []
         self.count = 0
-        self.runtime = {}
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
-        print(self.firmware)
         self.initializeProgressBar()
         self.setupUi()
 
     def initializeProgressBar(self):
-        if isCompositeTest(self.info):
-            for firmware in self.firmware:
-                self.ProgressBarList[firmware] = CompositeTests[self.info]
-                self.runtimeList[firmware] = CompositeTests[self.info]
-        else:
-            for firmware in self.firmware:
-                self.ProgressBarList[firmware] = [self.info]
-                self.runtimeList[firmware] = [self.info]
+        for fw_index, _ in enumerate(self.firmware):
+            if isCompositeTest(self.info):
+                self.ProgressBarLists[fw_index] = CompositeTests[self.info]
+                self.runtimeLists[fw_index] = CompositeTests[self.info]
+            else:
+                self.ProgressBarLists[fw_index] = [self.info]
+                self.runtimeLists[fw_index] = [self.info]
 
-        for index in range(len(self.ProgressBarList)):
-            for firmware in self.firmware:
+            for index, obj in enumerate(self.ProgressBarLists[0]):
                 ProgressBar = QProgressBar()
                 ProgressBar.setMinimum(0)
                 ProgressBar.setMaximum(100)
-                self.ProgressBar[index, firmware] = ProgressBar
+                self.ProgressBars[fw_index][index] = ProgressBar
                 runtime = QLabel()
-                self.runtime[index, firmware] = runtime
+                self.runtimes[fw_index][index] = runtime
 
     def setupUi(self):
-        self.ScrollAreas = [QScrollArea() for i in range(len(self.firmware))]
-        self.ProgressWidgets = [QWidget() for i in range(len(self.firmware))]
+        self.ScrollAreas = [QScrollArea() for fw in self.firmware]
+        self.ProgressWidgets = [QWidget() for fw in self.firmware]
+        self.ProgressLayouts = [QGridLayout() for fw in self.firmware]
+        for fw_index, firmware in enumerate(self.firmware):
+            self.ScrollAreas[fw_index].setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.ProgressLayouts[fw_index].setAlignment(Qt.AlignTop)
+            self.ProgressLayouts[fw_index].addWidget(QLabel(firmware.getBoardName()), 0, 0, 1, Qt.AlignTop)
 
-        for i in range(len(self.firmware)):
-            self.ProgressWidgets[i].setMinimumWidth(400)
-            layout = QGridLayout()
-            layout.setAlignment(Qt.AlignTop)
+            for index, key in enumerate(self.ProgressBars[fw_index].keys()):
+                testLabel = QLabel("<b>{}</b>".format(self.ProgressBarLists[fw_index][index]))
+                testProgress = self.ProgressBars[fw_index][key]
+                statusLabel = QLabel()
+                
+                self.ProgressLayouts[fw_index].addWidget(testLabel, index+1, 0, 1, 1, Qt.AlignTop)
+                self.ProgressLayouts[fw_index].addWidget(testProgress, index+1, 1, 1, 4, Qt.AlignTop)
+                self.ProgressLayouts[fw_index].addWidget(statusLabel, index+1, 6, 1, 1, Qt.AlignTop)
+                self.ProgressLayouts[fw_index].addWidget(
+                    self.runtimes[fw_index][index], index+1, 5, 1, 1, Qt.AlignTop
+                )
 
-            for firmware in self.firmware:
-                for index in range(len(self.ProgressBarList[self.firmware[0]])):
-
-                    testLabel = QLabel("<b>{}</b>".format(self.ProgressBarList[firmware][index]))
-                    testProgress = self.ProgressBar[index,firmware]
-                    statusLabel = QLabel()
-
-                    layout.addWidget(testLabel, index, 0, 1, 1, Qt.AlignTop)
-                    layout.addWidget(testProgress, index, 1, 1, 4, Qt.AlignTop)
-                    layout.addWidget(statusLabel, index, 6, 1, 1, Qt.AlignTop)
-                    layout.addWidget(
-                        self.runtime[index, firmware], index, 5, 1, 1, Qt.AlignTop
-                    )
-                    self.StatusLabel[index, firmware] = statusLabel
-
-            self.ProgressWidgets[i].setLayout(layout)
-            self.ScrollAreas[i].setWidget(self.ProgressWidgets[i])
-            self.mainLayout.addWidget(self.ScrollAreas[i], 0, i, 10, 2)
+            self.ProgressWidgets[fw_index].setLayout(self.ProgressLayouts[fw_index])
+            self.ScrollAreas[fw_index].setWidget(self.ProgressWidgets[fw_index])
+            self.mainLayout.addWidget(self.ScrollAreas[fw_index], 1, fw_index, 10, 1)
 
         if self.master.expertMode:
             self.OutputTree = QTreeWidget()
+            self.OutputTree.setMinimumWidth(320)
             self.OutputTree.horizontalScrollBar().setEnabled(True)
             self.OutputTree.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
             self.OutputTree.setHeaderLabels(["Name"])
             self.OutputTree.itemClicked.connect(self.onItemClicked)
             self.OutputTree.itemExpanded.connect(self.onItemExpanded)
             self.TreeRoot = QTreeWidgetItem(self.OutputTree)
-            self.TreeRoot.setText(0, "Files..")
+            self.TreeRoot.setText(0, "Files...")
         else:
             self.TestLabel = QLabel("Test")
 
@@ -159,7 +156,7 @@ class ResultTreeWidget(QWidget):
         self.OutputTree.resizeColumnToContents(0)
         if item.text(0).endswith(";TCanvas"):
             temp = item.clone()
-            while item.parent().text(0) != "Files..":
+            while item.parent().text(0) != "Files...":
                 item = item.parent()
             runNumber = item.text(0).split("_")[0]
             # print("the test is {0}".format(item.text(0)))
