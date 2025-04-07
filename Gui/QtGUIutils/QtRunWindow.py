@@ -524,12 +524,14 @@ class QtRunWindow(QWidget):
             isReRun = True
             self.grades = []
             if isCompositeTest(self.info):
-                for index in range(len(CompositeTests[self.info])):
-                    self.ResultWidget.ProgressBar[index].setValue(0)
-                    self.ResultWidget.runtime[index].setText("")
+                for fw_index in range(len(self.firmware)):
+                    for index in range(len(CompositeTests[self.info])):
+                        self.ResultWidget.ProgressBars[fw_index][index].setValue(0)
+                        self.ResultWidget.runtimes[fw_index][index].setText("")
             else:
-                self.ResultWidget.ProgressBar[0].setValue(0)
-                self.ResultWidget.runtime[0].setText("")
+                for fw_index in range(len(self.firmware)):
+                    self.ResultWidget.ProgressBars[fw_index][0].setValue(0)
+                    self.ResultWidget.runtimes[fw_index][0].setText("")
         self.ResetButton.setDisabled(True)
         self.testHandler.runTest(isReRun)
 

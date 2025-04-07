@@ -41,10 +41,10 @@ class ResultTreeWidget(QWidget):
         self.SLDOFileList = []
         self.info = info
 
-        self.ProgressBarLists = [[] for fw in firmware]
-        self.ProgressBars = [{} for fw in firmware]
-        self.runtimes = [{} for fw in firmware]
-        self.runtimeLists = [[] for fw in firmware]
+        self.ProgressBarLists = [[] for _ in firmware]
+        self.ProgressBars = [{} for _ in firmware]
+        self.runtimes = [{} for _ in firmware]
+        self.runtimeLists = [[] for _ in firmware]
 
         self.displayingImage = ""
         self.displayList = []
@@ -76,11 +76,12 @@ class ResultTreeWidget(QWidget):
                 self.runtimes[fw_index][index] = runtime
 
     def setupUi(self):
-        self.ScrollAreas = [QScrollArea() for fw in self.firmware]
-        self.ProgressWidgets = [QWidget() for fw in self.firmware]
-        self.ProgressLayouts = [QGridLayout() for fw in self.firmware]
+        self.ScrollAreas = [QScrollArea() for _ in self.firmware]
+        self.ProgressWidgets = [QWidget() for _ in self.firmware]
+        self.ProgressLayouts = [QGridLayout() for _ in self.firmware]
         for fw_index, firmware in enumerate(self.firmware):
             self.ScrollAreas[fw_index].setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.ScrollAreas[fw_index].setWidgetResizable(True)
             self.ProgressLayouts[fw_index].setAlignment(Qt.AlignTop)
             self.ProgressLayouts[fw_index].addWidget(QLabel(firmware.getBoardName()), 0, 0, 1, Qt.AlignTop)
 
@@ -91,7 +92,7 @@ class ResultTreeWidget(QWidget):
                 
                 self.ProgressLayouts[fw_index].addWidget(testLabel, index+1, 0, 1, 1, Qt.AlignTop)
                 self.ProgressLayouts[fw_index].addWidget(testProgress, index+1, 1, 1, 4, Qt.AlignTop)
-                self.ProgressLayouts[fw_index].addWidget(statusLabel, index+1, 6, 1, 1, Qt.AlignTop)
+                self.ProgressLayouts[fw_index].addWidget(statusLabel, index+1, 5, 1, 1, Qt.AlignTop)
                 self.ProgressLayouts[fw_index].addWidget(
                     self.runtimes[fw_index][index], index+1, 5, 1, 1, Qt.AlignTop
                 )

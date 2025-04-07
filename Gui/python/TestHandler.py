@@ -85,7 +85,6 @@ class TestHandler(QObject):
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
-        print(f'test firmware {firmware}')
         self.info = info  # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
 
@@ -167,7 +166,6 @@ class TestHandler(QObject):
                 lambda j=i: self.on_readyReadStandardOutput(j)
             )
             process.finished.connect(lambda exitCode, exitStatus, j=i: self.finished_run_process(exitCode, exitStatus, j))
-            process.started.connect(lambda j=i:print(f"\n process {j} started \n"))
 
         self.readingOutput = False
         self.ProgressingMode = "None"
@@ -175,6 +173,7 @@ class TestHandler(QObject):
         self.IVProgressValue = 0
         self.SLDOProgressValue = 0
         self.runtimeList = []
+        self.starttime = None
 
         self.info_processes = [QProcess() for _ in self.firmware]
         for i, process in enumerate(self.info_processes):
@@ -291,9 +290,7 @@ class TestHandler(QObject):
                     except OSError:
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
-                print(self.firmware)
                 for firmware in self.firmware:
-                    print(firmware)
                     config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir)
 
                     if config_file:
@@ -582,7 +579,6 @@ class TestHandler(QObject):
                 )
         else:
             for process, firmware in zip(self.info_processes, self.firmware):
-                print(f'info in setupQProcess {firmware}')
                 process.start(
                     "echo",
                     [
@@ -665,7 +661,6 @@ class TestHandler(QObject):
                 for OG in beboard.getAllOpticalGroups().values():
                     ogID = OG.getOpticalGroupID()
                     for module in OG.getAllModules().values():
-                        print(f'module {module}')
                         hybridID = module.getFMCPort()
                         module_data = {
                             "boardID": boardID,
@@ -689,9 +684,6 @@ class TestHandler(QObject):
                         self.figurelist[module.getModuleName()] = self.collect_plots(
                             module.getModuleName()
                         )
-
-            print(f'results {results}')
-            print(f'finished_tests {self.finished_tests}')
 
             self.updateValidation.emit(results)
             self.updateFinishedTests.emit(
@@ -797,9 +789,6 @@ created by Ph2_ACF is empty."
 
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput(self, processIndex: int):
-
-        print(f'reading standard output from process {processIndex}')
-
         if self.readingOutput:
             print("Thread competition detected")
             return
@@ -809,11 +798,7 @@ created by Ph2_ACF is empty."
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
         self.outputfile.write(alltext)
-        # print(alltext)
-        # outputfile.close()
         textline = alltext.split("\n")
-        # fileLines = open(self.outputFile,"r")
-        # textline = fileLines.readlines()
 
         for textStr in textline:
             import re
@@ -1056,8 +1041,6 @@ created by Ph2_ACF is empty."
 
     @QtCore.pyqtSlot()
     def on_finish(self, processIndex: int):
-        print(f'on_finish process {processIndex}')
-
         self.outputfile.close()
         # While the process is killed:
 
@@ -1088,7 +1071,6 @@ created by Ph2_ACF is empty."
         self.validateTest()
 
         EnableReRun = self.onFinalTest(self.testIndexTracker)
-
         self.stepFinished.emit(EnableReRun)
 
         # show the score of test
@@ -1099,12 +1081,14 @@ created by Ph2_ACF is empty."
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
 
-        # self.update()
-
         if isCompositeTest(self.info):
             self.runTest()
 
     def onFinalTest(self, index):
+        for process in self.run_processes:
+            if process.state() == QProcess.Running:
+                return
+
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
