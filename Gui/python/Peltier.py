@@ -124,11 +124,11 @@ class PeltierSignalGenerator:
         connection = True
         buff = self.buffer.copy()
 
-        for i in range(len(buff)):
+        for b in buff:
             char = self.ser.read(1).decode("utf-8")
             if len(char) == 0:
                 return buff, False
-            buff[i] = char
+            b = char
 
         logger.debug(f"Peltier Buffer Message: {buff}")
         if buff == self.checksumError:

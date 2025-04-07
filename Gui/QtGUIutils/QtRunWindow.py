@@ -247,15 +247,15 @@ class QtRunWindow(QWidget):
 
         ConsoleLayout = QGridLayout()
 
-        self.ConsoleViews = [QPlainTextEdit() for i in range(len(self.firmware))]
-        for i in range(len(self.ConsoleViews)):
-            self.ConsoleViews[i].setStyleSheet(
+        self.ConsoleViews = [QPlainTextEdit() for _ in self.firmware]
+        for i, consoleView in enumerate(self.ConsoleViews):
+            consoleView.setStyleSheet(
                 "QTextEdit { background-color: rgb(10, 10, 10); color : white; }"
             )
-            self.ConsoleViews[i].ensureCursorVisible()
-            self.ConsoleViews[i].setReadOnly(True)
+            consoleView.ensureCursorVisible()
+            consoleView.setReadOnly(True)
             ConsoleLayout.addWidget(QLabel(self.firmware[i].getBoardName()), 0, i)
-            ConsoleLayout.addWidget(self.ConsoleViews[i], 1, i)
+            ConsoleLayout.addWidget(consoleView, 1, i)
 
         TerminalBox.setLayout(ConsoleLayout)
 

@@ -31,13 +31,13 @@ class QtDBTableWidget(QSortFilterProxyModel):
         else:
             self.model.setHorizontalHeaderLabels(self.dataHeader)
 
-        for row in range(len(self.dataBody)):
+        for row in self.dataBody:
             RowContents = []
             if withButton:
                 ButtonItem = QStandardItem()
                 RowContents.append(ButtonItem)
-            for column in range(len(self.dataBody[row])):
-                item = QStandardItem("{0}".format(self.dataBody[row][column]))
+            for col in row:
+                item = QStandardItem("{0}".format(col))
                 RowContents.append(item)
             self.model.invisibleRootItem().appendRow(RowContents)
         self.setSourceModel(self.model)

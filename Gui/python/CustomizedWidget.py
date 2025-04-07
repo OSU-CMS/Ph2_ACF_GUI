@@ -425,10 +425,10 @@ class ChipBox(QWidget):
                         values[-1].append(element.text)
 
             data = {}
-            for i in range(len(values)):
+            for i, value in enumerate(values):
                 data[str(i + 12)] = {
-                    "VDDD": values[i][1],
-                    "VDDA": values[i][2],
+                    "VDDD": value[1],
+                    "VDDA": value[2],
                 }
 
             return data

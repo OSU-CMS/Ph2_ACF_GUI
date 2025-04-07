@@ -86,11 +86,11 @@ class QtImageViewerTab(QWidget):
             self.view.setSelectionMode(QAbstractItemView.MultiSelection)
             self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
 
-            for row in range(len(self.proxy.dataBody)):
+            for row, db in enumerate(self.proxy.dataBody):
                 DetailButton = QPushButton("&Show...")
                 DetailButton.clicked.connect(
                     lambda state,
-                    x="{0}".format(self.proxy.dataBody[row][0]): self.openImage(x)
+                    x="{0}".format(db[0]): self.openImage(x)
                 )
                 self.view.setIndexWidget(self.proxy.index(row, 0), DetailButton)
 

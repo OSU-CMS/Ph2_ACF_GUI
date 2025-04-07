@@ -376,7 +376,6 @@ def CheckXMLValue(pFilename, pAttribute):
 
 def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
     outputFile = f"{outputDir}/CMSIT_{BeBoard.getBoardName()}_{testName}.xml"
-    print(outputFile)
 
     boardtype = "RD53A"
     RegisterSettingsList = RegisterSettings  # TODO: Investigate whether this actually matters (ie deep vs shallow copy)

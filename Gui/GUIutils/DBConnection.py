@@ -97,7 +97,7 @@ def getAllTests(dbconnection):
         )
         remoteList = []
     localList = list(Test_to_Ph2ACF_Map.keys())
-    remoteList = [remoteList[i][0] for i in range(len(remoteList))]
+    remoteList = [rl[0] for rl in remoteList]
     for test in remoteList:
         if test not in localList:
             localList.append(test)
@@ -470,7 +470,7 @@ def updateGenericTable(dbconnection, table, column, data, **kwargs):
             """UPDATE """
             + str(table)
             + """ SET """
-            + ",".join(list(column[i] + "=%s" for i in range(len(column))))
+            + ",".join(list(col + "=%s" for col in column))
             + """
 					WHERE ("""
             + " AND ".join(constraints)

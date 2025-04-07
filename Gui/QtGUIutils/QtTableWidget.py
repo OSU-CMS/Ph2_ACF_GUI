@@ -36,15 +36,15 @@ class QtTableWidget(QSortFilterProxyModel):
         self.model = QStandardItemModel()
         self.model.setHorizontalHeaderLabels(["Details"] + self.dataHeader)
 
-        for row in range(len(self.dataBody)):
+        for db in self.dataBody:
             RowContents = []
             ButtonItem = QStandardItem()
             RowContents.append(ButtonItem)
-            for column in range(len(self.dataBody[row])):
+            for column in db:
                 if column == 0:
                     brush = QBrush()
-                    brush.setColor(Color[self.dataBody[row][0]])
-                item = QStandardItem("{0}".format(self.dataBody[row][column]))
+                    brush.setColor(Color[column])
+                item = QStandardItem("{0}".format(column))
                 item.setForeground(brush)
                 RowContents.append(item)
             self.model.invisibleRootItem().appendRow(RowContents)

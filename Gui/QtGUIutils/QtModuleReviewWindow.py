@@ -136,10 +136,6 @@ class QtModuleReviewWindow(QWidget):
         self.view.setSelectionMode(QAbstractItemView.MultiSelection)
         self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.addButtons()
-        # for row in range(len(self.proxy.dataBody)):
-        # 	DetailButton = QPushButton("&Show...")
-        # 	DetailButton.clicked.connect(lambda state, x="{0}".format(self.proxy.dataBody[row][len(self.proxy.dataHeader)-1]) : self.openDQM(x))
-        # 	self.view.setIndexWidget(self.proxy.index(row,0),DetailButton)
 
         HistoryLayout = QGridLayout()
         HistoryLayout.addWidget(self.lineEdit, 0, 1, 1, 1)

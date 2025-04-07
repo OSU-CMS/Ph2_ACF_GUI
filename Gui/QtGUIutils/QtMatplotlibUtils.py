@@ -133,9 +133,9 @@ class RunStatusCanvas(FigureCanvas):
         self.xticks = [""]
 
         if isCompositeTest(self.parent.info[1]):
-            for i in range(len(CompositeTests[self.parent.info[1]])):
+            for iter in CompositeTests[self.parent.info[1]]:
                 self.xticks.append(
-                    Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]]
+                    Test_to_Ph2ACF_Map[iter]
                 )
         if isSingleTest(self.parent.info[1]):
             self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
@@ -181,7 +181,7 @@ class RunStatusCanvas(FigureCanvas):
             module_grades = []
             for grade in self.grades:
                 module_grades.append(grade.get(module, 0))
-            for i in range(len(xList) - len(self.grades)):
+            for _ in range(len(xList) - len(self.grades)):
                 module_grades.append(0.0)
             allXs.append([x + (width_bar * index) - width_cluster / 2.0 for x in xList])
             allGrades.append(module_grades)
@@ -208,9 +208,9 @@ class RunStatusCanvas(FigureCanvas):
     def renew(self):
         self.xticks = [""]
         if isCompositeTest(self.parent.info[1]):
-            for i in range(len(CompositeTests[self.parent.info[1]])):
+            for iter in CompositeTests[self.parent.info[1]]:
                 self.xticks.append(
-                    Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]]
+                    Test_to_Ph2ACF_Map[iter]
                 )
         if isSingleTest(self.parent.info[1]):
             self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
