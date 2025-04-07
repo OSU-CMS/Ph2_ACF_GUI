@@ -3,6 +3,7 @@ from PyQt5.QtCore import QThread, QObject, pyqtSignal
 import numpy as np
 from Gui.python.logging_config import logger
 from Gui.siteSettings import IVcurve_range
+import Gui.siteSettings as site_settings
 
 
 class IVCurveThread(QThread):
@@ -45,6 +46,7 @@ class IVCurveThread(QThread):
             execute_each_step=lambda: self.execute_each_step(starting_voltages)
         )
         self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
+        self.instruments.hv_set_ocp(0.00001)
 
     # Used to break out of hv_on correctly
     def breakTest(self):
@@ -98,10 +100,11 @@ class IVCurveHandler(QObject):
     progressSignal = pyqtSignal(str, float)
     startSignal = pyqtSignal()
 
-    def __init__(self, testName, instrument_cluster, execute_each_step):
+    def __init__(self, testName, instrument_cluster, nextTest, execute_each_step):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.execute_each_step = execute_each_step
+        self.nextTest = nextTest
 
         assert self.instruments is not None, logger.debug(
             "Error instantiating instrument cluster"
@@ -136,9 +139,15 @@ class IVCurveHandler(QObject):
             np.abs(getattr(module["hv"], "voltage"))
             for module in self.instruments._module_dict.values()
         ]
-        self.instruments.hv_off(
-            execute_each_step=lambda: self.execute_each_step(starting_voltages)
-        )
+        ## Will Set voltage to default unless SLDO is the next test
+        if (self.nextTest is not None) and ("SLDO" not in self.nextTest): 
+            self.instruments.hv_set(voltage = site_settings.icicle_instrument_setup[
+                    "instrument_dict"]["hv"]["default_voltage"], delay = 0.3, step_size = 10
+                )
+        else:    
+            self.instruments.hv_off(
+                execute_each_step=lambda: self.execute_each_step(starting_voltages)
+            )    
         self.finished.emit(test, measure)
 
     def stop(self):

@@ -20,6 +20,7 @@ import time
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import cProfile
 
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
@@ -371,7 +372,12 @@ class TestHandler(QObject):
             self.testIndexTracker = 0
             return
         testName = runTestList[self.testIndexTracker]
-        self.runSingleTest(testName)
+        if self.testIndexTracker + 1 < len(runTestList):  # Check if there is a next test
+            nextTest = runTestList[self.testIndexTracker + 1]
+        else:
+            nextTest = None  
+        print("\n\n Next test: {}".format(nextTest))
+        self.runSingleTest(testName, nextTest)
 
     def ramp_progress_bar(self, max):
         voltages = [
@@ -385,7 +391,8 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(self.runwindow.RampProgressBars[i], value, text)
 
-    def runSingleTest(self, testName):
+    def runSingleTest(self, testName, nextTest = None):
+        print("\n\nRunning Test: {}".format(testName))
         if "analyze" in testName.lower():
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
@@ -427,6 +434,7 @@ class TestHandler(QObject):
             self.IVCurveHandler = IVCurveHandler(
                 self.currentTest,
                 self.instruments,
+                nextTest,
                 execute_each_step=self.ramp_progress_bar,
             )
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
@@ -1241,21 +1249,6 @@ created by Ph2_ACF is empty."
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            default_hv_voltage = site_settings.icicle_instrument_setup[
-                "instrument_dict"
-            ]["hv"]["default_voltage"]
-            # assumes only 1 HV titled 'hv' in instruments.json
-
-            self.master.instruments.hv_on(
-                voltage=default_hv_voltage,
-                delay=0.3,
-                step_size=3,
-                measure=False,
-                execute_each_step=lambda: self.ramp_progress_bar(
-                    [default_hv_voltage] * len(self.instruments._module_dict.values())
-                ),
-            )
-
             if self.testIndexTracker == len(CompositeTests[self.info]):
                 self.powerSignal.emit()
                 EnableReRun = True
