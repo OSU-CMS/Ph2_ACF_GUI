@@ -20,7 +20,6 @@ import time
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-import cProfile
 
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
@@ -376,7 +375,6 @@ class TestHandler(QObject):
             nextTest = runTestList[self.testIndexTracker + 1]
         else:
             nextTest = None  
-        print("\n\n Next test: {}".format(nextTest))
         self.runSingleTest(testName, nextTest)
 
     def ramp_progress_bar(self, max):
@@ -392,7 +390,6 @@ class TestHandler(QObject):
             self.updateProgressBar.emit(self.runwindow.RampProgressBars[i], value, text)
 
     def runSingleTest(self, testName, nextTest = None):
-        print("\n\nRunning Test: {}".format(testName))
         if "analyze" in testName.lower():
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
