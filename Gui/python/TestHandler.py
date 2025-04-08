@@ -610,7 +610,6 @@ class TestHandler(QObject):
                 )
         else:
             for process, firmware in zip(self.run_processes, self.firmware):
-                print(f'firmware in setupQProcess {firmware}')
                 process.start(
                     "CMSITminiDAQ",
                     [
