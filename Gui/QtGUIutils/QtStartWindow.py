@@ -3,7 +3,7 @@ import math
 import subprocess
 import logging
 
-from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QHBoxLayout,
     QWidget,
-    QMessageBox,
+    QMessageBox
 )
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
@@ -248,6 +248,7 @@ class SummaryBox(QWidget):
 
 
 class QtStartWindow(QWidget):
+    loader_signal = pyqtSignal()
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -262,6 +263,7 @@ class QtStartWindow(QWidget):
         self.createApp()
         self.occupied()
         self.loading_counter = 0
+        self.loaderSignal.connect(self.loader)
 
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
@@ -407,12 +409,13 @@ class QtStartWindow(QWidget):
         self.loading_counter = (self.loading_counter + 1) % 3
 
     def openRunWindow_starter(self):
+        self.NextButton.setDisabled(True)
         self.NextButton.setText(". . .")
         self.run_window_thread = LoadingThread(self.openRunWindow, 500)
         self.run_window_thread.finished.connect(
-            lambda: self.NextButton.setText("&Next")
+            lambda:self.NextButton.setText("&Next")
         )
-        self.run_window_thread.timer.timeout.connect(self.loader)
+        self.run_window_thread.timer.timeout.connect(lambda:self.loader_signal.emit())
         self.run_window_thread.timer.start()
         self.run_window_thread.start()
 
