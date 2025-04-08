@@ -250,7 +250,9 @@ class SummaryBox(QWidget):
 
 
 class QtStartWindow(QWidget):
-    loader_signal = pyqtSignal()
+    onThreadFinishSignal = pyqtSignal()
+    loaderSignal = pyqtSignal()
+    openRunWindowSignal = pyqtSignal()
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -264,8 +266,12 @@ class QtStartWindow(QWidget):
         self.createMain()
         self.createApp()
         self.occupied()
+
+        self.closeFlag = False
         self.loading_counter = 0
-        self.loader_signal.connect(self.loader)
+        self.loaderSignal.connect(self.loader)
+        self.onThreadFinishSignal.connect(self.onThreadFinish)
+        self.openRunWindowSignal.connect(self.openRunWindow)
 
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
@@ -410,14 +416,20 @@ class QtStartWindow(QWidget):
         self.NextButton.setText(". " * (self.loading_counter + 1))
         self.loading_counter = (self.loading_counter + 1) % 3
 
+    def onThreadFinish(self):
+        if self.closeFlag:
+            self.close()
+        else:
+            self.NextButton.setText("&Next")
+            self.Nextbutton.setDisabled(False)
+
     def openRunWindow_starter(self):
+        self.NextButton.setDisabled(True)
         self.NextButton.setDisabled(True)
         self.NextButton.setText(". . .")
         self.run_window_thread = LoadingThread(self.openRunWindow, 500)
-        self.run_window_thread.finished.connect(
-            lambda:self.NextButton.setText("&Next")
-        )
-        self.run_window_thread.timer.timeout.connect(lambda:self.loader_signal.emit())
+        self.run_window_thread.finished.connect(self.onThreadFinishSignal)
+        self.run_window_thread.timer.timeout.connect(self.loaderSignal)
         self.run_window_thread.timer.start()
         self.run_window_thread.start()
 
@@ -472,7 +484,7 @@ class QtStartWindow(QWidget):
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription)
-        self.close()
+        self.closeFlag = True
 
     def closeEvent(self, event):
         if self.runFlag:
