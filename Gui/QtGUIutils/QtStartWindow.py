@@ -263,7 +263,7 @@ class QtStartWindow(QWidget):
         self.createApp()
         self.occupied()
         self.loading_counter = 0
-        self.loaderSignal.connect(self.loader)
+        self.loader_signal.connect(self.loader)
 
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
