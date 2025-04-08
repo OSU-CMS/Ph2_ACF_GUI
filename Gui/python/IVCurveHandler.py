@@ -2,7 +2,6 @@ from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
 import numpy as np
 from Gui.python.logging_config import logger
-from Gui.siteSettings import IVcurve_range
 import Gui.siteSettings as site_settings
 
 
@@ -27,8 +26,8 @@ class IVCurveThread(QThread):
         self.startVal = 0
         self.target = 0
         # Making sure IVcurve peak is a negative voltage
-        if IVcurve_range[testName] < 0:
-            self.stopVal = IVcurve_range[testName]
+        if site_settings.IVcurve_range[testName] < 0:
+            self.stopVal = site_settings.IVcurve_range[testName]
             print("IVcurve range: ", self.stopVal)
         else:
             self.stopVal = -80
