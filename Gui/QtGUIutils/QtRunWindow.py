@@ -69,7 +69,7 @@ class QtRunWindow(QWidget):
             self.testHandler.powerSignal.connect(self.onPowerSignal)
 
         self.GroupBoxSeg = [1, 10, 1]
-        self.HorizontalSeg = [3, 5]
+        self.HorizontalSeg = [4, 5]
         self.VerticalSegCol0 = [1, 3]
         self.VerticalSegCol1 = [2, 2]
         self.DisplayH = self.height() * 3.0 / 7
@@ -232,7 +232,6 @@ class QtRunWindow(QWidget):
             self.ControlLayout.addWidget(self.AbortButton, 0, 1, 1, 1)
             self.ControlLayout.addWidget(self.ResetButton, 0, 2, 1, 1)
             self.ControlLayout.addWidget(self.saveCheckBox, 1, 0, 1, 1)
-
         else:
             pass
 
