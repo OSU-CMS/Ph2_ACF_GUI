@@ -69,7 +69,7 @@ class QtRunWindow(QWidget):
             self.testHandler.powerSignal.connect(self.onPowerSignal)
 
         self.GroupBoxSeg = [1, 10, 1]
-        self.HorizontalSeg = [4, 5]
+        self.HorizontalSeg = [3, 5]
         self.VerticalSegCol0 = [1, 3]
         self.VerticalSegCol1 = [2, 2]
         self.DisplayH = self.height() * 3.0 / 7
@@ -212,9 +212,9 @@ class QtRunWindow(QWidget):
         self.ResetButton.clicked.connect(self.resetConfigTest)
         self.RunButton = QPushButton("&Run")
         self.RunButton.setDefault(True)
+        self.RunButton.clicked.connect(lambda: self.RunButton.setDisabled(True))
         self.RunButton.clicked.connect(self.resetConfigTest)
         self.RunButton.clicked.connect(self.initialTest)
-        self.RunButton.clicked.connect(lambda: self.RunButton.setDisabled(True))
         self.AbortButton = QPushButton("&Abort")
         self.AbortButton.clicked.connect(self.abortTest)
         self.saveCheckBox = QCheckBox("&auto-save to Panthera")
