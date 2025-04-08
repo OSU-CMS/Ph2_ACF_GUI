@@ -82,6 +82,7 @@ def iter_except(function, exception):
 def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
     if not Output_Dir:
         test_dir = os.environ.get("DATA_dir") + "/Test_" + str(Test)
+        print(f'test dir {test_dir}')
         if not os.path.isdir(test_dir):
             try:
                 os.makedirs(test_dir)
