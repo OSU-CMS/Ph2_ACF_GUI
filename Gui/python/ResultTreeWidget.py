@@ -10,8 +10,7 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QTreeWidget,
     QTreeWidgetItem,
-    QWidget,
-    QSizePolicy
+    QWidget
 )
 from PyQt5 import QtSvg
 

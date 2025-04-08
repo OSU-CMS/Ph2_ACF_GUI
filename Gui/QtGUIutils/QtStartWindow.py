@@ -3,7 +3,7 @@ import math
 import subprocess
 import logging
 
-from PyQt5.QtCore import QSize, Qt, pyqtSignal
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMessageBox,
 )
-from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 from Gui.python.CustomizedWidget import BeBoardBox
