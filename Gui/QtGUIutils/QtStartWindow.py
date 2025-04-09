@@ -419,7 +419,7 @@ class QtStartWindow(QWidget):
             self.close()
         else:
             self.NextButton.setText("&Next")
-            self.Nextbutton.setDisabled(False)
+            self.NextButton.setDisabled(False)
 
     def openRunWindow_starter(self):
         self.NextButton.setDisabled(True)
