@@ -250,7 +250,9 @@ class SummaryBox(QWidget):
 
 
 class QtStartWindow(QWidget):
-    loader_signal = pyqtSignal()
+    onThreadFinishSignal = pyqtSignal()
+    loaderSignal = pyqtSignal()
+    openRunWindowSignal = pyqtSignal()
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -264,8 +266,12 @@ class QtStartWindow(QWidget):
         self.createMain()
         self.createApp()
         self.occupied()
+
+        self.closeFlag = False
         self.loading_counter = 0
-        self.loader_signal.connect(self.loader)
+        self.loaderSignal.connect(self.loader)
+        self.onThreadFinishSignal.connect(self.onThreadFinish)
+        self.openRunWindowSignal.connect(self.openRunWindow)
 
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
@@ -421,15 +427,8 @@ class QtStartWindow(QWidget):
         self.NextButton.setDisabled(True)
         self.NextButton.setText(". . .")
         self.run_window_thread = LoadingThread(self.openRunWindow, 500)
-<<<<<<< HEAD
-        self.run_window_thread.finished.connect(
-            lambda:self.NextButton.setText("&Next")
-        )
-        self.run_window_thread.timer.timeout.connect(lambda:self.loader_signal.emit())
-=======
         self.run_window_thread.finished.connect(self.onThreadFinishSignal)
         self.run_window_thread.timer.timeout.connect(self.loaderSignal)
->>>>>>> startwindow-fix
         self.run_window_thread.timer.start()
         self.run_window_thread.start()
 
@@ -484,7 +483,7 @@ class QtStartWindow(QWidget):
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription)
-        self.close()
+        self.closeFlag = True
 
     def closeEvent(self, event):
         if self.runFlag:
