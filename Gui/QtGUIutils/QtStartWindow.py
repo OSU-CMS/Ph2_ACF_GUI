@@ -410,14 +410,26 @@ class QtStartWindow(QWidget):
         self.NextButton.setText(". " * (self.loading_counter + 1))
         self.loading_counter = (self.loading_counter + 1) % 3
 
+    def onThreadFinish(self):
+        if self.closeFlag:
+            self.close()
+        else:
+            self.NextButton.setText("&Next")
+            self.NextButton.setDisabled(False)
+
     def openRunWindow_starter(self):
         self.NextButton.setDisabled(True)
         self.NextButton.setText(". . .")
         self.run_window_thread = LoadingThread(self.openRunWindow, 500)
+<<<<<<< HEAD
         self.run_window_thread.finished.connect(
             lambda:self.NextButton.setText("&Next")
         )
         self.run_window_thread.timer.timeout.connect(lambda:self.loader_signal.emit())
+=======
+        self.run_window_thread.finished.connect(self.onThreadFinishSignal)
+        self.run_window_thread.timer.timeout.connect(self.loaderSignal)
+>>>>>>> startwindow-fix
         self.run_window_thread.timer.start()
         self.run_window_thread.start()
 
