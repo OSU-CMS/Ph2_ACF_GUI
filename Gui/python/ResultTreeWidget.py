@@ -12,7 +12,8 @@ from PyQt5.QtWidgets import (
     QTreeWidgetItem,
     QWidget,
 )
-from PyQt5 import QtSvg
+#from PyQt5 import QtSvg
+from PyQt5.Gui import QPixmap
 
 import os
 import subprocess
@@ -21,7 +22,8 @@ import subprocess
 from Gui.GUIutils.guiUtils import isCompositeTest
 from Gui.python.ROOTInterface import (
     GetDirectory,
-    TCanvas2SVG,
+    #TCanvas2SVG,
+    TCanvas2JPG
 )
 from Gui.QtGUIutils.QtTCanvasWidget import QtTCanvasWidget
 from Gui.python.logging_config import logger
@@ -50,6 +52,8 @@ class ResultTreeWidget(QWidget):
         self.count = 0
         self.runtime = {}
         self.mainLayout = QGridLayout()
+        self.DisplayLabel = QLabel()
+        self.DisplayLabel.setScaledContents(True)
         self.setLayout(self.mainLayout)
         self.initializeProgressBar()
         self.setupUi()
@@ -85,6 +89,7 @@ class ResultTreeWidget(QWidget):
         # self.ReferLabel.setScaledContents(True)
         # self.ReferView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
         # self.ReferLabel.setPixmap(self.ReferView)
+
 
         self.ScrollArea = QScrollArea()
         self.ProgressWidget = QWidget()
@@ -127,11 +132,11 @@ class ResultTreeWidget(QWidget):
             self.leftArrow = QPushButton("<-")
             self.leftArrow.clicked.connect(self.leftArrowFunc)
 
-            self.SVGWidget = QtSvg.QSvgWidget()
+#            self.SVGWidget = QtSvg.QSvgWidget()
             minHeight = 400
             ratio = 1.5
-            self.SVGWidget.setMinimumHeight(minHeight)
-            self.SVGWidget.setMinimumWidth(minHeight * ratio)
+#            self.SVGWidget.setMinimumHeight(minHeight)
+#            self.SVGWidget.setMinimumWidth(minHeight * ratio)
 
         self.ScrollArea.setWidget(self.ProgressWidget)
 
@@ -150,7 +155,8 @@ class ResultTreeWidget(QWidget):
             self.mainLayout.addWidget(self.ControlButtom, 0, 5, 1, 1)
             self.mainLayout.addWidget(self.rightArrow, 0, 4, 1, 1)
             self.mainLayout.addWidget(self.leftArrow, 0, 3, 1, 1)
-            self.mainLayout.addWidget(self.SVGWidget, 1, 2, 9, 3)
+#            self.mainLayout.addWidget(self.SVGWidget, 1, 2, 9, 3)
+            self.mainLayout.addWidget(self.DisplayLabel, 1, 2, 9, 3)
 
         if not self.master.expertMode:
             # Initialize timer:
@@ -185,6 +191,9 @@ class ResultTreeWidget(QWidget):
         elif "svg" in str(item.data(0, Qt.UserRole)):
             canvas = item.data(0, Qt.UserRole)
             self.displayResult(canvas)
+        elif "jpg" in str(item.data(0, Qt.UserRole)):
+            canvas = item.data(0, Qt.UserRole)
+            self.displayResult(canvas)    
 
     @QtCore.pyqtSlot(QTreeWidgetItem)
     def onItemExpanded(self, item):
@@ -213,6 +222,7 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, Node.getKeyName())
             QTreeNode.addChild(CurrentNode)
             self.DirectoryVAL(CurrentNode, Node)
+            print("\n\nNode" + Node.getKeyName() + " added")
 
     def updateDisplayList(self, step, resultDict):
         toBeDisplayed = len(self.displayList)
@@ -239,7 +249,7 @@ class ResultTreeWidget(QWidget):
         self.displayIndex = self.displayIndex % len(self.displayList)
         step, displayPlot = self.displayList[self.displayIndex]
         self.TestLabel.setText("Step{}".format(step))
-        self.SVGWidget.load(displayPlot)
+        self.DisplayLabel.load(displayPlot)
 
     def rightArrowFunc(self):
         self.timer.start(3000)
@@ -286,7 +296,7 @@ class ResultTreeWidget(QWidget):
 
     def updateIVResult(self, sourceFolder):
         process2 = subprocess.run(
-            'find {0} -type f -name "*IVCurve_Module_*.svg" '.format(sourceFolder),
+            'find {0} -type f -name "*IVCurve_Module_*.jpg" '.format(sourceFolder),
             shell=True,
             stdout=subprocess.PIPE,
         )
@@ -308,7 +318,7 @@ class ResultTreeWidget(QWidget):
 
     def updateSLDOResult(self, sourceFolder):
         process2 = subprocess.run(
-            'find {0} -type f -name "*.svg" '.format(sourceFolder),
+            'find {0} -type f -name "*.jpg" '.format(sourceFolder),
             shell=True,
             stdout=subprocess.PIPE,
         )
@@ -343,18 +353,24 @@ class ResultTreeWidget(QWidget):
             except OSError:
                 logger.warning("Failed to create " + tmpDir)
 
-        if "svg" in str(canvas):
-            svgFile = str(canvas)
+        if "jpg" in str(canvas):
+            jpgFile = str(canvas)
         else:
-            svgFile = TCanvas2SVG(tmpDir, canvas, name)
-        self.displayingImage = svgFile
+            jpgFile = TCanvas2JPG(tmpDir, canvas, name)
+        self.displayingImage = pngFile
+
+       # if "svg" in str(canvas):
+       #     svgFile = str(canvas)
+       # else:
+       #     svgFile = TCanvas2SVG(tmpDir, canvas, name)
+       # self.displayingImage = svgFile
 
         try:
-            # self.DisplayView = QPixmap(jpgFile).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            # self.DisplayLabel.setPixmap(self.DisplayView)
+            self.DisplayView = QPixmap(jpgFile).scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self.DisplayLabel.setPixmap(self.DisplayView)
             # self.update
-            self.Plot.append(QtTCanvasWidget(self.master, svgFile))
-            logger.info("Displaying " + svgFile)
+            self.Plot.append(QtTCanvasWidget(self.master, jpgFile))
+            logger.info("Displaying " + jpgFile)
         except Exception as e:
-            logger.error("Failed to display " + svgFile + f"due to error {e}")
+            logger.error("Failed to display " + jpgFile + f"due to error {e}")
         pass
