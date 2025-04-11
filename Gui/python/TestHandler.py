@@ -108,6 +108,7 @@ class TestHandler(QObject):
             self.moduleVersion = self.firmware[0].getModuleData()[
                 "version"
             ]  # module types/versions should be identical for all modules
+            self.hdiVersion = self.firmware[0].getModuleData()["hdiVersion"]
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
@@ -694,6 +695,14 @@ class TestHandler(QObject):
     def copyMostRecentRootFile(self, RunNumber, base_dir, output_dir, test):
         files = root_files[test] if test in root_files.keys() else (test,)
         for name in files:
+            name = name.split("_")[0]
+            if "SCurveScan" in name:
+                name = "SCurve"
+            elif "GainScan" in name:
+                name = "Gain"
+            elif "Threshold" in name:
+                name = name.replace("Threshold", "Thr")
+            
             # Construct the search pattern for files
             search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
             logger.debug(f"Looking for {search_pattern}")
