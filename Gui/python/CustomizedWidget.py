@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
 import sys
 import requests
 from lxml import etree
+import re
 
 import Gui.siteSettings as site_settings
 from Gui.python.Firmware import (
@@ -95,10 +96,15 @@ class ModuleBox(QWidget):
         if self.FC7Combo.count() == 1:
             self.FC7Combo.setDisabled(True)
 
-        VersionLabel = QLabel("Version:")
+        VersionLabel = QLabel("CROC_Version:")
         self.VersionCombo = ClickOnlyComboBox()
         self.VersionCombo.addItems(["v1", "v2"])
         VersionLabel.setBuddy(self.VersionCombo)
+
+        HDIVersionLabel = QLabel("HDI_Version:")
+        self.HDIVersionCombo = ClickOnlyComboBox()
+        self.HDIVersionCombo.addItems(["1", "2"])
+        HDIVersionLabel.setBuddy(self.HDIVersionCombo)
 
         self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
@@ -112,6 +118,8 @@ class ModuleBox(QWidget):
         self.mainLayout.addWidget(self.TypeCombo, 0, 9, 1, 1)
         # self.mainLayout.addWidget(VersionLabel, 0, 10, 1, 1)
         self.mainLayout.addWidget(self.VersionCombo, 0, 11, 1, 1)
+        self.mainLayout.addWidget(HDIVersionLabel, 0, 12, 1, 1)
+        self.mainLayout.addWidget(self.HDIVersionCombo, 0, 13, 1, 1)
 
     def setType(self):
         # this method is created to set moudle type under online mode and comboBox is hidden
@@ -146,6 +154,9 @@ class ModuleBox(QWidget):
 
     def getVersion(self):
         return self.VersionCombo.currentText()
+    
+    def getHDIVersion(self):
+        return self.HDIVersionCombo.currentText()
 
     def getVDDD(self, pChipID):
         return self.VDDD[pChipID]
@@ -332,6 +343,18 @@ class ChipBox(QWidget):
         ChipStatus = ChipCheckBox.isChecked()
         return ChipStatus
 
+    def fetchHDIVersionFromDB(self, moduleName):
+        URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+        response = requests.get(URL)
+        html_content = response.text
+        match = re.search(r"Version\s*=\s*(.+)", html_content)
+        if match:
+            hdiversion = match.group(1).strip()
+        else:
+            print("Warning: HDI version not found for module.  Using default value of 1.")
+            hdiversion = "1"
+        return hdiversion
+
     ## This function returns a list of dictionaries.  Each element of the list is a chip dictinary.
     ## For example, chipdata[0]['EFUSE'] is the efuse ID of the first chip
     def fetchChipDataFromDB(self, moduleName):
@@ -512,6 +535,7 @@ class BeBoardBox(QWidget):
         self.ModuleList.append(ModuleRow)
         ModuleRow.TypeCombo.currentTextChanged.connect(self.updateList)
         ModuleRow.VersionCombo.currentTextChanged.connect(self.updateList)
+        ModuleRow.HDIVersionCombo.currentTextChanged.connect(self.updateList)
         ModuleRow.SerialEdit.editingFinished.connect(
             self.createSerialUpdateCallback(ModuleRow)
         )
@@ -609,8 +633,9 @@ class BeBoardBox(QWidget):
         if data:
             if module.TypeCombo.isEnabled():
                 module.TypeCombo.setCurrentText(data["type"])
-            if module.VersionCombo.isEnabled():
-                module.VersionCombo.setCurrentText(data["version"])
+            if module.HDIVersionCombo.isEnabled():
+                module.HDIVersionCombo.setCurrentText(data["HDIversion"])
+                print('returning hdi version {0}'.format(data["HDIversion"]))
 
             self.updateList()
 
@@ -645,7 +670,7 @@ class BeBoardBox(QWidget):
                 )
                 return None
             else:
-                return {"type": moduletype, "version": f"v{moduleversion}"}
+                return {"type": moduletype, "HDIversion": f"{moduleversion}"}
         except requests.exceptions.RequestException as req_err:
             # some sort of connection issue, alert user
             msg = QMessageBox()
@@ -720,6 +745,7 @@ class BeBoardBox(QWidget):
                 moduleName=module.getSerialNumber(),
                 moduleType=module.getType(),
                 moduleVersion=module.getVersion(),
+                hdiVersion=module.getHDIVersion(),
                 FMCPort=module.getFMCPort(),
             )
             Module.setOpticalGroup(
@@ -1124,6 +1150,7 @@ class SimpleBeBoardBox(QWidget):
                 moduleName=module.getSerialNumber(),
                 moduleType=module.getType(module.getSerialNumber()),
                 moduleVersion=module.getVersion(module.getSerialNumber()),
+                #hdiVersion=module.getHDI(module.getSerialNumber()),
                 FMCPort=cable_properties["FMCPort"],
             )
             Module.setOpticalGroup(
