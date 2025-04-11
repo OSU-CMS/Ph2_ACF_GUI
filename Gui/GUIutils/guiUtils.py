@@ -44,7 +44,7 @@ from InnerTrackerTests.MonitoringSettings import (
     MonitoringListA,
     Monitoring_DictB,
 )
-from InnerTrackerTests.RegisterSettings import RegisterSettings
+from InnerTrackerTests.RegisterSettings import RegisterSettings, RegisterSettings_dict
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
@@ -402,16 +402,29 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
             HyBridModule0.SetHyBridName(module.getModuleName())
 
             moduleType = module.getModuleType()
+            hdiVersion = module.getHDIVersion()
+            registerKey = "{0}_HDIv{1}".format(moduleType.replace(" ", "_"), hdiVersion)
+            print('register key is {0}'.format(registerKey))
+            RegisterSettingsList = RegisterSettings_dict[registerKey]
+            print("I see that the hdi version is {0}".format(hdiVersion))
+            L12polarityMap = {
+            "TFPX_Quad_HDI1" : "0b1101",
+            "TFPX_Quad_HDI2" : "0b1001",
+            "TFPX_1x2_HDI1"  : "0b0000",
+            "TFPX_1x2_HDI2"  : "0b0100",
+            }
             RxPolarities = (
                 "1"
                 if "CROC" in moduleType
-                and "Quad" in moduleType
+                and hdiVersion
                 and "TFPX" in moduleType
                 else "0"
                 if "CROC" in moduleType
                 else None
             )
             revPolarity = bool(int(RxPolarities))
+
+            
             FESettings_Dict = (
                 FESettings_DictB if "CROC" in moduleType else FESettings_DictA
             )
@@ -457,9 +470,15 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
 
         BeBoardModule0.AddOGModule(OpticalGroupModule0)
 
-        if revPolarity:
-            RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l12"] = "0b1101"
-            RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l8"] = "0x22"
+        #if revPolarity:
+        #    print("using HDI version {0} gtx polarity settings".format(hdiVersion))
+        #    if hdiVersion == "2":
+        #        RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l12"] = "0b1001"
+        #        RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l8"] = "0x22"
+        #        print("using HDI version 2 gtx polarity settings")
+        #    else:
+        #        RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l12"] = "0b1101"
+        #        RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l8"] = "0x22"
 
         BeBoardModule0.SetURI(BeBoard.getIPAddress())
         BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")
