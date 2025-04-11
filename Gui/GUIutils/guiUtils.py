@@ -410,6 +410,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
             RxPolarities = (
                 "1"
                 if "CROC" in moduleType
+                and "Quad" in moduleType
                 and "TFPX" in moduleType
                 else "0"
                 if "CROC" in moduleType
