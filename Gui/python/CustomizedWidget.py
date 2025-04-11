@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (
 import sys
 import requests
 from lxml import etree
+import re
 
 import Gui.siteSettings as site_settings
 from Gui.python.Firmware import (
