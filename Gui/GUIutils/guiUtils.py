@@ -406,22 +406,16 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
             print('register key is {0}'.format(registerKey))
             RegisterSettingsList = RegisterSettings_dict[registerKey]
             print("I see that the hdi version is {0}".format(hdiVersion))
-            L12polarityMap = {
-            "TFPX_Quad_HDI1" : "0b1101",
-            "TFPX_Quad_HDI2" : "0b1001",
-            "TFPX_1x2_HDI1"  : "0b0000",
-            "TFPX_1x2_HDI2"  : "0b0100",
-            }
+            
             RxPolarities = (
                 "1"
                 if "CROC" in moduleType
-                and hdiVersion
                 and "TFPX" in moduleType
                 else "0"
                 if "CROC" in moduleType
                 else None
             )
-            revPolarity = bool(int(RxPolarities))
+            #revPolarity = bool(int(RxPolarities))
 
             
             FESettings_Dict = (
