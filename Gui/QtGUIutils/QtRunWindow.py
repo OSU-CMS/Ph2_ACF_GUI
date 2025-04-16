@@ -39,7 +39,7 @@ from InnerTrackerTests.TestSequences import CompositeTests
 class QtRunWindow(QWidget):
     resized = pyqtSignal()
 
-    def __init__(self, master, info, firmware):
+    def __init__(self, master, info, firmware, txt_file=""):
         super(QtRunWindow, self).__init__()
         self.master = master
         self.master.globalStop.connect(self.urgentStop)
@@ -61,7 +61,7 @@ class QtRunWindow(QWidget):
         self.RunNumber = "-1"
 
         # Add TestProcedureHandler
-        self.testHandler = TestHandler(self, master, info, firmware)
+        self.testHandler = TestHandler(self, master, info, firmware, txt_file)
         if not site_settings.manual_powersupply_control:
             assert self.master.instruments is not None, logger.error(
                 "Unable to setup instruments"

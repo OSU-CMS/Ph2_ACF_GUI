@@ -73,7 +73,7 @@ class TestHandler(QObject):
     powerSignal = pyqtSignal()
     updateProgressBar = pyqtSignal(QProgressBar, int, str)
 
-    def __init__(self, runwindow, master, info, firmware):
+    def __init__(self, runwindow, master, info, firmware, txt_file=""):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
@@ -134,6 +134,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
+        self.txt = txt_file if txt_file != "" else None
 
         self.autoSave = False
         self.backSignal = False
@@ -266,7 +267,10 @@ class TestHandler(QObject):
 
         for key in self.rd53_file.keys():
             if self.rd53_file[key] is None:
-                self.rd53_file[key] = os.environ.get(
+                if self.txt:
+                    self.rd53_file[key] = self.txt
+                else:
+                    self.rd53_file[key] = self.txt = os.environ.get(
                     "PH2ACF_BASE_DIR"
                 ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(
                     self.boardType, self.moduleVersion
