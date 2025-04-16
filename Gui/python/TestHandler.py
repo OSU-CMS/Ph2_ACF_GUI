@@ -272,6 +272,10 @@ class TestHandler(QObject):
                     self.boardType, self.moduleVersion
                 )
                 print("Getting config file {0}".format(self.rd53_file[key]))
+
+                self.rd53_file[key] = os.environ.get(
+                    "/home/pixels/Workspaces/Steve/march5Ph2_ACF_GUI/Ph2_ACF_GUI/data/TestResults/Test_PixelAlive/Test_ModuleSH0012_PixelAlive_2025-03-06T21:50:05_UTC/CMSIT_RD53_SH0012_0_12_OUT.txt")
+
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
             SetupRD53ConfigfromFile(self.rd53_file, self.output_dir)
