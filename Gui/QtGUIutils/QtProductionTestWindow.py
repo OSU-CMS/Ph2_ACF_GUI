@@ -21,7 +21,7 @@ from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
 # from Gui.python.ResultTreeWidget import *
 # from Gui.python.TestValidator import *
 from Gui.python.IVCurveHandler import IVCurveHandler
-from Gui.python.SLDOScanHandler import SLDOScanHandler
+from Gui.python.SLDOScanHandler import SLDOCurveWorker
 
 class QtProductionTestWindow(QWidget):
     resized = pyqtSignal()
@@ -39,7 +39,7 @@ class QtProductionTestWindow(QWidget):
         self.IVCurveHandler = None
         self.IVCurveResult = None
 
-        self.SLDOScanHandler = None
+        self.SLDOCurveWorker = None
         self.SLDOScanResult = None
 
         self.mainLayout = QGridLayout()  # 10*10 segmentation
@@ -174,13 +174,13 @@ class QtProductionTestWindow(QWidget):
             self, xlabel="Voltage (V)", ylabel="I (A)", sorted=False
         )
         self.MainTabs.addTab(self.SLDOScanResult, "SLDO scan")
-        self.SLDOScanHandler = SLDOScanHandler(self, self.lvpowersupply)
-        self.SLDOScanHandler.finished.connect(self.SLDOScanFinished)
-        self.SLDOScanHandler.SLDOScan()
+        self.SLDOCurveWorker = SLDOCurveWorker(self, self.lvpowersupply)
+        self.SLDOCurveWorker.finished.connect(self.SLDOScanFinished)
+        self.SLDOCurveWorker.SLDOScan()
 
     def abortSLDOScan(self):
-        if self.SLDOScanHandler:
-            self.SLDOScanHandler.stop()
+        if self.SLDOCurveWorker:
+            self.SLDOCurveWorker.stop()
         self.SLDOScanButtom.setDisabled(False)
         self.SLDOScanAbortButtom.setDisabled(True)
 
