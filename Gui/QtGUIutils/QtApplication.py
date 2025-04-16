@@ -53,7 +53,7 @@ from Gui.python.logging_config import logger
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
     errorMessageBoxSignal = pyqtSignal(str)
-    openRunWindowSignal = pyqtSignal(object, object)
+    openRunWindowSignal = pyqtSignal(object, object, str)
 
     def __init__(self, dimension):
         super(QtApplication, self).__init__()
@@ -105,9 +105,9 @@ class QtApplication(QWidget):
 
         self.openRunWindowSignal.connect(self.openRunWindowGUI)
 
-    def openRunWindowGUI(self, info, firmwareDescription):
+    def openRunWindowGUI(self, info, firmwareDescription, txt_file):
         self.RunNewTest = QtRunWindow(
-            self, info, firmwareDescription
+            self, info, firmwareDescription, txt_file
         )
 
     def setLoginUI(self):

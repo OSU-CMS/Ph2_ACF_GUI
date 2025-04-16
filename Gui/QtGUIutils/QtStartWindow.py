@@ -13,7 +13,8 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QHBoxLayout,
     QWidget,
-    QMessageBox
+    QMessageBox,
+    QLineEdit
 )
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
@@ -267,6 +268,7 @@ class QtStartWindow(QWidget):
         self.createApp()
         self.occupied()
 
+        self.txt_file = ""
         self.closeFlag = False
         self.loading_counter = 0
         self.loaderSignal.connect(self.loader)
@@ -306,8 +308,8 @@ class QtStartWindow(QWidget):
 
         self.BeBoardWidget = BeBoardBox(self.master, self.firmware)  # FLAG
 
-        self.mainLayout.addWidget(self.TestBox, 0, 0)
-        self.mainLayout.addWidget(self.BeBoardWidget, 1, 0)
+        self.mainLayout.addWidget(self.TestBox, 0, 0, 1, 2)
+        self.mainLayout.addWidget(self.BeBoardWidget, 1, 0, 1, 2)
 
     def createMain(self):
         self.firmwareCheckBox = QGroupBox()
@@ -323,7 +325,15 @@ class QtStartWindow(QWidget):
         self.BeBoardWidget.updateList()  ############FIXME:  This may not work for multiple modules at a time.
         self.firmwareCheckBox.setLayout(firmwarePar)
 
-        self.mainLayout.addWidget(self.firmwareCheckBox, 2, 0)
+        self.txt_box = QGroupBox()
+        txt_layout = QHBoxLayout()
+        self.txt_entry = QLineEdit()
+        self.txt_entry.setPlaceholderText("Prebuilt .txt URL")
+        txt_layout.addWidget(self.txt_entry)
+        self.txt_box.setLayout(txt_layout)
+
+        self.mainLayout.addWidget(self.txt_box, 2, 0, 1, 1)
+        self.mainLayout.addWidget(self.firmwareCheckBox, 2, 1, 1, 1)
 
     def destroyMain(self):
         self.firmwareCheckBox.deleteLater()
@@ -379,11 +389,8 @@ class QtStartWindow(QWidget):
 
         self.LogoGroupBox.setLayout(self.LogoLayout)
 
-        # self.mainLayout.addWidget(self.LoginGroupBox, 0, 0)
-        # self.mainLayout.addWidget(self.LogoGroupBox, 1, 0)
-
-        self.mainLayout.addWidget(self.AppOption, 3, 0)
-        self.mainLayout.addWidget(self.LogoGroupBox, 4, 0)
+        self.mainLayout.addWidget(self.AppOption, 3, 0, 1, 2)
+        self.mainLayout.addWidget(self.LogoGroupBox, 4, 0, 1, 2)
 
     def closeWindow(self):
         self.close()
@@ -440,6 +447,20 @@ class QtStartWindow(QWidget):
         # if not os.access("{0}/test".format(os.environ.get('PH2ACF_BASE_DIR')),os.W_OK):
         # 	QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
         # 	return
+        
+        text = self.txt_entry.text().replace(" ","")
+        if text != "":
+            try:
+                index = text.find("panthera_storage/results/")
+                subdir = "" if index==-1 else text[index+25:]
+                self.txt_file = os.environ.get(
+                    "PH2ACF_BASE_DIR"
+                ) + "/settings/RD53Files/" + subdir
+                os.system(f"wget -O {self.txt_file} {text}")
+            except OSError as oserr:
+                self.logger.error(oserr)
+                self.master.errorMessageBoxSignal.emit("Failed to get .txt file from Panthera.")
+                return
 
         # NOTE This is not the best way to do this, we should be emitting a signal to change
         # the module type but ModuleBox is not publically accessible so we have to go through BeBoardWidget
@@ -483,7 +504,7 @@ class QtStartWindow(QWidget):
 
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
-        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription)
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, self.txt_file)
         self.closeFlag = True
 
     def closeEvent(self, event):
