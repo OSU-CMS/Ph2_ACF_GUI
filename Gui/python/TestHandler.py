@@ -414,7 +414,7 @@ class TestHandler(QObject):
             else:
                 step = "{}:{}".format(self.testIndexTracker, self.currentTest)
                 self.updateResult.emit((step, self.figurelist))
-            for i, firmware in enumerate(self.firmware):
+            for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
             return
 
@@ -499,7 +499,7 @@ class TestHandler(QObject):
                             for module in self.instruments._module_dict.values()
                         ]
                         self.instruments.hv_off(
-                            execute_each_step=lambda: self.execute_each_step(starting_voltages)
+                            execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
                         )
                         self.instruments.hv_on_module(
                             module=mod_dict[number],
@@ -849,7 +849,6 @@ created by Ph2_ACF is empty."
                     self.currentTime = self.starttime
 
             except Exception as err:
-                traceback.print_exc()
                 logger.info("Error occures while parsing running time, {0}".format(err))
             if "@@@ End of CMSIT miniDAQ @@@" in textStr:
                 self.ProgressingMode = "Summary"
