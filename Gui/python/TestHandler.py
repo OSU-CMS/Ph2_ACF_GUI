@@ -134,7 +134,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
-        self.txt_files = txt_files if txt_files != {} else None
+        self.txt_files = txt_files if txt_files != {} else {}
 
         self.autoSave = False
         self.backSignal = False
