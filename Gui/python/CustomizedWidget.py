@@ -162,7 +162,7 @@ class ChipBox(QWidget):
         self.serialNumber = serialNumber
         self.chipType = pChipType
         logger.debug("the chip type passed to the chipbox is {0}".format(self.chipType))
-        self.mainLayout = QHBoxLayout()
+        self.mainLayout = QVBoxLayout()
         self.ChipList = []  # chip id list for a single module
         # self.initList()
         self.createList()
@@ -202,6 +202,7 @@ class ChipBox(QWidget):
         else:
             self.ChipGroupBoxDict.clear()
             for chipid in self.ChipList:
+                print(f'chipid {chipid}')
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
 
         self.makeChipGroupBox(self.ChipGroupBoxDict)
@@ -225,6 +226,9 @@ class ChipBox(QWidget):
         self.ChipVDDDLabel = QLabel("VDDD:")
         self.ChipVDDDEdit = QLineEdit()
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
+        self.ChipTxtEdit = QLineEdit()
+        self.ChipTxtEdit.setPlaceholderText("Prebuilt chip .txt file")
+
 
         if not self.ChipVDDDEdit.text():
             logger.debug("no VDDD text")
@@ -239,16 +243,17 @@ class ChipBox(QWidget):
         self.ChipEfuseIDEdit.setText(EfuseID)
         self.ChipEfuseIDEdit.setObjectName("EfuseIDEdit_{0}".format(pChipID))
 
-        self.VChipLayout = QGridLayout()
-        self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
-        self.VChipLayout.addWidget(self.ChipVDDDLabel, 1, 0, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
-        self.VChipLayout.addWidget(self.ChipEfuseIDLabel, 3, 0, 1, 1)
-        self.VChipLayout.addWidget(self.ChipEfuseIDEdit, 3, 1, 1, 1)
+        self.HChipLayout = QGridLayout()
+        self.HChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 1)
+        self.HChipLayout.addWidget(self.ChipTxtEdit, 1, 0, 1, 7)
+        self.HChipLayout.addWidget(self.ChipVDDDLabel, 0, 1, 1, 1)
+        self.HChipLayout.addWidget(self.ChipVDDDEdit, 0, 2, 1, 1)
+        self.HChipLayout.addWidget(self.ChipVDDALabel, 0, 3, 1, 1)
+        self.HChipLayout.addWidget(self.ChipVDDAEdit, 0, 4, 1, 1)
+        self.HChipLayout.addWidget(self.ChipEfuseIDLabel, 0, 5, 1, 1)
+        self.HChipLayout.addWidget(self.ChipEfuseIDEdit, 0, 6, 1, 1)
 
-        return self.VChipLayout
+        return self.HChipLayout
 
     def makeChipBox(self, pChipID):
         self.ChipID = pChipID
@@ -258,6 +263,9 @@ class ChipBox(QWidget):
         self.ChipVDDDLabel = QLabel("VDDD:")
         self.ChipVDDDEdit = QLineEdit()
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
+        self.ChipTxtEdit = QLineEdit()
+        self.ChipTxtEdit.setPlaceholderText("Prebuilt chip .txt file")
+
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit()
         self.ChipVDDAEdit.setObjectName("VDDAEdit_{0}".format(pChipID))
@@ -272,42 +280,22 @@ class ChipBox(QWidget):
             self.ChipVDDDEdit.setText("16")
             self.ChipVDDAEdit.setText("16")
 
-        self.VChipLayout = QGridLayout()
-        self.VChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 2)
-        self.VChipLayout.addWidget(self.ChipVDDDLabel, 1, 0, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDDEdit, 1, 1, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDALabel, 2, 0, 1, 1)
-        self.VChipLayout.addWidget(self.ChipVDDAEdit, 2, 1, 1, 1)
-        self.VChipLayout.addWidget(self.ChipEfuseIDLabel, 3, 0, 1, 1)
-        self.VChipLayout.addWidget(self.ChipEfuseIDEdit, 3, 1, 1, 1)
+        self.HChipLayout = QGridLayout()
+        self.HChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 1)
+        self.HChipLayout.addWidget(self.ChipTxtEdit, 1, 0, 1, 7)
+        self.HChipLayout.addWidget(self.ChipVDDDLabel, 0, 1, 1, 1)
+        self.HChipLayout.addWidget(self.ChipVDDDEdit, 0, 2, 1, 1)
+        self.HChipLayout.addWidget(self.ChipVDDALabel, 0, 3, 1, 1)
+        self.HChipLayout.addWidget(self.ChipVDDAEdit, 0, 4, 1, 1)
+        self.HChipLayout.addWidget(self.ChipEfuseIDLabel, 0, 5, 1, 1)
+        self.HChipLayout.addWidget(self.ChipEfuseIDEdit, 0, 6, 1, 1)
 
-        return self.VChipLayout
-
-    # def createChipBox(self, pChipID):
-    #   self.ChipID = pChipID
-    #   self.ChipGroupBox = QGroupBox()
-    #   self.ChipLabel = QCheckBox('Chip ID: {0}'.format(self.ChipID))
-    #   self.ChipLabel.setChecked(True)
-    #   self.ChipVDDDLabel = QLabel('VDDD:')
-    #   self.ChipVDDDEdit = QLineEdit()
-    #   self.ChipVDDDEdit.setText('8')
-    #   self.ChipVDDALabel = QLabel('VDDA:')
-    #   self.ChipVDDAEdit = QLineEdit()
-    #   self.ChipVDDAEdit.setText('8')
-    #   #self.ChipVDDAEdit.textChanged.connect(self.chipchanged)
-    #   #self.ChipVDDDEdit.textChanged.connect(self.on_ChipChanged(pChipID,self.ChipVDDDEdit.text()))
-
-    #   self.VChipLayout = QGridLayout()
-    #   self.VChipLayout.addWidget(self.ChipLabel,0,0,1,2)
-    #   self.VChipLayout.addWidget(self.ChipVDDDLabel,1,0,1,1)
-    #   self.VChipLayout.addWidget(self.ChipVDDDEdit,1,1,1,1)
-    #   self.VChipLayout.addWidget(self.ChipVDDALabel,2,0,1,1)
-    #   self.VChipLayout.addWidget(self.ChipVDDAEdit,2,1,1,1)
-    # self.mainLayout.addLayout(self.VChipLayout)
+        return self.HChipLayout
 
     def makeChipGroupBox(self, pChipGroupBoxDict):
         for key in pChipGroupBoxDict.keys():
             self.mainLayout.addLayout(pChipGroupBoxDict[key])
+            self.mainLayout.addStretch(1)
 
     def getVDDA(self, pChipID):
         VDDAthing = self.findChild(QLineEdit, "VDDAEdit_{0}".format(pChipID))
