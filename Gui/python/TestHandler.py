@@ -481,7 +481,7 @@ class TestHandler(QObject):
                             for module in self.instruments._module_dict.values()
                         ]
                         self.instruments.hv_off(
-                            execute_each_step=lambda: self.execute_each_step(starting_voltages)
+                            execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
                         )
                         self.instruments.hv_on_module(
                             module=mod_dict[number],
