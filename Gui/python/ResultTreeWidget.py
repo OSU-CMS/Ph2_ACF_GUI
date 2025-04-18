@@ -33,7 +33,6 @@ class ResultTreeWidget(QWidget):
         super(ResultTreeWidget, self).__init__()
         self.master = master
         self.firmware = firmware
-        self.firmware.append("weenus")
         self.DisplayW = width
         self.DisplayH = height
         self.FileList = []
