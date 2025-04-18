@@ -73,7 +73,7 @@ class TestHandler(QObject):
     powerSignal = pyqtSignal()
     updateProgressBar = pyqtSignal(QProgressBar, int, str)
 
-    def __init__(self, runwindow, master, info, firmware, txt_file=""):
+    def __init__(self, runwindow, master, info, firmware, txt_files = {}):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
@@ -134,7 +134,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
-        self.txt = txt_file if txt_file != "" else None
+        self.txt_files = txt_files if txt_files != {} else None
 
         self.autoSave = False
         self.backSignal = False
@@ -267,18 +267,16 @@ class TestHandler(QObject):
 
         for key in self.rd53_file.keys():
             if self.rd53_file[key] is None:
-                if self.txt:
-                    self.rd53_file[key] = self.txt
+                txt_file_key = (key.split("_", 1)[0], "_".join(key.split("_")[2:]))
+                if txt_file_key in self.txt_files.keys():
+                    self.rd53_file[key] = self.txt_files[txt_file_key]
                 else:
-                    self.rd53_file[key] = self.txt = os.environ.get(
+                    self.rd53_file[key] = os.environ.get(
                     "PH2ACF_BASE_DIR"
                 ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(
                     self.boardType, self.moduleVersion
                 )
                 print("Getting config file {0}".format(self.rd53_file[key]))
-
-                self.rd53_file[key] = os.environ.get(
-                    "/home/pixels/Workspaces/Steve/march5Ph2_ACF_GUI/Ph2_ACF_GUI/data/TestResults/Test_PixelAlive/Test_ModuleSH0012_PixelAlive_2025-03-06T21:50:05_UTC/CMSIT_RD53_SH0012_0_12_OUT.txt")
 
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
