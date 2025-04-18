@@ -2,6 +2,7 @@ import os
 import math
 import subprocess
 import logging
+import requests
 
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage
@@ -12,9 +13,11 @@ from PyQt5.QtWidgets import (
     QLabel,
     QPushButton,
     QHBoxLayout,
+    QVBoxLayout,
     QWidget,
     QMessageBox,
-    QLineEdit
+    QLineEdit,
+    QRadioButton
 )
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
@@ -268,7 +271,6 @@ class QtStartWindow(QWidget):
         self.createApp()
         self.occupied()
 
-        self.txt_file = ""
         self.closeFlag = False
         self.loading_counter = 0
         self.loaderSignal.connect(self.loader)
@@ -307,7 +309,6 @@ class QtStartWindow(QWidget):
             beboard.removeAllOpticalGroups()
 
         self.BeBoardWidget = BeBoardBox(self.master, self.firmware)  # FLAG
-
         self.mainLayout.addWidget(self.TestBox, 0, 0, 1, 2)
         self.mainLayout.addWidget(self.BeBoardWidget, 1, 0, 1, 2)
 
@@ -326,14 +327,67 @@ class QtStartWindow(QWidget):
         self.firmwareCheckBox.setLayout(firmwarePar)
 
         self.txt_box = QGroupBox()
-        txt_layout = QHBoxLayout()
+        main_txt_layout = QVBoxLayout()  # vertical: text field on top, radio buttons below
+
+        # Text input
         self.txt_entry = QLineEdit()
-        self.txt_entry.setPlaceholderText("Prebuilt .txt URL")
-        txt_layout.addWidget(self.txt_entry)
-        self.txt_box.setLayout(txt_layout)
+        self.txt_entry.setPlaceholderText("Panthera .txt's (panthera.fit.edu/panthera_storage/results/ModuleID**/SequenceID***/ResultID****/)")
+        self.txt_entry.returnPressed.connect(lambda:self.change_chip_txts(self.txt_entry.text().replace(" ", "")))
+
+        main_txt_layout.addWidget(self.txt_entry)
+
+        # Radio buttons: OUT and IN side by side
+        radio_layout = QHBoxLayout()
+        self.out_radio = QRadioButton("OUT")
+        self.in_radio = QRadioButton("IN")
+        self.out_radio.setLayoutDirection(Qt.RightToLeft)
+        self.in_radio.setLayoutDirection(Qt.RightToLeft)
+        self.out_radio.setChecked(True)  # OUT selected by default
+
+        radio_layout.addWidget(self.out_radio, alignment=Qt.AlignTop)
+        radio_layout.addWidget(self.in_radio, alignment=Qt.AlignTop)
+        radio_layout.addStretch()
+
+        main_txt_layout.addLayout(radio_layout)
+        self.txt_box.setLayout(main_txt_layout)
 
         self.mainLayout.addWidget(self.txt_box, 2, 0, 1, 1)
         self.mainLayout.addWidget(self.firmwareCheckBox, 2, 1, 1, 1)
+
+        for module in self.BeBoardWidget.getModules():
+            module.SerialEdit.editingFinished.connect(self.txt_entry.clear)
+
+    def change_chip_txts(self, url):
+        if url != "":
+            links = {}
+            erroredFlag=False
+            if url[-1]!='/': url = url+'/'
+            outOrIn = 'OUT' if self.out_radio.isChecked() else 'IN'
+            for moduleBox in self.BeBoardWidget.getModules():
+                moduleName = moduleBox.getSerialNumber()
+                moduleId = moduleBox.getFMCPort()
+                for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                    pantheraFile = url+"CMSIT_RD53_{0}_{1}_{2}_{3}.txt".format(
+                            moduleName, moduleId, chipid, outOrIn
+                        )
+                    #Check if the Panthera file actually exists.
+                    if erroredFlag==False:
+                        try:
+                            response = requests.head(pantheraFile, allow_redirects=True)  # or .get() if you need content
+                            if response.status_code == 404:
+                                print("Panthera file doesn't exist: "+pantheraFile)
+                                self.master.errorMessageBoxSignal.emit("One or more of the Panthera chip txt pages don't exist!")
+                                erroredFlag=True
+                        except requests.exceptions.RequestException as e:
+                            logger.error("Error checking the page: ", e)
+
+                    links[moduleName, chipid] = pantheraFile
+
+        #Do this at the end so that there's no autofill unless all files pass the check above.
+        for moduleBox in self.BeBoardWidget.getModules():
+            moduleName = moduleBox.getSerialNumber()
+            for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setText(links[moduleName, chipid])
 
     def destroyMain(self):
         self.firmwareCheckBox.deleteLater()
@@ -447,19 +501,32 @@ class QtStartWindow(QWidget):
         # 	QMessageBox.warning(None, "Error",'write access to Ph2_ACF is {0}'.format(os.access(os.environ.get('PH2ACF_BASE_DIR'),os.W_OK)), QMessageBox.Ok)
         # 	return
         
-        text = self.txt_entry.text().replace(" ","")
-        if text != "":
-            try:
-                index = text.find("panthera_storage/results/")
-                subdir = "" if index==-1 else text[index+25:]
-                self.txt_file = os.environ.get(
-                    "PH2ACF_BASE_DIR"
-                ) + "/settings/RD53Files/" + subdir
-                os.system(f"wget -O {self.txt_file} {text}")
-            except OSError as oserr:
-                self.logger.error(oserr)
-                self.master.errorMessageBoxSignal.emit("Failed to get .txt file from Panthera.")
-                return
+        files = {} #Maybe this block could be combined with change_chip_txts.
+        for moduleBox in self.BeBoardWidget.getModules():
+            moduleName = moduleBox.getSerialNumber()
+            for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                text = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().text().replace(" ", "")
+                if text != "":
+                    if 'panthera.fit.edu' in text:
+                        IDsIndex = text.find("panthera_storage/results/")
+                        destination = os.environ.get("PH2ACF_BASE_DIR") + "/settings/RD53Files/" + text[IDsIndex+25:]
+                        try:
+                            os.system(f"wget -O {destination} {text}")
+                            files[moduleName, chipid] = destination
+                        except:
+                            self.master.errorMessageBoxSignal.emit("Could not get file from Panthera!")
+                            return
+                    elif os.path.exists(text):
+                        files[moduleName, chipid] = text
+                    else:
+                        self.master.errorMessageBoxSignal.emit("The chip txt file doesn't exist!")
+
+        
+        for moduleBox in self.BeBoardWidget.getModules():
+            moduleName = moduleBox.getSerialNumber()
+            for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                if (moduleName, chipid) in files.keys():
+                    self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setText(files[moduleName, chipid])
 
         # NOTE This is not the best way to do this, we should be emitting a signal to change
         # the module type but ModuleBox is not publically accessible so we have to go through BeBoardWidget
@@ -503,7 +570,9 @@ class QtStartWindow(QWidget):
 
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
-        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, self.txt_file)
+
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, files)
+
         self.closeFlag = True
 
     def closeEvent(self, event):

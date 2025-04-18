@@ -436,7 +436,7 @@ class SimplifiedMainWidget(QWidget):
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
-        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, None)
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         #self.config_and_test_Signal.emit()
 
     def abortTest(self):
