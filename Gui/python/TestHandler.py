@@ -1116,8 +1116,7 @@ created by Ph2_ACF is empty."
             ):  # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
-                if self.autoSave:
-                    self.runwindow.upload_to_Panthera_starter()
+                
                 if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
 
@@ -1135,16 +1134,25 @@ created by Ph2_ACF is empty."
                                     "module": module,
                                 }
 
-                                "This works"
+                                #print("This works")
+                                #self.felis.set_result(
+                                #    self.BBanalysis_root_files,
+                                #    module_data["module"].getModuleName(),
+                                #    f"{index:02d}_{self.currentTest}",
+                                #    Test_to_Ph2ACF_Map[self.currentTest],
+                                #)
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
-                                    f"{index:02d}_{self.currentTest}",
-                                    Test_to_Ph2ACF_Map[self.currentTest],
+                                    f"{index:02d}_PixelAlive",
+                                    "crosstalk",
+                                    "This is just a test of uploading feature"
                                 )
                                 self.figurelist[module.getModuleName()] = (
                                     self.collect_plots(module.getModuleName())
                                 )
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
 
         elif isSingleTest(self.info):
             EnableReRun = True
