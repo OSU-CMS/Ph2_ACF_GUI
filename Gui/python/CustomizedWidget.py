@@ -912,6 +912,9 @@ class SimpleModuleBox(QWidget):
     def setID(self, laneId):
         self.CableIDEdit.setText(str(laneId))
 
+    def setHDIversion(self, hdiVersion: str):
+        self.HDIversion = hdiVersion
+
     def getID(self):
         return self.CableIDEdit.text()
 
@@ -927,6 +930,7 @@ class SimpleModuleBox(QWidget):
             self.Type = "TFPX CROC Quad"
         return self.Type
 
+
     def setVersion(self, versionStr):
         self.version = versionStr
 
@@ -941,6 +945,7 @@ class SimpleModuleBox(QWidget):
         else:
             self.version = "v1"
         return self.version
+
 
     @QtCore.pyqtSlot()
     def on_TypeChanged(self):
@@ -1033,6 +1038,7 @@ class SimpleBeBoardBox(QWidget):
             module.typechanged.connect(self.on_TypeChanged)
             module.textchanged.connect(self.on_ModuleFilled)
             module.setID(index)
+            
             self.ListLayout.addWidget(module, index, 0, 1, 1)
         logger.debug(f"{__name__} : After connecting module signals")
         NewButton = QPushButton("add")
@@ -1101,6 +1107,58 @@ class SimpleBeBoardBox(QWidget):
     def getModules(self):
         return self.FilledModuleList
 
+    def fetchModuleTypeDB(self, moduleName):
+        if not self.master.purdue_connected:
+            return None
+        try:
+            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+
+            response = requests.get(URL)
+
+            moduletype, moduleversion = None, None
+            res = str(response.content).split("\\n")
+            for i in res:
+                if i.startswith("<br>Part = "):
+                    moduletype = i.split("<br>Part = ")[1]
+                elif i.startswith("<br>Version = "):
+                    moduleversion = i.split("<br>Version = ")[1]
+
+            if moduletype.startswith("croc_1x2"):
+                moduletype = "TFPX CROC 1x2"
+            elif moduletype.startswith("croc_2x2"):
+                moduletype = "TFPX CROC Quad"
+
+            if moduletype == "" or moduleversion == "":
+                msg = QMessageBox()
+                msg.information(
+                    None,
+                    "Error",
+                    f"Could not find {moduleName} in the database.",
+                    QMessageBox.Ok,
+                )
+                return None
+            else:
+                return {"type": moduletype, "HDIversion": f"{moduleversion}"}
+        except requests.exceptions.RequestException as req_err:
+            # some sort of connection issue, alert user
+            msg = QMessageBox()
+            msg.information(
+                None,
+                "Error",
+                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                QMessageBox.Ok,
+            )
+
+            self.master.purdue_connected = False
+            return None
+        except Exception as e:
+            # other issue
+            logger.error(
+                f"Some error occurred while querying the Purdue DB for module type. \nError: {repr(e)}"
+            )
+            self.master.purdue_connected = False
+            return None
+
     def getFirmwareDescription(self):
         module_types = []
         for module in self.ModuleList:
@@ -1144,13 +1202,12 @@ class SimpleBeBoardBox(QWidget):
                         None,
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",
                     )
-
             # Create a QtModule object based on the input data
             Module = QtModule(
                 moduleName=module.getSerialNumber(),
-                moduleType=module.getType(module.getSerialNumber()),
+                moduleType=self.fetchModuleTypeDB(module.getSerialNumber())["type"],
                 moduleVersion=module.getVersion(module.getSerialNumber()),
-                #hdiVersion=module.getHDI(module.getSerialNumber()),
+                hdiVersion=self.fetchModuleTypeDB(module.getSerialNumber())["HDIversion"],
                 FMCPort=cable_properties["FMCPort"],
             )
             Module.setOpticalGroup(
@@ -1171,6 +1228,7 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setVDDA(chipData[chipID]["VDDA"])
                     Module.getChips()[chipID].setVDDD(chipData[chipID]["VDDD"])
                     Module.getChips()[chipID].setEfuseID(chipData[chipID]["EFUSE"])
+                    
             else:
                 print(
                     "Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values."

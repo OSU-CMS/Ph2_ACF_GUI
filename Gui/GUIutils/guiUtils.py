@@ -380,9 +380,6 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
 
     boardtype = "RD53A"
     RegisterSettingsList = RegisterSettings  # TODO: Investigate whether this actually matters (ie deep vs shallow copy)
-    revPolarity = (
-        False  # Flag to determine whether or not to reverse the Aurora lane polarity
-    )
 
     # Get Hardware discription and a list of the modules
     HWDescription0 = HWDescription()
