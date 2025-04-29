@@ -1104,19 +1104,11 @@ created by Ph2_ACF is empty."
                                     "module": module,
                                 }
 
-                                #print("This works")
-                                #self.felis.set_result(
-                                #    self.BBanalysis_root_files,
-                                #    module_data["module"].getModuleName(),
-                                #    f"{index:02d}_{self.currentTest}",
-                                #    Test_to_Ph2ACF_Map[self.currentTest],
-                                #)
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
                                     f"{index:02d}_PixelAlive",
                                     "crosstalk",
-                                    "This is just a test of uploading feature"
                                 )
                                 self.figurelist[module.getModuleName()] = (
                                     self.collect_plots(module.getModuleName())
