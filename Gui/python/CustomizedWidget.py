@@ -930,20 +930,6 @@ class SimpleModuleBox(QWidget):
             self.Type = "TFPX CROC Quad"
         return self.Type
 
-    #def getType(self, SerialNumber: str):
-        #data = self.fetchModuleTypeDB(SerialNumber)
-        #if data:
-        #    self.Type = data["type"]
-    #    return self.Type
-            #if module.HDIVersionCombo.isEnabled():
-            #    module.HDIVersionCombo.setCurrentText(data["HDIversion"])
-            #    print('returning hdi version {0}'.format(data["HDIversion"]))
-    #def getHDI(self, SerialNumber: str):
-    #    data = self.fetchModuleTypeDB(SerialNumber)
-    #    if data:
-    #        self.HDI = data["HDIversion"]
-    #    return self.HDI
-
 
     def setVersion(self, versionStr):
         self.version = versionStr
@@ -1216,8 +1202,6 @@ class SimpleBeBoardBox(QWidget):
                         None,
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",
                     )
-            print('module hdi is {0}'.format(self.fetchModuleTypeDB(module.getSerialNumber())["HDIversion"]))
-            print('module type is {0}'.format(self.fetchModuleTypeDB(module.getSerialNumber())["type"]))
             # Create a QtModule object based on the input data
             Module = QtModule(
                 moduleName=module.getSerialNumber(),
