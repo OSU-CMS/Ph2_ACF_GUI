@@ -112,6 +112,9 @@ class QtModule:
     def getHDIVersion(self):
         return self.__hdiVersion
 
+    def setHDIVersion(self, hdiVersion: str):
+        self.__hdiVersion = hdiVersion
+        
     def setFMCPort(self, FMCPort: str):
         self.__FMCPort = FMCPort
 
