@@ -1,4 +1,3 @@
-import traceback
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, QObject, QProcess, Qt
 from PyQt5.QtWidgets import (
