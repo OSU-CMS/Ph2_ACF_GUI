@@ -23,7 +23,6 @@ from PyQt5.QtWidgets import (
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 from Gui.python.CustomizedWidget import BeBoardBox
-from Gui.GUIutils.FirmwareUtil import FEPowerUpVD
 from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
     FC7List,
@@ -350,7 +349,8 @@ class QtStartWindow(QWidget):
                 while i < len(url) and url[i].isdigit():
                     i += 1
                 url = url[:i+1]
-                if url[-1]!='/': url = url+'/'
+                if url[-1]!='/':
+                    url = url+'/'
                 self.txt_entry.setText(url)
                 pantheraURL=True
 
@@ -371,7 +371,7 @@ class QtStartWindow(QWidget):
                         response = requests.head(pantheraFile, allow_redirects=True)  # or .get() if you need content
                         if response.status_code == 404:
                             print("Panthera file doesn't exist: "+pantheraFile)
-                            if erroredFlag==False:
+                            if not erroredFlag:
                                 self.master.errorMessageBoxSignal.emit("One or more of the Panthera chip txt pages don't exist!")
                                 erroredFlag=True
                             self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setPlaceholderText("Failed to get chip .txt url!")
@@ -523,8 +523,9 @@ class QtStartWindow(QWidget):
                         try:
                             os.system(f"wget -O {destination} {text}")
                             files[moduleName, chipid] = destination
-                        except:
-                            self.master.errorMessageBoxSignal.emit("Could not get file from Panthera!")
+                        except Exception as e:
+                            logger.error(e)
+                            self.master.errorMessageBoxSignal.emit(f"Could not Chip{chipid} file from Panthera!")
                             return
                     elif os.path.exists(text):
                         files[moduleName, chipid] = text
