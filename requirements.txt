@@ -1,4 +1,5 @@
 PyQt5
+PyQtWebEngine
 pyqt-darktheme
 mysql-connector-python==8.0.21
 numpy
