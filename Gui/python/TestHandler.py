@@ -109,6 +109,7 @@ class TestHandler(QObject):
             self.moduleVersion = self.firmware[0].getModuleData()[
                 "version"
             ]  # module types/versions should be identical for all modules
+            self.hdiVersion = self.firmware[0].getModuleData()["hdiVersion"]
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
@@ -388,7 +389,11 @@ class TestHandler(QObject):
             self.testIndexTracker = 0
             return
         testName = runTestList[self.testIndexTracker]
-        self.runSingleTest(testName)
+        if self.testIndexTracker + 1 < len(runTestList):  # Check if there is a next test
+            nextTest = runTestList[self.testIndexTracker + 1]
+        else:
+            nextTest = None  
+        self.runSingleTest(testName, nextTest)
 
     def ramp_progress_bar(self, max):
         voltages = [
@@ -402,7 +407,7 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
-    def runSingleTest(self, testName):
+    def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
@@ -445,6 +450,7 @@ class TestHandler(QObject):
             self.IVCurveHandler = IVCurveHandler(
                 self.currentTest,
                 self.instruments,
+                nextTest,
                 execute_each_step=self.ramp_progress_bar,
             )
             self.IVCurveHandler.finished.connect(self.IVCurveFinished)
@@ -727,6 +733,14 @@ class TestHandler(QObject):
     def copyMostRecentRootFile(self, RunNumber, base_dir, output_dir, test):
         files = root_files[test] if test in root_files.keys() else (test,)
         for name in files:
+            name = name.split("_")[0]
+            if "SCurveScan" in name:
+                name = "SCurve"
+            elif "GainScan" in name:
+                name = "Gain"
+            elif "Threshold" in name:
+                name = name.replace("Threshold", "Thr")
+            
             # Construct the search pattern for files
             search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
             logger.debug(f"Looking for {search_pattern}")
@@ -1102,8 +1116,7 @@ created by Ph2_ACF is empty."
             ):  # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
-                if self.autoSave:
-                    self.runwindow.upload_to_Panthera_starter()
+                
                 if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
 
@@ -1121,16 +1134,17 @@ created by Ph2_ACF is empty."
                                     "module": module,
                                 }
 
-                                "This works"
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
-                                    f"{index:02d}_{self.currentTest}",
-                                    Test_to_Ph2ACF_Map[self.currentTest],
+                                    f"{index:02d}_PixelAlive",
+                                    "crosstalk",
                                 )
                                 self.figurelist[module.getModuleName()] = (
                                     self.collect_plots(module.getModuleName())
                                 )
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
 
         elif isSingleTest(self.info):
             EnableReRun = True
@@ -1273,21 +1287,6 @@ created by Ph2_ACF is empty."
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            default_hv_voltage = site_settings.icicle_instrument_setup[
-                "instrument_dict"
-            ]["hv"]["default_voltage"]
-            # assumes only 1 HV titled 'hv' in instruments.json
-
-            self.master.instruments.hv_on(
-                voltage=default_hv_voltage,
-                delay=0.3,
-                step_size=3,
-                measure=False,
-                execute_each_step=lambda: self.ramp_progress_bar(
-                    [default_hv_voltage] * len(self.instruments._module_dict.values())
-                ),
-            )
-
             if self.testIndexTracker == len(CompositeTests[self.info]):
                 self.powerSignal.emit()
                 EnableReRun = True

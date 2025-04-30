@@ -66,6 +66,7 @@ class QtModule:
         moduleName="",
         moduleType="",
         moduleVersion="",
+        hdiVersion="",
         FMCPort="",
         enabled="1",
         Fc7=None,
@@ -73,6 +74,7 @@ class QtModule:
         self.__moduleName = moduleName
         self.__moduleType = moduleType
         self.__moduleVersion = moduleVersion
+        self.__hdiVersion = hdiVersion
         self.__FMCPort = FMCPort
         self.__chipDict = {}  # {ChipID : QtChip()}, deviates from pattern to make usage easier, laneID is not commonly used
         self.__enabled = enabled
@@ -106,7 +108,13 @@ class QtModule:
 
     def getModuleVersion(self):
         return self.__moduleVersion
+    
+    def getHDIVersion(self):
+        return self.__hdiVersion
 
+    def setHDIVersion(self, hdiVersion: str):
+        self.__hdiVersion = hdiVersion
+        
     def setFMCPort(self, FMCPort: str):
         self.__FMCPort = FMCPort
 
@@ -157,7 +165,7 @@ class QtModule:
         chips_str = "\n".join(
             [f"      {chipID}: {str(chip)}" for chipID, chip in self.__chipDict.items()]
         )
-        return f"  ModuleName: {self.__moduleName}, ModuleType: {self.__moduleType} {self.__moduleVersion}, FMCPort: {self.__FMCPort}\n    Chips:\n{chips_str}"
+        return f"  ModuleName: {self.__moduleName}, ModuleType: {self.__moduleType} {self.__moduleVersion}, HDIVERsion: {self.__hdiVersion}, FMCPort: {self.__FMCPort}\n    Chips:\n{chips_str}"
 
 
 class QtOpticalGroup:
@@ -303,6 +311,7 @@ class QtBeBoard:
                 return {
                     "type": module.getModuleType(),
                     "version": module.getModuleVersion(),
+                    "hdiVersion": module.getHDIVersion(),
                 }
 
     ##########################################################
