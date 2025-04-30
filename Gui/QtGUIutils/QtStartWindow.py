@@ -46,7 +46,6 @@ logger = logging.getLogger(__name__)
 # from Gui.python.Firmware import *
 # from Gui.GUIutils.DBConnection import *
 
-# from Gui.QtGUIutils.QtProductionTestWindow import *
 
 
 class SummaryBox(QWidget):
