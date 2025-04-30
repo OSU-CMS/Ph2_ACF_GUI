@@ -44,7 +44,7 @@ from InnerTrackerTests.MonitoringSettings import (
     MonitoringListA,
     Monitoring_DictB,
 )
-from InnerTrackerTests.RegisterSettings import RegisterSettings, RegisterSettings_dict
+from InnerTrackerTests.RegisterSettings import RegisterSettings
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
