@@ -351,6 +351,7 @@ class QtStartWindow(QWidget):
                     i += 1
                 url = url[:i+1]
                 if url[-1]!='/': url = url+'/'
+                self.txt_entry.setText(url)
                 pantheraURL=True
 
             outOrIn = 'OUT' if self.out_radio.isChecked() else 'IN'
@@ -366,20 +367,26 @@ class QtStartWindow(QWidget):
                         pantheraFile = url
                     
                     #Check if the Panthera file actually exists.
-                    print(erroredFlag)
-                    if erroredFlag==False:
-                        try:
-                            response = requests.head(pantheraFile, allow_redirects=True)  # or .get() if you need content
-                            if response.status_code == 404:
-                                print("Panthera file doesn't exist: "+pantheraFile)
+                    try:
+                        response = requests.head(pantheraFile, allow_redirects=True)  # or .get() if you need content
+                        if response.status_code == 404:
+                            print("Panthera file doesn't exist: "+pantheraFile)
+                            if erroredFlag==False:
                                 self.master.errorMessageBoxSignal.emit("One or more of the Panthera chip txt pages don't exist!")
                                 erroredFlag=True
-                                pantheraFile = ""
-                        except requests.exceptions.RequestException as e:
-                            logger.error("Error checking the page: ", e)
+                            self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setPlaceholderText("Failed to get chip .txt url!")
+                            pantheraFile = ""
+                        else:
+                            self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setPlaceholderText("Prebuilt chip .txt file")
+                    except requests.exceptions.RequestException as e:
+                        logger.error("Error checking the page: ", e)
 
                     links[moduleName, chipid] = pantheraFile
-
+        else:
+            for moduleBox in self.BeBoardWidget.getModules():
+                moduleName = moduleBox.getSerialNumber()
+                for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                    self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setPlaceholderText("Prebuilt chip .txt file")
         
         #Do this at the end so that there's no autofill unless all files pass the check above.
         for moduleBox in self.BeBoardWidget.getModules():
@@ -522,7 +529,7 @@ class QtStartWindow(QWidget):
                     elif os.path.exists(text):
                         files[moduleName, chipid] = text
                     else:
-                        self.master.errorMessageBoxSignal.emit("The chip txt file doesn't exist!")
+                        self.master.errorMessageBoxSignal.emit(f"Chip{chipid}'s .txt file doesn't exist!")
 
         
         for moduleBox in self.BeBoardWidget.getModules():
