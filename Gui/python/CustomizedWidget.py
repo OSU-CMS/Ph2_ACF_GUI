@@ -10,7 +10,6 @@ from PyQt5.QtWidgets import (
     QLineEdit,
     QMessageBox,
     QPushButton,
-    QHBoxLayout,
     QWidget,
     QVBoxLayout,
     QScrollArea,
