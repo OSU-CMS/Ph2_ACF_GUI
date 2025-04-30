@@ -44,7 +44,7 @@ from InnerTrackerTests.MonitoringSettings import (
     MonitoringListA,
     Monitoring_DictB,
 )
-from InnerTrackerTests.RegisterSettings import RegisterSettings
+from InnerTrackerTests.RegisterSettings import RegisterSettings, RegisterSettings_dict
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
@@ -401,7 +401,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
             hdiVersion = module.getHDIVersion()
             registerKey = "{0}_HDIv{1}".format(moduleType.replace(" ", "_"), hdiVersion)
             print('register key is {0}'.format(registerKey))
-            RegisterSettingsList = RegisterSettings[registerKey]
+            RegisterSettingsList = RegisterSettings_dict[registerKey]
             print("I see that the hdi version is {0}".format(hdiVersion))
             
             RxPolarities = (
