@@ -401,7 +401,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
             hdiVersion = module.getHDIVersion()
             registerKey = "{0}_HDIv{1}".format(moduleType.replace(" ", "_"), hdiVersion)
             print('register key is {0}'.format(registerKey))
-            RegisterSettingsList = RegisterSettings_dict[registerKey]
+            RegisterSettingsList = RegisterSettings[registerKey]
             print("I see that the hdi version is {0}".format(hdiVersion))
             
             RxPolarities = (
