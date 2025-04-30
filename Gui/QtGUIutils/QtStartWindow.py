@@ -3,6 +3,7 @@ import math
 import subprocess
 import logging
 import requests
+import re
 
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage
@@ -65,7 +66,6 @@ class SummaryBox(QWidget):
         self.mainLayout = QGridLayout()
 
         self.initResult()
-        self.createBody()
         if icicle_instrument_setup is not None:
             self.measureFwPar()
         # self.checkFwPar()
@@ -76,25 +76,9 @@ class SummaryBox(QWidget):
             self.verboseResult[i] = {}
             self.chipSwitches[i] = True
 
-    def createBody(self):
-        FEIDLabel = QLabel("Module: {}".format(self.module.getSerialNumber()))
-        FEIDLabel.setStyleSheet("font-weight:bold")
-        PowerModeLabel = QLabel()
-        PowerModeLabel.setText("FE Power Mode:")
-        self.PowerModeCombo = QComboBox()
-        self.PowerModeCombo.addItems(FEPowerUpVD.keys())
-        # self.PowerModeCombo.currentTextChanged.connect(self.checkFwPar)
-        # self.ChipBoxWidget = ChipBox(self.module.getType())
-
-        self.CheckLabel = QLabel()
-
-        self.mainLayout.addWidget(PowerModeLabel, 1, 0, 1, 1)
-        self.mainLayout.addWidget(self.PowerModeCombo, 1, 1, 1, 1)
-        self.mainLayout.addWidget(self.CheckLabel, 2, 0, 1, 1)
-
     def measureFwPar(self):
         for index, (key, value) in enumerate(self.verboseResult.items()):
-            value["Power-up Mode"] = self.PowerModeCombo.currentText()
+            value["Power-up Mode"] = "SLDO" #self.PowerModeCombo.currentText()
             # Fixme
             measureList = [
                 "Set Bias Voltage (V)",
@@ -228,9 +212,6 @@ class SummaryBox(QWidget):
             logging.debug("Made it to turn on LV")
             return True
         except Exception as err:
-            # self.result = False
-            # self.CheckLabel.setText("No measurement")
-            # self.CheckLabel.setStyleSheet("color:red")
             print(err)
             return False
 
@@ -332,7 +313,7 @@ class QtStartWindow(QWidget):
         # Text input
         self.txt_entry = QLineEdit()
         self.txt_entry.setPlaceholderText("Panthera .txt's (panthera.fit.edu/panthera_storage/results/ModuleID**/SequenceID***/ResultID****/)")
-        self.txt_entry.returnPressed.connect(lambda:self.change_chip_txts(self.txt_entry.text().replace(" ", "")))
+        self.txt_entry.editingFinished.connect(lambda:self.change_chip_txts(self.txt_entry.text().replace(" ", "")))
 
         main_txt_layout.addWidget(self.txt_entry)
 
@@ -358,19 +339,34 @@ class QtStartWindow(QWidget):
             module.SerialEdit.editingFinished.connect(self.txt_entry.clear)
 
     def change_chip_txts(self, url):
+        links = {}
         if url != "":
-            links = {}
             erroredFlag=False
-            if url[-1]!='/': url = url+'/'
+
+            pantheraURL=False
+            idx = url.find("ResultID")
+            if "panthera.fit.edu" in url and idx != -1:
+                i = idx+len("ResultID")
+                while i < len(url) and url[i].isdigit():
+                    i += 1
+                url = url[:i+1]
+                if url[-1]!='/': url = url+'/'
+                pantheraURL=True
+
             outOrIn = 'OUT' if self.out_radio.isChecked() else 'IN'
             for moduleBox in self.BeBoardWidget.getModules():
                 moduleName = moduleBox.getSerialNumber()
                 moduleId = moduleBox.getFMCPort()
                 for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
-                    pantheraFile = url+"CMSIT_RD53_{0}_{1}_{2}_{3}.txt".format(
-                            moduleName, moduleId, chipid, outOrIn
-                        )
+                    if pantheraURL:
+                        pantheraFile = re.sub(r'_+', '_', url+"CMSIT_RD53_{0}_{1}_0_{2}_{3}.txt".format(
+                                moduleName, moduleId, chipid, outOrIn
+                            )) #The re function replaces any instance of multiple underscores with just one.
+                    else:
+                        pantheraFile = url
+                    
                     #Check if the Panthera file actually exists.
+                    print(erroredFlag)
                     if erroredFlag==False:
                         try:
                             response = requests.head(pantheraFile, allow_redirects=True)  # or .get() if you need content
@@ -378,16 +374,22 @@ class QtStartWindow(QWidget):
                                 print("Panthera file doesn't exist: "+pantheraFile)
                                 self.master.errorMessageBoxSignal.emit("One or more of the Panthera chip txt pages don't exist!")
                                 erroredFlag=True
+                                pantheraFile = ""
                         except requests.exceptions.RequestException as e:
                             logger.error("Error checking the page: ", e)
 
                     links[moduleName, chipid] = pantheraFile
 
+        
         #Do this at the end so that there's no autofill unless all files pass the check above.
         for moduleBox in self.BeBoardWidget.getModules():
             moduleName = moduleBox.getSerialNumber()
             for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
-                self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setText(links[moduleName, chipid])
+                chiptxt = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget()
+                if links!={}:
+                    chiptxt.setText(links[moduleName, chipid])
+                else:
+                    chiptxt.setText("")
 
     def destroyMain(self):
         self.firmwareCheckBox.deleteLater()
