@@ -36,7 +36,6 @@ from Gui.QtGUIutils.QtFwCheckWindow import QtFwCheckWindow
 from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
 from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
 from Gui.QtGUIutils.QtStartWindow import QtStartWindow
-from Gui.QtGUIutils.QtProductionTestWindow import QtProductionTestWindow
 from Gui.QtGUIutils.QtModuleReviewWindow import QtModuleReviewWindow
 from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
@@ -798,8 +797,6 @@ class QtApplication(QWidget):
         self.NewProductionTestButton.setDisabled(
             True
         )  # FIXME This is to temporarily disable the test until LV can be added.
-        self.NewProductionTestButton.clicked.connect(self.openNewProductionTest)
-        # NewProductionTestLabel = QLabel("Open production test")
 
         self.ReviewButton = QPushButton("&Review")
         self.ReviewButton.setMinimumWidth(kMinimumWidth)
@@ -1170,15 +1167,6 @@ class QtApplication(QWidget):
 
         if response == QMessageBox.No:
             return
-
-    def openNewProductionTest(self):
-        self.ProdTestPage = QtProductionTestWindow(
-            self, instrumentCluster=self.instruments
-        )
-        self.ProdTestPage.close.connect(self.releaseProdTestButton)
-        self.NewProductionTestButton.setDisabled(True)
-        self.LogoutButton.setDisabled(True)
-        self.ExitButton.setDisabled(True)
 
     def openNewTest(self):
         FwModule = [
