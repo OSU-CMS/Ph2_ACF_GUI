@@ -2,7 +2,7 @@ from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
 import numpy as np
 from Gui.python.logging_config import logger
-from Gui.siteSettings import IVcurve_range
+import Gui.siteSettings as site_settings
 
 
 class IVCurveThread(QThread):
@@ -26,8 +26,8 @@ class IVCurveThread(QThread):
         self.startVal = 0
         self.target = 0
         # Making sure IVcurve peak is a negative voltage
-        if IVcurve_range[testName] < 0:
-            self.stopVal = IVcurve_range[testName]
+        if site_settings.IVcurve_range[testName] < 0:
+            self.stopVal = site_settings.IVcurve_range[testName]
             print("IVcurve range: ", self.stopVal)
         else:
             self.stopVal = -80
@@ -98,10 +98,11 @@ class IVCurveHandler(QObject):
     progressSignal = pyqtSignal(str, float)
     startSignal = pyqtSignal()
 
-    def __init__(self, testName, instrument_cluster, execute_each_step):
+    def __init__(self, testName, instrument_cluster, nextTest, execute_each_step):
         super(IVCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.execute_each_step = execute_each_step
+        self.nextTest = nextTest
 
         assert self.instruments is not None, logger.debug(
             "Error instantiating instrument cluster"
@@ -136,9 +137,15 @@ class IVCurveHandler(QObject):
             np.abs(getattr(module["hv"], "voltage"))
             for module in self.instruments._module_dict.values()
         ]
-        self.instruments.hv_off(
-            execute_each_step=lambda: self.execute_each_step(starting_voltages)
-        )
+        ## Will Set voltage to default unless SLDO is the next test
+        if (self.nextTest is not None) and ("SLDO" not in self.nextTest): 
+            self.instruments.hv_set(voltage = site_settings.icicle_instrument_setup[
+                    "instrument_dict"]["hv"]["default_voltage"], delay = 0.3, step_size = 10
+                )
+        else:    
+            self.instruments.hv_off(
+                execute_each_step=lambda: self.execute_each_step(starting_voltages)
+            )    
         self.finished.emit(test, measure)
 
     def stop(self):

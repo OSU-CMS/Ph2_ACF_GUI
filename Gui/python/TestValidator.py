@@ -74,7 +74,7 @@ def ResultGrader(
             ROOT_file_path = "{0}/Run{1}_{2}.root".format(
                 outputDir, runNumber, root_file_name
             )
-            if root_file_name in (
+            if testName in (
                 "PixelAlive_highcharge_xtalk",
                 "PixelAlive_coupled_xtalk",
                 "PixelAlive_uncoupled_xtalk",

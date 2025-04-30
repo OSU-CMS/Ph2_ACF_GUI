@@ -44,21 +44,21 @@ class SLDOCurveWorker(QThread):
         self.PIN_MAPPINGS = {
             "DEFAULT": AdcBoard.DEFAULT_PIN_MAP,
             "DOUBLE": {
-                # 0: 'VDDA_ROC2',
+                0: 'VDDA_ROC1',
                 # 1: 'VDDA_ROC3',
                 # 2: 'VDDD_ROC2',
                 # 3: 'VDDD_ROC3',
-                # 4: 'TP7C', #VOFS OUT
-                # 5: 'TP7D', #VOFS OUT
+                4: 'VDDD_ROC1',
+                 #5: 'TP7D', #VOFS OUT
                 # 6: None,
                 # 7: 'TP8', #VOFS IN
                 # 8: None,
                 # 9: 'TP10', #VIN
                 # 10: None,
                 11: "VDDA_ROC0",
-                12: "VDDA_ROC1",
+                #12: "VDDA_ROC1",
                 13: "VDDD_ROC0",
-                14: "VDDD_ROC1",
+                #14: "VDDD_ROC1",
                 # 15: 'TP7A', #VOFS OUT
                 # 16: 'TP7B', #VOFS OUT
             },
