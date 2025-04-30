@@ -295,7 +295,7 @@ class ChipBox(QWidget):
     def makeChipGroupBox(self, pChipGroupBoxDict):
         for key in pChipGroupBoxDict.keys():
             self.mainLayout.addLayout(pChipGroupBoxDict[key])
-            self.mainLayout.addStretch(5)
+            self.mainLayout.addStretch(1)
 
     def getVDDA(self, pChipID):
         VDDAthing = self.findChild(QLineEdit, "VDDAEdit_{0}".format(pChipID))
