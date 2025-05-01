@@ -13,9 +13,8 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QHBoxLayout,
     QWidget,
-    QMessageBox,
+    QMessageBox
 )
-from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 from Gui.python.CustomizedWidget import BeBoardBox
@@ -249,9 +248,9 @@ class SummaryBox(QWidget):
 
 
 class QtStartWindow(QWidget):
+    onThreadFinishSignal = pyqtSignal()
+    loaderSignal = pyqtSignal()
     openRunWindowSignal = pyqtSignal()
-    errorMessageBoxSignal = pyqtSignal(str)
-
     def __init__(self, master, firmware):
         super(QtStartWindow, self).__init__()
         self.master = master
@@ -265,22 +264,12 @@ class QtStartWindow(QWidget):
         self.createMain()
         self.createApp()
         self.occupied()
+
+        self.closeFlag = False
         self.loading_counter = 0
-        self.openRunWindowSignal.connect(self.openRunWindowGUI)
-
-        self.errorMessageBoxSignal.connect(
-            lambda message: QMessageBox.information(
-                None,
-                "Error",
-                message,
-                QMessageBox.Ok,
-            )
-        )
-
-    def openRunWindowGUI(self):
-        self.master.RunNewTest = QtRunWindow(
-            self.master, self.info, self.firmwareDescription
-        )
+        self.loaderSignal.connect(self.loader)
+        self.onThreadFinishSignal.connect(self.onThreadFinish)
+        self.openRunWindowSignal.connect(self.openRunWindow)
 
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
@@ -425,13 +414,19 @@ class QtStartWindow(QWidget):
         self.NextButton.setText(". " * (self.loading_counter + 1))
         self.loading_counter = (self.loading_counter + 1) % 3
 
+    def onThreadFinish(self):
+        if self.closeFlag:
+            self.close()
+        else:
+            self.NextButton.setText("&Next")
+            self.NextButton.setDisabled(False)
+
     def openRunWindow_starter(self):
+        self.NextButton.setDisabled(True)
         self.NextButton.setText(". . .")
         self.run_window_thread = LoadingThread(self.openRunWindow, 500)
-        self.run_window_thread.finished.connect(
-            lambda: self.NextButton.setText("&Next")
-        )
-        self.run_window_thread.timer.timeout.connect(self.loader)
+        self.run_window_thread.finished.connect(self.onThreadFinishSignal)
+        self.run_window_thread.timer.timeout.connect(self.loaderSignal)
         self.run_window_thread.timer.start()
         self.run_window_thread.start()
 
@@ -485,8 +480,8 @@ class QtStartWindow(QWidget):
 
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
-        self.openRunWindowSignal.emit()
-        self.close()
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription)
+        self.closeFlag = True
 
     def closeEvent(self, event):
         if self.runFlag:

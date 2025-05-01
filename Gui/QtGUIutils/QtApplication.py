@@ -28,6 +28,7 @@ from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
 
 import Gui.siteSettings as site_settings
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
+from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.QtGUIutils.LaudaApp import LaudaWidget
 from Gui.QtGUIutils.PeltierCoolingApp import Peltier
 from Gui.QtGUIutils.TessieCoolingApp import Tessie
@@ -51,6 +52,7 @@ from Gui.python.logging_config import logger
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
     errorMessageBoxSignal = pyqtSignal(str)
+    openRunWindowSignal = pyqtSignal(object, object)
 
     def __init__(self, dimension):
         super(QtApplication, self).__init__()
@@ -98,6 +100,13 @@ class QtApplication(QWidget):
                 message,
                 QMessageBox.Ok,
             )
+        )
+
+        self.openRunWindowSignal.connect(self.openRunWindowGUI)
+
+    def openRunWindowGUI(self, info, firmwareDescription):
+        self.RunNewTest = QtRunWindow(
+            self, info, firmwareDescription
         )
 
     def setLoginUI(self):
