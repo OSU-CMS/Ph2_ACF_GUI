@@ -48,24 +48,3 @@ class Tessie(QWidget):
         web_view.page().runJavaScript(js)
 
 
-# Define your CSS as a JavaScript string
-css = """
-body {
-    background-color: #222;
-    color: #e0e0e0;
-}
-"""
-
-# Convert CSS into a <style> tag and inject it using JavaScript
-js = f"""
-var style = document.createElement('style');
-style.type = 'text/css';
-style.innerText = `{css}`;
-document.head.appendChild(style);
-"""
-
-# Run the JS after the page loads
-def inject_css():
-    webview.page().runJavaScript(js)
-
-webview.loadFinished.connect(inject_css)
