@@ -1,4 +1,6 @@
 import webbrowser
+from PyQt5 import QtWebEngine
+QtWebEngine.QtWebEngine.initialize()
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl
@@ -20,9 +22,6 @@ class Tessie(QWidget):
 
         layout.addWidget(open_button)
         layout.addWidget(web_view)
-
-        if dimension:
-            self.setFixedSize(*dimension)
 
     def launch_tessie_webpage(self):
         webbrowser.open(tessie_url)
