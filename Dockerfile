@@ -22,7 +22,8 @@ ARG USER_GID=1000
 
 # Create the group and user with the specified UID/GID
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
-    useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser
+    useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser &&\
+    usermod -aG dialout cmsTkUser
 
 
 #Setting the default user in the container to be root
