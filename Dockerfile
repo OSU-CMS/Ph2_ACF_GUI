@@ -39,7 +39,7 @@ ADD . /home/cmsTkUser/Ph2_ACF_GUI/
 RUN ls -lrt
 
 #Installing all needed packages in the container.
-RUN dnf -y install libxkbcommon-x11-devel mesa-libGL-devel xcb-util-wm xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm
+RUN dnf -y install libxkbcommon-x11-devel mesa-libGL-devel xcb-util-wm xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm mesa-dri-drivers mesa-libGL
 RUN dnf -y install dbus-x11 gcc gcc-c++ kernel-devel make usbutils udev
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirements.txt
