@@ -160,27 +160,33 @@ class TestHandler(QObject):
 
         self.figurelist = {}
 
-        self.run_processes = [QProcess(self) for i in range(len(self.firmware))]
-        for i in range(len(self.run_processes)):
-            self.run_processes[i].readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput(i)
+        self.run_processes = [QProcess() for _ in self.firmware]
+        for i, process in enumerate(self.run_processes):
+            process.readyReadStandardOutput.connect(
+                lambda j=i: self.on_readyReadStandardOutput(j)
             )
-            self.run_processes[i].finished.connect(lambda: self.on_finish(i))
+            process.finished.connect(lambda exitCode, exitStatus, j=i: self.finished_run_process(exitCode, exitStatus, j))
+
         self.readingOutput = False
         self.ProgressingMode = "None"
         self.ProgressValue = 0
         self.IVProgressValue = 0
         self.SLDOProgressValue = 0
         self.runtimeList = []
-        self.info_processes = [QProcess(self) for i in range(len(self.firmware))]
-        for i in range(len(self.info_processes)):
-            self.info_processes[i].readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput_info(i)
+        self.starttime = None
+
+        self.info_processes = [QProcess() for _ in self.firmware]
+        for i, process in enumerate(self.info_processes):
+            process.readyReadStandardOutput.connect(
+                lambda j=i: self.on_readyReadStandardOutput_info(j)
             )
 
         ##---Adding firmware setting-----
-        self.fw_process = QProcess(self)
-        self.fw_process.readyReadStandardOutput.connect(self.on_readyReadStandardOutput)
+        self.fw_processes =[QProcess() for _ in self.firmware]
+        for i, process in enumerate(self.fw_processes):
+            process.readyReadStandardOutput.connect(
+                lambda j=i: self.on_readyReadStandardOutput_info(j)
+            )
 
         self.haltSignal.connect(self.runwindow.finish)
         self.outputString.connect(self.runwindow.updateConsoleInfo)
@@ -197,6 +203,10 @@ class TestHandler(QObject):
         self.finished_tests = []
 
         self.initializeRD53Dict()
+
+    def finished_run_process(self, _, exitStatus, i):
+        if exitStatus == QProcess.NormalExit:
+            self.on_finish(i)
 
     def initializeRD53Dict(self):
         self.rd53_file = {}
@@ -384,11 +394,11 @@ class TestHandler(QObject):
             for module in self.instruments._module_dict.values()
         ]
 
-        for i in range(len(self.runwindow.RampProgressBars)):
+        for i, bar in enumerate(self.runwindow.RampProgressBars):
             text = f"{np.abs(voltages[i])} V"
             value = 100 * np.abs(voltages[i] / max[i]) if max[i] != 0 else 0
 
-            self.updateProgressBar.emit(self.runwindow.RampProgressBars[i], value, text)
+            self.updateProgressBar.emit(bar, value, text)
 
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
@@ -403,7 +413,8 @@ class TestHandler(QObject):
             else:
                 step = "{}:{}".format(self.testIndexTracker, self.currentTest)
                 self.updateResult.emit((step, self.figurelist))
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(100)
+            for i in range(len(self.firmware)):
+                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
             return
 
         print("Executing Single Step test...")
@@ -482,12 +493,21 @@ class TestHandler(QObject):
 
                 if testName == "SCurveScan_2100_FWD":
                     if hv_on_module:
-                        self.instruments.hv_off()
+                        starting_voltages = [
+                            np.abs(getattr(module["hv"], "voltage"))
+                            for module in self.instruments._module_dict.values()
+                        ]
+                        self.instruments.hv_off(
+                            execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
+                        )
                         self.instruments.hv_on_module(
                             module=mod_dict[number],
                             voltage=site_settings.forward_bias_voltage,
                             delay=0.3,
                             step_size=10,
+                            execute_each_step=lambda: self.ramp_progress_bar(
+                            [site_settings.forward_bias_voltage] * len(self.instruments._module_dict.values())
+                            )
                         )
                     else:
                         self.instruments.hv_on_module(
@@ -495,6 +515,9 @@ class TestHandler(QObject):
                             voltage=site_settings.forward_bias_voltage,
                             delay=0.3,
                             step_size=10,
+                            execute_each_step=lambda: self.ramp_progress_bar(
+                            [site_settings.forward_bias_voltage] * len(self.instruments._module_dict.values())
+                            )
                         )
                     testName = "SCurveScan_2100"
                     hv_on_module = True
@@ -504,6 +527,9 @@ class TestHandler(QObject):
                         voltage=default_hv_voltage,
                         delay=0.3,
                         step_size=10,
+                        execute_each_step=lambda: self.ramp_progress_bar(
+                            [default_hv_voltage] * len(self.instruments._module_dict.values())
+                            )
                     )
 
         self.tempHistory = [0.0] * self.numChips
@@ -549,20 +575,20 @@ class TestHandler(QObject):
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
         if self.currentTest == "CommunicationTest":
-            for i in range(len(self.firmware)):
-                self.info_processes[i].start(
+            for process, firmware in zip(self.info_processes, self.firmware):
+                process.start(
                     "echo",
                     [
-                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{self.firmware[i].getBoardName()}.xml  -p"
+                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
                     ],
                 )
         else:
-            for i in range(len(self.firmware)):
-                self.info_processes[i].start(
+            for process, firmware in zip(self.info_processes, self.firmware):
+                process.start(
                     "echo",
                     [
                         "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -c  {1}".format(
-                            self.firmware[i].getBoardName(),
+                            firmware.getBoardName(),
                             Test_to_Ph2ACF_Map[self.currentTest],
                         )
                     ],
@@ -575,24 +601,25 @@ class TestHandler(QObject):
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
-        self.fw_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-        self.fw_process.setWorkingDirectory(
-            os.environ.get("PH2ACF_BASE_DIR") + "/test/"
-        )
+        for process in self.fw_processes:
+            process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+            process.setWorkingDirectory(
+                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+            )
 
         if self.currentTest == "CommunicationTest":
-            for i in range(len(self.firmware)):
-                self.run_processes[i].start(
+            for process, firmware in zip(self.run_processes, self.firmware):
+                process.start(
                     "CMSITminiDAQ",
-                    ["-f", f"CMSIT_{self.firmware[i].getBoardName()}.xml", "-p"],
+                    ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
                 )
         else:
-            for i in range(len(self.firmware)):
-                self.run_processes[i].start(
+            for process, firmware in zip(self.run_processes, self.firmware):
+                process.start(
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{self.firmware[i].getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
@@ -622,7 +649,11 @@ class TestHandler(QObject):
         self.haltSignal.emit(self.halt)
         self.starttime = None
 
-    def validateTest(self):  # ATOC = At time of commit
+    def validateTest(self):
+        for process in self.run_processes:
+            if process.state() == QProcess.Running:
+                return
+
         self.finished_tests.append(self.currentTest)
         try:
             passed = []
@@ -661,7 +692,7 @@ class TestHandler(QObject):
             self.updateValidation.emit(results)
             self.updateFinishedTests.emit(
                 self.finished_tests
-            )  # Obsolete ATOC: "return all(passed)"
+            )  # Obsolete at time of commit: "return all(passed)"
         except Exception as err:
             logger.error(err)
 
@@ -715,7 +746,7 @@ class TestHandler(QObject):
                 raise Exception(
                     f"Failed to copy root file to output directory. \
 Module disconnection detected because Ph2_ACF didn't \
-create {search_pattern}."
+create {search_pattern}"
                 )
 
             # Sort files by modification time (newest first)
@@ -779,11 +810,7 @@ created by Ph2_ACF is empty."
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
         self.outputfile.write(alltext)
-        # print(alltext)
-        # outputfile.close()
         textline = alltext.split("\n")
-        # fileLines = open(self.outputFile,"r")
-        # textline = fileLines.readlines()
 
         for textStr in textline:
             import re
@@ -813,7 +840,7 @@ created by Ph2_ACF is empty."
                 if self.starttime is not None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
-                    self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText(
+                    self.runwindow.ResultWidget.runtimes[processIndex][self.testIndexTracker].setText(
                         "{0} s".format(round(runningTime, 1))
                     )
                 else:
@@ -834,9 +861,7 @@ created by Ph2_ACF is empty."
                         )
                         if self.ProgressValue == 100:
                             self.ProgressingMode = "Summary"
-                        self.runwindow.ResultWidget.ProgressBar[
-                            self.testIndexTracker
-                        ].setValue(self.ProgressValue)
+                        self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(self.ProgressValue)
                         ##Added because of Ph2_ACF bug:
 
                     except Exception as e:
@@ -844,9 +869,7 @@ created by Ph2_ACF is empty."
                         pass
 
                 if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBar[
-                        self.testIndexTracker
-                    ].setValue(100)
+                    self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(100)
                 elif "TEMPSENS_" in textStr:
                     try:
                         output = textStr.split("[")
@@ -932,9 +955,7 @@ created by Ph2_ACF is empty."
 
             elif self.ProgressingMode == "Summary":
                 if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBar[
-                        self.testIndexTracker
-                    ].setValue(100)
+                    self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(100)
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
@@ -1061,7 +1082,6 @@ created by Ph2_ACF is empty."
         self.validateTest()
 
         EnableReRun = self.onFinalTest(self.testIndexTracker)
-
         self.stepFinished.emit(EnableReRun)
 
         # show the score of test
@@ -1072,12 +1092,14 @@ created by Ph2_ACF is empty."
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
 
-        # self.update()
-
         if isCompositeTest(self.info):
             self.runTest()
 
     def onFinalTest(self, index):
+        for process in self.run_processes:
+            if process.state() == QProcess.Running:
+                return
+
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
@@ -1127,9 +1149,10 @@ created by Ph2_ACF is empty."
     def updateProgress(self, measurementType, stepSize):
         if measurementType == "IVCurve":
             self.IVProgressValue += stepSize / 2.0
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                self.IVProgressValue
-            )
+            for i, firmware in enumerate(self.firmware):
+                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(
+                    self.IVProgressValue
+                )
             self.ramp_progress_bar(
                 [
                     site_settings.IVcurve_range[self.currentTest]
@@ -1140,9 +1163,10 @@ created by Ph2_ACF is empty."
             )
         if "SLDO" in measurementType:
             self.SLDOProgressValue += stepSize
-            self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                self.SLDOProgressValue
-            )
+            for i, firmware in enumerate(self.firmware):
+                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(
+                    self.SLDOProgressValue
+                )
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for module in self.modules:
@@ -1403,14 +1427,14 @@ created by Ph2_ACF is empty."
                     self.force_continue_window.table.item(row, 1).checkState()
                     == Qt.Checked
                 ):
-                    for row in range(len(fc7modules)):
+                    for i, module in enumerate(fc7modules):
                         if (
-                            self.force_continue_window.table.item(row, 1).checkState()
+                            self.force_continue_window.table.item(i, 1).checkState()
                             == Qt.Checked
                         ):
-                            fc7modules[row].setEnabled("1")
+                            module.setEnabled("1")
                         else:
-                            fc7modules[row].setEnabled("0")
+                            module.setEnabled("0")
 
                     self.force_continue_window.abort = False
                     return True
@@ -1445,12 +1469,13 @@ created by Ph2_ACF is empty."
         def handle_retry():
             if check_enabledModules():
                 self.outputString.emit(f"Retrying {self.currentTest}...")
-                self.runwindow.ResultWidget.runtime[self.testIndexTracker].setText(
-                    ""
-                )  # may need to .update()
-                self.runwindow.ResultWidget.ProgressBar[self.testIndexTracker].setValue(
-                    0
-                )  # may need to .update(). Automatically adds "0%" text on Progress bar.
+                for i, _ in enumerate(self.firmware):
+                    self.runwindow.ResultWidget.runtimes[i][self.testIndexTracker].setText(
+                        ""
+                    )  # may need to .update()
+                    self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(
+                        0
+                    )  # may need to .update(). Automatically adds "0%" text on Progress bar.
                 self.testIndexTracker -= 1
                 self.force_continue_window.close()
 

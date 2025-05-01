@@ -18,8 +18,6 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
-
-from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.GUIutils.FirmwareUtil import fwStatusParser
 from Gui.python.CustomizedWidget import SimpleBeBoardBox
 from Gui.python.Firmware import QtBeBoard
@@ -33,6 +31,7 @@ from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 class SimplifiedMainWidget(QWidget):
     abort_signal = pyqtSignal()
     close_signal = pyqtSignal()
+    config_and_test_Signal = pyqtSignal()
 
     def __init__(self, master, dimension):
         logger.debug("SimplifiedMainWidget.__init__()")
@@ -69,7 +68,14 @@ class SimplifiedMainWidget(QWidget):
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         self.greenledpixmap = QPixmap.fromImage(greenledimage)
+
+        self.config_and_test_Signal.connect(self.config_and_test)
+
         self.createWindow()
+
+    def config_and_test(self):
+        self.master.RunNewTest.resetConfigTest()
+        self.master.RunNewTest.initialTest()
 
     def setupBeBoard(self):
         # self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
@@ -412,11 +418,8 @@ class SimplifiedMainWidget(QWidget):
         elif self.FullPerformanceTestButton.isChecked():
             self.info = "TFPX_FullPerformance_Test"
         self.runFlag = True
-        self.RunTest = QtRunWindow(self.master, self.info, self.firmwareDescription)
         self.RunButton.setDisabled(True)
         self.StopButton.setDisabled(False)
-
-        self.RunTest.resetConfigTest()
 
         module = self.firmwareDescription[0].getModules()[0]
         module_type = module.getModuleType()
@@ -432,11 +435,11 @@ class SimplifiedMainWidget(QWidget):
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
-        self.RunTest.initialTest()
-        # self.RunTest.runTest()
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription)
+        self.config_and_test_Signal.emit()
 
     def abortTest(self):
-        self.RunTest.abortTest()
+        self.master.RunNewTest.abortTest()
         self.StopButton.setDisabled(True)
         self.RunButton.setDisabled(False)
 

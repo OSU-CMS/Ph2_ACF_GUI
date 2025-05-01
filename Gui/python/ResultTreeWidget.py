@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QTreeWidget,
     QTreeWidgetItem,
-    QWidget,
+    QWidget
 )
 from PyQt5 import QtSvg
 
@@ -29,18 +29,22 @@ from InnerTrackerTests.TestSequences import CompositeTests
 
 
 class ResultTreeWidget(QWidget):
-    def __init__(self, info, width, height, master):
+    def __init__(self, info, width, height, master, firmware):
         super(ResultTreeWidget, self).__init__()
         self.master = master
+        self.firmware = firmware
         self.DisplayW = width
         self.DisplayH = height
         self.FileList = []
         self.IVFileList = []
         self.SLDOFileList = []
         self.info = info
-        self.ProgressBarList = []
-        self.ProgressBar = {}
-        self.StatusLabel = {}
+
+        self.ProgressBarLists = [[] for _ in firmware]
+        self.ProgressBars = [{} for _ in firmware]
+        self.runtimes = [{} for _ in firmware]
+        self.runtimeLists = [[] for _ in firmware]
+
         self.displayingImage = ""
         self.displayList = []
         self.displayIndex = 0
@@ -48,74 +52,64 @@ class ResultTreeWidget(QWidget):
         self.timerFrozen = False
         self.Plot = []
         self.count = 0
-        self.runtime = {}
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
         self.initializeProgressBar()
         self.setupUi()
 
-        # For test:
-        # self.updateResult("/Users/czkaiweb/Research/data")
-
     def initializeProgressBar(self):
-        if isCompositeTest(self.info):
-            self.ProgressBarList = CompositeTests[self.info]
-            self.runtimeList = CompositeTests[self.info]
-        else:
-            self.ProgressBarList = [self.info]
-            self.runtimeList = [self.info]
+        for fw_index, _ in enumerate(self.firmware):
+            if isCompositeTest(self.info):
+                self.ProgressBarLists[fw_index] = CompositeTests[self.info]
+                self.runtimeLists[fw_index] = CompositeTests[self.info]
+            else:
+                self.ProgressBarLists[fw_index] = [self.info]
+                self.runtimeLists[fw_index] = [self.info]
 
-        for index, obj in enumerate(self.ProgressBarList):
-            ProgressBar = QProgressBar()
-            ProgressBar.setMinimum(0)
-            ProgressBar.setMaximum(100)
-            self.ProgressBar[index] = ProgressBar
-            runtime = QLabel()
-            self.runtime[index] = runtime
+            for index, obj in enumerate(self.ProgressBarLists[0]):
+                ProgressBar = QProgressBar()
+                ProgressBar.setMinimum(0)
+                ProgressBar.setMaximum(100)
+                self.ProgressBars[fw_index][index] = ProgressBar
+                runtime = QLabel()
+                self.runtimes[fw_index][index] = runtime
 
     def setupUi(self):
-        # self.DisplayTitle = QLabel('<font size="6"> Result: </font>')
-        # self.DisplayLabel = QLabel()
-        # self.DisplayLabel.setScaledContents(True)
-        # self.displayingImage = 'test_plots/test_best1.png'
-        # self.DisplayView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        # self.DisplayLabel.setPixmap(self.DisplayView)
-        # self.ReferTitle = QLabel('<font size="6"> Reference: </font>')
-        # self.ReferLabel = QLabel()
-        # self.ReferLabel.setScaledContents(True)
-        # self.ReferView = QPixmap('test_plots/test_best1.png').scaled(QSize(self.DisplayW,self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        # self.ReferLabel.setPixmap(self.ReferView)
+        self.ScrollAreas = [QScrollArea() for _ in self.firmware]
+        self.ProgressWidgets = [QWidget() for _ in self.firmware]
+        self.ProgressLayouts = [QGridLayout() for _ in self.firmware]
+        for fw_index, firmware in enumerate(self.firmware):
+            self.ScrollAreas[fw_index].setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.ScrollAreas[fw_index].setWidgetResizable(True)
+            self.ProgressLayouts[fw_index].setAlignment(Qt.AlignTop)
+            self.ProgressLayouts[fw_index].addWidget(QLabel(firmware.getBoardName()), 0, 0, 1, Qt.AlignTop)
 
-        self.ScrollArea = QScrollArea()
-        self.ProgressWidget = QWidget()
-        self.ProgressWidget.setMinimumWidth(400)
-        self.ProgressLayout = QGridLayout()
-        self.ProgressLayout.setAlignment(Qt.AlignTop)
+            for index, key in enumerate(self.ProgressBars[fw_index].keys()):
+                testLabel = QLabel("<b>{}</b>".format(self.ProgressBarLists[fw_index][index]))
+                testProgress = self.ProgressBars[fw_index][key]
+                statusLabel = QLabel()
+                
+                self.ProgressLayouts[fw_index].addWidget(testLabel, index+1, 0, 1, 1, Qt.AlignTop)
+                self.ProgressLayouts[fw_index].addWidget(testProgress, index+1, 1, 1, 4, Qt.AlignTop)
+                self.ProgressLayouts[fw_index].addWidget(statusLabel, index+1, 5, 1, 1, Qt.AlignTop)
+                self.ProgressLayouts[fw_index].addWidget(
+                    self.runtimes[fw_index][index], index+1, 5, 1, 1, Qt.AlignTop
+                )
 
-        for index, key in enumerate(self.ProgressBar.keys()):
-            testLabel = QLabel("<b>{}</b>".format(self.ProgressBarList[index]))
-            testProgress = self.ProgressBar[key]
-            statusLabel = QLabel()
-
-            self.ProgressLayout.addWidget(testLabel, index, 0, 1, 1, Qt.AlignTop)
-            self.ProgressLayout.addWidget(testProgress, index, 1, 1, 4, Qt.AlignTop)
-            self.ProgressLayout.addWidget(statusLabel, index, 6, 1, 1, Qt.AlignTop)
-            self.ProgressLayout.addWidget(
-                self.runtime[index], index, 5, 1, 1, Qt.AlignTop
-            )
-            self.StatusLabel[index] = statusLabel
-
-        self.ProgressWidget.setLayout(self.ProgressLayout)
+            self.ProgressWidgets[fw_index].setLayout(self.ProgressLayouts[fw_index])
+            self.ScrollAreas[fw_index].setWidget(self.ProgressWidgets[fw_index])
+            self.mainLayout.addWidget(self.ScrollAreas[fw_index], 1, fw_index, 10, 1)
 
         if self.master.expertMode:
             self.OutputTree = QTreeWidget()
+            self.OutputTree.setMinimumWidth(320)
             self.OutputTree.horizontalScrollBar().setEnabled(True)
             self.OutputTree.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
             self.OutputTree.setHeaderLabels(["Name"])
             self.OutputTree.itemClicked.connect(self.onItemClicked)
             self.OutputTree.itemExpanded.connect(self.onItemExpanded)
             self.TreeRoot = QTreeWidgetItem(self.OutputTree)
-            self.TreeRoot.setText(0, "Files..")
+            self.TreeRoot.setText(0, "Files...")
         else:
             self.TestLabel = QLabel("Test")
 
@@ -133,24 +127,14 @@ class ResultTreeWidget(QWidget):
             self.SVGWidget.setMinimumHeight(minHeight)
             self.SVGWidget.setMinimumWidth(minHeight * ratio)
 
-        self.ScrollArea.setWidget(self.ProgressWidget)
-
-        ## Old display: To be removed
-        # self.mainLayout.addWidget(self.DisplayTitle,0,0,1,2)
-        # self.mainLayout.addWidget(self.DisplayLabel,1,0,1,2)
-        # self.mainLayout.addWidget(self.ReferTitle,0,2,1,2)
-        # self.mainLayout.addWidget(self.ReferLabel,1,2,1,2)
-        # self.mainLayout.addWidget(self.OutputTree,0,4,2,1)
-
-        self.mainLayout.addWidget(self.ScrollArea, 0, 0, 10, 2)
         if self.master.expertMode:
-            self.mainLayout.addWidget(self.OutputTree, 0, 2, 10, 2)
+            self.mainLayout.addWidget(self.OutputTree, 0, 1+len(self.firmware), 10, 2)
         else:
-            self.mainLayout.addWidget(self.TestLabel, 0, 2, 1, 2)
-            self.mainLayout.addWidget(self.ControlButtom, 0, 5, 1, 1)
-            self.mainLayout.addWidget(self.rightArrow, 0, 4, 1, 1)
-            self.mainLayout.addWidget(self.leftArrow, 0, 3, 1, 1)
-            self.mainLayout.addWidget(self.SVGWidget, 1, 2, 9, 3)
+            self.mainLayout.addWidget(self.TestLabel, 0, 1+len(self.firmware), 1, 2)
+            self.mainLayout.addWidget(self.ControlButtom, 0, 4+len(self.firmware), 1, 1)
+            self.mainLayout.addWidget(self.rightArrow, 0, 3+len(self.firmware), 1, 1)
+            self.mainLayout.addWidget(self.leftArrow, 0, 2+len(self.firmware), 1, 1)
+            self.mainLayout.addWidget(self.SVGWidget, 1, 1+len(self.firmware), 9, 3)
 
         if not self.master.expertMode:
             # Initialize timer:
@@ -172,7 +156,7 @@ class ResultTreeWidget(QWidget):
         self.OutputTree.resizeColumnToContents(0)
         if item.text(0).endswith(";TCanvas"):
             temp = item.clone()
-            while item.parent().text(0) != "Files..":
+            while item.parent().text(0) != "Files...":
                 item = item.parent()
             runNumber = item.text(0).split("_")[0]
             # print("the test is {0}".format(item.text(0)))
