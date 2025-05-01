@@ -61,6 +61,14 @@ In Gui/jsonFiles, there are example files written that may be modified to suit y
 Returning to Gui/siteConfig.py, you should also scroll down to the "FC7List" and edit the fc7.board.* listed there to match the IP addresses of your FC7 device(s).
 
 If you scroll down a little further, you will see a dictionary titled "CableMapping." This serves as a mapping of the cable ID you see when adding modules in the simplified GUI to a physical port on your FC7(s). Each cable ID is associated with a dictionary detailing the path to a port. The first key, "FC7," specifies which FC7 that you want that cable ID to be connected to. The FC7 you list should be in the FC7List above. Next, you can name the "FMCID," representing which FMC on the FC7 you wish to use. The possible values for this are "L8" if the FMC is on the left or "L12" if the FMC is on the right. Finally, you can specify which port on that FMC you want to connect to. The leftmost port is "0" and the rightmost port is "3."
+#### Cold Box
+The GUI embeds the Tessie webpage inside the expert mode
+window. However, the default Tessie webpage displays far too much
+information to be useful in this condensed form. Therefore, another
+HTML file was created Gui/Assets/guiOSU.html. You must upload this
+file to the raspberry pi inside of your coldbox. The file should be
+placed inside the following directory ~/tessie/node/test1/public/. 
+
 #### Temperature Chamber
 This section only applies to UIC and OSU who have the f4t thermal
 chamber for thermal cycling of the modules (This is NOT the same thing
