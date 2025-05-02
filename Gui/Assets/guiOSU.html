@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>tessie</title>
@@ -10,8 +9,7 @@
     <link rel="icon" href="tessieEllipse.png">
     <link rel="stylesheet" href="gui.css">
     <style>
-      html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif
-                                background-color: red}
+      html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
       .mycontainer {
           display: flex;
       }
@@ -37,18 +35,16 @@
     </style>
   </head>
   <body>
-    <!--
     <div class="mycontainer">
 
-      <div style="background-color:DodgerBlue" float="left">
+      <div class="info-table">
         <b>Nitrogen control: </b> <br>
         <button id="valve0" style="background-color:#D3D3D3">Flush</button>
         <button id="valve1" style="background-color:#D3D3D3">Rinse</button>
         <label><input id="throttleN2" name="throttleN2" type="checkbox" onclick="clkThrottle()"/>throttle N2</label>
 
-        <hr>
-        TEC arrangement:
-        <table style="border-collapse: collapse">
+        <span id="tec-label">TEC arrangement:</span>
+        <table class="hide" style="border-collapse: collapse">
           <tr>
             <td>8</td>
             <td>7</td>
@@ -62,160 +58,69 @@
             <td>4</td>
           </tr>
         </table>
-      </div> -->
+      </div>
 
-     <!-- <div style="background-color:DarkKhaki" >
-        <b>tessie control: </b> <br>
-        TEC Firmware: 
+    <div class="tessie-container info-table">
+    <!-- Control section -->
+    <div class="control-section">
+        <b>tessie control: </b><br>
+        TEC Firmware:
         <button id="loadFW">Load</button>
         <button id="saveFW">Save</button><br>
         CSV data:
         <button id="getcsv" disabled>Get CSV data</button>
-      </div> -->
-
-     <!--<div id="envDiv" style="background-color:MediumSeaGreen" float="center">
-        <table>
-          <tr>
-            <td>Air</td>
-            <td id="TempAir" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Rel. Humidity</td>
-            <td id="RelHum" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Dew point</td>
-            <td id="DP" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Water</td>
-            <td id="TempWater" style="text-align:right;">0 </td>
-          </tr>
-        </table>
-      </div> -->
-
-
-      <div id="varDiv" style="background-color:#1E90FF" float="center">
-        <div>
-        <b>Nitrogen control: </b> <br>
-        <button id="valve0" style="background-color:#D3D3D3">Flush</button>
-        <button id="valve1" style="background-color:#D3D3D3">Rinse</button>
-        <label><input id="throttleN2" name="throttleN2"
-                      type="checkbox" onclick="clkThrottle()"/>throttle N2</label>
-        </div>
-        <table style="display: inline-block; width: 15%;">
-          <tr>
-            <td>Air</td>
-            <td id="TempAir" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Rel. Humidity</td>
-            <td id="RelHum" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Dew point</td>
-            <td id="DP" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td></td>
-            <td></td>
-          </tr>
-          <tr>
-            <td>Water</td>
-            <td id="TempWater" style="text-align:right;">0 </td>
-          </tr>
-        </table>
-        <table style="display: inline-block; width: 15%;">
-          <tr>
-            <td>Lid status</td>
-            <td id="LidStatus" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Interlock</td>
-            <td id="Interlock" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Free diskspace</td>
-            <td id="FreeDiskspace" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Flow switch</td>
-            <td id="FM" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Traffic light</td>
-            <td id="TrafficLight" style="text-align:right">
-              <svg id="gLight" style="width: 24pt; height: 32pt">
-                <circle id="circleG" r="10" cx="12" cy="20" style="fill: white; stroke: green; stroke-width: 2"/>
-              </svg> 
-              <svg id="yLight" style="width: 24pt; height: 32pt">
-                <circle id="circleY" r="10" cx="12" cy="20" style="fill: white; stroke: yellow; stroke-width: 2"/>
-              </svg>
-              <svg id="rLight" style="width: 24pt; height: 32pt">
-                <circle id="circleR" r="10" cx="12" cy="20" style="fill: white; stroke: red; stroke-width: 2"/>
-              </svg>
-            </td>
-          </tr>
-        </table>
-        <table style="display: inline-block; width: 15%;">
-          <tr>
-            <td>I2C Errors</td>
-            <td id="I2CErrors" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>CANbus errors</td>
-            <td id="CANbusErrors" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Run time</td>
-            <td id="RunTime" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>tessie version</td>
-            <td id="versionField" style="text-align:right;">n/a </td>
-          </tr>
-          <tr>
-            <td>TEC f/w version</td>
-            <td id="fwverField" style="text-align:right;">n/a </td>
-          </tr>
-        </table>
-      </div>
-
     </div>
 
-    <!--
-      <div id="statusDiv" style="background-color:Goldenrod" float="right">
+    <!-- Tables section -->
+    <div class="tables-wrapper info-table">
+        <!-- Environment Table -->
+        <div class="data-table">
         <table>
-          <tr>
-            <td>I2C Errors</td>
-            <td id="I2CErrors" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>CANbus errors</td>
-            <td id="CANbusErrors" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>Run time</td>
-            <td id="RunTime" style="text-align:right;">0 </td>
-          </tr>
-          <tr>
-            <td>tessie version</td>
-            <td id="versionField" style="text-align:right;">n/a </td>
-          </tr>
-          <tr>
-            <td>TEC f/w version</td>
-            <td id="fwverField" style="text-align:right;">n/a </td>
-          </tr>
+            <tr><td>Air</td><td id="TempAir" style="text-align:right;">0</td></tr>
+            <tr><td>Rel. Humidity</td><td id="RelHum" style="text-align:right;">0</td></tr>
+            <tr><td>Dew point</td><td id="DP" style="text-align:right;">0</td></tr>
+            <tr><td></td><td></td></tr>
+            <tr><td>Water</td><td id="TempWater" style="text-align:right;">0</td></tr>
         </table>
-      </div>
-</div>
--->
-    
-    <div style="background-color:DarkGray">
+        </div>
+
+        <!-- Variable Table -->
+        <div class="data-table">
+        <table>
+            <tr><td>Lid status</td><td id="LidStatus" style="text-align:right;">0</td></tr>
+            <tr><td>Interlock</td><td id="Interlock" style="text-align:right;">0</td></tr>
+            <tr><td>Free diskspace</td><td id="FreeDiskspace" style="text-align:right;">0</td></tr>
+            <tr><td>Flow switch</td><td id="FM" style="text-align:right;">0</td></tr>
+            <tr>
+            <td>Traffic light</td>
+            <td id="TrafficLight" style="text-align:right">
+                <svg id="gLight" style="width: 24pt; height: 32pt">
+                <circle id="circleG" r="10" cx="12" cy="20" style="fill: white; stroke: green; stroke-width: 2"/>
+                </svg>
+                <svg id="yLight" style="width: 24pt; height: 32pt">
+                <circle id="circleY" r="10" cx="12" cy="20" style="fill: white; stroke: yellow; stroke-width: 2"/>
+                </svg>
+                <svg id="rLight" style="width: 24pt; height: 32pt">
+                <circle id="circleR" r="10" cx="12" cy="20" style="fill: white; stroke: red; stroke-width: 2"/>
+                </svg>
+            </td>
+            </tr>
+        </table>
+        </div>
+
+        <!-- Status Table -->
+        <div class="info-table">
+        <table>
+            <tr><td>I2C Errors</td><td id="I2CErrors" style="text-align:right;">0</td></tr>
+            <tr><td>CANbus errors</td><td id="CANbusErrors" style="text-align:right;">0</td></tr>
+            <tr><td>Run time</td><td id="RunTime" style="text-align:right;">0</td></tr>
+            <tr><td>tessie version</td><td id="versionField" style="text-align:right;">n/a</td></tr>
+            <tr><td>TEC f/w version</td><td id="fwverField" style="text-align:right;">n/a</td></tr>
+        </table>
+        </div>
+    </div>
+    </div>    
+    <div class="hide" style="background-color:DarkGray">
     <textarea id="logarea" class="scrollabletextbox" style="font-size: 10pt; width: 100%; max-width: 100%;"></textarea>
     </div>
 
@@ -325,61 +230,174 @@
           <td><button id="ErrorState8" disabled>wait </button></td>
         </tr>
 
+        <tr class="hide">
+          <td>Supply_U</td>
+          <td> </td>
+          <td id="Supply_U1">wait </td>
+          <td id="Supply_U2">wait </td>
+          <td id="Supply_U3">wait </td>
+          <td id="Supply_U4">wait </td>
+          <td id="Supply_U5">wait </td>
+          <td id="Supply_U6">wait </td>
+          <td id="Supply_U7">wait </td>
+          <td id="Supply_U8">wait </td>
+        </tr>
 
+        <tr class="hide">
+          <td>Supply_P</td>
+          <td> </td>
+          <td id="Supply_P1">wait </td>
+          <td id="Supply_P2">wait </td>
+          <td id="Supply_P3">wait </td>
+          <td id="Supply_P4">wait </td>
+          <td id="Supply_P5">wait </td>
+          <td id="Supply_P6">wait </td>
+          <td id="Supply_P7">wait </td>
+          <td id="Supply_P8">wait </td>
+        </tr>
+
+        <tr class="hide">
+          <td>Peltier_U</td>
+          <td> </td>
+          <td id="Peltier_U1">wait </td>
+          <td id="Peltier_U2">wait </td>
+          <td id="Peltier_U3">wait </td>
+          <td id="Peltier_U4">wait </td>
+          <td id="Peltier_U5">wait </td>
+          <td id="Peltier_U6">wait </td>
+          <td id="Peltier_U7">wait </td>
+          <td id="Peltier_U8">wait </td>
+        </tr>
+
+        <tr class="hide">
+          <td>Peltier_P</td>
+          <td> </td>
+          <td id="Peltier_P1">wait </td>
+          <td id="Peltier_P2">wait </td>
+          <td id="Peltier_P3">wait </td>
+          <td id="Peltier_P4">wait </td>
+          <td id="Peltier_P5">wait </td>
+          <td id="Peltier_P6">wait </td>
+          <td id="Peltier_P7">wait </td>
+          <td id="Peltier_P8">wait </td>
+        </tr>
+
+        <tr class="hide">
+          <td>Peltier_I</td>
+          <td> </td>
+          <td id="Peltier_I1">wait </td>
+          <td id="Peltier_I2">wait </td>
+          <td id="Peltier_I3">wait </td>
+          <td id="Peltier_I4">wait </td>
+          <td id="Peltier_I5">wait </td>
+          <td id="Peltier_I6">wait </td>
+          <td id="Peltier_I7">wait </td>
+          <td id="Peltier_I8">wait </td>
+        </tr>
+
+        <tr class="hide">
+          <td>Peltier_R</td>
+          <td> </td>
+          <td id="Peltier_R1">wait </td>
+          <td id="Peltier_R2">wait </td>
+          <td id="Peltier_R3">wait </td>
+          <td id="Peltier_R4">wait </td>
+          <td id="Peltier_R5">wait </td>
+          <td id="Peltier_R6">wait </td>
+          <td id="Peltier_R7">wait </td>
+          <td id="Peltier_R8">wait </td>
+        </tr>
+
+        <tr class="hide">
+          <td>PID_kp</td>
+          <td> <input id="PID_kp0" maxlength="4" size="4" value="all"  onchange="chgPID_kp(0,this.value)"></td>
+          <td> <input id="PID_kp1" maxlength="4" size="4" value="wait" onchange="chgPID_kp(1,this.value)"></td>
+          <td> <input id="PID_kp2" maxlength="4" size="4" value="wait" onchange="chgPID_kp(2,this.value)"></td>
+          <td> <input id="PID_kp3" maxlength="4" size="4" value="wait" onchange="chgPID_kp(3,this.value)"></td>
+          <td> <input id="PID_kp4" maxlength="4" size="4" value="wait" onchange="chgPID_kp(4,this.value)"></td>
+          <td> <input id="PID_kp5" maxlength="4" size="4" value="wait" onchange="chgPID_kp(5,this.value)"></td>
+          <td> <input id="PID_kp6" maxlength="4" size="4" value="wait" onchange="chgPID_kp(6,this.value)"></td>
+          <td> <input id="PID_kp7" maxlength="4" size="4" value="wait" onchange="chgPID_kp(7,this.value)"></td>
+          <td> <input id="PID_kp8" maxlength="4" size="4" value="wait" onchange="chgPID_kp(8,this.value)"></td>
+        </tr>
+
+        <tr class="hide">
+          <td>PID_ki</td>
+          <td> <input id="PID_ki0" maxlength="4" size="4" value="all"  onchange="chgPID_ki(0,this.value)"></td>
+          <td> <input id="PID_ki1" maxlength="4" size="4" value="wait" onchange="chgPID_ki(1,this.value)"></td>
+          <td> <input id="PID_ki2" maxlength="4" size="4" value="wait" onchange="chgPID_ki(2,this.value)"></td>
+          <td> <input id="PID_ki3" maxlength="4" size="4" value="wait" onchange="chgPID_ki(3,this.value)"></td>
+          <td> <input id="PID_ki4" maxlength="4" size="4" value="wait" onchange="chgPID_ki(4,this.value)"></td>
+          <td> <input id="PID_ki5" maxlength="4" size="4" value="wait" onchange="chgPID_ki(5,this.value)"></td>
+          <td> <input id="PID_ki6" maxlength="4" size="4" value="wait" onchange="chgPID_ki(6,this.value)"></td>
+          <td> <input id="PID_ki7" maxlength="4" size="4" value="wait" onchange="chgPID_ki(7,this.value)"></td>
+          <td> <input id="PID_ki8" maxlength="4" size="4" value="wait" onchange="chgPID_ki(8,this.value)"></td>
+        </tr>
+
+        <tr class="hide">
+          <td>PID_kd</td>
+          <td> <input id="PID_kd0" maxlength="4" size="4" value="all"  onchange="chgPID_kd(0,this.value)"></td>
+          <td> <input id="PID_kd1" maxlength="4" size="4" value="wait" onchange="chgPID_kd(1,this.value)"></td>
+          <td> <input id="PID_kd2" maxlength="4" size="4" value="wait" onchange="chgPID_kd(2,this.value)"></td>
+          <td> <input id="PID_kd3" maxlength="4" size="4" value="wait" onchange="chgPID_kd(3,this.value)"></td>
+          <td> <input id="PID_kd4" maxlength="4" size="4" value="wait" onchange="chgPID_kd(4,this.value)"></td>
+          <td> <input id="PID_kd5" maxlength="4" size="4" value="wait" onchange="chgPID_kd(5,this.value)"></td>
+          <td> <input id="PID_kd6" maxlength="4" size="4" value="wait" onchange="chgPID_kd(6,this.value)"></td>
+          <td> <input id="PID_kd7" maxlength="4" size="4" value="wait" onchange="chgPID_kd(7,this.value)"></td>
+          <td> <input id="PID_kd8" maxlength="4" size="4" value="wait" onchange="chgPID_kd(8,this.value)"></td>
+        </tr>
 
       </table>
     </div>
 
-    <!-- 
-    <div id="tec1pop" popover>
+    <div class="hide" id="tec1pop" popover>
       <h2 id="tec1errorTitle"></h2>
       <p id="tec1errorValue"></p>
       <p id="tec1errorExplanation"></p>
       <p>Click outside or press ESC to close this notice</p>
     </div>
-    <div id="tec2pop" popover>
+    <div class="hide" id="tec2pop" popover>
       <h2 id="tec2errorTitle"></h2>
       <p id="tec2errorValue"></p>
       <p id="tec2errorExplanation"></p>
       <p>Click outside or press ESC (escape) to close this notice</p>
     </div>
-    <div id="tec3pop" popover>
+    <div class="hide" id="tec3pop" popover>
       <h2 id="tec3errorTitle"></h2>
       <p id="tec3errorValue"></p>
       <p id="tec3errorExplanation"></p>
       <p>Click outside or press ESC (escape) to close this notice</p>
     </div>
-    <div id="tec4pop" popover>
+    <div class="hide" id="tec4pop" popover>
       <h2 id="tec4errorTitle"></h2>
       <p id="tec4errorValue"></p>
       <p id="tec4errorExplanation"></p>
       <p>Click outside or press ESC (escape) to close this notice</p>
     </div>
-    <div id="tec5pop" popover>
+    <div class="hide" id="tec5pop" popover>
       <h2 id="tec5errorTitle"></h2>
       <p id="tec5errorValue"></p>
       <p id="tec5errorExplanation"></p>
       <p>Click outside or press ESC (escape) to close this notice</p>
     </div>
-    <div id="tec6pop" popover>
+    <div class="hide" id="tec6pop" popover>
       <h2 id="tec6errorTitle"></h2>
       <p id="tec6errorValue"></p>
       <p id="tec6errorExplanation"></p>
       <p>Click outside or press ESC (escape) to close this notice</p>
     </div>
-    <div id="tec7pop" popover>
+    <div class="hide" id="tec7pop" popover>
       <h2 id="tec7errorTitle"></h2>
       <p id="tec7errorValue"></p>
       <p id="tec7errorExplanation"></p>
       <p>Click outside or press ESC (escape) to close this notice</p>
     </div>
-    <div id="tec8pop" popover>
+    <div class="hide" id="tec8pop" popover>
       <h2 id="tec8errorTitle"></h2>
       <p id="tec8errorValue"></p>
       <p id="tec8errorExplanation"></p>
       <p>Click outside or press ESC (escape) to close this notice</p>
     </div>
-    -->
 
 
     <script src="/socket.io/socket.io.js"></script>
@@ -421,9 +439,9 @@
       const socket = io.connect();
       const valve0 = document.getElementById('valve0');
       const valve1 = document.getElementById('valve1');
-      //const getcsv = document.getElementById('getcsv');
-      //const saveFW = document.getElementById('saveFW');
-      //const loadFW = document.getElementById('loadFW');
+      const getcsv = document.getElementById('getcsv');
+      const saveFW = document.getElementById('saveFW');
+      const loadFW = document.getElementById('loadFW');
 
       var logarea = document.getElementById("logarea");
 
@@ -445,15 +463,15 @@
           socket.emit('valve1');
       });
 
-      //loadFW.addEventListener('click', (e) => {
-      //    socket.emit('loadFW');
-      //});
+      loadFW.addEventListener('click', (e) => {
+          socket.emit('loadFW');
+      });
 
-      //saveFW.addEventListener('click', (e) => {
-      //    socket.emit('saveFW');
-      //});
+      saveFW.addEventListener('click', (e) => {
+          socket.emit('saveFW');
+      });
 
-      //getcsv.addEventListener('click', (e) => //{socket.emit('getcsv'); });
+      getcsv.addEventListener('click', (e) => {socket.emit('getcsv'); });
 
       socket.on('envString', (msg) => {
           const snumbers = msg.toString().replace('Env = ', '');
@@ -646,7 +664,71 @@
           }
       });
 
+      socket.on('Supply_UString', (msg) => {
+          const snumbers = msg.toString().replace('Supply_U = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Supply_U' + i.toString();
+              var el = document.getElementById(tm);
+              var tval = parseFloat(vNumbers[i-1]).toFixed(2);
+              el.innerHTML = tval;
+          }
+      });
 
+      socket.on('Supply_PString', (msg) => {
+          const snumbers = msg.toString().replace('Supply_P = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Supply_P' + i.toString();
+              var el = document.getElementById(tm);
+              var tval = parseFloat(vNumbers[i-1]).toFixed(2);
+              el.innerHTML = tval;
+          }
+      });
+
+      socket.on('Peltier_PString', (msg) => {
+          const snumbers = msg.toString().replace('Peltier_P = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Peltier_P' + i.toString();
+              var el = document.getElementById(tm);
+              var tval = parseFloat(vNumbers[i-1]).toFixed(2);
+              el.innerHTML = tval;
+          }
+      });
+
+      socket.on('Peltier_UString', (msg) => {
+          const snumbers = msg.toString().replace('Peltier_U = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Peltier_U' + i.toString();
+              var el = document.getElementById(tm);
+              var tval = parseFloat(vNumbers[i-1]).toFixed(2);
+              el.innerHTML = tval;
+          }
+      });
+
+      socket.on('Peltier_IString', (msg) => {
+          const snumbers = msg.toString().replace('Peltier_I = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Peltier_I' + i.toString();
+              var el = document.getElementById(tm);
+              var tval = parseFloat(vNumbers[i-1]).toFixed(2);
+              el.innerHTML = tval;
+          }
+      });
+
+      socket.on('Peltier_RString', (msg) => {
+          const snumbers = msg.toString().replace('Peltier_R = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Peltier_R' + i.toString();
+              var el = document.getElementById(tm);
+              var tval = parseFloat(vNumbers[i-1]).toFixed(2);
+              el.innerHTML = tval;
+          }
+      });
 
 
       socket.on('ModeString', (msg) => {
@@ -659,6 +741,35 @@
           }
       });
 
+      socket.on('PID_kpString', (msg) => {
+          const snumbers = msg.toString().replace('PID_kp = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'PID_kp' + i.toString();
+              if (document.activeElement != document.getElementById(tm))
+                  document.getElementById(tm).value = parseFloat(vNumbers[i-1]).toFixed(2);
+          }
+      });
+
+      socket.on('PID_kiString', (msg) => {
+          const snumbers = msg.toString().replace('PID_ki = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'PID_ki' + i.toString();
+              if (document.activeElement != document.getElementById(tm))
+                  document.getElementById(tm).value = parseFloat(vNumbers[i-1]).toFixed(2);
+          }
+      });
+
+      socket.on('PID_kdString', (msg) => {
+          const snumbers = msg.toString().replace('PID_kd = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'PID_kd' + i.toString();
+              if (document.activeElement != document.getElementById(tm))
+                  document.getElementById(tm).value = parseFloat(vNumbers[i-1]).toFixed(2);
+          }
+      });
 
       socket.on('Temp_SetString', (msg) => {
           const snumbers = msg.toString().replace('Temp_Set = ', '');
@@ -683,9 +794,9 @@
                   document.getElementById(es).innerHTML = "show";
                   document.getElementById(es).style.backgroundColor = mycolors[8];
                   document.getElementById(es).disabled = false;
-                  //document.getElementById("tec" + i.toString() + "errorTitle").innerHTML = "Error in TEC " + i.toString();
-                  //document.getElementById("tec" + i.toString() + "errorValue").innerHTML = "0x" + fecErrors[i-1].toString(16);
-                  //document.getElementById("tec" + i.toString() + "errorExplanation").innerHTML = tecErrorExplanation(fecErrors[i-1]);
+                  document.getElementById("tec" + i.toString() + "errorTitle").innerHTML = "Error in TEC " + i.toString();
+                  document.getElementById("tec" + i.toString() + "errorValue").innerHTML = "0x" + fecErrors[i-1].toString(16);
+                  document.getElementById("tec" + i.toString() + "errorExplanation").innerHTML = tecErrorExplanation(fecErrors[i-1]);
 
                   document.getElementById("ClearTECError").disabled = false;
               } else {
@@ -693,9 +804,9 @@
                   document.getElementById(es).innerHTML = "OK";
                   document.getElementById(es).style.backgroundColor = mycolors[4];
                   document.getElementById(es).disabled = true;
-                  //document.getElementById("tec" + i.toString() + "errorTitle").innerHTML = "No Error in TEC " + i.toString();
-                  //document.getElementById("tec" + i.toString() + "errorValue").innerHTML = "0x0";
-                  //document.getElementById("tec" + i.toString() + "errorExplanation").innerHTML = "Relax, all is well";
+                  document.getElementById("tec" + i.toString() + "errorTitle").innerHTML = "No Error in TEC " + i.toString();
+                  document.getElementById("tec" + i.toString() + "errorValue").innerHTML = "0x0";
+                  document.getElementById("tec" + i.toString() + "errorExplanation").innerHTML = "Relax, all is well";
               }
           }
           if (cntErrs == 0) {
