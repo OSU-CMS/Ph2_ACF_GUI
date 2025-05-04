@@ -1,9 +1,10 @@
-import webbrowser
 from PyQt5 import QtWebEngine
-QtWebEngine.QtWebEngine.initialize()
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl
+import logging
+
+logging.basicConfig(level="DEBUG")
 
 from Gui.siteSettings import tessie_url, alternative_tessie_url
 
@@ -16,6 +17,7 @@ class Tessie(QWidget):
         open_button = QPushButton("Open Tessie Webpage in Browser")
         open_button.clicked.connect(self.launch_tessie_webpage)
 
+        QtWebEngine.QtWebEngine.initialize()
         web_view = QWebEngineView()
         web_view.load(QUrl(alternative_tessie_url))
         web_view.setZoomFactor(0.8)
@@ -41,7 +43,23 @@ class Tessie(QWidget):
         layout.addWidget(web_view)
 
     def launch_tessie_webpage(self):
-        webbrowser.open(tessie_url)
+        """
+        Launch new window that will display full webpage using QWebEngine.
+        
+        Note: We can't make use of default browser on system since we are running within docker image.
+        """
+        print("Inside launch_tessie_webpage")
+        # Create widget
+        self.browser = QWidget()
+        layout = QVBoxLayout()
+
+        web_view = QWebEngineView()
+        web_view.load(QUrl(tessie_url))
+        
+        layout.addWidget(web_view)
+        self.browser.setLayout(layout)
+        self.browser.show()
+
 
     def inject_css(self, web_view, js):
         web_view.page().runJavaScript(js)
