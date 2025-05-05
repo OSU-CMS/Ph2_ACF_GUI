@@ -471,7 +471,7 @@ class QtStartWindow(QWidget):
                             self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")
                             erroredFlag=True
 
-                    links[moduleName, chipid] = fileLink
+                    links[moduleName, moduleBox.getFMCPort(), chipid] = fileLink
         
         #Do this at the end so that there's no autofill unless all files pass the check above.
         for moduleBox in self.BeBoardWidget.getModules():
@@ -481,10 +481,7 @@ class QtStartWindow(QWidget):
                 if item is not None:
                     chiplineedit = item.widget()
                     if chiplineedit is not None:
-                        if (moduleName, chipid) in links.keys():
-                            chiplineedit.setText(links[moduleName, chipid])
-                        else:
-                            chiplineedit.setText("")
+                        chiplineedit.setText(links[moduleName, moduleBox.getFMCPort(), chipid])
 
     def createApp(self):
         self.AppOption = QGroupBox()
@@ -600,11 +597,11 @@ class QtStartWindow(QWidget):
                 text = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().text().replace(" ", "")
                 if text != "":
                     if 'panthera.fit.edu' in text:
-                        IDsIndex = text.find("panthera_storage/results/")
-                        destination = os.environ.get("PH2ACF_BASE_DIR") + "/settings/RD53Files/" + text[IDsIndex+25:]
                         try:
+                            txt_index = text.rfind(".txt")
+                            destination = os.environ.get("PH2ACF_BASE_DIR") + "/test/" + text[text.rfind("/", 0, txt_index)+1:txt_index]
                             os.system(f"wget -O {destination} {text}")
-                            files[moduleName, chipid] = destination
+                            self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setText(destination)
                         except Exception as e:
                             logger.error(e)
                             self.master.errorMessageBoxSignal.emit(f"Could not Chip{chipid} file from Panthera!")
@@ -612,14 +609,7 @@ class QtStartWindow(QWidget):
                     elif not os.path.exists(text):
                         self.master.errorMessageBoxSignal.emit(f"Chip{chipid}'s .txt file doesn't exist!")
                         return
-                    else:
-                        files[moduleName, chipid] = text
-                         
-        for moduleBox in self.BeBoardWidget.getModules():
-            moduleName = moduleBox.getSerialNumber()
-            for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
-                if (moduleName, chipid) in files.keys():
-                    self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setText(files[moduleName, chipid])
+                    files[moduleName, moduleBox.getFMCPort(), chipid] = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().text()
 
         # NOTE This is not the best way to do this, we should be emitting a signal to change
         # the module type but ModuleBox is not publically accessible so we have to go through BeBoardWidget
