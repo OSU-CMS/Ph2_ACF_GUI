@@ -290,18 +290,12 @@ class QtStartWindow(QWidget):
         self.mainLayout.addWidget(self.BeBoardWidget, 1, 0, 1, 2)
 
     def createMain(self):
-        self.firmwareCheckBox = QGroupBox()
-        firmwarePar = QGridLayout()
         ## To be finished
         self.ModuleList = []
         for i, module in enumerate(self.BeBoardWidget.ModuleList):
             ModuleSummaryBox = SummaryBox(master=self.master, module=module)
             self.ModuleList.append(ModuleSummaryBox)
-            firmwarePar.addWidget(
-                ModuleSummaryBox, math.floor(i / 2), math.ceil(i % 2 / 2), 1, 1
-            )
         self.BeBoardWidget.updateList()  ############FIXME:  This may not work for multiple modules at a time.
-        self.firmwareCheckBox.setLayout(firmwarePar)
 
         self.txt_box = QGroupBox()
         main_txt_layout = QVBoxLayout()  # vertical: text field on top, radio buttons below
@@ -389,15 +383,14 @@ class QtStartWindow(QWidget):
         for moduleBox in self.BeBoardWidget.getModules():
             moduleName = moduleBox.getSerialNumber()
             for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
-                chiptxt = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget()
-                if links!={}:
-                    chiptxt.setText(links[moduleName, chipid])
-                else:
-                    chiptxt.setText("")
-
-    def destroyMain(self):
-        self.firmwareCheckBox.deleteLater()
-        self.mainLayout.removeWidget(self.firmwareCheckBox)
+                item = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0)
+                if item is not None:
+                    chiplineedit = item.widget()
+                    if chiplineedit is not None:
+                        if (moduleName, chipid) in links.keys():
+                            chiplineedit.setText(links[moduleName, chipid])
+                        else:
+                            chiplineedit.setText("")
 
     def createApp(self):
         self.AppOption = QGroupBox()
@@ -408,7 +401,6 @@ class QtStartWindow(QWidget):
         self.CancelButton.clicked.connect(self.closeWindow)
 
         self.ResetButton = QPushButton("&Reset")
-        self.ResetButton.clicked.connect(self.destroyMain)
         self.ResetButton.clicked.connect(self.createMain)
 
         self.CheckButton = QPushButton("&Check")
@@ -416,7 +408,6 @@ class QtStartWindow(QWidget):
 
         self.NextButton = QPushButton("&Next")
         self.NextButton.setDefault(True)
-        # self.NextButton.setDisabled(True)
         self.NextButton.clicked.connect(self.openRunWindow_starter)
 
         self.StartLayout.addStretch(1)
