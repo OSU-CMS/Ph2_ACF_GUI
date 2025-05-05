@@ -1,5 +1,4 @@
 import os
-import math
 import subprocess
 import logging
 import requests
@@ -573,7 +572,6 @@ class QtStartWindow(QWidget):
             self.NextButton.setDisabled(False)
 
     def openRunWindow_starter(self):
-        self.NextButton.setDisabled(True)
         self.NextButton.setDisabled(True)
         self.NextButton.setText(". . .")
         self.run_window_thread = LoadingThread(self.openRunWindow, 500)
