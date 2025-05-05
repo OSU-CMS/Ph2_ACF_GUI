@@ -123,6 +123,29 @@ def TCanvas2SVG(outputDir, canvas, name=None):
     return outputFile
 
 
+def TCanvas2PNG(outputDir, canvas, name=None):
+    ROOT.gStyle.SetPalette(57)
+    if not name:
+        seconds = time.time()
+        outputFile = outputDir + "/display{}.png".format(seconds)
+    else:
+        outputFile = outputDir + "/{}.png".format(name)
+    try:
+        canvas.SetBatch(ROOT.kTRUE)
+        canvas.Draw()
+        if "SCurve" in name:
+            canvas.SetLogz()
+        if "PixelAlive" in name:
+            ROOT.gStyle.SetOptStat(0)  # no statistics box
+        else:
+            ROOT.gStyle.SetOptStat(1111)  # default statistics box
+        canvas.Print(outputFile)
+        # canvas.Close()
+        logger.info(outputFile + " is saved")
+    except Exception as e:
+        logger.warning("Failed to save " + outputFile + "\nReason: " + str(e))
+    return outputFile
+
 def GetBinary(fileName):
     binaryData = ROOT.TFile(fileName)
     return binaryData
