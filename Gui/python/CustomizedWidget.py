@@ -76,6 +76,7 @@ class ModuleBox(QWidget):
     def createRow(self):
         SerialLabel = QLabel("SerialNumber:")
         self.SerialEdit = QLineEdit()
+        self.SerialEdit.setMinimumWidth(55)
 
         FMCLabel = QLabel("FMC:")
         self.FMCEdit = QLineEdit()
@@ -212,7 +213,6 @@ class ChipBox(QWidget):
         else:
             self.ChipGroupBoxDict.clear()
             for chipid in self.ChipList:
-                print(f'chipid {chipid}')
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
 
         self.makeChipGroupBox(self.ChipGroupBoxDict)
@@ -236,9 +236,6 @@ class ChipBox(QWidget):
         self.ChipVDDDLabel = QLabel("VDDD:")
         self.ChipVDDDEdit = QLineEdit()
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
-        self.ChipTxtEdit = QLineEdit()
-        self.ChipTxtEdit.setPlaceholderText("Prebuilt chip .txt file")
-
 
         if not self.ChipVDDDEdit.text():
             logger.debug("no VDDD text")
@@ -255,7 +252,6 @@ class ChipBox(QWidget):
 
         self.HChipLayout = QGridLayout()
         self.HChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 1)
-        self.HChipLayout.addWidget(self.ChipTxtEdit, 1, 0, 1, 7)
         self.HChipLayout.addWidget(self.ChipVDDDLabel, 0, 1, 1, 1)
         self.HChipLayout.addWidget(self.ChipVDDDEdit, 0, 2, 1, 1)
         self.HChipLayout.addWidget(self.ChipVDDALabel, 0, 3, 1, 1)
@@ -273,8 +269,6 @@ class ChipBox(QWidget):
         self.ChipVDDDLabel = QLabel("VDDD:")
         self.ChipVDDDEdit = QLineEdit()
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
-        self.ChipTxtEdit = QLineEdit()
-        self.ChipTxtEdit.setPlaceholderText("Prebuilt chip .txt file")
 
         self.ChipVDDALabel = QLabel("VDDA:")
         self.ChipVDDAEdit = QLineEdit()
@@ -292,7 +286,6 @@ class ChipBox(QWidget):
 
         self.HChipLayout = QGridLayout()
         self.HChipLayout.addWidget(self.ChipLabel, 0, 0, 1, 1)
-        self.HChipLayout.addWidget(self.ChipTxtEdit, 1, 0, 1, 7)
         self.HChipLayout.addWidget(self.ChipVDDDLabel, 0, 1, 1, 1)
         self.HChipLayout.addWidget(self.ChipVDDDEdit, 0, 2, 1, 1)
         self.HChipLayout.addWidget(self.ChipVDDALabel, 0, 3, 1, 1)
@@ -875,6 +868,7 @@ class SimpleModuleBox(QWidget):
     def createRow(self):
         SerialLabel = QLabel("SerialNumber:")
         self.SerialEdit = QLineEdit()
+        self.SerialEdit.setMinimumWidth(55)
         self.SerialEdit.returnPressed.connect(self.on_editing_finished)
 
         CableIDLabel = QLabel("Cable ID:")
