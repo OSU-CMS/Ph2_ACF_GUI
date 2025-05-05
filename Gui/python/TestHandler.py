@@ -268,11 +268,7 @@ class TestHandler(QObject):
 
         for key in self.rd53_file.keys():
             if self.rd53_file[key] is None:
-                txt_file_key = (key.split("_", 1)[0], "_".join(key.split("_")[2:]))
-                if txt_file_key in self.txt_files.keys():
-                    self.rd53_file[key] = self.txt_files[txt_file_key]
-                else:
-                    self.rd53_file[key] = os.environ.get(
+                self.rd53_file[key] = os.environ.get(
                     "PH2ACF_BASE_DIR"
                 ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(
                     self.boardType, self.moduleVersion
@@ -298,7 +294,7 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir)
+                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files)
 
                     if config_file:
                         SetupXMLConfigfromFile(
@@ -328,7 +324,7 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir)
+                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files)
 
                     if config_file:
                         SetupXMLConfigfromFile(
