@@ -305,25 +305,27 @@ class QtRunWindow(QWidget):
         self.TempLayout.addWidget(self.tempIndicator, 1, 1, 1, 1)
         self.TempBox.setLayout(self.TempLayout)
 
-        self.RampBox = QGroupBox()
-        self.RampLayout = QGridLayout()
-        self.RampProgressBars = [QProgressBar()] * len(
-            self.master.instruments._module_dict.values()
-        )
-        RampProgressLabels = [QLabel("Bias Voltage:")] * len(
-            self.master.instruments._module_dict.values()
-        )
-        for label in RampProgressLabels:
-            label.setStyleSheet("font-weight: bold;")
+        if not site_settings.manual_powersupply_control:
+            self.RampBox = QGroupBox()
+            self.RampLayout = QGridLayout()
+            self.RampProgressBars = [QProgressBar()] * len(
+                self.master.instruments._module_dict.values()
+            )
+            RampProgressLabels = [QLabel("Bias Voltage:")] * len(
+                self.master.instruments._module_dict.values()
+            )
+            for label in RampProgressLabels:
+                label.setStyleSheet("font-weight: bold;")
 
-        for i in range(len(self.master.instruments._module_dict.values())):
-            self.RampLayout.addWidget(RampProgressLabels[i], i, 0, 1, 1)
-            self.RampLayout.addWidget(self.RampProgressBars[i], i, 1, 1, 1)
-        self.RampBox.setLayout(self.RampLayout)
+            for i in range(len(self.master.instruments._module_dict.values())):
+                self.RampLayout.addWidget(RampProgressLabels[i], i, 0, 1, 1)
+                self.RampLayout.addWidget(self.RampProgressBars[i], i, 1, 1, 1)
+            self.RampBox.setLayout(self.RampLayout)
 
         LeftColSplitter.addWidget(ControllerBox)
         LeftColSplitter.addWidget(TerminalBox)
-        LeftColSplitter.addWidget(self.RampBox)
+        if not site_settings.manual_powersupply_control:
+            LeftColSplitter.addWidget(self.RampBox)
         LeftColSplitter.addWidget(self.TempBox)
         RightColSplitter.addWidget(OutputBox)
         RightColSplitter.addWidget(self.HistoryBox)

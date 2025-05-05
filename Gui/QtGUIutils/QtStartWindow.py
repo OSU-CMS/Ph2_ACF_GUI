@@ -653,7 +653,6 @@ class QtStartWindow(QWidget):
         self.master.BeBoardWidget = self.BeBoardWidget
 
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, files)
-
         self.closeFlag = True
 
     def closeEvent(self, event):

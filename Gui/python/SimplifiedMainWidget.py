@@ -437,7 +437,7 @@ class SimplifiedMainWidget(QWidget):
             )
 
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
-        #self.config_and_test_Signal.emit()
+        self.config_and_test_Signal.emit()
 
     def abortTest(self):
         self.master.RunNewTest.abortTest()
