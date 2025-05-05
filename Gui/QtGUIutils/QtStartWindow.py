@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QHBoxLayout,
     QVBoxLayout,
+    QCheckBox,
     QWidget,
     QMessageBox,
     QLineEdit,
@@ -256,6 +257,7 @@ class QtStartWindow(QWidget):
 
     def setLoginUI(self):
         self.setGeometry(400, 400, 400, 400)
+        self.setMinimumWidth(1000)
         self.setWindowTitle("Start a new test")
         self.show()
 
@@ -297,41 +299,132 @@ class QtStartWindow(QWidget):
             self.ModuleList.append(ModuleSummaryBox)
         self.BeBoardWidget.updateList()  ############FIXME:  This may not work for multiple modules at a time.
 
+        # Main vertical layout
         self.txt_box = QGroupBox()
-        main_txt_layout = QVBoxLayout()  # vertical: text field on top, radio buttons below
+        main_txt_layout = QVBoxLayout()
 
-        # Text input
+        # Create the top row as a horizontal layout
+        top_row_layout = QHBoxLayout()
+
+        # Create info button
+        self.info_button = QPushButton("ℹ️")
+        self.info_button.setToolTip("More information")
+        self.info_button.setFixedSize(30, 30)
+        self.info_button.clicked.connect(lambda:
+            QMessageBox.information(self, "Info",
+            "<ul><li>Log in to https://panthera.fit.edu/</li>"
+            "<li>Go to 'Find Modules'</li>"
+            "<li>Enter your module in 'Module Name', press Enter, hit 'Search'</li>"
+            "<li>Find the .txt you want, right click, choose 'Copy Link Text'</li>"
+            "<li>Enter chip .txt's or enter Panthera url to the right to autofill. Leave blank for default.</li>"
+            "<li>Chip .txt URLs will look like:<br>"
+            "panthera.fit.edu/panthera_storage/results/<br>"
+            "ModuleID**/SequenceID***/ResultID****/<br>"
+            "CMSIT_RD53_{ModuleName}_{Port #}_{ChipID}_{IN/OUT}.txt</li>"
+            "</ul>")
+        )
+
+        # Create other widgetsQt.Checked
+        self.customTxtLabel = QLabel("Use custom .txt files:")
+        self.customTxtCheck = QCheckBox()
+
+        self.customTxtCheck.setChecked(False)
+        self.customTxtCheck.stateChanged.connect(lambda state: self.useCustomTxts(state==Qt.Checked))
+
         self.txt_entry = QLineEdit()
-        self.txt_entry.setPlaceholderText("Panthera .txt's (panthera.fit.edu/panthera_storage/results/ModuleID**/SequenceID***/ResultID****/)")
-        self.txt_entry.editingFinished.connect(lambda:self.change_chip_txts(self.txt_entry.text().replace(" ", "")))
+        self.txt_entry.setPlaceholderText("Panthera .txt's (panthera.fit.edu/panthera_storage/results/...)")
+        self.txt_entry.editingFinished.connect(lambda: self.change_chip_txts(self.txt_entry.text().replace(" ", "")))
 
-        main_txt_layout.addWidget(self.txt_entry)
+        # Add widgets to the horizontal row
+        top_row_layout.addWidget(self.info_button)
+        top_row_layout.addWidget(self.customTxtLabel)
+        top_row_layout.addWidget(self.customTxtCheck)
+        top_row_layout.addWidget(self.txt_entry)
 
-        # Radio buttons: OUT and IN side by side
+        # Add top row to main layout
+        main_txt_layout.addLayout(top_row_layout)
+
+        # Radio buttons
         radio_layout = QHBoxLayout()
         self.out_radio = QRadioButton("OUT")
         self.in_radio = QRadioButton("IN")
         self.out_radio.setLayoutDirection(Qt.RightToLeft)
         self.in_radio.setLayoutDirection(Qt.RightToLeft)
-        self.out_radio.setChecked(True)  # OUT selected by default
+        self.out_radio.setChecked(True)
+        self.out_radio.toggled.connect(lambda checked: checked and self.radio_selected(replaceArgs=("_IN.txt", "_OUT.txt") ))
+        self.in_radio.toggled.connect(lambda checked: checked and self.radio_selected(replaceArgs=("_OUT.txt", "_IN.txt") ))
 
-        radio_layout.addWidget(self.out_radio, alignment=Qt.AlignTop)
-        radio_layout.addWidget(self.in_radio, alignment=Qt.AlignTop)
+        radio_layout.addWidget(self.out_radio)
+        radio_layout.addWidget(self.in_radio)
         radio_layout.addStretch()
 
         main_txt_layout.addLayout(radio_layout)
         self.txt_box.setLayout(main_txt_layout)
-
         self.mainLayout.addWidget(self.txt_box, 2, 0, 1, 1)
-        self.mainLayout.addWidget(self.firmwareCheckBox, 2, 1, 1, 1)
 
         for module in self.BeBoardWidget.getModules():
             module.SerialEdit.editingFinished.connect(self.txt_entry.clear)
 
-    def change_chip_txts(self, url):
+    def radio_selected(self, replaceArgs:tuple):
+        erroredFlag = False
+        for moduleBox in self.BeBoardWidget.getModules():
+            for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                item = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0)
+                if item is not None:
+                    chiplineedit = item.widget()
+                    if chiplineedit is not None:
+                        chiplineedit.setText(chiplineedit.text().replace(*replaceArgs))
+                        if "panthera.fit.edu" in chiplineedit.text():
+                            try:
+                                response = requests.head(chiplineedit.text(), allow_redirects=True)  # or .get() if you need content
+                                if response.status_code in (404, 0, 400, 403):
+                                    logger.info(f"Panthera file doesn't exist:  {chiplineedit.text()}")
+                                    if not erroredFlag:
+                                        self.master.errorMessageBoxSignal.emit("One or more of the chip txt pages don't exist!")
+                                        erroredFlag=True
+                            except requests.exceptions.RequestException as e:
+                                logger.error("Error checking the page: ", e)
+                                if not erroredFlag:
+                                    self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")
+                                    erroredFlag=True
+
+
+    def useCustomTxts(self, state:bool):
+        if state:
+            for moduleBox in self.BeBoardWidget.getModules():
+                for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                    ChipTxtEdit = QLineEdit()
+                    ChipTxtEdit.setPlaceholderText("Prebuilt chip .txt file")
+                    self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].addWidget(ChipTxtEdit, 1, 0, 1, 7)
+        else:
+            self.txt_entry.setText("")
+            for moduleBox in self.BeBoardWidget.getModules():
+                for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                    item = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0)
+                    if item is not None:
+                        widget = item.widget()
+                        if widget is not None:
+                            self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].removeWidget(widget)
+                            widget.setParent(None) 
+                            widget.deleteLater()  # Optional: safely schedule widget for deletion
+        
+
+    def change_chip_txts(self, url:str):
         links = {}
         if url != "":
+            if not self.customTxtCheck.isChecked():
+                self.customTxtCheck.setChecked(True)
+                moduleBox = self.BeBoardWidget.getModules()[0]
+                chipid = tuple(self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys())[0]
+                if self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0) is None:
+                    self.useCustomTxts(True)
+
             erroredFlag=False
+            noModuleInfoFlag=False
+
+            if len(url)< 8 or ("https://"!=url[:8] and "http://"!=url[:7]):
+                url = "https://"+url
+                self.txt_entry.setText(url)
 
             pantheraURL=False
             idx = url.find("ResultID")
@@ -347,37 +440,38 @@ class QtStartWindow(QWidget):
 
             outOrIn = 'OUT' if self.out_radio.isChecked() else 'IN'
             for moduleBox in self.BeBoardWidget.getModules():
+                
                 moduleName = moduleBox.getSerialNumber()
-                moduleId = moduleBox.getFMCPort()
+                port = moduleBox.getFMCPort()
+                if moduleName == "" or port == "":
+                    if not noModuleInfoFlag:
+                        self.master.errorMessageBoxSignal.emit("Please enter a Serial Number and FMC Port to autofill .txt files.")
+                        noModuleInfoFlag=True
+                    continue
+
                 for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
                     if pantheraURL:
-                        pantheraFile = re.sub(r'_+', '_', url+"CMSIT_RD53_{0}_{1}_0_{2}_{3}.txt".format(
-                                moduleName, moduleId, chipid, outOrIn
+                        fileLink = re.sub(r'_+', '_', url+"CMSIT_RD53_{0}_{1}_{2}_{3}.txt".format(
+                                moduleName, port, chipid, outOrIn
                             )) #The re function replaces any instance of multiple underscores with just one.
                     else:
-                        pantheraFile = url
+                        fileLink = url
                     
                     #Check if the Panthera file actually exists.
                     try:
-                        response = requests.head(pantheraFile, allow_redirects=True)  # or .get() if you need content
-                        if response.status_code == 404:
-                            print("Panthera file doesn't exist: "+pantheraFile)
+                        response = requests.head(fileLink, allow_redirects=True)  # or .get() if you need content
+                        if response.status_code in (404, 0, 400, 403):
+                            logger.info(f"Panthera file doesn't exist:  {fileLink}")
                             if not erroredFlag:
-                                self.master.errorMessageBoxSignal.emit("One or more of the Panthera chip txt pages don't exist!")
+                                self.master.errorMessageBoxSignal.emit("One or more of the chip txt pages don't exist!")
                                 erroredFlag=True
-                            self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setPlaceholderText("Failed to get chip .txt url!")
-                            pantheraFile = ""
-                        else:
-                            self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setPlaceholderText("Prebuilt chip .txt file")
                     except requests.exceptions.RequestException as e:
                         logger.error("Error checking the page: ", e)
+                        if not erroredFlag:
+                            self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")
+                            erroredFlag=True
 
-                    links[moduleName, chipid] = pantheraFile
-        else:
-            for moduleBox in self.BeBoardWidget.getModules():
-                moduleName = moduleBox.getSerialNumber()
-                for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
-                    self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setPlaceholderText("Prebuilt chip .txt file")
+                    links[moduleName, chipid] = fileLink
         
         #Do this at the end so that there's no autofill unless all files pass the check above.
         for moduleBox in self.BeBoardWidget.getModules():
@@ -514,12 +608,12 @@ class QtStartWindow(QWidget):
                             logger.error(e)
                             self.master.errorMessageBoxSignal.emit(f"Could not Chip{chipid} file from Panthera!")
                             return
-                    elif os.path.exists(text):
-                        files[moduleName, chipid] = text
-                    else:
+                    elif not os.path.exists(text):
                         self.master.errorMessageBoxSignal.emit(f"Chip{chipid}'s .txt file doesn't exist!")
-
-        
+                        return
+                    else:
+                        files[moduleName, chipid] = text
+                         
         for moduleBox in self.BeBoardWidget.getModules():
             moduleName = moduleBox.getSerialNumber()
             for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
