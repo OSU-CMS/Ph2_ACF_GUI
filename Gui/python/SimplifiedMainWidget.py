@@ -27,7 +27,7 @@ from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 
-
+#Simplified GUI
 class SimplifiedMainWidget(QWidget):
     abort_signal = pyqtSignal()
     close_signal = pyqtSignal()
