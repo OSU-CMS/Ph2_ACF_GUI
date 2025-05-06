@@ -23,7 +23,7 @@ jobs:
 
       - name: Docker Login to GitLab Registry
         run: |
-          docker login -u '${{ secrets.DOCKER_LOGIN_USERNAME}}' -p '${{ secrets.DOCKER_LOGIN_PASSWORD }}'' gitlab-registry.cern.ch
+          docker login -u '${{ secrets.DOCKER_LOGIN_USERNAME}}' -p '${{ secrets.DOCKER_LOGIN_PASSWORD }}' gitlab-registry.cern.ch
 
       - name: Docker build
         uses: docker/build-push-action@v6
