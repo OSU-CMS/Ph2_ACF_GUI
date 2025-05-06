@@ -222,16 +222,21 @@ xhost +local:
 ```
 # Using F4T Temperature Controller
 ## Monitoring F4T with DHT
-Alternative to the TFTP process below, the F4T temperature and humiditiy can be monitored by a DHT sensor connected to an Arduino using [F4T Monitoring](./F4T_Monitoring/). The arduino code and overall premise is based off of UIC's code: https://github.com/KalibMcEuen/UICThermalChamber.
+Alternative to the TFTP process below, the F4T temperature and humiditiy can be monitored by a DHT sensor connected to an Arduino using the [F4T Monitoring](./F4T_Monitoring/) folder. The arduino code and overall premise is based on UIC's code: https://github.com/KalibMcEuen/UICThermalChamber.
 
 NOTE: To run the Arduino code, your model will
 likely need >2KB of SRAM, which the UNO R3 (most common model) does
 not provide. Most other boards fit this RAM requirement.
 
+Ohio State Hardware:
+- Arduino MEGA 2560 R3
+- DFRobot DHT22 Temperature & Humidity Sensor v2
+
 Instructions:
 1. Upload [ModbusCommands.ino](./F4T_Monitoring/ModbusCommands/ModbusCommands.ino) to Arduino and turn it on. Check that is able to connect to F4T. Note IP address configured by DHCP from serial output.
 2. Run [F4TMonitor.py](./F4T_Monitoring/F4TMonitor.py) on a computer. Check Arduino IP address is correct and that connection is established.
 3. Connect to website outputed in python terminal to view data.
+4. If temperature or humidity becomes too extreme, Arduino will shut off F4T and the python code will email an alert to the code's alert_recipients.
 
 Logic:
 1. Arduino turns on, configures ethernet using DHCP, and prints corresponding IP address. Sometimes this IP address changes and needs to be updated in the computer-side python code.
