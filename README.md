@@ -232,7 +232,7 @@ not provide. Most other boards fit this RAM requirement.
 - Arduino MEGA 2560 R3
 - DFROBOT DHT22 Temperature & Humidity Sensor v2
 - DFROBOT Ethernet Shield V3.0
-- (This brand of ethernet shield or DHT required me to remove or replace a file locally for the arduino code to execute, but I forget what)
+(This brand of ethernet shield or DHT required me to remove or replace a file locally for the arduino code to execute, but I forget what)
 
 ### Instructions
 1. Connect DHT sensor to Arduino. [OSU_DHTtoArduino.jpeg](./F4T_Monitoring/OSU_DHTtoArduino.jpeg) depicts OSU's connection scheme.
