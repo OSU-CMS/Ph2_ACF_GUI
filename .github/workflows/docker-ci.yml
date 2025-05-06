@@ -33,7 +33,7 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             echo "BRANCH_NAME=${{ github.event.pull_request.title }}" >> $GITHUB_ENV
-          else if [[ -z "${{ github.event.inputs.image_name }}" ]]; then
+          elif [[ -z "${{ github.event.inputs.image_name }}" ]]; then
             echo "BRANCH_NAME=${{ github.event.head_ref }}" >> $GITHUB_ENV
           else
             echo "BRANCH_NAME=${{ github.event.inputs.image_name }}" >> $GITHUB_ENV
