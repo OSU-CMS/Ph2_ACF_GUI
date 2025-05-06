@@ -208,7 +208,7 @@ After logging in you will need to specify some hardware configurations.
 4. Clicking "New" will open a window for running a new test.  You will choose which test(s) you would like to run and which type of module you are testing.  You will also need to enter the Module serial number, FMC number (L12 or L8), and FMC port number (0-3) in the provided fields.  Once you've done that, you can choose the power mode (direct or SLDO) and click "Next".  If you are manually controlling your HV and LV, a window will open asking if you want to continue.  Click "Yes" to open a new window for running test. 
 5. When the next window opens, click "Run" to begin the test(s).
 
-# Notes on contributing
+# Notes on Contributing
 If you would like to contribute, and you are not at Ohio State there are a few things to keep in mind: 
 1. This software uses Python 3.9 and is designed to work in an Alma Linux 9 environment.  If using the docker image in dev mode, this should be satisfied.  We are happy to give more detailed instructions for anyone interested.
 2. Please ensure that you have tested your code with a module installed or if you do not have a module, that you ensure the GUI launches before making a pull request.
@@ -220,8 +220,8 @@ run the command
 ```
 xhost +local:
 ```
-
-# Monitoring F4T Temperature Controller with DHT
+# Using F4T Temperature Controller
+## Monitoring F4T with DHT
 Alternative to the TFTP process below, the F4T temperature and humiditiy can be monitored by a DHT sensor connected to an Arduino using [F4T Monitoring](./F4T_Monitoring/). The arduino code and overall premise is based off of UIC's code: https://github.com/KalibMcEuen/UICThermalChamber.
 
 NOTE: To run the Arduino code, your model will
@@ -242,7 +242,7 @@ Logic:
 6. When the temperature or humidity becomes too extreme, the python code emails alert to the code's alert_recipients with the python package yagmail
 
 
-# Transferring F4T Temperature Controller Data Logs with TFTP
+## Transferring F4T Data Logs with TFTP
 The F4T Temperature Controller can transfer its data logs via USB, Samba, or Trivial File Transfer Protocol (TFTP). Here are steps to set up a TFTP server on your Linux machine and have the F4T automatically send data logs to the server. Note this tutorial does not use the commonly used xinetd daemon.
 ### Creating the Server
 1. On your hosting machine, install the `tftp-server` and `tftp` packages
