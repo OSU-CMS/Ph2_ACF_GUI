@@ -220,7 +220,7 @@ run the command
 ```
 xhost +local:
 ```
-# Using F4T Temperature Controller
+# F4T Temperature Controller
 ## Monitoring F4T with DHT
 Alternative to the TFTP process below, the F4T temperature and humiditiy can be monitored by a DHT sensor connected to an Arduino using the [F4T Monitoring](./F4T_Monitoring/) folder. The arduino code and overall premise is based on UIC's code: https://github.com/KalibMcEuen/UICThermalChamber.
 
