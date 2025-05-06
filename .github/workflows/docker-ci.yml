@@ -2,26 +2,24 @@ name: ci
 
 on:
   push:
+    branches:
+      - DEV
+  pull_request:
 
 jobs:
-  docker:
+  build-image:
+    name: Build Image
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Login to Docker Hub
-        uses: docker/login-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
         with:
-          username: ${{ vars.osupixels }}
-          password: ${{ secrets.phase2pixels }}
-      -
-        name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-      -
-        name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      -
-        name: Build and push
-        uses: docker/build-push-action@v6
+          username: osupixels
+          password: phase2pixels
+
+      - name: Docker build
+        uses: docker/build-push-action@v2
         with:
-          push: true
-          tags: user/app:latest
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: osupixels/ph2_acf_gui_dev:latest
