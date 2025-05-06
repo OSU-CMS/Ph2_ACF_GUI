@@ -3,7 +3,7 @@ name: ci
 on:
   push:
     branches:
-      - DEV
+      - docking-test
 
 jobs:
   build-image:
