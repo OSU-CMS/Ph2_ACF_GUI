@@ -375,12 +375,6 @@ class SimplifiedMainWidget(QWidget):
         # self.setupStatusWidgets()
         self.setupUI()
 
-    def updateArduinoIndicator(self):
-        if self.ArduinoGroup.condensationRisk:
-            self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
-        else:
-            self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
-
     def updatePeltierTemp(self, temp: float):
         self.peltier_temperature_label.setText("{}C".format(temp))
         if abs(temp - site_settings.defaultPeltierSetTemp) < 15:
