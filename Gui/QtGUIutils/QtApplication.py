@@ -960,9 +960,11 @@ class QtApplication(QWidget):
 
         self.setDefault()
 
-        # In order to fit the coldbox website nicely, the GUI needs to be
-        # at least this big
-        self.resize(1420, 861)
+        if site_settings.cooler == "Tessie":
+            # In order to fit the coldbox website nicely, the GUI needs to be
+            # at least this big
+            self.resize(1420, 861)
+            self.setMinimumSize(1420, 861)
 
         # create a dictionary to easily disable groupboxes later
         self.groupbox_mapping = {"hv": self.HVPowerGroup, "lv": self.LVPowerGroup}
