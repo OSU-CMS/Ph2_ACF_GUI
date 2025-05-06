@@ -4,7 +4,7 @@ on:
   pull_request:
     branches:
       - docking-test
-  workflow_dispatch:
+  workflow_dispatch: 
     inputs:
       image_name:
         description: 'Name of Docker image' 
