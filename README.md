@@ -240,7 +240,7 @@ not provide. Most other boards fit this RAM requirement.
 3. To communicate with computer via ethernet, our Arduino needed a separate ethernet shield.
 4. Run [F4TMonitor.py](./F4T_Monitoring/F4TMonitor.py) on a computer. Check Arduino IP address is correct and that connection is established.
 5. Connect to website outputed in python terminal to view data. Computer logs data in a .csv file.
-6. If temperature or humidity becomes too extreme, Arduino will shut off F4T and the python code will email an alert to the code's alert_recipients.
+6. If temperature or humidity becomes too extreme, Arduino will shut off F4T and python code will email an alert to the code's alert_recipients.
 
 ## Transferring F4T Data Logs with TFTP
 The F4T Temperature Controller can transfer its data logs via USB, Samba, or Trivial File Transfer Protocol (TFTP). Here are steps to set up a TFTP server on your Linux machine and have the F4T automatically send data logs to the server. Note this tutorial does not use the commonly used xinetd daemon.
