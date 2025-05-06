@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       image_name:
-        description: 'Name of Docker image'
+        description: 'Name of Docker image' 
         required: true
 
 jobs:
@@ -29,12 +29,16 @@ jobs:
         run: |
           docker login -u '${{ secrets.DOCKER_LOGIN_USERNAME}}' -p '${{ secrets.DOCKER_LOGIN_PASSWORD }}' gitlab-registry.cern.ch
 
+      - name: Repo name
+        run: |
+          if [[ $GITHUB_EVENT_NAME == 'pull_request' ]]; then
+            echo "Branch Name: ${GITHUB_HEAD_REF}" >> $GITHUB_ENV
+          else
+            echo "Branch Name: ${{ github.event.inputs.image_name }}" >> $GITHUB_ENV
+          fi
+
       - name: Docker build
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: |
-            osupixels/ph2_acf_gui_dev:${{ 
-              # Check if the workflow was triggered by pull request or manually
-              github.event_name == 'pull_request' && github.head_ref || github.event.inputs.image_name 
-            }}
+          tags: osupixels/ph2_acf_gui_dev:${{ env.BRANCH_NAME }}
