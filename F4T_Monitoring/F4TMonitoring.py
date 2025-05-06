@@ -29,7 +29,7 @@ class F4TMonitor():
         self.serverPort = 3000
         self.serverIP = '0.0.0.0'
         self.arduinoPort = 8081
-        self.arduinoIP = '128.146.33.72'
+        self.arduinoIP = 'xxx.xxx.xx.xx' #GET FROM ARDUINO OUTPUT
         #tailscaleIP = '100.122.12.41'
         #tailscaleMachineLink = "https://login.tailscale.com/admin/invite/AfKCYUaFR2c"
         self.remoteIP = '128.146.32.122'
