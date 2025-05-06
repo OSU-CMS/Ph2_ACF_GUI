@@ -228,13 +228,13 @@ NOTE: To run the Arduino code, your model will
 likely need >2KB of SRAM, which the UNO R3 (most common model) does
 not provide. Most other boards fit this RAM requirement.
 
-### Ohio State Hardware:
+### Ohio State Hardware
 - Arduino MEGA 2560 R3
 - DFROBOT DHT22 Temperature & Humidity Sensor v2
 - DFROBOT Ethernet Shield V3.0
 - (This brand of ethernet shield or DHT required me to remove or replace a file locally for the arduino code to execute, but I forget what)
 
-### Instructions:
+### Instructions
 1. Connect DHT sensor to Arduino. [OSU_DHTtoArduino.jpeg](./F4T_Monitoring/OSU_DHTtoArduino.jpeg) depicts OSU's connection scheme.
 2. Upload [ModbusCommands.ino](./F4T_Monitoring/ModbusCommands/ModbusCommands.ino) to Arduino and turn it on. Check that is able to connect to F4T. Note IP address configured by DHCP from serial output.
 3. To communicate with computer via ethernet, our Arduino needed a separate ethernet shield.
