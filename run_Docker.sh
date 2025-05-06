@@ -48,6 +48,7 @@ then
 		-v ${PWD}/Gui/python/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/\
 		-v ${PWD}/InnerTrackerTests/:/home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/\
 		-v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
+		-v ${PWD}/F4T_Monitoring:/home/cmsTkUser/Ph2_ACF_GUI/F4T_Monitoring\
 		-v ${PWD}/felis:/home/cmsTkUser/Ph2_ACF_GUI/felis/\
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
