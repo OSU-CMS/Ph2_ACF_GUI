@@ -29,4 +29,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: osupixels/test:latest
+          tags: osupixels/ph2_acf_gui_dev:pr-${{ github.event.pull_request.number }}
