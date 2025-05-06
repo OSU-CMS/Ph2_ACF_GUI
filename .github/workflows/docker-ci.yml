@@ -3,7 +3,7 @@ name: Continuous Integration Docker
 on:
   pull_request:
     branches:
-      - DEV
+      - docker-test
   workflow_dispatch:
 
 jobs:
