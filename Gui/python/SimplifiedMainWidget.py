@@ -2,6 +2,8 @@ import os
 import time
 from serial import SerialException
 from typing import Optional
+import requests
+from bs4 import BeautifulSoup
 
 from Gui.QtGUIutils.QtStartWindow import SummaryBox
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread
@@ -92,7 +94,7 @@ class SimplifiedMainWidget(QWidget):
         self.ArduinoGroup.setPort(site_settings.defaultArduino)
         self.ArduinoGroup.frozeArduinoPanel()
         self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["arduino"]["Label"].setText("Condensation Risk")
+        self.instrument_info["arduino"]["Label"].setText("Environment Control")
 
     def setupLogFile(self):
         for firmwareName in site_settings.FC7List.keys():
@@ -349,7 +351,7 @@ class SimplifiedMainWidget(QWidget):
         )
 
         self.instrument_info["database"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["database"]["Label"].setText("Database connection:")
+        self.instrument_info["database"]["Label"].setText("Database connection")
 
         self.instrument_info["hv"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["hv"]["Label"].setText("HV status")
@@ -374,6 +376,25 @@ class SimplifiedMainWidget(QWidget):
         self.setupBeBoard()
         # self.setupStatusWidgets()
         self.setupUI()
+
+    def updateArduinoIndicator(self):
+        try:
+            soup = BeautifulSoup(requests.get('http://coldbox:3000/').text, 'html.parser')
+        except:
+            self.instrument_info["arduino"]["Label"].setText('<span style="color:red;">No data</span>')
+            return
+        
+        circle = soup.find('circle', id='circleG')
+        style = circle.get('style')
+        style.split
+        for part in style.split(';'):
+            if 'fill:' in part:
+                fill_value = part.split(':')[1].strip()
+                if fill_value == "green":
+                    self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
+                else:
+                    self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+                return
 
     def updatePeltierTemp(self, temp: float):
         self.peltier_temperature_label.setText("{}C".format(temp))
