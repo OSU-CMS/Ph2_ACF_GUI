@@ -221,6 +221,27 @@ run the command
 xhost +local:
 ```
 
+# Monitoring F4T Temperature Controller with DHT
+Alternative to the TFTP process below, the F4T temperature and humiditiy can be monitored by a DHT sensor connected to an Arduino using [F4T Monitoring](./F4T_Monitoring/). The arduino code and overall premise is based off of UIC's code: https://github.com/KalibMcEuen/UICThermalChamber.
+
+NOTE: To run the Arduino code, your model will
+likely need >2KB of SRAM, which the UNO R3 (most common model) does
+not provide. Most other boards fit this RAM requirement.
+
+Instructions:
+1. Upload [ModbusCommands.ino](./F4T_Monitoring/ModbusCommands/ModbusCommands.ino) to Arduino and turn it on. Check that is able to connect to F4T. Note IP address configured by DHCP from serial output.
+2. Run [F4TMonitor.py](./F4T_Monitoring/F4TMonitor.py) on a computer. Check Arduino IP address is correct and that connection is established.
+3. Connect to website outputed in python terminal to view data.
+
+Logic:
+1. Arduino turns on, configures ethernet using DHCP, and prints corresponding IP address. Sometimes this IP address changes and needs to be updated in the computer-side python code.
+2. Arduino attempts to connect to F4T every five seconds.
+3. Once connected, Arduino takes measurements every five seconds. If temperature or humidity is too extreme, Arduino shuts down F4T.
+4. A computer runs F4Tmonitory.py to get and process the Arduino data. With every measurement, Arduino tries to connect to computer via ethernet. Arduino signals it has been restarted by sending a '!' with the first measurement successfully sent to the computer which tells the computer to begin a new logging file.
+5. Computer stores measurements in a .csv file. It creates a .png of the plotted data and posts it to a local website. The Ohio State lab accesses the website via lab vpn, but the website can be hosted in other ways such as with the free service Tailscale.
+6. When the temperature or humidity becomes too extreme, the python code emails alert to the code's alert_recipients with the python package yagmail
+
+
 # Transferring F4T Temperature Controller Data Logs with TFTP
 The F4T Temperature Controller can transfer its data logs via USB, Samba, or Trivial File Transfer Protocol (TFTP). Here are steps to set up a TFTP server on your Linux machine and have the F4T automatically send data logs to the server. Note this tutorial does not use the commonly used xinetd daemon.
 ### Creating the Server
