@@ -1,0 +1,142 @@
+/* Dark Theme CSS */
+:root {
+  --md-bg-color: #121212;
+  --md-surface-color: #1e1e1e;
+  --md-primary-color: #bb86fc;
+  --md-secondary-color: #03dac6;
+  --md-text-color: #e0e0e0;
+  --md-muted-text-color: #a0a0a0;
+  --md-border-color: #333;
+  --md-error-color: #cf6679;
+  --md-hover-color: #2a2a2a;
+}
+
+* {
+    font-family: "Raleway", sans-serif;
+}
+.mycontainer, .tessie-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem; /* optional spacing between elements */
+  align-items: stretch;
+}
+
+.mycontainer {
+    flex-wrap: wrap;
+    display: ;
+}
+
+.mycontainer > table {
+    display: none;
+}
+
+.mycontainer > div {
+    width: 33.33%;
+    padding: 10px;
+}
+
+.button {
+    border: none;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+}
+
+br {
+    display: block;
+    margin: 10px 0;
+    line-height: 22px;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td, th {
+    padding: 4px 8px;
+    border: 1px solid #666;
+}
+
+textarea {
+    display: none;
+}
+
+input, button {
+    border: 1px solid #666;
+}
+
+th {
+}
+
+#envDiv, #varDiv, #statusDiv {
+}
+
+#logarea {
+    font-size: 10pt;
+    width: 100%;
+    max-width: 100%;
+}
+
+.w3-container {
+
+}
+
+.w3-table th {
+}
+
+.w3-table td {
+}
+
+.varDiv {
+    display: none;
+}
+
+#tec-label {
+    display: none;
+}
+
+.hide {
+    display: none;
+}
+.tessie-container {
+  padding: 1rem;
+  border-radius: 8px;
+  font-family: sans-serif;
+}
+
+.control-section {
+  margin-bottom: 1rem;
+}
+
+.tables-wrapper {
+  display: flex;
+  gap: 2rem;
+}
+
+.data-table table {
+  border-collapse: collapse;
+  padding: 0.5rem;
+  border-radius: 4px;
+  width: auto;
+  justify-content: stretch;
+}
+
+.data-table td {
+  padding: 4px 8px;
+}
+
+.control-section {
+    display: none;
+}
+
+.info-table{
+    flex: 1;
+    display: flex;
+    justify-content: stretch;
+}
+
+
