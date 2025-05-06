@@ -3,7 +3,7 @@ name: ci
 on:
   push:
     branches:
-      - DEV
+      - docking-(but-not-that-kind)
 
 jobs:
   build-image:
@@ -21,4 +21,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: osupixels/ph2_acf_gui_dev:latest 
+          tags: osupixels/ph2_acf_gui_dev2:latest 
