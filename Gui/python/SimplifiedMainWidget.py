@@ -36,7 +36,7 @@ class SimplifiedMainWidget(QWidget):
     def __init__(self, master, dimension):
         logger.debug("SimplifiedMainWidget.__init__()")
         super().__init__()
-        print("docking test 7")
+        print("docking test 8")
         self.master = master
         self.dimension = dimension
 
