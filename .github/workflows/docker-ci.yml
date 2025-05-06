@@ -17,6 +17,11 @@ jobs:
           username: osupixels
           password: phase2pixels
 
+
+      - name: Docker Login to GitLab Registry
+        run: |
+          docker login -p "pyVMKeq9VvswkFV" -u "rdelossa" gitlab-registry.cern.ch
+
       - name: Docker build
         uses: docker/build-push-action@v6
         with:
