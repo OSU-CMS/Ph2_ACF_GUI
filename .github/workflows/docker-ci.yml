@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - DEV
-  pull_request:
 
 jobs:
   build-image:
@@ -22,4 +21,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: majoyce2/ph2_acf_gui_dev:latest
+          tags: osupixels/ph2_acf_gui_dev:latest 
