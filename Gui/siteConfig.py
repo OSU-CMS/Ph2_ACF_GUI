@@ -33,7 +33,7 @@ defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #Coldbox variables
-cooler = "Tessie" # "Pelter", "Tessie", or "Manual"
+cooler = "Tessie" # "Peltier", "Tessie", or "Manual"
 usePeltier = False #The "cooler" variable will be used in the future, but this line is needed for the current version of the GUI
 
 tessie_url = "http://coldbox:3000/"
