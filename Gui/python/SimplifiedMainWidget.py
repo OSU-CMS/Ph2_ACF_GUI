@@ -379,9 +379,15 @@ class SimplifiedMainWidget(QWidget):
 
     def updateArduinoIndicator(self):
         try:
-            soup = BeautifulSoup(requests.get('http://coldbox:3000/').text, 'html.parser')
-        except:
-            self.instrument_info["arduino"]["Label"].setText('<span style="color:red;">No data</span>')
+            soup = BeautifulSoup(requests.get('http://coldboxx:3000/').text, 'html.parser')
+        except requests.exceptions.ConnectionError as e:
+            logger.error(e)
+            self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Can't connect to coldbox</span>")
+            return
+        except Exception as e:
+            print(type(e))
+            logger.error(e)
+            self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Error: No data</span>")
             return
         
         circle = soup.find('circle', id='circleG')
