@@ -21,5 +21,5 @@ jobs:
       - name: Docker build
         uses: docker/build-push-action@v6
         with:
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: osupixels/ph2_acf_gui_dev:latest
