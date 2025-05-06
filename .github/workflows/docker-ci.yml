@@ -13,13 +13,13 @@ jobs:
     steps:
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           username: osupixels
           password: phase2pixels
 
       - name: Docker build
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v6
         with:
           push: ${{ github.event_name != 'pull_request' }}
           tags: osupixels/ph2_acf_gui_dev:latest
