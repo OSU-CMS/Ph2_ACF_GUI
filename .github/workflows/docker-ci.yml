@@ -5,6 +5,10 @@ on:
     branches:
       - docking-test
   workflow_dispatch:
+    inputs:
+      image_name:
+        description: 'Name of Docker image'
+        required: true
 
 jobs:
   build-image:
@@ -29,4 +33,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: osupixels/ph2_acf_gui_dev:pr-${{ github.event.pull_request.number }}
+          tags: |
+            osupixels/ph2_acf_gui_dev:${{ 
+              # Check if the workflow was triggered by pull request or manually
+              github.event_name == 'pull_request' && github.head_ref || github.event.inputs.image_name 
+            }}
