@@ -53,11 +53,7 @@ then
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
-<<<<<<< HEAD
 		-v /tmp/.X11-unix:/tmp/.X11-unix --net host --entrypoint /bin/bash coldbox_testing
-=======
-		-v /tmp/.X11-unix:/tmp/.X11-unix --net host --entrypoint /bin/bash coldbox_testing
->>>>>>> 6d6aff8 (Modifications to run_Docker.sh to avoid needing to make 2 images)
 else
     echo "running as user"
 	IMAGE_NAME="osupixels/ph2_acf_gui_user:latest"
