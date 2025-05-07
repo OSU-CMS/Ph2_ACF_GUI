@@ -9,9 +9,9 @@ from datetime import datetime
 
 class F4TMonitor():
     def __init__(self):
-        self.alertRecipients=["speck.57@buckeyemail.osu.edu"]#,"delossantos.22@buckeyemail.osu.edu","joyce.279@osu.edu"]
+        self.alertRecipients=[] #emails
         self.alertSender="osupixels@gmail.com"
-        self.appPassword="jkwb jeez fvmb gdns"
+        self.appPassword=os.environ["APP_PASSWORD"]
         self.timeBetweenEmails = 3600
         self.lastEmailTime=-self.timeBetweenEmails
 
@@ -30,8 +30,6 @@ class F4TMonitor():
         self.serverIP = '0.0.0.0'
         self.arduinoPort = 8081
         self.arduinoIP = 'xxx.xxx.xx.xx' #GET FROM ARDUINO OUTPUT
-        #tailscaleIP = '100.122.12.41'
-        #tailscaleMachineLink = "https://login.tailscale.com/admin/invite/AfKCYUaFR2c"
         self.remoteIP = '128.146.32.122'
 
         matplotlib.use('agg')
