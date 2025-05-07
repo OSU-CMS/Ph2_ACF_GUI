@@ -98,7 +98,7 @@ To install on Alma Linux please run:\e[0m
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
 		-w $PWD  -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host osupixels/ph2_acf_gui_user:latest #local/testimagejuly30user
+		-v /tmp/.X11-unix:/tmp/.X11-unix --net host majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
 		#Before, the docker run command had the options -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH. We were having trouble
 		#running the GUI through SSH connections, so we removed those options and added --volume="$HOME/.Xauthority:/root/.Xauthority:rw"
 		#which seemed to fix the issue of running the GUI from SSH connections. At the time of this commit, we have no idea why this fixed it
