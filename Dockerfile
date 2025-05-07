@@ -59,7 +59,7 @@ RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/data /home/cmsTkUse
 USER cmsTkUser
 
 #Comment the following line if you want to build the developer container.  The following line makes docker open the GUI when the container started.
-CMD ["prepare_Ph2ACF.sh"]
+#CMD ["prepare_Ph2ACF.sh"]
 
 #ENTRYPOINT ["/bin/bash"]
 #The following would open the GUI when docker run is called.  Otherwise it will just give a terminal. -> I think this is an old comment so this statement should be checked.
