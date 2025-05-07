@@ -19,9 +19,9 @@ def ResultGrader(
         module_name = module_data["module"].getModuleName()
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
-        if "SLDOScan" in testName or "CommunicationTest" in testName:
+        if "CommunicationTest" in testName:
             explanation = (
-                "No grading currently available for SLDOScan or CommunicationTest."
+                "No grading currently available for CommunicationTest."
             )
             return {module_name: (True, explanation)}
 
@@ -35,23 +35,7 @@ def ResultGrader(
         if "IVCurve" in testName:
             root_file_name = testName.split("_")[0] + "_" + module_name
 
-            # NOTE: This may be useful
-            # module_canvas_path = (
-            #     "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
-            #         boardID=module_data["boardID"],
-            #         ogID=module_data["ogID"],
-            #         hybridID=module_data["hybridID"],
-            #     )
-            # )
-
             ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
-
-            if root_file_name in (
-                "PixelAlive_highcharge_xtalk",
-                "PixelAlive_coupled_xtalk",
-                "PixelAlive_uncoupled_xtalk",
-            ):
-                BBanalysis_root_files.append(ROOT_file_path)
 
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
@@ -62,13 +46,37 @@ def ResultGrader(
                 module_type.split(" ")[2].replace("Quad", "2x2"),
                 module_version.strip("v"),
                 True,
-                "link",
             )
             status, message, sanity, explanation = felis.set_result(
                 relevant_files,
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
                 "ivcurve",
+            )
+        
+        elif "SLDOScan" in testName:
+            print('this is validating sldo')
+            root_file_name = testName.split("_")[0] + "_" + module_name
+
+            ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
+
+            relevant_files = [
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
+            ]
+            print('the relevant files are {0}'.format(relevant_files))
+            _1, _2 = felis.set_module(
+                module_name,
+                module_type.split(" ")[0],
+                module_type.split(" ")[2].replace("Quad", "2x2"),
+                module_version.strip("v"),
+                True,
+            )
+            print(f"{testIndexInSequence:02d}_{testName}")
+            status, message, sanity, explanation = felis.set_result(
+                relevant_files,
+                module_name,
+                f"{testIndexInSequence:02d}_{testName}",
+                "sldo",
             )
         else:
             ROOT_file_path = "{0}/Run{1}_{2}.root".format(
