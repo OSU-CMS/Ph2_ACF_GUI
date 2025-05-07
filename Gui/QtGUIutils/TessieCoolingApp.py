@@ -4,9 +4,10 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl
 import logging
 
+from Gui.siteSettings import tessie_url, alternative_tessie_url
+
 logging.basicConfig(level="DEBUG")
 
-from Gui.siteSettings import tessie_url, alternative_tessie_url
 
 class Tessie(QWidget):
     def __init__(self, dimension=None):
