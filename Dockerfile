@@ -45,13 +45,16 @@ RUN dnf -y install dbus-x11 gcc gcc-c++ kernel-devel make usbutils udev
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirements.txt
 
-RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser
-USER cmsTkUser
+
 
 #GIT_REF is used in the compileSubModules script so you need to define it here before running the script.
 ARG GIT_REF=Dev
 RUN sh ./compileSubModules.sh
 RUN chmod +x prepare_Ph2ACF.sh
+
+RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser
+RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/data /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py
+USER cmsTkUser
 
 #Comment the following line if you want to build the developer container.  The following line makes docker open the GUI when the container started.
 #CMD ["prepare_Ph2ACF.sh"]
