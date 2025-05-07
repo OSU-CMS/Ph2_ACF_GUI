@@ -1,0 +1,35 @@
+{
+  "SH0012": {
+    "module_specs": {
+      "name_module": "SH0012",
+      "type_module": "2x2",
+      "subdetector": "TFPX",
+      "croc_version": "1",
+      "has_sensor": true,
+      "type_sensor": "unspecified",
+      "link_production_db": "link"
+    },
+    "results": {
+      "01_IVCurve": {
+        "AS": {
+          "IVCURVE_I_20": -6.825051500000001e-05,
+          "IVCURVE_I_80": 0.0
+        },
+        "paths_files": [
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/CMSIT_RD53_SH0012_0_12_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/CMSIT_RD53_SH0012_0_13_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/CMSIT_RD53_SH0012_0_14_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/CMSIT_RD53_SH0012_0_15_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/CMSIT_fc7.board.1.xml",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/output.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/IVCurve_Module_SH0012_20250317_205131.csv",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/Result_RunIVCurve_SH0012.root",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-17_20-48-00/SH0012/01_IVCurve/IVCurve_Module_SH0012_20250317_205131.svg"
+        ],
+        "type_test": "ivcurve",
+        "time": "2025-03-17 20:51:32",
+        "comment": ""
+      }
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "SH0012": {
+    "module_specs": {
+      "name_module": "SH0012",
+      "type_module": "2x2",
+      "subdetector": "TFPX",
+      "croc_version": "1",
+      "has_sensor": true,
+      "type_sensor": "unspecified",
+      "link_production_db": "link"
+    },
+    "results": {
+      "01_PixelAlive_highcharge_xtalk": {
+        "AS": {
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_3_CHIP_12": 0,
+          "PIXELALIVE_EN_CORE_COL_3_CHIP_12": "111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_2_CHIP_12": 0,
+          "PIXELALIVE_EN_CORE_COL_2_CHIP_12": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_1_CHIP_12": 0,
+          "PIXELALIVE_EN_CORE_COL_1_CHIP_12": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_0_CHIP_12": 0,
+          "PIXELALIVE_EN_CORE_COL_0_CHIP_12": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_3_CHIP_13": 0,
+          "PIXELALIVE_EN_CORE_COL_3_CHIP_13": "111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_2_CHIP_13": 0,
+          "PIXELALIVE_EN_CORE_COL_2_CHIP_13": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_1_CHIP_13": 0,
+          "PIXELALIVE_EN_CORE_COL_1_CHIP_13": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_0_CHIP_13": 0,
+          "PIXELALIVE_EN_CORE_COL_0_CHIP_13": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_3_CHIP_14": 0,
+          "PIXELALIVE_EN_CORE_COL_3_CHIP_14": "111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_2_CHIP_14": 0,
+          "PIXELALIVE_EN_CORE_COL_2_CHIP_14": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_1_CHIP_14": 0,
+          "PIXELALIVE_EN_CORE_COL_1_CHIP_14": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_0_CHIP_14": 0,
+          "PIXELALIVE_EN_CORE_COL_0_CHIP_14": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_3_CHIP_15": 0,
+          "PIXELALIVE_EN_CORE_COL_3_CHIP_15": "111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_2_CHIP_15": 0,
+          "PIXELALIVE_EN_CORE_COL_2_CHIP_15": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_1_CHIP_15": 0,
+          "PIXELALIVE_EN_CORE_COL_1_CHIP_15": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_0_CHIP_15": 0,
+          "PIXELALIVE_EN_CORE_COL_0_CHIP_15": "1111111111111111",
+          "PIXELALIVE_OCC_MEAN_12": 1.0049373010540437,
+          "PIXELALIVE_OCC_STDDEV_12": 0.006856429739723705,
+          "PIXELALIVE_MASKED_COL_NUM_ENTRIES_12": 9.0,
+          "PIXELALIVE_OCC_MEAN_13": 1.0048477580688833,
+          "PIXELALIVE_OCC_STDDEV_13": 0.012108807595879399,
+          "PIXELALIVE_MASKED_COL_NUM_ENTRIES_13": 54.0,
+          "PIXELALIVE_OCC_MEAN_14": 1.0049840159860648,
+          "PIXELALIVE_OCC_STDDEV_14": 0.0029232987753086185,
+          "PIXELALIVE_MASKED_COL_NUM_ENTRIES_14": 2.0,
+          "PIXELALIVE_OCC_MEAN_15": 1.0048978853609984,
+          "PIXELALIVE_OCC_STDDEV_15": 0.00822721256869531,
+          "PIXELALIVE_MASKED_COL_NUM_ENTRIES_15": 12.0
+        },
+        "paths_files": [
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_RD53_SH0012_0_12_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_RD53_SH0012_0_13_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_RD53_SH0012_0_14_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_RD53_SH0012_0_15_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_fc7.board.1.xml",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/output.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_RD53_SH0012_0_12_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_RD53_SH0012_0_13_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_RD53_SH0012_0_14_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/CMSIT_RD53_SH0012_0_15_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-11_18-16-06/SH0012/01_PixelAlive_highcharge_xtalk/Run000033_PixelAlive.root"
+        ],
+        "type_test": "pixelalive",
+        "time": "2025-03-11 18:17:41",
+        "comment": ""
+      }
+    }
+  }
+}

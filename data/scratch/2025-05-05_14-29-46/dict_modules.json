@@ -1,0 +1,47 @@
+{
+  "SH0012": {
+    "module_specs": {
+      "name_module": "SH0012",
+      "type_module": "2x2",
+      "subdetector": "TFPX",
+      "croc_version": "1",
+      "has_sensor": true,
+      "type_sensor": "unspecified",
+      "link_production_db": "link"
+    },
+    "results": {
+      "01_SCurveScan": {
+        "AS": {
+          "SCURVE_THRESHOLD_MEAN_12": 463.1153260250396,
+          "SCURVE_THRESHOLD_WIDTH_12": 100.1837292783001,
+          "SCURVE_NOISE_MEAN_12": 20.068159942722893,
+          "SCURVE_NOISE_WIDTH_12": 2.6225716986366474,
+          "SCURVE_THRESHOLD_MEAN_13": 547.522799177935,
+          "SCURVE_THRESHOLD_WIDTH_13": 91.56316378776967,
+          "SCURVE_NOISE_MEAN_13": 18.949125441681083,
+          "SCURVE_NOISE_WIDTH_13": 2.4866823848430193,
+          "SCURVE_THRESHOLD_MEAN_14": 473.5739556623558,
+          "SCURVE_THRESHOLD_WIDTH_14": 96.23551952139388,
+          "SCURVE_NOISE_MEAN_14": 19.62054969226196,
+          "SCURVE_NOISE_WIDTH_14": 2.854825939280625,
+          "SCURVE_THRESHOLD_MEAN_15": 464.3039518784005,
+          "SCURVE_THRESHOLD_WIDTH_15": 105.28694824333024,
+          "SCURVE_NOISE_MEAN_15": 20.714300289911105,
+          "SCURVE_NOISE_WIDTH_15": 2.837382714878785
+        },
+        "paths_files": [
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-05-05_14-29-46/SH0012/01_SCurveScan/CMSIT_fc7.board.1.xml",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-05-05_14-29-46/SH0012/01_SCurveScan/output.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-05-05_14-29-46/SH0012/01_SCurveScan/CMSIT_RD53_SH0012_0_12_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-05-05_14-29-46/SH0012/01_SCurveScan/CMSIT_RD53_SH0012_0_13_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-05-05_14-29-46/SH0012/01_SCurveScan/CMSIT_RD53_SH0012_0_14_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-05-05_14-29-46/SH0012/01_SCurveScan/CMSIT_RD53_SH0012_0_15_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-05-05_14-29-46/SH0012/01_SCurveScan/Run000046_SCurve.root"
+        ],
+        "type_test": "scurve",
+        "time": "2025-05-05 14:44:40",
+        "comment": ""
+      }
+    }
+  }
+}
