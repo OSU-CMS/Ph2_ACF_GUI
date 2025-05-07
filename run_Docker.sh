@@ -53,7 +53,7 @@ then
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host "test"
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host majoyce2/ph2_acf_gui_dev:latest 
 else
     echo "running as user"
 	IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
