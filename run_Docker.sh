@@ -56,8 +56,8 @@ then
 <<<<<<< HEAD
 		-v /tmp/.X11-unix:/tmp/.X11-unix --net host --entrypoint /bin/bash coldbox_testing
 =======
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host majoyce2/ph2_acf_gui_dev:latest 
->>>>>>> 52be2ee (Revert run_docker.sh script)
+		-v /tmp/.X11-unix:/tmp/.X11-unix --net host --entrypoint /bin/bash coldbox_testing
+>>>>>>> 6d6aff8 (Modifications to run_Docker.sh to avoid needing to make 2 images)
 else
     echo "running as user"
 	IMAGE_NAME="osupixels/ph2_acf_gui_user:latest"
