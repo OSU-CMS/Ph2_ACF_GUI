@@ -44,3 +44,5 @@ jobs:
         with:
           push: true
           tags: osupixels/ph2_acf_gui_dev:${{ env.BRANCH_NAME }}
+          build-args: |
+            APP_PASSWORD=${{ secrets.APP_PASSWORD }}
