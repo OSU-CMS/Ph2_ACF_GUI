@@ -12,7 +12,6 @@ from PyQt5.QtWidgets import (
     QTreeWidgetItem,
     QWidget
 )
-from PyQt5 import QtSvg
 
 import os
 import subprocess
