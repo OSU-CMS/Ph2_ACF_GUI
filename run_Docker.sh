@@ -53,7 +53,11 @@ then
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
+<<<<<<< HEAD
 		-v /tmp/.X11-unix:/tmp/.X11-unix --net host --entrypoint /bin/bash coldbox_testing
+=======
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host majoyce2/ph2_acf_gui_dev:latest 
+>>>>>>> 52be2ee (Revert run_docker.sh script)
 else
     echo "running as user"
 	IMAGE_NAME="osupixels/ph2_acf_gui_user:latest"
