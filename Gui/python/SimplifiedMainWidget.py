@@ -86,15 +86,18 @@ class SimplifiedMainWidget(QWidget):
         self.BeBoardWidget = SimpleBeBoardBox(self.master, self.firmware)
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
-    def setupArduino(self):
-        self.ArduinoGroup = ArduinoWidget()
-        self.ArduinoGroup.stop.connect(self.abort_signal.emit)
-        self.ArduinoGroup.enable()
-        self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
-        self.ArduinoGroup.setPort(site_settings.defaultArduino)
-        self.ArduinoGroup.frozeArduinoPanel()
+    def setupArduino(self, cooler : str = site_settings.cooler):
         self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["arduino"]["Label"].setText("Environment Control")
+        if cooler == "Tessie": #Arduino is now a misnomer
+            self.instrument_info["arduino"]["Label"].setText("Environment Control")
+        else:
+            self.ArduinoGroup = ArduinoWidget()
+            self.ArduinoGroup.stop.connect(self.abort_signal.emit)
+            self.ArduinoGroup.enable()
+            self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+            self.ArduinoGroup.setPort(site_settings.defaultArduino)
+            self.ArduinoGroup.frozeArduinoPanel()
+            self.instrument_info["arduino"]["Label"].setText("Condensation Risk")
 
     def setupLogFile(self):
         for firmwareName in site_settings.FC7List.keys():
@@ -377,30 +380,37 @@ class SimplifiedMainWidget(QWidget):
         # self.setupStatusWidgets()
         self.setupUI()
 
-    def updateArduinoIndicator(self):
-        try:
-            soup = BeautifulSoup(requests.get('http://coldboxx:3000/').text, 'html.parser')
-        except requests.exceptions.ConnectionError as e:
-            logger.error(e)
-            self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Can't connect to coldbox</span>")
-            return
-        except Exception as e:
-            print(type(e))
-            logger.error(e)
-            self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Error: No data</span>")
-            return
-        
-        circle = soup.find('circle', id='circleG')
-        style = circle.get('style')
-        style.split
-        for part in style.split(';'):
-            if 'fill:' in part:
-                fill_value = part.split(':')[1].strip()
-                if fill_value == "green":
-                    self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
-                else:
-                    self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
-                return
+    def updateArduinoIndicator(self, cooler : str = site_settings.cooler) -> bool:
+        if cooler == "Tessie":
+            if self.ArduinoGroup.condensationRisk:
+                self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+            else:
+                self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
+        else:
+            try:
+                soup = BeautifulSoup(requests.get('http://coldboxx:3000/').text, 'html.parser')
+            except requests.exceptions.ConnectionError as e:
+                logger.error(e)
+                self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Can't connect to coldbox</span>")
+                return None
+            except Exception as e:
+                print(type(e))
+                logger.error(e)
+                self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Error: No data</span>")
+                return None
+            
+            circle = soup.find('circle', id='circleG')
+            style = circle.get('style')
+            style.split
+            for part in style.split(';'):
+                if 'fill:' in part:
+                    fill_value = part.split(':')[1].strip()
+                    if fill_value == "green":
+                        self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
+                        return True
+                    else: 
+                        self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+                        return False
 
     def updatePeltierTemp(self, temp: float):
         self.peltier_temperature_label.setText("{}C".format(temp))
@@ -522,7 +532,12 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("instrument_status: {}".format(self.instrument_status))
         logger.debug("instruments: ")
 
-        self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
+        #5/7/25: instrument_status["arduino"] is never referenced again, so this block is redundant.
+        if site_settings.cooler == "Tessie": 
+            self.instrument_status["arduino"] = self.updateArduinoIndicator()
+        else:
+            self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
+
         for beboard in self.firmware:
             self.instrument_status[f"fc7_{beboard.getBoardName()}"] = True
         self.instrument_status["database"] = self.master.panthera_connected
