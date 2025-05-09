@@ -400,6 +400,28 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
+    def GADC_execute_each_step(self, physics_seconds : float =  15) -> None:
+        GADC_processes = [QProcess() for _ in self.firmware]
+        for i, process in enumerate(GADC_processes):
+            self.outputString.emit("Beginning intermediate physics test", self.runwindow.ConsoleViews[i])
+            process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+            process.setWorkingDirectory(
+                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+            )
+            process.readyReadStandardOutput.connect(
+                lambda j=i: self.on_readyReadStandardOutput(j)
+            )
+            process.start(
+                "CMSITminiDAQ",
+                ["-f", f"CMSIT_{self.firmware[i].getBoardName()}.xml", "-c", "physics", "-t", str(physics_seconds)],
+            )
+        for process, firmware in zip(GADC_processes, self.firmware):
+            if process.state() != QProcess.NotRunning:
+                result = process.waitForFinished(-1)
+                if not result:
+                    logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
+                    process.kill()
+
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
             self.output_dir, self.input_dir = self.config_output_dir(testName)
@@ -428,12 +450,24 @@ class TestHandler(QObject):
                     lv_on = True
                     break
             if not lv_on:
-                self.instruments.lv_on(
-                    voltage=site_settings.ModuleVoltageMapSLDO[
-                        self.master.module_in_use
-                    ],
-                    current=site_settings.ModuleCurrentMap[self.master.module_in_use],
-                )
+                if testName == "SLDOScan_GADC":
+                    starting_voltage = 2
+                    self.instruments.lv_on(
+                        voltage=starting_voltage,
+                        current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                    )
+                    self.instruments.lv_sweep(
+                        target=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                        delay=.5, step_size=site_settings.ModuleCurrentMap[self.master.module_in_use]/10,
+                        execute_each_step = self.GADC_execute_each_step
+                    )
+                else:
+                    self.instruments.lv_on(
+                        voltage=site_settings.ModuleVoltageMapSLDO[
+                            self.master.module_in_use
+                        ],
+                        current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                    )
 
         if "IVCurve" in testName:
             self.currentTest = testName
@@ -775,7 +809,8 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            elif "IVCurve" in self.currentTest:
+            elif "IVCurve" in self.currentTest or "SLDOScan_GADC" == self.currentTest:
+                print("monitor DQM check")
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
