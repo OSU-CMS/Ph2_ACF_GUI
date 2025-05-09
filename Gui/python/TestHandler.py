@@ -409,7 +409,7 @@ class TestHandler(QObject):
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/"
             )
             process.readyReadStandardOutput.connect(
-                lambda j=i: self.on_readyReadStandardOutput(j)
+                lambda : print(process.readAllStandardOutput().data().decode(), end='')
             )
             process.start(
                 "CMSITminiDAQ",
@@ -417,10 +417,19 @@ class TestHandler(QObject):
             )
         for process, firmware in zip(GADC_processes, self.firmware):
             if process.state() != QProcess.NotRunning:
-                result = process.waitForFinished(-1)
+                result = process.waitForFinished(-1) #waits indefinitely
                 if not result:
                     logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
                     process.kill()
+                else:
+                    print("dqm check")
+                    os.system(
+                        "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                            os.environ.get("PH2ACF_BASE_DIR"),
+                            self.RunNumber,
+                            self.output_dir,
+                        )
+                    )
 
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
@@ -443,6 +452,30 @@ class TestHandler(QObject):
         for console in self.runwindow.ConsoleViews:
             self.outputString.emit("Executing Single Step test...", console)
 
+        self.starttime = None
+        self.ProgressingMode = "None"
+        self.currentTest = testName
+
+        self.updateOptimizedXMLValues()
+        self.configTest()
+
+        self.outputFile = self.output_dir + "/output.txt"
+        self.errorFile = self.output_dir + "/error.txt"
+
+        # Make sure that the GUI is not trying to write to the root directory
+        try:
+            assert self.output_dir != ""
+        except AssertionError:
+            logger.exception(
+                "Output directory was not formatted correctly, closing GUI to not write to root directory."
+            )
+            raise
+
+        if os.path.exists(self.outputFile):
+            self.outputfile = open(self.outputFile, "a")
+        else:
+            self.outputfile = open(self.outputFile, "w")
+
         if self.instruments:
             lv_on = False
             for number in self.instruments.get_modules().keys():
@@ -451,13 +484,14 @@ class TestHandler(QObject):
                     break
             if not lv_on:
                 if testName == "SLDOScan_GADC":
-                    starting_voltage = 2
+                    print(f"voltage={site_settings.ModuleVoltageMapSLDO[self.master.module_in_use]}")
+                    print(f"current={site_settings.ModuleCurrentMap[self.master.module_in_use]}")
                     self.instruments.lv_on(
-                        voltage=starting_voltage,
+                        voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                         current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                     )
                     self.instruments.lv_sweep(
-                        target=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                        target=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
                         delay=.5, step_size=site_settings.ModuleCurrentMap[self.master.module_in_use]/10,
                         execute_each_step = self.GADC_execute_each_step
                     )
@@ -569,29 +603,6 @@ class TestHandler(QObject):
         self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
 
-        self.starttime = None
-        self.ProgressingMode = "None"
-        self.currentTest = testName
-
-        self.updateOptimizedXMLValues()
-        self.configTest()
-
-        self.outputFile = self.output_dir + "/output.txt"
-        self.errorFile = self.output_dir + "/error.txt"
-
-        # Make sure that the GUI is not trying to write to the root directory
-        try:
-            assert self.output_dir != ""
-        except AssertionError:
-            logger.exception(
-                "Output directory was not formatted correctly, closing GUI to not write to root directory."
-            )
-            raise
-
-        if os.path.exists(self.outputFile):
-            self.outputfile = open(self.outputFile, "a")
-        else:
-            self.outputfile = open(self.outputFile, "w")
         self.setupQProcess()
 
     def setupQProcess(self):
@@ -809,8 +820,7 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            elif "IVCurve" in self.currentTest or "SLDOScan_GADC" == self.currentTest:
-                print("monitor DQM check")
+            elif "IVCurve" in self.currentTest:
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
