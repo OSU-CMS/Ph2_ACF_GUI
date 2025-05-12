@@ -382,7 +382,7 @@ class SimplifiedMainWidget(QWidget):
         self.RunButtonState()
 
     def updateArduinoIndicator(self, cooler : str = site_settings.cooler) -> bool:
-        if cooler == "Tessie":
+        if cooler != "Tessie":
             if self.ArduinoGroup.condensationRisk:
                 self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
             else:
