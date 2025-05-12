@@ -44,16 +44,16 @@ class SLDOCurveWorker(QThread):
         self.PIN_MAPPINGS = {
             "DEFAULT": AdcBoard.DEFAULT_PIN_MAP,
             "DOUBLE": {
-                0: 'VDDA_ROC1',
-                # 1: 'VDDA_ROC3',
+                # 0: 'VDDA_ROC1',
+                1: 'VDDA_ROC1',
                 # 2: 'VDDD_ROC2',
                 # 3: 'VDDD_ROC3',
-                4: 'VDDD_ROC1',
-                 #5: 'TP7D', #VOFS OUT
+                # 4: 'VDDD_ROC1',
+                5: 'VDDD_ROC1', #VOFS OUT
                 # 6: None,
                 # 7: 'TP8', #VOFS IN
                 # 8: None,
-                # 9: 'TP10', #VIN
+                9: 'TP10', #VIN
                 # 10: None,
                 11: "VDDA_ROC0",
                 #12: "VDDA_ROC1",
@@ -72,7 +72,7 @@ class SLDOCurveWorker(QThread):
                 # 6: None,
                 # 7: 'TP8', #VOFS IN
                 # 8: None,
-                # 9: 'TP10', #VIN
+                9: 'TP10', #VIN
                 # 10: None,
                 11: "VDDA_ROC0",
                 12: "VDDA_ROC1",
@@ -153,14 +153,21 @@ class SLDOCurveWorker(QThread):
         self.instruments.lv_off()
 
         # extract lv voltage and lv current
-        LV_Voltage_Up = [res[4] for res in data_up]
         Currents_Up = [res[5] for res in data_up]
-        LV_Voltage_Down = [res[4] for res in data_down]
         Currents_Down = [res[5] for res in data_down]
+
+        # Use the results of pin 9 as LV_Voltage_Up and LV_Voltage_Down
+        pin_9_index = 9  # Pin index for "TP10"
+        LV_Voltage_Up = [res[6][pin_9_index] for res in data_up]
+        LV_Voltage_Down = [res[6][pin_9_index] for res in data_down]
 
         for index, pin in self.PIN_MAPPINGS[
             self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
         ].items():
+        
+            if index == 9:
+                continue
+
             ADC_Voltage_Up = [res[6][index] for res in data_up]
             result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
             ADC_Voltage_Down = [res[6][index] for res in data_down]
