@@ -1,7 +1,7 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, QSize
 
-# from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QGridLayout,
     QLabel,
@@ -12,7 +12,6 @@ from PyQt5.QtWidgets import (
     QTreeWidgetItem,
     QWidget
 )
-from PyQt5 import QtSvg
 
 import os
 import subprocess
@@ -121,11 +120,11 @@ class ResultTreeWidget(QWidget):
             self.leftArrow = QPushButton("<-")
             self.leftArrow.clicked.connect(self.leftArrowFunc)
 
-            self.SVGWidget = QtSvg.QSvgWidget()
-            minHeight = 400
-            ratio = 1.5
-            self.SVGWidget.setMinimumHeight(minHeight)
-            self.SVGWidget.setMinimumWidth(minHeight * ratio)
+            self.DisplayLabel = QLabel()
+            self.DisplayLabel.setMinimumHeight(400)
+            self.DisplayLabel.setMinimumWidth(600)
+            self.DisplayLabel.setAlignment(Qt.AlignCenter)
+            self.mainLayout.addWidget(self.DisplayLabel, 1, 1+len(self.firmware), 9, 3)
 
         if self.master.expertMode:
             self.mainLayout.addWidget(self.OutputTree, 0, 1+len(self.firmware), 10, 2)
@@ -134,7 +133,7 @@ class ResultTreeWidget(QWidget):
             self.mainLayout.addWidget(self.ControlButtom, 0, 4+len(self.firmware), 1, 1)
             self.mainLayout.addWidget(self.rightArrow, 0, 3+len(self.firmware), 1, 1)
             self.mainLayout.addWidget(self.leftArrow, 0, 2+len(self.firmware), 1, 1)
-            self.mainLayout.addWidget(self.SVGWidget, 1, 1+len(self.firmware), 9, 3)
+            self.mainLayout.addWidget(self.DisplayLabel, 1, 1+len(self.firmware), 9, 3)
 
         if not self.master.expertMode:
             # Initialize timer:
@@ -223,8 +222,9 @@ class ResultTreeWidget(QWidget):
         self.displayIndex = self.displayIndex % len(self.displayList)
         step, displayPlot = self.displayList[self.displayIndex]
         self.TestLabel.setText("Step{}".format(step))
-        self.SVGWidget.load(displayPlot)
-
+        pixmap = QPixmap(displayPlot).scaled(
+        QSize(self.DisplayW, self.DisplayH), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        self.DisplayLabel.setPixmap(pixmap)
     def rightArrowFunc(self):
         self.timer.start(3000)
         if len(self.displayList) > 0:
