@@ -16,10 +16,11 @@ import os
 import glob
 import subprocess
 import threading
-import time
+import time, re
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+from collections import defaultdict
 
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
@@ -90,6 +91,10 @@ class TestHandler(QObject):
         self.modules = [
             module for beboard in self.firmware for module in beboard.getModules()
         ]
+
+        self.GADC_meas_id = None
+        self.GADC_ramp_measurements = {measurement:{channel:{} for channel in self.instruments._module_dict.keys()} for measurement in ("VDDD","VDDA")}
+        self.GADC_sweep_index = 0
 
         self.finished_tests = []
         self.BBanalysis_root_files = []
@@ -400,21 +405,32 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
-    def GADC_execute_each_step(self, physics_seconds : float =  15) -> None:
-        GADC_processes = [QProcess() for _ in self.firmware]
+    def GADC_execute_each_step(self, physics_seconds : float =  5, fc7_index : int = 0) -> None:
+
+        GADC_processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
         for i, process in enumerate(GADC_processes):
-            self.outputString.emit("Beginning intermediate physics test", self.runwindow.ConsoleViews[i])
+
+            voltage = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "voltage")
+            current = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "current")
+
+            print(f"Beginning intermediate physics test at {voltage}V and {current}A")
+            self.outputString.emit(f"Beginning intermediate physics test at {voltage}V and {current}A", self.runwindow.ConsoleViews[fc7_index])
+
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/"
             )
             process.readyReadStandardOutput.connect(
-                lambda : print(process.readAllStandardOutput().data().decode(), end='')
+                lambda: self.on_readyReadStandardOutput_GADC(process, i, channel = tuple(self.instruments._module_dict.keys())[i],
+                voltage=voltage, current=current)
             )
+            process.finished.connect(lambda exitCode, exitStatus, j=i: self.finished_run_process(exitCode, exitStatus, j))
+            
             process.start(
                 "CMSITminiDAQ",
-                ["-f", f"CMSIT_{self.firmware[i].getBoardName()}.xml", "-c", "physics", "-t", str(physics_seconds)],
+                ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml", "-c", "physics", "-t", str(physics_seconds)],
             )
+            
         for process, firmware in zip(GADC_processes, self.firmware):
             if process.state() != QProcess.NotRunning:
                 result = process.waitForFinished(-1) #waits indefinitely
@@ -422,14 +438,9 @@ class TestHandler(QObject):
                     logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
                     process.kill()
                 else:
-                    print("dqm check")
-                    os.system(
-                        "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
-                            os.environ.get("PH2ACF_BASE_DIR"),
-                            self.RunNumber,
-                            self.output_dir,
-                        )
-                    )
+                    logger.error("physics test failed to create {0}/test/Results/Run{1}_MonitorDQM.root".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber))
 
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
@@ -484,17 +495,14 @@ class TestHandler(QObject):
                     break
             if not lv_on:
                 if testName == "SLDOScan_GADC":
-                    print(f"voltage={site_settings.ModuleVoltageMapSLDO[self.master.module_in_use]}")
-                    print(f"current={site_settings.ModuleCurrentMap[self.master.module_in_use]}")
-                    self.instruments.lv_on(
-                        voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
-                        current=site_settings.ModuleCurrentMap[self.master.module_in_use],
-                    )
-                    self.instruments.lv_sweep(
-                        target=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
-                        delay=.5, step_size=site_settings.ModuleCurrentMap[self.master.module_in_use]/10,
-                        execute_each_step = self.GADC_execute_each_step
-                    )
+                    self.instruments.lv_on(voltage=site_settings.SLDOScan_GADC["voltage"],current=site_settings.SLDOScan_GADC["starting current"])
+
+                    #Sweep current
+                    self.instruments.lv_sweep(target=site_settings.SLDOScan_GADC["target current"], delay=.1, set_property="current",
+                        step_size=site_settings.SLDOScan_GADC["step size"],execute_each_step=self.GADC_execute_each_step)
+
+                    print(f'\n{self.GADC_ramp_measurements}\n')
+                    return
                 else:
                     self.instruments.lv_on(
                         voltage=site_settings.ModuleVoltageMapSLDO[
@@ -547,7 +555,7 @@ class TestHandler(QObject):
             return
 
         # If the HV is not already on, turn it on.
-        if self.instruments:
+        if self.instruments and self.currentTest != "SLDOScan_GADC":
             default_hv_voltage = site_settings.icicle_instrument_setup[
                 "instrument_dict"
             ]["hv"]["default_voltage"]
@@ -820,7 +828,7 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            elif "IVCurve" in self.currentTest:
+            elif "IVCurve" in self.currentTest or "SLDOScan_GADC" == self.currentTest:
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
@@ -1094,6 +1102,38 @@ created by Ph2_ACF is empty."
 
         for textStr in textline:
             self.outputString.emit(textStr, self.runwindow.ConsoleViews[processIndex])
+
+    @QtCore.pyqtSlot()
+    def on_readyReadStandardOutput_GADC(self, process, fc7_index, channel, voltage, current): 
+        alltext = (
+            process.readAllStandardOutput().data().decode()
+        )
+        textline = alltext.split("\n")
+        
+        for textStr in textline:
+            print(textStr)
+            text = textStr.encode("ascii")
+            _, text = parseANSI(text)
+            self.outputString.emit(
+                text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
+            )
+
+            textStr = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]').sub('', textStr)
+            match = re.search(r"Reading monitored data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]", textStr)
+            if match:
+                self.GADC_meas_id = tuple(match.group(i) for i in range(1,5))
+            else:
+                match = re.search(r"(\w+):\s*([\d.]+)\s*\+/-\s*([\d.]+)\s*V", textStr)
+                if match:
+                    if self.GADC_meas_id is not None:
+                        if "VDDD" == match.group(1) or "VDDA" == match.group(1):
+                            if (voltage, current) not in self.GADC_ramp_measurements[match.group(1)][channel].keys():
+                                self.GADC_ramp_measurements[match.group(1)][channel][voltage, current] = {}
+                            self.GADC_ramp_measurements[match.group(1)][channel][voltage, current][self.GADC_meas_id] = {"Value":match.group(2), "Uncertainty":match.group(3)}
+                            self.GADC_meas_id = None
+                    else:
+                        logger.error(f'Did not receive expected message, "Reading monitored data for \
+                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
 
     @QtCore.pyqtSlot()
     def on_finish(self, processIndex: int):
