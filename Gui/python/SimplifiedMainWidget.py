@@ -379,6 +379,7 @@ class SimplifiedMainWidget(QWidget):
         self.setupBeBoard()
         # self.setupStatusWidgets()
         self.setupUI()
+        self.RunButtonState()
 
     def updateArduinoIndicator(self, cooler : str = site_settings.cooler) -> bool:
         if cooler == "Tessie":
@@ -559,6 +560,29 @@ class SimplifiedMainWidget(QWidget):
             for key, value in self.instrument_info.items():
                 value["Value"].setPixmap(self.redledpixmap)
         logger.debug(f"{__name__} Setup led labels")
+        logger.debug(f"Instrument status: {self.instrument_status}")       
+    def RunButtonState(self):
+        """
+        Check the status of LV, HV, and FC7, and disable the Run button
+        if any of these statuses are False.
+        """
+        try:
+            # Check FC7 statuses
+            fc7_status = any(self.instrument_status.get(f"fc7_{firmwareName}", False) for firmwareName in site_settings.FC7List.keys())
+            logger.debug(f"FC7 status: {fc7_status}")
+
+            # Disable the Run button if any status is False
+            # if self.instruments is False then icicle failed to connect to LV and HV
+            if not (self.instruments and fc7_status):
+                self.RunButton.setDisabled(True)
+                logger.debug("RunButton disabled due to one or more failing statuses.")
+            else:
+                self.RunButton.setDisabled(False)
+                logger.debug("RunButton enabled. All statuses are good.")
+
+        except Exception as e:
+            logger.error(f"Error while checking instrument statuses: {e}")
+            self.RunButton.setDisabled(True)
 
     def check_icicle_devices(self) -> Optional[dict[str, int]]:
         """
