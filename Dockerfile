@@ -17,6 +17,7 @@ ENV PH2ACF_BASE_DIR=${GUI_dir}/Ph2_ACF
 ENV DATA_dir=${GUI_dir}/data/TestResults
 ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}:${GUI_dir}/icicle/icicle:${GUI_dir}/InnerTrackerTests:${GUI_dir}/felis
 
+
 ARG USER_UID=1000
 ARG USER_GID=1000
 
@@ -24,6 +25,8 @@ ARG USER_GID=1000
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
     useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser &&\
     usermod -aG dialout cmsTkUser
+
+ENV APP_PASSWORD=${APP_PASSWORD}
 
 
 #Setting the default user in the container to be root

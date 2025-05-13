@@ -17,3 +17,6 @@ fasteners
 requests_toolbelt
 bs4
 ilock
+flask
+yagmail
+

@@ -216,7 +216,7 @@ After logging in you will need to specify some hardware configurations.
 4. Clicking "New" will open a window for running a new test.  You will choose which test(s) you would like to run and which type of module you are testing.  You will also need to enter the Module serial number, FMC number (L12 or L8), and FMC port number (0-3) in the provided fields.  Once you've done that, you can choose the power mode (direct or SLDO) and click "Next".  If you are manually controlling your HV and LV, a window will open asking if you want to continue.  Click "Yes" to open a new window for running test. 
 5. When the next window opens, click "Run" to begin the test(s).
 
-# Notes on contributing
+# Notes on Contributing
 If you would like to contribute, and you are not at Ohio State there are a few things to keep in mind: 
 1. This software uses Python 3.9 and is designed to work in an Alma Linux 9 environment.  If using the docker image in dev mode, this should be satisfied.  We are happy to give more detailed instructions for anyone interested.
 2. Please ensure that you have tested your code with a module installed or if you do not have a module, that you ensure the GUI launches before making a pull request.
@@ -228,8 +228,30 @@ run the command
 ```
 xhost +local:
 ```
+# F4T Temperature Controller
+## Monitoring F4T with DHT
+Alternative to the TFTP process below, the F4T temperature and humiditiy can be monitored by a DHT sensor connected to an Arduino using the [F4T Monitoring](./F4T_Monitoring/) folder. The arduino code and overall premise is based on UIC's code: https://github.com/KalibMcEuen/UICThermalChamber.
 
-# Transferring F4T Temperature Controller Data Logs with TFTP
+NOTE: To run the Arduino code, your model will
+likely need >2KB of SRAM, which the UNO R3 (most common model) does
+not provide. Most other boards fit this RAM requirement.
+
+### Ohio State Hardware
+- Arduino MEGA 2560 R3
+- DFROBOT DHT22 Temperature & Humidity Sensor v2
+- DFROBOT Ethernet Shield V3.0
+
+(This brand of ethernet shield or DHT required me to remove or replace a file locally for the arduino code to execute, but I forget what)
+
+### Instructions
+1. Connect DHT sensor to Arduino. [OSU_DHTtoArduino.jpeg](./F4T_Monitoring/OSU_DHTtoArduino.jpeg) depicts OSU's connection scheme.
+2. Upload [ModbusCommands.ino](./F4T_Monitoring/ModbusCommands/ModbusCommands.ino) to Arduino and turn it on. Check that is able to connect to F4T. Note IP address configured by DHCP from serial output.
+3. To communicate with computer via ethernet, our Arduino needed a separate ethernet shield.
+4. Run [F4TMonitor.py](./F4T_Monitoring/F4TMonitor.py) on a computer. Check Arduino IP address is correct and that connection is established.
+5. Connect to website outputed in python terminal to view data. Computer logs data in a .csv file.
+6. If temperature or humidity becomes too extreme, Arduino will shut off F4T and python code will email an alert to the code's alert_recipients.
+
+## Transferring F4T Data Logs with TFTP
 The F4T Temperature Controller can transfer its data logs via USB, Samba, or Trivial File Transfer Protocol (TFTP). Here are steps to set up a TFTP server on your Linux machine and have the F4T automatically send data logs to the server. Note this tutorial does not use the commonly used xinetd daemon.
 ### Creating the Server
 1. On your hosting machine, install the `tftp-server` and `tftp` packages
@@ -293,3 +315,26 @@ The F4T Temperature Controller can transfer its data logs via USB, Samba, or Tri
 
 * If the GUI doens't launch and an error stating a QT plugin could not be used even though it was found, reboot your computer. This seems to be an issue with the QT framework that the GUI is written with and we have yet to determine a fix. 
 
+# Udev Rules
+Give a permanent name to devices plugged into the computer so you don't have to change the port path (e.g. /dev/ttyUSB#) on reboot or replug. This tutorial uses Almalinux 9.5.
+1. Access or create a .rules file in /etc/udev/rules.d/
+2. Find the port path for your device (e.g. /dev/ttyUSB#). portFinder.sh in this repository gives a list of all port paths and device names connected to the computer
+3. Run `udevadm info -a -n #your port path here#` to get device match keys
+4. Find match key(s) unique to the device, ideally one that has real-life meaning like a brand/model name so it's recognizeable and won't change on reboot/replug/etc. Other good match keys are ATTRS{id/product} and ATTRS{id/vendor}. For our device, we used the match key DRIVERS.
+5. In your .rules file, add a line that looks like `MATCHKEY=="value", SYMLINK+="my_device_name"`. To differentiate devices, you can add more keys e.g. `SUBSYSTEM` and `KERNEL`
+
+   - NOTE: Singular match keys (e.g. KERNEL) is different from plural (e.g. KERNELS) in that singular refers to only the device, but plural refers to the device and any of its parents.
+7. In Gui/jsonFiles/#your json file#.json, you can change device "resource" to "ASRL/dev/#your device name#::INSTR
+
+Our rules file looks like
+```
+# AdcBoard
+SUBSYSTEM=="tty", KERNELS=="1-10:1.0", DRIVERS=="ftdi_sio", SYMLINK+="ttyUSBadc"
+
+# Keithley 2410 via PL2303 USB-to-serial
+SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="pl2303", SYMLINK+="ttyUSBkeith"
+
+# KeysightE3633A
+SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="keyspan_1", SYMLINK+="ttyUSBkey"
+```
+For devices with identical match keys, you can make udev rules specific to the port location that looks like #-# which *doesn't* change on reboot/replug. When you do step 3, you should see a line that looks like `looking at device '/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.0/#...#`. In this case, the port location is 1-10, so `KERNELS=="1-10:1.0"` ensures that the name ttyUSBadc only works when the ADC device is plugged into the 1-10 port.
