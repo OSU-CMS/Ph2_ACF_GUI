@@ -307,6 +307,45 @@ The F4T Temperature Controller can transfer its data logs via USB, Samba, or Tri
 
 * If the GUI doens't launch and an error stating a QT plugin could not be used even though it was found, reboot your computer. This seems to be an issue with the QT framework that the GUI is written with and we have yet to determine a fix. 
 
+
+# Coldbox:
+
+When setting up the coldbox alarm, the sound card tends to change indices on reboot. 
+i.e.
+```
+cat /proc/asound/cards
+``` 
+Will produce an output similar to this:
+```
+0 [vc4hdmi0     ]:vc4-hdmi- vc4-hdmi-0 
+                  vc4-hdmi-0
+1 [vc4hdmi1     ]:vc4-hdmi- vc4-hdmi-1 
+                  vc4-hdmi-1 
+2 [Headphones   ]:bcm2835_headpho- bcm2835 Headphones 
+                  bcm2835 Headphones 
+3 [UACDemoV10  ]: USB-Audio- UACDemoV1.0 
+                  Jieli Technology UACDemoV1.0 at usb-0000:01:00.0-1.3, full speed
+```
+But after reboot might look something like this:
+```
+0 [vc4hdmi0     ]:vc4-hdmi- vc4-hdmi-0 
+                  vc4-hdmi-0
+1 [vc4hdmi1     ]:vc4-hdmi- vc4-hdmi-1 
+                  vc4-hdmi-1 
+2 [UACDemoV10   ]:USB-Audio- UACDemoV1.0 
+                  Jieli Technology UACDemoV1.0 at usb-0000:01:00.0-1.3, full speed
+3 [Headphones   ]:bcm2835_headpho- bcm2835 Headphones 
+                  bcm2835 Headphones 
+```
+This may cause issues when connecting the speaker. You can set the index of the speaker in the following file:
+```
+sudoedit /lib/modprobe.d/aliases.conf
+```
+Adding the following line:
+```
+options snd-usb-audio index=3
+```
+
 # Udev Rules
 Give a permanent name to devices plugged into the computer so you don't have to change the port path (e.g. /dev/ttyUSB#) on reboot or replug. This tutorial uses Almalinux 9.5.
 1. Access or create a .rules file in /etc/udev/rules.d/
@@ -330,3 +369,4 @@ SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="pl2303", SYMLINK+="ttyUSBkei
 SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="keyspan_1", SYMLINK+="ttyUSBkey"
 ```
 For devices with identical match keys, you can make udev rules specific to the port location that looks like #-# which *doesn't* change on reboot/replug. When you do step 3, you should see a line that looks like `looking at device '/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.0/#...#`. In this case, the port location is 1-10, so `KERNELS=="1-10:1.0"` ensures that the name ttyUSBadc only works when the ADC device is plugged into the 1-10 port.
+
