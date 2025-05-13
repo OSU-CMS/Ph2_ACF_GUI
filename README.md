@@ -285,3 +285,40 @@ The F4T Temperature Controller can transfer its data logs via USB, Samba, or Tri
 
 * If the GUI doens't launch and an error stating a QT plugin could not be used even though it was found, reboot your computer. This seems to be an issue with the QT framework that the GUI is written with and we have yet to determine a fix. 
 
+# Coldbox:
+
+When setting up the coldbox alarm, the sound card tends to change indices on reboot. 
+i.e.
+```
+cat /proc/asound/cards
+``` 
+Will produce an output similar to this:
+```
+0 [vc4hdmi0     ]:vc4-hdmi- vc4-hdmi-0 
+                  vc4-hdmi-0
+1 [vc4hdmi1     ]:vc4-hdmi- vc4-hdmi-1 
+                  vc4-hdmi-1 
+2 [Headphones   ]:bcm2835_headpho- bcm2835 Headphones 
+                  bcm2835 Headphones 
+3 [UACDemoV10  ]: USB-Audio- UACDemoV1.0 
+                  Jieli Technology UACDemoV1.0 at usb-0000:01:00.0-1.3, full speed
+```
+But after reboot might look something like this:
+```
+0 [vc4hdmi0     ]:vc4-hdmi- vc4-hdmi-0 
+                  vc4-hdmi-0
+1 [vc4hdmi1     ]:vc4-hdmi- vc4-hdmi-1 
+                  vc4-hdmi-1 
+2 [UACDemoV10   ]:USB-Audio- UACDemoV1.0 
+                  Jieli Technology UACDemoV1.0 at usb-0000:01:00.0-1.3, full speed
+3 [Headphones   ]:bcm2835_headpho- bcm2835 Headphones 
+                  bcm2835 Headphones 
+```
+This may cause issues when connecting the speaker. You can set the index of the speaker in the following file:
+```
+sudoedit /lib/modprobe.d/aliases.conf
+```
+Adding the following line:
+```
+options snd-usb-audio index=3
+```
