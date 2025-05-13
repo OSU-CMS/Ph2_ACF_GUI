@@ -307,4 +307,38 @@ SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="pl2303", SYMLINK+="ttyUSBkei
 # KeysightE3633A
 SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="keyspan_1", SYMLINK+="ttyUSBkey"
 ```
+Our instruments_osu_adcboardsldo.json file looks like 
+```
+{
+    "instrument_dict": {
+        "hv": {
+            "class": "Keithley2410",
+            "resource": "ASRL/dev/ttyUSBkeith::INSTR",
+            "sim": false,
+            "default_voltage": -80,
+            "default_current": 5e-6
+        },
+	"lv_1": {
+            "class": "KeysightE3633A",
+            "resource": "ASRL/dev/ttyUSBkey::INSTR",
+            "sim": false,
+            "default_voltage": 1.8,
+            "default_current": 3
+        },
+	"adc_board": {
+            "class": "AdcBoard",
+            "resource": "ASRL/dev/ttyUSBadc::INSTR",
+            "sim": false,
+            "default_voltage": 0,
+            "default_current": 0
+        }
+    },
+    "channels_dict":{
+        "0":{
+            "lv": {"instrument":"lv_1", "channel":1},
+            "hv": {"instrument":"hv", "channel":1}
+        }
+    }
+}
+```
 For devices with identical match keys, you can make udev rules specific to the port location that looks like #-# which *doesn't* change on reboot/replug. When you do step 3, you should see a line that looks like `looking at device '/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.0/#...#`. In this case, the port location is 1-10, so `KERNELS=="1-10:1.0"` ensures that the name ttyUSBadc only works when the ADC device is plugged into the 1-10 port.
