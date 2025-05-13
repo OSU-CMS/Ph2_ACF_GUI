@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSU F4T</title>
+    <style>
+        /* CSS to arrange the images side by side */
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 20px;
+        }
+        img {
+            max-width: 45%; /* Adjust width to keep images side by side */
+            height: auto;
+            border: 1px solid #ccc;
+        }
+    </style>
+    <script>
+        // Function to fetch data from the server every second
+        function fetchData() {
+            fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);  // Debugging line to check what is received
+                    if (data.value) {
+                        document.getElementById('data-value').innerText = data.value;
+                    }
+
+                    // Update images with a timestamp to bypass caching
+                    document.getElementById('plot-temp').src = 'static/images/temp.png?t=' + new Date().getTime();
+                    document.getElementById('plot-humidity').src = 'static/images/humidity.png?t=' + new Date().getTime();
+                })
+                .catch(error => console.error('Error fetching data:', error));
+        }
+
+        // Fetch data immediately, and then every 5 seconds
+        setInterval(fetchData, 5000);
+        window.onload = fetchData; // Initial fetch on page load
+    </script>
+</head>
+<body>
+    <h1>Ohio State University F4T Temperature and Humidity Monitoring</h1>
+    <div class="image-container">
+        <img id="plot-temp" src="static/images/temp.png" alt="Temperature Plot">
+        <img id="plot-humidity" src="static/images/humidity.png" alt="Humidity Plot">
+    </div>
+
+     <p><span id="data-value"></span></p>
+</body>
+</html>
