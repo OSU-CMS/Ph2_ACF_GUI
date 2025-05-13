@@ -20,7 +20,7 @@ import time, re
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-from collections import defaultdict
+import csv
 
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
@@ -93,8 +93,10 @@ class TestHandler(QObject):
         ]
 
         self.GADC_meas_id = None
-        self.GADC_ramp_measurements = {measurement:{channel:{} for channel in self.instruments._module_dict.keys()} for measurement in ("VDDD","VDDA")}
-        self.GADC_sweep_index = 0
+        self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDAdown = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDAup = {channel:{} for channel in self.instruments._module_dict}
 
         self.finished_tests = []
         self.BBanalysis_root_files = []
@@ -405,7 +407,7 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
-    def GADC_execute_each_step(self, physics_seconds : float =  5, fc7_index : int = 0) -> None:
+    def GADC_execute_each_step(self, upOrDown:str, physics_seconds : float =  5, fc7_index : int = 0) -> None:
 
         GADC_processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
         for i, process in enumerate(GADC_processes):
@@ -413,18 +415,16 @@ class TestHandler(QObject):
             voltage = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "voltage")
             current = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "current")
 
-            print(f"Beginning intermediate physics test at {voltage}V and {current}A")
-            self.outputString.emit(f"Beginning intermediate physics test at {voltage}V and {current}A", self.runwindow.ConsoleViews[fc7_index])
+            print(f"Beginning physics test at {voltage}V and {current}A")
+            self.outputString.emit(f"Beginning physics test at {voltage}V and {current}A", self.runwindow.ConsoleViews[fc7_index])
 
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/"
             )
             process.readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput_GADC(process, i, channel = tuple(self.instruments._module_dict.keys())[i],
-                voltage=voltage, current=current)
+                lambda: self.on_readyReadStandardOutput_GADC(process, i, upOrDown, channel = tuple(self.instruments._module_dict.keys())[i])
             )
-            process.finished.connect(lambda exitCode, exitStatus, j=i: self.finished_run_process(exitCode, exitStatus, j))
             
             process.start(
                 "CMSITminiDAQ",
@@ -437,10 +437,6 @@ class TestHandler(QObject):
                 if not result:
                     logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
                     process.kill()
-                else:
-                    logger.error("physics test failed to create {0}/test/Results/Run{1}_MonitorDQM.root".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber))
 
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
@@ -497,11 +493,36 @@ class TestHandler(QObject):
                 if testName == "SLDOScan_GADC":
                     self.instruments.lv_on(voltage=site_settings.SLDOScan_GADC["voltage"],current=site_settings.SLDOScan_GADC["starting current"])
 
-                    #Sweep current
-                    self.instruments.lv_sweep(target=site_settings.SLDOScan_GADC["target current"], delay=.1, set_property="current",
-                        step_size=site_settings.SLDOScan_GADC["step size"],execute_each_step=self.GADC_execute_each_step)
+                    #Sweep current up
+                    up_sweep = self.instruments.lv_sweep(target=site_settings.SLDOScan_GADC["target current"],
+                        delay=.1, set_property="current", measure=True,
+                        step_size=site_settings.SLDOScan_GADC["step size"], execute_each_step=lambda:self.GADC_execute_each_step("up"))
 
-                    print(f'\n{self.GADC_ramp_measurements}\n')
+                    #Sweep current down
+                    down_sweep = self.instruments.lv_sweep(target=site_settings.SLDOScan_GADC["starting current"],
+                        delay=.1, set_property="current", measure=True,
+                        step_size=site_settings.SLDOScan_GADC["step size"], execute_each_step=self.GADC_execute_each_step("down"))
+
+                    for datatype in ('VDDD', 'VDDA'):
+                        for channel in self.instruments._module_dict:
+                            for chip in self.VDDDup[channel]:
+                                data = [
+                                    [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
+                                    [sweep_step[-2] for sweep_step in up_sweep[0][1]],
+                                    getattr(self, f"{datatype}up")[channel][chip],
+                                    [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
+                                    [sweep_step[-2] for sweep_step in up_sweep[0][1]],
+                                    getattr(self, f"{datatype}down")[channel][chip]
+                                ]
+
+                                with open(f"{os.environ.get('GUI_dir')}/data/TestResults/Test_SLDOScan_GADC/"+
+                                    f"Module{self.master.module_in_use}_chip{chip}_channel{channel}_{datatype}_Run{self.RunNumber}.csv",
+                                    "w", newline="") as file:
+                                    writer = csv.writer(file)
+                                    writer.writerows(data)
+
+                    self.instruments.lv_off()
+
                     return
                 else:
                     self.instruments.lv_on(
@@ -815,8 +836,8 @@ created by Ph2_ACF is empty."
             # Copy the most recent file to the output directory
             os.system(f"cp {latest_file} {output_dir}/")
 
-    def saveTest(self, processIndex: int):
-        if self.run_processes[processIndex].state() == QProcess.Running:
+    def saveTest(self, processIndex: int, process: QProcess):
+        if process.state() == QProcess.Running:
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
 
@@ -829,6 +850,7 @@ created by Ph2_ACF is empty."
                 )
 
             elif "IVCurve" in self.currentTest or "SLDOScan_GADC" == self.currentTest:
+                print("copying MonitorDQM.root file to output directory")
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
@@ -1104,7 +1126,7 @@ created by Ph2_ACF is empty."
             self.outputString.emit(textStr, self.runwindow.ConsoleViews[processIndex])
 
     @QtCore.pyqtSlot()
-    def on_readyReadStandardOutput_GADC(self, process, fc7_index, channel, voltage, current): 
+    def on_readyReadStandardOutput_GADC(self, process:QProcess, fc7_index:int, upOrDown:str, channel): 
         alltext = (
             process.readAllStandardOutput().data().decode()
         )
@@ -1119,7 +1141,7 @@ created by Ph2_ACF is empty."
             )
 
             textStr = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]').sub('', textStr)
-            match = re.search(r"Reading monitored data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]", textStr)
+            match = re.search(r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]", textStr)
             if match:
                 self.GADC_meas_id = tuple(match.group(i) for i in range(1,5))
             else:
@@ -1127,10 +1149,9 @@ created by Ph2_ACF is empty."
                 if match:
                     if self.GADC_meas_id is not None:
                         if "VDDD" == match.group(1) or "VDDA" == match.group(1):
-                            if (voltage, current) not in self.GADC_ramp_measurements[match.group(1)][channel].keys():
-                                self.GADC_ramp_measurements[match.group(1)][channel][voltage, current] = {}
-                            self.GADC_ramp_measurements[match.group(1)][channel][voltage, current][self.GADC_meas_id] = {"Value":match.group(2), "Uncertainty":match.group(3)}
-                            self.GADC_meas_id = None
+                            if self.GADC_meas_id[-1] not in getattr(self, match.group(1)+upOrDown)[channel]:
+                                getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_id[-1]] = []
+                            getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_id[-1]].append(match.group(2))
                     else:
                         logger.error(f'Did not receive expected message, "Reading monitored data for \
                         [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
@@ -1154,13 +1175,13 @@ created by Ph2_ACF is empty."
                 self.run_processes[processIndex].kill()
 
         if "IVCurve" in self.currentTest:
-            self.saveTest(processIndex)
+            self.saveTest(processIndex, self.run_processes[processIndex])
             return
 
         self.saveConfigs()
 
         # Save the output ROOT file to output_dir
-        self.saveTest(processIndex)
+        self.saveTest(processIndex, self.run_processes[processIndex])
         self.testIndexTracker += 1
 
         # validate the results
