@@ -306,4 +306,4 @@ SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="pl2303", SYMLINK+="ttyUSBkei
 # KeysightE3633A
 SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="keyspan_1", SYMLINK+="ttyUSBkey"
 ```
-For devices with identical match keys, you can make udev rules specific to the port location that looks like #-# which *doesn't* change on reboot/replug. When you do step 3, you should see a line that looks like `looking at device '/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.0/#...#`. In this case, the port location is 1-10, so `KERNELS=="1-10:1.0"` ensures that the name ttyUSBadc only works when the device is plugged into the 1-10 port.
+For devices with identical match keys, you can make udev rules specific to the port location that looks like #-# which *doesn't* change on reboot/replug. When you do step 3, you should see a line that looks like `looking at device '/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.0/#...#`. In this case, the port location is 1-10, so `KERNELS=="1-10:1.0"` ensures that the name ttyUSBadc only works when the ADC device is plugged into the 1-10 port.
