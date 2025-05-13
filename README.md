@@ -307,3 +307,26 @@ The F4T Temperature Controller can transfer its data logs via USB, Samba, or Tri
 
 * If the GUI doens't launch and an error stating a QT plugin could not be used even though it was found, reboot your computer. This seems to be an issue with the QT framework that the GUI is written with and we have yet to determine a fix. 
 
+# Udev Rules
+Give a permanent name to devices plugged into the computer so you don't have to change the port path (e.g. /dev/ttyUSB#) on reboot or replug. This tutorial uses Almalinux 9.5.
+1. Access or create a .rules file in /etc/udev/rules.d/
+2. Find the port path for your device (e.g. /dev/ttyUSB#). portFinder.sh in this repository gives a list of all port paths and device names connected to the computer
+3. Run `udevadm info -a -n #your port path here#` to get device match keys
+4. Find match key(s) unique to the device, ideally one that has real-life meaning like a brand/model name so it's recognizeable and won't change on reboot/replug/etc. Other good match keys are ATTRS{id/product} and ATTRS{id/vendor}. For our device, we used the match key DRIVERS.
+5. In your .rules file, add a line that looks like `MATCHKEY=="value", SYMLINK+="my_device_name"`. To differentiate devices, you can add more keys e.g. `SUBSYSTEM` and `KERNEL`
+
+   - NOTE: Singular match keys (e.g. KERNEL) is different from plural (e.g. KERNELS) in that singular refers to only the device, but plural refers to the device and any of its parents.
+7. In Gui/jsonFiles/#your json file#.json, you can change device "resource" to "ASRL/dev/#your device name#::INSTR
+
+Our rules file looks like
+```
+# AdcBoard
+SUBSYSTEM=="tty", KERNELS=="1-10:1.0", DRIVERS=="ftdi_sio", SYMLINK+="ttyUSBadc"
+
+# Keithley 2410 via PL2303 USB-to-serial
+SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="pl2303", SYMLINK+="ttyUSBkeith"
+
+# KeysightE3633A
+SUBSYSTEM=="tty", KERNEL=="ttyUSB[0-9]*", DRIVERS=="keyspan_1", SYMLINK+="ttyUSBkey"
+```
+For devices with identical match keys, you can make udev rules specific to the port location that looks like #-# which *doesn't* change on reboot/replug. When you do step 3, you should see a line that looks like `looking at device '/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.0/#...#`. In this case, the port location is 1-10, so `KERNELS=="1-10:1.0"` ensures that the name ttyUSBadc only works when the ADC device is plugged into the 1-10 port.
