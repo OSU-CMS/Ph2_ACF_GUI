@@ -2,21 +2,21 @@
     "instrument_dict": {
         "hv": {
             "class": "Keithley2410",
-            "resource": "ASRL/dev/ttyUSBHV::INSTR",
+            "resource": "ASRL/dev/ttyUSBkeith::INSTR",
             "sim": false,
             "default_voltage": -80,
             "default_current": 5e-6
         },
         "lv_1": {
             "class": "KeysightE3633A",
-            "resource": "ASRL/dev/ttyUSBLV::INSTR",
+            "resource": "ASRL/dev/ttyUSBkey::INSTR",
             "sim": false,
             "default_voltage": 1.8,
             "default_current": 3
         },
         "adc_board": {
             "class": "AdcBoard",
-            "resource": "ASRL/dev/ttyUSB3::INSTR",
+            "resource": "ASRL/dev/ttyUSBadc::INSTR",
             "sim": false,
             "default_voltage": 0,
             "default_current": 0
