@@ -58,6 +58,8 @@ class QtApplication(QWidget):
         super(QtApplication, self).__init__()
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
+
+
         self.ProcessingTest = False
         self.expertMode = False
         self.ActiveFC7s = {}
@@ -957,6 +959,12 @@ class QtApplication(QWidget):
             self.mainLayout.addWidget(self.AppOption, 6, 1, 1, 3)
 
         self.setDefault()
+
+        if site_settings.cooler == "Tessie":
+            # In order to fit the coldbox website nicely, the GUI needs to be
+            # at least this big
+            self.resize(1420, 861)
+            self.setMinimumSize(1420, 861)
 
         # create a dictionary to easily disable groupboxes later
         self.groupbox_mapping = {"hv": self.HVPowerGroup, "lv": self.LVPowerGroup}
