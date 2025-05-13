@@ -1,0 +1,1 @@
+Running COMMAND: CMSITminiDAQ  -f  CMSIT_fc7.board.1.xml  -c  scurve

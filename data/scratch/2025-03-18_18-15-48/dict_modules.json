@@ -1,0 +1,99 @@
+{
+  "SH0012": {
+    "module_specs": {
+      "name_module": "SH0012",
+      "type_module": "2x2",
+      "subdetector": "TFPX",
+      "croc_version": "1",
+      "has_sensor": true,
+      "type_sensor": "unspecified",
+      "link_production_db": "link"
+    },
+    "results": {
+      "00_IVCurve": {
+        "AS": {
+          "IVCURVE_I_20": 0.5735953999342771,
+          "IVCURVE_I_80": 0.6118679000947301
+        },
+        "paths_files": [
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/CMSIT_RD53_SH0012_0_12_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/CMSIT_RD53_SH0012_0_13_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/CMSIT_RD53_SH0012_0_14_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/CMSIT_RD53_SH0012_0_15_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/CMSIT_fc7.board.1.xml",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/output.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/IVCurve_Module_SH0012_20250318_182012.csv",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/Result_RunIVCurve_SH0012.root",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/00_IVCurve/IVCurve_Module_SH0012_20250318_182012.svg"
+        ],
+        "type_test": "ivcurve",
+        "time": "2025-03-18 18:20:14",
+        "comment": ""
+      },
+      "03_PixelAlive_Analog": {
+        "AS": {
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_3_CHIP_12": 0,
+          "PIXELALIVE_EN_CORE_COL_3_CHIP_12": "111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_2_CHIP_12": 0,
+          "PIXELALIVE_EN_CORE_COL_2_CHIP_12": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_1_CHIP_12": 0,
+          "PIXELALIVE_EN_CORE_COL_1_CHIP_12": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_0_CHIP_12": 0,
+          "PIXELALIVE_EN_CORE_COL_0_CHIP_12": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_3_CHIP_13": 0,
+          "PIXELALIVE_EN_CORE_COL_3_CHIP_13": "111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_2_CHIP_13": 0,
+          "PIXELALIVE_EN_CORE_COL_2_CHIP_13": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_1_CHIP_13": 0,
+          "PIXELALIVE_EN_CORE_COL_1_CHIP_13": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_0_CHIP_13": 0,
+          "PIXELALIVE_EN_CORE_COL_0_CHIP_13": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_3_CHIP_14": 0,
+          "PIXELALIVE_EN_CORE_COL_3_CHIP_14": "111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_2_CHIP_14": 0,
+          "PIXELALIVE_EN_CORE_COL_2_CHIP_14": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_1_CHIP_14": 0,
+          "PIXELALIVE_EN_CORE_COL_1_CHIP_14": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_0_CHIP_14": 0,
+          "PIXELALIVE_EN_CORE_COL_0_CHIP_14": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_3_CHIP_15": 0,
+          "PIXELALIVE_EN_CORE_COL_3_CHIP_15": "111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_2_CHIP_15": 0,
+          "PIXELALIVE_EN_CORE_COL_2_CHIP_15": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_1_CHIP_15": 0,
+          "PIXELALIVE_EN_CORE_COL_1_CHIP_15": "1111111111111111",
+          "PIXELALIVE_BAD_COLUMNS_EN_CORE_COL_0_CHIP_15": 0,
+          "PIXELALIVE_EN_CORE_COL_0_CHIP_15": "1111111111111111",
+          "PIXELALIVE_OCC_MEAN_12": 1.0049217991055979,
+          "PIXELALIVE_OCC_STDDEV_12": 0.007885983781039173,
+          "PIXELALIVE_MASKED_COL_NUM_ENTRIES_12": 22.0,
+          "PIXELALIVE_OCC_MEAN_13": 1.0048619534673071,
+          "PIXELALIVE_OCC_STDDEV_13": 0.01151586703000983,
+          "PIXELALIVE_MASKED_COL_NUM_ENTRIES_13": 77.0,
+          "PIXELALIVE_OCC_MEAN_14": 1.0049928348027244,
+          "PIXELALIVE_OCC_STDDEV_14": 0.0015554985400226336,
+          "PIXELALIVE_MASKED_COL_NUM_ENTRIES_14": 5.0,
+          "PIXELALIVE_OCC_MEAN_15": 1.004924896994217,
+          "PIXELALIVE_OCC_STDDEV_15": 0.0066345398602416965,
+          "PIXELALIVE_MASKED_COL_NUM_ENTRIES_15": 35.0
+        },
+        "paths_files": [
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_RD53_SH0012_0_12_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_RD53_SH0012_0_13_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_RD53_SH0012_0_14_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_RD53_SH0012_0_15_IN.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_fc7.board.1.xml",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/output.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_RD53_SH0012_0_12_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_RD53_SH0012_0_13_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_RD53_SH0012_0_14_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/CMSIT_RD53_SH0012_0_15_OUT.txt",
+          "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch/2025-03-18_18-15-48/SH0012/03_PixelAlive_Analog/Run000036_PixelAlive.root"
+        ],
+        "type_test": "pixelalive",
+        "time": "2025-03-18 18:22:56",
+        "comment": ""
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "SH0011": {
+    "module_specs": {
+      "name_module": "SH0011",
+      "type_module": "2x2",
+      "subdetector": "TFPX",
+      "croc_version": "1",
+      "has_sensor": true,
+      "link_production_db": "link"
+    },
+    "results": {}
+  },
+  "SH0012": {
+    "module_specs": {
+      "name_module": "SH0012",
+      "type_module": "2x2",
+      "subdetector": "TFPX",
+      "croc_version": "1",
+      "has_sensor": true,
+      "link_production_db": "link"
+    },
+    "results": {}
+  },
+  "SH0013": {
+    "module_specs": {
+      "name_module": "SH0013",
+      "type_module": "2x2",
+      "subdetector": "TFPX",
+      "croc_version": "1",
+      "has_sensor": true,
+      "link_production_db": "link"
+    },
+    "results": {}
+  },
+  "SH0014": {
+    "module_specs": {
+      "name_module": "SH0014",
+      "type_module": "2x2",
+      "subdetector": "TFPX",
+      "croc_version": "1",
+      "has_sensor": true,
+      "link_production_db": "link"
+    },
+    "results": {}
+  }
+}

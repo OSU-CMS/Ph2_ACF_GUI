@@ -33,7 +33,7 @@ defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #Coldbox variables
-cooler = "Tessie" # "Pelter", "Tessie", or "Manual"
+cooler = "Peltier" # "Pelter", "Tessie", or "Manual"
 usePeltier = False #The "cooler" variable will be used in the future, but this line is needed for the current version of the GUI
 
 defaultPeltierPort = '/dev/ttyUSBPeltier'
@@ -57,6 +57,13 @@ manual_powersupply_control = False
 # Load instrument setup from json file
 with open('jsonFiles/instruments_osu_adcboardsldo.json', 'r') as file:
     icicle_instrument_setup = json.load(file)
+
+SLDOScan_GADC = {
+    "voltage" : 2.98, #Volts
+    "starting current" : 6, #Amps
+    "target current" : 7.5, #Amps
+    "step size" : .5 #Amps
+}
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = {
@@ -82,7 +89,7 @@ CableMapping = {
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
 Monitor_CROC = "1"
-Monitor_SleepTime = "30000"  # time in milliseconds between temperature readings
+Monitor_SleepTime = "3000"  # time in milliseconds between temperature readings
 
 ## Establish thresholds for chip temperature readings. A chip reading above the
 ## emergency threshold will abort the test.
