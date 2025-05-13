@@ -294,7 +294,7 @@ Give a permanent name to devices plugged into the computer so you don't have to 
 5. In your .rules file, add a line that looks like `MATCHKEY=="value", SYMLINK+="my_device_name"`. To differentiate devices, you can add more keys e.g. `SUBSYSTEM` and `KERNEL`
 
    - NOTE: Singular match keys (e.g. KERNEL) is different from plural (e.g. KERNELS) in that singular refers to only the device, but plural refers to the device and any of its parents.
-7. In Gui/jsonFiles, you can change device "resource" to "ASRL/dev/#your device name#::INSTR
+7. In Gui/jsonFiles/#your json file#.json, you can change device "resource" to "ASRL/dev/#your device name#::INSTR
 
 Our rules file looks like
 ```
