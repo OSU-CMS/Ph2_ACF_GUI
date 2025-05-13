@@ -86,9 +86,9 @@ class SimplifiedMainWidget(QWidget):
         self.BeBoardWidget = SimpleBeBoardBox(self.master, self.firmware)
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
-    def setupArduino(self, cooler : str = site_settings.cooler):
+    def setupArduino(self):
         self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
-        if cooler == "Tessie": #Arduino is now a misnomer
+        if site_settings.cooler == "Tessie": #Arduino is now a misnomer
             self.instrument_info["arduino"]["Label"].setText("Environment Control")
         else:
             self.ArduinoGroup = ArduinoWidget()
@@ -381,13 +381,8 @@ class SimplifiedMainWidget(QWidget):
         self.setupUI()
         self.RunButtonState()
 
-    def updateArduinoIndicator(self, cooler : str = site_settings.cooler) -> bool:
-        if cooler == "Tessie":
-            if self.ArduinoGroup.condensationRisk:
-                self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
-            else:
-                self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
-        else:
+    def updateArduinoIndicator(self) -> bool:
+        if site_settings.cooler == "Tessie":
             try:
                 soup = BeautifulSoup(requests.get('http://coldboxx:3000/').text, 'html.parser')
             except requests.exceptions.ConnectionError as e:
@@ -412,6 +407,11 @@ class SimplifiedMainWidget(QWidget):
                     else: 
                         self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
                         return False
+        else:
+            if self.ArduinoGroup.condensationRisk:
+                self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+            else:
+                self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
 
     def updatePeltierTemp(self, temp: float):
         self.peltier_temperature_label.setText("{}C".format(temp))
