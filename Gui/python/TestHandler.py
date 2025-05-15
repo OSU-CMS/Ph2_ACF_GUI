@@ -88,15 +88,15 @@ class TestHandler(QObject):
         self.info = info  # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
 
-        self.modules = [
-            module for beboard in self.firmware for module in beboard.getModules()
-        ]
+        self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
+        print(self.modules)
 
         self.GADC_meas_id = None
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
         self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAup = {channel:{} for channel in self.instruments._module_dict}
+        self.SLDOfilelist = []
 
         self.finished_tests = []
         self.BBanalysis_root_files = []
@@ -407,7 +407,7 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
-    def GADC_execute_each_step(self, upOrDown:str, physics_seconds : float =  5, fc7_index : int = 0) -> None:
+    def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : float =  1, fc7_index : int = 0) -> None:
 
         GADC_processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
         for i, process in enumerate(GADC_processes):
@@ -437,6 +437,10 @@ class TestHandler(QObject):
                 if not result:
                     logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
                     process.kill()
+        
+        self.ProgressValue+=1
+        for i in range(len(self.firmware)):
+            self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
 
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
@@ -491,17 +495,23 @@ class TestHandler(QObject):
                     break
             if not lv_on:
                 if testName == "SLDOScan_GADC":
+                    self.ProgressValue = 0
+                    total_steps =2*(1+np.ceil(np.abs(site_settings.SLDOScan_GADC["target current"]-site_settings.SLDOScan_GADC["starting current"])/site_settings.SLDOScan_GADC["step size"]))
+                    for i in range(len(self.firmware)):
+                        self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(0)
+
                     self.instruments.lv_on(voltage=site_settings.SLDOScan_GADC["voltage"],current=site_settings.SLDOScan_GADC["starting current"])
 
-                    #Sweep current up
                     up_sweep = self.instruments.lv_sweep(target=site_settings.SLDOScan_GADC["target current"],
                         delay=.1, set_property="current", measure=True,
-                        step_size=site_settings.SLDOScan_GADC["step size"], execute_each_step=lambda:self.GADC_execute_each_step("up"))
+                        step_size=site_settings.SLDOScan_GADC["step size"], execute_each_step=lambda:self.GADC_execute_each_step("up", total_steps))
 
-                    #Sweep current down
                     down_sweep = self.instruments.lv_sweep(target=site_settings.SLDOScan_GADC["starting current"],
                         delay=.1, set_property="current", measure=True,
-                        step_size=site_settings.SLDOScan_GADC["step size"], execute_each_step=self.GADC_execute_each_step("down"))
+                        step_size=site_settings.SLDOScan_GADC["step size"], execute_each_step=lambda:self.GADC_execute_each_step("down", total_steps))
+                    
+                    for i in range(len(self.firmware)):
+                        self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
 
                     for datatype in ('VDDD', 'VDDA'):
                         for channel in self.instruments._module_dict:
@@ -510,19 +520,21 @@ class TestHandler(QObject):
                                     [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
                                     [sweep_step[-2] for sweep_step in up_sweep[0][1]],
                                     getattr(self, f"{datatype}up")[channel][chip],
-                                    [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
-                                    [sweep_step[-2] for sweep_step in up_sweep[0][1]],
+                                    [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
+                                    [sweep_step[-2] for sweep_step in down_sweep[0][1]],
                                     getattr(self, f"{datatype}down")[channel][chip]
                                 ]
 
-                                with open(f"{os.environ.get('GUI_dir')}/data/TestResults/Test_SLDOScan_GADC/"+
-                                    f"Module{self.master.module_in_use}_chip{chip}_channel{channel}_{datatype}_Run{self.RunNumber}.csv",
-                                    "w", newline="") as file:
+                                #with open(f"{self.output_dir}/SLDOCurve_Module{self.master.module_in_use}_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv",
+                                with open(f"{self.output_dir}/SLDOCurve_Module_SH0012_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv",
+                                    'w', newline="") as file:
                                     writer = csv.writer(file)
                                     writer.writerows(data)
+                                #self.SLDOfilelist.append(f"{self.output_dir}/SLDOCurve_Module_{self.master.module_in_use}_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv")
+                                print(f"{self.output_dir}/SLDOCurve_Module_SH0012_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv")
+                    self.SLDOScanFinished()
 
                     self.instruments.lv_off()
-
                     return
                 else:
                     self.instruments.lv_on(
@@ -555,7 +567,6 @@ class TestHandler(QObject):
             self.currentTest = testName
             self.configTest()
             self.SLDOScanData = []
-            self.SLDOfilelist = []
             self.SLDOProgressValue = 0
             self.SLDOScanHandler = SLDOCurveHandler(
                 self.instruments,
@@ -849,7 +860,7 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            elif "IVCurve" in self.currentTest or "SLDOScan_GADC" == self.currentTest:
+            elif "IVCurve" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
@@ -1127,18 +1138,25 @@ created by Ph2_ACF is empty."
 
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_GADC(self, process:QProcess, fc7_index:int, upOrDown:str, channel): 
+        if self.readingOutput:
+            print("Thread competition detected")
+            return
+        self.readingOutput = True
+
         alltext = (
             process.readAllStandardOutput().data().decode()
         )
+        self.outputfile.write(alltext)
         textline = alltext.split("\n")
         
         for textStr in textline:
-            print(textStr)
             text = textStr.encode("ascii")
             _, text = parseANSI(text)
             self.outputString.emit(
                 text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
             )
+            self.runwindow.ConsoleViews[fc7_index].repaint()
+            #.repaint() should not be necessary - indicates a larger problem in the PyQt workflow.
 
             textStr = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]').sub('', textStr)
             match = re.search(r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]", textStr)
@@ -1155,6 +1173,8 @@ created by Ph2_ACF is empty."
                     else:
                         logger.error(f'Did not receive expected message, "Reading monitored data for \
                         [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
+        
+        self.readingOutput = False
 
     @QtCore.pyqtSlot()
     def on_finish(self, processIndex: int):
