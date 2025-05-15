@@ -89,7 +89,6 @@ class TestHandler(QObject):
         self.ModuleMap = dict()
 
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
-        print(self.modules)
 
         self.GADC_meas_id = None
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
@@ -526,12 +525,12 @@ class TestHandler(QObject):
                                 ]
 
                                 #with open(f"{self.output_dir}/SLDOCurve_Module{self.master.module_in_use}_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv",
-                                with open(f"{self.output_dir}/SLDOCurve_Module_SH0012_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv",
+                                with open(f"{self.output_dir}/SLDOCurve_Module_{self.modules[0].getModuleName()}_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv",
                                     'w', newline="") as file:
                                     writer = csv.writer(file)
                                     writer.writerows(data)
                                 #self.SLDOfilelist.append(f"{self.output_dir}/SLDOCurve_Module_{self.master.module_in_use}_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv")
-                                print(f"{self.output_dir}/SLDOCurve_Module_SH0012_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv")
+                                print(f"{self.output_dir}/SLDOCurve_Module_{self.modules[0].getModuleName()}_{datatype}_ROC{int(chip) - min(tuple(int(c) for c in self.VDDDup[channel]))}.csv")
                     self.SLDOScanFinished()
 
                     self.instruments.lv_off()
