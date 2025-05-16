@@ -1,0 +1,1 @@
+This is the Ohio State University's repository for testing detectors to be installed in the Compact Muon Solenoid on the Large Hadron Collider at CERN. Check out our [wiki](https://github.com/OSU-CMS/Ph2_ACF_GUI/wiki) for in-depth information!
