@@ -34,6 +34,21 @@ mydevices=$(echo $mydevices | xargs)
 echo $mydevices | xargs
 ################################################################################################
 
+# For whatever reason /data and /test are owned by the root user by default and 
+# since we bind them, whatever I do in the Dockerfile will have no effect. So we need to change the owner
+# here. 
+permission_issue_directories=("${PWD}/data" "${PWD}/test")
+new_owner="cmsTkUser"
+for dir in "${permission_issue_directories[@]}"; do
+	if [ -d "$dir" ]; then 
+		find "$dir" -type f -exec sudo chmod 666 {} \; # Edit permissions of all files
+		find "$dir" -type d -exec sudo chmod 777 {} \; # Edit permissions of all directories
+
+		echo "Permissions for $dir and its contents have been update"
+	fi
+done
+
+
 if [[ $mode == "dev" ]] 
 then
     echo "running as $mode"
@@ -93,8 +108,8 @@ To install on Alma Linux please run:\e[0m
 	fi
     docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
-		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
-		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
+		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test:rw\
+		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data:rw\
         -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
