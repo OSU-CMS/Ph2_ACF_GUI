@@ -965,6 +965,7 @@ class QtApplication(QWidget):
         if self.multimeter:
             self.groupbox_mpaping["multimeter"] = self.multimeter_group
 
+        # only for the simplified GUI so this default should not matter right?
     def setDefault(self):
         if self.expertMode is False:
             self.HVPowerGroup.setDisabled(True)
@@ -1025,8 +1026,10 @@ class QtApplication(QWidget):
                 self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
 
+                # arduino control here: check why this does not work. 
         if self.expertMode:
             if self.ArduinoControl.isChecked():
+                self.ArduinoGroup.setEnabled(True)
                 self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
                 self.ArduinoGroup.frozeArduinoPanel()
 
