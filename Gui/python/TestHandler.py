@@ -16,11 +16,11 @@ import os
 import glob
 import subprocess
 import threading
-import time, re
+import time
+import re
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
-import csv
 
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
