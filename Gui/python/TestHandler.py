@@ -90,7 +90,7 @@ class TestHandler(QObject):
 
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
 
-        self.GADC_meas_id = None
+        self.GADC_meas_chip = None
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
         self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAdown = {channel:{} for channel in self.instruments._module_dict}
@@ -422,7 +422,7 @@ class TestHandler(QObject):
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/"
             )
             process.readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput_GADC(process, i, upOrDown, channel = tuple(self.instruments._module_dict.keys())[i])
+                lambda: self.on_readyReadStandardOutput_GADC(process, i, upOrDown, current, channel = tuple(self.instruments._module_dict.keys())[i])
             )
             
             process.start(
@@ -520,13 +520,13 @@ class TestHandler(QObject):
                                 data = [
                                     [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
                                     [sweep_step[-2] for sweep_step in up_sweep[0][1]],
-                                    [float(i) for i in getattr(self, f"{datatype}up")[channel][chip]],
+                                    [float(i) for i in getattr(self, f"{datatype}up")[channel][chip].keys()],
                                     [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
                                     [sweep_step[-2] for sweep_step in down_sweep[0][1]],
-                                    [float(i) for i in getattr(self, f"{datatype}down")[channel][chip]]
+                                    [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].keys()]
                                 ]
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{min(int(c) for c in getattr(self,f'{datatype}up')[channel])}")
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{min(int(c) for c in getattr(self,f'{datatype}up')[channel])}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
                     self.SLDOScanFinished()
                     return
                 else:
@@ -760,6 +760,7 @@ class TestHandler(QObject):
                             self.BBanalysis_root_files,
                         )
 
+                        print(f'TestHandler {result}')
                         results.append(result)
                         passed.append(list(result.values())[0][0])
 
@@ -1130,7 +1131,7 @@ created by Ph2_ACF is empty."
             self.outputString.emit(textStr, self.runwindow.ConsoleViews[processIndex])
 
     @QtCore.pyqtSlot()
-    def on_readyReadStandardOutput_GADC(self, process:QProcess, fc7_index:int, upOrDown:str, channel): 
+    def on_readyReadStandardOutput_GADC(self, process:QProcess, fc7_index:int, upOrDown:str, current, channel): 
         if self.readingOutput:
             print("Thread competition detected")
             return
@@ -1154,15 +1155,15 @@ created by Ph2_ACF is empty."
             textStr = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]').sub('', textStr)
             match = re.search(r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]", textStr)
             if match:
-                self.GADC_meas_id = tuple(match.group(i) for i in range(1,5))
+                self.GADC_meas_chip = match.group(4)
             else:
                 match = re.search(r"(\w+):\s*([\d.]+)\s*\+/-\s*([\d.]+)\s*V", textStr)
                 if match:
-                    if self.GADC_meas_id is not None:
+                    if self.GADC_meas_chip is not None:
                         if "VDDD" == match.group(1) or "VDDA" == match.group(1):
-                            if self.GADC_meas_id[-1] not in getattr(self, match.group(1)+upOrDown)[channel]:
-                                getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_id[-1]] = []
-                            getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_id[-1]].append(match.group(2))
+                            if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown)[channel]:
+                                getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip] = {}
+                            getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip][current] = match.group(2) #This line enforces that it only logs one VDDD or VDDA value per sweep step
                     else:
                         logger.error(f'Did not receive expected message, "Reading monitored data for \
                         [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
