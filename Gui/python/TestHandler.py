@@ -406,7 +406,7 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
-    def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds:float =  1, fc7_index:int = 0) -> None:
+    def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : float =  1, fc7_index : int = 0) -> None:
 
         GADC_processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
         for i, process in enumerate(GADC_processes):
@@ -513,8 +513,20 @@ class TestHandler(QObject):
                 
                     for i in range(len(self.firmware)):
                         self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
-                    
-                    self.makeSLDOPlot()
+
+                    for datatype in ('VDDD', 'VDDA'):
+                        for channel in self.instruments._module_dict:
+                            for chip in self.VDDDup[channel]:
+                                data = [
+                                    [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
+                                    [sweep_step[-2] for sweep_step in up_sweep[0][1]],
+                                    [float(i) for i in getattr(self, f"{datatype}up")[channel][chip]],
+                                    [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
+                                    [sweep_step[-2] for sweep_step in down_sweep[0][1]],
+                                    [float(i) for i in getattr(self, f"{datatype}down")[channel][chip]]
+                                ]
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{min(int(c) for c in getattr(self,f'{datatype}up')[channel])}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{min(int(c) for c in getattr(self,f'{datatype}up')[channel])}")
                     self.SLDOScanFinished()
                     return
                 else:
@@ -747,8 +759,6 @@ class TestHandler(QObject):
                             module_data,
                             self.BBanalysis_root_files,
                         )
-
-                        print(f"result, BB {self, self.BBanalysis_root_files}")
 
                         results.append(result)
                         passed.append(list(result.values())[0][0])
@@ -1466,9 +1476,7 @@ created by Ph2_ACF is empty."
         self.stepFinished.emit(EnableReRun)
 
         self.historyRefresh.emit()
-        print(self.output_dir)
         if self.master.expertMode:
-            print("expert")
             self.updateSLDOResult.emit(self.output_dir)
         else:
             self.updateSLDOResult.emit(
