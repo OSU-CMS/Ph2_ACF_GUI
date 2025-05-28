@@ -18,8 +18,8 @@ ENV DATA_dir=${GUI_dir}/data/TestResults
 ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}:${GUI_dir}/icicle/icicle:${GUI_dir}/InnerTrackerTests:${GUI_dir}/felis
 
 # Commenting for now, this was needed to change user to non-ROOT 
-# ARG USER_UID=1000
-# ARG USER_GID=1000
+ARG USER_UID=1000
+ARG USER_GID=1000
 
 # Create the group and user with the specified UID/GID
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
