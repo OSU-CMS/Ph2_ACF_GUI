@@ -845,6 +845,8 @@ class QtApplication(QWidget):
         if site_settings.cooler == "Peltier":
             self.CoolerLayout.addWidget(Peltier(100))
         elif site_settings.cooler == "Tessie":
+            logger.error("The Tessie controls are currently not implemented. Please change cooling method in siteConfig.py!") 
+            sys.exit() 
             self.CoolerLayout.addWidget(Tessie(100))
         elif site_settings.cooler == "Manual":
             # Title label (Manual Cooling)
