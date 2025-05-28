@@ -59,7 +59,7 @@ then
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host --entrypoint /bin/bash osupixels/ph2_acf_gui_dev:v2-1-0-beta-
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host --entrypoint /bin/bash osupixels/ph2_acf_gui_dev:v2-1-0-beta-
 else
     echo "running as user"
         # Check if skopleo is installed, if not prompt user to install
@@ -102,7 +102,7 @@ To install on Alma Linux please run:\e[0m
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
 		-w /home/cmsTkUser/Ph2_ACF_GUI  -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host $IMAGE_NAME  #local/testimagejuly30user
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host $IMAGE_NAME  #local/testimagejuly30user
 		#Before, the docker run command had the options -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH. We were having trouble
 		#running the GUI through SSH connections, so we removed those options and added --volume="$HOME/.Xauthority:/root/.Xauthority:rw"
 		#which seemed to fix the issue of running the GUI from SSH connections. At the time of this commit, we have no idea why this fixed it
