@@ -1181,7 +1181,7 @@ created by Ph2_ACF is empty."
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
-                                    f"{index:02d}_PixelAlive",
+                                    f"{index:02d}_CrossTalk",
                                     "crosstalk",
                                 )
                                 self.figurelist[module.getModuleName()] = (
