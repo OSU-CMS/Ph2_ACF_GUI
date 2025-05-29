@@ -20,14 +20,15 @@ def ResultGrader(
 ):
     try:
         if sequence[testIndexInSequence] != testName:
-            logger.error("Test name didn't match expected test sequence name\n"
-                         "Expected Test Name: {}".format(sequence[testIndexInSequence])
-                         "Recieved Test Name: {}".format(testName))
-            raise Exception("Test name doesn't match expected sequence name!."
+            logger.error(
+                f"Test name didn't match expected test sequence name\n"
+                f"Expected Test Name: {sequence[testIndexInSequence]}\n"
+                f"Received Test Name: {testName}"
+            )
+            raise Exception("Test name doesn't match expected sequence name! "
                             "Something went wrong.")
     
-        
-
+        logger.debug(f"Given test name: {testName} | Expected test name: {sequence[testIndexInSequence]}")
 
         module_name = module_data["module"].getModuleName()
         module_type = module_data["module"].getModuleType()
