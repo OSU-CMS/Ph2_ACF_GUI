@@ -20,8 +20,8 @@ def ResultGrader(
 ):
     try:
         if sequence[testIndexInSequence] != testName:
-            logger.error("Test name didn't match expected test sequence name\n"
-                         "Expected Test Name: {}".format(sequence[testIndexInSequence])
+            logger.error("Test name didn't match expected test sequence name\n"+
+                         "Expected Test Name: {}".format(sequence[testIndexInSequence])+
                          "Recieved Test Name: {}".format(testName))
             raise Exception("Test name doesn't match expected sequence name!."
                             "Something went wrong.")

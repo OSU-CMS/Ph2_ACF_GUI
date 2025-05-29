@@ -791,24 +791,6 @@ class QtApplication(QWidget):
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
 
-        self.ReviewButton = QPushButton("&Review")
-        self.ReviewButton.setMinimumWidth(kMinimumWidth)
-        self.ReviewButton.setMaximumWidth(kMaximumWidth)
-        self.ReviewButton.setMinimumHeight(kMinimumHeight)
-        self.ReviewButton.setMaximumHeight(kMaximumHeight)
-        self.ReviewButton.clicked.connect(self.openReviewWindow)
-        ReviewLabel = QLabel("Review all results")
-
-        self.ReviewModuleButton = QPushButton("&Show Module")
-        self.ReviewModuleButton.setMinimumWidth(kMinimumWidth)
-        self.ReviewModuleButton.setMaximumWidth(kMaximumWidth)
-        self.ReviewModuleButton.setMinimumHeight(kMinimumHeight)
-        self.ReviewModuleButton.setMaximumHeight(kMaximumHeight)
-        self.ReviewModuleButton.clicked.connect(self.openModuleReviewWindow)
-        self.ReviewModuleEdit = QLineEdit("")
-        self.ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
-        self.ReviewModuleEdit.setPlaceholderText("Enter Module ID")
-
         self.ThermalTestButton = QPushButton("&Thermal Test")
         self.ThermalTestButton.setEnabled(True)
         self.AbortThermalTestButton = QPushButton("&Abort thermal test")
@@ -878,11 +860,6 @@ class QtApplication(QWidget):
         layout = QGridLayout()
         layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
         layout.addWidget(NewTestLabel, 0, 1, 1, 2)
-
-        layout.addWidget(self.ReviewButton, 2, 0, 1, 1)
-        layout.addWidget(ReviewLabel, 2, 1, 1, 2)
-        layout.addWidget(self.ReviewModuleButton, 3, 0, 1, 1)
-        layout.addWidget(self.ReviewModuleEdit, 3, 1, 1, 2)
 
         self.ChillerOption = QGroupBox("Chiller", self)
         self.ChillerLayout = QGridLayout()
@@ -1189,19 +1166,6 @@ class QtApplication(QWidget):
     def openSummaryWindow(self):
         self.SummaryViewer = QtSummaryWindow(self)
         self.SummaryButton.setDisabled(True)
-
-    def openReviewWindow(self):
-        self.ReviewWindow = QtModuleReviewWindow(self)
-
-    def openModuleReviewWindow(self):
-        Module_ID = self.ReviewModuleEdit.text()
-        if Module_ID != "":
-            self.ModuleReviewWindow = QtModuleReviewWindow(self, Module_ID)
-        else:
-            QMessageBox.information(
-                None, "Error", "Please enter a valid module ID", QMessageBox.Ok
-            )
-
     def releaseHVPowerPanel(self):
         if self.instruments:
             self.instruments.hv_off()
