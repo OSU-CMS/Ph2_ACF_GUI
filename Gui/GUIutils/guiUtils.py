@@ -425,11 +425,37 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
             HWSettings_Dict = (
                 HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
             )
-            FELaneConfig_Dict = (
-                FELaneConfig_DictB[module.getModuleType().split(" ")[0]]
-                if "CROC" in moduleType
-                else None
-            )
+            FELaneConfig_Dict = FELaneConfig_DictB[registerKey]
+               
+            if FELaneConfig_Dict is None:
+                logger.error(f"No FELaneConfig found for module type {module.getModuleType()}.")
+            else:
+                for chip in module.getChips().values():
+                    print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
+                    FEChip = FE()
+                    FEChip.SetFE(
+                        chip.getID(),
+                        "1" if chip.getStatus() else "0",
+                        chip.getLane(),
+                        RxPolarities,
+                        "CMSIT_RD53_{0}_{1}_{2}.txt".format(
+                            module.getModuleName(), module.getFMCPort(), chip.getID()
+                        ),
+                    )
+
+                    if testName in FELaneConfig_Dict:
+                        FEChip.ConfigureLaneConfig(
+                            FELaneConfig_Dict[testName][int(chip.getLane())]
+                        )
+                    else:
+                        logger.warning(f"Test name {testName} not found in FELaneConfig_Dict.")
+                        if "default" in FELaneConfig_Dict:
+                            FEChip.ConfigureLaneConfig(
+                                FELaneConfig_Dict["default"][int(chip.getLane())]
+                            )
+                        else:
+                            logger.error(f"No default configuration available for test name {testName}.")
+#####
             boardtype = (
                 "RD53B" + module.getModuleVersion() if "CROC" in moduleType else "RD53A"
             )
