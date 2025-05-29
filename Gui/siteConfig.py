@@ -64,6 +64,13 @@ IVcurve_range = {
 	"IVCurve_High"	:	-90 #Maximum voltage in Volts to be used in IVcurve after Parylene coating
 }
 
+SLDOScan_GADC = {
+    "voltage":2.98,
+    "target current":7,
+    "starting current":6,
+    "step size":.5
+}
+
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
