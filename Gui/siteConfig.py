@@ -9,7 +9,7 @@ logging.basicConfig(
    filemode='w'  # 'w' for write, 'a' for append
 )
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__) 
 
 ######################################################################
 # To be edited by expert as default setting for Hardware configuration
