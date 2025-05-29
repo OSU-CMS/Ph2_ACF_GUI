@@ -731,6 +731,7 @@ class TestHandler(QObject):
                             runNumber,
                             module_data,
                             self.BBanalysis_root_files,
+                            self.info
                         )
 
                         results.append(result)
@@ -1133,7 +1134,7 @@ created by Ph2_ACF is empty."
         # validate the results
         self.validateTest()
 
-        EnableReRun = self.onFinalTest(self.testIndexTracker)
+        EnableReRun = self.onFinalTest(self.testIndexTracker) # This function uses BBanalysis_root_files when all composite tests will not make use of it
         self.stepFinished.emit(EnableReRun)
 
         # show the score of test

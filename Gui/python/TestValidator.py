@@ -3,6 +3,8 @@ import ROOT
 
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
+from Gui.python.logging_config import logger
+
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
 
@@ -14,8 +16,19 @@ def ResultGrader(
     runNumber,
     module_data,
     BBanalysis_root_files,
+    sequence
 ):
     try:
+        if sequence[testIndexInSequence] != testName:
+            logger.error("Test name didn't match expected test sequence name\n"
+                         "Expected Test Name: {}".format(sequence[testIndexInSequence])
+                         "Recieved Test Name: {}".format(testName))
+            raise Exception("Test name doesn't match expected sequence name!."
+                            "Something went wrong.")
+    
+        
+
+
         module_name = module_data["module"].getModuleName()
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
@@ -121,5 +134,5 @@ def ResultGrader(
 
         return {module_name: (True, explanation)}, BBanalysis_root_files
     except Exception as err:
-        # logger.error("An error was thrown while grading: {}".format(repr(err)))
+        logger.error("An error was thrown while grading: {}".format(repr(err)))
         return {module_name: (False, repr(err))}, BBanalysis_root_files
