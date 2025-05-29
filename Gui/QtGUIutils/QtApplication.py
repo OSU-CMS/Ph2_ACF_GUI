@@ -878,21 +878,6 @@ class QtApplication(QWidget):
             self.ExpertButton = QPushButton("&Enter Expert Mode")
             self.ExpertButton.clicked.connect(self.goExpert)
 
-        self.RefreshButton = QPushButton("&Refresh")
-        if self.PYTHON_VERSION.startswith("3.8"):
-            self.RefreshButton.clicked.connect(self.disableBoxs)
-            self.RefreshButton.clicked.connect(self.destroyMain)
-            self.RefreshButton.clicked.connect(self.createMain)
-            self.RefreshButton.clicked.connect(self.checkFirmware)
-            self.RefreshButton.clicked.connect(self.setDefault)
-        elif self.PYTHON_VERSION.startswith(("3.7", "3.9")):
-            self.RefreshButton.clicked.connect(self.disableBoxs)
-            self.RefreshButton.clicked.connect(self.destroyMain)
-            self.RefreshButton.clicked.connect(self.reCreateMain)
-            self.RefreshButton.clicked.connect(self.enableBoxs)
-            self.RefreshButton.clicked.connect(self.update)
-            self.RefreshButton.clicked.connect(self.setDefault)
-
         self.LogoutButton = QPushButton("&Logout")
         # Fixme: more conditions to be added
         if self.ProcessingTest:
@@ -909,7 +894,6 @@ class QtApplication(QWidget):
         if self.expertMode is False:
             self.AppLayout.addWidget(self.ExpertButton)
         self.AppLayout.addStretch(1)
-        self.AppLayout.addWidget(self.RefreshButton)
         self.AppLayout.addWidget(self.LogoutButton)
         self.AppLayout.addWidget(self.ExitButton)
         self.AppOption.setLayout(self.AppLayout)
