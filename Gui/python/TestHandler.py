@@ -1,4 +1,3 @@
-import traceback
 from PyQt5 import QtCore
 from PyQt5.QtCore import pyqtSignal, QObject, QProcess, Qt
 from PyQt5.QtWidgets import (
@@ -852,7 +851,6 @@ created by Ph2_ACF is empty."
                     self.currentTime = self.starttime
 
             except Exception as err:
-                traceback.print_exc()
                 logger.info("Error occures while parsing running time, {0}".format(err))
             if "@@@ End of CMSIT miniDAQ @@@" in textStr:
                 self.ProgressingMode = "Summary"
