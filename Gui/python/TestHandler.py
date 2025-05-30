@@ -1561,6 +1561,7 @@ created by Ph2_ACF is empty."
                     self.master.password,
                     type_sequence=self.info,
                     version_ph2acf=os.environ.get("PH2ACF_VERSION"),
+                    version_testStationSoftware="OSUGUI " +  os.environ.get("PH2ACFGUI_VERSION")
                 )
                 if not status:
                     raise ConnectionError(message)

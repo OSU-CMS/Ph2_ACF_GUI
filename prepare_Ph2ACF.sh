@@ -4,8 +4,11 @@ cd $PH2ACF_BASE_DIR
 source setup.sh
 export PH2ACF_VERSION=$(git describe --tags)
 
+
+
 cd ${GUI_dir}
 source symlinks.sh
+export PH2ACFGUI_VERSION=$(git describe --tags)
 
 cd ${GUI_dir}/Gui/python
 
