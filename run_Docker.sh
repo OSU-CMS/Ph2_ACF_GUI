@@ -3,9 +3,9 @@ SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/
 
 ######### Specify the docker image to use #################
 #IMAGE_NAME="osupixels/ph2_acf_gui_dev:v2-1-0-beta-"
-#IMAGE_NAME="majoyce2/ph2_acf_gui_purdue:latest"
-IMAGE_NAME="majoyce2/ph2_acf_gui_user:v2.0.0"
-
+#IMAGE_NAME="majoyce2/ph2_acf_gui_dev:latest"
+IMAGE_NAME="local/testimagemay28dev"
+IMAGE_NAME="test_i_hate_docker"
 mode=$1
 ## Finding the USB ports to use with the GUI#############
 mydevices=""
@@ -56,10 +56,10 @@ then
 		-v ${PWD}/F4T_Monitoring:/home/cmsTkUser/Ph2_ACF_GUI/F4T_Monitoring\
 		-v ${PWD}/felis:/home/cmsTkUser/Ph2_ACF_GUI/felis/\
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
-		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
+		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host --entrypoint /bin/bash osupixels/ph2_acf_gui_dev:v2-1-0-beta-
+		-v /tmp/.X11-unix:/tmp/.X11-unix -u root --entrypoint /bin/bash --net host $IMAGE_NAME
 else
     echo "running as user"
         # Check if skopleo is installed, if not prompt user to install
