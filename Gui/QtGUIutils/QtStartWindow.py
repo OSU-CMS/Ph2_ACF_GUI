@@ -363,6 +363,7 @@ class QtStartWindow(QWidget):
 
         for module in self.BeBoardWidget.getModules():
             module.SerialEdit.editingFinished.connect(self.txt_entry.clear)
+            module.SerialEdit.editingFinished.connect(lambda:self.customTxtCheck.setChecked(False))
 
     def radio_selected(self, replaceArgs:tuple):
         erroredFlag = False
@@ -419,7 +420,6 @@ class QtStartWindow(QWidget):
                     self.useCustomTxts(True)
 
             erroredFlag=False
-            noModuleInfoFlag=False
 
             if len(url)< 8 or ("https://"!=url[:8] and "http://"!=url[:7]):
                 url = "https://"+url
@@ -443,10 +443,8 @@ class QtStartWindow(QWidget):
                 moduleName = moduleBox.getSerialNumber()
                 port = moduleBox.getFMCPort()
                 if moduleName == "" or port == "":
-                    if not noModuleInfoFlag:
-                        self.master.errorMessageBoxSignal.emit("Please enter a Serial Number and FMC Port to autofill .txt files.")
-                        noModuleInfoFlag=True
-                    continue
+                    self.master.errorMessageBoxSignal.emit("Please enter a Serial Number and FMC Port to autofill .txt files.")
+                    return
 
                 for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
                     if pantheraURL:
@@ -589,25 +587,26 @@ class QtStartWindow(QWidget):
         # 	return
         
         files = {} #Maybe this block could be combined with change_chip_txts.
-        for moduleBox in self.BeBoardWidget.getModules():
-            moduleName = moduleBox.getSerialNumber()
-            for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
-                text = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().text().replace(" ", "")
-                if text != "":
-                    if 'panthera.fit.edu' in text:
-                        try:
-                            txt_index = text.rfind(".txt")
-                            destination = os.environ.get("PH2ACF_BASE_DIR") + "/test/" + text[text.rfind("/", 0, txt_index)+1:txt_index]
-                            os.system(f"wget -O {destination} {text}")
-                            self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setText(destination)
-                        except Exception as e:
-                            logger.error(e)
-                            self.master.errorMessageBoxSignal.emit(f"Could not Chip{chipid} file from Panthera!")
+        if self.customTxtCheck.isChecked():
+            for moduleBox in self.BeBoardWidget.getModules():
+                moduleName = moduleBox.getSerialNumber()
+                for chipid in self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict.keys():
+                    text = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().text().replace(" ", "")
+                    if text != "":
+                        if 'panthera.fit.edu' in text:
+                            try:
+                                txt_index = text.rfind(".txt")
+                                destination = os.environ.get("PH2ACF_BASE_DIR") + "/test/" + text[text.rfind("/", 0, txt_index)+1:txt_index]
+                                os.system(f"wget -O {destination} {text}")
+                                self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setText(destination)
+                            except Exception as e:
+                                logger.error(e)
+                                self.master.errorMessageBoxSignal.emit(f"Could not Chip{chipid} file from Panthera!")
+                                return
+                        elif not os.path.exists(text):
+                            self.master.errorMessageBoxSignal.emit(f"Chip{chipid}'s .txt file doesn't exist!")
                             return
-                    elif not os.path.exists(text):
-                        self.master.errorMessageBoxSignal.emit(f"Chip{chipid}'s .txt file doesn't exist!")
-                        return
-                    files[moduleName, moduleBox.getFMCPort(), chipid] = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().text()
+                        files[moduleName, moduleBox.getFMCPort(), chipid] = self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().text()
 
         # NOTE This is not the best way to do this, we should be emitting a signal to change
         # the module type but ModuleBox is not publically accessible so we have to go through BeBoardWidget
