@@ -1,6 +1,8 @@
 import json
 import logging
 
+CONFIG_VER = 0
+
 # Customize the logging configuration
 logging.basicConfig(
    level=logging.INFO,
