@@ -2,7 +2,7 @@ import os
 import ROOT
 
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests
-
+from Gui.GUIutils.guiUtils import isCompositeTest
 from Gui.python.logging_config import logger
 
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
@@ -19,7 +19,7 @@ def ResultGrader(
     sequence
 ):
     try:
-        if CompositeTests[sequence][testIndexInSequence] != testName:
+        if isCompositeTest(sequence) and CompositeTests[sequence][testIndexInSequence] != testName:
             logger.error(
                 f"Test name didn't match expected test sequence name\n"
                 f"Expected Test Name: {CompositeTests[sequence][testIndexInSequence]}\n"
