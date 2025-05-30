@@ -1,7 +1,7 @@
 import os
 import ROOT
 
-from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
+from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests
 
 from Gui.python.logging_config import logger
 
@@ -19,10 +19,10 @@ def ResultGrader(
     sequence
 ):
     try:
-        if sequence[testIndexInSequence] != testName:
+        if CompositeTests[sequence][testIndexInSequence] != testName:
             logger.error(
                 f"Test name didn't match expected test sequence name\n"
-                f"Expected Test Name: {sequence[testIndexInSequence]}\n"
+                f"Expected Test Name: {CompositeTests[sequence][testIndexInSequence]}\n"
                 f"Received Test Name: {testName}"
             )
             raise Exception("Test name doesn't match expected sequence name! Something went wrong.")
