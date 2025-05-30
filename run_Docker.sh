@@ -9,8 +9,8 @@ SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/
 ######### Specify the docker image to use #################
 #IMAGE_NAME="osupixels/ph2_acf_gui_dev:v2-1-0-beta-"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_purdue:latest"
-#IMAGE_NAME="majoyce2/ph2_acf_gui_user:v2.0.0"
-IMAGE_NAME="local/testimagemay29user"
+IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
+#IMAGE_NAME="local/testimagemay29user"
 
 mode=$1
 ## Finding the USB ports to use with the GUI#############
