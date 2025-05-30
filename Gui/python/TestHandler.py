@@ -1128,11 +1128,14 @@ created by Ph2_ACF is empty."
 
         # Save the output ROOT file to output_dir
         self.saveTest(processIndex)
+        
+        # validate the results
+        self.validateTest()
+        
         self.testIndexTracker += 1
         self.testsAttempted += 1
 
-        # validate the results
-        self.validateTest()
+
 
         EnableReRun = self.onFinalTest(self.testIndexTracker) # This function uses BBanalysis_root_files when all composite tests will not make use of it
         self.stepFinished.emit(EnableReRun)
