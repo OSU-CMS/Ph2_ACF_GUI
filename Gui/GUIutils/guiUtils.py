@@ -374,7 +374,7 @@ def CheckXMLValue(pFilename, pAttribute):
 ##########################################################################
 
 
-def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
+def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
     outputFile = f"{outputDir}/CMSIT_{BeBoard.getBoardName()}_{testName}.xml"
     print(outputFile)
 
@@ -464,14 +464,18 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, **arg):
             for chip in module.getChips().values():
                 print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
                 FEChip = FE()
+                if (module.getModuleName(), module.getFMCPort(), chip.getID()) in txt_files.keys():
+                    txt_file = txt_files[module.getModuleName(), module.getFMCPort(), chip.getID()]
+                else:
+                    txt_file = "CMSIT_RD53_{0}_{1}_{2}.txt".format(
+                        module.getModuleName(), module.getFMCPort(), chip.getID()
+                    )
                 FEChip.SetFE(
                     chip.getID(),
                     "1" if chip.getStatus() else "0",
                     chip.getLane(),
                     RxPolarities,
-                    "CMSIT_RD53_{0}_{1}_{2}.txt".format(
-                        module.getModuleName(), module.getFMCPort(), chip.getID()
-                    ),
+                    txt_file,
                 )
 
                 FEChip.ConfigureFE(FESettings_Dict[testName])
