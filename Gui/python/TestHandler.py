@@ -72,7 +72,7 @@ class TestHandler(QObject):
     powerSignal = pyqtSignal()
     updateProgressBar = pyqtSignal(QProgressBar, int, str)
 
-    def __init__(self, runwindow, master, info, firmware):
+    def __init__(self, runwindow, master, info, firmware, txt_files = {}):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
@@ -134,6 +134,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
+        self.txt_files = txt_files if txt_files != {} else {}
 
         self.autoSave = False
         self.backSignal = False
@@ -273,6 +274,7 @@ class TestHandler(QObject):
                     self.boardType, self.moduleVersion
                 )
                 print("Getting config file {0}".format(self.rd53_file[key]))
+
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
             SetupRD53ConfigfromFile(self.rd53_file, self.output_dir)
@@ -292,7 +294,7 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir)
+                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files)
 
                     if config_file:
                         SetupXMLConfigfromFile(
@@ -322,7 +324,7 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir)
+                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files)
 
                     if config_file:
                         SetupXMLConfigfromFile(
@@ -416,6 +418,7 @@ class TestHandler(QObject):
             else:
                 step = "{}:{}".format(self.testIndexTracker, self.currentTest)
                 self.updateResult.emit((step, self.figurelist))
+
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
             return
@@ -1128,11 +1131,14 @@ created by Ph2_ACF is empty."
 
         # Save the output ROOT file to output_dir
         self.saveTest(processIndex)
+        
+        # validate the results
+        self.validateTest()
+        
         self.testIndexTracker += 1
         self.testsAttempted += 1
 
-        # validate the results
-        self.validateTest()
+
 
         EnableReRun = self.onFinalTest(self.testIndexTracker) # This function uses BBanalysis_root_files when all composite tests will not make use of it
         self.stepFinished.emit(EnableReRun)
