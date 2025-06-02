@@ -208,8 +208,6 @@ class QtRunWindow(QWidget):
 
         self.CustomizedButton = QPushButton("&Customize...")
         self.CustomizedButton.clicked.connect(self.customizeTest)
-        self.ResetButton = QPushButton("&Reset")
-        self.ResetButton.clicked.connect(self.resetConfigTest)
         self.RunButton = QPushButton("&Run")
         self.RunButton.setDefault(True)
         self.RunButton.clicked.connect(lambda: self.RunButton.setDisabled(True))
@@ -230,7 +228,6 @@ class QtRunWindow(QWidget):
         if self.master.expertMode:
             self.ControlLayout.addWidget(self.RunButton, 0, 0, 1, 1)
             self.ControlLayout.addWidget(self.AbortButton, 0, 1, 1, 1)
-            self.ControlLayout.addWidget(self.ResetButton, 0, 2, 1, 1)
             self.ControlLayout.addWidget(self.saveCheckBox, 1, 0, 1, 1)
         else:
             pass
@@ -509,11 +506,9 @@ class QtRunWindow(QWidget):
     def customizeTest(self):
         print("Customize configuration")
         self.CustomizedButton.setDisabled(True)
-        self.ResetButton.setDisabled(True)
         self.RunButton.setDisabled(True)
         self.CustomizedWindow = QtCustomizeWindow(self, self.testHandler.rd53_file)
         self.CustomizedButton.setDisabled(False)
-        self.ResetButton.setDisabled(False)
         self.RunButton.setDisabled(False)
 
     def resetConfigTest(self):
@@ -533,7 +528,6 @@ class QtRunWindow(QWidget):
                 for fw_index in range(len(self.firmware)):
                     self.ResultWidget.ProgressBars[fw_index][0].setValue(0)
                     self.ResultWidget.runtimes[fw_index][0].setText("")
-        self.ResetButton.setDisabled(True)
         self.testHandler.runTest(isReRun)
 
     def abortTest(self):

@@ -36,7 +36,6 @@ from Gui.QtGUIutils.QtFwCheckWindow import QtFwCheckWindow
 from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
 from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
 from Gui.QtGUIutils.QtStartWindow import QtStartWindow
-from Gui.QtGUIutils.QtModuleReviewWindow import QtModuleReviewWindow
 from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
@@ -791,24 +790,6 @@ class QtApplication(QWidget):
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
 
-        self.ReviewButton = QPushButton("&Review")
-        self.ReviewButton.setMinimumWidth(kMinimumWidth)
-        self.ReviewButton.setMaximumWidth(kMaximumWidth)
-        self.ReviewButton.setMinimumHeight(kMinimumHeight)
-        self.ReviewButton.setMaximumHeight(kMaximumHeight)
-        self.ReviewButton.clicked.connect(self.openReviewWindow)
-        ReviewLabel = QLabel("Review all results")
-
-        self.ReviewModuleButton = QPushButton("&Show Module")
-        self.ReviewModuleButton.setMinimumWidth(kMinimumWidth)
-        self.ReviewModuleButton.setMaximumWidth(kMaximumWidth)
-        self.ReviewModuleButton.setMinimumHeight(kMinimumHeight)
-        self.ReviewModuleButton.setMaximumHeight(kMaximumHeight)
-        self.ReviewModuleButton.clicked.connect(self.openModuleReviewWindow)
-        self.ReviewModuleEdit = QLineEdit("")
-        self.ReviewModuleEdit.setEchoMode(QLineEdit.Normal)
-        self.ReviewModuleEdit.setPlaceholderText("Enter Module ID")
-
         self.ThermalTestButton = QPushButton("&Thermal Test")
         self.ThermalTestButton.setEnabled(True)
         self.AbortThermalTestButton = QPushButton("&Abort thermal test")
@@ -879,11 +860,6 @@ class QtApplication(QWidget):
         layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
         layout.addWidget(NewTestLabel, 0, 1, 1, 2)
 
-        layout.addWidget(self.ReviewButton, 2, 0, 1, 1)
-        layout.addWidget(ReviewLabel, 2, 1, 1, 2)
-        layout.addWidget(self.ReviewModuleButton, 3, 0, 1, 1)
-        layout.addWidget(self.ReviewModuleEdit, 3, 1, 1, 2)
-
         self.ChillerOption = QGroupBox("Chiller", self)
         self.ChillerLayout = QGridLayout()
         self.ChillerOption.setLayout(self.ChillerLayout)
@@ -901,21 +877,6 @@ class QtApplication(QWidget):
             self.ExpertButton = QPushButton("&Enter Expert Mode")
             self.ExpertButton.clicked.connect(self.goExpert)
 
-        self.RefreshButton = QPushButton("&Refresh")
-        if self.PYTHON_VERSION.startswith("3.8"):
-            self.RefreshButton.clicked.connect(self.disableBoxs)
-            self.RefreshButton.clicked.connect(self.destroyMain)
-            self.RefreshButton.clicked.connect(self.createMain)
-            self.RefreshButton.clicked.connect(self.checkFirmware)
-            self.RefreshButton.clicked.connect(self.setDefault)
-        elif self.PYTHON_VERSION.startswith(("3.7", "3.9")):
-            self.RefreshButton.clicked.connect(self.disableBoxs)
-            self.RefreshButton.clicked.connect(self.destroyMain)
-            self.RefreshButton.clicked.connect(self.reCreateMain)
-            self.RefreshButton.clicked.connect(self.enableBoxs)
-            self.RefreshButton.clicked.connect(self.update)
-            self.RefreshButton.clicked.connect(self.setDefault)
-
         self.LogoutButton = QPushButton("&Logout")
         # Fixme: more conditions to be added
         if self.ProcessingTest:
@@ -932,7 +893,6 @@ class QtApplication(QWidget):
         if self.expertMode is False:
             self.AppLayout.addWidget(self.ExpertButton)
         self.AppLayout.addStretch(1)
-        self.AppLayout.addWidget(self.RefreshButton)
         self.AppLayout.addWidget(self.LogoutButton)
         self.AppLayout.addWidget(self.ExitButton)
         self.AppOption.setLayout(self.AppLayout)
@@ -1189,19 +1149,6 @@ class QtApplication(QWidget):
     def openSummaryWindow(self):
         self.SummaryViewer = QtSummaryWindow(self)
         self.SummaryButton.setDisabled(True)
-
-    def openReviewWindow(self):
-        self.ReviewWindow = QtModuleReviewWindow(self)
-
-    def openModuleReviewWindow(self):
-        Module_ID = self.ReviewModuleEdit.text()
-        if Module_ID != "":
-            self.ModuleReviewWindow = QtModuleReviewWindow(self, Module_ID)
-        else:
-            QMessageBox.information(
-                None, "Error", "Please enter a valid module ID", QMessageBox.Ok
-            )
-
     def releaseHVPowerPanel(self):
         if self.instruments:
             self.instruments.hv_off()

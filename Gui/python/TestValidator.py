@@ -19,6 +19,7 @@ def ResultGrader(
     sequence
 ):
     try:
+
         if isCompositeTest(sequence) and CompositeTests[sequence][testIndexInSequence] != testName:
             logger.error(
                 f"Test name didn't match expected test sequence name\n"
@@ -26,8 +27,6 @@ def ResultGrader(
                 f"Received Test Name: {testName}"
             )
             raise Exception("Test name doesn't match expected sequence name! Something went wrong.")
-    
-        
 
 
         module_name = module_data["module"].getModuleName()
