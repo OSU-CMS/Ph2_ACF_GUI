@@ -89,7 +89,7 @@ class TestHandler(QObject):
         self.ModuleMap = dict()
 
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
-
+        self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in self.info} for module in self.modules}
         self.GADC_meas_chip = None
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
         self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
@@ -818,6 +818,8 @@ class TestHandler(QObject):
                         print(f'TestHandler {result}')
                         results.append(result)
                         passed.append(list(result.values())[0][0])
+                        
+                        self.module_test_history[next(iter(result))][self.currentTest]["Passed" if next(iter(result.values()))[0] else "Failed"] += 1 
 
                         self.figurelist[module.getModuleName()] = self.collect_plots(
                             module.getModuleName()
@@ -1651,7 +1653,7 @@ created by Ph2_ACF is empty."
         def handle_retry():
             if check_enabledModules():
                 self.outputString.emit(f"Retrying {self.currentTest}...")
-                for i, _ in enumerate(self.firmware):
+                for i in range(len(self.firmware)):
                     self.runwindow.ResultWidget.runtimes[i][self.testIndexTracker].setText(
                         ""
                     )  # may need to .update()
