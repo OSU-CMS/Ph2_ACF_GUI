@@ -332,6 +332,7 @@ class SimplifiedMainWidget(QWidget):
         self.RunButton.setIcon(RunIcon)
         self.RunButton.setIconSize(QSize(80, 80))
         self.RunButton.clicked.connect(self.runNewTest)
+        self.RunButton.clicked.connect(self.config_and_test)
         self.StartLayout.addStretch(1)
         self.StartLayout.addWidget(self.TestGroup)
         self.StartLayout.addWidget(self.StopButton)
@@ -467,7 +468,7 @@ class SimplifiedMainWidget(QWidget):
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
-        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription)
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
 
     def abortTest(self):
