@@ -70,10 +70,18 @@ IVcurve_range = {
 }
 
 SLDOScan_GADC = {
-    "voltage":2.98,
-    "target current":7,
-    "starting current":6,
-    "step size":.5
+    "1x2":{
+		"voltage":2.98,
+		"starting current":3.5,
+		"target current":4.5,
+		"step size":.5
+	},
+	"quad":{
+		"voltage":2.98,
+		"starting current":6,
+		"target current":7,
+		"step size":.5
+	}
 }
 
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test

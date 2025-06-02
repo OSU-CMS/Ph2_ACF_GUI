@@ -500,20 +500,28 @@ class TestHandler(QObject):
                     break
             if not lv_on:
                 if testName == "SLDOScan_GADC":
+                    if "1x2" in self.ModuleType.lower():
+                        SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
+                    elif "quad" in self.ModuleType.lower():
+                        SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["quad"]
+                    else:
+                        SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
+                        logger.error('Module type does not specify "1x2" or "quad". Running SLDOScan_GADC as 1x2.')
+
                     self.ProgressValue = 0
-                    total_steps =2*(1+np.ceil(np.abs(site_settings.SLDOScan_GADC["target current"]-site_settings.SLDOScan_GADC["starting current"])/site_settings.SLDOScan_GADC["step size"]))
+                    total_steps =2*(1+np.ceil(np.abs(SLDOScan_GADC_dict["target current"]-SLDOScan_GADC_dict["starting current"])/SLDOScan_GADC_dict["step size"]))
                     for i in range(len(self.firmware)):
                         self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(0)
 
-                    self.instruments.lv_on(voltage=site_settings.SLDOScan_GADC["voltage"],current=site_settings.SLDOScan_GADC["starting current"])
+                    self.instruments.lv_on(voltage=SLDOScan_GADC_dict["voltage"],current=SLDOScan_GADC_dict["starting current"])
 
-                    up_sweep = self.instruments.lv_sweep(target=site_settings.SLDOScan_GADC["target current"],
+                    up_sweep = self.instruments.lv_sweep(target=SLDOScan_GADC_dict["target current"],
                         delay=.1, set_property="current", measure=True,
-                        step_size=site_settings.SLDOScan_GADC["step size"], execute_each_step=lambda:self.GADC_execute_each_step("up", total_steps))
+                        step_size=SLDOScan_GADC_dict["step size"], execute_each_step=lambda:self.GADC_execute_each_step("up", total_steps))
 
-                    down_sweep = self.instruments.lv_sweep(target=site_settings.SLDOScan_GADC["starting current"],
+                    down_sweep = self.instruments.lv_sweep(target=SLDOScan_GADC_dict["starting current"],
                         delay=.1, set_property="current", measure=True,
-                        step_size=site_settings.SLDOScan_GADC["step size"], execute_each_step=lambda:self.GADC_execute_each_step("down", total_steps))
+                        step_size=SLDOScan_GADC_dict["step size"], execute_each_step=lambda:self.GADC_execute_each_step("down", total_steps))
                     
                     self.instruments.lv_off()
                 
