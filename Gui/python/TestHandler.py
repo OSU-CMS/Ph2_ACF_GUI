@@ -89,12 +89,16 @@ class TestHandler(QObject):
         self.ModuleMap = dict()
 
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
-        self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in self.info} for module in self.modules}
+
+        test_list = CompositeTests[self.info] if isCompositeTest(self.info) else (self.info,)
+        self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in test_list} for module in self.modules}
+        
         self.GADC_meas_chip = None
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
         self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAup = {channel:{} for channel in self.instruments._module_dict}
+
         self.SLDOfilelist = []
 
         self.finished_tests = []
@@ -823,7 +827,6 @@ class TestHandler(QObject):
                             self.info
                         )
 
-                        print(f'TestHandler {result}')
                         results.append(result)
                         passed.append(list(result.values())[0][0])
                         
