@@ -267,7 +267,7 @@ class QtRunWindow(QWidget):
 
         OutputLayout = QGridLayout()
         self.ResultWidget = ResultTreeWidget(
-            self.info, self.DisplayW, self.DisplayH, self.master
+            self.info, self.DisplayW, self.DisplayH, self.master, self.firmware
         )
         OutputLayout.addWidget(self.ResultWidget, 0, 0, 1, 1)
         OutputBox.setLayout(OutputLayout)
