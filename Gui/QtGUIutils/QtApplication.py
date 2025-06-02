@@ -52,12 +52,14 @@ from Gui.python.logging_config import logger
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
     errorMessageBoxSignal = pyqtSignal(str)
-    openRunWindowSignal = pyqtSignal(object, object)
+    openRunWindowSignal = pyqtSignal(object, object, dict)
 
     def __init__(self, dimension):
         super(QtApplication, self).__init__()
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
+
+
         self.ProcessingTest = False
         self.expertMode = False
         self.ActiveFC7s = {}
@@ -104,9 +106,9 @@ class QtApplication(QWidget):
 
         self.openRunWindowSignal.connect(self.openRunWindowGUI)
 
-    def openRunWindowGUI(self, info, firmwareDescription):
+    def openRunWindowGUI(self, info, firmwareDescription, txt_files):
         self.RunNewTest = QtRunWindow(
-            self, info, firmwareDescription
+            self, info, firmwareDescription, txt_files
         )
 
     def setLoginUI(self):
@@ -843,6 +845,8 @@ class QtApplication(QWidget):
         if site_settings.cooler == "Peltier":
             self.CoolerLayout.addWidget(Peltier(100))
         elif site_settings.cooler == "Tessie":
+            logger.error("The Tessie controls are currently not implemented. Please change cooling method in siteConfig.py!") 
+            sys.exit() 
             self.CoolerLayout.addWidget(Tessie(100))
         elif site_settings.cooler == "Manual":
             # Title label (Manual Cooling)
@@ -958,6 +962,12 @@ class QtApplication(QWidget):
 
         self.setDefault()
 
+        if site_settings.cooler == "Tessie":
+            # In order to fit the coldbox website nicely, the GUI needs to be
+            # at least this big
+            self.resize(1420, 861)
+            self.setMinimumSize(1420, 861)
+
         # create a dictionary to easily disable groupboxes later
         self.groupbox_mapping = {"hv": self.HVPowerGroup, "lv": self.LVPowerGroup}
         if self.relay:
@@ -965,6 +975,7 @@ class QtApplication(QWidget):
         if self.multimeter:
             self.groupbox_mpaping["multimeter"] = self.multimeter_group
 
+        # only for the simplified GUI so this default should not matter right?
     def setDefault(self):
         if self.expertMode is False:
             self.HVPowerGroup.setDisabled(True)
@@ -1025,8 +1036,10 @@ class QtApplication(QWidget):
                 self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
 
+                # arduino control here: check why this does not work. 
         if self.expertMode:
             if self.ArduinoControl.isChecked():
+                self.ArduinoGroup.setEnabled(True)
                 self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
                 self.ArduinoGroup.frozeArduinoPanel()
 

@@ -1,6 +1,8 @@
 import json
 import logging
 
+CONFIG_VER = 0
+
 # Customize the logging configuration
 logging.basicConfig(
    level=logging.INFO,
@@ -33,8 +35,11 @@ defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #Coldbox variables
-cooler = "Tessie" # "Pelter", "Tessie", or "Manual"
+cooler = "Peltier" # "Peltier" or "Manual".
 usePeltier = False #The "cooler" variable will be used in the future, but this line is needed for the current version of the GUI
+
+tessie_url = "http://coldbox:3000/"
+alternative_tessie_url = "http://coldbox:3000/guiOSU.html"
 
 defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
@@ -55,7 +60,7 @@ defaultPeltierWarningTemp = 40
 manual_powersupply_control = False
 
 # Load instrument setup from json file
-with open('jsonFiles/instruments_osu_adcboardsldo.json', 'r') as file:
+with open('jsonFiles/instruments_osu_oneLV.json', 'r') as file:
     icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.

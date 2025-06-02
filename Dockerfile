@@ -17,9 +17,20 @@ ENV PH2ACF_BASE_DIR=${GUI_dir}/Ph2_ACF
 ENV DATA_dir=${GUI_dir}/data/TestResults
 ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}:${GUI_dir}/icicle/icicle:${GUI_dir}/InnerTrackerTests:${GUI_dir}/felis
 
+# Commenting for now, this was needed to change user to non-ROOT 
+ARG USER_UID=1000
+ARG USER_GID=1000
+
+# Create the group and user with the specified UID/GID
+RUN groupadd -g ${USER_GID} cmsTkUser || true && \
+    useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser &&\
+    usermod -aG dialout cmsTkUser
+
+ENV APP_PASSWORD=${APP_PASSWORD}
+
 
 #Setting the default user in the container to be root
-USER root
+# USER root
 
 LABEL Name=ph2acfgui_dev Version=${Ph2_ACF_VERSION}
 
@@ -32,15 +43,26 @@ ADD . /home/cmsTkUser/Ph2_ACF_GUI/
 RUN ls -lrt
 
 #Installing all needed packages in the container.
-RUN dnf -y install libxkbcommon-x11-devel mesa-libGL-devel xcb-util-wm xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm PyQt5
+RUN dnf -y install libxkbcommon-x11-devel mesa-libGL-devel xcb-util-wm xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm mesa-dri-drivers mesa-libGL
 RUN dnf -y install dbus-x11 gcc gcc-c++ kernel-devel make usbutils udev
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install -r requirements.txt
+
+
 
 #GIT_REF is used in the compileSubModules script so you need to define it here before running the script.
 ARG GIT_REF=Dev
 RUN sh ./compileSubModules.sh
 RUN chmod +x prepare_Ph2ACF.sh
+
+#RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser
+
+# For some reason I couldn't change the permissions on this file alongside the other chown command.
+# TODO: This was also needed to change user in docker image
+RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/data && \
+    [ -e /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py ] && \
+    chown cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py || true
+#USER cmsTkUser
 
 #Comment the following line if you want to build the developer container.  The following line makes docker open the GUI when the container started.
 CMD ["prepare_Ph2ACF.sh"]

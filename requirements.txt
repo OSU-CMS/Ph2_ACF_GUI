@@ -1,4 +1,5 @@
 PyQt5
+PyQtWebEngine
 pyqt-darktheme
 mysql-connector-python==8.0.21
 numpy
@@ -16,3 +17,6 @@ fasteners
 requests_toolbelt
 bs4
 ilock
+flask
+yagmail
+

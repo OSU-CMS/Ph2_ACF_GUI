@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tessie</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="tessieEllipse.png">
+  </head>
+  <body style='background-color: #474552; color: #000000;'>
+    <!--
+    <div class="mycontainer">
+
+      <div style="background-color:DodgerBlue" float="left">
+        <b>Nitrogen control: </b> <br>
+        <button id="valve0" style="background-color:#D3D3D3">Flush</button>
+        <button id="valve1" style="background-color:#D3D3D3">Rinse</button>
+        <label><input id="throttleN2" name="throttleN2" type="checkbox" onclick="clkThrottle()"/>throttle N2</label>
+
+        <hr>
+        TEC arrangement:
+        <table style="border-collapse: collapse">
+          <tr>
+            <td>8</td>
+            <td>7</td>
+            <td>6</td>
+            <td>5</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>2</td>
+            <td>3</td>
+            <td>4</td>
+          </tr>
+        </table>
+      </div> -->
+
+     <!-- <div style="background-color:DarkKhaki" >
+        <b>tessie control: </b> <br>
+        TEC Firmware: 
+        <button id="loadFW">Load</button>
+        <button id="saveFW">Save</button><br>
+        CSV data:
+        <button id="getcsv" disabled>Get CSV data</button>
+      </div> -->
+
+     <!--<div id="envDiv" style="background-color:MediumSeaGreen" float="center">
+        <table>
+          <tr>
+            <td>Air</td>
+            <td id="TempAir" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Rel. Humidity</td>
+            <td id="RelHum" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Dew point</td>
+            <td id="DP" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Water</td>
+            <td id="TempWater" style="text-align:right;">0 </td>
+          </tr>
+        </table>
+      </div> -->
+
+
+      <div id="varDiv" style="background-color:#abb2b9" float="center">
+        <b>Nitrogen control: </b> <br>
+        <button id="valve0" style="background-color:#D3D3D3">Flush</button>
+        <button id="valve1" style="background-color:#D3D3D3">Rinse</button>
+        <label><input id="throttleN2" name="throttleN2"
+                      type="checkbox" onclick="clkThrottle()"/>throttle N2</label>
+        <table style="margin: auto; display: table-cell; width: 30%;">
+          <tr>
+            <td>Air</td>
+            <td id="TempAir" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Rel. Humidity</td>
+            <td id="RelHum" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Dew point</td>
+            <td id="DP" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>Water</td>
+            <td id="TempWater" style="text-align:right;">0 </td>
+          </tr>
+        </table>
+        <table style="display: table-cell; width: 30%; margin: auto;">
+          <tr>
+            <td>Lid status</td>
+            <td id="LidStatus" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Interlock</td>
+            <td id="Interlock" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Free diskspace</td>
+            <td id="FreeDiskspace" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Flow switch</td>
+            <td id="FM" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Traffic light</td>
+            <td id="TrafficLight" style="text-align:right">
+              <svg id="gLight" style="width: 24pt; height: 32pt">
+                <circle id="circleG" r="10" cx="12" cy="20" style="fill: white; stroke: green; stroke-width: 2"/>
+              </svg> 
+              <svg id="yLight" style="width: 24pt; height: 32pt">
+                <circle id="circleY" r="10" cx="12" cy="20" style="fill: white; stroke: yellow; stroke-width: 2"/>
+              </svg>
+              <svg id="rLight" style="width: 24pt; height: 32pt">
+                <circle id="circleR" r="10" cx="12" cy="20" style="fill: white; stroke: red; stroke-width: 2"/>
+              </svg>
+            </td>
+          </tr>
+        </table>
+        <table style="margin: auto; display: table-cell; width: 30%;">
+          <tr>
+            <td>I2C Errors</td>
+            <td id="I2CErrors" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>CANbus errors</td>
+            <td id="CANbusErrors" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Run time</td>
+            <td id="RunTime" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>tessie version</td>
+            <td id="versionField" style="text-align:right;">n/a </td>
+          </tr>
+          <tr>
+            <td>TEC f/w version</td>
+            <td id="fwverField" style="text-align:right;">n/a </td>
+          </tr>
+        </table>
+      </div>
+
+    </div>
+
+    <!--
+      <div id="statusDiv" style="background-color:Goldenrod" float="right">
+        <table>
+          <tr>
+            <td>I2C Errors</td>
+            <td id="I2CErrors" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>CANbus errors</td>
+            <td id="CANbusErrors" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>Run time</td>
+            <td id="RunTime" style="text-align:right;">0 </td>
+          </tr>
+          <tr>
+            <td>tessie version</td>
+            <td id="versionField" style="text-align:right;">n/a </td>
+          </tr>
+          <tr>
+            <td>TEC f/w version</td>
+            <td id="fwverField" style="text-align:right;">n/a </td>
+          </tr>
+        </table>
+      </div>
+</div>
+-->
+    
+    <div style="background-color:DarkGray">
+    <textarea id="logarea" class="scrollabletextbox" style="font-size: 10pt; width: 100%; max-width: 100%;"></textarea>
+    </div>
+
+
+    <div class="w3-container w3-cream w3-cell">
+      <table class="w3-table">
+        <tr>
+          <th>Parameter</th>
+          <th>all</th>
+          <th>TEC 1</th>
+          <th>TEC 2</th>
+          <th>TEC 3</th>
+          <th>TEC 4</th>
+          <th>TEC 5</th>
+          <th>TEC 6</th>
+          <th>TEC 7</th>
+          <th>TEC 8</th>
+        </tr>
+        <tr>
+          <td>Turn on/off</td>
+          <td><input id="CheckTEC0" type="checkbox" onclick="clkCheckTec(0)"></td>
+          <td><input id="CheckTEC1" type="checkbox" onclick="clkCheckTec(1)"></td>
+          <td><input id="CheckTEC2" type="checkbox" onclick="clkCheckTec(2)"></td>
+          <td><input id="CheckTEC3" type="checkbox" onclick="clkCheckTec(3)"></td>
+          <td><input id="CheckTEC4" type="checkbox" onclick="clkCheckTec(4)"></td>
+          <td><input id="CheckTEC5" type="checkbox" onclick="clkCheckTec(5)"></td>
+          <td><input id="CheckTEC6" type="checkbox" onclick="clkCheckTec(6)"></td>
+          <td><input id="CheckTEC7" type="checkbox" onclick="clkCheckTec(7)"></td>
+          <td><input id="CheckTEC8" type="checkbox" onclick="clkCheckTec(8)"></td>
+        </tr>
+
+        <tr>
+          <td>PowerState (0=Off, 1=On)</td>
+          <td> </td>
+          <td id="PowerState1">wait </td>
+          <td id="PowerState2">wait </td>
+          <td id="PowerState3">wait </td>
+          <td id="PowerState4">wait </td>
+          <td id="PowerState5">wait </td>
+          <td id="PowerState6">wait </td>
+          <td id="PowerState7">wait </td>
+          <td id="PowerState8">wait </td>
+        </tr>
+
+        <tr>
+          <td>Mode (0=T, 1=V)</td>
+          <td> <input id="Mode0" maxlength="3" size="3" value="all"  onchange="chgMode(0,this.value)"></td>
+          <td> <input id="Mode1" maxlength="3" size="3" value="wait" onchange="chgMode(1,this.value)"></td>
+          <td> <input id="Mode2" maxlength="3" size="3" value="wait" onchange="chgMode(2,this.value)"></td>
+          <td> <input id="Mode3" maxlength="3" size="3" value="wait" onchange="chgMode(3,this.value)"></td>
+          <td> <input id="Mode4" maxlength="3" size="3" value="wait" onchange="chgMode(4,this.value)"></td>
+          <td> <input id="Mode5" maxlength="3" size="3" value="wait" onchange="chgMode(5,this.value)"></td>
+          <td> <input id="Mode6" maxlength="3" size="3" value="wait" onchange="chgMode(6,this.value)"></td>
+          <td> <input id="Mode7" maxlength="3" size="3" value="wait" onchange="chgMode(7,this.value)"></td>
+          <td> <input id="Mode8" maxlength="3" size="3" value="wait" onchange="chgMode(8,this.value)"></td>
+        </tr>
+
+        <tr>
+          <td>ControlVoltage_Set [V]</td>
+          <td> <input id="ControlVoltage_Set0" maxlength="4" size="4" value="all"  onchange="chgControlVoltage_Set(0,this.value)"></td>
+          <td> <input id="ControlVoltage_Set1" maxlength="4" size="4" value="wait" onchange="chgControlVoltage_Set(1,this.value)"></td>
+          <td> <input id="ControlVoltage_Set2" maxlength="4" size="4" value="wait" onchange="chgControlVoltage_Set(2,this.value)"></td>
+          <td> <input id="ControlVoltage_Set3" maxlength="4" size="4" value="wait" onchange="chgControlVoltage_Set(3,this.value)"></td>
+          <td> <input id="ControlVoltage_Set4" maxlength="4" size="4" value="wait" onchange="chgControlVoltage_Set(4,this.value)"></td>
+          <td> <input id="ControlVoltage_Set5" maxlength="4" size="4" value="wait" onchange="chgControlVoltage_Set(5,this.value)"></td>
+          <td> <input id="ControlVoltage_Set6" maxlength="4" size="4" value="wait" onchange="chgControlVoltage_Set(6,this.value)"></td>
+          <td> <input id="ControlVoltage_Set7" maxlength="4" size="4" value="wait" onchange="chgControlVoltage_Set(7,this.value)"></td>
+          <td> <input id="ControlVoltage_Set8" maxlength="4" size="4" value="wait" onchange="chgControlVoltage_Set(8,this.value)"></td>
+        </tr>
+
+        <tr>
+          <td> Temp_Set [C] </td>
+          <td> <input id="Temp_Set0" maxlength="4" size="5" value="all"  onchange="chgTemp_Set(0,this.value)"> </td>
+          <td> <input id="Temp_Set1" maxlength="4" size="5" value="wait" onchange="chgTemp_Set(1,this.value)"> </td>
+          <td> <input id="Temp_Set2" maxlength="4" size="5" value="wait" onchange="chgTemp_Set(2,this.value)"> </td>
+          <td> <input id="Temp_Set3" maxlength="4" size="5" value="wait" onchange="chgTemp_Set(3,this.value)"> </td>
+          <td> <input id="Temp_Set4" maxlength="4" size="5" value="wait" onchange="chgTemp_Set(4,this.value)"> </td>
+          <td> <input id="Temp_Set5" maxlength="4" size="5" value="wait" onchange="chgTemp_Set(5,this.value)"> </td>
+          <td> <input id="Temp_Set6" maxlength="4" size="5" value="wait" onchange="chgTemp_Set(6,this.value)"> </td>
+          <td> <input id="Temp_Set7" maxlength="4" size="5" value="wait" onchange="chgTemp_Set(7,this.value)"> </td>
+          <td> <input id="Temp_Set8" maxlength="4" size="5" value="wait" onchange="chgTemp_Set(8,this.value)"> </td>
+        </tr>
+
+        <tr>
+          <td>Temp_M [deg C]</td>
+          <td> </td>
+          <td id="Temp_M1">wait </td>
+          <td id="Temp_M2">wait </td>
+          <td id="Temp_M3">wait </td>
+          <td id="Temp_M4">wait </td>
+          <td id="Temp_M5">wait </td>
+          <td id="Temp_M6">wait </td>
+          <td id="Temp_M7">wait </td>
+          <td id="Temp_M8">wait </td>
+        </tr>
+
+        <tr>
+          <td>Errorstate (click for details)</td>
+          <td><button id="ClearTECError" disabled>Clear</button></td>
+          <td><button id="ErrorState1" disabled>wait </button></td>
+          <td><button id="ErrorState2" disabled>wait </button></td>
+          <td><button id="ErrorState3" disabled>wait </button></td>
+          <td><button id="ErrorState4" disabled>wait </button></td>
+          <td><button id="ErrorState5" disabled>wait </button></td>
+          <td><button id="ErrorState6" disabled>wait </button></td>
+          <td><button id="ErrorState7" disabled>wait </button></td>
+          <td><button id="ErrorState8" disabled>wait </button></td>
+        </tr>
+
+
+
+      </table>
+    </div>
+
+    <!-- 
+    <div id="tec1pop" popover>
+      <h2 id="tec1errorTitle"></h2>
+      <p id="tec1errorValue"></p>
+      <p id="tec1errorExplanation"></p>
+      <p>Click outside or press ESC to close this notice</p>
+    </div>
+    <div id="tec2pop" popover>
+      <h2 id="tec2errorTitle"></h2>
+      <p id="tec2errorValue"></p>
+      <p id="tec2errorExplanation"></p>
+      <p>Click outside or press ESC (escape) to close this notice</p>
+    </div>
+    <div id="tec3pop" popover>
+      <h2 id="tec3errorTitle"></h2>
+      <p id="tec3errorValue"></p>
+      <p id="tec3errorExplanation"></p>
+      <p>Click outside or press ESC (escape) to close this notice</p>
+    </div>
+    <div id="tec4pop" popover>
+      <h2 id="tec4errorTitle"></h2>
+      <p id="tec4errorValue"></p>
+      <p id="tec4errorExplanation"></p>
+      <p>Click outside or press ESC (escape) to close this notice</p>
+    </div>
+    <div id="tec5pop" popover>
+      <h2 id="tec5errorTitle"></h2>
+      <p id="tec5errorValue"></p>
+      <p id="tec5errorExplanation"></p>
+      <p>Click outside or press ESC (escape) to close this notice</p>
+    </div>
+    <div id="tec6pop" popover>
+      <h2 id="tec6errorTitle"></h2>
+      <p id="tec6errorValue"></p>
+      <p id="tec6errorExplanation"></p>
+      <p>Click outside or press ESC (escape) to close this notice</p>
+    </div>
+    <div id="tec7pop" popover>
+      <h2 id="tec7errorTitle"></h2>
+      <p id="tec7errorValue"></p>
+      <p id="tec7errorExplanation"></p>
+      <p>Click outside or press ESC (escape) to close this notice</p>
+    </div>
+    <div id="tec8pop" popover>
+      <h2 id="tec8errorTitle"></h2>
+      <p id="tec8errorValue"></p>
+      <p id="tec8errorExplanation"></p>
+      <p>Click outside or press ESC (escape) to close this notice</p>
+    </div>
+    -->
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+      let checkedTEC = -1;
+
+      let hostname = location.hostname;
+      document.title = hostname;
+      
+      const houston = new Audio('houstonwehaveaproblem_loud.mp3');
+      const siren = new Audio('siren.mp3');
+      // -- this works:
+      // var mp3_url = 'https://media.geeksforgeeks.org/wp-content/uploads/20190531135120/beep.mp3';
+      // (new Audio(mp3_url)).play();
+
+      let fecErrors = Array("no error", 
+                            "no error", 
+                            "no error", 
+                            "no error", 
+                            "no error", 
+                            "no error", 
+                            "no error", 
+                            "no error");
+     
+
+      let mycolors = [];
+      mycolors.push('#0000fa'); // dark blue
+      mycolors.push('#1450fa'); // blue
+      mycolors.push('#14fafa'); // cyan
+      mycolors.push('#14f0b4'); // green-blue
+      mycolors.push('#0ac80a'); // darker green
+      mycolors.push('#50f000'); // light green
+      mycolors.push('#f0f000'); // yellow
+      mycolors.push('#f05000'); // orange
+      mycolors.push('#f00000'); // red
+      mycolors.push('#ffffff'); // white
+
+      const socket = io.connect();
+      const valve0 = document.getElementById('valve0');
+      const valve1 = document.getElementById('valve1');
+      //const getcsv = document.getElementById('getcsv');
+      //const saveFW = document.getElementById('saveFW');
+      //const loadFW = document.getElementById('loadFW');
+
+      var logarea = document.getElementById("logarea");
+
+      // --
+      //socket.on('disconnect', () => {
+      //    document.getElementById('statusDiv').style = "background-color:Tomato";
+      //});
+      //socket.on('connect', () => {
+      //    document.getElementById('statusDiv').style = "background-color:Goldenrod";
+      //});
+
+      valve0.addEventListener('click', (e) => {
+          valve0.style.backgroundColor = 'darkgray';
+          socket.emit('valve0');
+      });
+
+      valve1.addEventListener('click', (e) => {
+          valve1.style.backgroundColor = 'darkgray';
+          socket.emit('valve1');
+      });
+
+      //loadFW.addEventListener('click', (e) => {
+      //    socket.emit('loadFW');
+      //});
+
+      //saveFW.addEventListener('click', (e) => {
+      //    socket.emit('saveFW');
+      //});
+
+      //getcsv.addEventListener('click', (e) => //{socket.emit('getcsv'); });
+
+      socket.on('envString', (msg) => {
+          const snumbers = msg.toString().replace('Env = ', '');
+          const vNumbers = snumbers.split(', ');
+          var tmpTA = parseFloat(vNumbers[0]); 
+          var el = document.getElementById('TempAir');
+          el.innerHTML       = tmpTA.toFixed(2);
+          el.style.backgroundColor = mycolors[colorReducedIndex(tmpTA)];
+
+          var tmpTW = parseFloat(vNumbers[1]); 
+          el = document.getElementById('TempWater');
+          el.innerHTML = parseFloat(tmpTW).toFixed(2);
+          el.style.backgroundColor = mycolors[colorReducedIndex(tmpTW)];
+
+          var tmpRH = parseFloat(vNumbers[2]);
+          el = document.getElementById('RelHum');
+          el.innerHTML = tmpRH.toFixed(2);
+          if (tmpRH < 5.) {
+              el.style.backgroundColor = mycolors[2];
+          } else if (tmpRH < 12.){
+              el.style.backgroundColor = mycolors[4];
+          } else {
+              el.style.backgroundColor = mycolors[6];
+          }
+          var tmpDP = parseFloat(vNumbers[3]);
+          el = document.getElementById('DP');
+          el.innerHTML = tmpDP.toFixed(2);
+          if ((tmpTA - tmpDP) < 2.) {
+              el.style.backgroundColor = mycolors[8];
+          } else {
+              el.style.backgroundColor = mycolors[4];
+          }
+          if ((tmpTW - tmpDP) < 2.) {
+              el.style.backgroundColor = mycolors[8];
+          } else {
+              el.style.backgroundColor = mycolors[4];
+          }
+
+          document.getElementById('CANbusErrors').innerHTML = vNumbers[4];
+          document.getElementById('I2CErrors').innerHTML = vNumbers[5];
+          document.getElementById('RunTime').innerHTML = vNumbers[6];
+          if (0 == vNumbers[7]) {
+              valve0.style.background='#D3D3D3';
+          } else {
+              valve0.style.background='#46923c';
+          }
+          if (0 == vNumbers[8]) {
+              valve1.style.background='#D3D3D3';
+          } else {
+              valve1.style.background='#46923c';
+          }
+
+      });
+
+      socket.on('varString', (msg) => {
+          const snumbers = msg.toString().replace('VAR = ', '');
+          const vNumbers = snumbers.split(', ');
+          let greenLight     = vNumbers[0].replace("G", "");
+          let yellowLight    = vNumbers[1].replace("Y", "");
+          let redLight       = vNumbers[2].replace("R", "");
+          let lidStatus      = vNumbers[3].replace("L", "");
+          let interLock      = vNumbers[4].replace("I", "");
+          let freeDiskspace  = parseInt(vNumbers[5].replace("D", ""));
+          let statusFM       = -1; 
+          let statusThrottle = -1; 
+          if (vNumbers.length > 6) {
+              statusFM =  parseInt(parseInt(vNumbers[6].replace("F", "")));
+          }
+          if (vNumbers.length > 7) {
+              statusThrottle =  parseInt(parseInt(vNumbers[7].replace("T", "")));
+          }
+          
+          var el = document.getElementById('LidStatus');
+          if (1 == lidStatus) {
+              el.innerHTML = "locked";
+              el.style.backgroundColor = mycolors[4];
+          } else {
+              el.innerHTML = "open";
+              el.style.backgroundColor = mycolors[6];
+          }
+
+          el = document.getElementById('Interlock');
+          if (1 == interLock) {
+              el.innerHTML = "good";
+              el.style.backgroundColor = mycolors[4];
+          } else {
+              el.innerHTML = "bad";
+              el.style.backgroundColor = mycolors[8];
+          }
+
+          el = document.getElementById('FreeDiskspace');
+          el.innerHTML = freeDiskspace + " GB";
+          if (freeDiskspace > 2) {
+              el.style.backgroundColor = mycolors[4];
+          } else if ((freeDiskspace > 1) && (freeDiskspace < 2)) {
+              el.style.backgroundColor = mycolors[6];
+          } else {
+              el.style.backgroundColor = mycolors[8];
+          }
+
+          el = document.getElementById('FM');
+          el.innerHTML = statusFM;
+          if (statusFM < 0) {
+              el.style.backgroundColor = mycolors[1];
+          } else if (0 == statusFM) {
+              el.style.backgroundColor = mycolors[8];
+          } else {
+              el.style.backgroundColor = mycolors[4];
+          }
+
+          el = document.getElementById('throttleN2');
+          if (statusThrottle == 1) {
+              el.checked = true;
+          } else {
+              el.checked = false;
+          }
+          
+          if ("1" == greenLight) {
+              document.getElementById('circleG').style = "fill: green; stroke: green; stroke-width: 2";
+          } else {
+              document.getElementById('circleG').style = "fill: #99cf30; stroke: green; stroke-width: 2";
+          }
+
+          if ("1" == redLight) {
+              document.getElementById('circleR').style = "fill: red; stroke: red; stroke-width: 2";
+          } else {
+              document.getElementById('circleR').style = "fill: #99cf30; stroke: red; stroke-width: 2";
+          }
+
+          if ("1" == yellowLight) {
+              document.getElementById('circleY').style = "fill: yellow; stroke: yellow; stroke-width: 2";
+          } else {
+              document.getElementById('circleY').style = "fill: #99cf30; stroke: yellow; stroke-width: 2";
+          }
+      });
+      
+
+      socket.on('Temp_MString', (msg) => {
+          const snumbers = msg.toString().replace('Temp_M = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Temp_M' + i.toString();
+              var el = document.getElementById(tm);
+              var tval = parseFloat(vNumbers[i-1]).toFixed(2);
+              el.innerHTML = tval;
+              el.style.backgroundColor = mycolors[colorIndex(tval)];
+          }
+      });
+
+
+      socket.on('PowerStateString', (msg) => {
+          const snumbers = msg.toString().replace('PowerState = ', '');
+          const vNumbers = snumbers.split(',');
+          var checkAll = true;
+          for (let i = 1; i <= 8; i++) {
+              let ps = 'PowerState' + i.toString();
+              let ct = 'CheckTEC' + i.toString();
+              if (checkedTEC == i) {
+                  // -- do nothing if this instance clicked on CheckTECx
+                  //    This is to avoid the flicker on the checkbox
+                  checkedTEC = -1;
+              } else {
+                  if (parseInt(vNumbers[i-1]).toFixed(0) == 1) {
+                      document.getElementById(ps).innerHTML = parseInt(vNumbers[i-1]).toFixed(0);
+                      document.getElementById(ps).style.backgroundColor = mycolors[4];
+                      document.getElementById(ct).checked = true;
+                  } else {
+                      document.getElementById(ps).innerHTML = parseInt(vNumbers[i-1]).toFixed(0);
+                      document.getElementById(ps).style.backgroundColor = mycolors[9];
+                      document.getElementById(ct).checked = false;
+                      checkAll = false;
+                  }
+              }
+          }
+
+          if (checkAll) {
+              document.getElementById("CheckTEC0").checked = true;
+          } else {
+              document.getElementById("CheckTEC0").checked = false;
+          }
+      });
+
+      socket.on('ControlVoltage_SetString', (msg) => {
+          const snumbers = msg.toString().replace('ControlVoltage_Set = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let cv = 'ControlVoltage_Set' + i.toString();
+              if (document.activeElement != document.getElementById(cv))
+                  document.getElementById(cv).value = parseFloat(vNumbers[i-1]).toFixed(2);
+          }
+      });
+
+
+
+
+      socket.on('ModeString', (msg) => {
+          const snumbers = msg.toString().replace('Mode = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Mode' + i.toString();
+              if (document.activeElement != document.getElementById(tm))
+                  document.getElementById(tm).value = parseFloat(vNumbers[i-1]).toFixed(0);
+          }
+      });
+
+
+      socket.on('Temp_SetString', (msg) => {
+          const snumbers = msg.toString().replace('Temp_Set = ', '');
+          const vNumbers = snumbers.split(',');
+          for (let i = 1; i <= 8; i++) {
+              let tm = 'Temp_Set' + i.toString();
+              if (document.activeElement != document.getElementById(tm))
+                  document.getElementById(tm).value = parseFloat(vNumbers[i-1]).toFixed(2);
+          }
+      });
+
+      socket.on('ErrorString', (msg) => {
+          const snumbers = msg.toString().replace('Error = ', '');
+          const vNumbers = snumbers.split(',');
+          let cntErrs = 0; 
+          for (let i = 1; i <= 8; i++) {
+              let es = 'ErrorState' + i.toString();
+              if (parseInt(vNumbers[i-1]) > 0) {
+                  cntErrs++;
+                  
+                  fecErrors[i-1] = parseInt(vNumbers[i-1]);
+                  document.getElementById(es).innerHTML = "show";
+                  document.getElementById(es).style.backgroundColor = mycolors[8];
+                  document.getElementById(es).disabled = false;
+                  //document.getElementById("tec" + i.toString() + "errorTitle").innerHTML = "Error in TEC " + i.toString();
+                  //document.getElementById("tec" + i.toString() + "errorValue").innerHTML = "0x" + fecErrors[i-1].toString(16);
+                  //document.getElementById("tec" + i.toString() + "errorExplanation").innerHTML = tecErrorExplanation(fecErrors[i-1]);
+
+                  document.getElementById("ClearTECError").disabled = false;
+              } else {
+                  fecErrors[i-1] = 0;
+                  document.getElementById(es).innerHTML = "OK";
+                  document.getElementById(es).style.backgroundColor = mycolors[4];
+                  document.getElementById(es).disabled = true;
+                  //document.getElementById("tec" + i.toString() + "errorTitle").innerHTML = "No Error in TEC " + i.toString();
+                  //document.getElementById("tec" + i.toString() + "errorValue").innerHTML = "0x0";
+                  //document.getElementById("tec" + i.toString() + "errorExplanation").innerHTML = "Relax, all is well";
+              }
+          }
+          if (cntErrs == 0) {
+              document.getElementById("ClearTECError").disabled = true;
+          }
+      });
+
+      socket.on('AlarmString', (msg) => {
+          console.log(msg.toString());
+          const salarm = msg.toString().replace('==ALARM== ', '');
+
+          logarea.value += formatNow() + salarm +  "\n";
+          logarea.scrollTop = logarea.scrollHeight;
+
+          siren.play();
+      });
+
+      socket.on('WarningString', (msg) => {
+          console.log(msg.toString());
+          const salarm = msg.toString().replace('==WARNING== ', '');
+          logarea.value += formatNow() + salarm +  "\n";
+          logarea.scrollTop = logarea.scrollHeight;
+
+          houston.play();
+      });
+
+      socket.on('HintString', (msg) => {
+        console.log(msg.toString());
+        const salarm = msg.toString().replace('==HINT== ', '');
+        logarea.value += formatNow() + salarm +  "\n";
+        logarea.scrollTop = logarea.scrollHeight;
+        
+      });
+
+      socket.on('versionString', (msg) => {
+          let versionString = msg.toString();
+          console.log(msg.toString() + ' => versionString ->' + versionString + '<-');
+          document.getElementById('versionField').innerHTML = versionString;
+      });
+
+      socket.on('fwverString', (msg) => {
+          const snumbers = msg.toString().replace('GetSWVersion = ', '');
+          const vNumbers = snumbers.split(',');
+          let fwverString = vNumbers[0].toString();
+          console.log(msg.toString() + ' => fwverString ->' + fwverString + '<-');
+          document.getElementById('fwverField').innerHTML = fwverString;
+      });
+
+      socket.on('putcsv', (msg) => {
+          console.log('hallo got putcsv');
+          console.log(msg.toString());
+      });
+
+
+      let msg = "getversionstring";
+      socket.emit('getversionstring', msg);
+
+      let msg2 = "getfwverstring";
+      socket.emit('getfwverstring', msg2);
+
+      function chgControlVoltage_Set(itec, val) {
+          let msg = "tec " + itec.toString() + " set ControlVoltage_Set " + val.toString();
+          console.log("controlvoltage_set: " + msg);
+          socket.emit('controlvoltage_set', msg);
+      }
+
+      function chgTemp_Set(itec, val) {
+          let msg = "tec " + itec.toString() + " set Temp_Set " + val.toString();
+          console.log("temp_set: " + msg);
+          socket.emit('temp_set', msg);
+      }
+
+      function chgMode(itec, val) {
+          let msg = "tec " + itec.toString() + " set Mode " + val.toString();
+          console.log("mode_set: " + msg);
+          socket.emit('mode_set', msg);
+      }
+
+      function chgPID_kp(itec, val) {
+          let msg = "tec " + itec.toString() + " set PID_kp " + val.toString();
+          console.log("pid_kp: " + msg);
+          socket.emit('pid_kp', msg);
+      }
+      function chgPID_ki(itec, val) {
+          let msg = "tec " + itec.toString() + " set PID_ki " + val.toString();
+          console.log("pid_ki: " + msg);
+          socket.emit('pid_ki', msg);
+      }
+      function chgPID_kd(itec, val) {
+          let msg = "tec " + itec.toString() + " set PID_kd " + val.toString();
+          console.log("pid_kd: " + msg);
+          socket.emit('pid_kd', msg);
+      }
+
+      function clkCheckTec(itec) {
+          checkedTEC = itec;
+
+          let ct = 'CheckTEC' + itec.toString();
+          let msg = "tec " + itec.toString();
+          if (document.getElementById(ct).checked) {
+              msg = msg + " cmd Power_On";
+          } else {
+              msg = msg + " cmd Power_Off";
+          }
+          console.log(ct + " " + msg);
+          socket.emit('checktec', msg);
+      }
+
+      function clkThrottle() {
+          let msg = "cmd ";
+          if (document.getElementById("throttleN2").checked) {
+              msg = msg + " throttleN2On";
+          } else {
+              msg = msg + " throttleN2Off";
+          }
+          console.log("clkThrottle ->" + msg + "<-");
+          socket.emit('throttle', msg);
+      }
+
+      
+      function formatNow(){
+          var x = new Date();
+          var dd = x.getDate();
+          var mm = x.getMonth()+1;
+          var yy = x.getFullYear();
+          var hh = x.getHours();
+          if (hh < 10) hh = '0' + hh;
+          var mi = x.getMinutes();
+          if (mi < 10) mi = '0' + mi;
+          var ss = x.getSeconds();
+          if (ss < 10) ss = '0' + ss;
+          return yy + "/" + mm + "/" + dd + " " + hh + ":" + mi + ":" + ss + ">";
+      }
+      
+
+      function colorIndex(temp){
+          if (temp < -30.) return 0;
+          if (temp < -20.) return 1;
+          if (temp < -10.) return 2;
+          if (temp < 0.) return 3;
+          if (temp < 10.) return 4;
+          if (temp < 20.) return 5;
+          if (temp < 25.) return 6;
+          if (temp < 30.) return 7;
+          if (temp > 30.) return 8;
+      }
+
+      function colorReducedIndex(temp){
+          if (temp < 10.)  return 1;
+          if (temp < 20.)  return 2;
+          if (temp < 25.)  return 4;
+          if (temp > 25.)  return 8;
+          return 0;
+      }
+
+      function tecErrorExplanation(tecerr) {
+          const catDict = {
+              1: "CAN_ERROR", 
+              2: "SPI_ERROR",
+              3: "AI_Error",
+              4: "AI_DMA_ERROR",
+              5: "TEMP_ERROR",
+              6: "VARH_ERROR",
+              7: "PELTIER_ERROR",
+              8: "MAIN_ERROR",
+              9: "HARDFAULT_ERROR"
+          };
+
+          const regDict = {
+              0: "Mode", 
+              1: "ControlVoltage_Set", 
+              2: "PID_kp", 
+              3: "PID_ki", 
+              4: "PID_kd",
+              5: "Temp_Set", 
+              6: "PID_Max", 
+              7: "PID_Min", 
+              8: "Temp_W", 
+              9: "Temp_M",
+              10:"Temp_Diff", 
+              11:"Peltier_U", 
+              12:"Peltier_I",
+              13:"Peltier_R",
+              14:"Peltier_P",
+              15:"Supply_U",
+              16:"Supply_I",
+              17:"Supply_P",
+              18:"PowerState",
+              19:"Error",
+              20:"Ref_U"
+          };
+
+          const VARH_ERROR = { // 0x06000000
+              0x1: "VARH_ERROR_INVALID_VARIABLE",      
+              0x2: "VARH_ERROR_INVALID_DATA",
+              0x4: "VARH_ERROR_READONLY",
+              0x8: "VARH_ERROR_OUTOFRANGE",
+              0x10: "VARH_ERROR_OUTOFRANGE_INT" ,
+              0x20: "VARH_ERROR_LOAD_FLASH"
+          };
+ 
+          const PELTIER_ERROR = { // 0x07000000
+              0x1: "PELTIER_ERROR_SETVOLTAGE",
+              0x2: "PELTIER_ERROR_SETVOLTAGE_PID",
+              0x4: "PELTIER_ERROR_MAX_POWER"
+          };
+ 
+          const MAIN_ERROR = { // 0x08000000
+              0x1: "MAIN_ERROR_REG_NOT_FOUND", 
+              0x2: "MAIN_ERROR_CMD_NOT_FOUND", 
+              0x4: "MAIN_ERROR_SAVE_FLASH",
+              0x8: "MAIN_ERROR_WATCHDOG"
+          };
+ 
+
+
+          let cat = (tecerr & 0xff000000)>>24;
+          let reg = (tecerr & 0x0000ff00)>>8;
+          let err = (tecerr & 0x000000ff);
+          let errtext = "";
+          if (cat == 0) {
+              // nothing
+          } else if (cat == 6) {
+              for (const [key, value] of Object.entries(VARH_ERROR)) {
+                  let eak = err&key;
+                  if (eak > 0) {
+                      errtext = errtext.concat(value, " ");
+                  }
+              }
+          } else if (cat == 7) {
+              for (const [key, value] of Object.entries(PELTIER_ERROR)) {
+                  let eak = err&key;
+                  if (eak > 0) {
+                      errtext = errtext.concat(value, " ");
+                  }
+              }
+          } else if (cat == 8) {
+              for (const [key, value] of Object.entries(MAIN_ERROR)) {
+                  let eak = err&key;
+                  if (eak > 0) {
+                      errtext = errtext.concat(value, " ");
+                  }
+              }
+          } else {
+              errtext = "please post an issue to github about this error!";
+          }
+
+
+          let str = "";
+          let msg = str.concat("category ", cat.toString(), " (", catDict[cat],
+                               ") <br> register ", reg.toString(), " (", regDict[reg],
+                               ") <br> error ", err.toString(), "(", errtext, ")");
+          return msg;
+      }
+
+
+
+      document.onreadystatechange =  function disclaimerAlert() {
+          if (document.readyState=='loaded' || document.readyState=='complete') {
+              alert("Note: After clicking anything, the display will update only after reading back the coldbox state!\nThis allows synchronization between all connected browsers and the coldbox GUI.\nSo be patient before double-clicking!");
+          }
+      }
+
+      // -- add eight event listeners for TEC error popover display
+      for (let itec = 1; itec <= 8; itec++) {
+          let ps = 'tec' + itec.toString() + 'pop';
+          document.getElementById("ErrorState" + itec.toString()).addEventListener('click', (e) => {
+              const popupOpened = document.getElementById(ps).togglePopover();
+              // Check if popover is opened or closed on supporting browsers
+              if (popupOpened !== undefined) {
+                  // FIXME: now what?
+              }              
+          });
+      }
+
+
+      // -- emit ClearError when button pressed
+      document.getElementById("ClearTECError").addEventListener('click', (e) => {
+          socket.emit('ClearError');
+      });
+
+    </script>
+
+  </body>
+</html>

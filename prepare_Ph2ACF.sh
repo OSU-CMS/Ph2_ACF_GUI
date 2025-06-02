@@ -9,7 +9,18 @@ source symlinks.sh
 
 cd ${GUI_dir}/Gui/python
 
-wget -O rhapi.py https://gitlab.cern.ch/cms-ph2-database/resthub-dev/-/raw/master/clients/python/src/main/python/rhapi.py
+
+# Ensure rhapi.py is accessible by cmsTkUser
+if [ -f "rhapi.py" ]; then
+    # Check if the file is owned by cmsTkUser
+    OWNER=$(stat -c '%U' "rhapi.py")
+    if [ "$OWNER" != "cmsTkUser" ]; then
+        rm rhapi.py 
+        wget -O rhapi.py https://gitlab.cern.ch/cms-ph2-database/resthub-dev/-/raw/master/clients/python/src/main/python/rhapi.py
+    fi
+else
+    wget -O rhapi.py https://gitlab.cern.ch/cms-ph2-database/resthub-dev/-/raw/master/clients/python/src/main/python/rhapi.py
+fi
 
 cd ${GUI_dir}/Gui
 

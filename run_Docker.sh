@@ -1,5 +1,16 @@
 #!/bin/bash
+# DO NOT EDIT THIS BY HAND!!!
+CONFIG_VER=0
+
+./check_configuration_files.sh 
+
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
+
+######### Specify the docker image to use #################
+IMAGE_NAME="osupixels/ph2_acf_gui_dev:v2-1-0-"
+#IMAGE_NAME="majoyce2/ph2_acf_gui_purdue:latest"
+#IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
+#IMAGE_NAME="local/testimagemay29user"
 
 mode=$1
 ## Finding the USB ports to use with the GUI#############
@@ -48,16 +59,15 @@ then
 		-v ${PWD}/Gui/python/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/\
 		-v ${PWD}/InnerTrackerTests/:/home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/\
 		-v ${PWD}/Configuration:/home/cmsTkUser/Ph2_ACF_GUI/Configuration\
+		-v ${PWD}/F4T_Monitoring:/home/cmsTkUser/Ph2_ACF_GUI/F4T_Monitoring\
 		-v ${PWD}/felis:/home/cmsTkUser/Ph2_ACF_GUI/felis/\
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host osupixels/ph2_acf_gui_dev:latest 
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host --entrypoint /bin/bash $IMAGE_NAME
 else
     echo "running as user"
-	IMAGE_NAME="osupixels/ph2_acf_gui_user:latest"
-
         # Check if skopleo is installed, if not prompt user to install
         if ! which skopeo > /dev/null 2>&1; then
             echo -e "\e[31mPlease install skopeo. This allows us to check whether you are
@@ -90,17 +100,17 @@ To install on Alma Linux please run:\e[0m
     		echo "Image pull canceled."
   		fi
 	fi
-    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
+    docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
         -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
-		-w $PWD  -e DISPLAY=$DISPLAY\
-		-v /tmp/.X11-unix:/tmp/.X11-unix --net host majoyce2/ph2_acf_gui_user:latest #local/testimagejuly30user
+		-w /home/cmsTkUser/Ph2_ACF_GUI  -e DISPLAY=$DISPLAY\
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host $IMAGE_NAME  #local/testimagejuly30user
 		#Before, the docker run command had the options -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH. We were having trouble
 		#running the GUI through SSH connections, so we removed those options and added --volume="$HOME/.Xauthority:/root/.Xauthority:rw"
 		#which seemed to fix the issue of running the GUI from SSH connections. At the time of this commit, we have no idea why this fixed it
-		#or what these lines did or do.
+		#or what these lines did or do.  -v /tmp/.X11-unix:/tmp/.X11-unix
 fi

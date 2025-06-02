@@ -73,7 +73,7 @@ class TestHandler(QObject):
     powerSignal = pyqtSignal()
     updateProgressBar = pyqtSignal(QProgressBar, int, str)
 
-    def __init__(self, runwindow, master, info, firmware):
+    def __init__(self, runwindow, master, info, firmware, txt_files = {}):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
@@ -140,6 +140,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
+        self.txt_files = txt_files if txt_files != {} else {}
 
         self.autoSave = False
         self.backSignal = False
@@ -149,6 +150,7 @@ class TestHandler(QObject):
 
         self.runNext = threading.Event()
         self.testIndexTracker = 0
+        self.testsAttempted = 0
         self.listWidgetIndex = 0
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
@@ -278,6 +280,7 @@ class TestHandler(QObject):
                     self.boardType, self.moduleVersion
                 )
                 print("Getting config file {0}".format(self.rd53_file[key]))
+
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
             SetupRD53ConfigfromFile(self.rd53_file, self.output_dir)
@@ -297,7 +300,7 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir)
+                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files)
 
                     if config_file:
                         SetupXMLConfigfromFile(
@@ -327,7 +330,7 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir)
+                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files)
 
                     if config_file:
                         SetupXMLConfigfromFile(
@@ -365,6 +368,7 @@ class TestHandler(QObject):
         if reRun:
             self.halt = False
             self.testIndexTracker = 0
+            self.testsAttempted = 0
         testName = self.info
 
         self.input_dir = self.output_dir
@@ -386,6 +390,7 @@ class TestHandler(QObject):
 
         if self.testIndexTracker == len(CompositeTests[self.info]):
             self.testIndexTracker = 0
+            self.testsAttempted = 0
             return
         testName = runTestList[self.testIndexTracker]
         if self.testIndexTracker + 1 < len(runTestList):  # Check if there is a next test
@@ -454,6 +459,7 @@ class TestHandler(QObject):
             else:
                 step = "{}:{}".format(self.testIndexTracker, self.currentTest)
                 self.updateResult.emit((step, self.figurelist))
+
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
             return
@@ -660,12 +666,36 @@ class TestHandler(QObject):
                         f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
                     ],
                 )
-        else:
+        '''
+        if self.currentTest == ["exampletest"]:               #for tests needing -c
             for process, firmware in zip(self.info_processes, self.firmware):
                 process.start(
                     "echo",
                     [
                         "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -c  {1}".format(
+                            firmware.getBoardName(),
+                            Test_to_Ph2ACF_Map[self.currentTest],
+                        )
+                    ],
+                )        
+                    '''        
+        if self.testsAttempted == 0:
+            for process, firmware in zip(self.info_processes, self.firmware):
+                process.start(
+                    "echo",
+                    [
+                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -c  {1}".format(
+                            firmware.getBoardName(),
+                            Test_to_Ph2ACF_Map[self.currentTest],
+                        )
+                    ],
+                )        
+        else:
+            for process, firmware in zip(self.info_processes, self.firmware):
+                process.start(
+                    "echo",
+                    [
+                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -k -c  {1}".format(
                             firmware.getBoardName(),
                             Test_to_Ph2ACF_Map[self.currentTest],
                         )
@@ -691,6 +721,28 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
                 )
+        #if self.currentTest == ["exampletest"]:               #for tests needing -c
+        #    for process, firmware in zip(self.run_processes, self.firmware):
+        #        process.start(
+        #            "CMSITminiDAQ",
+        #            [
+        #                "-f",
+        #                f"CMSIT_{firmware.getBoardName()}.xml",
+        #                "-c",
+        #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+        #            ],
+        #        )
+        if self.testsAttempted == 0:
+            for process, firmware in zip(self.run_processes, self.firmware):
+                process.start(
+                    "CMSITminiDAQ",
+                    [
+                        "-f",
+                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        "-c",
+                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                    ],
+                )
         else:
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
@@ -698,6 +750,7 @@ class TestHandler(QObject):
                     [
                         "-f",
                         f"CMSIT_{firmware.getBoardName()}.xml",
+                        "-k",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
@@ -711,6 +764,7 @@ class TestHandler(QObject):
         self.haltSignal.emit(self.halt)
 
         self.starttime = None
+        self.testsAttempted = 0 #reset when aborted for fresh restart
         if self.IVCurveHandler:
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting IVCurve", console)
@@ -758,6 +812,7 @@ class TestHandler(QObject):
                             runNumber,
                             module_data,
                             self.BBanalysis_root_files,
+                            self.info
                         )
 
                         print(f'TestHandler {result}')
@@ -1195,13 +1250,18 @@ created by Ph2_ACF is empty."
         self.saveConfigs()
 
         # Save the output ROOT file to output_dir
+
         self.saveTest(processIndex, self.run_processes[processIndex])
-        self.testIndexTracker += 1
 
         # validate the results
         self.validateTest()
+        
+        self.testIndexTracker += 1
+        self.testsAttempted += 1
 
-        EnableReRun = self.onFinalTest(self.testIndexTracker)
+
+
+        EnableReRun = self.onFinalTest(self.testIndexTracker) # This function uses BBanalysis_root_files when all composite tests will not make use of it
         self.stepFinished.emit(EnableReRun)
 
         # show the score of test
@@ -1249,7 +1309,7 @@ created by Ph2_ACF is empty."
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
-                                    f"{index:02d}_PixelAlive",
+                                    f"{index:02d}_CrossTalk",
                                     "crosstalk",
                                 )
                                 self.figurelist[module.getModuleName()] = (
@@ -1394,6 +1454,7 @@ created by Ph2_ACF is empty."
         step = "IVCurve"
 
         self.testIndexTracker += 1
+        self.testsAttempted += 1
 
         EnableReRun = False
 
@@ -1441,6 +1502,7 @@ created by Ph2_ACF is empty."
 
         self.validateTest()
         self.testIndexTracker += 1
+        self.testsAttempted += 1
 
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run

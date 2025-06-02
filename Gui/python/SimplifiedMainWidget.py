@@ -2,6 +2,8 @@ import os
 import time
 from serial import SerialException
 from typing import Optional
+import requests
+from bs4 import BeautifulSoup
 
 from Gui.QtGUIutils.QtStartWindow import SummaryBox
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread
@@ -85,14 +87,17 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
     def setupArduino(self):
-        self.ArduinoGroup = ArduinoWidget()
-        self.ArduinoGroup.stop.connect(self.abort_signal.emit)
-        self.ArduinoGroup.enable()
-        self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
-        self.ArduinoGroup.setPort(site_settings.defaultArduino)
-        self.ArduinoGroup.frozeArduinoPanel()
         self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["arduino"]["Label"].setText("Condensation Risk")
+        if site_settings.cooler == "Tessie": #Arduino is now a misnomer
+            self.instrument_info["arduino"]["Label"].setText("Environment Control")
+        else:
+            self.ArduinoGroup = ArduinoWidget()
+            self.ArduinoGroup.stop.connect(self.abort_signal.emit)
+            self.ArduinoGroup.enable()
+            self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+            self.ArduinoGroup.setPort(site_settings.defaultArduino)
+            self.ArduinoGroup.frozeArduinoPanel()
+            self.instrument_info["arduino"]["Label"].setText("Condensation Risk")
 
     def setupLogFile(self):
         for firmwareName in site_settings.FC7List.keys():
@@ -327,6 +332,7 @@ class SimplifiedMainWidget(QWidget):
         self.RunButton.setIcon(RunIcon)
         self.RunButton.setIconSize(QSize(80, 80))
         self.RunButton.clicked.connect(self.runNewTest)
+        self.RunButton.clicked.connect(self.config_and_test)
         self.StartLayout.addStretch(1)
         self.StartLayout.addWidget(self.TestGroup)
         self.StartLayout.addWidget(self.StopButton)
@@ -349,7 +355,7 @@ class SimplifiedMainWidget(QWidget):
         )
 
         self.instrument_info["database"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["database"]["Label"].setText("Database connection:")
+        self.instrument_info["database"]["Label"].setText("Database connection")
 
         self.instrument_info["hv"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["hv"]["Label"].setText("HV status")
@@ -374,12 +380,39 @@ class SimplifiedMainWidget(QWidget):
         self.setupBeBoard()
         # self.setupStatusWidgets()
         self.setupUI()
+        self.RunButtonState()
 
-    def updateArduinoIndicator(self):
-        if self.ArduinoGroup.condensationRisk:
-            self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+    def updateArduinoIndicator(self) -> bool:
+        if site_settings.cooler == "Tessie":
+            try:
+                soup = BeautifulSoup(requests.get('http://coldboxx:3000/').text, 'html.parser')
+            except requests.exceptions.ConnectionError as e:
+                logger.error(e)
+                self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Can't connect to coldbox</span>")
+                return None
+            except Exception as e:
+                print(type(e))
+                logger.error(e)
+                self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Error: No data</span>")
+                return None
+            
+            circle = soup.find('circle', id='circleG')
+            style = circle.get('style')
+            style.split
+            for part in style.split(';'):
+                if 'fill:' in part:
+                    fill_value = part.split(':')[1].strip()
+                    if fill_value == "green":
+                        self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
+                        return True
+                    else: 
+                        self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+                        return False
         else:
-            self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
+            if self.ArduinoGroup.condensationRisk:
+                self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+            else:
+                self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
 
     def updatePeltierTemp(self, temp: float):
         self.peltier_temperature_label.setText("{}C".format(temp))
@@ -435,7 +468,7 @@ class SimplifiedMainWidget(QWidget):
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
-        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription)
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
 
     def abortTest(self):
@@ -501,7 +534,12 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("instrument_status: {}".format(self.instrument_status))
         logger.debug("instruments: ")
 
-        self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
+        #5/7/25: instrument_status["arduino"] is never referenced again, so this block is redundant.
+        if site_settings.cooler == "Tessie": 
+            self.instrument_status["arduino"] = self.updateArduinoIndicator()
+        else:
+            self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
+
         for beboard in self.firmware:
             self.instrument_status[f"fc7_{beboard.getBoardName()}"] = True
         self.instrument_status["database"] = self.master.panthera_connected
@@ -523,6 +561,29 @@ class SimplifiedMainWidget(QWidget):
             for key, value in self.instrument_info.items():
                 value["Value"].setPixmap(self.redledpixmap)
         logger.debug(f"{__name__} Setup led labels")
+        logger.debug(f"Instrument status: {self.instrument_status}")       
+    def RunButtonState(self):
+        """
+        Check the status of LV, HV, and FC7, and disable the Run button
+        if any of these statuses are False.
+        """
+        try:
+            # Check FC7 statuses
+            fc7_status = any(self.instrument_status.get(f"fc7_{firmwareName}", False) for firmwareName in site_settings.FC7List.keys())
+            logger.debug(f"FC7 status: {fc7_status}")
+
+            # Disable the Run button if any status is False
+            # if self.instruments is False then icicle failed to connect to LV and HV
+            if not (self.instruments and fc7_status):
+                self.RunButton.setDisabled(True)
+                logger.debug("RunButton disabled due to one or more failing statuses.")
+            else:
+                self.RunButton.setDisabled(False)
+                logger.debug("RunButton enabled. All statuses are good.")
+
+        except Exception as e:
+            logger.error(f"Error while checking instrument statuses: {e}")
+            self.RunButton.setDisabled(True)
 
     def check_icicle_devices(self) -> Optional[dict[str, int]]:
         """
