@@ -1,5 +1,6 @@
 import json
 import logging
+from MonitoringSettings import Monitor_SleepTime
 
 CONFIG_VER = 0
 
@@ -73,7 +74,6 @@ IVcurve_range = {
 ## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
 Monitor_RD53A = "1"
 Monitor_CROC = "1"
-Monitor_SleepTime = "1000"  # time in milliseconds between temperature readings
 
 SLDOScan_GADC = {
     "1x2":{
@@ -88,7 +88,7 @@ SLDOScan_GADC = {
 		"target current":7,
 		"step size":.5
 	},
-    "physics seconds": 1.5*int(Monitor_SleepTime)/1000
+    "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000
 }
 
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
