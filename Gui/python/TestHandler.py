@@ -538,11 +538,12 @@ class TestHandler(QObject):
                                 data = [
                                     [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
                                     [sweep_step[-2] for sweep_step in up_sweep[0][1]],
-                                    [float(i) for i in getattr(self, f"{datatype}up")[channel][chip].keys()],
+                                    [float(i) for i in getattr(self, f"{datatype}up")[channel][chip].values()],
                                     [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
                                     [sweep_step[-2] for sweep_step in down_sweep[0][1]],
-                                    [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].keys()]
+                                    [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
                                 ]
+
                                 self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
                                 self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}")
                     self.SLDOScanFinished()
