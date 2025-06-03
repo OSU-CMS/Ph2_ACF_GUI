@@ -69,19 +69,26 @@ IVcurve_range = {
 	"IVCurve_High"	:	-90 #Maximum voltage in Volts to be used in IVcurve after Parylene coating
 }
 
+## Specify whether of not you want to monitor chip temperature during the tests ##
+## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
+Monitor_RD53A = "1"
+Monitor_CROC = "1"
+Monitor_SleepTime = "1000"  # time in milliseconds between temperature readings
+
 SLDOScan_GADC = {
     "1x2":{
 		"voltage":2.98,
-		"starting current":3.5,
+		"starting current":4,
 		"target current":4.5,
 		"step size":.5
 	},
 	"quad":{
 		"voltage":2.98,
-		"starting current":6,
+		"starting current":6.5,
 		"target current":7,
 		"step size":.5
-	}
+	},
+    "physics seconds": 1.5*int(Monitor_SleepTime)/1000
 }
 
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
@@ -97,12 +104,6 @@ CableMapping = {
     "0" : {"FC7": "fc7.board.1", "FMCID": "L12", "FMCPort": "0"},
     "1" : {"FC7": "fc7.board.2", "FMCID": "L12", "FMCPort": "0"}
 }
-
-## Specify whether of not you want to monitor chip temperature during the tests ##
-## Set this to "1" if you want the monitoring enabled.  Set it to "0" if you want it disabled. ##
-Monitor_RD53A = "1"
-Monitor_CROC = "1"
-Monitor_SleepTime = "30000"  # time in milliseconds between temperature readings
 
 ## Establish thresholds for chip temperature readings. A chip reading above the
 ## emergency threshold will abort the test.
