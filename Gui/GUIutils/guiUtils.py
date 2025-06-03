@@ -43,6 +43,7 @@ from InnerTrackerTests.HWSettings import (
 from InnerTrackerTests.MonitoringSettings import (
     MonitoringListA,
     Monitoring_DictB,
+    Monitor_SleepTime,
 )
 from InnerTrackerTests.RegisterSettings import RegisterSettings, RegisterSettings_dict
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
@@ -513,6 +514,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
         MonitoringModule0.SetMonitoringList(MonitoringListA)
     else:
         if testName in Monitoring_DictB:
+            MonitoringModule0.SetSleepTime(Monitor_SleepTime[testName])
             MonitoringModule0.SetMonitoringList(Monitoring_DictB[testName])
         else:
             MonitoringModule0.SetMonitoringList({})
