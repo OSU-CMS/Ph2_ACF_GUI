@@ -415,7 +415,7 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
-    def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : float =  1, fc7_index : int = 0) -> None:
+    def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_GADC["physics seconds"], fc7_index : int = 0) -> None:
 
         GADC_processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
         for i, process in enumerate(GADC_processes):
@@ -510,7 +510,7 @@ class TestHandler(QObject):
                         SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["quad"]
                     else:
                         SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
-                        logger.error('Module type does not specify "1x2" or "quad". Running SLDOScan_GADC as 1x2.')
+                        logger.error('Module type does not contain "1x2" or "quad". Running SLDOScan_GADC as 1x2.')
 
                     self.ProgressValue = 0
                     total_steps =2*(1+np.ceil(np.abs(SLDOScan_GADC_dict["target current"]-SLDOScan_GADC_dict["starting current"])/SLDOScan_GADC_dict["step size"]))
@@ -544,7 +544,7 @@ class TestHandler(QObject):
                                     [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].keys()]
                                 ]
                                 self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}")
                     self.SLDOScanFinished()
                     return
                 else:
