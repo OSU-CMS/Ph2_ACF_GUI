@@ -40,6 +40,11 @@ RUN echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/cmsTkUser_
 # Ensure APP_PASSWORD is passed as a --build-arg or --env during docker run if needed.
 ENV APP_PASSWORD=${APP_PASSWORD}
 
+# Specify the working directory in the container for the cmsTkUser.
+# This is where the application will be launched from.
+WORKDIR ${GUI_dir}
+
+
 
 #Setting the default user in the container to be root
 # USER root
