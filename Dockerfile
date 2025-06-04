@@ -85,6 +85,9 @@ RUN ${PH2ACF_BASE_DIR}/compileSubModules.sh
 RUN chown -R cmsTkUser:cmsTkUser ${GUI_dir}/data && \
     chown cmsTkUser:cmsTkUser ${GUI_dir}/Gui/python/rhapi.py
 
+# Metadata
+LABEL Name=ph2acfgui_dev Version=${Ph2_ACF_VERSION}
+
 
 # Add cmsTkUser to the 'dialout' group for serial port access
 # Crucial for Arduino communication
