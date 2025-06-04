@@ -58,12 +58,8 @@ RUN dnf -y update && \
     libXext libXrender libXtst nss libasound && \
     dnf clean all
 
-    
-
-
-
+# Switch to non-root user
 USER cmsTkUser
-ENV APP_PASSWORD=${APP_PASSWORD}
 
 # Add cmsTkUser to the 'dialout' group for serial port access
 # Crucial for Arduino communication
