@@ -28,6 +28,10 @@ RUN groupadd -g ${USER_GID} cmsTkUser || true && \
 USER cmsTkUser
 ENV APP_PASSWORD=${APP_PASSWORD}
 
+# Add cmsTkUser to the 'dialout' group for serial port access
+#Crucial for Arduino communication
+RUN usermod -a -G dialout cmsTkUser
+
 
 #Setting the default user in the container to be root
 # USER root
