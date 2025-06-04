@@ -25,7 +25,7 @@ ARG USER_GID=1000
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
     useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser &&\
     usermod -aG dialout cmsTkUser
-
+USER cmsTkUser
 ENV APP_PASSWORD=${APP_PASSWORD}
 
 
