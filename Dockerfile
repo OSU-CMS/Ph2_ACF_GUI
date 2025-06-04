@@ -81,6 +81,10 @@ RUN chmod +x ${GUI_dir}/prepare_Ph2ACF.sh && \
 # Compile Ph2 ACF submodules
 RUN ${PH2ACF_BASE_DIR}/compileSubModules.sh
 
+# Set proper permissions
+RUN chown -R cmsTkUser:cmsTkUser ${GUI_dir}/data && \
+    chown cmsTkUser:cmsTkUser ${GUI_dir}/Gui/python/rhapi.py
+
 
 # Add cmsTkUser to the 'dialout' group for serial port access
 # Crucial for Arduino communication
