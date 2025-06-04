@@ -71,6 +71,9 @@ COPY --chown=cmsTkUser:cmsTkUser requirements.txt ${PH2ACF_BASE_DIR}/
 RUN python3 -m pip install --upgrade pip && \
     python3 -m pip install -r ${PH2ACF_BASE_DIR}/requirements.txt
 
+# Copy the rest of the source
+COPY --chown=cmsTkUser:cmsTkUser . ${PH2ACF_BASE_DIR}/
+
 
 # Add cmsTkUser to the 'dialout' group for serial port access
 # Crucial for Arduino communication
