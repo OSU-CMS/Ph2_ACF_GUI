@@ -20,6 +20,7 @@ ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}:${GUI_dir}/icicle/icicle:${GUI_dir}/Inne
 # Commenting for now, this was needed to change user to non-ROOT 
 ARG USER_UID=1000
 ARG USER_GID=1000
+ARG APP_PASSWORD
 
 # Create the group and user with the specified UID/GID
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
@@ -43,6 +44,7 @@ ENV APP_PASSWORD=${APP_PASSWORD}
 # Specify the working directory in the container for the cmsTkUser.
 # This is where the application will be launched from.
 WORKDIR ${GUI_dir}
+
 
 
 
