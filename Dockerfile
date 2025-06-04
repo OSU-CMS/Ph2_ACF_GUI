@@ -27,7 +27,10 @@ ENV APP_PASSWORD=${APP_PASSWORD}
 
 # Create the group and user with the specified UID/GID
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
-    useradd -m -u ${USER_UID} -g cmsTkUser cmsTkUser
+    useradd -m -u ${USER_UID} -g cmsTkUser cmsTkUser &&\
+    usermod -a -G dialout cmsTkUser && \
+    echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/cmsTkUser_nopasswd && \
+    chmod 0440 /etc/sudoers.d/cmsTkUser_nopasswd
     
 USER cmsTkUser
 ENV APP_PASSWORD=${APP_PASSWORD}
