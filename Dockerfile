@@ -36,6 +36,10 @@ RUN usermod -a -G dialout cmsTkUser
 RUN echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/cmsTkUser_nopasswd && \
     sudo chmod 0440 /etc/sudoers.d/cmsTkUser_nopasswd
 
+# Set the application password environment variable. 
+# Ensure APP_PASSWORD is passed as a --build-arg or --env during docker run if needed.
+ENV APP_PASSWORD=${APP_PASSWORD}
+
 
 #Setting the default user in the container to be root
 # USER root
