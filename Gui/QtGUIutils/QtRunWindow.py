@@ -356,6 +356,12 @@ class QtRunWindow(QWidget):
         self.mainLayout.removeWidget(self.MainBodyBox)
 
     def upload_to_Panthera_starter(self):
+
+        #Prevent duplicate upload progress bars
+        if hasattr(self, "UploadProgressBar") and self.UploadProgressBar is not None:
+            if self.UploadProgressBar.isVisible():
+                return
+            
         self.UploadProgressBar = QProgressBar()
         self.UploadWheel = LoadingWheel()
         self.UploadProgressBar.setFormat(f"0/{len(self.testHandler.modules)} uploaded")
