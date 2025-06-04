@@ -1,6 +1,7 @@
 # November 19 2021:  Edited by Matt Joyce.  Added information for Purdue database to DBNames and DBServerIP
 
 from collections import defaultdict
+import copy
 # from Gui.siteSettings import *
 # import InnerTrackerTests.TestSequences as TestSequences
 
@@ -114,13 +115,18 @@ ModuleLaneMap = {
     "TBPX RD53A Quad": {"0": "4", "1": "5", "2": "6", "3": "7"},
     "SCC": {"0": "0"},
     "CROC SCC": {"0": "15"},
-    "TFPX CROC 1x2": {"3": "12", "1": "13"},
+    "TFPX CROC 1x2": {"0": "12", "2": "13"},
     "TEPX CROC 1x2": {"0": "0", "2": "2"},
     "TBPX CROC 1x2": {"0": "0", "2": "2"},
     "TFPX CROC Quad": {"2": "12", "1": "13", "0": "14", "3": "15"},
     "TEPX CROC Quad": {"0": "15", "1": "14", "2": "13", "3": "12"},
     "TBPX CROC Quad": {"0": "0", "1": "1", "2": "2", "3": "3"},
 }
+ModuleLaneMap_Dict = {}
+ModuleLaneMap_Dict["HDIv1"] = copy.deepcopy(ModuleLaneMap)
+ModuleLaneMap_Dict["HDIv2"] = copy.deepcopy(ModuleLaneMap)
+
+ModuleLaneMap_Dict["HDIv2"]["TFPX CROC 1x2"] = {"3": "12", "1": "13"}
 
 ChipMap = {
     "TFPX CROC 1x2": {
@@ -157,7 +163,6 @@ optimizationTestMap = {
         "DAC_GDAC_R_LIN",
         "Vthreshold_LIN",
     ],
-    "thrmin": ["DAC_GDAC_M_LINDAC_GDAC_L_LINDAC_GDAC_R_LINVthreshold_LIN"],
     "threq": [
         "VCAL_HIGH",
     ],

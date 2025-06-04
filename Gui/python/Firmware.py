@@ -1,5 +1,6 @@
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
+    ModuleLaneMap_Dict,
 )
 
 
@@ -124,7 +125,7 @@ class QtModule:
     def __setupChips(self):
         self.__chipDict.clear()
 
-        for LaneID, ChipID in ModuleLaneMap[self.__moduleType].items():
+        for LaneID, ChipID in ModuleLaneMap_Dict["HDIv{0}".format(self.__hdiVersion)][self.__moduleType].items():
             FEChip = QtChip(
                 chipID=ChipID, chipLane=LaneID, chipVDDA=8, chipVDDD=8, chipStatus=True
             )

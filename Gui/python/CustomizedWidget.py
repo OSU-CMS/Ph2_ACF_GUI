@@ -27,6 +27,7 @@ from Gui.python.Firmware import (
 )
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
+    ModuleLaneMap_Dict,
     ModuleType,
 )
 # from Gui.GUIutils.FirmwareUtil import *
@@ -733,7 +734,7 @@ class BeBoardBox(QWidget):
             )  # Ignore this line, see explanation in Firmware.py
 
             # Pull VDDA/VDDD trim and chip status from the ChipBox on the StartWindow.
-            for chipID in ModuleLaneMap[module.getType()].values():
+            for chipID in ModuleLaneMap_Dict["HDIv{0}".format(module.getHDIVersion())][module.getType()].values():
                 Module.getChips()[chipID].setStatus(
                     self.ChipWidgetDict[module].getChipStatus(chipID)
                 )
