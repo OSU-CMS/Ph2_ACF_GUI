@@ -31,7 +31,15 @@ RUN groupadd -g ${USER_GID} cmsTkUser || true && \
     usermod -a -G dialout cmsTkUser && \
     echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/cmsTkUser_nopasswd && \
     chmod 0440 /etc/sudoers.d/cmsTkUser_nopasswd
-    
+
+# Create XDG runtime dir for GUI
+ENV DISPLAY=:0
+ENV QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
+ENV XDG_RUNTIME_DIR=/tmp/runtime-cmsTkUser
+RUN mkdir -p $XDG_RUNTIME_DIR && chmod 700 $XDG_RUNTIME_DIR && chown -R cmsTkUser:cmsTkUser $XDG_RUNTIME_DIR
+
+
+
 USER cmsTkUser
 ENV APP_PASSWORD=${APP_PASSWORD}
 
