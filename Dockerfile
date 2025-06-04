@@ -22,6 +22,9 @@ ARG USER_UID=1000
 ARG USER_GID=1000
 ARG APP_PASSWORD
 
+# Set environemt variable for application password (can be overriden at runtime)
+ENV APP_PASSWORD=${APP_PASSWORD}
+
 # Create the group and user with the specified UID/GID
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
     useradd -m -u ${USER_UID} -g cmsTkUser cmsTkUser
