@@ -38,6 +38,28 @@ ENV QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
 ENV XDG_RUNTIME_DIR=/tmp/runtime-cmsTkUser
 RUN mkdir -p $XDG_RUNTIME_DIR && chmod 700 $XDG_RUNTIME_DIR && chown -R cmsTkUser:cmsTkUser $XDG_RUNTIME_DIR
 
+# Install system dependencies before switching to user 
+RUN dnf -y update && \
+    dnf -y install \
+    mesa-libGL-dlevel 
+    libxkbcommon-x11-devel \
+    xcb-util-wm \
+    xcb-util-image \
+    xcb-util-keysyms \
+    xcb-util-renderutil \
+    dbus-x11 \
+    gcc gcc-c++ \
+    kernel-devel \
+    make \
+    usbutils \
+    udev \
+    git \
+    wget \
+    libXext libXrender libXtst nss libasound && \
+    dnf clean all
+
+    
+
 
 
 USER cmsTkUser
