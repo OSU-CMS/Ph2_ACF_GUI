@@ -86,7 +86,10 @@ RUN chown -R cmsTkUser:cmsTkUser ${GUI_dir}/data && \
     chown cmsTkUser:cmsTkUser ${GUI_dir}/Gui/python/rhapi.py
 
 # Metadata
-LABEL Name=ph2acfgui_dev Version=${Ph2_ACF_VERSION}
+LABEL Name=ph2acfgui_dev Version=${Ph2ACF_VERSION}
+
+# Default command
+CMD ["/bin/bash", "-c", "source ${Ph2ACF_BASE_DIR}/setup.sh && source ${GUI_dir}/symlinks.sh && ${GUI_dir}/preparePh2ACF.sh"]
 
 
 # Add cmsTkUser to the 'dialout' group for serial port access
