@@ -78,6 +78,9 @@ COPY --chown=cmsTkUser:cmsTkUser . ${PH2ACF_BASE_DIR}/
 RUN chmod +x ${GUI_dir}/prepare_Ph2ACF.sh && \
     chmod +x ${PH2ACF_BASE_DIR}/compileSubModules.sh
 
+# Compile Ph2 ACF submodules
+RUN ${PH2ACF_BASE_DIR}/compileSubModules.sh
+
 
 # Add cmsTkUser to the 'dialout' group for serial port access
 # Crucial for Arduino communication
