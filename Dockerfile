@@ -64,6 +64,9 @@ USER cmsTkUser
 # Set working directory for the app
 WORKDIR ${GUI_dir}
 
+# Copy requirements first for cache efficiency
+COPY --chown=cmsTkUser:cmsTkUser requirements.txt ${PH2ACF_BASE_DIR}/
+
 # Add cmsTkUser to the 'dialout' group for serial port access
 # Crucial for Arduino communication
 RUN usermod -a -G dialout cmsTkUser
