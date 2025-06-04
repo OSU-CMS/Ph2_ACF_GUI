@@ -67,6 +67,11 @@ WORKDIR ${GUI_dir}
 # Copy requirements first for cache efficiency
 COPY --chown=cmsTkUser:cmsTkUser requirements.txt ${PH2ACF_BASE_DIR}/
 
+# Install python dependencies 
+RUN python3 -m pip install --upgrade pip && \
+    python3 -m pip install -r ${PH2ACF_BASE_DIR}/requirements.txt
+
+
 # Add cmsTkUser to the 'dialout' group for serial port access
 # Crucial for Arduino communication
 RUN usermod -a -G dialout cmsTkUser
