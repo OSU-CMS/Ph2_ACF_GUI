@@ -29,8 +29,12 @@ USER cmsTkUser
 ENV APP_PASSWORD=${APP_PASSWORD}
 
 # Add cmsTkUser to the 'dialout' group for serial port access
-#Crucial for Arduino communication
+# Crucial for Arduino communication
 RUN usermod -a -G dialout cmsTkUser
+
+# Configure sudo for cmsTkUser if elevated privileges are ever needed inside the container
+RUN echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/cmsTkUser_nopasswd && \
+    sudo chmod 0440 /etc/sudoers.d/cmsTkUser_nopasswd
 
 
 #Setting the default user in the container to be root
