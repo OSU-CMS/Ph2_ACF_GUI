@@ -45,28 +45,28 @@ class SLDOCurveWorker(QThread):
             "DEFAULT": AdcBoard.DEFAULT_PIN_MAP,
             "DOUBLE": {
                 # 0: 'VDDA_ROC1',
-                1: 'VDDA_ROC1',
+                1: 'VDDA_ROC13', #ROC U1B
                 # 2: 'VDDD_ROC2',
                 # 3: 'VDDD_ROC3',
                 # 4: 'VDDD_ROC1',
-                5: 'VDDD_ROC1', #VOFS OUT
+                5: 'VDDD_ROC13', #ROC U1B
                 # 6: None,
                 # 7: 'TP8', #VOFS IN
                 # 8: None,
                 9: 'TP10', #VIN
                 # 10: None,
-                11: "VDDA_ROC0",
+                11: "VDDA_ROC12", #ROC U1A
                 #12: "VDDA_ROC1",
-                13: "VDDD_ROC0",
+                13: "VDDD_ROC12", #ROC U1A
                 #14: "VDDD_ROC1",
                 # 15: 'TP7A', #VOFS OUT
                 # 16: 'TP7B', #VOFS OUT
             },
             "QUAD": {
-                0: "VDDA_ROC2",
-                1: "VDDA_ROC3",
-                2: "VDDD_ROC2",
-                3: "VDDD_ROC3",
+                0: "VDDA_ROC14", #ROC U1C
+                1: "VDDA_ROC15", #ROC U1D
+                2: "VDDD_ROC14", #ROC U1C
+                3: "VDDD_ROC15", #ROC U1D
                 # 4: 'TP7C', #VOFS OUT
                 # 5: 'TP7D', #VOFS OUT
                 # 6: None,
@@ -74,10 +74,10 @@ class SLDOCurveWorker(QThread):
                 # 8: None,
                 9: 'TP10', #VIN
                 # 10: None,
-                11: "VDDA_ROC0",
-                12: "VDDA_ROC1",
-                13: "VDDD_ROC0",
-                14: "VDDD_ROC1",
+                11: "VDDA_ROC12", #ROC U1A
+                12: "VDDA_ROC13", #ROC U1B
+                13: "VDDD_ROC12", #ROC U1A
+                14: "VDDD_ROC13", #ROC U1B
                 # 15: 'TP7A', #VOFS OUT
                 # 16: 'TP7B', #VOFShv_off OUT
             },
