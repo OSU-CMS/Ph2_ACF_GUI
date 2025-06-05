@@ -57,7 +57,7 @@ RUN dnf -y update && \
         udev \
         git \
         wget \
-        libXext libXrender libXtst nss libasound && \
+        libXext libXrender libXtst nss alsa-lib && \
         mesa-libGL-devel \
     && dnf clean all
 
