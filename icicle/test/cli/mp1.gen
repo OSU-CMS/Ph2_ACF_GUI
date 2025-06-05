@@ -1,0 +1,19 @@
+identify                | mp1 -S identify
+status                  | mp1 -S status
+off                     | mp1 -S off
+on                      | mp1 -S on
+voltage                 | mp1 -S voltage
+set voltage             | mp1 -S voltage 5
+set voltage prohibited  | mp1 -S voltage 5000
+current                 | mp1 -S current
+set current             | mp1 -S current 20
+set current prohibited  | mp1 -S current 500
+read_errors             | mp1 -S read_errors
+read_timer              | mp1 -S read_timer
+read_programme_revision | mp1 -S read_programme_revision
+read_warmup             | mp1 -S read_warmup
+reset_timer             | mp1 -S reset_timer
+generic set             | mp1 -S set "RESET_TIMER"
+generic query           | mp1 -S query "PROGRAMME"
+scpi query              | mp1 -S scpi_query "?P927"
+#scpi write             | mp1 -S scpi_write "*ESE 0"

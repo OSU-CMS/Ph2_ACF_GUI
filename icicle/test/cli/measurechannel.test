@@ -1,0 +1,1852 @@
+##
+AdcBoard VOLTAGE identify
+# COMMAND
+measurechannel -S AdcBoard 1 VOLTAGE identify
+# OUTPUT
+ADC_Board, Production number A1, Serial number 0x2
+None
+# RETURNS 0
+##
+AdcBoard VOLTAGE value
+# COMMAND
+measurechannel -S AdcBoard 1 VOLTAGE value
+# OUTPUT
+0.998039186000824
+# RETURNS 0
+##
+AdcBoard VOLTAGE status
+# COMMAND
+measurechannel -S AdcBoard 1 VOLTAGE status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+AdcBoard TEMPERATURE identify
+# COMMAND
+measurechannel -S AdcBoard 9 TEMPERATURE identify
+# OUTPUT
+ADC_Board, Production number A1, Serial number 0x2
+None
+# RETURNS 0
+##
+AdcBoard TEMPERATURE value
+# COMMAND
+measurechannel -S AdcBoard 9 TEMPERATURE value
+# OUTPUT
+15.968626976013184
+# RETURNS 0
+##
+AdcBoard TEMPERATURE status
+# COMMAND
+measurechannel -S AdcBoard 9 TEMPERATURE status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+HMP4040 VOLT:DC identify
+# COMMAND
+measurechannel -S HMP4040 1 VOLT:DC identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+HMP4040 VOLT:DC value
+# COMMAND
+measurechannel -S HMP4040 1 VOLT:DC value
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+HMP4040 VOLT:DC status
+# COMMAND
+measurechannel -S HMP4040 1 VOLT:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+HMP4040 CURR:DC identify
+# COMMAND
+measurechannel -S HMP4040 1 CURR:DC identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+HMP4040 CURR:DC value
+# COMMAND
+measurechannel -S HMP4040 1 CURR:DC value
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+HMP4040 CURR:DC status
+# COMMAND
+measurechannel -S HMP4040 1 CURR:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+HP34401A VOLT:DC identify
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A VOLT:DC value
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A VOLT:DC status
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A VOLT:AC identify
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:AC identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A VOLT:AC value
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:AC value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A VOLT:AC status
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:AC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A CURR:DC identify
+# COMMAND
+measurechannel -S HP34401A 1 CURR:DC identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A CURR:DC value
+# COMMAND
+measurechannel -S HP34401A 1 CURR:DC value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A CURR:DC status
+# COMMAND
+measurechannel -S HP34401A 1 CURR:DC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A CURR:AC identify
+# COMMAND
+measurechannel -S HP34401A 1 CURR:AC identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A CURR:AC value
+# COMMAND
+measurechannel -S HP34401A 1 CURR:AC value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A CURR:AC status
+# COMMAND
+measurechannel -S HP34401A 1 CURR:AC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A RES identify
+# COMMAND
+measurechannel -S HP34401A 1 RES identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A RES value
+# COMMAND
+measurechannel -S HP34401A 1 RES value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A RES status
+# COMMAND
+measurechannel -S HP34401A 1 RES status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A FRES identify
+# COMMAND
+measurechannel -S HP34401A 1 FRES identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A FRES value
+# COMMAND
+measurechannel -S HP34401A 1 FRES value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A FRES status
+# COMMAND
+measurechannel -S HP34401A 1 FRES status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A VOLT:DC:RAT identify
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC:RAT identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A VOLT:DC:RAT value
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC:RAT value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A VOLT:DC:RAT status
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC:RAT status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A FREQ identify
+# COMMAND
+measurechannel -S HP34401A 1 FREQ identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A FREQ value
+# COMMAND
+measurechannel -S HP34401A 1 FREQ value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A FREQ status
+# COMMAND
+measurechannel -S HP34401A 1 FREQ status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A PER identify
+# COMMAND
+measurechannel -S HP34401A 1 PER identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A PER value
+# COMMAND
+measurechannel -S HP34401A 1 PER value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A PER status
+# COMMAND
+measurechannel -S HP34401A 1 PER status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A CONT identify
+# COMMAND
+measurechannel -S HP34401A 1 CONT identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A CONT value
+# COMMAND
+measurechannel -S HP34401A 1 CONT value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A CONT status
+# COMMAND
+measurechannel -S HP34401A 1 CONT status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A DIOD identify
+# COMMAND
+measurechannel -S HP34401A 1 DIOD identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A DIOD value
+# COMMAND
+measurechannel -S HP34401A 1 DIOD value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A DIOD status
+# COMMAND
+measurechannel -S HP34401A 1 DIOD status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+Keithley2000 VOLT:DC identify
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 VOLT:DC value
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:DC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 VOLT:DC status
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:DC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 VOLT:AC identify
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:AC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 VOLT:AC value
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:AC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 VOLT:AC status
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:AC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 CURR:DC identify
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 CURR:DC value
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:DC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 CURR:DC status
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:DC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 CURR:AC identify
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:AC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 CURR:AC value
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:AC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 CURR:AC status
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:AC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 RES identify
+# COMMAND
+measurechannel -S Keithley2000 1 RES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 RES value
+# COMMAND
+measurechannel -S Keithley2000 1 RES value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 RES status
+# COMMAND
+measurechannel -S Keithley2000 1 RES status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 FRES identify
+# COMMAND
+measurechannel -S Keithley2000 1 FRES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 FRES value
+# COMMAND
+measurechannel -S Keithley2000 1 FRES value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 FRES status
+# COMMAND
+measurechannel -S Keithley2000 1 FRES status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 FREQ identify
+# COMMAND
+measurechannel -S Keithley2000 1 FREQ identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 FREQ value
+# COMMAND
+measurechannel -S Keithley2000 1 FREQ value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 FREQ status
+# COMMAND
+measurechannel -S Keithley2000 1 FREQ status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 PER identify
+# COMMAND
+measurechannel -S Keithley2000 1 PER identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 PER value
+# COMMAND
+measurechannel -S Keithley2000 1 PER value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 PER status
+# COMMAND
+measurechannel -S Keithley2000 1 PER status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 VOLT:DC identify
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 VOLT:DC value
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:DC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 VOLT:DC status
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:DC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 VOLT:AC identify
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:AC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 VOLT:AC value
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:AC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 VOLT:AC status
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:AC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 CURR:DC identify
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 CURR:DC value
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:DC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 CURR:DC status
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:DC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 CURR:AC identify
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:AC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 CURR:AC value
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:AC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 CURR:AC status
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:AC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 RES identify
+# COMMAND
+measurechannel -S Keithley6500 1 RES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 RES value
+# COMMAND
+measurechannel -S Keithley6500 1 RES value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 RES status
+# COMMAND
+measurechannel -S Keithley6500 1 RES status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 FRES identify
+# COMMAND
+measurechannel -S Keithley6500 1 FRES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 FRES value
+# COMMAND
+measurechannel -S Keithley6500 1 FRES value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 FRES status
+# COMMAND
+measurechannel -S Keithley6500 1 FRES status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 FREQ identify
+# COMMAND
+measurechannel -S Keithley6500 1 FREQ identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 FREQ value
+# COMMAND
+measurechannel -S Keithley6500 1 FREQ value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 FREQ status
+# COMMAND
+measurechannel -S Keithley6500 1 FREQ status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 PER identify
+# COMMAND
+measurechannel -S Keithley6500 1 PER identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 PER value
+# COMMAND
+measurechannel -S Keithley6500 1 PER value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 PER status
+# COMMAND
+measurechannel -S Keithley6500 1 PER status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2410 VOLT:DC identify
+# COMMAND
+measurechannel -S Keithley2410 1 VOLT:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2410, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2410 VOLT:DC value
+# COMMAND
+measurechannel -S Keithley2410 1 VOLT:DC value
+# OUTPUT
+1.0
+# RETURNS 0
+##
+Keithley2410 VOLT:DC status
+# COMMAND
+measurechannel -S Keithley2410 1 VOLT:DC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+Keithley2410 CURR:DC identify
+# COMMAND
+measurechannel -S Keithley2410 1 CURR:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2410, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2410 CURR:DC value
+# COMMAND
+measurechannel -S Keithley2410 1 CURR:DC value
+# OUTPUT
+2.0
+# RETURNS 0
+##
+Keithley2410 CURR:DC status
+# COMMAND
+measurechannel -S Keithley2410 1 CURR:DC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+Keithley2410 RES identify
+# COMMAND
+measurechannel -S Keithley2410 1 RES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2410, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2410 RES value
+# COMMAND
+measurechannel -S Keithley2410 1 RES value
+# OUTPUT
+3.0
+# RETURNS 0
+##
+Keithley2410 RES status
+# COMMAND
+measurechannel -S Keithley2410 1 RES status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+KeysightE3633A VOLT:DC identify
+# COMMAND
+measurechannel -S KeysightE3633A 1 VOLT:DC identify
+# OUTPUT
+HEWLETT-PACKARD,E3633A,0,SIM1.0
+# RETURNS 0
+##
+KeysightE3633A VOLT:DC value
+# COMMAND
+measurechannel -S KeysightE3633A 1 VOLT:DC value
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+KeysightE3633A VOLT:DC status
+# COMMAND
+measurechannel -S KeysightE3633A 1 VOLT:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+KeysightE3633A CURR:DC identify
+# COMMAND
+measurechannel -S KeysightE3633A 1 CURR:DC identify
+# OUTPUT
+HEWLETT-PACKARD,E3633A,0,SIM1.0
+# RETURNS 0
+##
+KeysightE3633A CURR:DC value
+# COMMAND
+measurechannel -S KeysightE3633A 1 CURR:DC value
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+KeysightE3633A CURR:DC status
+# COMMAND
+measurechannel -S KeysightE3633A 1 CURR:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+Lauda TEMP:BATH identify
+# COMMAND
+measurechannel -S Lauda 1 TEMP:BATH identify
+# OUTPUT
+E10G
+# RETURNS 0
+##
+Lauda TEMP:BATH value
+# COMMAND
+measurechannel -S Lauda 1 TEMP:BATH value
+# OUTPUT
+0.01
+# RETURNS 0
+##
+Lauda TEMP:BATH status
+# COMMAND
+measurechannel -S Lauda 1 TEMP:BATH status
+# OUTPUT
+0xF69B5
+# RETURNS 0
+##
+Lauda TEMP:EXT identify
+# COMMAND
+measurechannel -S Lauda 1 TEMP:EXT identify
+# OUTPUT
+E10G
+# RETURNS 0
+##
+Lauda TEMP:EXT value
+# COMMAND
+measurechannel -S Lauda 1 TEMP:EXT value
+# OUTPUT
+2.3
+# RETURNS 0
+##
+Lauda TEMP:EXT status
+# COMMAND
+measurechannel -S Lauda 1 TEMP:EXT status
+# OUTPUT
+0xF69B5
+# RETURNS 0
+##
+MP1 VOLT:DC identify
+# COMMAND
+measurechannel -S MP1 1 VOLT:DC identify
+# OUTPUT
+GULMAY,MP1,000000,SIMv1
+# RETURNS 0
+##
+MP1 VOLT:DC value
+# COMMAND
+measurechannel -S MP1 1 VOLT:DC value
+# OUTPUT
+0
+# RETURNS 0
+##
+MP1 VOLT:DC status
+# COMMAND
+measurechannel -S MP1 1 VOLT:DC status
+# OUTPUT
+0x3
+# RETURNS 0
+##
+MP1 CURR:DC identify
+# COMMAND
+measurechannel -S MP1 1 CURR:DC identify
+# OUTPUT
+GULMAY,MP1,000000,SIMv1
+# RETURNS 0
+##
+MP1 CURR:DC value
+# COMMAND
+measurechannel -S MP1 1 CURR:DC value
+# OUTPUT
+0.0
+# RETURNS 0
+##
+MP1 CURR:DC status
+# COMMAND
+measurechannel -S MP1 1 CURR:DC status
+# OUTPUT
+0x3
+# RETURNS 0
+##
+TTI VOLT:DC identify
+# COMMAND
+measurechannel -S TTI 1 VOLT:DC identify
+# OUTPUT
+Aim-TTI,MX180TP,000000,SIM1.0
+# RETURNS 0
+##
+TTI VOLT:DC value
+# COMMAND
+measurechannel -S TTI 1 VOLT:DC value
+# OUTPUT
+1.00012098
+# RETURNS 0
+##
+TTI VOLT:DC status
+# COMMAND
+measurechannel -S TTI 1 VOLT:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+TTI CURR:DC identify
+# COMMAND
+measurechannel -S TTI 1 CURR:DC identify
+# OUTPUT
+Aim-TTI,MX180TP,000000,SIM1.0
+# RETURNS 0
+##
+TTI CURR:DC value
+# COMMAND
+measurechannel -S TTI 1 CURR:DC value
+# OUTPUT
+1.00000008
+# RETURNS 0
+##
+TTI CURR:DC status
+# COMMAND
+measurechannel -S TTI 1 CURR:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+TTITSX VOLT:DC identify
+# COMMAND
+measurechannel -S TTITSX 1 VOLT:DC identify
+# OUTPUT
+Aim-TTI,TSX1820P,000000,SIM1.0
+# RETURNS 0
+##
+TTITSX VOLT:DC value
+# COMMAND
+measurechannel -S TTITSX 1 VOLT:DC value
+# OUTPUT
+1.00012098
+# RETURNS 0
+##
+TTITSX VOLT:DC status
+# COMMAND
+measurechannel -S TTITSX 1 VOLT:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+TTITSX CURR:DC identify
+# COMMAND
+measurechannel -S TTITSX 1 CURR:DC identify
+# OUTPUT
+Aim-TTI,TSX1820P,000000,SIM1.0
+# RETURNS 0
+##
+TTITSX CURR:DC value
+# COMMAND
+measurechannel -S TTITSX 1 CURR:DC value
+# OUTPUT
+1.00000008
+# RETURNS 0
+##
+TTITSX CURR:DC status
+# COMMAND
+measurechannel -S TTITSX 1 CURR:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+AdcBoard VOLTAGE identify
+# COMMAND
+measurechannel -S AdcBoard 1 VOLTAGE identify
+# OUTPUT
+ADC_Board, Production number A1, Serial number 0x2
+None
+# RETURNS 0
+##
+AdcBoard VOLTAGE value
+# COMMAND
+measurechannel -S AdcBoard 1 VOLTAGE value
+# OUTPUT
+0.998039186000824
+# RETURNS 0
+##
+AdcBoard VOLTAGE status
+# COMMAND
+measurechannel -S AdcBoard 1 VOLTAGE status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+AdcBoard TEMPERATURE identify
+# COMMAND
+measurechannel -S AdcBoard 1 TEMPERATURE identify
+# OUTPUT
+ADC_Board, Production number A1, Serial number 0x2
+None
+# RETURNS 0
+##
+AdcBoard TEMPERATURE value
+# COMMAND
+measurechannel -S AdcBoard 1 TEMPERATURE value
+# OUTPUT
+0.998039186000824
+# RETURNS 0
+##
+AdcBoard TEMPERATURE status
+# COMMAND
+measurechannel -S AdcBoard 1 TEMPERATURE status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+HMP4040 VOLT:DC identify
+# COMMAND
+measurechannel -S HMP4040 1 VOLT:DC identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+HMP4040 VOLT:DC value
+# COMMAND
+measurechannel -S HMP4040 1 VOLT:DC value
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+HMP4040 VOLT:DC status
+# COMMAND
+measurechannel -S HMP4040 1 VOLT:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+HMP4040 CURR:DC identify
+# COMMAND
+measurechannel -S HMP4040 1 CURR:DC identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+HMP4040 CURR:DC value
+# COMMAND
+measurechannel -S HMP4040 1 CURR:DC value
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+HMP4040 CURR:DC status
+# COMMAND
+measurechannel -S HMP4040 1 CURR:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+HP34401A VOLT:DC identify
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A VOLT:DC value
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A VOLT:DC status
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A VOLT:AC identify
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:AC identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A VOLT:AC value
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:AC value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A VOLT:AC status
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:AC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A CURR:DC identify
+# COMMAND
+measurechannel -S HP34401A 1 CURR:DC identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A CURR:DC value
+# COMMAND
+measurechannel -S HP34401A 1 CURR:DC value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A CURR:DC status
+# COMMAND
+measurechannel -S HP34401A 1 CURR:DC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A CURR:AC identify
+# COMMAND
+measurechannel -S HP34401A 1 CURR:AC identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A CURR:AC value
+# COMMAND
+measurechannel -S HP34401A 1 CURR:AC value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A CURR:AC status
+# COMMAND
+measurechannel -S HP34401A 1 CURR:AC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A RES identify
+# COMMAND
+measurechannel -S HP34401A 1 RES identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A RES value
+# COMMAND
+measurechannel -S HP34401A 1 RES value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A RES status
+# COMMAND
+measurechannel -S HP34401A 1 RES status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A FRES identify
+# COMMAND
+measurechannel -S HP34401A 1 FRES identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A FRES value
+# COMMAND
+measurechannel -S HP34401A 1 FRES value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A FRES status
+# COMMAND
+measurechannel -S HP34401A 1 FRES status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A VOLT:DC:RAT identify
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC:RAT identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A VOLT:DC:RAT value
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC:RAT value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A VOLT:DC:RAT status
+# COMMAND
+measurechannel -S HP34401A 1 VOLT:DC:RAT status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A FREQ identify
+# COMMAND
+measurechannel -S HP34401A 1 FREQ identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A FREQ value
+# COMMAND
+measurechannel -S HP34401A 1 FREQ value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A FREQ status
+# COMMAND
+measurechannel -S HP34401A 1 FREQ status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A PER identify
+# COMMAND
+measurechannel -S HP34401A 1 PER identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A PER value
+# COMMAND
+measurechannel -S HP34401A 1 PER value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A PER status
+# COMMAND
+measurechannel -S HP34401A 1 PER status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A CONT identify
+# COMMAND
+measurechannel -S HP34401A 1 CONT identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A CONT value
+# COMMAND
+measurechannel -S HP34401A 1 CONT value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A CONT status
+# COMMAND
+measurechannel -S HP34401A 1 CONT status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+HP34401A DIOD identify
+# COMMAND
+measurechannel -S HP34401A 1 DIOD identify
+# OUTPUT
+HEWLETT-PACKARD,E34401A,0,SIM1.0
+# RETURNS 0
+##
+HP34401A DIOD value
+# COMMAND
+measurechannel -S HP34401A 1 DIOD value
+# OUTPUT
+10000.01
+# RETURNS 0
+##
+HP34401A DIOD status
+# COMMAND
+measurechannel -S HP34401A 1 DIOD status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+Keithley2000 VOLT:DC identify
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 VOLT:DC value
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:DC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 VOLT:DC status
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:DC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 VOLT:AC identify
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:AC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 VOLT:AC value
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:AC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 VOLT:AC status
+# COMMAND
+measurechannel -S Keithley2000 1 VOLT:AC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 CURR:DC identify
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 CURR:DC value
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:DC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 CURR:DC status
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:DC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 CURR:AC identify
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:AC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 CURR:AC value
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:AC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 CURR:AC status
+# COMMAND
+measurechannel -S Keithley2000 1 CURR:AC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 RES identify
+# COMMAND
+measurechannel -S Keithley2000 1 RES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 RES value
+# COMMAND
+measurechannel -S Keithley2000 1 RES value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 RES status
+# COMMAND
+measurechannel -S Keithley2000 1 RES status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 FRES identify
+# COMMAND
+measurechannel -S Keithley2000 1 FRES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 FRES value
+# COMMAND
+measurechannel -S Keithley2000 1 FRES value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 FRES status
+# COMMAND
+measurechannel -S Keithley2000 1 FRES status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 FREQ identify
+# COMMAND
+measurechannel -S Keithley2000 1 FREQ identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 FREQ value
+# COMMAND
+measurechannel -S Keithley2000 1 FREQ value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 FREQ status
+# COMMAND
+measurechannel -S Keithley2000 1 FREQ status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2000 PER identify
+# COMMAND
+measurechannel -S Keithley2000 1 PER identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2000 PER value
+# COMMAND
+measurechannel -S Keithley2000 1 PER value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley2000 PER status
+# COMMAND
+measurechannel -S Keithley2000 1 PER status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 VOLT:DC identify
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 VOLT:DC value
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:DC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 VOLT:DC status
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:DC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 VOLT:AC identify
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:AC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 VOLT:AC value
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:AC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 VOLT:AC status
+# COMMAND
+measurechannel -S Keithley6500 1 VOLT:AC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 CURR:DC identify
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 CURR:DC value
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:DC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 CURR:DC status
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:DC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 CURR:AC identify
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:AC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 CURR:AC value
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:AC value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 CURR:AC status
+# COMMAND
+measurechannel -S Keithley6500 1 CURR:AC status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 RES identify
+# COMMAND
+measurechannel -S Keithley6500 1 RES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 RES value
+# COMMAND
+measurechannel -S Keithley6500 1 RES value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 RES status
+# COMMAND
+measurechannel -S Keithley6500 1 RES status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 FRES identify
+# COMMAND
+measurechannel -S Keithley6500 1 FRES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 FRES value
+# COMMAND
+measurechannel -S Keithley6500 1 FRES value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 FRES status
+# COMMAND
+measurechannel -S Keithley6500 1 FRES status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 FREQ identify
+# COMMAND
+measurechannel -S Keithley6500 1 FREQ identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 FREQ value
+# COMMAND
+measurechannel -S Keithley6500 1 FREQ value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 FREQ status
+# COMMAND
+measurechannel -S Keithley6500 1 FREQ status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley6500 PER identify
+# COMMAND
+measurechannel -S Keithley6500 1 PER identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley6500 PER value
+# COMMAND
+measurechannel -S Keithley6500 1 PER value
+# OUTPUT
+9325.32
+# RETURNS 0
+##
+Keithley6500 PER status
+# COMMAND
+measurechannel -S Keithley6500 1 PER status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+Keithley2410 VOLT:DC identify
+# COMMAND
+measurechannel -S Keithley2410 1 VOLT:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2410, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2410 VOLT:DC value
+# COMMAND
+measurechannel -S Keithley2410 1 VOLT:DC value
+# OUTPUT
+1.0
+# RETURNS 0
+##
+Keithley2410 VOLT:DC status
+# COMMAND
+measurechannel -S Keithley2410 1 VOLT:DC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+Keithley2410 CURR:DC identify
+# COMMAND
+measurechannel -S Keithley2410 1 CURR:DC identify
+# OUTPUT
+Keithley Instruments Inc., Model 2410, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2410 CURR:DC value
+# COMMAND
+measurechannel -S Keithley2410 1 CURR:DC value
+# OUTPUT
+2.0
+# RETURNS 0
+##
+Keithley2410 CURR:DC status
+# COMMAND
+measurechannel -S Keithley2410 1 CURR:DC status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+Keithley2410 RES identify
+# COMMAND
+measurechannel -S Keithley2410 1 RES identify
+# OUTPUT
+Keithley Instruments Inc., Model 2410, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2410 RES value
+# COMMAND
+measurechannel -S Keithley2410 1 RES value
+# OUTPUT
+3.0
+# RETURNS 0
+##
+Keithley2410 RES status
+# COMMAND
+measurechannel -S Keithley2410 1 RES status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+KeysightE3633A VOLT:DC identify
+# COMMAND
+measurechannel -S KeysightE3633A 1 VOLT:DC identify
+# OUTPUT
+HEWLETT-PACKARD,E3633A,0,SIM1.0
+# RETURNS 0
+##
+KeysightE3633A VOLT:DC value
+# COMMAND
+measurechannel -S KeysightE3633A 1 VOLT:DC value
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+KeysightE3633A VOLT:DC status
+# COMMAND
+measurechannel -S KeysightE3633A 1 VOLT:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+KeysightE3633A CURR:DC identify
+# COMMAND
+measurechannel -S KeysightE3633A 1 CURR:DC identify
+# OUTPUT
+HEWLETT-PACKARD,E3633A,0,SIM1.0
+# RETURNS 0
+##
+KeysightE3633A CURR:DC value
+# COMMAND
+measurechannel -S KeysightE3633A 1 CURR:DC value
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+KeysightE3633A CURR:DC status
+# COMMAND
+measurechannel -S KeysightE3633A 1 CURR:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+Lauda TEMP:BATH identify
+# COMMAND
+measurechannel -S Lauda 1 TEMP:BATH identify
+# OUTPUT
+E10G
+# RETURNS 0
+##
+Lauda TEMP:BATH value
+# COMMAND
+measurechannel -S Lauda 1 TEMP:BATH value
+# OUTPUT
+0.01
+# RETURNS 0
+##
+Lauda TEMP:BATH status
+# COMMAND
+measurechannel -S Lauda 1 TEMP:BATH status
+# OUTPUT
+0xF69B5
+# RETURNS 0
+##
+Lauda TEMP:EXT identify
+# COMMAND
+measurechannel -S Lauda 1 TEMP:EXT identify
+# OUTPUT
+E10G
+# RETURNS 0
+##
+Lauda TEMP:EXT value
+# COMMAND
+measurechannel -S Lauda 1 TEMP:EXT value
+# OUTPUT
+2.3
+# RETURNS 0
+##
+Lauda TEMP:EXT status
+# COMMAND
+measurechannel -S Lauda 1 TEMP:EXT status
+# OUTPUT
+0xF69B5
+# RETURNS 0
+##
+MP1 VOLT:DC identify
+# COMMAND
+measurechannel -S MP1 1 VOLT:DC identify
+# OUTPUT
+GULMAY,MP1,000000,SIMv1
+# RETURNS 0
+##
+MP1 VOLT:DC value
+# COMMAND
+measurechannel -S MP1 1 VOLT:DC value
+# OUTPUT
+0
+# RETURNS 0
+##
+MP1 VOLT:DC status
+# COMMAND
+measurechannel -S MP1 1 VOLT:DC status
+# OUTPUT
+0x3
+# RETURNS 0
+##
+MP1 CURR:DC identify
+# COMMAND
+measurechannel -S MP1 1 CURR:DC identify
+# OUTPUT
+GULMAY,MP1,000000,SIMv1
+# RETURNS 0
+##
+MP1 CURR:DC value
+# COMMAND
+measurechannel -S MP1 1 CURR:DC value
+# OUTPUT
+0.0
+# RETURNS 0
+##
+MP1 CURR:DC status
+# COMMAND
+measurechannel -S MP1 1 CURR:DC status
+# OUTPUT
+0x3
+# RETURNS 0
+##
+TTI VOLT:DC identify
+# COMMAND
+measurechannel -S TTI 1 VOLT:DC identify
+# OUTPUT
+Aim-TTI,MX180TP,000000,SIM1.0
+# RETURNS 0
+##
+TTI VOLT:DC value
+# COMMAND
+measurechannel -S TTI 1 VOLT:DC value
+# OUTPUT
+1.00012098
+# RETURNS 0
+##
+TTI VOLT:DC status
+# COMMAND
+measurechannel -S TTI 1 VOLT:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+TTI CURR:DC identify
+# COMMAND
+measurechannel -S TTI 1 CURR:DC identify
+# OUTPUT
+Aim-TTI,MX180TP,000000,SIM1.0
+# RETURNS 0
+##
+TTI CURR:DC value
+# COMMAND
+measurechannel -S TTI 1 CURR:DC value
+# OUTPUT
+1.00000008
+# RETURNS 0
+##
+TTI CURR:DC status
+# COMMAND
+measurechannel -S TTI 1 CURR:DC status
+# OUTPUT
+0xE500C0DE
+# RETURNS 0
+##
+CaenDT8033N VOLT:DC identify
+# COMMAND
+measurechannel -S CaenDT8033N 1 VOLT:DC identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N VOLT:DC value
+# COMMAND
+measurechannel -S CaenDT8033N 1 VOLT:DC value
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N VOLT:DC status
+# COMMAND
+measurechannel -S CaenDT8033N 1 VOLT:DC status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N CURR:DC identify
+# COMMAND
+measurechannel -S CaenDT8033N 1 CURR:DC identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N CURR:DC value
+# COMMAND
+measurechannel -S CaenDT8033N 1 CURR:DC value
+# OUTPUT
+1e-07
+# RETURNS 0
+##
+CaenDT8033N CURR:DC status
+# COMMAND
+measurechannel -S CaenDT8033N 1 CURR:DC status
+# OUTPUT
+0x1
+# RETURNS 0

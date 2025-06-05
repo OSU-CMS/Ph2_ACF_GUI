@@ -1,0 +1,305 @@
+# == AdcBoard ==
+AdcBoard VOLTAGE identify           | measurechannel -S AdcBoard 1 VOLTAGE identify
+AdcBoard VOLTAGE value              | measurechannel -S AdcBoard 1 VOLTAGE value
+AdcBoard VOLTAGE status             | measurechannel -S AdcBoard 1 VOLTAGE status
+AdcBoard TEMPERATURE identify       | measurechannel -S AdcBoard 9 TEMPERATURE identify
+AdcBoard TEMPERATURE value          | measurechannel -S AdcBoard 9 TEMPERATURE value
+AdcBoard TEMPERATURE status         | measurechannel -S AdcBoard 9 TEMPERATURE status
+
+# == HMP4040 ==
+HMP4040 VOLT:DC identify            | measurechannel -S HMP4040 1 VOLT:DC identify
+HMP4040 VOLT:DC value               | measurechannel -S HMP4040 1 VOLT:DC value
+HMP4040 VOLT:DC status              | measurechannel -S HMP4040 1 VOLT:DC status
+HMP4040 CURR:DC identify            | measurechannel -S HMP4040 1 CURR:DC identify
+HMP4040 CURR:DC value               | measurechannel -S HMP4040 1 CURR:DC value
+HMP4040 CURR:DC status              | measurechannel -S HMP4040 1 CURR:DC status
+
+# == HP34401A ==
+HP34401A VOLT:DC identify           | measurechannel -S HP34401A 1 VOLT:DC identify
+HP34401A VOLT:DC value              | measurechannel -S HP34401A 1 VOLT:DC value
+HP34401A VOLT:DC status             | measurechannel -S HP34401A 1 VOLT:DC status
+HP34401A VOLT:AC identify           | measurechannel -S HP34401A 1 VOLT:AC identify
+HP34401A VOLT:AC value              | measurechannel -S HP34401A 1 VOLT:AC value
+HP34401A VOLT:AC status             | measurechannel -S HP34401A 1 VOLT:AC status
+HP34401A CURR:DC identify           | measurechannel -S HP34401A 1 CURR:DC identify
+HP34401A CURR:DC value              | measurechannel -S HP34401A 1 CURR:DC value
+HP34401A CURR:DC status             | measurechannel -S HP34401A 1 CURR:DC status
+HP34401A CURR:AC identify           | measurechannel -S HP34401A 1 CURR:AC identify
+HP34401A CURR:AC value              | measurechannel -S HP34401A 1 CURR:AC value
+HP34401A CURR:AC status             | measurechannel -S HP34401A 1 CURR:AC status
+HP34401A RES identify               | measurechannel -S HP34401A 1 RES identify
+HP34401A RES value                  | measurechannel -S HP34401A 1 RES value
+HP34401A RES status                 | measurechannel -S HP34401A 1 RES status
+HP34401A FRES identify              | measurechannel -S HP34401A 1 FRES identify
+HP34401A FRES value                 | measurechannel -S HP34401A 1 FRES value
+HP34401A FRES status                | measurechannel -S HP34401A 1 FRES status
+HP34401A VOLT:DC:RAT identify       | measurechannel -S HP34401A 1 VOLT:DC:RAT identify
+HP34401A VOLT:DC:RAT value          | measurechannel -S HP34401A 1 VOLT:DC:RAT value
+HP34401A VOLT:DC:RAT status         | measurechannel -S HP34401A 1 VOLT:DC:RAT status
+HP34401A FREQ identify              | measurechannel -S HP34401A 1 FREQ identify
+HP34401A FREQ value                 | measurechannel -S HP34401A 1 FREQ value
+HP34401A FREQ status                | measurechannel -S HP34401A 1 FREQ status
+HP34401A PER identify               | measurechannel -S HP34401A 1 PER identify
+HP34401A PER value                  | measurechannel -S HP34401A 1 PER value
+HP34401A PER status                 | measurechannel -S HP34401A 1 PER status
+HP34401A CONT identify              | measurechannel -S HP34401A 1 CONT identify
+HP34401A CONT value                 | measurechannel -S HP34401A 1 CONT value
+HP34401A CONT status                | measurechannel -S HP34401A 1 CONT status
+HP34401A DIOD identify              | measurechannel -S HP34401A 1 DIOD identify
+HP34401A DIOD value                 | measurechannel -S HP34401A 1 DIOD value
+HP34401A DIOD status                | measurechannel -S HP34401A 1 DIOD status
+
+# == Keithley2000 ==
+Keithley2000 VOLT:DC identify       | measurechannel -S Keithley2000 1 VOLT:DC identify
+Keithley2000 VOLT:DC value          | measurechannel -S Keithley2000 1 VOLT:DC value
+Keithley2000 VOLT:DC status         | measurechannel -S Keithley2000 1 VOLT:DC status
+Keithley2000 VOLT:AC identify       | measurechannel -S Keithley2000 1 VOLT:AC identify
+Keithley2000 VOLT:AC value          | measurechannel -S Keithley2000 1 VOLT:AC value
+Keithley2000 VOLT:AC status         | measurechannel -S Keithley2000 1 VOLT:AC status
+Keithley2000 CURR:DC identify       | measurechannel -S Keithley2000 1 CURR:DC identify
+Keithley2000 CURR:DC value          | measurechannel -S Keithley2000 1 CURR:DC value
+Keithley2000 CURR:DC status         | measurechannel -S Keithley2000 1 CURR:DC status
+Keithley2000 CURR:AC identify       | measurechannel -S Keithley2000 1 CURR:AC identify
+Keithley2000 CURR:AC value          | measurechannel -S Keithley2000 1 CURR:AC value
+Keithley2000 CURR:AC status         | measurechannel -S Keithley2000 1 CURR:AC status
+Keithley2000 RES identify           | measurechannel -S Keithley2000 1 RES identify
+Keithley2000 RES value              | measurechannel -S Keithley2000 1 RES value
+Keithley2000 RES status             | measurechannel -S Keithley2000 1 RES status
+Keithley2000 FRES identify          | measurechannel -S Keithley2000 1 FRES identify
+Keithley2000 FRES value             | measurechannel -S Keithley2000 1 FRES value
+Keithley2000 FRES status            | measurechannel -S Keithley2000 1 FRES status
+Keithley2000 FREQ identify          | measurechannel -S Keithley2000 1 FREQ identify
+Keithley2000 FREQ value             | measurechannel -S Keithley2000 1 FREQ value
+Keithley2000 FREQ status            | measurechannel -S Keithley2000 1 FREQ status
+Keithley2000 PER identify           | measurechannel -S Keithley2000 1 PER identify
+Keithley2000 PER value              | measurechannel -S Keithley2000 1 PER value
+Keithley2000 PER status             | measurechannel -S Keithley2000 1 PER status
+
+# == Keithley6500 ==
+Keithley6500 VOLT:DC identify       | measurechannel -S Keithley6500 1 VOLT:DC identify
+Keithley6500 VOLT:DC value          | measurechannel -S Keithley6500 1 VOLT:DC value
+Keithley6500 VOLT:DC status         | measurechannel -S Keithley6500 1 VOLT:DC status
+Keithley6500 VOLT:AC identify       | measurechannel -S Keithley6500 1 VOLT:AC identify
+Keithley6500 VOLT:AC value          | measurechannel -S Keithley6500 1 VOLT:AC value
+Keithley6500 VOLT:AC status         | measurechannel -S Keithley6500 1 VOLT:AC status
+Keithley6500 CURR:DC identify       | measurechannel -S Keithley6500 1 CURR:DC identify
+Keithley6500 CURR:DC value          | measurechannel -S Keithley6500 1 CURR:DC value
+Keithley6500 CURR:DC status         | measurechannel -S Keithley6500 1 CURR:DC status
+Keithley6500 CURR:AC identify       | measurechannel -S Keithley6500 1 CURR:AC identify
+Keithley6500 CURR:AC value          | measurechannel -S Keithley6500 1 CURR:AC value
+Keithley6500 CURR:AC status         | measurechannel -S Keithley6500 1 CURR:AC status
+Keithley6500 RES identify           | measurechannel -S Keithley6500 1 RES identify
+Keithley6500 RES value              | measurechannel -S Keithley6500 1 RES value
+Keithley6500 RES status             | measurechannel -S Keithley6500 1 RES status
+Keithley6500 FRES identify          | measurechannel -S Keithley6500 1 FRES identify
+Keithley6500 FRES value             | measurechannel -S Keithley6500 1 FRES value
+Keithley6500 FRES status            | measurechannel -S Keithley6500 1 FRES status
+Keithley6500 FREQ identify          | measurechannel -S Keithley6500 1 FREQ identify
+Keithley6500 FREQ value             | measurechannel -S Keithley6500 1 FREQ value
+Keithley6500 FREQ status            | measurechannel -S Keithley6500 1 FREQ status
+Keithley6500 PER identify           | measurechannel -S Keithley6500 1 PER identify
+Keithley6500 PER value              | measurechannel -S Keithley6500 1 PER value
+Keithley6500 PER status             | measurechannel -S Keithley6500 1 PER status
+
+# == Keithley2410 ==
+Keithley2410 VOLT:DC identify       | measurechannel -S Keithley2410 1 VOLT:DC identify
+Keithley2410 VOLT:DC value          | measurechannel -S Keithley2410 1 VOLT:DC value
+Keithley2410 VOLT:DC status         | measurechannel -S Keithley2410 1 VOLT:DC status
+Keithley2410 CURR:DC identify       | measurechannel -S Keithley2410 1 CURR:DC identify
+Keithley2410 CURR:DC value          | measurechannel -S Keithley2410 1 CURR:DC value
+Keithley2410 CURR:DC status         | measurechannel -S Keithley2410 1 CURR:DC status
+Keithley2410 RES identify           | measurechannel -S Keithley2410 1 RES identify
+Keithley2410 RES value              | measurechannel -S Keithley2410 1 RES value
+Keithley2410 RES status             | measurechannel -S Keithley2410 1 RES status
+
+# == KeysightE3633A ==
+KeysightE3633A VOLT:DC identify     | measurechannel -S KeysightE3633A 1 VOLT:DC identify
+KeysightE3633A VOLT:DC value        | measurechannel -S KeysightE3633A 1 VOLT:DC value
+KeysightE3633A VOLT:DC status       | measurechannel -S KeysightE3633A 1 VOLT:DC status
+KeysightE3633A CURR:DC identify     | measurechannel -S KeysightE3633A 1 CURR:DC identify
+KeysightE3633A CURR:DC value        | measurechannel -S KeysightE3633A 1 CURR:DC value
+KeysightE3633A CURR:DC status       | measurechannel -S KeysightE3633A 1 CURR:DC status
+
+# == Lauda ==
+Lauda TEMP:BATH identify            | measurechannel -S Lauda 1 TEMP:BATH identify
+Lauda TEMP:BATH value               | measurechannel -S Lauda 1 TEMP:BATH value
+Lauda TEMP:BATH status              | measurechannel -S Lauda 1 TEMP:BATH status
+Lauda TEMP:EXT identify             | measurechannel -S Lauda 1 TEMP:EXT identify
+Lauda TEMP:EXT value                | measurechannel -S Lauda 1 TEMP:EXT value
+Lauda TEMP:EXT status               | measurechannel -S Lauda 1 TEMP:EXT status
+
+# == MP1 ==
+MP1 VOLT:DC identify                | measurechannel -S MP1 1 VOLT:DC identify
+MP1 VOLT:DC value                   | measurechannel -S MP1 1 VOLT:DC value
+MP1 VOLT:DC status                  | measurechannel -S MP1 1 VOLT:DC status
+MP1 CURR:DC identify                | measurechannel -S MP1 1 CURR:DC identify
+MP1 CURR:DC value                   | measurechannel -S MP1 1 CURR:DC value
+MP1 CURR:DC status                  | measurechannel -S MP1 1 CURR:DC status
+
+# == TTI ==
+TTI VOLT:DC identify                | measurechannel -S TTI 1 VOLT:DC identify
+TTI VOLT:DC value                   | measurechannel -S TTI 1 VOLT:DC value
+TTI VOLT:DC status                  | measurechannel -S TTI 1 VOLT:DC status
+TTI CURR:DC identify                | measurechannel -S TTI 1 CURR:DC identify
+TTI CURR:DC value                   | measurechannel -S TTI 1 CURR:DC value
+TTI CURR:DC status                  | measurechannel -S TTI 1 CURR:DC status
+# == TTITSX ==
+TTITSX VOLT:DC identify                | measurechannel -S TTITSX 1 VOLT:DC identify
+TTITSX VOLT:DC value                   | measurechannel -S TTITSX 1 VOLT:DC value
+TTITSX VOLT:DC status                  | measurechannel -S TTITSX 1 VOLT:DC status
+TTITSX CURR:DC identify                | measurechannel -S TTITSX 1 CURR:DC identify
+TTITSX CURR:DC value                   | measurechannel -S TTITSX 1 CURR:DC value
+TTITSX CURR:DC status                  | measurechannel -S TTITSX 1 CURR:DC status
+# == AdcBoard ==
+AdcBoard VOLTAGE identify           | measurechannel -S AdcBoard 1 VOLTAGE identify
+AdcBoard VOLTAGE value              | measurechannel -S AdcBoard 1 VOLTAGE value
+AdcBoard VOLTAGE status             | measurechannel -S AdcBoard 1 VOLTAGE status
+AdcBoard TEMPERATURE identify       | measurechannel -S AdcBoard 1 TEMPERATURE identify
+AdcBoard TEMPERATURE value          | measurechannel -S AdcBoard 1 TEMPERATURE value
+AdcBoard TEMPERATURE status         | measurechannel -S AdcBoard 1 TEMPERATURE status
+
+# == HMP4040 ==
+HMP4040 VOLT:DC identify            | measurechannel -S HMP4040 1 VOLT:DC identify
+HMP4040 VOLT:DC value               | measurechannel -S HMP4040 1 VOLT:DC value
+HMP4040 VOLT:DC status              | measurechannel -S HMP4040 1 VOLT:DC status
+HMP4040 CURR:DC identify            | measurechannel -S HMP4040 1 CURR:DC identify
+HMP4040 CURR:DC value               | measurechannel -S HMP4040 1 CURR:DC value
+HMP4040 CURR:DC status              | measurechannel -S HMP4040 1 CURR:DC status
+
+# == HP34401A ==
+HP34401A VOLT:DC identify           | measurechannel -S HP34401A 1 VOLT:DC identify
+HP34401A VOLT:DC value              | measurechannel -S HP34401A 1 VOLT:DC value
+HP34401A VOLT:DC status             | measurechannel -S HP34401A 1 VOLT:DC status
+HP34401A VOLT:AC identify           | measurechannel -S HP34401A 1 VOLT:AC identify
+HP34401A VOLT:AC value              | measurechannel -S HP34401A 1 VOLT:AC value
+HP34401A VOLT:AC status             | measurechannel -S HP34401A 1 VOLT:AC status
+HP34401A CURR:DC identify           | measurechannel -S HP34401A 1 CURR:DC identify
+HP34401A CURR:DC value              | measurechannel -S HP34401A 1 CURR:DC value
+HP34401A CURR:DC status             | measurechannel -S HP34401A 1 CURR:DC status
+HP34401A CURR:AC identify           | measurechannel -S HP34401A 1 CURR:AC identify
+HP34401A CURR:AC value              | measurechannel -S HP34401A 1 CURR:AC value
+HP34401A CURR:AC status             | measurechannel -S HP34401A 1 CURR:AC status
+HP34401A RES identify               | measurechannel -S HP34401A 1 RES identify
+HP34401A RES value                  | measurechannel -S HP34401A 1 RES value
+HP34401A RES status                 | measurechannel -S HP34401A 1 RES status
+HP34401A FRES identify              | measurechannel -S HP34401A 1 FRES identify
+HP34401A FRES value                 | measurechannel -S HP34401A 1 FRES value
+HP34401A FRES status                | measurechannel -S HP34401A 1 FRES status
+HP34401A VOLT:DC:RAT identify       | measurechannel -S HP34401A 1 VOLT:DC:RAT identify
+HP34401A VOLT:DC:RAT value          | measurechannel -S HP34401A 1 VOLT:DC:RAT value
+HP34401A VOLT:DC:RAT status         | measurechannel -S HP34401A 1 VOLT:DC:RAT status
+HP34401A FREQ identify              | measurechannel -S HP34401A 1 FREQ identify
+HP34401A FREQ value                 | measurechannel -S HP34401A 1 FREQ value
+HP34401A FREQ status                | measurechannel -S HP34401A 1 FREQ status
+HP34401A PER identify               | measurechannel -S HP34401A 1 PER identify
+HP34401A PER value                  | measurechannel -S HP34401A 1 PER value
+HP34401A PER status                 | measurechannel -S HP34401A 1 PER status
+HP34401A CONT identify              | measurechannel -S HP34401A 1 CONT identify
+HP34401A CONT value                 | measurechannel -S HP34401A 1 CONT value
+HP34401A CONT status                | measurechannel -S HP34401A 1 CONT status
+HP34401A DIOD identify              | measurechannel -S HP34401A 1 DIOD identify
+HP34401A DIOD value                 | measurechannel -S HP34401A 1 DIOD value
+HP34401A DIOD status                | measurechannel -S HP34401A 1 DIOD status
+
+# == Keithley2000 ==
+Keithley2000 VOLT:DC identify       | measurechannel -S Keithley2000 1 VOLT:DC identify
+Keithley2000 VOLT:DC value          | measurechannel -S Keithley2000 1 VOLT:DC value
+Keithley2000 VOLT:DC status         | measurechannel -S Keithley2000 1 VOLT:DC status
+Keithley2000 VOLT:AC identify       | measurechannel -S Keithley2000 1 VOLT:AC identify
+Keithley2000 VOLT:AC value          | measurechannel -S Keithley2000 1 VOLT:AC value
+Keithley2000 VOLT:AC status         | measurechannel -S Keithley2000 1 VOLT:AC status
+Keithley2000 CURR:DC identify       | measurechannel -S Keithley2000 1 CURR:DC identify
+Keithley2000 CURR:DC value          | measurechannel -S Keithley2000 1 CURR:DC value
+Keithley2000 CURR:DC status         | measurechannel -S Keithley2000 1 CURR:DC status
+Keithley2000 CURR:AC identify       | measurechannel -S Keithley2000 1 CURR:AC identify
+Keithley2000 CURR:AC value          | measurechannel -S Keithley2000 1 CURR:AC value
+Keithley2000 CURR:AC status         | measurechannel -S Keithley2000 1 CURR:AC status
+Keithley2000 RES identify           | measurechannel -S Keithley2000 1 RES identify
+Keithley2000 RES value              | measurechannel -S Keithley2000 1 RES value
+Keithley2000 RES status             | measurechannel -S Keithley2000 1 RES status
+Keithley2000 FRES identify          | measurechannel -S Keithley2000 1 FRES identify
+Keithley2000 FRES value             | measurechannel -S Keithley2000 1 FRES value
+Keithley2000 FRES status            | measurechannel -S Keithley2000 1 FRES status
+Keithley2000 FREQ identify          | measurechannel -S Keithley2000 1 FREQ identify
+Keithley2000 FREQ value             | measurechannel -S Keithley2000 1 FREQ value
+Keithley2000 FREQ status            | measurechannel -S Keithley2000 1 FREQ status
+Keithley2000 PER identify           | measurechannel -S Keithley2000 1 PER identify
+Keithley2000 PER value              | measurechannel -S Keithley2000 1 PER value
+Keithley2000 PER status             | measurechannel -S Keithley2000 1 PER status
+
+# == Keithley6500 ==
+Keithley6500 VOLT:DC identify       | measurechannel -S Keithley6500 1 VOLT:DC identify
+Keithley6500 VOLT:DC value          | measurechannel -S Keithley6500 1 VOLT:DC value
+Keithley6500 VOLT:DC status         | measurechannel -S Keithley6500 1 VOLT:DC status
+Keithley6500 VOLT:AC identify       | measurechannel -S Keithley6500 1 VOLT:AC identify
+Keithley6500 VOLT:AC value          | measurechannel -S Keithley6500 1 VOLT:AC value
+Keithley6500 VOLT:AC status         | measurechannel -S Keithley6500 1 VOLT:AC status
+Keithley6500 CURR:DC identify       | measurechannel -S Keithley6500 1 CURR:DC identify
+Keithley6500 CURR:DC value          | measurechannel -S Keithley6500 1 CURR:DC value
+Keithley6500 CURR:DC status         | measurechannel -S Keithley6500 1 CURR:DC status
+Keithley6500 CURR:AC identify       | measurechannel -S Keithley6500 1 CURR:AC identify
+Keithley6500 CURR:AC value          | measurechannel -S Keithley6500 1 CURR:AC value
+Keithley6500 CURR:AC status         | measurechannel -S Keithley6500 1 CURR:AC status
+Keithley6500 RES identify           | measurechannel -S Keithley6500 1 RES identify
+Keithley6500 RES value              | measurechannel -S Keithley6500 1 RES value
+Keithley6500 RES status             | measurechannel -S Keithley6500 1 RES status
+Keithley6500 FRES identify          | measurechannel -S Keithley6500 1 FRES identify
+Keithley6500 FRES value             | measurechannel -S Keithley6500 1 FRES value
+Keithley6500 FRES status            | measurechannel -S Keithley6500 1 FRES status
+Keithley6500 FREQ identify          | measurechannel -S Keithley6500 1 FREQ identify
+Keithley6500 FREQ value             | measurechannel -S Keithley6500 1 FREQ value
+Keithley6500 FREQ status            | measurechannel -S Keithley6500 1 FREQ status
+Keithley6500 PER identify           | measurechannel -S Keithley6500 1 PER identify
+Keithley6500 PER value              | measurechannel -S Keithley6500 1 PER value
+Keithley6500 PER status             | measurechannel -S Keithley6500 1 PER status
+
+# == Keithley2410 ==
+Keithley2410 VOLT:DC identify       | measurechannel -S Keithley2410 1 VOLT:DC identify
+Keithley2410 VOLT:DC value          | measurechannel -S Keithley2410 1 VOLT:DC value
+Keithley2410 VOLT:DC status         | measurechannel -S Keithley2410 1 VOLT:DC status
+Keithley2410 CURR:DC identify       | measurechannel -S Keithley2410 1 CURR:DC identify
+Keithley2410 CURR:DC value          | measurechannel -S Keithley2410 1 CURR:DC value
+Keithley2410 CURR:DC status         | measurechannel -S Keithley2410 1 CURR:DC status
+Keithley2410 RES identify           | measurechannel -S Keithley2410 1 RES identify
+Keithley2410 RES value              | measurechannel -S Keithley2410 1 RES value
+Keithley2410 RES status             | measurechannel -S Keithley2410 1 RES status
+
+# == KeysightE3633A ==
+KeysightE3633A VOLT:DC identify     | measurechannel -S KeysightE3633A 1 VOLT:DC identify
+KeysightE3633A VOLT:DC value        | measurechannel -S KeysightE3633A 1 VOLT:DC value
+KeysightE3633A VOLT:DC status       | measurechannel -S KeysightE3633A 1 VOLT:DC status
+KeysightE3633A CURR:DC identify     | measurechannel -S KeysightE3633A 1 CURR:DC identify
+KeysightE3633A CURR:DC value        | measurechannel -S KeysightE3633A 1 CURR:DC value
+KeysightE3633A CURR:DC status       | measurechannel -S KeysightE3633A 1 CURR:DC status
+
+# == Lauda ==
+Lauda TEMP:BATH identify            | measurechannel -S Lauda 1 TEMP:BATH identify
+Lauda TEMP:BATH value               | measurechannel -S Lauda 1 TEMP:BATH value
+Lauda TEMP:BATH status              | measurechannel -S Lauda 1 TEMP:BATH status
+Lauda TEMP:EXT identify             | measurechannel -S Lauda 1 TEMP:EXT identify
+Lauda TEMP:EXT value                | measurechannel -S Lauda 1 TEMP:EXT value
+Lauda TEMP:EXT status               | measurechannel -S Lauda 1 TEMP:EXT status
+
+# == MP1 ==
+MP1 VOLT:DC identify                | measurechannel -S MP1 1 VOLT:DC identify
+MP1 VOLT:DC value                   | measurechannel -S MP1 1 VOLT:DC value
+MP1 VOLT:DC status                  | measurechannel -S MP1 1 VOLT:DC status
+MP1 CURR:DC identify                | measurechannel -S MP1 1 CURR:DC identify
+MP1 CURR:DC value                   | measurechannel -S MP1 1 CURR:DC value
+MP1 CURR:DC status                  | measurechannel -S MP1 1 CURR:DC status
+
+# == TTI ==
+TTI VOLT:DC identify                | measurechannel -S TTI 1 VOLT:DC identify
+TTI VOLT:DC value                   | measurechannel -S TTI 1 VOLT:DC value
+TTI VOLT:DC status                  | measurechannel -S TTI 1 VOLT:DC status
+TTI CURR:DC identify                | measurechannel -S TTI 1 CURR:DC identify
+TTI CURR:DC value                   | measurechannel -S TTI 1 CURR:DC value
+TTI CURR:DC status                  | measurechannel -S TTI 1 CURR:DC status
+
+# == CaenDT8033N ==
+CaenDT8033N VOLT:DC identify        | measurechannel -S CaenDT8033N 1 VOLT:DC identify
+CaenDT8033N VOLT:DC value           | measurechannel -S CaenDT8033N 1 VOLT:DC value
+CaenDT8033N VOLT:DC status          | measurechannel -S CaenDT8033N 1 VOLT:DC status
+CaenDT8033N CURR:DC identify        | measurechannel -S CaenDT8033N 1 CURR:DC identify
+CaenDT8033N CURR:DC value           | measurechannel -S CaenDT8033N 1 CURR:DC value
+CaenDT8033N CURR:DC status          | measurechannel -S CaenDT8033N 1 CURR:DC status

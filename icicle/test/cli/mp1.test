@@ -1,0 +1,128 @@
+##
+identify
+# COMMAND
+mp1 -S identify
+# OUTPUT
+GULMAY,MP1,000000,SIMv1
+# RETURNS 0
+##
+status
+# COMMAND
+mp1 -S status
+# OUTPUT
+XRAY_RAMPING
+# RETURNS 0
+##
+off
+# COMMAND
+mp1 -S off
+# OUTPUT
+OFF
+# RETURNS 0
+##
+on
+# COMMAND
+mp1 -S on
+# OUTPUT
+ON
+# RETURNS 0
+##
+voltage
+# COMMAND
+mp1 -S voltage
+# OUTPUT
+0
+# RETURNS 0
+##
+set voltage
+# COMMAND
+mp1 -S voltage 5
+# OUTPUT
+5
+# RETURNS 0
+##
+set voltage prohibited
+# COMMAND
+mp1 -S voltage 5000
+# OUTPUT
+ValidationError: Value 5000 does not pass verifier _is_integer for set() on setting VOLTAGE for device MP1.
+Allowable values: Numbers in range [0:{max if max is not None else ""}]
+# RETURNS 1
+##
+current
+# COMMAND
+mp1 -S current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+set current
+# COMMAND
+mp1 -S current 20
+# OUTPUT
+20.0
+# RETURNS 0
+##
+set current prohibited
+# COMMAND
+mp1 -S current 500
+# OUTPUT
+ValidationError: Value 500.0 does not pass verifier _is_numeric for set() on setting CURRENT for device MP1.
+Allowable values: Numbers in range [0:99]
+# RETURNS 1
+##
+read_errors
+# COMMAND
+mp1 -S read_errors
+# OUTPUT
+(11, 56)
+# RETURNS 0
+##
+read_timer
+# COMMAND
+mp1 -S read_timer
+# OUTPUT
+5.0
+# RETURNS 0
+##
+read_programme_revision
+# COMMAND
+mp1 -S read_programme_revision
+# OUTPUT
+1
+# RETURNS 0
+##
+read_warmup
+# COMMAND
+mp1 -S read_warmup
+# OUTPUT
+1
+# RETURNS 0
+##
+reset_timer
+# COMMAND
+mp1 -S reset_timer
+# OUTPUT
+
+# RETURNS 0
+##
+generic set
+# COMMAND
+mp1 -S set "RESET_TIMER"
+# OUTPUT
+True
+# RETURNS 0
+##
+generic query
+# COMMAND
+mp1 -S query "PROGRAMME"
+# OUTPUT
+800
+# RETURNS 0
+##
+scpi query
+# COMMAND
+mp1 -S scpi_query "?P927"
+# OUTPUT
+RelayBoard_ERROR
+# RETURNS 0

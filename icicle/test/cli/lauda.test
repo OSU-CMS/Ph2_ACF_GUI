@@ -1,0 +1,155 @@
+##
+identify
+# COMMAND
+lauda -S identify
+# OUTPUT
+E10G
+# RETURNS 0
+##
+command
+# COMMAND
+lauda -S command start
+# OUTPUT
+ERR_X
+# RETURNS 0
+##
+diagnostics
+# COMMAND
+lauda -S diagnostics
+# OUTPUT
+error:                   	True
+alarm:                   	False
+warning:                 	True
+overtemperature:         	False
+low level:               	True
+<unknown>:               	False
+external control missing:	True
+# RETURNS 0
+##
+model
+# COMMAND
+lauda -S model
+# OUTPUT
+E10G
+# RETURNS 0
+##
+off
+# COMMAND
+lauda -S off
+# OUTPUT
+1
+# RETURNS 0
+##
+on
+# COMMAND
+lauda -S on
+# OUTPUT
+1
+# RETURNS 0
+##
+reference
+# COMMAND
+lauda -S reference
+# OUTPUT
+temperature reference: external
+# RETURNS 0
+##
+reference set
+# COMMAND
+lauda -S reference external
+# OUTPUT
+1
+# RETURNS 0
+##
+reference bad channel
+# COMMAND
+lauda -S reference noodle
+# OUTPUT
+Usage: lauda reference [OPTIONS] CHANNEL
+Try 'lauda reference --help' for help.
+
+Error: Invalid value for 'CHANNEL': 'noodle' is not one of 'bath', 'external', 'ext_analog', 'ext_serial'.
+# RETURNS 2
+##
+set temperature
+# COMMAND
+lauda -S set 40
+# OUTPUT
+40.0
+# RETURNS 0
+##
+set temperature neg.
+# COMMAND
+lauda -S set -- -20
+# OUTPUT
+-20.0
+# RETURNS 0
+##
+status
+# COMMAND
+lauda -S status
+# OUTPUT
+status: error
+operation: off
+# RETURNS 0
+##
+temperature
+# COMMAND
+lauda -S temperature
+# OUTPUT
+bath temperature =	   0.01 C
+external temperature =	   2.30 C	[reference]
+target temperature =	  21.00 C
+# RETURNS 0
+##
+temperature bath
+# COMMAND
+lauda -S temperature bath
+# OUTPUT
+bath temperature =	   0.01 C
+# RETURNS 0
+##
+temperature target
+# COMMAND
+lauda -S temperature target
+# OUTPUT
+target temperature =	  21.00 C
+# RETURNS 0
+##
+temperature external
+# COMMAND
+lauda -S temperature external
+# OUTPUT
+external temperature =	   2.30 C	[reference]
+# RETURNS 0
+##
+temperature bath set
+# COMMAND
+lauda -S temperature bath 10
+# OUTPUT
+0  10.0
+# RETURNS 0
+##
+temperature target set
+# COMMAND
+lauda -S temperature target 10
+# OUTPUT
+10.0
+# RETURNS 0
+##
+temperature external set
+# COMMAND
+lauda -S temperature external 10
+# OUTPUT
+1  10.0
+# RETURNS 0
+##
+temperature bad channel
+# COMMAND
+lauda -S temperature noodle
+# OUTPUT
+Usage: lauda temperature [OPTIONS] CHANNEL VALUE
+Try 'lauda temperature --help' for help.
+
+Error: Invalid value for 'CHANNEL': 'noodle' is not one of 'bath', 'external', 'target'.
+# RETURNS 2

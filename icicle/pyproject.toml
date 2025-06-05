@@ -1,0 +1,112 @@
+[build-system]
+    requires = ["setuptools"]
+    build-backend = "setuptools.build_meta"
+
+[project]
+    name = "icicle"
+    description = "Instrument Control Interfaces and Commands Library @ ETHZ"
+    authors = [
+        {name = "Simon Koch", email="simon.florian.koch@cern.ch"},
+        {name = "David Bacher"},
+        {name = "Vasilije Perovic"},
+        {name = "Daniele Ruini"},
+        {name = "Thierry Guillaume Harte", email="thierry.guillaume.harte@cern.ch"},
+    ]
+    version = '2.1.0'
+    dependencies = [
+        "wheel>=0.36.2",
+        "pyvisa>=1.11.3",
+        "pyvisa-py>=0.5.2",
+        "pyserial>=3.5",
+        "pyusb==1.2.0",
+        "minimalmodbus==0.7",
+        "click>=8.0.1",
+        "paho-mqtt>=2.0.0",
+        "fasteners>=0.14.1",
+    ]
+    requires-python = ">=3.7"
+    readme = "README.md"
+
+[project.optional-dependencies]
+    sim = [
+        'pyvisa_sim==0.6.0; python_version >="3.8"',
+        'pyvisa_sim==0.5.1; python_version  <"3.8"',
+        'importlib-metadata==6.7.0; python_version <"3.8"',
+        ]
+    docs = [
+        "sphinx>=5.3.0",
+        "sphinx-rtd-theme>=2.0.0",
+    ]
+    dev = [
+        "pre-commit==4.2.0",
+        "pre-commit-hooks==5.0.0",
+        "black==25.1.0",
+        "docformatter[tomli]==1.7.5",
+        "flake8==7.2.0",
+        "flake8-bugbear==24.12.12",
+        "flake8-pyproject==1.2.3",
+    ]
+    test = [
+        "termcolor",
+    ]
+    ximc = [
+        "libximc == 2.14.28",
+    ]
+
+[project.scripts]
+    adc_board = "icicle.adc_board_cli:cli"
+    binder = "icicle.binder_climate_chamber_cli:cli"
+    caendt8033n = "icicle.caendt8033n_cli:cli"
+    hmp4040 = "icicle.hmp4040_cli:cli"
+    hp34401a = "icicle.hp34401a_cli:cli"
+    instrument_cluster = "icicle.instrument_cluster_cli:cli"
+    keithley2000 = "icicle.keithley2000_cli:cli"
+    keithley6500 = "icicle.keithley6500_cli:cli"
+    keithley2410 = "icicle.keithley2410_cli:cli"
+    keysighte3633a = "icicle.keysighte3633a_cli:cli"
+    lauda = "icicle.lauda_cli:cli"
+    measurechannel = "icicle.measurechannel_cli:cli"
+    mp1 = "icicle.mp1_cli:cli"
+    powerchannel = "icicle.powerchannel_cli:cli"
+    relay_board = "icicle.relay_board_cli:cli"
+    temperaturechannel = "icicle.temperaturechannel_cli:cli"
+    tpx4sc = "icicle.tpx4sc_cli:cli"
+    tti = "icicle.tti_cli:cli"
+    ttitsx = "icicle.ttitsx_cli:cli"
+    ximc = "icicle.ximc_cli:cli"
+    psi_coldbox = "icicle.psi_coldbox_cli:cli"
+
+[tool.setuptools]
+    include-package-data = true
+
+[tool.setuptools.package-data]
+    icicle = ["sim/*.yaml"]
+
+[tool.setuptools.packages]
+    find = {}
+
+[tool.black]
+    exclude = '''(
+        ^/\.git|^/docs|^/build|^/dist|^/py3-env|^/py-env|__pycache__|.*\.egg-info|
+        ^/third-party|^/deps/pyximc_profiles|^/deps/pyximc.py
+    )'''
+
+[tool.flake8]
+    exclude = [
+        ".git", "docs", "build*", "dist",
+        "py3-env", "py-env", "__pycache__", "*.egg-info",
+        "third-party", "deps/pyximc_profiles", "deps/pyximc.py",
+        ]
+    max-line-length = 80
+    extend-select = "B950"
+    extend-ignore = ["E203", "E501", "E701"]
+
+[tool.docformatter]
+    exclude = [
+        ".git", "docs", "build", "dist",
+        "py3-env", "py-env", "__pycache__", "*.egg-info",
+        "third-party", "deps/pyximc_profiles", "deps/pyximc.py",
+        ]
+    recursive = true
+    black = true
+    style = "sphinx"

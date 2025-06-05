@@ -1,0 +1,17 @@
+identify               | ttitsx -S identify
+reset                  | ttitsx -S reset
+voltage                | ttitsx -S voltage
+set voltage            | ttitsx -S voltage  5.0
+set voltage prohibited | ttitsx -S voltage  500.0
+current                | ttitsx -S current
+set current            | ttitsx -S current 0.2
+measure                | ttitsx -S measure
+status                 | ttitsx -S status
+off                    | ttitsx -S off
+on                     | ttitsx -S on
+generic query          | ttitsx -S query status_byte
+ramp voltage           | ttitsx -S ramp_voltage -s 3 -d 5 -m 10
+ramp voltage negative  | ttitsx -S ramp_voltage -s 5 -d 5 -m -- -10
+ramp current           | ttitsx -S ramp_current -s 3 -d 0 -m 10
+scpi query             | ttitsx -S scpi_query "*ESR?"
+#scpi write             | ttitsx -S scpi_write "*ESE 0"

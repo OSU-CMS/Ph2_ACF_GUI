@@ -1,0 +1,218 @@
+spec: "1.1"
+devices:
+  HP34401A:
+    eom:
+      ASRL INSTR:
+        q: "\r\n"
+        r: "\r\n"
+      USB INSTR:
+        q: "\r\n"
+        r: "\r\n"
+      TCPIP INSTR:
+        q: "\r\n"
+        r: "\r\n"
+      TCPIP SOCKET:
+        q: "\r\n"
+        r: "\r\n"
+      GPIB INSTR:
+        q: "\r\n"
+        r: "\r\n"
+    error: HP_34401A_ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "HEWLETT-PACKARD,E34401A,0,SIM1.0"
+      - q: "*RST"
+      - q: "*TST?"
+        r: 1
+      - q: "DCL"
+      - q: ":SYST:LOC"
+      - q: ":SYST:REM"
+      - q: ":SYST:RWL"
+      - q: "*RST; STATUS:PRESET; *CLS"
+      - q: ":TRAC:CLE"
+      - q: ":INIT:IMM"
+      - q: ":READ?"
+        r: "10000.01"
+      - q: "*STB?"
+        r: "0"
+      - q: ":STAT:QUES:EVEN?"
+        r: 1342226654  # 0x5000CODE
+      - q: ":STAT:MEAS:EVEN?"
+        r: 1073791198  # 0x4000CODE
+    properties:
+      CONFIGURE:
+        default: "VOLT:DC"
+        getter:
+          q: ":CONF?"
+          r: "{:s}"
+        setter:
+          q: ":CONF:{:s}"
+        specs:
+          type: str
+          valid: ["VOLT:DC", "VOLT:DC:RAT", "VOLT:AC", "CURR:DC", "CURR:AC", "RES", "FRES", "FREQ", "PER", "CONT", "DIOD"]
+      SENSE_FUNCTION:
+        default: "VOLT:DC"
+        getter:
+          q: ":SENS:FUNC?"
+          r: "{:s}"
+        setter:
+          q: ":SENS:FUNC {:s}"
+        specs:
+          type: str
+          valid: ["VOLT:DC", "VOLT:DC:RAT", "VOLT:AC", "CURR:DC", "CURR:AC", "RES", "FRES", "FREQ", "PER", "CONT", "DIOD"]
+      SAMPLE_COUNT:
+        default: 1
+        getter:
+          q: ":SAMP:COUN ?"
+          r: "{:d}"
+        setter:
+          q: ":SAMP:COUN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 50000
+      STATUS_BYTE_ENABLE:
+        default: 1
+        getter:
+          q: "*SRE?"
+          r: "{:d}"
+        setter:
+          q: "*SRE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 1024
+      EVENT_STATUS_REGISTER_ENABLE:
+        default: 1
+        getter:
+          q: "*ESE?"
+          r: "{:d}"
+        setter:
+          q: "*ESE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 1024
+      QUESTIONABLE_STATUS_ENABLE:
+        default: 1
+        getter:
+          q: ":STAT:QUES:ENAB?"
+          r: "{:d}"
+        setter:
+          q: ":STAT:QUES:ENAB {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      # Idiotic: this function accepts only string but returns int on DMM :(
+      # ... hacked using a truthy(...) parser that is technically too permissive
+      ENABLE_AVERAGING:
+        default: "OFF"
+        setter:
+          q: ":SENS:AVER {:s}"
+        getter:
+          q: ":SENS:AVER?"
+          r: "{:s}"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      AVERAGING_COUNT:
+        default: 1
+        getter:
+          q: ":SENS:AVER:COUN?"
+          r: "{:d}"
+        setter:
+          q: ":SENS:AVER:COUN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 100
+      AVERAGING_FUNCTION:
+        default: "NULL"
+        getter:
+          q: ":CALC:FUNC?"
+          r: "{:s}"
+        setter:
+          q: ":CALC:FUNC {:s}"
+        specs:
+          type: str
+          valid: ["NULL", "DB", "DBM", "AVER", "LIM"]
+      TRIGGER_COUNT:
+        default: 2
+        getter:
+          q: ":TRIG:COUN?"
+          r: "{:d}"
+        setter:
+          q: ":TRIG:COUN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 9999
+      # Idiotic: this function accepts only string but returns int on DMM :(
+      # ... hacked using a truthy(...) parser that is technically too permissive
+      TRIGGER_SOURCE:
+        default: "IMM"
+        getter:
+          q: ":TRIG:SOUR ?"
+          r: "{:s}"
+        setter:
+          q: ":TRIG:SOUR {:s}"
+        specs:
+          type: str
+          valid: ["BUS", "IMM", "EXT"]
+      TRIGGER_DELAY:
+        default: 0
+        getter:
+          q: ":TRIG:DEL?"
+          r: "{:d}"
+        setter:
+          q: ":TRIG:DEL {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 3600
+      # Idiotic: this function accepts only string but returns int on DMM :(
+      # ... hacked using a truthy(...) parser that is technically too permissive
+      TRIGGER_DELAY_AUTO:
+        default: "OFF"
+        setter:
+          q: ":TRIG:DEL:AUTO {:s}"
+        getter:
+          q: ":TRIG:DEL:AUTO?"
+          r: "{:s}"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      # Idiotic: this function accepts only string but returns int on DMM :(
+      # ... hacked using a truthy(..., false_like += "ONCE") parser that is
+      #     technically too permissive
+      AUTOZERO:
+        default: "ON"
+        setter:
+          q: ":SENS:ZERO:AUTO {:s}"
+        getter:
+          q: ":SENS:ZERO:AUTO?"
+          r: "{:s}"
+        specs:
+          type: str
+          valid: ["ON", "OFF", "ONCE"]
+    channels:
+      sense_function:
+        ids: ["VOLT:DC", "VOLT:AC", "CURR:DC", "CURR:AC", "RES", "FRES"]
+        can_select: True
+        properties:
+          LINE_INTEGRATION_CYCLES:
+            default: 1
+            getter:
+              q: ":SENS:{ch_id}:NPLC?"
+              r: "{:.2f}"
+            setter:
+              q: ":SENS:{ch_id}:NPLC {:f}"
+            specs:
+              type: float
+              min: 0.02
+              max: 100
+
+resources:
+  ASRL5::INSTR:
+    device: HP34401A

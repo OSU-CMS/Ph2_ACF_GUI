@@ -1,0 +1,41 @@
+spec: "1.1"
+resources:
+  ASRL1::INSTR:
+    device: Keithley2410
+    filename: keithley2410.yaml
+  ASRL2::INSTR:
+    device: HMP4040
+    filename: hmp4040.yaml
+  ASRL3::INSTR:
+    device: TTI
+    filename: tti.yaml
+  ASRL4::INSTR:
+    device: KeysightE3633A
+    filename: keysighte3633a.yaml
+  ASRL5::INSTR:
+    device: HP34401A
+    filename:  hp34401a.yaml
+  ASRL6::INSTR:
+    device: Keithley2000
+    filename: keithley2000.yaml
+  ASRL7::INSTR:
+    device: TTITSX
+    filename: ttitsx.yaml
+  ASRL10::INSTR:
+    device: MP1
+    filename: mp1.yaml
+  ASRL11::INSTR:
+    device: Lauda
+    filename: lauda.yaml
+  ASRL12::INSTR:
+    device: CaenDT8033N
+    filename: caendt8033N.yaml
+  ASRL20::INSTR:
+    device: RelayBoard
+    filename: relay_board.yaml
+  ASRL21::INSTR:
+    device: AdcBoard
+    filename: adc_board.yaml
+  ASRL30::INSTR:
+    device: TPX4SC
+    filename: tpx4sc.yaml

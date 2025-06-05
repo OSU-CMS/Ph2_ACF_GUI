@@ -1,0 +1,465 @@
+spec: "1.1"
+devices:
+  Keithley2410:
+    eom:
+      ASRL INSTR:
+        q: "\n"
+        r: "\n"
+      USB INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP SOCKET:
+        q: "\n"
+        r: "\n"
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: Keithley_2410_ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "Keithley Instruments Inc., Model 2410, 000000, SIM1.0"
+      - q: "*RST"
+      - q: "*TST?"
+        r: 1
+      - q: "LOC"
+      - q: "*STB?"
+        r: 4207853790  # 0xFACECODE
+      - q: "*ESR?"
+        r: 3842031838  # 0xES00CODE
+      - q: ":STAT:QUES:EVEN?"
+        r: 1342226654  # 0x5000CODE
+      - q: ":STAT:MEAS:EVEN?"
+        r: 1073791198  # 0x4000CODE
+      - q: ":SENS:VOLT:PROT:TRIP?"
+        r: 0
+      - q: ":SENS:CURR:PROT:TRIP?"
+        r: 0
+      - q: ":TRAC:CLE"
+      - q: "DCL"
+        r: "1"
+      - q: "*RST; STATUS:PRESET; *CLS"
+      - q: ":READ?"
+        r: "1,2,3,4,5"
+      - q: ":MEAS:VOLT:DC?"
+        r: "1,0,0,0,0"
+      - q: ":MEAS:CURR:DC?"
+        r: "0,2,0,0,0"
+      - q: ":MEAS:RES?"
+        r: "0,0,3,0,0"
+    properties:
+      RWL:
+        default: 0
+        getter:
+          q: ":SYST:RWL?"
+          r: ":SYST:RWL {:d}"
+        setter:
+          q: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      STATUS_BYTE_ENABLE:
+        default: 1
+        getter:
+          q: "*SRE?"
+          r: "{:d}"
+        setter:
+          q: "*SRE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 1024
+      EVENT_STATUS_REGISTER_ENABLE:
+        default: 65535
+        getter:
+          q: "*ESE?"
+          r: "{:d}"
+        setter:
+          q: "*ESE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      QUESTIONABLE_STATUS_REGISTER_ENABLE:
+        default: 1
+        getter:
+          q: ":STAT:QUES:ENAB?"
+          r: "{:d}"
+        setter:
+          q: ":STAT:QUES:ENAB {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      MEASUREMENT_STATUS_REGISTER_ENABLE:
+        default: 1
+        getter:
+          q: ":STAT:MEAS:ENAB?"
+          r: "{:d}"
+        setter:
+          q: ":STAT:MEAS:ENAB {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      OUTPUT:
+        default: 1
+        getter:
+          q: ":OUTP?"
+          r: "{:d}"
+        setter:
+          q: ":OUTP {:d}"
+          e: "OUTP_ERR"
+        specs:
+          type: int
+          valid: [0, 1]
+      PANEL:
+        default: FRON
+        getter:
+          q: ":ROUT:TERM?"
+          r: "{:s}"
+        setter:
+          q: ":ROUT:TERM {:s}"
+        specs:
+          type: str
+          valid: ["FRON", "REAR"]
+      SOURCE_FUNCTION:
+        default: "VOLT"
+        getter:
+          q: ":SOUR:FUNC?"
+          r: "{:s}"
+        setter:
+          q: ":SOUR:FUNC {:s}"
+        specs:
+          type: str
+          valid: ["VOLT", "CURR"]
+      SENSE_FUNCTION:
+        default: "VOLT:DC"
+        getter:
+          q: ":SENS:FUNC?"
+          r: '"{:s}"'
+        setter:
+          q: ':SENS:FUNC "{:s}"'
+        specs:
+          type: str
+          valid: ["VOLT:DC", "CURR:DC", "RES"]
+      VOLTAGE_RANGE:
+        default: 1100
+        getter:
+          q: ":SOUR:VOLT:RANG?"
+          r: "{:.1f}"
+        setter:
+          q: ":SOUR:VOLT:RANG {:.1f}"
+        specs:
+          type: float
+          min: -1100
+          max: 1100
+      VOLTAGE_RANGE_AUTO:
+        default: 0
+        getter:
+          q: ":SOUR:VOLT:RANG:AUTO?"
+          r: "{:d}"
+        setter:
+          q: ":SOUR:VOLT:RANG:AUTO {:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      SENSE_VOLTAGE_RANGE:
+        default: 1100
+        getter:
+          q: ":SENS:VOLT:RANG?"
+          r: "{:.1f}"
+        setter:
+          q: ":SENS:VOLT:RANG {:.1f}"
+        specs:
+          type: float
+          min: -1100
+          max: 1100
+      SENSE_VOLTAGE_RANGE_AUTO:
+        default: 0
+        getter:
+          q: ":SENS:VOLT:RANG:AUTO?"
+          r: "{:d}"
+        setter:
+          q: ":SENS:VOLT:RANG:AUTO {:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      VOLTAGE:
+        default: 0
+        getter:
+          q: ":SOUR:VOLT:LEV?"
+          r: "{:.2f}"
+        setter:
+          q: ":SOUR:VOLT:LEV {:f}"
+        specs:
+          type: float
+          min: -1100
+          max: 1100
+      CURRENT_RANGE:
+        default: 10.5
+        getter:
+          q: ":SOUR:CURR:RANG?"
+          r: "{:.6f}"
+        setter:
+          q: "SOUR:CURR:RANG {:f}"
+        specs:
+          type: float
+          min: -10.5
+          max: 10.5
+      CURRENT_RANGE_AUTO:
+        default: 0
+        getter:
+          q: ":SOUR:CURR:RANG:AUTO?"
+          r: "{:d}"
+        setter:
+          q: ":SOUR:CURR:RANG:AUTO {:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      SENSE_CURRENT_RANGE:
+        default: 10.5
+        getter:
+          q: ":SENS:CURR:RANG?"
+          r: "{:.6f}"
+        setter:
+          q: ":SENS:CURR:RANG {:f}"
+        specs:
+          type: float
+          min: -10.5
+          max: 10.5
+      SENSE_CURRENT_RANGE_AUTO:
+        default: 0
+        getter:
+          q: ":SENS:CURR:RANG:AUTO?"
+          r: "{:d}"
+        setter:
+          q: ":SENS:CURR:RANG:AUTO {:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      CURRENT:
+        default: 0
+        getter:
+          q: ":SOUR:CURR:LEV?"
+          r: "{:.6f}"
+        setter:
+          q: ":SOUR:CURR:LEV {:f}"
+        specs:
+          type: float
+          min: -10.5
+          max: 10.5
+      DELAY:
+        default: 0
+        getter:
+          q: ":SOUR:DEL?"
+          r: "{:.2f}"
+        setter:
+          q: ":SOUR:DEL {:f}"
+        specs:
+          type: float
+          min: 0
+          max: 9999.999
+      OCP:
+        default: 105e-6
+        getter:
+          q: ":SENS:CURR:PROT?"
+          r: "{:.6f}"
+        setter:
+          q: ":SENS:CURR:PROT {:f}"
+        specs:
+          type: float
+          min: -10.5
+          max: 10.5
+      OVP:
+        default: 21
+        getter:
+          q: ":SENS:VOLT:PROT?"
+          r: "{:.2f}"
+        setter:
+          q: ":SENS:VOLT:PROT {:f}"
+        specs:
+          type: float
+          min: -1100
+          max: 1100
+      SWEEP_DIRECTION:
+        default: "UP"
+        getter:
+          q: ":SOUR:SWE:DIR?"
+          r: "{:s}"
+        setter:
+          q: ":SOUR:SWE:DIR {:s}"
+        specs:
+          type: str
+          valid: ["UP", "DOWN"]
+      SWEEP_RANGE:
+        default: "AUTO"
+        getter:
+          q: ":SOUR:SWE:RANG?"
+          r: "{:s}"
+        setter:
+          q: ":SOUR:SWE:RANG {:s}"
+        specs:
+          type: str
+          valid: ["FIX", "AUTO", "BEST"]
+      SWEEP_POINTS:
+        default: "1"
+        getter:
+          q: ":SOUR:SWE:POIN?"
+          r: "{:d}"
+        setter:
+          q: ":SOUR:SWE:POIN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 2500
+      SWEEP_SPACE:
+        default: "LIN"
+        getter:
+          q: ":SOUR:SWE:SPAC?"
+          r: "{:s}"
+        setter:
+          q: ":SOUR:SWE:SPAC {:s}"
+        specs:
+          type: str
+          valid: ["LIN", "LOG"]
+      ENABLE_AVERAGING:
+        default: 1
+        setter:
+          q: ":SENS:AVER {:d}"
+        getter:
+          q: ":SENS:AVER?"
+          r: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      AVERAGING_COUNT:
+        default: 1
+        getter:
+          q: ":SENS:AVER:COUN?"
+          r: "{:d}"
+        setter:
+          q: ":SENS:AVER:COUN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 100
+      AVERAGING_FUNCTION:
+        default: "NULL"
+        getter:
+          q: ":CALC:FUNC?"
+          r: "{:s}"
+        setter:
+          q: ":CALC:FUNC {:s}"
+        specs:
+          type: str
+          valid: ["NULL", "DB", "DBM", "AVER", "LIM"]
+      TRIGGER_COUNT:
+        default: 2
+        getter:
+          q: ":TRIG:COUN?"
+          r: "{:d}"
+        setter:
+          q: ":TRIG:COUN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 9999
+      TRIGGER_SOURCE:
+        default: "IMM"
+        getter:
+          q: ":TRIG:SOUR ?"
+          r: "{:s}"
+        setter:
+          q: ":TRIG:SOUR {:s}"
+        specs:
+          type: str
+          valid: ["IMM", "TIM", "MAN", "BUS", "TLIN", "NST", "PST", "BST"]
+      TRIGGER_DELAY:
+        default: 0
+        getter:
+          q: ":TRIG:DEL?"
+          r: "{:d}"
+        setter:
+          q: ":TRIG:DEL {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 3600
+
+    channels:
+      sense_function:
+        ids: ["VOLT:DC", "CURR:DC", "RES"]
+        can_select: True
+        properties:
+          LINE_INTEGRATION_CYCLES:
+            default: 1
+            getter:
+              q: ":SENS:{ch_id}:NPLC?"
+              r: "{:.2f}"
+            setter:
+              q: ":SENS:{ch_id}:NPLC {:f}"
+            specs:
+              type: float
+              min: 0.01
+              max: 10
+          SOURCE_RANGE_AUTO:
+            default: 0
+            getter:
+              q: ":SOUR:{ch_id}:RANG:AUTO?"
+              r: "{:d}"
+            setter:
+              q: ":SOUR:{ch_id}:RANG:AUTO {:d}"
+            specs:
+              type: int
+              valid: [0, 1]
+          SWEEP_ENABLE:
+            default: "FIX"
+            getter:
+              q: ":SOUR:{ch_id}:MODE?"
+              r: "{:s}"
+            setter:
+              q: ":SOUR:{ch_id}:MODE {:s}"
+            specs:
+              type: str
+              valid: ["SWE", "FIX", "LIST"]
+          SWEEP_START:
+            default: 0
+            getter:
+              q: ":SOUR:{ch_id}:START?"
+              r: "{:.2f}"
+            setter:
+              q: ":SOUR:{ch_id}:START {:f}"
+            specs:
+              type: float
+              min: -1100
+              max: 1100
+          SWEEP_END:
+            default: 0
+            getter:
+              q: ":SOUR:{ch_id}:END?"
+              r: "{:.2f}"
+            setter:
+              q: ":SOUR:{ch_id}:END {:f}"
+            specs:
+              type: float
+              min: -1100
+              max: 1100
+          SWEEP_STEP:
+            default: 0
+            getter:
+              q: ":SOUR:{ch_id}:STEP?"
+              r: "{:.2f}"
+            setter:
+              q: ":SOUR:{ch_id}:STEP {:f}"
+            specs:
+              type: float
+              min: -1100
+              max: 1100
+
+
+resources:
+  ASRL1::INSTR:
+    device: Keithley2410

@@ -1,0 +1,158 @@
+##
+identify
+# COMMAND
+tti -S identify
+# OUTPUT
+Aim-TTI,MX180TP,000000,SIM1.0
+# RETURNS 0
+##
+reset
+# COMMAND
+tti -S reset
+# OUTPUT
+
+# RETURNS 0
+##
+voltage
+# COMMAND
+tti -S voltage 1
+# OUTPUT
+0.0
+# RETURNS 0
+##
+voltage invalid output
+# COMMAND
+tti -S voltage 5
+# OUTPUT
+Usage: tti voltage [OPTIONS] CHANNEL VOLTAGE
+Try 'tti voltage --help' for help.
+
+Error: Invalid value for 'CHANNEL': '5' is not one of '1', '2', '3'.
+# RETURNS 2
+##
+voltage masked output
+# COMMAND
+tti -S -O 2 voltage 3
+# OUTPUT
+ChannelError: Channel 3 does not exist or is not enabled on this device.
+# RETURNS 1
+##
+set voltage
+# COMMAND
+tti -S voltage 2 5.0
+# OUTPUT
+5.0
+# RETURNS 0
+##
+set voltage prohibited
+# COMMAND
+tti -S voltage 3 500.0
+# OUTPUT
+ValidationError: Value 500.0 does not pass verifier _is_numeric for set() on setting VOLTAGE3 for device TTI.
+Allowable values: Numbers in range [-12:12]
+# RETURNS 1
+##
+current
+# COMMAND
+tti -S current 2
+# OUTPUT
+0.0
+# RETURNS 0
+##
+set current
+# COMMAND
+tti -S current 3 0.2
+# OUTPUT
+0.2
+# RETURNS 0
+##
+measure
+# COMMAND
+tti -S measure 3
+# OUTPUT
+(3.02002098, 3.00000008)
+# RETURNS 0
+##
+status
+# COMMAND
+tti -S status 2
+# OUTPUT
+0
+# RETURNS 0
+##
+off
+# COMMAND
+tti -S off 1
+# OUTPUT
+
+# RETURNS 0
+##
+on
+# COMMAND
+tti -S on 2
+# OUTPUT
+
+# RETURNS 0
+##
+generic query
+# COMMAND
+tti -S query status_byte
+# OUTPUT
+4207853790
+# RETURNS 0
+##
+generic set
+# COMMAND
+tti -S set status_byte_enable 255
+# OUTPUT
+ValidationError: Setting STATUS_BYTE_ENABLE not found for device TTI. Cannot call set().
+# RETURNS 1
+##
+ramp voltage
+# COMMAND
+tti -S ramp_voltage 1 10 -s 3 -d 0 -m
+# OUTPUT
+Will sweep VOLTAGE1 to 10.0 in 4 steps of size 3.0
+Time             	Output Voltage (V)	Output Current (A)
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+(10.0, [[{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+ramp voltage negative
+# COMMAND
+tti -S ramp_voltage 1 -s 5 -d 0 -m -- -20
+# OUTPUT
+Will sweep VOLTAGE1 to -20.0 in 4 steps of size 5.0
+Time             	Output Voltage (V)	Output Current (A)
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+(-20.0, [[{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+ramp current
+# COMMAND
+tti -S ramp_current 1 10 -s 3 -d 0 -m
+# OUTPUT
+Will sweep CURRENT1 to 10.0 in 4 steps of size 3.0
+Time             	Output Voltage (V)	Output Current (A)
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+(10.0, [[{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+scpi query
+# COMMAND
+tti -S scpi_query "*ESR?"
+# OUTPUT
+3842031838
+# RETURNS 0

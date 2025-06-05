@@ -1,0 +1,10 @@
+--- ./pyvisa_sim/component.py
++++ ./pyvisa_sim/component.py
+@@ -194,7 +194,7 @@
+             try:
+                 self._properties[name].set_value(value)
+-                return response
++                return response.decode().format(value).encode()
+             except ValueError:
+                 if isinstance(error_response, bytes):
+                     return error_response

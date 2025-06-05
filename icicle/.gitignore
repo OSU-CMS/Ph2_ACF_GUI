@@ -1,0 +1,28 @@
+# egg info after installing package
+*.egg-info/
+
+# pycache
+*__pycache__*
+*.pyc
+
+# logs produced by monitoring
+*logs*
+*.log
+
+# docs build artefacts
+docs/build
+
+# deps installed
+deps/libximc_profiles
+
+# build
+build/
+
+# vim files
+*.swp
+*.swo
+
+# Mac OS X garbage
+.DS_Store
+.Spotlight-V100
+.Trashes

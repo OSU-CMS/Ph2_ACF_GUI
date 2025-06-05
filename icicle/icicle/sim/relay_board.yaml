@@ -1,0 +1,36 @@
+spec: "1.1"
+devices:
+  RelayBoard:
+    eom:
+      ASRL INSTR:
+        q: "\n"
+        r: "\n"
+      USB INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP SOCKET:
+        q: "\n"
+        r: "\n"
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: RelayBoard_ERROR
+    dialogues:
+    properties:
+      PIN:
+        default: "x"
+        getter:
+          q: "?"
+          r: "{:s}"
+        setter:
+          q: "{:s}"
+          r: "{:s}"
+        specs:
+          type: str
+          valid: ["a","b","c","d","e","f","g","h","i","j","x"]
+resources:
+  ASRL20::INSTR:
+    device: RelayBoard

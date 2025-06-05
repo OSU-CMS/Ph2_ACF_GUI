@@ -1,0 +1,21 @@
+identify               | keithley6500 -S identify
+measure VOLT           | keithley6500 -S measure VOLT -r 5 -c 4
+measure CURR           | keithley6500 -S measure CURR -r 5 -c 4
+measure VOLT:DC        | keithley6500 -S measure VOLT:DC -r 5 -c 4
+measure CURR:DC        | keithley6500 -S measure CURR:DC -r 5 -c 4
+measure VOLT:AC        | keithley6500 -S measure VOLT:AC -r 5 -c 4
+measure CURR:AC        | keithley6500 -S measure CURR:AC -r 5 -c 4
+measure RES            | keithley6500 -S measure RES -r 5 -c 4
+measure FRES           | keithley6500 -S measure FRES -r 5 -c 4
+measure PER            | keithley6500 -S measure PER -r 5 -c 4
+measure RD53B_TEMP     | keithley6500 -S measure RD53B_TEMP -r 5 -c 4
+measure ALU_TEMP       | keithley6500 -S measure ALU_TEMP -r 5 -c 4
+measure HUMIDITY       | keithley6500 -S measure HUMIDITY -r 5 -c 4
+#measure CONT           | keithley6500 -S measure CONT
+#measure DIOD           | keithley6500 -S measure DIOD
+reset                  | keithley6500 -S reset
+selftest               | keithley6500 -S selftest
+generic query          | keithley6500 -S query status_byte
+generic set            | keithley6500 -S set status_byte_enable 255
+scpi query             | keithley6500 -S scpi_query "*ESR?"
+#scpi write             | keithley6500 -S scpi_write "*ESE 0"

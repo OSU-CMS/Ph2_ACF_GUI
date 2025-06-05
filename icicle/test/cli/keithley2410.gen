@@ -1,0 +1,24 @@
+identify               | keithley2410 -S identify
+reset                  | keithley2410 -S reset
+selftest               | keithley2410 -S selftest
+voltage                | keithley2410 -S voltage
+set voltage            | keithley2410 -S voltage 50.0
+set voltage prohibited | keithley2410 -S -V 0 50.0 voltage -- -20
+voltage range          | keithley2410 -S voltage_range
+set voltage range      | keithley2410 -S voltage_range 50.0
+compliance current     | keithley2410 -S compliance_current
+set compliance current | keithley2410 -S compliance_current 0.02
+measure V              | keithley2410 -S measure V
+measure I              | keithley2410 -S measure I
+measure R              | keithley2410 -S measure R
+device clear           | keithley2410 -S device_clear
+status                 | keithley2410 -S status
+off                    | keithley2410 -S off
+on                     | keithley2410 -S on
+panel                  | keithley2410 -S panel
+set panel              | keithley2410 -S panel BACK
+generic query          | keithley2410 -S query status_byte
+ramp voltage           | keithley2410 -S ramp_voltage 50 -s 5 -d 0
+ramp voltage negative  | keithley2410 -S ramp_voltage -s 5 -d 0 -- -25
+scpi query             | keithley2410 -S scpi_query "*ESR?"
+#scpi write             | keithley2410 -S scpi_write "*ESE 0"

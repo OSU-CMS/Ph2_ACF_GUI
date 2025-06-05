@@ -1,0 +1,9 @@
+identify | adc_board -S identify
+measure | adc_board -S measure
+measure_quad | adc_board -S -m QUAD measure
+measure_quad_case | adc_board -S -m qUaD measure
+measure_double | adc_board -S -m DOUBLE measure
+monitor | adc_board -S monitor -r 5
+details | adc_board -S details
+on | adc_board -S on
+off | adc_board -S off

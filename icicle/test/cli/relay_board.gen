@@ -1,0 +1,6 @@
+off                       | relay_board -S off
+query_pin                 | relay_board -S query_pin
+set_pin                   | relay_board -S set_pin OFF
+set_pin                   | relay_board -S -M QUAD set_pin VDDA_ROC0
+set_pin CaSe              | relay_board -S -M QuAd set_pin VDDA_ROC0
+set_pin DOUBLE            | relay_board -S -M DOUBLE set_pin VDDA_ROC0

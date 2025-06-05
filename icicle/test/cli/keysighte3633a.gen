@@ -1,0 +1,20 @@
+identify                | keysighte3633a -S identify
+reset                   | keysighte3633a -S reset
+voltage                 | keysighte3633a -S voltage 1
+voltage invalid output  | keysighte3633a -S voltage 5
+voltage unmasked output | keysighte3633a -S -O 2 voltage 2
+set voltage             | keysighte3633a -S voltage 1 5.0
+set voltage prohibited  | keysighte3633a -S voltage 1 500.0
+current                 | keysighte3633a -S current 1
+set current             | keysighte3633a -S current 1 0.2
+measure                 | keysighte3633a -S measure 1
+status                  | keysighte3633a -S status 1
+off                     | keysighte3633a -S off 1
+on                      | keysighte3633a -S on 1
+generic query           | keysighte3633a -S query status_byte
+generic set             | keysighte3633a -S set status_byte_enable 255
+ramp voltage            | keysighte3633a -S ramp_voltage 1 10 -s 3 -d 0 -m
+ramp voltage negative   | keysighte3633a -S ramp_voltage 1 -s 5 -d 0 -m -- -20
+ramp current            | keysighte3633a -S ramp_current 1 10 -s 3 -d 0 -m
+scpi query              | keysighte3633a -S scpi_query "*ESR?"
+#scpi write             | keysighte3633a -S scpi_write "*ESE 0"

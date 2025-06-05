@@ -1,0 +1,461 @@
+# == HMP4040 ==
+HMP4040 1 identify               | powerchannel -S HMP4040 1 identify
+HMP4040 1 status                 | powerchannel -S HMP4040 1 status
+HMP4040 1 voltage                | powerchannel -S HMP4040 1 voltage
+HMP4040 1 voltage set            | powerchannel -S HMP4040 1 voltage 5
+HMP4040 1 voltage_limit          | powerchannel -S HMP4040 1 voltage_limit
+HMP4040 1 voltage_limit set      | powerchannel -S HMP4040 1 voltage_limit 5
+HMP4040 1 voltage_trip           | powerchannel -S HMP4040 1 voltage_trip
+HMP4040 1 voltage_trip reset     | powerchannel -S HMP4040 1 voltage_trip --reset
+HMP4040 1 current                | powerchannel -S HMP4040 1 current
+HMP4040 1 current set            | powerchannel -S HMP4040 1 current 3
+HMP4040 1 current_limit          | powerchannel -S HMP4040 1 current_limit
+HMP4040 1 current_limit set      | powerchannel -S HMP4040 1 current_limit 3
+HMP4040 1 current_trip           | powerchannel -S HMP4040 1 current_trip
+HMP4040 1 current_trip reset     | powerchannel -S HMP4040 1 current_trip --reset
+HMP4040 1 sweep_voltage          | powerchannel -S HMP4040 1 sweep_voltage -s 2 -d 0 10
+HMP4040 1 sweep_voltage n_steps  | powerchannel -S HMP4040 1 sweep_voltage -n 3 -d 0 10
+HMP4040 1 sweep_voltage measure  | powerchannel -S HMP4040 1 sweep_voltage -s 2 -d 0 10 -m
+HMP4040 1 sweep_voltage no log   | powerchannel -S HMP4040 1 sweep_voltage -s 2 -d 0 10 -l
+HMP4040 1 sweep_voltage m+nl     | powerchannel -S HMP4040 1 sweep_voltage -s 2 -d 0 10 -m -l
+HMP4040 1 sweep_current          | powerchannel -S HMP4040 1 sweep_current -s 0.2 -d 0 2
+HMP4040 1 sweep_current n_steps  | powerchannel -S HMP4040 1 sweep_current -n 3 -d 0 2
+HMP4040 1 sweep_current measure  | powerchannel -S HMP4040 1 sweep_current -s 0.2 -d 0 2 -m
+HMP4040 1 sweep_current no log   | powerchannel -S HMP4040 1 sweep_current -s 0.2 -d 0 2 -l
+HMP4040 1 sweep_current m+nl     | powerchannel -S HMP4040 1 sweep_current -s 0.2 -d 0 2 -m -l
+HMP4040 1 measure_voltage        | powerchannel -S HMP4040 1 measure_voltage
+HMP4040 1 measure_current        | powerchannel -S HMP4040 1 measure_current
+HMP4040 2 identify               | powerchannel -S HMP4040 2 identify
+HMP4040 2 status                 | powerchannel -S HMP4040 2 status
+HMP4040 2 voltage                | powerchannel -S HMP4040 2 voltage
+HMP4040 2 voltage set            | powerchannel -S HMP4040 2 voltage 5
+HMP4040 2 voltage_limit          | powerchannel -S HMP4040 2 voltage_limit
+HMP4040 2 voltage_limit set      | powerchannel -S HMP4040 2 voltage_limit 5
+HMP4040 2 voltage_trip           | powerchannel -S HMP4040 2 voltage_trip
+HMP4040 2 voltage_trip reset     | powerchannel -S HMP4040 2 voltage_trip --reset
+HMP4040 2 current                | powerchannel -S HMP4040 2 current
+HMP4040 2 current set            | powerchannel -S HMP4040 2 current 3
+HMP4040 2 current_limit          | powerchannel -S HMP4040 2 current_limit
+HMP4040 2 current_limit set      | powerchannel -S HMP4040 2 current_limit 3
+HMP4040 2 current_trip           | powerchannel -S HMP4040 2 current_trip
+HMP4040 2 current_trip reset     | powerchannel -S HMP4040 2 current_trip --reset
+HMP4040 2 sweep_voltage          | powerchannel -S HMP4040 2 sweep_voltage -s 2 -d 0 10
+HMP4040 2 sweep_voltage n_steps  | powerchannel -S HMP4040 2 sweep_voltage -n 3 -d 0 10
+HMP4040 2 sweep_voltage measure  | powerchannel -S HMP4040 2 sweep_voltage -s 2 -d 0 10 -m
+HMP4040 2 sweep_voltage no log   | powerchannel -S HMP4040 2 sweep_voltage -s 2 -d 0 10 -l
+HMP4040 2 sweep_voltage m+nl     | powerchannel -S HMP4040 2 sweep_voltage -s 2 -d 0 10 -m -l
+HMP4040 2 sweep_current          | powerchannel -S HMP4040 2 sweep_current -s 0.2 -d 0 2
+HMP4040 2 sweep_current n_steps  | powerchannel -S HMP4040 2 sweep_current -n 3 -d 0 2
+HMP4040 2 sweep_current measure  | powerchannel -S HMP4040 2 sweep_current -s 0.2 -d 0 2 -m
+HMP4040 2 sweep_current no log   | powerchannel -S HMP4040 2 sweep_current -s 0.2 -d 0 2 -l
+HMP4040 2 sweep_current m+nl     | powerchannel -S HMP4040 2 sweep_current -s 0.2 -d 0 2 -m -l
+HMP4040 2 measure_voltage        | powerchannel -S HMP4040 2 measure_voltage
+HMP4040 2 measure_current        | powerchannel -S HMP4040 2 measure_current
+HMP4040 3 identify               | powerchannel -S HMP4040 3 identify
+HMP4040 3 status                 | powerchannel -S HMP4040 3 status
+HMP4040 3 voltage                | powerchannel -S HMP4040 3 voltage
+HMP4040 3 voltage set            | powerchannel -S HMP4040 3 voltage 5
+HMP4040 3 voltage_limit          | powerchannel -S HMP4040 3 voltage_limit
+HMP4040 3 voltage_limit set      | powerchannel -S HMP4040 3 voltage_limit 5
+HMP4040 3 voltage_trip           | powerchannel -S HMP4040 3 voltage_trip
+HMP4040 3 voltage_trip reset     | powerchannel -S HMP4040 3 voltage_trip --reset
+HMP4040 3 current                | powerchannel -S HMP4040 3 current
+HMP4040 3 current set            | powerchannel -S HMP4040 3 current 3
+HMP4040 3 current_limit          | powerchannel -S HMP4040 3 current_limit
+HMP4040 3 current_limit set      | powerchannel -S HMP4040 3 current_limit 3
+HMP4040 3 current_trip           | powerchannel -S HMP4040 3 current_trip
+HMP4040 3 current_trip reset     | powerchannel -S HMP4040 3 current_trip --reset
+HMP4040 3 sweep_voltage          | powerchannel -S HMP4040 3 sweep_voltage -s 2 -d 0 10
+HMP4040 3 sweep_voltage n_steps  | powerchannel -S HMP4040 3 sweep_voltage -n 3 -d 0 10
+HMP4040 3 sweep_voltage measure  | powerchannel -S HMP4040 3 sweep_voltage -s 2 -d 0 10 -m
+HMP4040 3 sweep_voltage no log   | powerchannel -S HMP4040 3 sweep_voltage -s 2 -d 0 10 -l
+HMP4040 3 sweep_voltage m+nl     | powerchannel -S HMP4040 3 sweep_voltage -s 2 -d 0 10 -m -l
+HMP4040 3 sweep_current          | powerchannel -S HMP4040 3 sweep_current -s 0.2 -d 0 2
+HMP4040 3 sweep_current n_steps  | powerchannel -S HMP4040 3 sweep_current -n 3 -d 0 2
+HMP4040 3 sweep_current measure  | powerchannel -S HMP4040 3 sweep_current -s 0.2 -d 0 2 -m
+HMP4040 3 sweep_current no log   | powerchannel -S HMP4040 3 sweep_current -s 0.2 -d 0 2 -l
+HMP4040 3 sweep_current m+nl     | powerchannel -S HMP4040 3 sweep_current -s 0.2 -d 0 2 -m -l
+HMP4040 3 measure_voltage        | powerchannel -S HMP4040 3 measure_voltage
+HMP4040 3 measure_current        | powerchannel -S HMP4040 3 measure_current
+HMP4040 4 identify               | powerchannel -S HMP4040 4 identify
+HMP4040 4 status                 | powerchannel -S HMP4040 4 status
+HMP4040 4 voltage                | powerchannel -S HMP4040 4 voltage
+HMP4040 4 voltage set            | powerchannel -S HMP4040 4 voltage 5
+HMP4040 4 voltage_limit          | powerchannel -S HMP4040 4 voltage_limit
+HMP4040 4 voltage_limit set      | powerchannel -S HMP4040 4 voltage_limit 5
+HMP4040 4 voltage_trip           | powerchannel -S HMP4040 4 voltage_trip
+HMP4040 4 voltage_trip reset     | powerchannel -S HMP4040 4 voltage_trip --reset
+HMP4040 4 current                | powerchannel -S HMP4040 4 current
+HMP4040 4 current set            | powerchannel -S HMP4040 4 current 3
+HMP4040 4 current_limit          | powerchannel -S HMP4040 4 current_limit
+HMP4040 4 current_limit set      | powerchannel -S HMP4040 4 current_limit 3
+HMP4040 4 current_trip           | powerchannel -S HMP4040 4 current_trip
+HMP4040 4 current_trip reset     | powerchannel -S HMP4040 4 current_trip --reset
+HMP4040 4 sweep_voltage          | powerchannel -S HMP4040 4 sweep_voltage -s 2 -d 0 10
+HMP4040 4 sweep_voltage n_steps  | powerchannel -S HMP4040 4 sweep_voltage -n 3 -d 0 10
+HMP4040 4 sweep_voltage measure  | powerchannel -S HMP4040 4 sweep_voltage -s 2 -d 0 10 -m
+HMP4040 4 sweep_voltage no log   | powerchannel -S HMP4040 4 sweep_voltage -s 2 -d 0 10 -l
+HMP4040 4 sweep_voltage m+nl     | powerchannel -S HMP4040 4 sweep_voltage -s 2 -d 0 10 -m -l
+HMP4040 4 sweep_current          | powerchannel -S HMP4040 4 sweep_current -s 0.2 -d 0 2
+HMP4040 4 sweep_current n_steps  | powerchannel -S HMP4040 4 sweep_current -n 3 -d 0 2
+HMP4040 4 sweep_current measure  | powerchannel -S HMP4040 4 sweep_current -s 0.2 -d 0 2 -m
+HMP4040 4 sweep_current no log   | powerchannel -S HMP4040 4 sweep_current -s 0.2 -d 0 2 -l
+HMP4040 4 sweep_current m+nl     | powerchannel -S HMP4040 4 sweep_current -s 0.2 -d 0 2 -m -l
+HMP4040 4 measure_voltage        | powerchannel -S HMP4040 4 measure_voltage
+HMP4040 4 measure_current        | powerchannel -S HMP4040 4 measure_current
+# == Keithley2410 ==
+Keithley2410 1 identify               | powerchannel -S Keithley2410 1 identify
+Keithley2410 1 status                 | powerchannel -S Keithley2410 1 status
+Keithley2410 1 voltage                | powerchannel -S Keithley2410 1 voltage
+Keithley2410 1 voltage set            | powerchannel -S Keithley2410 1 voltage 5
+Keithley2410 1 voltage_limit          | powerchannel -S Keithley2410 1 voltage_limit
+Keithley2410 1 voltage_limit set      | powerchannel -S Keithley2410 1 voltage_limit 5
+Keithley2410 1 voltage_trip           | powerchannel -S Keithley2410 1 voltage_trip
+Keithley2410 1 voltage_trip reset     | powerchannel -S Keithley2410 1 voltage_trip --reset
+Keithley2410 1 current                | powerchannel -S Keithley2410 1 current
+Keithley2410 1 current set            | powerchannel -S Keithley2410 1 current 3
+Keithley2410 1 current_limit          | powerchannel -S Keithley2410 1 current_limit
+Keithley2410 1 current_limit set      | powerchannel -S Keithley2410 1 current_limit 3
+Keithley2410 1 current_trip           | powerchannel -S Keithley2410 1 current_trip
+Keithley2410 1 current_trip reset     | powerchannel -S Keithley2410 1 current_trip --reset
+Keithley2410 1 sweep_voltage          | powerchannel -S Keithley2410 1 sweep_voltage -s 2 -d 0 10
+Keithley2410 1 sweep_voltage n_steps  | powerchannel -S Keithley2410 1 sweep_voltage -n 3 -d 0 10
+Keithley2410 1 sweep_voltage measure  | powerchannel -S Keithley2410 1 sweep_voltage -s 2 -d 0 10 -m
+Keithley2410 1 sweep_voltage no log   | powerchannel -S Keithley2410 1 sweep_voltage -s 2 -d 0 10 -l
+Keithley2410 1 sweep_voltage m+nl     | powerchannel -S Keithley2410 1 sweep_voltage -s 2 -d 0 10 -m -l
+Keithley2410 1 sweep_current          | powerchannel -S Keithley2410 1 sweep_current -s 0.2 -d 0 2
+Keithley2410 1 sweep_current n_steps  | powerchannel -S Keithley2410 1 sweep_current -n 3 -d 0 2
+Keithley2410 1 sweep_current measure  | powerchannel -S Keithley2410 1 sweep_current -s 0.2 -d 0 2 -m
+Keithley2410 1 sweep_current no log   | powerchannel -S Keithley2410 1 sweep_current -s 0.2 -d 0 2 -l
+Keithley2410 1 sweep_current m+nl     | powerchannel -S Keithley2410 1 sweep_current -s 0.2 -d 0 2 -m -l
+Keithley2410 1 measure_voltage        | powerchannel -S Keithley2410 1 measure_voltage
+Keithley2410 1 measure_current        | powerchannel -S Keithley2410 1 measure_current
+# == KeysightE3633A ==
+KeysightE3633A 1 identify               | powerchannel -S KeysightE3633A 1 identify
+KeysightE3633A 1 status                 | powerchannel -S KeysightE3633A 1 status
+KeysightE3633A 1 voltage                | powerchannel -S KeysightE3633A 1 voltage
+KeysightE3633A 1 voltage set            | powerchannel -S KeysightE3633A 1 voltage 5
+KeysightE3633A 1 voltage_limit          | powerchannel -S KeysightE3633A 1 voltage_limit
+KeysightE3633A 1 voltage_limit set      | powerchannel -S KeysightE3633A 1 voltage_limit 5
+KeysightE3633A 1 voltage_trip           | powerchannel -S KeysightE3633A 1 voltage_trip
+KeysightE3633A 1 voltage_trip reset     | powerchannel -S KeysightE3633A 1 voltage_trip --reset
+KeysightE3633A 1 current                | powerchannel -S KeysightE3633A 1 current
+KeysightE3633A 1 current set            | powerchannel -S KeysightE3633A 1 current 3
+KeysightE3633A 1 current_limit          | powerchannel -S KeysightE3633A 1 current_limit
+KeysightE3633A 1 current_limit set      | powerchannel -S KeysightE3633A 1 current_limit 3
+KeysightE3633A 1 current_trip           | powerchannel -S KeysightE3633A 1 current_trip
+KeysightE3633A 1 current_trip reset     | powerchannel -S KeysightE3633A 1 current_trip --reset
+KeysightE3633A 1 sweep_voltage          | powerchannel -S KeysightE3633A 1 sweep_voltage -s 2 -d 0 10
+KeysightE3633A 1 sweep_voltage n_steps  | powerchannel -S KeysightE3633A 1 sweep_voltage -n 3 -d 0 10
+KeysightE3633A 1 sweep_voltage measure  | powerchannel -S KeysightE3633A 1 sweep_voltage -s 2 -d 0 10 -m
+KeysightE3633A 1 sweep_voltage no log   | powerchannel -S KeysightE3633A 1 sweep_voltage -s 2 -d 0 10 -l
+KeysightE3633A 1 sweep_voltage m+nl     | powerchannel -S KeysightE3633A 1 sweep_voltage -s 2 -d 0 10 -m -l
+KeysightE3633A 1 sweep_current          | powerchannel -S KeysightE3633A 1 sweep_current -s 0.2 -d 0 2
+KeysightE3633A 1 sweep_current n_steps  | powerchannel -S KeysightE3633A 1 sweep_current -n 3 -d 0 2
+KeysightE3633A 1 sweep_current measure  | powerchannel -S KeysightE3633A 1 sweep_current -s 0.2 -d 0 2 -m
+KeysightE3633A 1 sweep_current no log   | powerchannel -S KeysightE3633A 1 sweep_current -s 0.2 -d 0 2 -l
+KeysightE3633A 1 sweep_current m+nl     | powerchannel -S KeysightE3633A 1 sweep_current -s 0.2 -d 0 2 -m -l
+KeysightE3633A 1 measure_voltage        | powerchannel -S KeysightE3633A 1 measure_voltage
+KeysightE3633A 1 measure_current        | powerchannel -S KeysightE3633A 1 measure_current
+# == MP1 ==
+MP1 1 identify               | powerchannel -S MP1 1 identify
+MP1 1 status                 | powerchannel -S MP1 1 status
+MP1 1 voltage                | powerchannel -S MP1 1 voltage
+MP1 1 voltage set            | powerchannel -S MP1 1 voltage 5
+MP1 1 voltage_limit          | powerchannel -S MP1 1 voltage_limit
+MP1 1 voltage_limit set      | powerchannel -S MP1 1 voltage_limit 5
+MP1 1 voltage_trip           | powerchannel -S MP1 1 voltage_trip
+MP1 1 voltage_trip reset     | powerchannel -S MP1 1 voltage_trip --reset
+MP1 1 current                | powerchannel -S MP1 1 current
+MP1 1 current set            | powerchannel -S MP1 1 current 3
+MP1 1 current_limit          | powerchannel -S MP1 1 current_limit
+MP1 1 current_limit set      | powerchannel -S MP1 1 current_limit 3
+MP1 1 current_trip           | powerchannel -S MP1 1 current_trip
+MP1 1 current_trip reset     | powerchannel -S MP1 1 current_trip --reset
+MP1 1 sweep_voltage          | powerchannel -S MP1 1 sweep_voltage -s 2 -d 0 10
+MP1 1 sweep_voltage n_steps  | powerchannel -S MP1 1 sweep_voltage -n 3 -d 0 10
+MP1 1 sweep_voltage measure  | powerchannel -S MP1 1 sweep_voltage -s 2 -d 0 10 -m
+MP1 1 sweep_voltage no log   | powerchannel -S MP1 1 sweep_voltage -s 2 -d 0 10 -l
+MP1 1 sweep_voltage m+nl     | powerchannel -S MP1 1 sweep_voltage -s 2 -d 0 10 -m -l
+MP1 1 sweep_current          | powerchannel -S MP1 1 sweep_current -s 0.2 -d 0 2
+MP1 1 sweep_current n_steps  | powerchannel -S MP1 1 sweep_current -n 3 -d 0 2
+MP1 1 sweep_current measure  | powerchannel -S MP1 1 sweep_current -s 0.2 -d 0 2 -m
+MP1 1 sweep_current no log   | powerchannel -S MP1 1 sweep_current -s 0.2 -d 0 2 -l
+MP1 1 sweep_current m+nl     | powerchannel -S MP1 1 sweep_current -s 0.2 -d 0 2 -m -l
+MP1 1 measure_voltage        | powerchannel -S MP1 1 measure_voltage
+MP1 1 measure_current        | powerchannel -S MP1 1 measure_current
+# == TTI ==
+TTI 1 identify               | powerchannel -S TTI 1 identify
+TTI 1 status                 | powerchannel -S TTI 1 status
+TTI 1 voltage                | powerchannel -S TTI 1 voltage
+TTI 1 voltage set            | powerchannel -S TTI 1 voltage 5
+TTI 1 voltage_limit          | powerchannel -S TTI 1 voltage_limit
+TTI 1 voltage_limit set      | powerchannel -S TTI 1 voltage_limit 5
+TTI 1 voltage_trip           | powerchannel -S TTI 1 voltage_trip
+TTI 1 voltage_trip reset     | powerchannel -S TTI 1 voltage_trip --reset
+TTI 1 current                | powerchannel -S TTI 1 current
+TTI 1 current set            | powerchannel -S TTI 1 current 3
+TTI 1 current_limit          | powerchannel -S TTI 1 current_limit
+TTI 1 current_limit set      | powerchannel -S TTI 1 current_limit 3
+TTI 1 current_trip           | powerchannel -S TTI 1 current_trip
+TTI 1 current_trip reset     | powerchannel -S TTI 1 current_trip --reset
+TTI 1 sweep_voltage          | powerchannel -S TTI 1 sweep_voltage -s 2 -d 0 10
+TTI 1 sweep_voltage n_steps  | powerchannel -S TTI 1 sweep_voltage -n 3 -d 0 10
+TTI 1 sweep_voltage measure  | powerchannel -S TTI 1 sweep_voltage -s 2 -d 0 10 -m
+TTI 1 sweep_voltage no log   | powerchannel -S TTI 1 sweep_voltage -s 2 -d 0 10 -l
+TTI 1 sweep_voltage m+nl     | powerchannel -S TTI 1 sweep_voltage -s 2 -d 0 10 -m -l
+TTI 1 sweep_current          | powerchannel -S TTI 1 sweep_current -s 0.2 -d 0 2
+TTI 1 sweep_current n_steps  | powerchannel -S TTI 1 sweep_current -n 3 -d 0 2
+TTI 1 sweep_current measure  | powerchannel -S TTI 1 sweep_current -s 0.2 -d 0 2 -m
+TTI 1 sweep_current no log   | powerchannel -S TTI 1 sweep_current -s 0.2 -d 0 2 -l
+TTI 1 sweep_current m+nl     | powerchannel -S TTI 1 sweep_current -s 0.2 -d 0 2 -m -l
+TTI 1 measure_voltage        | powerchannel -S TTI 1 measure_voltage
+TTI 1 measure_current        | powerchannel -S TTI 1 measure_current
+TTI 2 identify               | powerchannel -S TTI 2 identify
+TTI 2 status                 | powerchannel -S TTI 2 status
+TTI 2 voltage                | powerchannel -S TTI 2 voltage
+TTI 2 voltage set            | powerchannel -S TTI 2 voltage 5
+TTI 2 voltage_limit          | powerchannel -S TTI 2 voltage_limit
+TTI 2 voltage_limit set      | powerchannel -S TTI 2 voltage_limit 5
+TTI 2 voltage_trip           | powerchannel -S TTI 2 voltage_trip
+TTI 2 voltage_trip reset     | powerchannel -S TTI 2 voltage_trip --reset
+TTI 2 current                | powerchannel -S TTI 2 current
+TTI 2 current set            | powerchannel -S TTI 2 current 3
+TTI 2 current_limit          | powerchannel -S TTI 2 current_limit
+TTI 2 current_limit set      | powerchannel -S TTI 2 current_limit 3
+TTI 2 current_trip           | powerchannel -S TTI 2 current_trip
+TTI 2 current_trip reset     | powerchannel -S TTI 2 current_trip --reset
+TTI 2 sweep_voltage          | powerchannel -S TTI 2 sweep_voltage -s 2 -d 0 10
+TTI 2 sweep_voltage n_steps  | powerchannel -S TTI 2 sweep_voltage -n 3 -d 0 10
+TTI 2 sweep_voltage measure  | powerchannel -S TTI 2 sweep_voltage -s 2 -d 0 10 -m
+TTI 2 sweep_voltage no log   | powerchannel -S TTI 2 sweep_voltage -s 2 -d 0 10 -l
+TTI 2 sweep_voltage m+nl     | powerchannel -S TTI 2 sweep_voltage -s 2 -d 0 10 -m -l
+TTI 2 sweep_current          | powerchannel -S TTI 2 sweep_current -s 0.2 -d 0 2
+TTI 2 sweep_current n_steps  | powerchannel -S TTI 2 sweep_current -n 3 -d 0 2
+TTI 2 sweep_current measure  | powerchannel -S TTI 2 sweep_current -s 0.2 -d 0 2 -m
+TTI 2 sweep_current no log   | powerchannel -S TTI 2 sweep_current -s 0.2 -d 0 2 -l
+TTI 2 sweep_current m+nl     | powerchannel -S TTI 2 sweep_current -s 0.2 -d 0 2 -m -l
+TTI 2 measure_voltage        | powerchannel -S TTI 2 measure_voltage
+TTI 2 measure_current        | powerchannel -S TTI 2 measure_current
+TTI 3 identify               | powerchannel -S TTI 3 identify
+TTI 3 status                 | powerchannel -S TTI 3 status
+TTI 3 voltage                | powerchannel -S TTI 3 voltage
+TTI 3 voltage set            | powerchannel -S TTI 3 voltage 5
+TTI 3 voltage_limit          | powerchannel -S TTI 3 voltage_limit
+TTI 3 voltage_limit set      | powerchannel -S TTI 3 voltage_limit 5
+TTI 3 voltage_trip           | powerchannel -S TTI 3 voltage_trip
+TTI 3 voltage_trip reset     | powerchannel -S TTI 3 voltage_trip --reset
+TTI 3 current                | powerchannel -S TTI 3 current
+TTI 3 current set            | powerchannel -S TTI 3 current 3
+TTI 3 current_limit          | powerchannel -S TTI 3 current_limit
+TTI 3 current_limit set      | powerchannel -S TTI 3 current_limit 3
+TTI 3 current_trip           | powerchannel -S TTI 3 current_trip
+TTI 3 current_trip reset     | powerchannel -S TTI 3 current_trip --reset
+TTI 3 sweep_voltage          | powerchannel -S TTI 3 sweep_voltage -s 2 -d 0 10
+TTI 3 sweep_voltage n_steps  | powerchannel -S TTI 3 sweep_voltage -n 3 -d 0 10
+TTI 3 sweep_voltage measure  | powerchannel -S TTI 3 sweep_voltage -s 2 -d 0 10 -m
+TTI 3 sweep_voltage no log   | powerchannel -S TTI 3 sweep_voltage -s 2 -d 0 10 -l
+TTI 3 sweep_voltage m+nl     | powerchannel -S TTI 3 sweep_voltage -s 2 -d 0 10 -m -l
+TTI 3 sweep_current          | powerchannel -S TTI 3 sweep_current -s 0.2 -d 0 2
+TTI 3 sweep_current n_steps  | powerchannel -S TTI 3 sweep_current -n 3 -d 0 2
+TTI 3 sweep_current measure  | powerchannel -S TTI 3 sweep_current -s 0.2 -d 0 2 -m
+TTI 3 sweep_current no log   | powerchannel -S TTI 3 sweep_current -s 0.2 -d 0 2 -l
+TTI 3 sweep_current m+nl     | powerchannel -S TTI 3 sweep_current -s 0.2 -d 0 2 -m -l
+TTI 3 measure_voltage        | powerchannel -S TTI 3 measure_voltage
+TTI 3 measure_current        | powerchannel -S TTI 3 measure_current
+# == TTITSX ==
+TTITSX identify               | powerchannel -S TTITSX 1 identify
+TTITSX status                 | powerchannel -S TTITSX 1 status
+TTITSX voltage                | powerchannel -S TTITSX 1 voltage
+TTITSX voltage set            | powerchannel -S TTITSX 1 voltage 5
+TTITSX voltage_limit          | powerchannel -S TTITSX 1 voltage_limit
+TTITSX voltage_limit set      | powerchannel -S TTITSX 1 voltage_limit 5
+TTITSX voltage_trip           | powerchannel -S TTITSX 1 voltage_trip
+TTITSX voltage_trip reset     | powerchannel -S TTITSX 1 voltage_trip --reset
+TTITSX current                | powerchannel -S TTITSX 1 current
+TTITSX current set            | powerchannel -S TTITSX 1 current 3
+TTITSX current_limit          | powerchannel -S TTITSX 1 current_limit
+TTITSX current_limit set      | powerchannel -S TTITSX 1 current_limit 3
+TTITSX current_trip           | powerchannel -S TTITSX 1 current_trip
+TTITSX current_trip reset     | powerchannel -S TTITSX 1 current_trip --reset
+TTITSX sweep_voltage          | powerchannel -S TTITSX 1 sweep_voltage -s 2 -d 0 10
+TTITSX sweep_voltage n_steps  | powerchannel -S TTITSX 1 sweep_voltage -n 3 -d 0 10
+TTITSX sweep_voltage measure  | powerchannel -S TTITSX 1 sweep_voltage -s 2 -d 0 10 -m
+TTITSX sweep_voltage no log   | powerchannel -S TTITSX 1 sweep_voltage -s 2 -d 0 10 -l
+TTITSX sweep_voltage m+nl     | powerchannel -S TTITSX 1 sweep_voltage -s 2 -d 0 10 -m -l
+TTITSX sweep_current          | powerchannel -S TTITSX 1 sweep_current -s 0.2 -d 0 2
+TTITSX sweep_current n_steps  | powerchannel -S TTITSX 1 sweep_current -n 3 -d 0 2
+TTITSX sweep_current measure  | powerchannel -S TTITSX 1 sweep_current -s 0.2 -d 0 2 -m
+TTITSX sweep_current no log   | powerchannel -S TTITSX 1 sweep_current -s 0.2 -d 0 2 -l
+TTITSX sweep_current m+nl     | powerchannel -S TTITSX 1 sweep_current -s 0.2 -d 0 2 -m -l
+TTITSX measure_voltage        | powerchannel -S TTITSX 1 measure_voltage
+TTITSX measure_current        | powerchannel -S TTITSX 1 measure_current
+# == CaenDT8033N ==
+CaenDT8033N 1 identify               | powerchannel -S CaenDT8033N 1 identify
+CaenDT8033N 1 status                 | powerchannel -S CaenDT8033N 1 status
+CaenDT8033N 1 voltage                | powerchannel -S CaenDT8033N 1 voltage
+CaenDT8033N 1 voltage set            | powerchannel -S CaenDT8033N 1 voltage -5
+CaenDT8033N 1 voltage_limit          | powerchannel -S CaenDT8033N 1 voltage_limit
+CaenDT8033N 1 voltage_limit set      | powerchannel -S CaenDT8033N 1 voltage_limit -5
+CaenDT8033N 1 voltage_trip           | powerchannel -S CaenDT8033N 1 voltage_trip
+CaenDT8033N 1 voltage_trip reset     | powerchannel -S CaenDT8033N 1 voltage_trip --reset
+CaenDT8033N 1 current                | powerchannel -S CaenDT8033N 1 current
+CaenDT8033N 1 current set            | powerchannel -S CaenDT8033N 1 current 3e-5
+CaenDT8033N 1 current_limit          | powerchannel -S CaenDT8033N 1 current_limit
+CaenDT8033N 1 current_limit set      | powerchannel -S CaenDT8033N 1 current_limit 3e-5
+CaenDT8033N 1 current_trip           | powerchannel -S CaenDT8033N 1 current_trip
+CaenDT8033N 1 current_trip reset     | powerchannel -S CaenDT8033N 1 current_trip --reset
+CaenDT8033N 1 sweep_voltage          | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+CaenDT8033N 1 sweep_voltage n_steps  | powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+CaenDT8033N 1 sweep_voltage measure  | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+CaenDT8033N 1 sweep_voltage no log   | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+CaenDT8033N 1 sweep_voltage m+nl     | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+CaenDT8033N 1 measure_voltage        | powerchannel -S CaenDT8033N 1 measure_voltage
+CaenDT8033N 1 measure_current        | powerchannel -S CaenDT8033N 1 measure_current
+CaenDT8033N 2 identify               | powerchannel -S CaenDT8033N 2 identify
+CaenDT8033N 2 status                 | powerchannel -S CaenDT8033N 2 status
+CaenDT8033N 2 voltage                | powerchannel -S CaenDT8033N 2 voltage
+CaenDT8033N 2 voltage set            | powerchannel -S CaenDT8033N 2 voltage -5
+CaenDT8033N 2 voltage_limit          | powerchannel -S CaenDT8033N 2 voltage_limit
+CaenDT8033N 2 voltage_limit set      | powerchannel -S CaenDT8033N 2 voltage_limit -5
+CaenDT8033N 2 voltage_trip           | powerchannel -S CaenDT8033N 2 voltage_trip
+CaenDT8033N 2 voltage_trip reset     | powerchannel -S CaenDT8033N 2 voltage_trip --reset
+CaenDT8033N 2 current                | powerchannel -S CaenDT8033N 2 current
+CaenDT8033N 2 current set            | powerchannel -S CaenDT8033N 2 current 3e-5
+CaenDT8033N 2 current_limit          | powerchannel -S CaenDT8033N 2 current_limit
+CaenDT8033N 2 current_limit set      | powerchannel -S CaenDT8033N 2 current_limit 3e-5
+CaenDT8033N 2 current_trip           | powerchannel -S CaenDT8033N 2 current_trip
+CaenDT8033N 2 current_trip reset     | powerchannel -S CaenDT8033N 2 current_trip --reset
+CaenDT8033N 2 sweep_voltage          | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+CaenDT8033N 2 sweep_voltage n_steps  | powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+CaenDT8033N 2 sweep_voltage measure  | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+CaenDT8033N 2 sweep_voltage no log   | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+CaenDT8033N 2 sweep_voltage m+nl     | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+CaenDT8033N 2 measure_voltage        | powerchannel -S CaenDT8033N 2 measure_voltage
+CaenDT8033N 2 measure_current        | powerchannel -S CaenDT8033N 2 measure_current
+CaenDT8033N 3 identify               | powerchannel -S CaenDT8033N 3 identify
+CaenDT8033N 3 status                 | powerchannel -S CaenDT8033N 3 status
+CaenDT8033N 3 voltage                | powerchannel -S CaenDT8033N 3 voltage
+CaenDT8033N 3 voltage set            | powerchannel -S CaenDT8033N 3 voltage -5
+CaenDT8033N 3 voltage_limit          | powerchannel -S CaenDT8033N 3 voltage_limit
+CaenDT8033N 3 voltage_limit set      | powerchannel -S CaenDT8033N 3 voltage_limit -5
+CaenDT8033N 3 voltage_trip           | powerchannel -S CaenDT8033N 3 voltage_trip
+CaenDT8033N 3 voltage_trip reset     | powerchannel -S CaenDT8033N 3 voltage_trip --reset
+CaenDT8033N 3 current                | powerchannel -S CaenDT8033N 3 current
+CaenDT8033N 3 current set            | powerchannel -S CaenDT8033N 3 current 3e-5
+CaenDT8033N 3 current_limit          | powerchannel -S CaenDT8033N 3 current_limit
+CaenDT8033N 3 current_limit set      | powerchannel -S CaenDT8033N 3 current_limit 3e-5
+CaenDT8033N 3 current_trip           | powerchannel -S CaenDT8033N 3 current_trip
+CaenDT8033N 3 current_trip reset     | powerchannel -S CaenDT8033N 3 current_trip --reset
+CaenDT8033N 3 sweep_voltage          | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+CaenDT8033N 3 sweep_voltage n_steps  | powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+CaenDT8033N 3 sweep_voltage measure  | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+CaenDT8033N 3 sweep_voltage no log   | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+CaenDT8033N 3 sweep_voltage m+nl     | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+CaenDT8033N 3 measure_voltage        | powerchannel -S CaenDT8033N 3 measure_voltage
+CaenDT8033N 3 measure_current        | powerchannel -S CaenDT8033N 3 measure_current
+CaenDT8033N 4 identify               | powerchannel -S CaenDT8033N 4 identify
+CaenDT8033N 4 status                 | powerchannel -S CaenDT8033N 4 status
+CaenDT8033N 4 voltage                | powerchannel -S CaenDT8033N 4 voltage
+CaenDT8033N 4 voltage set            | powerchannel -S CaenDT8033N 4 voltage -5
+CaenDT8033N 4 voltage_limit          | powerchannel -S CaenDT8033N 4 voltage_limit
+CaenDT8033N 4 voltage_limit set      | powerchannel -S CaenDT8033N 4 voltage_limit -5
+CaenDT8033N 4 voltage_trip           | powerchannel -S CaenDT8033N 4 voltage_trip
+CaenDT8033N 4 voltage_trip reset     | powerchannel -S CaenDT8033N 4 voltage_trip --reset
+CaenDT8033N 4 current                | powerchannel -S CaenDT8033N 4 current
+CaenDT8033N 4 current set            | powerchannel -S CaenDT8033N 4 current 3e-5
+CaenDT8033N 4 current_limit          | powerchannel -S CaenDT8033N 4 current_limit
+CaenDT8033N 4 current_limit set      | powerchannel -S CaenDT8033N 4 current_limit 3e-5
+CaenDT8033N 4 current_trip           | powerchannel -S CaenDT8033N 4 current_trip
+CaenDT8033N 4 current_trip reset     | powerchannel -S CaenDT8033N 4 current_trip --reset
+CaenDT8033N 4 sweep_voltage          | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+CaenDT8033N 4 sweep_voltage n_steps  | powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+CaenDT8033N 4 sweep_voltage measure  | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+CaenDT8033N 4 sweep_voltage no log   | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+CaenDT8033N 4 sweep_voltage m+nl     | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+CaenDT8033N 4 measure_voltage        | powerchannel -S CaenDT8033N 4 measure_voltage
+CaenDT8033N 4 measure_current        | powerchannel -S CaenDT8033N 4 measure_current
+CaenDT8033N 5 identify               | powerchannel -S CaenDT8033N 5 identify
+CaenDT8033N 5 status                 | powerchannel -S CaenDT8033N 5 status
+CaenDT8033N 5 voltage                | powerchannel -S CaenDT8033N 5 voltage
+CaenDT8033N 5 voltage set            | powerchannel -S CaenDT8033N 5 voltage -5
+CaenDT8033N 5 voltage_limit          | powerchannel -S CaenDT8033N 5 voltage_limit
+CaenDT8033N 5 voltage_limit set      | powerchannel -S CaenDT8033N 5 voltage_limit -5
+CaenDT8033N 5 voltage_trip           | powerchannel -S CaenDT8033N 5 voltage_trip
+CaenDT8033N 5 voltage_trip reset     | powerchannel -S CaenDT8033N 5 voltage_trip --reset
+CaenDT8033N 5 current                | powerchannel -S CaenDT8033N 5 current
+CaenDT8033N 5 current set            | powerchannel -S CaenDT8033N 5 current 3e-5
+CaenDT8033N 5 current_limit          | powerchannel -S CaenDT8033N 5 current_limit
+CaenDT8033N 5 current_limit set      | powerchannel -S CaenDT8033N 5 current_limit 3e-5
+CaenDT8033N 5 current_trip           | powerchannel -S CaenDT8033N 5 current_trip
+CaenDT8033N 5 current_trip reset     | powerchannel -S CaenDT8033N 5 current_trip --reset
+CaenDT8033N 5 sweep_voltage          | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+CaenDT8033N 5 sweep_voltage n_steps  | powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+CaenDT8033N 5 sweep_voltage measure  | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+CaenDT8033N 5 sweep_voltage no log   | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+CaenDT8033N 5 sweep_voltage m+nl     | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+CaenDT8033N 5 measure_voltage        | powerchannel -S CaenDT8033N 5 measure_voltage
+CaenDT8033N 5 measure_current        | powerchannel -S CaenDT8033N 5 measure_current
+CaenDT8033N 6 identify               | powerchannel -S CaenDT8033N 6 identify
+CaenDT8033N 6 status                 | powerchannel -S CaenDT8033N 6 status
+CaenDT8033N 6 voltage                | powerchannel -S CaenDT8033N 6 voltage
+CaenDT8033N 6 voltage set            | powerchannel -S CaenDT8033N 6 voltage -5
+CaenDT8033N 6 voltage_limit          | powerchannel -S CaenDT8033N 6 voltage_limit
+CaenDT8033N 6 voltage_limit set      | powerchannel -S CaenDT8033N 6 voltage_limit -5
+CaenDT8033N 6 voltage_trip           | powerchannel -S CaenDT8033N 6 voltage_trip
+CaenDT8033N 6 voltage_trip reset     | powerchannel -S CaenDT8033N 6 voltage_trip --reset
+CaenDT8033N 6 current                | powerchannel -S CaenDT8033N 6 current
+CaenDT8033N 6 current set            | powerchannel -S CaenDT8033N 6 current 3e-5
+CaenDT8033N 6 current_limit          | powerchannel -S CaenDT8033N 6 current_limit
+CaenDT8033N 6 current_limit set      | powerchannel -S CaenDT8033N 6 current_limit 3e-5
+CaenDT8033N 6 current_trip           | powerchannel -S CaenDT8033N 6 current_trip
+CaenDT8033N 6 current_trip reset     | powerchannel -S CaenDT8033N 6 current_trip --reset
+CaenDT8033N 6 sweep_voltage          | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+CaenDT8033N 6 sweep_voltage n_steps  | powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+CaenDT8033N 6 sweep_voltage measure  | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+CaenDT8033N 6 sweep_voltage no log   | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+CaenDT8033N 6 sweep_voltage m+nl     | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+CaenDT8033N 6 measure_voltage        | powerchannel -S CaenDT8033N 6 measure_voltage
+CaenDT8033N 6 measure_current        | powerchannel -S CaenDT8033N 6 measure_current
+CaenDT8033N 7 identify               | powerchannel -S CaenDT8033N 7 identify
+CaenDT8033N 7 status                 | powerchannel -S CaenDT8033N 7 status
+CaenDT8033N 7 voltage                | powerchannel -S CaenDT8033N 7 voltage
+CaenDT8033N 7 voltage set            | powerchannel -S CaenDT8033N 7 voltage -5
+CaenDT8033N 7 voltage_limit          | powerchannel -S CaenDT8033N 7 voltage_limit
+CaenDT8033N 7 voltage_limit set      | powerchannel -S CaenDT8033N 7 voltage_limit -5
+CaenDT8033N 7 voltage_trip           | powerchannel -S CaenDT8033N 7 voltage_trip
+CaenDT8033N 7 voltage_trip reset     | powerchannel -S CaenDT8033N 7 voltage_trip --reset
+CaenDT8033N 7 current                | powerchannel -S CaenDT8033N 7 current
+CaenDT8033N 7 current set            | powerchannel -S CaenDT8033N 7 current 3e-5
+CaenDT8033N 7 current_limit          | powerchannel -S CaenDT8033N 7 current_limit
+CaenDT8033N 7 current_limit set      | powerchannel -S CaenDT8033N 7 current_limit 3e-5
+CaenDT8033N 7 current_trip           | powerchannel -S CaenDT8033N 7 current_trip
+CaenDT8033N 7 current_trip reset     | powerchannel -S CaenDT8033N 7 current_trip --reset
+CaenDT8033N 7 sweep_voltage          | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+CaenDT8033N 7 sweep_voltage n_steps  | powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+CaenDT8033N 7 sweep_voltage measure  | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+CaenDT8033N 7 sweep_voltage no log   | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+CaenDT8033N 7 sweep_voltage m+nl     | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+CaenDT8033N 7 measure_voltage        | powerchannel -S CaenDT8033N 7 measure_voltage
+CaenDT8033N 7 measure_current        | powerchannel -S CaenDT8033N 7 measure_current
+CaenDT8033N 8 identify               | powerchannel -S CaenDT8033N 8 identify
+CaenDT8033N 8 status                 | powerchannel -S CaenDT8033N 8 status
+CaenDT8033N 8 voltage                | powerchannel -S CaenDT8033N 8 voltage
+CaenDT8033N 8 voltage set            | powerchannel -S CaenDT8033N 8 voltage -5
+CaenDT8033N 8 voltage_limit          | powerchannel -S CaenDT8033N 8 voltage_limit
+CaenDT8033N 8 voltage_limit set      | powerchannel -S CaenDT8033N 8 voltage_limit -5
+CaenDT8033N 8 voltage_trip           | powerchannel -S CaenDT8033N 8 voltage_trip
+CaenDT8033N 8 voltage_trip reset     | powerchannel -S CaenDT8033N 8 voltage_trip --reset
+CaenDT8033N 8 current                | powerchannel -S CaenDT8033N 8 current
+CaenDT8033N 8 current set            | powerchannel -S CaenDT8033N 8 current 3e-5
+CaenDT8033N 8 current_limit          | powerchannel -S CaenDT8033N 8 current_limit
+CaenDT8033N 8 current_limit set      | powerchannel -S CaenDT8033N 8 current_limit 3e-5
+CaenDT8033N 8 current_trip           | powerchannel -S CaenDT8033N 8 current_trip
+CaenDT8033N 8 current_trip reset     | powerchannel -S CaenDT8033N 8 current_trip --reset
+CaenDT8033N 7 sweep_voltage          | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+CaenDT8033N 7 sweep_voltage n_steps  | powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+CaenDT8033N 7 sweep_voltage measure  | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+CaenDT8033N 7 sweep_voltage no log   | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+CaenDT8033N 7 sweep_voltage m+nl     | powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+CaenDT8033N 8 measure_voltage        | powerchannel -S CaenDT8033N 8 measure_voltage
+CaenDT8033N 8 measure_current        | powerchannel -S CaenDT8033N 8 measure_current

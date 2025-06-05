@@ -1,0 +1,142 @@
+# This file is a template, and might need editing before it works on your project.
+# To contribute improvements to CI/CD templates, please follow the Development guide at:
+# https://docs.gitlab.com/ee/development/cicd/templates.html
+# This specific template is located at:
+# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Python.gitlab-ci.yml
+
+# Official language image. Look for the different tagged releases at:
+# https://hub.docker.com/r/library/python/tags/
+image: registry.cern.ch/docker.io/library/python:3.9-slim
+
+# Change pip's cache directory to be inside the project directory since we can
+# only cache local items.
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+stages:
+  - check
+  - build
+  - test
+  - docs
+  - publish
+
+# Pip's cache doesn't store the python packages
+# https://pip.pypa.io/en/stable/reference/pip_install/#caching
+#
+# If you want to also cache the installed packages, you have to install
+# them in a virtualenv and cache it as well.
+cache:
+  paths:
+    - .cache/pip
+
+before_script:
+  - apt-get update && apt-get install -y build-essential
+  - apt-get install -y curl unzip
+  - python -m venv py3-env
+  - . py3-env/bin/activate
+
+black:
+  stage: check
+  script:
+    - python -m pip install black
+    - black --check .
+
+flake8:
+  stage: check
+  script:
+    - python -m pip install flake8 flake8-bugbear flake8-pyproject
+    - flake8 .
+
+build:
+  stage: build
+  needs: ["flake8"]
+  script:
+    - python -m pip install build
+    - cd deps && chmod +x get_pyximc.sh && ./get_pyximc.sh && cd ..
+    - dpkg -i ${TMPDIR}/third-party/ximc-*/ximc/deb/libximc7*_amd64.deb
+    - cd deps && chmod +x get_softcheck.sh && ./get_softcheck.sh && cd ..
+    - python -m build . --wheel
+
+.test:
+  stage: test
+  needs: ["flake8"]
+  script:
+    - cd deps && chmod +x get_pyximc.sh && ./get_pyximc.sh && cd ..
+    - dpkg -i ${TMPDIR}/third-party/ximc-*/ximc/deb/libximc7*_amd64.deb
+    - cd deps && chmod +x get_softcheck.sh && ./get_softcheck.sh && cd ..
+    - python -m pip install ".[sim,test,ximc]"
+    - cd ./deps/ && bash patch-pyvisa-sim.sh && cd ../
+    - cd ./test/cli/ && make -j test && cd ../../
+
+test_py37:
+  extends: .test
+  image: registry.cern.ch/docker.io/library/python:3.7-slim
+
+test_py38:
+  extends: .test
+  image: registry.cern.ch/docker.io/library/python:3.8-slim
+
+test_py39:
+  extends: .test
+  image: registry.cern.ch/docker.io/library/python:3.9-slim
+
+test_py310:
+  extends: .test
+  image: registry.cern.ch/docker.io/library/python:3.10-slim
+
+test_py311:
+  extends: .test
+  image: registry.cern.ch/docker.io/library/python:3.11-slim
+
+test_py312:
+  extends: .test
+  image: registry.cern.ch/docker.io/library/python:3.12-slim
+
+test_py313:
+  extends: .test
+  image: registry.cern.ch/docker.io/library/python:3.13-slim
+
+docs:
+  stage: docs
+  needs: []
+  image: registry.cern.ch/docker.io/texlive/texlive:latest
+  before_script:
+    - rm -rf py3-env
+    - apt-get update
+    - apt-get install -y curl python3 python3-pip python3-venv make unzip
+    - /usr/bin/python3 -m venv py3-env
+    - . py3-env/bin/activate
+  script:
+    - cd deps && chmod +x get_pyximc.sh && ./get_pyximc.sh && cd ..
+    - dpkg -i ${TMPDIR}/third-party/ximc-*/ximc/deb/libximc7*_amd64.deb
+    - cd deps && chmod +x get_softcheck.sh && ./get_softcheck.sh && cd ..
+    - python -m pip install ".[sim,docs,ximc]"
+    - cd docs ; make html ; mv build/html ../public; cd ..
+    - cd docs ; make latex ; make latexpdf ; cd ../
+    - mv docs/build/latex/icicle.pdf .
+  artifacts:
+    paths:
+      - public
+      - icicle.pdf
+
+pages:
+  stage: publish
+  needs:
+  - job: docs
+    artifacts: true
+  script:
+    - ls -alR public/
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+publish:
+  stage: publish
+  script:
+    - pip install twine build
+    - python -m build . --sdist --wheel
+    - TWINE_PASSWORD=${CI_JOB_TOKEN} TWINE_USERNAME=gitlab-ci-token python -m twine upload --repository-url ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/pypi dist/*
+  only:
+    - tags

@@ -1,0 +1,131 @@
+##
+identify
+# COMMAND
+ttitsx -S identify
+# OUTPUT
+Aim-TTI,TSX1820P,000000,SIM1.0
+# RETURNS 0
+##
+reset
+# COMMAND
+ttitsx -S reset
+# OUTPUT
+
+# RETURNS 0
+##
+voltage
+# COMMAND
+ttitsx -S voltage
+# OUTPUT
+1.2
+# RETURNS 0
+##
+set voltage
+# COMMAND
+ttitsx -S voltage  5.0
+# OUTPUT
+5.0
+# RETURNS 0
+##
+set voltage prohibited
+# COMMAND
+ttitsx -S voltage  500.0
+# OUTPUT
+ValidationError: Value 500.0 does not pass verifier _is_numeric for set() on setting VOLTAGE for device TTITSX.
+Allowable values: Numbers in range [-120:120]
+# RETURNS 1
+##
+current
+# COMMAND
+ttitsx -S current
+# OUTPUT
+2.0
+# RETURNS 0
+##
+set current
+# COMMAND
+ttitsx -S current 0.2
+# OUTPUT
+0.2
+# RETURNS 0
+##
+measure
+# COMMAND
+ttitsx -S measure
+# OUTPUT
+(1.00012098, 1.00000008)
+# RETURNS 0
+##
+status
+# COMMAND
+ttitsx -S status
+# OUTPUT
+1
+# RETURNS 0
+##
+off
+# COMMAND
+ttitsx -S off
+# OUTPUT
+
+# RETURNS 0
+##
+on
+# COMMAND
+ttitsx -S on
+# OUTPUT
+
+# RETURNS 0
+##
+generic query
+# COMMAND
+ttitsx -S query status_byte
+# OUTPUT
+4207853790
+# RETURNS 0
+##
+ramp voltage
+# COMMAND
+ttitsx -S ramp_voltage -s 3 -d 5 -m 10
+# OUTPUT
+Will sweep VOLTAGE to 10.0 in 3 steps of size 3.0
+Time             	Output Voltage (V)	Output Current (A)
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+(10.0, [[{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+ramp voltage negative
+# COMMAND
+ttitsx -S ramp_voltage -s 5 -d 5 -m -- -10
+# OUTPUT
+Will sweep VOLTAGE to -10.0 in 3 steps of size 5.0
+Time             	Output Voltage (V)	Output Current (A)
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+(-10.0, [[{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+ramp current
+# COMMAND
+ttitsx -S ramp_current -s 3 -d 0 -m 10
+# OUTPUT
+Will sweep CURRENT to 10.0 in 3 steps of size 3.0
+Time             	Output Voltage (V)	Output Current (A)
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+{DATE}{TIME}1.00012098       	1.00000008
+(10.0, [[{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008], [{TIMESTAMP}, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+scpi query
+# COMMAND
+ttitsx -S scpi_query "*ESR?"
+# OUTPUT
+3842031838
+# RETURNS 0

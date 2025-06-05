@@ -1,0 +1,105 @@
+##
+identify
+# COMMAND
+tpx4sc -S identify
+# OUTPUT
+W000
+# RETURNS 0
+##
+status
+# COMMAND
+tpx4sc -S status
+# OUTPUT
+CONFIGURED
+# RETURNS 0
+##
+configure
+# COMMAND
+tpx4sc -S configure
+# OUTPUT
+True
+# RETURNS 0
+##
+start_run
+# COMMAND
+tpx4sc -S start_run 999
+# OUTPUT
+False
+# RETURNS 0
+##
+stop_run
+# COMMAND
+tpx4sc -S stop_run
+# OUTPUT
+(9999, 8888)
+# RETURNS 0
+##
+read threshold
+# COMMAND
+tpx4sc -S threshold
+# OUTPUT
+0
+# RETURNS 0
+##
+set threshold
+# COMMAND
+tpx4sc -S threshold 2000
+# OUTPUT
+2000
+# RETURNS 0
+##
+start_monitoring
+# COMMAND
+tpx4sc -S start_monitoring
+# OUTPUT
+True
+# RETURNS 0
+##
+stop_monitoring
+# COMMAND
+tpx4sc -S stop_monitoring
+# OUTPUT
+True
+# RETURNS 0
+##
+user_data
+# COMMAND
+tpx4sc -S user_data 'TEST'
+# OUTPUT
+True
+# RETURNS 0
+##
+set threshold
+# COMMAND
+tpx4sc -S threshold 2000
+# OUTPUT
+2000
+# RETURNS 0
+##
+restart_readout
+# COMMAND
+tpx4sc -S restart_readout
+# OUTPUT
+True
+# RETURNS 0
+##
+generic set
+# COMMAND
+tpx4sc -S set "THRESHOLD" 1800
+# OUTPUT
+1800
+# RETURNS 0
+##
+generic query
+# COMMAND
+tpx4sc -S query "THRESHOLD"
+# OUTPUT
+0
+# RETURNS 0
+##
+scpi query
+# COMMAND
+tpx4sc -S scpi_query "get_devid"
+# OUTPUT
+W000
+# RETURNS 0
