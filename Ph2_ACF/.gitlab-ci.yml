@@ -1,0 +1,290 @@
+## YAML script for CI of Ph2_ACF Software/Middleware
+## Author: Emery Nibigira (IPHC-Strasbourg, U. of Tennessee)
+##         emery.nibigira@cern.ch
+
+## Updates: Lawrence Lee (U. of Tennessee)
+##          lawrence.lee.jr@cern.ch
+
+## SETUP ##########
+
+## The pipeline starts when a merge request is created
+## or when the CI config is changed
+
+workflow:
+    rules:
+    - if: $CI_MERGE_REQUEST_ID || $CI_PIPELINE_SOURCE == "web" || $CI_COMMIT_BRANCH == "Dev"
+      when: always
+    - if: '$CI_PIPELINE_SOURCE == "push"'
+      changes: # when any file matching the below is edited, create a pipeline
+        - .gitlab/ci/*
+        - .gitlab/ci/*/*
+        - .gitlab-ci.yml
+      when: always
+      allow_failure: true
+
+image:
+  name: gitlab-registry.cern.ch/cms_tk_ph2/docker_exploration/cmstkph2_ci_al9:latest
+  entrypoint: ["/bin/sh","-c"]
+
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+  MKDOCS_VERSION: '1.5.3'
+  MATERIAL_VERSION: '9.5.18'
+
+
+stages:
+  - validation
+  - pages
+  - quality
+  - build_al9
+  - run
+  - check
+  - deploy
+
+
+include:
+  ## DOCS #############
+  - project: 'authoring/documentation/mkdocs-ci'
+    file: 'mkdocs-gitlab-pages.gitlab-ci.yml'
+  ## QUALITY ##########
+  - .gitlab/ci/code-quality.yml
+
+## BUILD Alma 9 ##########
+
+.build:
+  stage: build_al9
+  needs: []
+  image:
+    name: gitlab-registry.cern.ch/cms_tk_ph2/docker_exploration/cmstkph2_ci_al9:latest
+    entrypoint: ["/bin/sh","-c"]
+  before_script:
+    - source ./setup.sh ci
+  script:
+    - mkdir -p build; cd build
+    - cmake ..
+    - make -j4
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/
+    expire_in: 1 week
+
+# Stand-alone application, without data streaming
+build:StandAlone_woDS_al9:
+  extends: .build
+
+# Stand-alone application, with data streaming
+build:StandAlone_wDS_al9:
+  extends: .build
+  before_script:
+    - source ./setup.sh ci
+    - export CompileForHerd=true
+    - export CompileForShep=true
+
+# Herd application
+build:HerdApplication_al9:
+  extends: .build
+  before_script:
+    - source ./setup.sh ci
+    - export CompileForHerd=true
+    - yum remove -y root #final home will not have ROOT. Should test build without it.
+
+# Shep application
+build:ShepApplication_al9:
+  extends: .build
+  before_script:
+    - source ./setup.sh ci
+    - export CompileForShep=true
+
+# Compile with EUDAQ libraries
+# build:StandAlone_wEUDAQ_al9:
+#   extends: .build
+#   before_script:
+#     - source ./setup.sh ci
+#     - export CompileWithEUDAQ=true
+
+# Compile with TC_USB library 
+build:StandAlone_wTC_USB_al9:
+  extends: .build
+  before_script:
+    - yum install -y libusb-devel libusbx-devel
+    - source ./setup.sh ci
+    - export CompileWithTCUSB=true
+
+
+## RUN ##########
+
+.run:
+  stage: run
+  needs:
+    - build:StandAlone_woDS_al9
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: always
+      allow_failure: false
+    - when: manual
+      allow_failure: true
+
+
+## IT module
+run:IT:
+  extends: .run
+  before_script:
+    - cp settings/CMSIT_CI.xml .
+    - cp settings/RD53Files/CMSIT_RD53Bv1.txt .
+  script:
+    - source ./setup.sh ci
+    - fpgaconfig -c CMSIT_CI.xml -i IT-L12KSU_L8DIO5_CROC_4SCC_v4-8
+    - CMSITminiDAQ -f CMSIT_CI.xml -r
+    - CMSITminiDAQ -f CMSIT_CI.xml -c pixelalive
+    - CMSITminiDAQ -f CMSIT_CI.xml -c threqu
+    - CMSITminiDAQ -f CMSIT_CI.xml -c scurve
+    - CMSITminiDAQ -f CMSIT_CI.xml -c injdelay
+  after_script:
+    - cp Results/Run000000_PixelAlive.root .
+    - cp Results/Run000001_ThrEqualization.root .
+    - cp Results/Run000002_SCurve.root .
+  artifacts:
+    paths:
+      - Run000000_PixelAlive.root
+      - Run000001_ThrEqualization.root
+      - Run000002_SCurve.root
+      - coreAnalysisRD53.log
+    expire_in: 1 week
+
+run:IT:DS:
+  extends: .run
+  before_script:
+    - cp settings/CMSIT_CI.xml .
+    - cp settings/RD53Files/CMSIT_RD53Bv1.txt .
+  script:
+    - source ./setup.sh ci
+    - fpgaconfig -c CMSIT_CI.xml -i IT-L12KSU_L8DIO5_CROC_4SCC_v4-8
+    - CMSITminiDAQ -f CMSIT_CI.xml -r
+    - CMSITminiDAQ -f CMSIT_CI.xml -c physics -t 10
+  needs:
+    - job: build:StandAlone_wDS_al9
+      artifacts: true
+    - job: run:IT
+      artifacts: false
+
+## 2S module
+run:2S:
+  extends: .run
+  script:
+    - source ./setup.sh ci
+    - fpgaconfig -c settings/CMS2S_CI.xml -i 2s_cic1_18Aug
+    - runCalibration -f settings/CMS2S_CI.xml -c calibrationandpedenoise
+  after_script:
+    - cp Results/*/Hybrid.root .
+  artifacts:
+    paths:
+      - Hybrid.root
+      - coreAnalysis2S.log
+      - MonitorResults/MonitorDQM*.root
+    expire_in: 1 week
+
+
+run:2S:python:
+  extends: .run
+  script:
+    - source ./setup.sh ci
+    - python3 pythonUtils/PythonController.py -f settings/CMS2S_CI.xml -c calibrationandpedenoise
+  after_script:
+    - cp Results/*/*.root .
+  artifacts:
+    paths:
+      - Result.root
+    expire_in: 1 week
+  needs:
+    - job: build:StandAlone_woDS_al9
+      artifacts: true
+    - job: run:2S
+      artifacts: false
+
+
+run:2S:DS:
+  extends: .run
+  script:
+    - source ./setup.sh ci
+    - supervisor -b -f settings/CMS2S_CI.xml -c calibrationandpedenoise
+  after_script:
+    - cp Results/*/*.root .
+  artifacts:
+    paths:
+      - Result.root
+    expire_in: 1 week
+  needs:
+    - job: build:StandAlone_wDS_al9
+      artifacts: true
+    - job: run:2S:python
+      artifacts: false
+
+## PS module
+run:PS:
+  extends: .run
+  script:
+    - source ./setup.sh ci
+    - fpgaconfig -c settings/CMSPS_CI.xml -i ps_8m_5g_cic1_l12octa_l8dio5
+    - runCalibration -f settings/CMSPS_CI.xml -c calibrationandpedenoise
+  after_script:
+    - cp Results/*/Hybrid.root .
+  artifacts:
+    paths:
+      - Hybrid.root
+      - coreAnalysisPS.log
+      - MonitorResults/MonitorDQM*.root
+    expire_in: 1 week
+
+## CHECK ##########
+
+.check:
+  stage: check
+  rules:
+    - if: $CI_MERGE_REQUEST_ID
+      when: always
+      allow_failure: false
+    - when: manual
+      allow_failure: true
+  artifacts:
+    paths:
+      - plots
+    expire_in: 1 week
+
+check:IT:
+  extends: .check
+  needs:
+    - run:IT
+  script:
+    - python3 pythonUtils/ci_tools/plot_canvas.py Run000000_PixelAlive.root "Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_15/D_B(0)_O(0)_H(0)_PixelAlive_Chip(15)" -o plots
+    - python3 pythonUtils/ci_tools/plot_canvas.py Run000001_ThrEqualization.root "Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_15/D_B(0)_O(0)_H(0)_ThrEqualization_Chip(15)" -o plots
+    - python3 pythonUtils/ci_tools/plot_canvas.py Run000002_SCurve.root "Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_15/D_B(0)_O(0)_H(0)_SCurves_Chip(15)" -o plots
+
+check:2S:
+  extends: .check
+  needs:
+    - run:2S
+  script:
+    - python3 pythonUtils/ci_tools/plot_hist.py Hybrid.root "Detector/Board_0/OpticalGroup_0/Hybrid_0/D_B(0)_O(0)_HybridNoiseDistribution_Hybrid(0)" -o plots
+
+
+## DEPLOY ##########
+
+deploy:
+  stage: deploy
+  trigger: cms_tk_ph2/docker_exploration
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: always
+      variables:
+        IMAGE_TAG: ph2_acf_$CI_COMMIT_TAG
+        GIT_REF: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "Dev"
+      when: always
+      variables:
+        IMAGE_TAG: nightly-dev
+    - if: $DEBUG
+      when: always
+      variables:
+        IMAGE_TAG: upstream-test
+    - when: never

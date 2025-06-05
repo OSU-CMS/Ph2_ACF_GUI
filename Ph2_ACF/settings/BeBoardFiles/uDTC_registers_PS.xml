@@ -1,0 +1,801 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BeBoardRegister>
+	<Register name="clock_source">3</Register>
+	<Register name="clock_source_u7">15</Register>
+	<Register name="clock_source_u8">3</Register>
+	<Register name="coax_select">1</Register>
+	<Register name="icap">4294967257</Register>
+	<Register name="fc7_daq_cnfg">
+		<Register name="amc13">
+			<Register name="sw_tts_state">0</Register>
+			<Register name="sw_tts_state_valid">0</Register>
+		</Register>
+		<Register name="calibration_2s_block">
+			<Register name="enable_hybrids">65535</Register>
+		</Register>
+		<Register name="clock">
+			<Register name="ext_clk_en">0</Register>
+		</Register>
+		<Register name="command_processor_block">
+			<Register name="i2c_address_table">
+				<Register name="slave_0_config">2206204961</Register>
+				<Register name="slave_1_config">2239759393</Register>
+				<Register name="slave_2_config">2273313825</Register>
+				<Register name="slave_3_config">2306868257</Register>
+				<Register name="slave_4_config">2340422689</Register>
+				<Register name="slave_5_config">2373977121</Register>
+				<Register name="slave_6_config">2407531553</Register>
+				<Register name="slave_7_config">2441085985</Register>
+				<Register name="slave_8_config">2474640417</Register>
+			</Register>
+		</Register>
+		<Register name="ddr3_debug">
+			<Register name="ps_async_counter_enable">0</Register>
+			<Register name="stub_enable">0</Register>
+		</Register>
+		<Register name="dio5_block">
+			<Register name="dio5_en">0</Register>
+			<Register name="ch1">
+				<Register name="out_enable">1</Register>
+				<Register name="term_enable">0</Register>
+				<Register name="threshold">0</Register>
+			</Register>
+			<Register name="ch2">
+				<Register name="out_enable">0</Register>
+				<Register name="term_enable">0</Register>
+				<Register name="threshold">50</Register>
+			</Register>
+			<Register name="ch3">
+				<Register name="out_enable">1</Register>
+				<Register name="term_enable">0</Register>
+				<Register name="threshold">0</Register>
+			</Register>
+			<Register name="ch4">
+				<Register name="out_enable">0</Register>
+				<Register name="term_enable">1</Register>
+				<Register name="threshold">50</Register>
+			</Register>
+			<Register name="ch5">
+				<Register name="out_enable">0</Register>
+				<Register name="term_enable">1</Register>
+				<Register name="threshold">50</Register>
+			</Register>
+		</Register>
+		<Register name="fast_command_block">
+			<Register name="antenna_trigger_delay_value">1</Register>
+			<Register name="delay_between_two_consecutive">25</Register>
+			<Register name="ext_trigger_delay_value">269</Register>
+			<Register name="generic_fcmd_addr">0</Register>
+			<Register name="generic_fcmd_data">0</Register>
+			<Register name="stub_trigger_delay_value">0</Register>
+			<Register name="stub_trigger_veto_length">0</Register>
+			<Register name="stubs_mask">1</Register>
+			<Register name="trigger_source">3</Register>
+			<Register name="triggers_to_accept">0</Register>
+			<Register name="user_trigger_frequency">400</Register>
+			<Register name="generic_fcmd">
+				<Register name="number_of_cmds_to_play">0</Register>
+				<Register name="number_of_repetitions">0</Register>
+			</Register>
+			<Register name="misc">
+				<Register name="backpressure_enable">0</Register>
+				<Register name="initial_fast_reset_enable">0</Register>
+				<Register name="stubOR">1</Register>
+				<Register name="trigger_multiplicity">0</Register>
+				<Register name="trigger_timeout_enable">0</Register>
+			</Register>
+			<Register name="ps_async_delay">
+				<Register name="after_clear_counters">200</Register>
+				<Register name="after_close_shutter">200</Register>
+				<Register name="after_open_shutter">1</Register>
+				<Register name="after_stop_antenna">200</Register>
+			</Register>
+			<Register name="ps_async_en">
+				<Register name="antenna">0</Register>
+				<Register name="cal_pulse">1</Register>
+				<Register name="cic_veto">0</Register>
+				<Register name="clear_counters">1</Register>
+				<Register name="close_shutter">1</Register>
+				<Register name="open_shutter">1</Register>
+				<Register name="select_even">0</Register>
+			</Register>
+			<Register name="test_pulse">
+				<Register name="delay_after_fast_reset">100</Register>
+				<Register name="delay_after_test_pulse">200</Register>
+				<Register name="delay_before_next_pulse">400</Register>
+				<Register name="en_fast_reset">0</Register>
+				<Register name="en_l1a">1</Register>
+				<Register name="en_shutter">0</Register>
+				<Register name="en_test_pulse">1</Register>
+			</Register>
+		</Register>
+		<Register name="global">
+			<Register name="chips_enable_hyb_00">231</Register>
+			<Register name="chips_enable_hyb_01">255</Register>
+			<Register name="chips_enable_hyb_02">255</Register>
+			<Register name="chips_enable_hyb_03">255</Register>
+			<Register name="chips_enable_hyb_04">255</Register>
+			<Register name="chips_enable_hyb_05">255</Register>
+			<Register name="chips_enable_hyb_06">255</Register>
+			<Register name="chips_enable_hyb_07">255</Register>
+			<Register name="chips_enable_hyb_08">255</Register>
+			<Register name="chips_enable_hyb_09">255</Register>
+			<Register name="chips_enable_hyb_10">255</Register>
+			<Register name="chips_enable_hyb_11">255</Register>
+			<Register name="chips_enable_hyb_12">255</Register>
+			<Register name="chips_enable_hyb_13">255</Register>
+			<Register name="chips_enable_hyb_14">255</Register>
+			<Register name="chips_enable_hyb_15">255</Register>
+			<Register name="chips_enable_hyb_16">255</Register>
+			<Register name="chips_enable_hyb_17">255</Register>
+			<Register name="chips_enable_hyb_18">255</Register>
+			<Register name="chips_enable_hyb_19">255</Register>
+			<Register name="chips_enable_hyb_20">0</Register>
+			<Register name="chips_enable_hyb_21">254</Register>
+			<Register name="chips_enable_hyb_22">255</Register>
+			<Register name="chips_enable_hyb_23">255</Register>
+			<Register name="hybrid_enable">3</Register>
+		</Register>
+		<Register name="optical_block">
+			<Register name="link_select">0</Register>
+			<Register name="lpgbt_version">1</Register>
+			<Register name="enable">
+				<Register name="l12">0</Register>
+				<Register name="l8">0</Register>
+			</Register>
+			<Register name="gbtx">
+				<Register name="address">0</Register>
+				<Register name="data">0</Register>
+			</Register>
+			<Register name="ic">
+				<Register name="nwords">0</Register>
+				<Register name="register">0</Register>
+			</Register>
+			<Register name="lpgbt_sc_worker">
+				<Register name="fe_retry">1</Register>
+				<Register name="i2c_retry">1</Register>
+				<Register name="ic_retry">1</Register>
+				<Register name="max_fe_retry">10</Register>
+				<Register name="max_i2c_retry">10</Register>
+				<Register name="max_ic_retry">10</Register>
+			</Register>
+			<Register name="rx_polarity">
+				<Register name="l12">1</Register>
+				<Register name="l8">0</Register>
+			</Register>
+			<Register name="sca">
+				<Register name="address">0</Register>
+				<Register name="channel">0</Register>
+				<Register name="cmd">0</Register>
+				<Register name="data">0</Register>
+				<Register name="id">0</Register>
+			</Register>
+			<Register name="tx_polarity">
+				<Register name="l12">0</Register>
+				<Register name="l8">0</Register>
+			</Register>
+		</Register>
+		<Register name="physical_interface_block">
+			<Register name="debug_blk_input">0</Register>
+			<Register name="debug_blk_output">0</Register>
+			<Register name="debug_blk_signal">0</Register>
+			<Register name="ps_counters_raw_en">0</Register>
+			<Register name="cic">
+				<Register name="2s_sparsified_enable">1</Register>
+				<Register name="clock_enable">1</Register>
+				<Register name="fast_commands_enable">0</Register>
+				<Register name="power_enable">0</Register>
+			</Register>
+			<Register name="data_player">
+				<Register name="pattern_320MHz">0</Register>
+				<Register name="pattern_640MHz">0</Register>
+			</Register>
+			<Register name="i2c">
+				<Register name="frequency">4</Register>
+				<Register name="master_en">1</Register>
+			</Register>
+			<Register name="multiplexing_bp">
+				<Register name="backplane_num">15</Register>
+				<Register name="card_num">15</Register>
+				<Register name="interlock_switch_feature">1</Register>
+				<Register name="interlock_switch_output">1</Register>
+				<Register name="rtn_fcmd_test">0</Register>
+				<Register name="ssa_pair_select">15</Register>
+			</Register>
+			<Register name="slvs_debug">
+				<Register name="auto_l1_capture">0</Register>
+				<Register name="chip_select">0</Register>
+				<Register name="hybrid_select">1</Register>
+			</Register>
+		</Register>
+		<Register name="readout_block">
+			<Register name="packet_nbr">999</Register>
+			<Register name="timeout">0xfff</Register>
+			<Register name="global">
+				<Register name="common_stubdata_delay">217</Register>
+				<Register name="data_handshake_enable">0</Register>
+				<Register name="data_type">0</Register>
+				<Register name="int_trig_enable">0</Register>
+				<Register name="int_trig_rate">0</Register>
+				<Register name="trigger_type">0</Register>
+				<Register name="zero_suppression_enable">0</Register>
+			</Register>
+		</Register>
+		<Register name="sfp_ddmi">
+			<Register name="channel_number">0</Register>
+			<Register name="data_wr">0</Register>
+			<Register name="enable">0</Register>
+			<Register name="regAddress">0</Register>
+		</Register>
+		<Register name="sync_block">
+			<Register name="delay">10000</Register>
+			<Register name="enable">1</Register>
+			<Register name="is_bc0_enable">1</Register>
+			<Register name="is_resync_enable">0</Register>
+			<Register name="num_triggers">99</Register>
+		</Register>
+		<Register name="tlu_block">
+			<Register name="handshake_mode">2</Register>
+			<Register name="phase_select">255</Register>
+			<Register name="tlu_enabled">0</Register>
+			<Register name="trigger_id_delay">1</Register>
+		</Register>
+		<Register name="ttc">
+			<Register name="ttc_enable">0</Register>
+		</Register>
+	</Register>
+	<Register name="fc7_daq_ctrl">
+		<Register name="tlu_block">0</Register>
+		<Register name="calibration_2s_block">
+			<Register name="control">
+				<Register name="reset_fsm">0</Register>
+				<Register name="start">0</Register>
+			</Register>
+		</Register>
+		<Register name="command_processor_block">
+			<Register name="cpb_ctrl_reg">
+				<Register name="command_fifo_reset">0</Register>
+				<Register name="core_reset">0</Register>
+				<Register name="reply_fifo_reset">0</Register>
+				<Register name="state_reset">0</Register>
+			</Register>
+			<Register name="global">
+				<Register name="reset">0</Register>
+			</Register>
+			<Register name="i2c">
+				<Register name="control">
+					<Register name="reset">0</Register>
+					<Register name="reset_fifos">0</Register>
+				</Register>
+			</Register>
+		</Register>
+		<Register name="ddr3_block">
+			<Register name="control">
+				<Register name="traffic_str">0</Register>
+			</Register>
+		</Register>
+		<Register name="dio5_block">
+			<Register name="control">
+				<Register name="load_config">0</Register>
+			</Register>
+		</Register>
+		<Register name="fast_command_block">
+			<Register name="control">
+				<Register name="fast_duration">0</Register>
+				<Register name="fast_i2c_refresh">0</Register>
+				<Register name="fast_orbit_reset">0</Register>
+				<Register name="fast_reset">0</Register>
+				<Register name="fast_test_pulse">0</Register>
+				<Register name="fast_trigger">0</Register>
+				<Register name="load_config">0</Register>
+				<Register name="reset">0</Register>
+				<Register name="reset_test_pulse">0</Register>
+				<Register name="start_generic">0</Register>
+				<Register name="start_trigger">0</Register>
+				<Register name="stop_generic">0</Register>
+				<Register name="stop_trigger">0</Register>
+				<Register name="write_generic">0</Register>
+			</Register>
+		</Register>
+		<Register name="fine_phase_tune">
+			<Register name="control">
+				<Register name="phase_shift_trig_data">0</Register>
+				<Register name="toggle_phase">0</Register>
+			</Register>
+		</Register>
+		<Register name="global">
+			<Register name="amc13">
+				<Register name="link_reset">0</Register>
+			</Register>
+			<Register name="clock_generator">
+				<Register name="clk40_reset">0</Register>
+				<Register name="refclk_reset">0</Register>
+			</Register>
+			<Register name="ttc">
+				<Register name="dec_reset">0</Register>
+			</Register>
+		</Register>
+		<Register name="optical_block">
+			<Register name="general">0</Register>
+			<Register name="ic">
+				<Register name="read">0</Register>
+				<Register name="reset">0</Register>
+				<Register name="start_read">0</Register>
+				<Register name="start_write">0</Register>
+				<Register name="write">0</Register>
+			</Register>
+			<Register name="sca">
+				<Register name="reset">0</Register>
+				<Register name="start">0</Register>
+				<Register name="start_connect">0</Register>
+				<Register name="start_reset">0</Register>
+			</Register>
+		</Register>
+		<Register name="physical_interface_block">
+			<Register name="phase_tuning_ctrl">0</Register>
+            <Register name="link0_hybrid0_stub_bitslip">0</Register>
+            <Register name="link0_hybrid1_stub_bitslip">0</Register>
+            <Register name="link1_hybrid0_stub_bitslip">0</Register>
+            <Register name="link1_hybrid1_stub_bitslip">0</Register>
+            <Register name="link2_hybrid0_stub_bitslip">0</Register>
+            <Register name="link2_hybrid1_stub_bitslip">0</Register>
+            <Register name="link3_hybrid0_stub_bitslip">0</Register>
+            <Register name="link3_hybrid1_stub_bitslip">0</Register>
+            <Register name="link4_hybrid0_stub_bitslip">0</Register>
+            <Register name="link4_hybrid1_stub_bitslip">0</Register>
+            <Register name="link5_hybrid0_stub_bitslip">0</Register>
+            <Register name="link5_hybrid1_stub_bitslip">0</Register>
+            <Register name="link6_hybrid0_stub_bitslip">0</Register>
+            <Register name="link6_hybrid1_stub_bitslip">0</Register>
+            <Register name="link7_hybrid0_stub_bitslip">0</Register>
+            <Register name="link7_hybrid1_stub_bitslip">0</Register>
+            <Register name="link8_hybrid0_stub_bitslip">0</Register>
+            <Register name="link8_hybrid1_stub_bitslip">0</Register>
+            <Register name="link9_hybrid0_stub_bitslip">0</Register>
+            <Register name="link9_hybrid1_stub_bitslip">0</Register>
+            <Register name="linkA_hybrid0_stub_bitslip">0</Register>
+            <Register name="linkA_hybrid1_stub_bitslip">0</Register>
+            <Register name="linkB_hybrid0_stub_bitslip">0</Register>
+            <Register name="linkB_hybrid1_stub_bitslip">0</Register>
+            <Register name="link0_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link0_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link1_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link1_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link2_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link2_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link3_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link3_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link4_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link4_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link5_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link5_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link6_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link6_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link7_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link7_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link8_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link8_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="link9_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="link9_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="linkA_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="linkA_hybrid1_L1A_bitslip" >0</Register>
+            <Register name="linkB_hybrid0_L1A_bitslip" >0</Register>
+            <Register name="linkB_hybrid1_L1A_bitslip" >0</Register>
+			<Register name="cic_decoder">
+				<Register name="backend_alignment_pattern_disable">0</Register>
+				<Register name="start_bx0_alignment">0</Register>
+			</Register>
+			<Register name="control">
+				<Register name="cbc3_tune_again">0</Register>
+				<Register name="chip_hard_reset">0</Register>
+				<Register name="cic_hard_reset">0</Register>
+				<Register name="decoder_reset">0</Register>
+				<Register name="stub_debug">0</Register>
+			</Register>
+			<Register name="data_player">
+				<Register name="i2c_slave_reset">0</Register>
+				<Register name="start_data_player">0</Register>
+				<Register name="start_fe_for_ps_roh_fcmd_test">0</Register>
+				<Register name="stop_data_player">0</Register>
+				<Register name="write_ref_fcmd_to_bram">0</Register>
+				<Register name="write_test_fcmd_to_bram">0</Register>
+			</Register>
+			<Register name="debug_blk">
+				<Register name="start_input">0</Register>
+				<Register name="start_output">0</Register>
+				<Register name="stop_input">0</Register>
+				<Register name="stop_output">0</Register>
+			</Register>
+			<Register name="multiplexing_bp">
+				<Register name="check_payload_ntriggers">0</Register>
+				<Register name="check_return_clock">0</Register>
+				<Register name="reset_powergood_flag">0</Register>
+				<Register name="setup_configure">0</Register>
+				<Register name="setup_disconnect">0</Register>
+				<Register name="setup_scan">0</Register>
+			</Register>
+		</Register>
+		<Register name="readout_block">
+			<Register name="control">
+				<Register name="readout_done">0</Register>
+				<Register name="readout_reset">0</Register>
+			</Register>
+		</Register>
+		<Register name="stub_counter_block">
+			<Register name="general">
+				<Register name="shutter_close">0</Register>
+				<Register name="shutter_open">0</Register>
+			</Register>
+		</Register>
+	</Register>
+	<Register name="fc7_daq_stat">
+		<Register name="be_proc">
+			<Register name="frame_counters">
+				<Register name="hybrid0">
+					<Register name="chip0">10</Register>
+					<Register name="chip1">478551030</Register>
+					<Register name="chip2">0</Register>
+					<Register name="chip3">0</Register>
+					<Register name="chip4">0</Register>
+					<Register name="chip5">0</Register>
+					<Register name="chip6">0</Register>
+					<Register name="chip7">0</Register>
+				</Register>
+			</Register>
+			<Register name="general">
+				<Register name="data_payload_buf_empty">1</Register>
+				<Register name="evnt_cnt">10</Register>
+				<Register name="evnt_cnt_buf_empty">1</Register>
+				<Register name="trigdata_buf_empty">1</Register>
+			</Register>
+		</Register>
+		<Register name="calibration_2s_block">
+			<Register name="general">
+				<Register name="counters_ready">0</Register>
+				<Register name="fifo_empty">0</Register>
+				<Register name="fsm_done">0</Register>
+			</Register>
+		</Register>
+		<Register name="command_processor_block">
+			<Register name="command_arbitrator_fsm_state">1</Register>
+			<Register name="reply_arbitrator_fsm_state">1</Register>
+			<Register name="i2c">
+				<Register name="master_status_fsm">0</Register>
+				<Register name="master_version">1</Register>
+				<Register name="nreplies">0</Register>
+				<Register name="command_fifo">
+					<Register name="empty">0</Register>
+					<Register name="full">0</Register>
+				</Register>
+				<Register name="reply_fifo">
+					<Register name="empty">0</Register>
+					<Register name="full">0</Register>
+				</Register>
+			</Register>
+			<Register name="worker">
+				<Register name="lpgbtsc_fsm_state">
+					<Register name="fe_state">1</Register>
+					<Register name="i2c_state">1</Register>
+					<Register name="ic_state">1</Register>
+					<Register name="worker_state">1</Register>
+				</Register>
+				<Register name="lpgbtsc_try_counters">
+					<Register name="fe_tool">0</Register>
+					<Register name="i2c_tool">0</Register>
+					<Register name="ic_tool">0</Register>
+				</Register>
+			</Register>
+		</Register>
+		<Register name="ddr3_block">
+			<Register name="init_calib_done">1</Register>
+			<Register name="is_ddr3_type">1</Register>
+			<Register name="num_errors">0</Register>
+			<Register name="num_words">0</Register>
+			<Register name="self_check_done">0</Register>
+		</Register>
+		<Register name="dio5_block">
+			<Register name="status">
+				<Register name="error">0</Register>
+				<Register name="not_ready">0</Register>
+			</Register>
+		</Register>
+		<Register name="fast_command_block">
+			<Register name="running_time">3849</Register>
+			<Register name="trigger_in_counter">10</Register>
+			<Register name="general">
+				<Register name="antenna_async_done">0</Register>
+				<Register name="configured">1</Register>
+				<Register name="fsm_state">0</Register>
+				<Register name="source">3</Register>
+			</Register>
+		</Register>
+		<Register name="general">
+			<Register name="firmware_timestamp">3098605575</Register>
+			<Register name="clock_generator">
+				<Register name="clk_40_locked">1</Register>
+				<Register name="ref_clk_locked">0</Register>
+			</Register>
+			<Register name="global_error">
+				<Register name="counter">0</Register>
+				<Register name="full_error">0</Register>
+			</Register>
+			<Register name="info">
+				<Register name="chip_type">5</Register>
+				<Register name="fmc1_card_type">18</Register>
+				<Register name="fmc2_card_type">1</Register>
+				<Register name="implementation">0</Register>
+				<Register name="num_chips">1</Register>
+				<Register name="num_hybrids">16</Register>
+			</Register>
+			<Register name="ttc">
+				<Register name="dec_double_err_cnt">0</Register>
+				<Register name="dec_single_err_cnt">0</Register>
+				<Register name="ready">0</Register>
+			</Register>
+		</Register>
+		<Register name="optical_block">
+			<Register name="ic">
+				<Register name="address">0</Register>
+				<Register name="data">0</Register>
+				<Register name="empty">0</Register>
+				<Register name="rd_mem_ptr">0</Register>
+				<Register name="ready">0</Register>
+				<Register name="words">0</Register>
+			</Register>
+			<Register name="sca">
+				<Register name="address">0</Register>
+				<Register name="channel">0</Register>
+				<Register name="data">0</Register>
+				<Register name="done">0</Register>
+				<Register name="error">0</Register>
+				<Register name="length">0</Register>
+				<Register name="trans_id">0</Register>
+			</Register>
+		</Register>
+		<Register name="physical_interface_block">
+			<Register name="bitslip_done_cbc0">0</Register>
+			<Register name="bitslip_done_cbc1">0</Register>
+			<Register name="counter_powergood_glitches">0</Register>
+			<Register name="debug_blk_counter00">0</Register>
+			<Register name="debug_blk_counter01">0</Register>
+			<Register name="debug_blk_counter02">0</Register>
+			<Register name="debug_blk_counter03">0</Register>
+			<Register name="debug_blk_counter04">0</Register>
+			<Register name="debug_blk_counter05">0</Register>
+			<Register name="debug_blk_counter06">0</Register>
+			<Register name="debug_blk_counter07">0</Register>
+			<Register name="debug_blk_counter08">0</Register>
+			<Register name="debug_blk_counter09">0</Register>
+			<Register name="debug_blk_counter10">0</Register>
+			<Register name="debug_blk_counter11">0</Register>
+			<Register name="debug_blk_counter12">0</Register>
+			<Register name="debug_blk_counter13">0</Register>
+			<Register name="debug_blk_counter14">0</Register>
+			<Register name="debug_blk_counter15">0</Register>
+			<Register name="debug_blk_counter16">0</Register>
+			<Register name="debug_blk_counter17">0</Register>
+			<Register name="debug_blk_counter18">0</Register>
+			<Register name="debug_blk_counter19">0</Register>
+			<Register name="debug_blk_counter20">0</Register>
+			<Register name="debug_blk_counter21">0</Register>
+			<Register name="debug_blk_counter22">0</Register>
+			<Register name="debug_blk_counter23">0</Register>
+			<Register name="debug_blk_counter24">0</Register>
+			<Register name="debug_blk_counter25">0</Register>
+			<Register name="debug_blk_counter26">0</Register>
+			<Register name="debug_blk_counter27">0</Register>
+			<Register name="debug_blk_counter28">0</Register>
+			<Register name="debug_blk_counter29">0</Register>
+			<Register name="debug_blk_counter30">0</Register>
+			<Register name="debug_blk_counter31">0</Register>
+			<Register name="delay5_done_cbc0">0</Register>
+			<Register name="delay5_done_cbc1">0</Register>
+			<Register name="fcmd_debug_cic_l">0</Register>
+			<Register name="fcmd_debug_cic_r">0</Register>
+			<Register name="fcmd_debug_ssa_l">0</Register>
+			<Register name="fcmd_debug_ssa_r">0</Register>
+			<Register name="hardware_ready">1</Register>
+			<Register name="input_lines_debug_done">0</Register>
+			<Register name="l1a_debug">2863311530</Register>
+			<Register name="mpa_to_cic_cntr">0</Register>
+			<Register name="phase_tuning_reply">17468928</Register>
+			<Register name="serializer_done_cbc0">0</Register>
+			<Register name="serializer_done_cbc1">0</Register>
+			<Register name="state_tuning_cbc0">0</Register>
+			<Register name="state_tuning_cbc1">0</Register>
+			<Register name="stub_debug">0</Register>
+			<Register name="async_counter_decode">
+				<Register name="chip_counters_done">0</Register>
+				<Register name="store_fsm_state">0</Register>
+				<Register name="received_start">0</Register>
+				<Register name="start_pattern_not_found">0</Register>
+			</Register>
+			<Register name="cic_decoder">
+				<Register name="bx0_alignment_state">8</Register>
+			</Register>
+			<Register name="clk_test">
+				<Register name="fe_for_ps_roh_clk_320_l_stat">0</Register>
+				<Register name="fe_for_ps_roh_clk_320_l_test_done">0</Register>
+				<Register name="fe_for_ps_roh_clk_320_r_stat">0</Register>
+				<Register name="fe_for_ps_roh_clk_320_r_test_done">0</Register>
+				<Register name="fe_for_ps_roh_clk_640_l_stat">0</Register>
+				<Register name="fe_for_ps_roh_clk_640_l_test_done">0</Register>
+				<Register name="fe_for_ps_roh_clk_640_r_stat">0</Register>
+				<Register name="fe_for_ps_roh_clk_640_r_test_done">0</Register>
+			</Register>
+			<Register name="clk_test_debug_1">
+				<Register name="fe_for_ps_roh_clk_320_l_ref_counter">0</Register>
+				<Register name="fe_for_ps_roh_clk_320_l_test_counter">0</Register>
+			</Register>
+			<Register name="clk_test_debug_2">
+				<Register name="fe_for_ps_roh_clk_320_r_ref_counter">0</Register>
+				<Register name="fe_for_ps_roh_clk_320_r_test_counter">0</Register>
+			</Register>
+			<Register name="clk_test_debug_3">
+				<Register name="fe_for_ps_roh_clk_640_l_ref_counter">0</Register>
+				<Register name="fe_for_ps_roh_clk_640_l_test_counter">0</Register>
+			</Register>
+			<Register name="clk_test_debug_4">
+				<Register name="fe_for_ps_roh_clk_640_r_ref_counter">0</Register>
+				<Register name="fe_for_ps_roh_clk_640_r_test_counter">0</Register>
+			</Register>
+			<Register name="data_player">
+				<Register name="stat_feh_data_player">0</Register>
+				<Register name="stat_roh_data_player">0</Register>
+			</Register>
+			<Register name="fcmd_debug">
+				<Register name="cic_l">0</Register>
+				<Register name="cic_r">0</Register>
+				<Register name="ssa_l">0</Register>
+				<Register name="ssa_r">0</Register>
+			</Register>
+			<Register name="fcmd_test">
+				<Register name="fe_for_ps_roh_fcmd_CIC_l_stat">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_CIC_l_test_done">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_CIC_r_stat">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_CIC_r_test_done">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_SSA_l_stat">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_SSA_l_test_done">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_SSA_r_stat">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_SSA_r_test_done">0</Register>
+			</Register>
+			<Register name="fe_for_ps_roh_cic_fcmd_test">
+				<Register name="fe_for_ps_roh_fcmd_CIC_l_check">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_CIC_l_ref">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_CIC_r_check">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_CIC_r_ref">0</Register>
+			</Register>
+			<Register name="fe_for_ps_roh_ssa_fcmd_test">
+				<Register name="fe_for_ps_roh_fcmd_SSA_l_check">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_SSA_l_ref">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_SSA_r_check">0</Register>
+				<Register name="fe_for_ps_roh_fcmd_SSA_r_ref">0</Register>
+			</Register>
+			<Register name="multiplexing_bp">
+				<Register name="available_backplanes_cards">0</Register>
+				<Register name="backplane_powergood">0</Register>
+				<Register name="backplane_valid">0</Register>
+				<Register name="backplanes_disconnected">0</Register>
+				<Register name="card_powergood">0</Register>
+				<Register name="card_valid">0</Register>
+				<Register name="cards_disconnected">0</Register>
+				<Register name="configuration_required">0</Register>
+				<Register name="flag_power_good_dropped">0</Register>
+				<Register name="setup_configured">0</Register>
+				<Register name="setup_scanned">0</Register>
+				<Register name="status_interlock_switch">0</Register>
+			</Register>
+			<Register name="ps_return">
+				<Register name="clock_from_ssa1_test_done">0</Register>
+				<Register name="clock_from_ssa1_test_stat">0</Register>
+				<Register name="clock_from_ssa2_test_done">0</Register>
+				<Register name="clock_from_ssa2_test_stat">0</Register>
+				<Register name="fcmd_from_ssa1_test_done">0</Register>
+				<Register name="fcmd_from_ssa1_test_is_pattern_error">0</Register>
+				<Register name="fcmd_from_ssa1_test_is_payload_error">0</Register>
+				<Register name="fcmd_from_ssa1_test_stat">0</Register>
+				<Register name="fcmd_from_ssa2_test_done">0</Register>
+				<Register name="fcmd_from_ssa2_test_is_pattern_error">0</Register>
+				<Register name="fcmd_from_ssa2_test_is_payload_error">0</Register>
+				<Register name="fcmd_from_ssa2_test_stat">0</Register>
+			</Register>
+			<Register name="slvs_debug">
+				<Register name="first_header_delay">223</Register>
+				<Register name="ps_counters_fsm_state">0</Register>
+				<Register name="ps_counters_ready">0</Register>
+			</Register>
+		</Register>
+		<Register name="readout_block">
+			<Register name="general">
+				<Register name="fsm_status">3</Register>
+				<Register name="readout_req">0</Register>
+				<Register name="words_cnt">0</Register>
+			</Register>
+		</Register>
+		<Register name="sfp_ddmi">
+			<Register name="data_l12">0</Register>
+			<Register name="data_l8">0</Register>
+		</Register>
+		<Register name="sfp_ddmi_status">
+			<Register name="busy_l12">0</Register>
+			<Register name="busy_l8">0</Register>
+			<Register name="error_l12">0</Register>
+			<Register name="error_l8">0</Register>
+		</Register>
+		<Register name="stub_counter_block">
+			<Register name="bx_counter_ls">0</Register>
+			<Register name="bx_counter_ms">0</Register>
+			<Register name="counters_hyb0_chip0">
+				<Register name="error_counter">0</Register>
+				<Register name="stub_counter">0</Register>
+			</Register>
+			<Register name="counters_hyb0_chip1">
+				<Register name="error_counter">0</Register>
+				<Register name="stub_counter">0</Register>
+			</Register>
+		</Register>
+		<Register name="tlu_block">
+			<Register name="fifo_empty">0</Register>
+			<Register name="fifo_full">0</Register>
+			<Register name="trigger_id_fifo">0</Register>
+		</Register>
+	</Register>
+	<Register name="sysreg">
+		<Register name="board_id">1178810144</Register>
+		<Register name="rev_id">825699892</Register>
+		<Register name="ctrl">
+			<Register name="cdce_ctrl_sel">1</Register>
+			<Register name="cdce_powerup">1</Register>
+			<Register name="cdce_refsel">0</Register>
+			<Register name="cdce_sync">1</Register>
+			<Register name="pcieclk_fsel0">1</Register>
+			<Register name="pcieclk_fsel1">0</Register>
+			<Register name="pcieclk_mr">0</Register>
+			<Register name="pcieclk_pll_sel">0</Register>
+		</Register>
+		<Register name="fmc_pwr">
+			<Register name="l12_pwr_en">1</Register>
+			<Register name="l8_pwr_en">1</Register>
+			<Register name="pg_c2m">1</Register>
+		</Register>
+		<Register name="i2c_command">
+			<Register name="mem">1</Register>
+			<Register name="mode16">0</Register>
+			<Register name="regaddr">8</Register>
+			<Register name="slvaddr_7b">47</Register>
+			<Register name="strobe">0</Register>
+			<Register name="wrdata">212</Register>
+			<Register name="write">1</Register>
+		</Register>
+		<Register name="i2c_reply">
+			<Register name="done">1</Register>
+			<Register name="error">1</Register>
+			<Register name="r_16b">2260</Register>
+			<Register name="r_8b">212</Register>
+			<Register name="status">3</Register>
+		</Register>
+		<Register name="i2c_settings">
+			<Register name="i2c_bus_select">0</Register>
+			<Register name="i2c_enable">0</Register>
+			<Register name="i2c_prescaler">1000</Register>
+		</Register>
+		<Register name="spi">
+			<Register name="command">0</Register>
+			<Register name="rx_data">0</Register>
+			<Register name="tx_data">0</Register>
+		</Register>
+		<Register name="status">
+			<Register name="cdce_lock">1</Register>
+			<Register name="cdce_sync_busy">0</Register>
+			<Register name="cdce_sync_done">1</Register>
+		</Register>
+		<Register name="version">
+			<Register name="ver_build">3</Register>
+			<Register name="ver_day">14</Register>
+			<Register name="ver_major">5</Register>
+			<Register name="ver_minor">0</Register>
+			<Register name="ver_month">3</Register>
+			<Register name="ver_year">18</Register>
+		</Register>
+	</Register>
+</BeBoardRegister>

@@ -1,0 +1,12 @@
+[submodule "NetworkUtils"]
+	path = NetworkUtils
+	url = ../../cms_tk_ph2/NetworkUtils.git
+	fetchRecurseSubmodules = true
+	branch = master
+	shallow = true
+[submodule "MessageUtils"]
+	path = MessageUtils
+	url = ../../cms_tk_ph2/MessageUtils.git
+	fetchRecurseSubmodules = true
+	branch = master
+	shallow = true

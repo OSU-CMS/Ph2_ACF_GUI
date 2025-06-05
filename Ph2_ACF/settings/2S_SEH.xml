@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HwDescription>
+    <!--##############
+      OPTICAL FC7 
+  ###############-->
+    <BeBoard Id="0" boardType="D19C" eventType="VR2S" linkReset="1" boardReset="1" configure="1">
+        <connection id="board" uri="ipbusudp-2.0://192.168.0.169:50001" address_table="file://settings/address_tables/uDTC_OT_address_table.xml" />
+        <CDCE configure="0" clockRate="320" />
+
+         <OpticalGroup Id="0" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+            <lpGBT Id="0" version="1" optical="1" configFile="lpGBT_v1_2S.txt">
+                <Settings />
+            </lpGBT>
+        </OpticalGroup>
+         <OpticalGroup Id="1" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+            <lpGBT Id="0" version="0" optical="1" configFile="lpGBT_v0_2S.txt">
+                <Settings />
+            </lpGBT>
+        </OpticalGroup>
+         <OpticalGroup Id="2" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+            <lpGBT Id="0" version="1" optical="1" configFile="lpGBT_v1_2S.txt">
+                <Settings />
+            </lpGBT>
+        </OpticalGroup>
+        <!--  <OpticalGroup Id="3" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+            <lpGBT Id="0" version="0" optical="1" configFile="lpGBT_v0_2S.txt">
+                <Settings />
+            </lpGBT>
+        </OpticalGroup>
+         <OpticalGroup Id="4" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+            <lpGBT Id="0" version="0" optical="1" configFile="lpGBT_v0_2S.txt">
+                <Settings />
+            </lpGBT>
+        </OpticalGroup>
+         <OpticalGroup Id="5" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+            <lpGBT Id="0" version="0" optical="1" configFile="lpGBT_v0_2S.txt">
+                <Settings />
+            </lpGBT>
+        </OpticalGroup>
+         <OpticalGroup Id="6" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+            <lpGBT Id="0" version="0" optical="1" configFile="lpGBT_v0_2S.txt">
+                <Settings />
+            </lpGBT>
+        </OpticalGroup>
+         <OpticalGroup Id="7" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+            <lpGBT Id="0" version="0" optical="1" configFile="lpGBT_v0_2S.txt">
+                <Settings />
+            </lpGBT>
+        </OpticalGroup> -->
+
+
+        
+
+        <!--CONFIG-->
+        <!-- 15 - default (internal oscillator), 0 - AMC13 -->
+        <Register name="clock_source_u7">0 </Register>
+        <!-- 3 = internal oscillator (default), 1 = fmc_l8_clk1, 2 = fmc_l8_clk0, 0 = COAX_IN -->
+        <Register name="clock_source_u8">3</Register>
+        <Register name="fc7_daq_cnfg">
+            <Register name="optical_block">
+                <Register name="lpgbt_sc_worker">
+                    <Register name="ic_retry"> 1 </Register>
+                    <Register name="i2c_retry"> 1 </Register>
+                    <Register name="fe_retry"> 1 </Register>
+                    <Register name="max_ic_retry"> 10 </Register>
+                    <Register name="max_i2c_retry"> 10 </Register>
+                    <Register name="max_fe_retry"> 10 </Register>
+                </Register>
+            </Register>
+            <!-- Clock control -->
+            <Register name="clock">
+                <Register name="ext_clk_en"> 0 </Register>
+            </Register>
+            <!-- TTC -->
+            <Register name="ttc">
+                <Register name="ttc_enable"> 0 </Register>
+            </Register>
+            <!-- Fast Command Block -->
+            <Register name="fast_command_block">
+                <Register name="triggers_to_accept"> 0 </Register>
+                <Register name="trigger_source"> 3 </Register>
+                <Register name="user_trigger_frequency"> 1000 </Register>
+                <Register name="stubs_mask"> 1 </Register>
+                <!--this is the delay for the stub trigger-->
+                <Register name="stub_trigger_delay_value"> 0 </Register>
+                <Register name="stub_trigger_veto_length"> 0 </Register>
+                <Register name="test_pulse">
+                    <Register name="delay_after_fast_reset"> 50 </Register>
+                    <Register name="delay_after_test_pulse"> 200 </Register>
+                    <Register name="delay_before_next_pulse"> 400 </Register>
+                    <Register name="en_fast_reset"> 1 </Register>
+                    <Register name="en_test_pulse"> 1 </Register>
+                    <Register name="en_l1a"> 1 </Register>
+                </Register>
+                <Register name="ext_trigger_delay_value"> 10 </Register>
+                <Register name="antenna_trigger_delay_value"> 200 </Register>
+                <Register name="delay_between_two_consecutive"> 0 </Register>
+                <Register name="misc">
+                    <Register name="backpressure_enable"> 1 </Register>
+                    <Register name="stubOR"> 1 </Register>
+                    <Register name="initial_fast_reset_enable"> 0 </Register>
+                    <Register name="trigger_multiplicity"> 0 </Register>
+                </Register>
+            </Register>
+            <!-- I2C manager -->
+            <Register name="command_processor_block"></Register>
+            <!-- Phy Block -->
+            <Register name="physical_interface_block">
+                <Register name="i2c">
+                    <Register name="frequency"> 4 </Register>
+                </Register>
+            </Register>
+            <!-- Readout Block -->
+            <Register name="readout_block">
+                <Register name="packet_nbr"> 999 </Register>
+                <Register name="global">
+                    <Register name="data_handshake_enable"> 0 </Register>
+                    <Register name="int_trig_enable"> 0 </Register>
+                    <Register name="int_trig_rate"> 0 </Register>
+                    <Register name="trigger_type"> 0 </Register>
+                    <Register name="data_type"> 0 </Register>
+                    <!--this is what is commonly known as stub latency-->
+                    <Register name="common_stubdata_delay"> 194 </Register>
+                </Register>
+            </Register>
+        
+        </Register>
+    </BeBoard>
+
+
+    <!--##############
+    ELECTRICAL FC7 
+  ###############-->
+    <BeBoard Id="1" boardType="D19C" eventType="VR" linkReset="1" boardReset="0" configure="1">
+        <connection id="board" uri="ipbusudp-2.0://192.168.0.135:50001" address_table="file://settings/address_tables/uDTC_OT_address_table.xml" />
+        <CDCE configure="0" clockRate="320" />
+
+        <!--  <OpticalGroup Id="0" enable="1" FMCId="0" reset="1"></OpticalGroup> -->
+
+        <!--CONFIG-->
+        <!-- 15 - default (internal oscillator), 0 - AMC13 -->
+        <Register name="clock_source_u7">0 </Register>
+        <!-- 3 = internal oscillator (default), 1 = fmc_l8_clk1, 2 = fmc_l8_clk0, 0 = COAX_IN -->
+        <Register name="clock_source_u8">3</Register>
+
+        
+    </BeBoard>
+
+
+    <Settings>
+        <!-- Interlock enabled. 1 is input to the backplane from the switch. 0 is input to the backplane by the firmware -->
+        <Setting name="InterlockEnabled">1</Setting>
+    </Settings>
+
+    <MonitoringSettings>
+        <Monitoring type="2SSEH" enable="0">
+            <MonitoringSleepTime> 1500 </MonitoringSleepTime>
+            <MonitoringElement device="LpGBT" register="ADC0" enable="0" />
+            <MonitoringElement device="LpGBT" register="TEMP" enable="0" />
+            <MonitoringElement device="PowerSupply" register="MyRohdeSchwarz_LV_Module3_Voltage" enable="0" />
+            <MonitoringElement device="PowerSupply" register="MyRohdeSchwarz_LV_Module3_Current" enable="0" />
+            <!-- <MonitoringElement device="PowerSupply" register="IsegSHR4220_HV_Module1_Voltage" enable="1" />
+            <MonitoringElement device="PowerSupply" register="IsegSHR4220_HV_Module1_Current" enable="1" /> -->
+            <MonitoringElement device="PowerSupply" register="MyKeithley_HV_Front_Voltage" enable="1" />
+            <MonitoringElement device="PowerSupply" register="MyKeithley_HV_Front_Current" enable="1" />
+            <!-- High voltage monitoring element needs to contain "_HV_" and end with "Voltage" or "Current!" -->
+            <MonitoringElement device="TestCard" register="HV_meas" enable="1" />
+        </Monitoring>
+    </MonitoringSettings>
+
+    <CommunicationSettings>
+        <DQM               ip="127.0.0.1" port="6000" enableConnection="1"/>
+        <MonitorDQM        ip="127.0.0.1" port="8000" enableConnection="1"/>
+        <PowerSupplyClient ip="127.0.0.1" port="7000" enableConnection="1"/>
+    </CommunicationSettings>
+    <TestParameters>
+        <InputVoltages>
+          <Voltage>5., 5.2, 5.4, 6., 7., 8., 8.7, 8.8, 8.9, 9., 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7, 10., 10.5, 10., 9., 8., 7., 6.6, 6.4, 6.2, 6.0, 5.8, 5.6, 5.4, 5.2, 5</Voltage>
+        </InputVoltages>
+    </TestParameters>
+    <Devices>
+        <PowerSupply
+            ID="MyRohdeSchwarz"
+            Type="LV"
+        >
+            <Channel ID="LV_Module3" Channel="3" InUse="Yes" />
+        </PowerSupply>
+        <!-- <PowerSupply
+            ID="MyIsegSHR4220"
+            Type="HV"
+        >
+            <Channel ID="HV_Module1" Channel="1" InUse="Yes" />
+        </PowerSupply> -->
+        <PowerSupply
+            ID="MyKeithley"
+            Type="HV"
+        >
+            <Channel ID="HV_Front" Channel="FRON" InUse="Yes" />
+        </PowerSupply>
+    </Devices>
+</HwDescription>

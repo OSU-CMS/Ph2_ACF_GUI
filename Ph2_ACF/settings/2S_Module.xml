@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HwDescription>
+  <BeBoard Id="0" boardType="D19C" eventType="VR2S" linkReset="1" boardReset="1" configure="1">
+    <!-- B598 skeleton -->
+    <connection id="board" uri="chtcp-2.0://localhost:10203?target=192.168.13.204:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/uDTC_OT_address_table.xml" />
+    <configuration file_name="${PH2ACF_BASE_DIR}/settings/BeBoardFiles/uDTC_registers_2S.xml"/>
+    <CDCE configure="0" clockRate="320"/>
+
+     <OpticalGroup Id="0" enable="1" FMCId="L12" reset="1">
+        <NTCProperties type="Sensor" ADC="ADC4" lookUpTable = "${PH2ACF_BASE_DIR}/settings/NTCFiles/ntc_1k.csv"/>
+        
+        <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+        <lpGBT Id="0" version="1" optical="1" configFile="lpGBT_v1_2S.txt">
+          <Settings
+          />
+          <TuneVrefSettings ADC = "ADC2" ReferenceVoltage = "501" /> <!--Voltage given in mV!-->
+
+        </lpGBT>
+        <VTRx_Files path="${PH2ACF_BASE_DIR}/settings/VTRxFiles/" />
+        <VTRx Id="0" configFile="VTRx.txt"/>
+        <Hybrid Id="0" enable="1" reset="1">
+            <Global>
+                <Settings threshold="520" latency="108"/>
+                <TestPulse enable="1" polarity="0" amplitude="0xC0" channelgroup="0" delay="0" groundothers="0"/>
+                <ClusterStub clusterwidth="4" ptwidth="14" layerswap="0" off1="0" off2="0" off3="0" off4="0"/>
+                <Misc analogmux="0b00000" pipelogic="0" stublogic="0" or254="0" tpgclock="1" testclock="0" dll="10" hipCount="2"/>
+                <ChannelMask disable=""/>
+                <CIC2 enableBend="1" enableLastLine="0" enableSparsification="0" driveStrength="3" edgeSelect="0"/>
+            </Global>
+
+            <CBC_Files path="${PH2ACF_BASE_DIR}/settings/CbcFiles/" />
+            <CBC Id="0" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="1" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="2" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="3" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="4" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="5" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="6" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="7" enable="1" configFile="CBC3_default.txt" />
+
+            <CIC2_Files path="${PH2ACF_BASE_DIR}/settings/CicFiles/" />
+            <CIC2 Id="8" enable="1" configFile="CIC2_2S.txt" />
+        </Hybrid>
+        <Hybrid Id="1" enable="1" reset="1"> <!-- i2cMaster="1"> -->
+            <Global>
+                <Settings threshold="520" latency="108"/>
+                <TestPulse enable="1" polarity="0" amplitude="0xC0" channelgroup="0" delay="0" groundothers="0"/>
+                <ClusterStub clusterwidth="4" ptwidth="14" layerswap="0" off1="0" off2="0" off3="0" off4="0"/>
+                <Misc analogmux="0b00000" pipelogic="0" stublogic="0" or254="0" tpgclock="1" testclock="0" dll="10" hipCount="2"/>
+                <ChannelMask disable=""/>
+                <CIC2 enableBend="1" enableLastLine="0" enableSparsification="0" driveStrength="3" edgeSelect="0"/>
+            </Global>
+
+            <CBC_Files path="${PH2ACF_BASE_DIR}/settings/CbcFiles/" />
+            <CBC Id="0" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="1" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="2" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="3" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="4" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="5" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="6" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="7" enable="1" configFile="CBC3_default.txt" />
+
+            <CIC2_Files path="${PH2ACF_BASE_DIR}/settings/CicFiles/" />
+            <CIC2 Id="8" enable="1" configFile="CIC2_2S.txt" />
+        </Hybrid>
+    </OpticalGroup>
+  </BeBoard>
+
+
+<Settings>
+    <Setting name="isKickoff">0</Setting>
+    <!--PedestalEqualization-->
+	<Setting name="Nevents">1000</Setting>
+	<Setting name="CMNoise_Nevents">10000</Setting>
+	<Setting name="CMNoise_manualVcth">0</Setting> <!-- 0 = default (use CMNoise_nSigmas) -->
+    <Setting name="CMNoise_nSigmas">0, 3</Setting> <!-- 0 = pedestal, 1 = 1 sigma, 2 = 2 sigma, ... . Ignored if CMNoise_manualVcth!=0 -->
+	<Setting name="CMNoise_2DHistograms">0</Setting> <!-- Create additional Correlation plots. CPU & RAM intensive -->
+	<Setting name="CMNoise_2DHistogramsLight">1</Setting> <!-- Create additional Correlation plots. -->
+    <Setting name="HoleMode">0</Setting>
+    <Setting name="VerificationLoop">1</Setting>
+    <Setting name="MaskChannelsFromOtherGroups">0</Setting>
+    <Setting name="FitSCurves">1</Setting>
+    <Setting name="PlotSCurves">1</Setting>
+    <Setting name="NoiseMeasurementLimit">10</Setting>
+    <Setting name="NeventsForValidation">100000</Setting>
+    <Setting name="MaskingThreshold">0.001</Setting>
+    <!-- <Setting name="PedeNoise_MinThreshold">375</Setting>
+    <Setting name="PedeNoise_MaxThreshold">750</Setting> -->
+
+    <!-- <Setting name="PedestalEqualization_PulseAmplitude">70</Setting>
+    <Setting name="PedeNoise_PulseAmplitude">70</Setting> -->
+    <Setting name="TriggerRate">10</Setting>
+    <Setting name="StubAlignmentThreshold">550</Setting>
+    <Setting name="StubAlignmentScanStart">67</Setting>
+    <Setting name="StartLatency">190</Setting>
+    <Setting name="LatencyRange">20</Setting>
+
+
+    <Setting name="TargetVcth">0x78</Setting>
+    <Setting name="TargetOffset">0x50</Setting>
+
+    <!--Signal Scan Fit-->
+	<Setting name="InitialVcth">0x78</Setting>
+	<Setting name="SignalScanStep">2</Setting>
+    <Setting name="FitSignal">0</Setting>
+
+    <!--Antenna for Opens -->
+    <Setting name="AntennaPotentiometer">647</Setting>
+    <Setting name="ThresholdForOpens">10</Setting>
+    <Setting name="AntennaTriggerRate">50</Setting>
+
+    <!-- Shorts -->
+    <Setting name="ShortsPulseAmplitude"> 20 </Setting>
+
+    <!--PS hybrid SSA output test -->
+    <!-- number of 10 ms periods to wait for in the case of stubs -->
+    <!-- number of triggers to send in the case of L1A data -->
+    <!-- L1 triggers sent once every 10 ms -->
+    <Setting name="PSHybridDebugDuration">1</Setting>
+
+    <!-- Async Test -->
+    <Setting name="AsyncSweepTh">1</Setting>
+    <Setting name="AsyncThreshold">100</Setting>
+    <Setting name="AsyncCalDac">30</Setting>
+
+    <Setting name="StartTHDAC">0x40</Setting>
+    <Setting name="StopTHDAC">0x90</Setting>
+    <Setting name="NMsec">0</Setting>
+    <Setting name="NMpulse">3000</Setting>
+    <Setting name="Nlvl">50</Setting>
+    <Setting name="Vfac">0.9</Setting>
+    <Setting name="Mrms">0.6</Setting>
+    <Setting name="TestPulsePotentiometer">0x50</Setting>
+    <Setting name="SyncDebug">0</Setting>
+
+    <!-- Burst Test -->
+    <Setting name="Ntrials">5</Setting>
+    <Setting name="LengthOfBurst">16</Setting>
+    <Setting name="TriggerSeparation">500</Setting>
+    <Setting name="TestPulseSeparation">70</Setting>
+
+    <Setting name="UseFcmdBram">0</Setting>
+    <Setting name="MeanTriggerSeparation">100</Setting>
+
+    <Setting name="Check2SUseReadNEvents">0</Setting>
+    <Setting name="Check2Swait">2000</Setting>   <!-- wait is in ms -->
+    <Setting name="Check2STPamplitude">10</Setting>
+    <Setting name="Check2STPdelay">10</Setting>
+    <Setting name="Check2Sthreshold">550</Setting>
+    <Setting name="Check2SRefSensor">0</Setting>   <!--bottom == 0 ; top == 1 -->
+    <Setting name="Check2SRefSide">1</Setting>   <!-- L == 1  ; R== 0 -->
+    <Setting name="Check2SRefChip">0</Setting>   <!-- L == 1  ; R== 0 -->
+
+    <Setting name="PulseShape_Nevents"       >100</Setting>
+    <Setting name="PulseShape_InitialDelay"  >  0</Setting>
+    <Setting name="PulseShape_FinalDelay"    > 75</Setting>
+    <Setting name="PulseShape_DelayStep"     >  1</Setting>
+    <Setting name="PulseShape_PulseAmplitude">200</Setting>
+    <Setting name="PulseShape_ChannelGroup"  >  0</Setting>
+
+    <Setting name="DoManualVrefTuning"      >  0</Setting>
+
+    <Setting name="OTalignBoardDataWord_BroadcastAlignSetting">0</Setting> <!-- 0 = One line at a time - 1 = One hybrid at a time = 2 = all hybrids together -->
+
+    <Setting name="OTRegisterTester_NumberOfIterations">1000</Setting>
+    <Setting name="OTRegisterTester_Pattern">0xAA</Setting>
+    <Setting name="OTverifyBoardDataWord_NumberOfTestedL1Bits">1e6</Setting>
+    <Setting name="OTverifyBoardDataWord_NumberOfTestedStubBits">1e8</Setting>
+    <Setting name="OTverifyBoardDataWord_DoMatchingInFirmware">1</Setting>
+    <Setting name="OTCICtoLpGBTecv_CICStrength">1, 3, 5</Setting>
+    <Setting name="OTCICtoLpGBTecv_ClockPolarity">0-1</Setting>
+    <Setting name="OTCICtoLpGBTecv_ClockStrength">1, 4, 7</Setting>
+    <Setting name="OTCICtoLpGBTecv_LpGBTPhase">0-14</Setting>
+   <Setting name="OTCICtoLpGBTecv_NumberOfL1Bits">1e5</Setting>
+    <Setting name="OTCICtoLpGBTecv_NumberOfStubBits">1e6</Setting>
+    <Setting name="OTalignLpGBTinputs_NumberOfAlignmentIterations">100</Setting>
+    <Setting name="OTalignLpGBTinputs_MinAlignmentSuccessRate">0.99</Setting>
+
+    <Setting name="OTCICphaseAlignment_NumberOfAlignmentIterations">100</Setting>
+    <Setting name="OTCICphaseAlignment_MinLockingSuccessRate">0.90</Setting>
+    <Setting name="OTverifyCICdataWord_NumberOfTestedStubBits">1e6</Setting>
+    <Setting name="OTverifyCICdataWord_NumberOfTestedL1Bits">1e5</Setting>
+    <Setting name="OTverifyCICdataWord_DoMatchingInFirmware">1</Setting>
+    
+    <Setting name="OTinjectionDelayOptimization_NumberOfEvents">100</Setting>
+    <Setting name="OTinjectionDelayOptimization_MaximumDelay">150</Setting>
+    <Setting name="OTinjectionDelayOptimization_DelayStep">1</Setting>
+    <Setting name="OTinjectionDelayOptimization_CBCtestPulseValue">1.</Setting> <!-- MIP units -->
+    <Setting name="OTinjectionDelayOptimization_CBCnumberOfSigmaNoiseAwayFromPedestal">5.</Setting>
+
+    <Setting name="OTMeasureOccupancy_NumberOfEvents">10000</Setting>
+    <Setting name="OTMeasureOccupancy_CBCtestPulseValue">1.</Setting> <!-- MIP units -->
+    <Setting name="OTMeasureOccupancy_ForceChannelGroup">0</Setting>
+    <Setting name="OTMeasureOccupancy_ThresholdOffset">0</Setting>
+
+    <Setting name="OTinjectionOccupancyScan_ListOfInjectedPulses"> 0, 0.25, 0.5, 1., 2.</Setting> <!-- MIP units -->
+    <Setting name="OTinjectionOccupancyScan_NumberOfEventsWithoutInjection"> 1000000</Setting>
+    <Setting name="OTinjectionOccupancyScan_NumberOfEventsWithInjection"> 1000</Setting>
+
+    <Setting name="OTalignLpGBTinputsForBypass_NumberOfTestedBits"> 1e6</Setting>
+    <Setting name="OTalignLpGBTinputsForBypass_NumberOfTestedBitsL12S"> 1e5</Setting>
+
+    <Setting name="OTChipToCICecv_NumberOfTestedBits"> 1e6</Setting>
+    <Setting name="OTChipToCICecv_NumberOfTestedBitsL12S"> 1e5</Setting>
+    <Setting name="OTChipToCICecv_ListOfCBCslvsCurrents"> 0, 8, 14</Setting>
+    <Setting name="OTLpGBTEyeOpeningTest_PowerList">1-3</Setting>
+
+    <Setting name="OTBitErrorRateTest_NumberOfBits">1E10</Setting>
+
+    <Setting name="OTPatternCheckerHelper_NumberOfBits">1E10</Setting>
+
+</Settings>
+
+
+<MonitoringSettings>
+<Monitoring type="2S" enable="1">
+    <MonitoringSleepTime> 1000 </MonitoringSleepTime>
+    <MonitoringElement device="LpGBT" register="VDD"             enable="1"/>
+    <MonitoringElement device="LpGBT" register="VDDA"            enable="1"/>
+    <MonitoringElement device="LpGBT" register="LpGBTtemp"       enable="1"/>
+    <MonitoringElement device="LpGBT" register="ADC0"            enable="1"/>
+    <MonitoringElement device="LpGBT" register="1V25_Left"       enable="1"/>
+    <MonitoringElement device="LpGBT" register="VIN"             enable="1"/>
+    <MonitoringElement device="LpGBT" register="ADC3"            enable="1"/>
+    <MonitoringElement device="LpGBT" register="SensorTemp"      enable="1"/>
+    <MonitoringElement device="LpGBT" register="VTRxLeakageCurr" enable="1"/>
+    <MonitoringElement device="LpGBT" register="BPOL2V5temp"     enable="1"/>
+    <MonitoringElement device="LpGBT" register="BPOL12Vtemp"     enable="1"/>
+</Monitoring>
+</MonitoringSettings>
+
+<CommunicationSettings>
+    <DQM               ip="127.0.0.1" port="6000" enableConnection="1"/>
+    <MonitorDQM        ip="127.0.0.1" port="8000" enableConnection="1"/>
+    <PowerSupplyClient ip="127.0.0.1" port="7000" enableConnection="1"/>
+</CommunicationSettings>
+
+</HwDescription>
+
+<Devices>
+    <PowerSupply
+        ID          =   "MyRohdeSchwarz"
+        InUse       =   "Yes"
+        Model       =   "RohdeSchwarz"
+        Connection  =   "Serial"
+        Port        =   "/dev/ttyACM0"
+   	BaudRate    =   "9600"
+        FlowControl =   "true"
+        Parity      =   "false"
+  	RemoveEcho  =   "false"
+        Terminator  =   "\r\n"
+        Suffix      =   "\n"
+        Timeout     =   "1"
+        Series	    =   "TSX"
+    >
+    <Channel ID="LV_Module2" Channel="2" InUse ="Yes" />
+    <Channel ID="LV_Module3" Channel="3" InUse ="Yes" />
+    <Channel ID="LV_Module4" Channel="4" InUse ="Yes" />
+  </PowerSupply>
+</Devices>

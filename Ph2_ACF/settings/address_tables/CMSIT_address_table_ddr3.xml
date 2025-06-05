@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<node id="ddr3">
+  <node id="fc7_daq_ddr3" address="0x00000000" size="134217728" mode="incremental" permission="r"/>
+</node>

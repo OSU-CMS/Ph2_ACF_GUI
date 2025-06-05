@@ -1,0 +1,390 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<node id="user">
+
+  <!-- ================================================ -->
+  <!-- =============== CONTROL REGISTERS ============== -->
+  <!-- ================================================ -->
+
+  <node id="ctrl_regs"             address="0x00000040"       permission="rw"      description="User control registers.">
+
+    <node id="reset_reg"            address="0x00000000"      permission="rw"      description="Reset register. All resets are active high, unless otherwise states.">
+      <node id="global_rst"            mask="0x00000001"      permission="rw"      description="Global reset." />
+      <node id="clk_gen_rst"           mask="0x00000002"      permission="rw"      description="Clock generator reset." />
+      <node id="i2c_rst"               mask="0x00000004"      permission="rw"      description="I2C block reset." />
+      <node id="aurora_rst"            mask="0x00000008"      permission="rw"      description="Aurora receiver reset." />
+      <node id="fmc_pll_rst"           mask="0x00000010"      permission="rw"      description="FMC PLL reset. Active low!" />
+      <node id="cmd_rst"               mask="0x00000020"      permission="rw"      description="CMD processor reset." />
+      <node id="scc_rst"               mask="0x00000040"      permission="rw"      description="SCC reset. NOT CONNECTED!" />
+      <node id="chip_resync"           mask="0x00000080"      permission="rw"      description="Force initialization of chip communication" />
+      <node id="aurora_pma_rst"        mask="0x00000100"      permission="rw"      description="Aurora frame counter reset" />
+      <node id="readout_block_rst"     mask="0x00000200"      permission="rw"      description="Readout Block reset" />
+      <node id="enable_sync_word"      mask="0x00000400"      permission="rw"      description="When '1', Sync words are inserted in the cmd stream every 32 commands" />
+      <node id="ext_clk_en"            mask="0x00000800"      permission="rw"      description="Enable external clock as main clock input (40MHz)" />
+      <node id="rst_cdce_sync"         mask="0x00001000"      permission="rw"      description="CDCE chip on FC7 that generates the clocks is forced to resync with the reference clock" />
+      <node id="set_sync_cmd_freq"     mask="0x00002000"      permission="rw"      description="Toggling this bit, forces the value of the register chip_reset_duration to be updated in the firmware" />
+      <node id="nb_of_pll_words"       mask="0x000FC000"      permission="rw"      description="Number of pll words to send every nb_slow_cmd_before_pll slow commands" />
+      <node id="nb_of_sync_words"      mask="0x00700000"      permission="rw"      description="Number of sync words to send every nb_slow_cmd_before_sync slow commands" />
+      <node id="chip_reset_duration"   mask="0xFF800000"      permission="rw"      description="For this register only the 5 lsb are used and it defines how long will the reset period be during the initialization procedure. The default value in the fw is 100 (x100ns period)" />
+    </node>
+
+    <!-- Fast Commands Block -->
+    <node id="fast_cmd_reg_1"       address="0x00000001"      permission="rw"      description="Control registers associated with fast commands block">
+      <node id="cmd_strobe"            mask="0x00000001"      permission="rw"      description="must be asserted to send load configuration, reset and start/stop triggering commands." />
+      <node id="ipb_reset"             mask="0x00000002"      permission="rw"      description="Fast Commands block reset." />
+      <node id="load_config"           mask="0x00000004"      permission="rw"      description="Command to load configuration settings for fast commands block." />
+      <node id="start_trigger"         mask="0x00000008"      permission="rw"      description="Command to start triggering process." />
+      <node id="stop_trigger"          mask="0x00000010"      permission="rw"      description="Command to stop triggering process." />
+      <node id="reset_test_pulse"      mask="0x00000020"      permission="rw"      description="Command to reset test pulse fsm." />
+      <node id="ipb_ecr"               mask="0x00000040"      permission="rw"      description="ECR command" />
+      <node id="ipb_test_pulse"        mask="0x00000080"      permission="rw"      description="Cal command, sends contents of cal_data_prime register" />
+      <node id="ipb_trigger"           mask="0x00000100"      permission="rw"      description="Trigger command" />
+      <node id="ipb_bcr"               mask="0x00000200"      permission="rw"      description="BCR command" />
+      <node id="ipb_glb_pulse"         mask="0x00000400"      permission="rw"      description="Global Pulse command, sends contents of glb_pulse_data register" />
+      <node id="ipb_fast_duration"     mask="0x00007800"      permission="rw"      description="Duration of the fast commands in 40MHz clk cycles" />
+    </node>
+
+    <node id="fast_cmd_reg_2"       address="0x00000002"      permission="rw"      description="Configuration registers associated with fast commands block">
+      <node id="trigger_source"        mask="0x00000007"      permission="rw"      description="Trigger source.   # 1=IPBus, 2=Test-FSM, 3=TTC, 4=TLU, 5=External, 6=Hit-Or" />
+      <node id="autozero_source"       mask="0x00000030"      permission="rw"      description="Auto-Zero source. # 1=IPBus, 2=Test-FSM, 3=Free-Run" />
+      <node id="ext_trig_delay"        mask="0x00007FC0"      permission="rw"      description="Delay value of the external trigger." />
+      <node id="backpressure_en"       mask="0x00008000"      permission="rw"      description="Enables backpressure check." />
+      <node id="init_ecr_en"           mask="0x00010000"      permission="rw"      description="Enables ECR command at the beginning of every triggering process." />
+      <node id="veto_en"               mask="0x00020000"      permission="rw"      description="Enables trigger-veto when Auto-Zero is active." />
+      <node id="tp_fsm_ecr_en"         mask="0x00040000"      permission="rw"      description="Enables ECR command for the Test-Pulse FSM (Trigger Source = 2) " />
+      <node id="tp_fsm_test_pulse_en"  mask="0x00080000"      permission="rw"      description="Enables Cal command (prime) for the Test-Pulse FSM (Trigger Source = 2) " />
+      <node id="tp_fsm_inject_pulse_en" mask="0x00100000"     permission="rw"      description="Enables Cal command (inject) for the Test-Pulse FSM (Trigger Source = 2) " />
+      <node id="tp_fsm_trigger_en"     mask="0x00200000"      permission="rw"      description="Enables trigger command for the Test-Pulse FSM (Trigger Source= 2)" />
+      <node id="trigger_duration"      mask="0x07C00000"      permission="rw"      description="Duration of Trigger command" />
+      <node id="HitOr_enable_l12"      mask="0x60000000"      permission="rw"      description="Enable HitOr signals" />
+    </node>
+
+    <node id="fast_cmd_reg_3"       address="0x00000003"      permission="rw"      description="Configuration registers associated with fast commands block">
+      <node id="triggers_to_accept"    mask="0xFFFFFFFF"      permission="rw"      description="Number of triggers to accept, #0 = unlimited." />
+    </node>
+
+    <node id="fast_cmd_reg_4"       address="0x00000004"      permission="rw"      description="Config registers associated with fast cmds block (Test Pulse FSM)">
+      <node id="cal_data_prime"          mask="0x000FFFFF"    permission="rw"      description="Data for Cal command (prime when trigger soure = 2)." />
+      <node id="delay_after_prime_pulse" mask="0xFFF00000"    permission="rw"      description="Delay after prime (when trigger source = 2)." />
+    </node>
+
+    <node id="fast_cmd_reg_5"       address="0x00000005"      permission="rw"      description="Config registers associated with fast cmds block (Test Pulse FSM)">
+      <node id="cal_data_inject"          mask="0x000FFFFF"   permission="rw"      description="Data for Cal command (inject when trigger soure = 2)." />
+      <node id="delay_after_inject_pulse" mask="0xFFF00000"   permission="rw"      description="Delay after inject (when trigger source = 2)." />
+    </node>
+
+    <node id="fast_cmd_reg_6"       address="0x00000006"      permission="rw"      description="Config registers associated with fast cmds block (Test Pulse FSM)">
+      <node id="delay_after_autozero"    mask="0x000003FF"    permission="rw"      description="Delay after autozero (when trigger source = 2)." />
+      <node id="delay_before_next_pulse" mask="0x003FFC00"    permission="rw"      description="Delay before next pulse (when trigger source = 2)." />
+      <node id="delay_after_init_prime"  mask="0xFFC00000"    permission="rw"      description="Delay after initial prime pulse - executed only once at the begining of FSM loop (when trigger source = 2)." />
+    </node>
+
+    <node id="fast_cmd_reg_7"       address="0x00000007"      permission="rw"      description="Config registers associated with fast cmds block (Auto-Zero process).">
+      <node id="glb_pulse_data"        mask="0x000003FF"      permission="rw"      description="Relevant data for Global Pulse command." />
+      <node id="autozero_freq"         mask="0x000FFC00"      permission="rw"      description="Frequency of the Auto-Zero process (in 10MHz clk cyles)." />
+      <node id="delay_after_ecr"       mask="0xFFF00000"      permission="rw"      description="Delay after ECR (when trigger source = 2)." />
+    </node>
+
+    <!-- Ext TLU and DIO5 -->
+    <node id="ext_tlu_reg1"         address="0x00000008"      permission="rw"      description="Config registers when using external trigger source and/or tlu (Trigger source = 4 or 5) ">
+      <node id="dio5_en"               mask="0x00000001"      permission="rw"      description="Enable for the dio5 card" />
+      <node id="dio5_ch_out_en"        mask="0x0000003E"      permission="rw"      description="DIO5, Output enable for channels 5(MSb) to 1(LSb)" />
+      <node id="dio5_term_50ohm_en"    mask="0x000007C0"      permission="rw"      description="DIO5, 50 Ohm termination enable for channels 5(MSb) to 1(LSb)" />
+      <node id="dio5_ch1_thr"          mask="0x0007F800"      permission="rw"      description="DIO5, Voltage threshold for channel 1" />
+      <node id="dio5_ch2_thr"          mask="0x07F80000"      permission="rw"      description="DIO5, Voltage threshold for channel 2" />
+    </node>
+
+    <node id="ext_tlu_reg2"         address="0x00000009"      permission="rw"      description="Config registers when using external trigger source and/or tlu (Trigger source = 4 or 5) ">
+      <node id="dio5_ch3_thr"          mask="0x000000FF"      permission="rw"      description="DIO5, Voltage threshold for channel 3" />
+      <node id="dio5_ch4_thr"          mask="0x0000FF00"      permission="rw"      description="DIO5, Voltage threshold for channel 4" />
+      <node id="dio5_ch5_thr"          mask="0x00FF0000"      permission="rw"      description="DIO5, Voltage threshold for channel 5" />
+      <node id="dio5_load_config"      mask="0x01000000"      permission="rw"      description="DIO5, load configuration settings" />
+      <node id="tlu_en"                mask="0x02000000"      permission="rw"      description="Enable for the tlu module" />
+      <node id="tlu_handshake_mode"    mask="0x0C000000"      permission="rw"      description="Handshake mode for tlu, 0 = no handshake, 1 = simple handshake, 2 = data handshake" />
+      <node id="tlu_delay"             mask="0xF0000000"      permission="rw"      description="Trigger ID delay from TLU" />
+    </node>
+
+    <!-- Readout Block -->
+    <node id="readout_block"        address="0x0000000A"      permission="rw"      description="">
+      <node id="data_handshake_en"     mask="0x00000001"      permission="rw"      description="Enable data handshake" />
+      <node id="l1a_timeout_value"     mask="0x00001FFE"      permission="rw"      description="" />
+      <node id="ddr3_traffic_str"      mask="0x00002000"      permission="rw"      description="" />
+      <node id="Nb_of_events"          mask="0x3FFFC000"      permission="rw"      description="" />
+    </node>
+
+    <node id="Hybrids_en"           address="0x0000000B"      permission="rw"      description=""> </node>
+
+    <node id="Chips_en"             address="0x0000000C"      permission="rw"      description=""> </node>
+
+    <node id="Slow_cmd_fifo_din"    address="0x0000000D"      permission="rw"      mode="non-incremental"       description=""> </node>
+
+    <node id="Slow_cmd"             address="0x0000000E"      permission="rw"      description="">
+      <node id="fifo_prog_empty_thr"   mask="0x00000FFF"      permission="rw"      description="" />
+      <node id="fifo_reset"            mask="0x00001000"      permission="rw"      description="" />
+      <node id="dispatch_packet"       mask="0x00002000"      permission="rw"      description="" />
+    </node>
+
+    <node id="Register_RdBack"      address="0x0000000F"      permission="rw"      description="">
+      <node id="fifo_reset"            mask="0x00000001"      permission="rw"      description="" />
+      <node id="AutoRead_addr_a"       mask="0x0000003E"      permission="rw"      description="" />
+      <node id="AutoRead_addr_b"       mask="0x000007C0"      permission="rw"      description="" />
+    </node>
+
+    <node id="Aurora_block"          address="0x00000010"     permission="rw"      description="">
+      <node id="error_cntr_module_addr" mask="0x0000000F"     permission="rw"      description="" />
+      <node id="error_cntr_chip_addr"   mask="0x00000070"     permission="rw"      description="" />
+      <node id="event_stream_timeout"   mask="0x007FFF80"     permission="rw"      description="" />
+      <node id="self_trigger_en"        mask="0x00800000"     permission="rw"      description="" />
+      <node id="data_merging_en"        mask="0x01000000"     permission="rw"      description="" />
+      <node id="rst_frame_cntr"         mask="0x02000000"     permission="rw"      description="" />
+      <node id="start_frame_cntr"       mask="0x04000000"     permission="rw"      description="" />
+      <node id="slave_en"               mask="0xF0000000"     permission="rw"      description="Enable slave chips" />
+    </node>
+
+    <node id="i2c_block"            address="0x00000011"      permission="rw"      description="">
+      <node id="dp_addr"               mask="0x0000000F"      permission="rw"      description="" />
+      <node id="chip0_id"              mask="0x00000030"      permission="rw"      description="" />
+      <node id="chip1_id"              mask="0x000000C0"      permission="rw"      description="" />
+      <node id="chip2_id"              mask="0x00000300"      permission="rw"      description="" />
+      <node id="chip3_id"              mask="0x00000C00"      permission="rw"      description="" />
+      <node id="chip0_primary"         mask="0x00003000"      permission="rw"      description="" />
+      <node id="chip1_primary"         mask="0x0000C000"      permission="rw"      description="" />
+      <node id="chip2_primary"         mask="0x00030000"      permission="rw"      description="" />
+      <node id="chip3_primary"         mask="0x000C0000"      permission="rw"      description="" />
+      <node id="chip_id_en"            mask="0x00100000"      permission="rw"      description="" />
+      <node id="active_lanes"          mask="0x03C00000"      permission="rw"      description="" />
+    </node>
+
+    <node id="PRBS_checker"         address="0x00000012"      permission="rw"      description="">
+      <node id="reset_cntr"            mask="0x00000001"      permission="rw"      description="Reset the PRBS counter" />
+      <node id="start_checker"         mask="0x00000002"      permission="rw"      description="Start the PRBS counter to monitor BER" />
+      <node id="stop_checker"          mask="0x00000004"      permission="rw"      description="Stop the PRBS counter" />
+      <node id="load_config"           mask="0x00000008"      permission="rw"      description="Load the configuration for PRBS tests (nb of frames to run etc)" />
+      <node id="error_cntr_sel"        mask="0x00000010"      permission="rw"      description="Select between Error Counter per Frame ('0') or per bit ('1')" />
+      <node id="upgroup_addr"          mask="0x000001E0"      permission="rw"      description="Address of the uplink group" />
+      <node id="emulator_en"           mask="0x00000200"      permission="rw"      description="Enable PRBS emulation (for fw debugging only)" />
+      <node id="chip_address"          mask="0x00001C00"      permission="rw"      description="Address of the chip for which PRBS output regs will be read. (IPBus status registers are MUXed)" />
+      <node id="module_addr"           mask="0x0001E000"      permission="rw"      description="Address of the module for which PRBS output regs will be read. (IPBus status registers are MUXed)" />
+      <node id="lane_addr"             mask="0x00060000"      permission="rw"      description="Aurora lane for which PRBS output regs will be read. (IPBus status registers are MUXed)" />
+    </node>
+
+    <node id="prbs_frames_to_run_low"  address="0x00000013"   permission="rw"      description=""> </node>
+    <node id="prbs_frames_to_run_high" address="0x00000014"   permission="rw"      description=""> </node>
+
+    <!-- Optical Implementation -->
+    <node id="lpgbt_1"              address="0x00000015"      permission="rw"      description="Signals for Slow Control of lpgbt">
+      <node id="mgt_reset"             mask="0x00000001"      permission="rw"      description="Reset FPGA mgt bank" />
+      <node id="ic_tx_fifo_wr_en"      mask="0x00000002"      permission="rw"      description="Write Enable for SC Tx FIFO" />
+      <node id="ic_rx_fifo_rd_en"      mask="0x00000004"      permission="rw"      description="Read Enable for SC Rx FIFO" />
+      <node id="ic_send_wr_cmd"        mask="0x00000008"      permission="rw"      description="Send Write command to lpgbt" />
+      <node id="ic_send_rd_cmd"        mask="0x00000010"      permission="rw"      description="Send Read command to lpgbt" />
+      <node id="ic_tx_reset"           mask="0x00000020"      permission="rw"      description="Reset tx block of slow control module in fpga" />
+      <node id="ic_rx_reset"           mask="0x00000040"      permission="rw"      description="Reset rx block of slow control module in fpga" />
+      <node id="ic_tx_fifo_din"        mask="0x00007F80"      permission="rw"      description="Slow-Control Data to be transmited" />
+      <node id="ic_chip_addr_tx"       mask="0x007F8000"      permission="rw"      description="lpgbt address (always 0x70 for now)" />
+      <node id="active_link"           mask="0x07800000"      permission="rw"      description="select link for slow control (only one lpgbt at a time for now)" />
+      <node id="lpgbt_version"         mask="0x08000000"      permission="rw"      description="Version of the lpGBT chip. 0=lpGBTv0(default), 1=lpGBTv1" />
+      <node id="fec_cntr_clear"        mask="0x10000000"      permission="rw"      description="Reset counter for FEC monitoring" />
+    </node>
+
+    <node id="lpgbt_2"               address="0x00000016"     permission="rw"      description="Signals for Slow Control of lpgbt">
+      <node id="ic_reg_addr_tx"         mask="0x0000FFFF"     permission="rw"      description="lpgbt register address to read" />
+      <node id="ic_nb_of_words_to_read" mask="0xFFFF0000"     permission="rw"      description="nb of words to read through lpgbt sc" />
+    </node>
+
+    <node id="lpgbt_mapping"         address="0x00000018"     permission="rw"      description="Configuration lpGBT link mapping">
+      <node id="update_downlink"       mask="0x00000001"      permission="rw"      description="Update mapping for downlink groups/channels" />
+      <node id="update_uplink"         mask="0x00000002"      permission="rw"      description="Update mapping for downlink groups/channels" />
+      <node id="link_id"               mask="0x0000003C"      permission="rw"      description="lpGBT address" />
+      <node id="module_id"             mask="0x000003C0"      permission="rw"      description="Module Address" />
+      <node id="chip_id"               mask="0x00000C00"      permission="rw"      description="Chip Address" />
+      <node id="tx_elink_id"           mask="0x00007000"      permission="rw"      description="tx group/channel id" />
+      <node id="lane0_elink_id"        mask="0x00038000"      permission="rw"      description="rx group for lane0" />
+      <node id="lane1_elink_id"        mask="0x001C0000"      permission="rw"      description="rx group for lane1" />
+      <node id="lane2_elink_id"        mask="0x00E00000"      permission="rw"      description="rx group for lane2" />
+      <node id="lane3_elink_id"        mask="0x07000000"      permission="rw"      description="rx group for lane3" />
+    </node>
+
+    <node id="gtx_drp"              address="0x0000001A"      permission="rw"      description="Control registers for drp ports">
+      <node id="address"               mask="0x000007FF"      permission="rw"      description="Address for DRP Register transaction" />
+      <node id="wr_din"                mask="0x0007F800"      permission="rw"      description="Write data in" />
+      <node id="wr_en"                 mask="0x00080000"      permission="rw"      description="Write enable" />
+      <node id="rd_en"                 mask="0x00100000"      permission="rw"      description="Read enable" />
+      <node id="set_aurora_speed"      mask="0x00200000"      permission="rw"      description="Start Procedure to set aurora speed" />
+      <node id="aurora_speed"          mask="0x00400000"      permission="rw"      description="Aurora Speed configuration. '0'=1.28Gbps, '1'=640Mbps" />
+    </node>
+
+    <node id="sfp_disable"          address="0x00000017"      permission="rw"      description="Configuration for SFP connectors">
+      <node id="l8"                    mask="0x00007FFF"      permission="rw"      description="disable for FMC L8 pins" />
+      <node id="l12"                   mask="0xFFFF8000"      permission="rw"      description="diasble for FMC L12 pins" />
+    </node>
+
+    <node id="gtx_rx_polarity"      address="0x00000019"      permission="rw"      description="Configuration for GTX polarity">
+      <node id="fmc_l12"               mask="0x00000FFF"      permission="rw"      description="Polarity for FMC L12 RX pins" />
+      <node id="fmc_l8"                mask="0x000FF000"      permission="rw"      description="Polarity for FMC L8 RX pins" />
+      <node id="cmd_strobe"            mask="0x00100000"      permission="rw"      description="Start Procedure to set GTX polarity" />
+    </node>
+
+    <node id="cnf_cmd_ctrl"         address="0x0000001B"      permission="rw"      description="Additional configurations for CMD Controller">
+      <node id="nb_slow_cmd_before_sync" mask="0x000003FF"    permission="rw"      description="Number of slow commands before sending sync words" />
+      <node id="nb_slow_cmd_before_pll"  mask="0x000FFC00"    permission="rw"      description="Number of slow commands before sending pll words" />
+    </node>
+
+   <node id="cnf_portcard_adapter"  address="0x0000001C"      permission="rw"      description="Configure SPI communication with Portcard Test Adapter">
+      <node id="ctrl"                  mask="0x00000003"      permission="rw"      description="Idle='0', Write Register='1', Read Register='2'" />
+      <node id="switch_address"        mask="0x000003FC"      permission="rw"      description="Specify the address of one switch register" />
+      <node id="switch_value"          mask="0x0003FC00"      permission="rw"      description="Specify the value of one switch register" />
+      <node id="reset"                 mask="0x00040000"      permission="rw"      description="Reset SPI communication" />
+    </node>
+
+   <node id="cnfg_sfp_monitoring"   address="0x0000001D"      permission="rw"      description="">
+      <node id="reg_address"           mask="0x000000FF"      permission="rw"      description="Address of the SFP's EEPROM register" />
+      <node id="data_in"               mask="0x0000FF00"      permission="rw"      description="Data to write" />
+      <node id="channel_number"        mask="0x00070000"      permission="rw"      description="Specify which SFP of the FMC you want to access" />
+      <node id="enable"                mask="0x00080000"      permission="rw"      description="Enable transaction" />
+    </node>
+
+  </node>
+
+  <!-- ================================================ -->
+  <!-- =============== STATUS REGISTERS =============== -->
+  <!-- ================================================ -->
+
+  <node id="stat_regs"              address="0x00000000"      permission="rw"      description="User status registers.">
+
+    <node id="fw_date"              address="0x00000000"      permission="r"       description="Compilation date of the fw">
+      <node id="day"                   mask="0xf8000000"      permission="r"       description="Compilation Day" />
+      <node id="month"                 mask="0x07800000"      permission="r"       description="Compilation Month" />
+      <node id="year"                  mask="0x007e0000"      permission="r"       description="Compilation Year" />
+      <node id="hour"                  mask="0x0001f000"      permission="r"       description="Compilation hour (24h format)" />
+      <node id="minute"                mask="0x00000fc0"      permission="r"       description="Compilation Minute" />
+      <node id="seconds"               mask="0x0000003f"      permission="r"       description="Compilation Seconds" />
+    </node>
+
+    <node id="usr_ver"              address="0x00000001"      permission="r"       description="User firmware version number.">
+      <node id="usr_ver_major"         mask="0xffff0000"      permission="r"       description="Major version number." />
+      <node id="usr_ver_minor"         mask="0x0000ffff"      permission="r"       description="Minor version number." />
+    </node>
+
+    <node id="global_reg"           address="0x00000002"      permission="r"       description="Global status register, reflecting various blocks.">
+      <node id="clk_gen_lock"          mask="0x00000001"      permission="r"       description="Clock generator status. 1 = locked." />
+      <node id="i2c_init"              mask="0x00000002"      permission="r"       description="I2C initialization status. 1 = initialized." />
+      <node id="i2c_init_err"          mask="0x00000004"      permission="r"       description="I2C initialization incomplete status. 1 = error." />
+      <node id="i2c_acq_err"           mask="0x00000008"      permission="r"       description="I2C ack error during analog readout. For KSU FMC only. 1 = error." />
+      <node id="link_type"             mask="0x00000010"      permission="r"       description="'0'=Electrical link, '1'=Optical link" />
+      <node id="optical_speed"         mask="0x00000020"      permission="r"       description="'0'=10G24, '1'=5G link speed. (NOT IMPLEMENTED YET)" />
+      <node id="front_end_type"        mask="0x000000C0"      permission="r"       description="Front-End type.1=RD53A, 2=RD53B, 0=unspecified" />
+      <node id="fmc_l12_type"          mask="0x00000700"      permission="r"       description="Type of FMC board plugged at L12 slot. 1=KSU, 2=CERN, 3=DIO5, 4=OPTO, 5=FERMI, 7=NONE, 0=unspecified" />
+      <node id="fmc_l8_type"           mask="0x00003800"      permission="r"       description="Type of FMC board plugged at L8 slot. 1=KSU, 2=CERN, 3=DIO5, 4=OPTO, 5=FERMI, 7=NONE, 0=unspecified" />
+      <node id="dio5_not_ready"        mask="0x00004000"      permission="r"       description="Still configuring the dio5 thresholds." />
+      <node id="dio5_error"            mask="0x00008000"      permission="r"       description="Error when configuring dio5 thresholds via i2c" />
+    </node>
+
+    <node id="slow_cmd"             address="0x00000003"      permission="r"       description="Clk_rate_tool output, for debugging purpose only">
+      <node id="fifo_empty"            mask="0x00000001"      permission="r"       description="Empty flag" />
+      <node id="fifo_full"             mask="0x00000002"      permission="r"       description="Full flag" />
+      <node id="fifo_prog_empty"       mask="0x00000004"      permission="r"       description="Fifo programmable empty flag" />
+      <node id="error_flag"            mask="0x00000008"      permission="r"       description="Transaction error flag" />
+      <node id="fifo_packet_dispatched" mask="0x00000010"     permission="r"       description="Transaction completed" />
+    </node>
+
+    <node id="fast_cmd"             address="0x00000004"      permission="r"       description="Status Registers associated with Fast commands block.">
+      <node id="trigger_source_o"      mask="0x00000007"      permission="r"       description="Selected trigger source." />
+      <node id="trigger_state"         mask="0x00000030"      permission="r"       description="Status of the triggering process. 2= running, 0=Idle" />
+      <node id="if_configured"         mask="0x00000040"      permission="r"       description="Checks if the congiguration registers have been set. 1=configured." />
+      <node id="error_code"            mask="0x00007F80"      permission="r"       description="0= no error." />
+    </node>
+
+    <node id="trigger_cntr"         address="0x00000005"      permission="r"       description="Number of triggers received."> </node>
+
+    <node id="aurora_rx"            address="0x00000006"      permission="r"       description="">
+      <node id="Hybrid_type"           mask="0x00000007"      permission="r"       description="" />
+      <node id="Nb_of_modules"         mask="0x00000078"      permission="r"       description="" />
+      <node id="speed"                 mask="0x00000080"      permission="r"       description="" />
+    </node>
+
+    <node id="aurora_rx_channel_up" address="0x00000007"      permission="r"       description=""> </node>
+
+    <!-- Readout -->
+    <node id="words_to_read"        address="0x0000000A"      permission="r"       description="Nb of words to read in the DDR3 memory"> </node>
+
+    <node id="readout1"             address="0x0000000B"      permission="r"       description="Status Registers associated with the DDR3 Readout">
+      <node id="ddr3_initial_calibration_done" mask="0x00000001" permission="r"    description="DDR3 has been calibrated" />
+      <node id="ddr3_self_check_done"  mask="0x00000002"      permission="r"       description="DDR3 self check done completed" />
+      <node id="readout_req"           mask="0x00000004"      permission="r"       description="Readout request for the handshake mode" />
+      <node id="fsm_status"            mask="0x000007F8"      permission="r"       description="Readout FSM status" />
+      <node id="register_fifo_full"    mask="0x00000800"      permission="r"       description="" />
+      <node id="register_fifo_empty"   mask="0x00001000"      permission="r"       description="" />
+    </node>
+
+    <node id="readout2"             address="0x0000000C"      permission="r"       description="Status Registers associated with the DDR3 Readout">
+      <node id="event_cntr"            mask="0x00FFFFFF"      permission="r"       description="Event Nb counter (last value stored)" />
+      <node id="event_cntr_buf_empty"  mask="0x01000000"      permission="r"       description="Event counter fifo empty flag" />
+      <node id="trig_data_buf_empty"   mask="0x02000000"      permission="r"       description="Data payload fifo empty flag (all fifos combined) " />
+    </node>
+
+    <node id="aurora_rx_lane_up"    address="0x0000000D"      permission="r"       description=""> </node>
+
+    <node id="stat_portcard_adapter" address="0x0000000E"     permission="r"       description="SPI received data from Portcard Test Adapter">
+      <node id="switch_value"          mask="0x000000FF"      permission="r"       description="Received register value from the switch" />
+      <node id="data_ready"            mask="0x00000100"      permission="r"       description="End of communication flag from firmware" />
+    </node>
+
+    <node id="ddr3_num_words"       address="0x0000000F"      permission="r"       description="Nb of words readout during DDR3 self-check"> </node>
+
+    <!-- Register Readout -->
+    <node id="Register_Rdback_fifo" address="0x00000010"      permission="r"       mode="non-incremental" description="Fifo with Register Read-back data from all chips."> </node>
+
+    <node id="AutoRead_Reg_A"       address="0x00000011"      permission="r"       description="Auto-Read Register-A Data of the selected chip"> </node>
+    <node id="AutoRead_Reg_B"       address="0x00000012"      permission="r"       description="Auto-Read Register-B Data of the selected chip"> </node>
+
+    <node id="gtx_refclk_rate"      address="0x00000013"      permission="r"       description=""> </node>
+    <node id="clkin_rate"           address="0x00000014"      permission="r"       description=""> </node>
+
+    <node id="i2c_block_1"          address="0x00000015"      permission="r"       description="">
+      <node id="NTC1"                  mask="0x00000FFF"      permission="r"       description="" />
+      <node id="NTC2"                  mask="0x00FFF000"      permission="r"       description="" />
+    </node>
+
+    <node id="i2c_block_2"          address="0x00000016"      permission="r"       description="">
+      <node id="vdd_sense"             mask="0x00000FFF"      permission="r"       description="" />
+      <node id="gnd_sense"             mask="0x00FFF000"      permission="r"       description="" />
+    </node>
+
+    <node id="prbs_ber_cntr"        address="0x00000018"      permission="r"       description=""> </node>
+    <node id="prbs_frame_cntr_low"  address="0x00000019"      permission="r"       description=""> </node>
+    <node id="prbs_frame_cntr_high" address="0x0000001A"      permission="r"       description=""> </node>
+
+    <!-- Optical Link -->
+    <node id="lpgbt_fpga"           address="0x00000017"      permission="r"       description="Status Signals from the lpgbt-fpga core">
+      <node id="tx_ready"              mask="0x000000FF"      permission="r"       description="lpgbt-fpga tx ready, one bit per link" />
+      <node id="rx_ready"              mask="0x0000FF00"      permission="r"       description="lpgbt-fpga rx ready, one bit per link" />
+      <node id="mgt_ready"             mask="0x00FF0000"      permission="r"       description="fpga mgt ready, one bit per link" />
+    </node>
+
+    <node id="lpgbt_sc_1"           address="0x0000001B"      permission="r"       description="Status Signals for the lpgbt Slow Control">
+      <node id="tx_ready"              mask="0x00000001"      permission="r"       description="lpgbt Slow Control tx ready" />
+      <node id="rx_empty"              mask="0x00000002"      permission="r"       description="lpgbt Slow Control rx ready" />
+      <node id="rx_fifo_dout"          mask="0x000003FC"      permission="r"       description="Read-back data from Slow Control Read Command" />
+      <node id="rx_chip_addr"          mask="0x0003FC00"      permission="r"       description="Chip Address from Slow Control Read Command" />
+      <node id="link_id"               mask="0x003C0000"      permission="r"       description="Current active link for Slow Control operation" />
+    </node>
+
+    <node id="lpgbt_sc_2"           address="0x0000001C"      permission="r"       description="Status Signals for the lpgbt Slow Control">
+      <node id="reg_addr_rx"           mask="0x0000FFFF"      permission="r"       description="Returned Register addres from Slow Control Read Command" />
+      <node id="nb_of_words_rx"        mask="0xFFFF0000"      permission="r"       description="Nb of received words from Slow Control Read Command" />
+    </node>
+
+    <node id="aurora_frame_cntr"       address="0x0000001D"   permission="r"       description="Aurora Frame Counter for DM Tests"> </node>
+    <node id="aurora_service_blk_cntr" address="0x0000001E"   permission="r"       description="Aurora Service Block Counter for DM Tests"> </node>
+
+    <node id="lpgbt_monitoring"     address="0x0000001F"      permission="r"       description="">
+      <node id="fec_cntr"              mask="0x00000FFF"      permission="r"       description="" />
+      <node id="sfp_i2c_error"         mask="0x00006000"      permission="r"       description="" />
+      <node id="sfp_i2c_busy"          mask="0x00008000"      permission="r"       description="" />
+      <node id="sfp_i2c_data_out"      mask="0xFFFF0000"      permission="r"       description="" />
+    </node>
+
+  </node>
+
+</node>

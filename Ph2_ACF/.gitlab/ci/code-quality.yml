@@ -1,0 +1,98 @@
+# GitLab CI -- Code Quality Checks
+
+variables:
+  ARTIFACTS_DIR: ${CI_PROJECT_DIR}/artifacts
+  REPORTS_PATH: ${CI_PROJECT_DIR}/artifacts/reports
+  QUALITY_CHECK_DIR: ci-quality-checks
+  LCG_CLANG_VERSION: 14 # Check if true
+
+  
+# Ideally, we'd throw the warnings and errors discovered in a sensitive compilation
+# job into the code quality report so that the number of compilation warnings 
+# can be equally monitored.
+
+# See: https://gitlab.cern.ch/gitlabci-examples/static_code_analysis
+quality:cpplint:
+  image: registry.cern.ch/docker.io/cfreak/codeclimate-cpplint:latest
+  stage: quality
+  tags:
+    - k8s-default
+  needs: []
+  allow_failure: true
+
+  before_script:
+    - echo "Running code quality cpplint checks"
+    - mkdir -p ${REPORTS_PATH}
+  script:
+    - python3 ${CI_PROJECT_DIR}/.gitlab/ci/scripts/runcpplint.py --files ./**/*.cxx ./**/*.cpp ./**/*.h ./**/*.hpp
+    - mv cpplint-report.json ${REPORTS_PATH}
+  after_script:
+    - echo "Running code quality checks after script"
+    - ls -l ${ARTIFACTS_DIR}/*
+    - ls -l ${REPORTS_PATH}
+  artifacts:
+    expire_in: 1 month
+    paths:
+      - artifacts
+
+quality:clang-format:
+  image: gitlab-registry.cern.ch/linuxsupport/alma9-base
+  stage: quality
+  tags:
+    - cvmfs
+  allow_failure: true
+  before_script:
+    - echo "Running code quality clang-format checks"
+    - mkdir -p ${REPORTS_PATH}
+  script:
+    - yum install -y clang-tools-extra git git-lfs which
+    - curl -LO https://raw.githubusercontent.com/Sarcasm/run-clang-format/master/run-clang-format.py
+    - CLANG_FORMAT_EXE=${CI_PROJECT_DIR}/.gitlab/ci/scripts/run-clang-format.py
+    - export PATCHFILE=clang-format-${GITLAB_USER_LOGIN}-${CI_COMMIT_REF_SLUG}-job-${CI_JOB_ID}.patch
+    - echo ARTIFACTS_DIR/PATCHFILE is ${ARTIFACTS_DIR}/${PATCHFILE}
+    - ls ${ARTIFACTS_DIR}
+    - |
+        git checkout -b patch/${GITLAB_USER_LOGIN}-${CI_COMMIT_REF_SLUG}-job-${CI_JOB_ID}
+        ${CLANG_FORMAT_EXE} -i -r . || true
+        ${CLANG_FORMAT_EXE} -i -r . || true
+        git config --global user.email "${GITLAB_USER_EMAIL}"
+        git config --global user.name "${GITLAB_USER_NAME}"
+        git commit -am "Apply clang-format for ${GITLAB_USER_LOGIN}-${CI_COMMIT_REF_SLUG}-job-${CI_JOB_ID}"
+        git format-patch ${CI_COMMIT_SHORT_SHA} --stdout > ${ARTIFACTS_DIR}/${PATCHFILE}
+    - NUMBER_OF_LINES=$(sed -n '$=' ${ARTIFACTS_DIR}/${PATCHFILE})
+    - cat ${ARTIFACTS_DIR}/${PATCHFILE}
+    - echo ${NUMBER_OF_LINES}
+    - if [ ${NUMBER_OF_LINES} = 0 ]; then
+    -   echo "No changes to be made!"
+    - else
+    -   echo "Patch file with changes is in ${ARTIFACTS_DIR}/${PATCHFILE}" 
+    -   exit 1
+    - fi
+
+  after_script:
+    - echo "Running code quality checks after script"
+    # - export PATCHFILE=clang-format-${GITLAB_USER_LOGIN}-${CI_COMMIT_REF_SLUG}-job-${CI_JOB_ID}.patch
+  artifacts:
+    when: always
+    expire_in: 1 month
+    paths:
+      - artifacts
+
+code_quality:
+  stage: quality
+  allow_failure: false
+  tags:
+    - k8s-default
+  needs:
+    - job: quality:cpplint
+      artifacts: true
+  before_script:
+    - yum install -y jq
+  script:
+    - ls -l ${REPORTS_PATH}
+    - bash ${CI_PROJECT_DIR}/.gitlab/ci/scripts/merge-reports.sh
+  artifacts:
+    reports:
+      codequality: artifacts/reports/gl-code-quality-report.json
+    paths: [artifacts/reports/gl-code-quality-report.json]
+    expire_in: 1 month
