@@ -1,0 +1,155 @@
+##
+identify
+# COMMAND
+keysighte3633a -S identify
+# OUTPUT
+HEWLETT-PACKARD,E3633A,0,SIM1.0
+# RETURNS 0
+##
+reset
+# COMMAND
+keysighte3633a -S reset
+# OUTPUT
+
+# RETURNS 0
+##
+voltage
+# COMMAND
+keysighte3633a -S voltage 1
+# OUTPUT
+0.0
+# RETURNS 0
+##
+voltage invalid output
+# COMMAND
+keysighte3633a -S voltage 5
+# OUTPUT
+ChannelError: Channel 5 does not exist or is not enabled on this device.
+# RETURNS 1
+##
+voltage unmasked output
+# COMMAND
+keysighte3633a -S -O 2 voltage 2
+# OUTPUT
+0.0
+# RETURNS 0
+##
+set voltage
+# COMMAND
+keysighte3633a -S voltage 1 5.0
+# OUTPUT
+5.0
+# RETURNS 0
+##
+set voltage prohibited
+# COMMAND
+keysighte3633a -S voltage 1 500.0
+# OUTPUT
+ValidationError: Value 500.0 does not pass verifier _is_numeric for set() on setting VOLTAGE for device KeysightE3633A.
+Allowable values: Numbers in range [-50:50]
+# RETURNS 1
+##
+current
+# COMMAND
+keysighte3633a -S current 1
+# OUTPUT
+0.0
+# RETURNS 0
+##
+set current
+# COMMAND
+keysighte3633a -S current 1 0.2
+# OUTPUT
+0.2
+# RETURNS 0
+##
+measure
+# COMMAND
+keysighte3633a -S measure 1
+# OUTPUT
+(0.00012098, 2.1e-07)
+# RETURNS 0
+##
+status
+# COMMAND
+keysighte3633a -S status 1
+# OUTPUT
+0
+# RETURNS 0
+##
+off
+# COMMAND
+keysighte3633a -S off 1
+# OUTPUT
+
+# RETURNS 0
+##
+on
+# COMMAND
+keysighte3633a -S on 1
+# OUTPUT
+
+# RETURNS 0
+##
+generic query
+# COMMAND
+keysighte3633a -S query status_byte
+# OUTPUT
+4207853790
+# RETURNS 0
+##
+generic set
+# COMMAND
+keysighte3633a -S set status_byte_enable 255
+# OUTPUT
+255
+# RETURNS 0
+##
+ramp voltage
+# COMMAND
+keysighte3633a -S ramp_voltage 1 10 -s 3 -d 0 -m
+# OUTPUT
+Will sweep VOLTAGE to 10.0 in 4 steps of size 3.0
+Output Voltage (V)
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+(10.0, [[{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+ramp voltage negative
+# COMMAND
+keysighte3633a -S ramp_voltage 1 -s 5 -d 0 -m -- -20
+# OUTPUT
+Will sweep VOLTAGE to -20.0 in 4 steps of size 5.0
+Output Voltage (V)
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+(-20.0, [[{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+ramp current
+# COMMAND
+keysighte3633a -S ramp_current 1 10 -s 3 -d 0 -m
+# OUTPUT
+Will sweep CURRENT to 10.0 in 4 steps of size 3.0
+Output Voltage (V)
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+{DATE}{TIME}0.00012098       	2.1e-07
+(10.0, [[{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+scpi query
+# COMMAND
+keysighte3633a -S scpi_query "*ESR?"
+# OUTPUT
+3842031838
+# RETURNS 0

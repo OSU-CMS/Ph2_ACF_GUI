@@ -1,0 +1,3894 @@
+##
+HMP4040 1 identify
+# COMMAND
+powerchannel -S HMP4040 1 identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+HMP4040 1 status
+# COMMAND
+powerchannel -S HMP4040 1 status
+# OUTPUT
+0xC100C0DE
+# RETURNS 0
+##
+HMP4040 1 voltage
+# COMMAND
+powerchannel -S HMP4040 1 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+HMP4040 1 voltage set
+# COMMAND
+powerchannel -S HMP4040 1 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+HMP4040 1 voltage_limit
+# COMMAND
+powerchannel -S HMP4040 1 voltage_limit
+# OUTPUT
+32.5
+# RETURNS 0
+##
+HMP4040 1 voltage_limit set
+# COMMAND
+powerchannel -S HMP4040 1 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+HMP4040 1 voltage_trip
+# COMMAND
+powerchannel -S HMP4040 1 voltage_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+HMP4040 1 voltage_trip reset
+# COMMAND
+powerchannel -S HMP4040 1 voltage_trip --reset
+# OUTPUT
+False
+# RETURNS 0
+##
+HMP4040 1 current
+# COMMAND
+powerchannel -S HMP4040 1 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+HMP4040 1 current set
+# COMMAND
+powerchannel -S HMP4040 1 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+HMP4040 1 current_limit
+# COMMAND
+powerchannel -S HMP4040 1 current_limit
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 1 current_limit set
+# COMMAND
+powerchannel -S HMP4040 1 current_limit 3
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 1 current_trip
+# COMMAND
+powerchannel -S HMP4040 1 current_trip
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 1 current_trip reset
+# COMMAND
+powerchannel -S HMP4040 1 current_trip --reset
+# OUTPUT
+NotImplementedError: HMP4040 does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 1 sweep_voltage
+# COMMAND
+powerchannel -S HMP4040 1 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 1 sweep_voltage n_steps
+# COMMAND
+powerchannel -S HMP4040 1 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 1 sweep_voltage measure
+# COMMAND
+powerchannel -S HMP4040 1 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	2.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	4.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	6.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	8.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	10.0             	0.0              	0.00012098       	2.1e-07
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 1 sweep_voltage no log
+# COMMAND
+powerchannel -S HMP4040 1 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 1 sweep_voltage m+nl
+# COMMAND
+powerchannel -S HMP4040 1 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 1 sweep_current
+# COMMAND
+powerchannel -S HMP4040 1 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 1 sweep_current n_steps
+# COMMAND
+powerchannel -S HMP4040 1 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.67
+{DATE}{TIME}2                	0.0              	1.33
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.67], [{TIMESTAMP}, 2, 0.0, 1.33], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 1 sweep_current measure
+# COMMAND
+powerchannel -S HMP4040 1 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	0.0              	0.2              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	0.0              	0.4              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	0.0              	0.6              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	0.0              	0.8              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	0.0              	1.0              	0.00012098       	2.1e-07
+{DATE}{TIME}6                	0.0              	1.2              	0.00012098       	2.1e-07
+{DATE}{TIME}7                	0.0              	1.4              	0.00012098       	2.1e-07
+{DATE}{TIME}8                	0.0              	1.6              	0.00012098       	2.1e-07
+{DATE}{TIME}9                	0.0              	1.8              	0.00012098       	2.1e-07
+{DATE}{TIME}10               	0.0              	2.0              	0.00012098       	2.1e-07
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 1 sweep_current no log
+# COMMAND
+powerchannel -S HMP4040 1 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 1 sweep_current m+nl
+# COMMAND
+powerchannel -S HMP4040 1 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 1 measure_voltage
+# COMMAND
+powerchannel -S HMP4040 1 measure_voltage
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+HMP4040 1 measure_current
+# COMMAND
+powerchannel -S HMP4040 1 measure_current
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+HMP4040 2 identify
+# COMMAND
+powerchannel -S HMP4040 2 identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+HMP4040 2 status
+# COMMAND
+powerchannel -S HMP4040 2 status
+# OUTPUT
+0xC200C0DE
+# RETURNS 0
+##
+HMP4040 2 voltage
+# COMMAND
+powerchannel -S HMP4040 2 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+HMP4040 2 voltage set
+# COMMAND
+powerchannel -S HMP4040 2 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+HMP4040 2 voltage_limit
+# COMMAND
+powerchannel -S HMP4040 2 voltage_limit
+# OUTPUT
+32.5
+# RETURNS 0
+##
+HMP4040 2 voltage_limit set
+# COMMAND
+powerchannel -S HMP4040 2 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+HMP4040 2 voltage_trip
+# COMMAND
+powerchannel -S HMP4040 2 voltage_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+HMP4040 2 voltage_trip reset
+# COMMAND
+powerchannel -S HMP4040 2 voltage_trip --reset
+# OUTPUT
+False
+# RETURNS 0
+##
+HMP4040 2 current
+# COMMAND
+powerchannel -S HMP4040 2 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+HMP4040 2 current set
+# COMMAND
+powerchannel -S HMP4040 2 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+HMP4040 2 current_limit
+# COMMAND
+powerchannel -S HMP4040 2 current_limit
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 2 current_limit set
+# COMMAND
+powerchannel -S HMP4040 2 current_limit 3
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 2 current_trip
+# COMMAND
+powerchannel -S HMP4040 2 current_trip
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 2 current_trip reset
+# COMMAND
+powerchannel -S HMP4040 2 current_trip --reset
+# OUTPUT
+NotImplementedError: HMP4040 does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 2 sweep_voltage
+# COMMAND
+powerchannel -S HMP4040 2 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 2 sweep_voltage n_steps
+# COMMAND
+powerchannel -S HMP4040 2 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 2 sweep_voltage measure
+# COMMAND
+powerchannel -S HMP4040 2 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	2.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	4.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	6.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	8.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	10.0             	0.0              	0.00012098       	2.1e-07
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 2 sweep_voltage no log
+# COMMAND
+powerchannel -S HMP4040 2 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 2 sweep_voltage m+nl
+# COMMAND
+powerchannel -S HMP4040 2 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 2 sweep_current
+# COMMAND
+powerchannel -S HMP4040 2 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 2 sweep_current n_steps
+# COMMAND
+powerchannel -S HMP4040 2 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.67
+{DATE}{TIME}2                	0.0              	1.33
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.67], [{TIMESTAMP}, 2, 0.0, 1.33], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 2 sweep_current measure
+# COMMAND
+powerchannel -S HMP4040 2 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	0.0              	0.2              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	0.0              	0.4              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	0.0              	0.6              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	0.0              	0.8              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	0.0              	1.0              	0.00012098       	2.1e-07
+{DATE}{TIME}6                	0.0              	1.2              	0.00012098       	2.1e-07
+{DATE}{TIME}7                	0.0              	1.4              	0.00012098       	2.1e-07
+{DATE}{TIME}8                	0.0              	1.6              	0.00012098       	2.1e-07
+{DATE}{TIME}9                	0.0              	1.8              	0.00012098       	2.1e-07
+{DATE}{TIME}10               	0.0              	2.0              	0.00012098       	2.1e-07
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 2 sweep_current no log
+# COMMAND
+powerchannel -S HMP4040 2 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 2 sweep_current m+nl
+# COMMAND
+powerchannel -S HMP4040 2 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 2 measure_voltage
+# COMMAND
+powerchannel -S HMP4040 2 measure_voltage
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+HMP4040 2 measure_current
+# COMMAND
+powerchannel -S HMP4040 2 measure_current
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+HMP4040 3 identify
+# COMMAND
+powerchannel -S HMP4040 3 identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+HMP4040 3 status
+# COMMAND
+powerchannel -S HMP4040 3 status
+# OUTPUT
+0xC300C0DE
+# RETURNS 0
+##
+HMP4040 3 voltage
+# COMMAND
+powerchannel -S HMP4040 3 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+HMP4040 3 voltage set
+# COMMAND
+powerchannel -S HMP4040 3 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+HMP4040 3 voltage_limit
+# COMMAND
+powerchannel -S HMP4040 3 voltage_limit
+# OUTPUT
+32.5
+# RETURNS 0
+##
+HMP4040 3 voltage_limit set
+# COMMAND
+powerchannel -S HMP4040 3 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+HMP4040 3 voltage_trip
+# COMMAND
+powerchannel -S HMP4040 3 voltage_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+HMP4040 3 voltage_trip reset
+# COMMAND
+powerchannel -S HMP4040 3 voltage_trip --reset
+# OUTPUT
+False
+# RETURNS 0
+##
+HMP4040 3 current
+# COMMAND
+powerchannel -S HMP4040 3 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+HMP4040 3 current set
+# COMMAND
+powerchannel -S HMP4040 3 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+HMP4040 3 current_limit
+# COMMAND
+powerchannel -S HMP4040 3 current_limit
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 3 current_limit set
+# COMMAND
+powerchannel -S HMP4040 3 current_limit 3
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 3 current_trip
+# COMMAND
+powerchannel -S HMP4040 3 current_trip
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 3 current_trip reset
+# COMMAND
+powerchannel -S HMP4040 3 current_trip --reset
+# OUTPUT
+NotImplementedError: HMP4040 does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 3 sweep_voltage
+# COMMAND
+powerchannel -S HMP4040 3 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 3 sweep_voltage n_steps
+# COMMAND
+powerchannel -S HMP4040 3 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 3 sweep_voltage measure
+# COMMAND
+powerchannel -S HMP4040 3 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	2.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	4.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	6.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	8.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	10.0             	0.0              	0.00012098       	2.1e-07
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 3 sweep_voltage no log
+# COMMAND
+powerchannel -S HMP4040 3 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 3 sweep_voltage m+nl
+# COMMAND
+powerchannel -S HMP4040 3 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 3 sweep_current
+# COMMAND
+powerchannel -S HMP4040 3 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 3 sweep_current n_steps
+# COMMAND
+powerchannel -S HMP4040 3 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.67
+{DATE}{TIME}2                	0.0              	1.33
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.67], [{TIMESTAMP}, 2, 0.0, 1.33], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 3 sweep_current measure
+# COMMAND
+powerchannel -S HMP4040 3 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	0.0              	0.2              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	0.0              	0.4              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	0.0              	0.6              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	0.0              	0.8              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	0.0              	1.0              	0.00012098       	2.1e-07
+{DATE}{TIME}6                	0.0              	1.2              	0.00012098       	2.1e-07
+{DATE}{TIME}7                	0.0              	1.4              	0.00012098       	2.1e-07
+{DATE}{TIME}8                	0.0              	1.6              	0.00012098       	2.1e-07
+{DATE}{TIME}9                	0.0              	1.8              	0.00012098       	2.1e-07
+{DATE}{TIME}10               	0.0              	2.0              	0.00012098       	2.1e-07
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 3 sweep_current no log
+# COMMAND
+powerchannel -S HMP4040 3 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 3 sweep_current m+nl
+# COMMAND
+powerchannel -S HMP4040 3 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 3 measure_voltage
+# COMMAND
+powerchannel -S HMP4040 3 measure_voltage
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+HMP4040 3 measure_current
+# COMMAND
+powerchannel -S HMP4040 3 measure_current
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+HMP4040 4 identify
+# COMMAND
+powerchannel -S HMP4040 4 identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+HMP4040 4 status
+# COMMAND
+powerchannel -S HMP4040 4 status
+# OUTPUT
+0xC400C0DE
+# RETURNS 0
+##
+HMP4040 4 voltage
+# COMMAND
+powerchannel -S HMP4040 4 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+HMP4040 4 voltage set
+# COMMAND
+powerchannel -S HMP4040 4 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+HMP4040 4 voltage_limit
+# COMMAND
+powerchannel -S HMP4040 4 voltage_limit
+# OUTPUT
+32.5
+# RETURNS 0
+##
+HMP4040 4 voltage_limit set
+# COMMAND
+powerchannel -S HMP4040 4 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+HMP4040 4 voltage_trip
+# COMMAND
+powerchannel -S HMP4040 4 voltage_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+HMP4040 4 voltage_trip reset
+# COMMAND
+powerchannel -S HMP4040 4 voltage_trip --reset
+# OUTPUT
+False
+# RETURNS 0
+##
+HMP4040 4 current
+# COMMAND
+powerchannel -S HMP4040 4 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+HMP4040 4 current set
+# COMMAND
+powerchannel -S HMP4040 4 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+HMP4040 4 current_limit
+# COMMAND
+powerchannel -S HMP4040 4 current_limit
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 4 current_limit set
+# COMMAND
+powerchannel -S HMP4040 4 current_limit 3
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 4 current_trip
+# COMMAND
+powerchannel -S HMP4040 4 current_trip
+# OUTPUT
+NotImplementedError: HMP4040 does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 4 current_trip reset
+# COMMAND
+powerchannel -S HMP4040 4 current_trip --reset
+# OUTPUT
+NotImplementedError: HMP4040 does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+HMP4040 4 sweep_voltage
+# COMMAND
+powerchannel -S HMP4040 4 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 4 sweep_voltage n_steps
+# COMMAND
+powerchannel -S HMP4040 4 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 4 sweep_voltage measure
+# COMMAND
+powerchannel -S HMP4040 4 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	2.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	4.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	6.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	8.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	10.0             	0.0              	0.00012098       	2.1e-07
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 4 sweep_voltage no log
+# COMMAND
+powerchannel -S HMP4040 4 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+HMP4040 4 sweep_voltage m+nl
+# COMMAND
+powerchannel -S HMP4040 4 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 4 sweep_current
+# COMMAND
+powerchannel -S HMP4040 4 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 4 sweep_current n_steps
+# COMMAND
+powerchannel -S HMP4040 4 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.67
+{DATE}{TIME}2                	0.0              	1.33
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.67], [{TIMESTAMP}, 2, 0.0, 1.33], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 4 sweep_current measure
+# COMMAND
+powerchannel -S HMP4040 4 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	0.0              	0.2              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	0.0              	0.4              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	0.0              	0.6              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	0.0              	0.8              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	0.0              	1.0              	0.00012098       	2.1e-07
+{DATE}{TIME}6                	0.0              	1.2              	0.00012098       	2.1e-07
+{DATE}{TIME}7                	0.0              	1.4              	0.00012098       	2.1e-07
+{DATE}{TIME}8                	0.0              	1.6              	0.00012098       	2.1e-07
+{DATE}{TIME}9                	0.0              	1.8              	0.00012098       	2.1e-07
+{DATE}{TIME}10               	0.0              	2.0              	0.00012098       	2.1e-07
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 4 sweep_current no log
+# COMMAND
+powerchannel -S HMP4040 4 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+HMP4040 4 sweep_current m+nl
+# COMMAND
+powerchannel -S HMP4040 4 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+HMP4040 4 measure_voltage
+# COMMAND
+powerchannel -S HMP4040 4 measure_voltage
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+HMP4040 4 measure_current
+# COMMAND
+powerchannel -S HMP4040 4 measure_current
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+Keithley2410 1 identify
+# COMMAND
+powerchannel -S Keithley2410 1 identify
+# OUTPUT
+Keithley Instruments Inc., Model 2410, 000000, SIM1.0
+# RETURNS 0
+##
+Keithley2410 1 status
+# COMMAND
+powerchannel -S Keithley2410 1 status
+# OUTPUT
+0x4000C0DE
+# RETURNS 0
+##
+Keithley2410 1 voltage
+# COMMAND
+powerchannel -S Keithley2410 1 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+Keithley2410 1 voltage set
+# COMMAND
+powerchannel -S Keithley2410 1 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+Keithley2410 1 voltage_limit
+# COMMAND
+powerchannel -S Keithley2410 1 voltage_limit
+# OUTPUT
+21.0
+# RETURNS 0
+##
+Keithley2410 1 voltage_limit set
+# COMMAND
+powerchannel -S Keithley2410 1 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+Keithley2410 1 voltage_trip
+# COMMAND
+powerchannel -S Keithley2410 1 voltage_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+Keithley2410 1 voltage_trip reset
+# COMMAND
+powerchannel -S Keithley2410 1 voltage_trip --reset
+# OUTPUT
+False
+# RETURNS 0
+##
+Keithley2410 1 current
+# COMMAND
+powerchannel -S Keithley2410 1 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+Keithley2410 1 current set
+# COMMAND
+powerchannel -S Keithley2410 1 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+Keithley2410 1 current_limit
+# COMMAND
+powerchannel -S Keithley2410 1 current_limit
+# OUTPUT
+0.000105
+# RETURNS 0
+##
+Keithley2410 1 current_limit set
+# COMMAND
+powerchannel -S Keithley2410 1 current_limit 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+Keithley2410 1 current_trip
+# COMMAND
+powerchannel -S Keithley2410 1 current_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+Keithley2410 1 current_trip reset
+# COMMAND
+powerchannel -S Keithley2410 1 current_trip --reset
+# OUTPUT
+False
+# RETURNS 0
+##
+Keithley2410 1 sweep_voltage
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_voltage n_steps
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_voltage measure
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	1.0              	2.0
+{DATE}{TIME}1                	2.0              	0.0              	1.0              	2.0
+{DATE}{TIME}2                	4.0              	0.0              	1.0              	2.0
+{DATE}{TIME}3                	6.0              	0.0              	1.0              	2.0
+{DATE}{TIME}4                	8.0              	0.0              	1.0              	2.0
+{DATE}{TIME}5                	10.0             	0.0              	1.0              	2.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 1, 2.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 2, 4.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 3, 6.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 4, 8.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 5, 10.0, 0.0, 1.0, 2.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_voltage no log
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_voltage m+nl
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 1, 2.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 2, 4.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 3, 6.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 4, 8.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 5, 10.0, 0.0, 1.0, 2.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_current
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_current n_steps
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.666667
+{DATE}{TIME}2                	0.0              	1.333333
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.666667], [{TIMESTAMP}, 2, 0.0, 1.333333], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_current measure
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	1.0              	2.0
+{DATE}{TIME}1                	0.0              	0.2              	1.0              	2.0
+{DATE}{TIME}2                	0.0              	0.4              	1.0              	2.0
+{DATE}{TIME}3                	0.0              	0.6              	1.0              	2.0
+{DATE}{TIME}4                	0.0              	0.8              	1.0              	2.0
+{DATE}{TIME}5                	0.0              	1.0              	1.0              	2.0
+{DATE}{TIME}6                	0.0              	1.2              	1.0              	2.0
+{DATE}{TIME}7                	0.0              	1.4              	1.0              	2.0
+{DATE}{TIME}8                	0.0              	1.6              	1.0              	2.0
+{DATE}{TIME}9                	0.0              	1.8              	1.0              	2.0
+{DATE}{TIME}10               	0.0              	2.0              	1.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 1, 0.0, 0.2, 1.0, 2.0], [{TIMESTAMP}, 2, 0.0, 0.4, 1.0, 2.0], [{TIMESTAMP}, 3, 0.0, 0.6, 1.0, 2.0], [{TIMESTAMP}, 4, 0.0, 0.8, 1.0, 2.0], [{TIMESTAMP}, 5, 0.0, 1.0, 1.0, 2.0], [{TIMESTAMP}, 6, 0.0, 1.2, 1.0, 2.0], [{TIMESTAMP}, 7, 0.0, 1.4, 1.0, 2.0], [{TIMESTAMP}, 8, 0.0, 1.6, 1.0, 2.0], [{TIMESTAMP}, 9, 0.0, 1.8, 1.0, 2.0], [{TIMESTAMP}, 10, 0.0, 2.0, 1.0, 2.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_current no log
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+Keithley2410 1 sweep_current m+nl
+# COMMAND
+powerchannel -S Keithley2410 1 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 1.0, 2.0], [{TIMESTAMP}, 1, 0.0, 0.2, 1.0, 2.0], [{TIMESTAMP}, 2, 0.0, 0.4, 1.0, 2.0], [{TIMESTAMP}, 3, 0.0, 0.6, 1.0, 2.0], [{TIMESTAMP}, 4, 0.0, 0.8, 1.0, 2.0], [{TIMESTAMP}, 5, 0.0, 1.0, 1.0, 2.0], [{TIMESTAMP}, 6, 0.0, 1.2, 1.0, 2.0], [{TIMESTAMP}, 7, 0.0, 1.4, 1.0, 2.0], [{TIMESTAMP}, 8, 0.0, 1.6, 1.0, 2.0], [{TIMESTAMP}, 9, 0.0, 1.8, 1.0, 2.0], [{TIMESTAMP}, 10, 0.0, 2.0, 1.0, 2.0]])
+# RETURNS 0
+##
+Keithley2410 1 measure_voltage
+# COMMAND
+powerchannel -S Keithley2410 1 measure_voltage
+# OUTPUT
+1.0
+# RETURNS 0
+##
+Keithley2410 1 measure_current
+# COMMAND
+powerchannel -S Keithley2410 1 measure_current
+# OUTPUT
+2.0
+# RETURNS 0
+##
+KeysightE3633A 1 identify
+# COMMAND
+powerchannel -S KeysightE3633A 1 identify
+# OUTPUT
+HEWLETT-PACKARD,E3633A,0,SIM1.0
+# RETURNS 0
+##
+KeysightE3633A 1 status
+# COMMAND
+powerchannel -S KeysightE3633A 1 status
+# OUTPUT
+0xFACEC0DE
+# RETURNS 0
+##
+KeysightE3633A 1 voltage
+# COMMAND
+powerchannel -S KeysightE3633A 1 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+KeysightE3633A 1 voltage set
+# COMMAND
+powerchannel -S KeysightE3633A 1 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+KeysightE3633A 1 voltage_limit
+# COMMAND
+powerchannel -S KeysightE3633A 1 voltage_limit
+# OUTPUT
+50.0
+# RETURNS 0
+##
+KeysightE3633A 1 voltage_limit set
+# COMMAND
+powerchannel -S KeysightE3633A 1 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+KeysightE3633A 1 voltage_trip
+# COMMAND
+powerchannel -S KeysightE3633A 1 voltage_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+KeysightE3633A 1 voltage_trip reset
+# COMMAND
+powerchannel -S KeysightE3633A 1 voltage_trip --reset
+# OUTPUT
+False
+# RETURNS 0
+##
+KeysightE3633A 1 current
+# COMMAND
+powerchannel -S KeysightE3633A 1 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+KeysightE3633A 1 current set
+# COMMAND
+powerchannel -S KeysightE3633A 1 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+KeysightE3633A 1 current_limit
+# COMMAND
+powerchannel -S KeysightE3633A 1 current_limit
+# OUTPUT
+50.0
+# RETURNS 0
+##
+KeysightE3633A 1 current_limit set
+# COMMAND
+powerchannel -S KeysightE3633A 1 current_limit 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+KeysightE3633A 1 current_trip
+# COMMAND
+powerchannel -S KeysightE3633A 1 current_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+KeysightE3633A 1 current_trip reset
+# COMMAND
+powerchannel -S KeysightE3633A 1 current_trip --reset
+# OUTPUT
+False
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_voltage
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_voltage n_steps
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_voltage measure
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	2.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	4.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	6.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	8.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	10.0             	0.0              	0.00012098       	2.1e-07
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_voltage no log
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_voltage m+nl
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 2.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 4.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 6.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 8.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 10.0, 0.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_current
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_current n_steps
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.67
+{DATE}{TIME}2                	0.0              	1.33
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.67], [{TIMESTAMP}, 2, 0.0, 1.33], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_current measure
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0.00012098       	2.1e-07
+{DATE}{TIME}1                	0.0              	0.2              	0.00012098       	2.1e-07
+{DATE}{TIME}2                	0.0              	0.4              	0.00012098       	2.1e-07
+{DATE}{TIME}3                	0.0              	0.6              	0.00012098       	2.1e-07
+{DATE}{TIME}4                	0.0              	0.8              	0.00012098       	2.1e-07
+{DATE}{TIME}5                	0.0              	1.0              	0.00012098       	2.1e-07
+{DATE}{TIME}6                	0.0              	1.2              	0.00012098       	2.1e-07
+{DATE}{TIME}7                	0.0              	1.4              	0.00012098       	2.1e-07
+{DATE}{TIME}8                	0.0              	1.6              	0.00012098       	2.1e-07
+{DATE}{TIME}9                	0.0              	1.8              	0.00012098       	2.1e-07
+{DATE}{TIME}10               	0.0              	2.0              	0.00012098       	2.1e-07
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_current no log
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+KeysightE3633A 1 sweep_current m+nl
+# COMMAND
+powerchannel -S KeysightE3633A 1 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 1, 0.0, 0.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 2, 0.0, 0.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 3, 0.0, 0.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 4, 0.0, 0.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 5, 0.0, 1.0, 0.00012098, 2.1e-07], [{TIMESTAMP}, 6, 0.0, 1.2, 0.00012098, 2.1e-07], [{TIMESTAMP}, 7, 0.0, 1.4, 0.00012098, 2.1e-07], [{TIMESTAMP}, 8, 0.0, 1.6, 0.00012098, 2.1e-07], [{TIMESTAMP}, 9, 0.0, 1.8, 0.00012098, 2.1e-07], [{TIMESTAMP}, 10, 0.0, 2.0, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+KeysightE3633A 1 measure_voltage
+# COMMAND
+powerchannel -S KeysightE3633A 1 measure_voltage
+# OUTPUT
+0.00012098
+# RETURNS 0
+##
+KeysightE3633A 1 measure_current
+# COMMAND
+powerchannel -S KeysightE3633A 1 measure_current
+# OUTPUT
+2.1e-07
+# RETURNS 0
+##
+MP1 1 identify
+# COMMAND
+powerchannel -S MP1 1 identify
+# OUTPUT
+GULMAY,MP1,000000,SIMv1
+# RETURNS 0
+##
+MP1 1 status
+# COMMAND
+powerchannel -S MP1 1 status
+# OUTPUT
+0x3
+# RETURNS 0
+##
+MP1 1 voltage
+# COMMAND
+powerchannel -S MP1 1 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+MP1 1 voltage set
+# COMMAND
+powerchannel -S MP1 1 voltage 5
+# OUTPUT
+5000.0
+# RETURNS 0
+##
+MP1 1 voltage_limit
+# COMMAND
+powerchannel -S MP1 1 voltage_limit
+# OUTPUT
+NotImplementedError: MP1 does not implement voltage_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+MP1 1 voltage_limit set
+# COMMAND
+powerchannel -S MP1 1 voltage_limit 5
+# OUTPUT
+NotImplementedError: MP1 does not implement voltage_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+MP1 1 voltage_trip
+# COMMAND
+powerchannel -S MP1 1 voltage_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+MP1 1 voltage_trip reset
+# COMMAND
+powerchannel -S MP1 1 voltage_trip --reset
+# OUTPUT
+NotImplementedError: MP1 does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+MP1 1 current
+# COMMAND
+powerchannel -S MP1 1 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+MP1 1 current set
+# COMMAND
+powerchannel -S MP1 1 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+MP1 1 current_limit
+# COMMAND
+powerchannel -S MP1 1 current_limit
+# OUTPUT
+NotImplementedError: MP1 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+MP1 1 current_limit set
+# COMMAND
+powerchannel -S MP1 1 current_limit 3
+# OUTPUT
+NotImplementedError: MP1 does not implement current_limit - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+MP1 1 current_trip
+# COMMAND
+powerchannel -S MP1 1 current_trip
+# OUTPUT
+False
+# RETURNS 0
+##
+MP1 1 current_trip reset
+# COMMAND
+powerchannel -S MP1 1 current_trip --reset
+# OUTPUT
+NotImplementedError: MP1 does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+MP1 1 sweep_voltage
+# COMMAND
+powerchannel -S MP1 1 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2000.0           	0.0
+{DATE}{TIME}2                	4000.0           	0.0
+{DATE}{TIME}3                	6000.0           	0.0
+{DATE}{TIME}4                	8000.0           	0.0
+{DATE}{TIME}5                	10000.0          	0.0
+(10000.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2000.0, 0.0], [{TIMESTAMP}, 2, 4000.0, 0.0], [{TIMESTAMP}, 3, 6000.0, 0.0], [{TIMESTAMP}, 4, 8000.0, 0.0], [{TIMESTAMP}, 5, 10000.0, 0.0]])
+# RETURNS 0
+##
+MP1 1 sweep_voltage n_steps
+# COMMAND
+powerchannel -S MP1 1 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3000.0           	0.0
+{DATE}{TIME}2                	6000.0           	0.0
+{DATE}{TIME}3                	10000.0          	0.0
+(10000.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3000.0, 0.0], [{TIMESTAMP}, 2, 6000.0, 0.0], [{TIMESTAMP}, 3, 10000.0, 0.0]])
+# RETURNS 0
+##
+MP1 1 sweep_voltage measure
+# COMMAND
+powerchannel -S MP1 1 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0                	0.0
+{DATE}{TIME}1                	2000.0           	0.0              	2                	0.0
+{DATE}{TIME}2                	4000.0           	0.0              	4                	0.0
+{DATE}{TIME}3                	6000.0           	0.0              	6                	0.0
+{DATE}{TIME}4                	8000.0           	0.0              	8                	0.0
+{DATE}{TIME}5                	10000.0          	0.0              	10               	0.0
+(10000.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0, 0.0], [{TIMESTAMP}, 1, 2000.0, 0.0, 2, 0.0], [{TIMESTAMP}, 2, 4000.0, 0.0, 4, 0.0], [{TIMESTAMP}, 3, 6000.0, 0.0, 6, 0.0], [{TIMESTAMP}, 4, 8000.0, 0.0, 8, 0.0], [{TIMESTAMP}, 5, 10000.0, 0.0, 10, 0.0]])
+# RETURNS 0
+##
+MP1 1 sweep_voltage no log
+# COMMAND
+powerchannel -S MP1 1 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10000.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2000.0, 0.0], [{TIMESTAMP}, 2, 4000.0, 0.0], [{TIMESTAMP}, 3, 6000.0, 0.0], [{TIMESTAMP}, 4, 8000.0, 0.0], [{TIMESTAMP}, 5, 10000.0, 0.0]])
+# RETURNS 0
+##
+MP1 1 sweep_voltage m+nl
+# COMMAND
+powerchannel -S MP1 1 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10000.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0, 0.0], [{TIMESTAMP}, 1, 2000.0, 0.0, 2, 0.0], [{TIMESTAMP}, 2, 4000.0, 0.0, 4, 0.0], [{TIMESTAMP}, 3, 6000.0, 0.0, 6, 0.0], [{TIMESTAMP}, 4, 8000.0, 0.0, 8, 0.0], [{TIMESTAMP}, 5, 10000.0, 0.0, 10, 0.0]])
+# RETURNS 0
+##
+MP1 1 sweep_current
+# COMMAND
+powerchannel -S MP1 1 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+MP1 1 sweep_current n_steps
+# COMMAND
+powerchannel -S MP1 1 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.6
+{DATE}{TIME}2                	0.0              	1.3
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.6], [{TIMESTAMP}, 2, 0.0, 1.3], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+MP1 1 sweep_current measure
+# COMMAND
+powerchannel -S MP1 1 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	0                	0.0
+{DATE}{TIME}1                	0.0              	0.2              	0                	0.2
+{DATE}{TIME}2                	0.0              	0.4              	0                	0.4
+{DATE}{TIME}3                	0.0              	0.6              	0                	0.6
+{DATE}{TIME}4                	0.0              	0.8              	0                	0.8
+{DATE}{TIME}5                	0.0              	1.0              	0                	1.0
+{DATE}{TIME}6                	0.0              	1.2              	0                	1.2
+{DATE}{TIME}7                	0.0              	1.4              	0                	1.4
+{DATE}{TIME}8                	0.0              	1.6              	0                	1.6
+{DATE}{TIME}9                	0.0              	1.8              	0                	1.8
+{DATE}{TIME}10               	0.0              	2.0              	0                	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2, 0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4, 0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6, 0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8, 0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0, 0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2, 0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4, 0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6, 0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8, 0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0, 0, 2.0]])
+# RETURNS 0
+##
+MP1 1 sweep_current no log
+# COMMAND
+powerchannel -S MP1 1 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+MP1 1 sweep_current m+nl
+# COMMAND
+powerchannel -S MP1 1 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2, 0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4, 0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6, 0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8, 0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0, 0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2, 0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4, 0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6, 0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8, 0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0, 0, 2.0]])
+# RETURNS 0
+##
+MP1 1 measure_voltage
+# COMMAND
+powerchannel -S MP1 1 measure_voltage
+# OUTPUT
+0
+# RETURNS 0
+##
+MP1 1 measure_current
+# COMMAND
+powerchannel -S MP1 1 measure_current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+TTI 1 identify
+# COMMAND
+powerchannel -S TTI 1 identify
+# OUTPUT
+Aim-TTI,MX180TP,000000,SIM1.0
+# RETURNS 0
+##
+TTI 1 status
+# COMMAND
+powerchannel -S TTI 1 status
+# OUTPUT
+0xC100C0DE
+# RETURNS 0
+##
+TTI 1 voltage
+# COMMAND
+powerchannel -S TTI 1 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+TTI 1 voltage set
+# COMMAND
+powerchannel -S TTI 1 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+TTI 1 voltage_limit
+# COMMAND
+powerchannel -S TTI 1 voltage_limit
+# OUTPUT
+130.0
+# RETURNS 0
+##
+TTI 1 voltage_limit set
+# COMMAND
+powerchannel -S TTI 1 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+TTI 1 voltage_trip
+# COMMAND
+powerchannel -S TTI 1 voltage_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 1 voltage_trip reset
+# COMMAND
+powerchannel -S TTI 1 voltage_trip --reset
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 1 current
+# COMMAND
+powerchannel -S TTI 1 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+TTI 1 current set
+# COMMAND
+powerchannel -S TTI 1 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+TTI 1 current_limit
+# COMMAND
+powerchannel -S TTI 1 current_limit
+# OUTPUT
+21.0
+# RETURNS 0
+##
+TTI 1 current_limit set
+# COMMAND
+powerchannel -S TTI 1 current_limit 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+TTI 1 current_trip
+# COMMAND
+powerchannel -S TTI 1 current_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 1 current_trip reset
+# COMMAND
+powerchannel -S TTI 1 current_trip --reset
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 1 sweep_voltage
+# COMMAND
+powerchannel -S TTI 1 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 1 sweep_voltage n_steps
+# COMMAND
+powerchannel -S TTI 1 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 1 sweep_voltage measure
+# COMMAND
+powerchannel -S TTI 1 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	1.00012098       	1.00000008
+{DATE}{TIME}1                	2.0              	0.0              	1.00012098       	1.00000008
+{DATE}{TIME}2                	4.0              	0.0              	1.00012098       	1.00000008
+{DATE}{TIME}3                	6.0              	0.0              	1.00012098       	1.00000008
+{DATE}{TIME}4                	8.0              	0.0              	1.00012098       	1.00000008
+{DATE}{TIME}5                	10.0             	0.0              	1.00012098       	1.00000008
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 1, 2.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 2, 4.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 3, 6.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 4, 8.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 5, 10.0, 0.0, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+TTI 1 sweep_voltage no log
+# COMMAND
+powerchannel -S TTI 1 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 1 sweep_voltage m+nl
+# COMMAND
+powerchannel -S TTI 1 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 1, 2.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 2, 4.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 3, 6.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 4, 8.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 5, 10.0, 0.0, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+TTI 1 sweep_current
+# COMMAND
+powerchannel -S TTI 1 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 1 sweep_current n_steps
+# COMMAND
+powerchannel -S TTI 1 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.67
+{DATE}{TIME}2                	0.0              	1.33
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.67], [{TIMESTAMP}, 2, 0.0, 1.33], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 1 sweep_current measure
+# COMMAND
+powerchannel -S TTI 1 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	1.00012098       	1.00000008
+{DATE}{TIME}1                	0.0              	0.2              	1.00012098       	1.00000008
+{DATE}{TIME}2                	0.0              	0.4              	1.00012098       	1.00000008
+{DATE}{TIME}3                	0.0              	0.6              	1.00012098       	1.00000008
+{DATE}{TIME}4                	0.0              	0.8              	1.00012098       	1.00000008
+{DATE}{TIME}5                	0.0              	1.0              	1.00012098       	1.00000008
+{DATE}{TIME}6                	0.0              	1.2              	1.00012098       	1.00000008
+{DATE}{TIME}7                	0.0              	1.4              	1.00012098       	1.00000008
+{DATE}{TIME}8                	0.0              	1.6              	1.00012098       	1.00000008
+{DATE}{TIME}9                	0.0              	1.8              	1.00012098       	1.00000008
+{DATE}{TIME}10               	0.0              	2.0              	1.00012098       	1.00000008
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 1, 0.0, 0.2, 1.00012098, 1.00000008], [{TIMESTAMP}, 2, 0.0, 0.4, 1.00012098, 1.00000008], [{TIMESTAMP}, 3, 0.0, 0.6, 1.00012098, 1.00000008], [{TIMESTAMP}, 4, 0.0, 0.8, 1.00012098, 1.00000008], [{TIMESTAMP}, 5, 0.0, 1.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 6, 0.0, 1.2, 1.00012098, 1.00000008], [{TIMESTAMP}, 7, 0.0, 1.4, 1.00012098, 1.00000008], [{TIMESTAMP}, 8, 0.0, 1.6, 1.00012098, 1.00000008], [{TIMESTAMP}, 9, 0.0, 1.8, 1.00012098, 1.00000008], [{TIMESTAMP}, 10, 0.0, 2.0, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+TTI 1 sweep_current no log
+# COMMAND
+powerchannel -S TTI 1 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 1 sweep_current m+nl
+# COMMAND
+powerchannel -S TTI 1 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 1, 0.0, 0.2, 1.00012098, 1.00000008], [{TIMESTAMP}, 2, 0.0, 0.4, 1.00012098, 1.00000008], [{TIMESTAMP}, 3, 0.0, 0.6, 1.00012098, 1.00000008], [{TIMESTAMP}, 4, 0.0, 0.8, 1.00012098, 1.00000008], [{TIMESTAMP}, 5, 0.0, 1.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 6, 0.0, 1.2, 1.00012098, 1.00000008], [{TIMESTAMP}, 7, 0.0, 1.4, 1.00012098, 1.00000008], [{TIMESTAMP}, 8, 0.0, 1.6, 1.00012098, 1.00000008], [{TIMESTAMP}, 9, 0.0, 1.8, 1.00012098, 1.00000008], [{TIMESTAMP}, 10, 0.0, 2.0, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+TTI 1 measure_voltage
+# COMMAND
+powerchannel -S TTI 1 measure_voltage
+# OUTPUT
+1.00012098
+# RETURNS 0
+##
+TTI 1 measure_current
+# COMMAND
+powerchannel -S TTI 1 measure_current
+# OUTPUT
+1.00000008
+# RETURNS 0
+##
+TTI 2 identify
+# COMMAND
+powerchannel -S TTI 2 identify
+# OUTPUT
+Aim-TTI,MX180TP,000000,SIM1.0
+# RETURNS 0
+##
+TTI 2 status
+# COMMAND
+powerchannel -S TTI 2 status
+# OUTPUT
+0xC200C0DE
+# RETURNS 0
+##
+TTI 2 voltage
+# COMMAND
+powerchannel -S TTI 2 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+TTI 2 voltage set
+# COMMAND
+powerchannel -S TTI 2 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+TTI 2 voltage_limit
+# COMMAND
+powerchannel -S TTI 2 voltage_limit
+# OUTPUT
+70.0
+# RETURNS 0
+##
+TTI 2 voltage_limit set
+# COMMAND
+powerchannel -S TTI 2 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+TTI 2 voltage_trip
+# COMMAND
+powerchannel -S TTI 2 voltage_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 2 voltage_trip reset
+# COMMAND
+powerchannel -S TTI 2 voltage_trip --reset
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 2 current
+# COMMAND
+powerchannel -S TTI 2 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+TTI 2 current set
+# COMMAND
+powerchannel -S TTI 2 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+TTI 2 current_limit
+# COMMAND
+powerchannel -S TTI 2 current_limit
+# OUTPUT
+11.0
+# RETURNS 0
+##
+TTI 2 current_limit set
+# COMMAND
+powerchannel -S TTI 2 current_limit 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+TTI 2 current_trip
+# COMMAND
+powerchannel -S TTI 2 current_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 2 current_trip reset
+# COMMAND
+powerchannel -S TTI 2 current_trip --reset
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 2 sweep_voltage
+# COMMAND
+powerchannel -S TTI 2 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 2 sweep_voltage n_steps
+# COMMAND
+powerchannel -S TTI 2 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 2 sweep_voltage measure
+# COMMAND
+powerchannel -S TTI 2 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	2.01002098       	2.00000008
+{DATE}{TIME}1                	2.0              	0.0              	2.01002098       	2.00000008
+{DATE}{TIME}2                	4.0              	0.0              	2.01002098       	2.00000008
+{DATE}{TIME}3                	6.0              	0.0              	2.01002098       	2.00000008
+{DATE}{TIME}4                	8.0              	0.0              	2.01002098       	2.00000008
+{DATE}{TIME}5                	10.0             	0.0              	2.01002098       	2.00000008
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 1, 2.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 2, 4.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 3, 6.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 4, 8.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 5, 10.0, 0.0, 2.01002098, 2.00000008]])
+# RETURNS 0
+##
+TTI 2 sweep_voltage no log
+# COMMAND
+powerchannel -S TTI 2 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 2 sweep_voltage m+nl
+# COMMAND
+powerchannel -S TTI 2 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 1, 2.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 2, 4.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 3, 6.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 4, 8.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 5, 10.0, 0.0, 2.01002098, 2.00000008]])
+# RETURNS 0
+##
+TTI 2 sweep_current
+# COMMAND
+powerchannel -S TTI 2 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 2 sweep_current n_steps
+# COMMAND
+powerchannel -S TTI 2 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.67
+{DATE}{TIME}2                	0.0              	1.33
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.67], [{TIMESTAMP}, 2, 0.0, 1.33], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 2 sweep_current measure
+# COMMAND
+powerchannel -S TTI 2 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	2.01002098       	2.00000008
+{DATE}{TIME}1                	0.0              	0.2              	2.01002098       	2.00000008
+{DATE}{TIME}2                	0.0              	0.4              	2.01002098       	2.00000008
+{DATE}{TIME}3                	0.0              	0.6              	2.01002098       	2.00000008
+{DATE}{TIME}4                	0.0              	0.8              	2.01002098       	2.00000008
+{DATE}{TIME}5                	0.0              	1.0              	2.01002098       	2.00000008
+{DATE}{TIME}6                	0.0              	1.2              	2.01002098       	2.00000008
+{DATE}{TIME}7                	0.0              	1.4              	2.01002098       	2.00000008
+{DATE}{TIME}8                	0.0              	1.6              	2.01002098       	2.00000008
+{DATE}{TIME}9                	0.0              	1.8              	2.01002098       	2.00000008
+{DATE}{TIME}10               	0.0              	2.0              	2.01002098       	2.00000008
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 1, 0.0, 0.2, 2.01002098, 2.00000008], [{TIMESTAMP}, 2, 0.0, 0.4, 2.01002098, 2.00000008], [{TIMESTAMP}, 3, 0.0, 0.6, 2.01002098, 2.00000008], [{TIMESTAMP}, 4, 0.0, 0.8, 2.01002098, 2.00000008], [{TIMESTAMP}, 5, 0.0, 1.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 6, 0.0, 1.2, 2.01002098, 2.00000008], [{TIMESTAMP}, 7, 0.0, 1.4, 2.01002098, 2.00000008], [{TIMESTAMP}, 8, 0.0, 1.6, 2.01002098, 2.00000008], [{TIMESTAMP}, 9, 0.0, 1.8, 2.01002098, 2.00000008], [{TIMESTAMP}, 10, 0.0, 2.0, 2.01002098, 2.00000008]])
+# RETURNS 0
+##
+TTI 2 sweep_current no log
+# COMMAND
+powerchannel -S TTI 2 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 2 sweep_current m+nl
+# COMMAND
+powerchannel -S TTI 2 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 1, 0.0, 0.2, 2.01002098, 2.00000008], [{TIMESTAMP}, 2, 0.0, 0.4, 2.01002098, 2.00000008], [{TIMESTAMP}, 3, 0.0, 0.6, 2.01002098, 2.00000008], [{TIMESTAMP}, 4, 0.0, 0.8, 2.01002098, 2.00000008], [{TIMESTAMP}, 5, 0.0, 1.0, 2.01002098, 2.00000008], [{TIMESTAMP}, 6, 0.0, 1.2, 2.01002098, 2.00000008], [{TIMESTAMP}, 7, 0.0, 1.4, 2.01002098, 2.00000008], [{TIMESTAMP}, 8, 0.0, 1.6, 2.01002098, 2.00000008], [{TIMESTAMP}, 9, 0.0, 1.8, 2.01002098, 2.00000008], [{TIMESTAMP}, 10, 0.0, 2.0, 2.01002098, 2.00000008]])
+# RETURNS 0
+##
+TTI 2 measure_voltage
+# COMMAND
+powerchannel -S TTI 2 measure_voltage
+# OUTPUT
+2.01002098
+# RETURNS 0
+##
+TTI 2 measure_current
+# COMMAND
+powerchannel -S TTI 2 measure_current
+# OUTPUT
+2.00000008
+# RETURNS 0
+##
+TTI 3 identify
+# COMMAND
+powerchannel -S TTI 3 identify
+# OUTPUT
+Aim-TTI,MX180TP,000000,SIM1.0
+# RETURNS 0
+##
+TTI 3 status
+# COMMAND
+powerchannel -S TTI 3 status
+# OUTPUT
+0xC300C0DE
+# RETURNS 0
+##
+TTI 3 voltage
+# COMMAND
+powerchannel -S TTI 3 voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+TTI 3 voltage set
+# COMMAND
+powerchannel -S TTI 3 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+TTI 3 voltage_limit
+# COMMAND
+powerchannel -S TTI 3 voltage_limit
+# OUTPUT
+15.0
+# RETURNS 0
+##
+TTI 3 voltage_limit set
+# COMMAND
+powerchannel -S TTI 3 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+TTI 3 voltage_trip
+# COMMAND
+powerchannel -S TTI 3 voltage_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 3 voltage_trip reset
+# COMMAND
+powerchannel -S TTI 3 voltage_trip --reset
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 3 current
+# COMMAND
+powerchannel -S TTI 3 current
+# OUTPUT
+0.0
+# RETURNS 0
+##
+TTI 3 current set
+# COMMAND
+powerchannel -S TTI 3 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+TTI 3 current_limit
+# COMMAND
+powerchannel -S TTI 3 current_limit
+# OUTPUT
+4.0
+# RETURNS 0
+##
+TTI 3 current_limit set
+# COMMAND
+powerchannel -S TTI 3 current_limit 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+TTI 3 current_trip
+# COMMAND
+powerchannel -S TTI 3 current_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 3 current_trip reset
+# COMMAND
+powerchannel -S TTI 3 current_trip --reset
+# OUTPUT
+True
+# RETURNS 0
+##
+TTI 3 sweep_voltage
+# COMMAND
+powerchannel -S TTI 3 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	2.0              	0.0
+{DATE}{TIME}2                	4.0              	0.0
+{DATE}{TIME}3                	6.0              	0.0
+{DATE}{TIME}4                	8.0              	0.0
+{DATE}{TIME}5                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 3 sweep_voltage n_steps
+# COMMAND
+powerchannel -S TTI 3 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	3.33             	0.0
+{DATE}{TIME}2                	6.67             	0.0
+{DATE}{TIME}3                	10.0             	0.0
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 3.33, 0.0], [{TIMESTAMP}, 2, 6.67, 0.0], [{TIMESTAMP}, 3, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 3 sweep_voltage measure
+# COMMAND
+powerchannel -S TTI 3 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	3.02002098       	3.00000008
+{DATE}{TIME}1                	2.0              	0.0              	3.02002098       	3.00000008
+{DATE}{TIME}2                	4.0              	0.0              	3.02002098       	3.00000008
+{DATE}{TIME}3                	6.0              	0.0              	3.02002098       	3.00000008
+{DATE}{TIME}4                	8.0              	0.0              	3.02002098       	3.00000008
+{DATE}{TIME}5                	10.0             	0.0              	3.02002098       	3.00000008
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 1, 2.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 2, 4.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 3, 6.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 4, 8.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 5, 10.0, 0.0, 3.02002098, 3.00000008]])
+# RETURNS 0
+##
+TTI 3 sweep_voltage no log
+# COMMAND
+powerchannel -S TTI 3 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 2.0, 0.0], [{TIMESTAMP}, 2, 4.0, 0.0], [{TIMESTAMP}, 3, 6.0, 0.0], [{TIMESTAMP}, 4, 8.0, 0.0], [{TIMESTAMP}, 5, 10.0, 0.0]])
+# RETURNS 0
+##
+TTI 3 sweep_voltage m+nl
+# COMMAND
+powerchannel -S TTI 3 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 1, 2.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 2, 4.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 3, 6.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 4, 8.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 5, 10.0, 0.0, 3.02002098, 3.00000008]])
+# RETURNS 0
+##
+TTI 3 sweep_current
+# COMMAND
+powerchannel -S TTI 3 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.2
+{DATE}{TIME}2                	0.0              	0.4
+{DATE}{TIME}3                	0.0              	0.6
+{DATE}{TIME}4                	0.0              	0.8
+{DATE}{TIME}5                	0.0              	1.0
+{DATE}{TIME}6                	0.0              	1.2
+{DATE}{TIME}7                	0.0              	1.4
+{DATE}{TIME}8                	0.0              	1.6
+{DATE}{TIME}9                	0.0              	1.8
+{DATE}{TIME}10               	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 3 sweep_current n_steps
+# COMMAND
+powerchannel -S TTI 3 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	0.0              	0.0
+{DATE}{TIME}1                	0.0              	0.67
+{DATE}{TIME}2                	0.0              	1.33
+{DATE}{TIME}3                	0.0              	2.0
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.67], [{TIMESTAMP}, 2, 0.0, 1.33], [{TIMESTAMP}, 3, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 3 sweep_current measure
+# COMMAND
+powerchannel -S TTI 3 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	0.0              	0.0              	3.02002098       	3.00000008
+{DATE}{TIME}1                	0.0              	0.2              	3.02002098       	3.00000008
+{DATE}{TIME}2                	0.0              	0.4              	3.02002098       	3.00000008
+{DATE}{TIME}3                	0.0              	0.6              	3.02002098       	3.00000008
+{DATE}{TIME}4                	0.0              	0.8              	3.02002098       	3.00000008
+{DATE}{TIME}5                	0.0              	1.0              	3.02002098       	3.00000008
+{DATE}{TIME}6                	0.0              	1.2              	3.02002098       	3.00000008
+{DATE}{TIME}7                	0.0              	1.4              	3.02002098       	3.00000008
+{DATE}{TIME}8                	0.0              	1.6              	3.02002098       	3.00000008
+{DATE}{TIME}9                	0.0              	1.8              	3.02002098       	3.00000008
+{DATE}{TIME}10               	0.0              	2.0              	3.02002098       	3.00000008
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 1, 0.0, 0.2, 3.02002098, 3.00000008], [{TIMESTAMP}, 2, 0.0, 0.4, 3.02002098, 3.00000008], [{TIMESTAMP}, 3, 0.0, 0.6, 3.02002098, 3.00000008], [{TIMESTAMP}, 4, 0.0, 0.8, 3.02002098, 3.00000008], [{TIMESTAMP}, 5, 0.0, 1.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 6, 0.0, 1.2, 3.02002098, 3.00000008], [{TIMESTAMP}, 7, 0.0, 1.4, 3.02002098, 3.00000008], [{TIMESTAMP}, 8, 0.0, 1.6, 3.02002098, 3.00000008], [{TIMESTAMP}, 9, 0.0, 1.8, 3.02002098, 3.00000008], [{TIMESTAMP}, 10, 0.0, 2.0, 3.02002098, 3.00000008]])
+# RETURNS 0
+##
+TTI 3 sweep_current no log
+# COMMAND
+powerchannel -S TTI 3 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0], [{TIMESTAMP}, 1, 0.0, 0.2], [{TIMESTAMP}, 2, 0.0, 0.4], [{TIMESTAMP}, 3, 0.0, 0.6], [{TIMESTAMP}, 4, 0.0, 0.8], [{TIMESTAMP}, 5, 0.0, 1.0], [{TIMESTAMP}, 6, 0.0, 1.2], [{TIMESTAMP}, 7, 0.0, 1.4], [{TIMESTAMP}, 8, 0.0, 1.6], [{TIMESTAMP}, 9, 0.0, 1.8], [{TIMESTAMP}, 10, 0.0, 2.0]])
+# RETURNS 0
+##
+TTI 3 sweep_current m+nl
+# COMMAND
+powerchannel -S TTI 3 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 0.0, 0.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 1, 0.0, 0.2, 3.02002098, 3.00000008], [{TIMESTAMP}, 2, 0.0, 0.4, 3.02002098, 3.00000008], [{TIMESTAMP}, 3, 0.0, 0.6, 3.02002098, 3.00000008], [{TIMESTAMP}, 4, 0.0, 0.8, 3.02002098, 3.00000008], [{TIMESTAMP}, 5, 0.0, 1.0, 3.02002098, 3.00000008], [{TIMESTAMP}, 6, 0.0, 1.2, 3.02002098, 3.00000008], [{TIMESTAMP}, 7, 0.0, 1.4, 3.02002098, 3.00000008], [{TIMESTAMP}, 8, 0.0, 1.6, 3.02002098, 3.00000008], [{TIMESTAMP}, 9, 0.0, 1.8, 3.02002098, 3.00000008], [{TIMESTAMP}, 10, 0.0, 2.0, 3.02002098, 3.00000008]])
+# RETURNS 0
+##
+TTI 3 measure_voltage
+# COMMAND
+powerchannel -S TTI 3 measure_voltage
+# OUTPUT
+3.02002098
+# RETURNS 0
+##
+TTI 3 measure_current
+# COMMAND
+powerchannel -S TTI 3 measure_current
+# OUTPUT
+3.00000008
+# RETURNS 0
+##
+TTITSX identify
+# COMMAND
+powerchannel -S TTITSX 1 identify
+# OUTPUT
+Aim-TTI,TSX1820P,000000,SIM1.0
+# RETURNS 0
+##
+TTITSX status
+# COMMAND
+powerchannel -S TTITSX 1 status
+# OUTPUT
+0xC100C0DE
+# RETURNS 0
+##
+TTITSX voltage
+# COMMAND
+powerchannel -S TTITSX 1 voltage
+# OUTPUT
+1.2
+# RETURNS 0
+##
+TTITSX voltage set
+# COMMAND
+powerchannel -S TTITSX 1 voltage 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+TTITSX voltage_limit
+# COMMAND
+powerchannel -S TTITSX 1 voltage_limit
+# OUTPUT
+130.0
+# RETURNS 0
+##
+TTITSX voltage_limit set
+# COMMAND
+powerchannel -S TTITSX 1 voltage_limit 5
+# OUTPUT
+5.0
+# RETURNS 0
+##
+TTITSX voltage_trip
+# COMMAND
+powerchannel -S TTITSX 1 voltage_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+TTITSX voltage_trip reset
+# COMMAND
+powerchannel -S TTITSX 1 voltage_trip --reset
+# OUTPUT
+True
+# RETURNS 0
+##
+TTITSX current
+# COMMAND
+powerchannel -S TTITSX 1 current
+# OUTPUT
+2.0
+# RETURNS 0
+##
+TTITSX current set
+# COMMAND
+powerchannel -S TTITSX 1 current 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+TTITSX current_limit
+# COMMAND
+powerchannel -S TTITSX 1 current_limit
+# OUTPUT
+21.0
+# RETURNS 0
+##
+TTITSX current_limit set
+# COMMAND
+powerchannel -S TTITSX 1 current_limit 3
+# OUTPUT
+3.0
+# RETURNS 0
+##
+TTITSX current_trip
+# COMMAND
+powerchannel -S TTITSX 1 current_trip
+# OUTPUT
+True
+# RETURNS 0
+##
+TTITSX current_trip reset
+# COMMAND
+powerchannel -S TTITSX 1 current_trip --reset
+# OUTPUT
+True
+# RETURNS 0
+##
+TTITSX sweep_voltage
+# COMMAND
+powerchannel -S TTITSX 1 sweep_voltage -s 2 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	1.2              	2.0
+{DATE}{TIME}1                	3.2              	2.0
+{DATE}{TIME}2                	5.2              	2.0
+{DATE}{TIME}3                	7.2              	2.0
+{DATE}{TIME}4                	9.2              	2.0
+{DATE}{TIME}5                	10.0             	2.0
+(10.0, [[{TIMESTAMP}, 0, 1.2, 2.0], [{TIMESTAMP}, 1, 3.2, 2.0], [{TIMESTAMP}, 2, 5.2, 2.0], [{TIMESTAMP}, 3, 7.2, 2.0], [{TIMESTAMP}, 4, 9.2, 2.0], [{TIMESTAMP}, 5, 10.0, 2.0]])
+# RETURNS 0
+##
+TTITSX sweep_voltage n_steps
+# COMMAND
+powerchannel -S TTITSX 1 sweep_voltage -n 3 -d 0 10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	1.2              	2.0
+{DATE}{TIME}1                	4.13             	2.0
+{DATE}{TIME}2                	7.07             	2.0
+{DATE}{TIME}3                	10.0             	2.0
+(10.0, [[{TIMESTAMP}, 0, 1.2, 2.0], [{TIMESTAMP}, 1, 4.13, 2.0], [{TIMESTAMP}, 2, 7.07, 2.0], [{TIMESTAMP}, 3, 10.0, 2.0]])
+# RETURNS 0
+##
+TTITSX sweep_voltage measure
+# COMMAND
+powerchannel -S TTITSX 1 sweep_voltage -s 2 -d 0 10 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	1.2              	2.0              	1.00012098       	1.00000008
+{DATE}{TIME}1                	3.2              	2.0              	1.00012098       	1.00000008
+{DATE}{TIME}2                	5.2              	2.0              	1.00012098       	1.00000008
+{DATE}{TIME}3                	7.2              	2.0              	1.00012098       	1.00000008
+{DATE}{TIME}4                	9.2              	2.0              	1.00012098       	1.00000008
+{DATE}{TIME}5                	10.0             	2.0              	1.00012098       	1.00000008
+(10.0, [[{TIMESTAMP}, 0, 1.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 1, 3.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 2, 5.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 3, 7.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 4, 9.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 5, 10.0, 2.0, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+TTITSX sweep_voltage no log
+# COMMAND
+powerchannel -S TTITSX 1 sweep_voltage -s 2 -d 0 10 -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 1.2, 2.0], [{TIMESTAMP}, 1, 3.2, 2.0], [{TIMESTAMP}, 2, 5.2, 2.0], [{TIMESTAMP}, 3, 7.2, 2.0], [{TIMESTAMP}, 4, 9.2, 2.0], [{TIMESTAMP}, 5, 10.0, 2.0]])
+# RETURNS 0
+##
+TTITSX sweep_voltage m+nl
+# COMMAND
+powerchannel -S TTITSX 1 sweep_voltage -s 2 -d 0 10 -m -l
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0, 1.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 1, 3.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 2, 5.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 3, 7.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 4, 9.2, 2.0, 1.00012098, 1.00000008], [{TIMESTAMP}, 5, 10.0, 2.0, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+TTITSX sweep_current
+# COMMAND
+powerchannel -S TTITSX 1 sweep_current -s 0.2 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	1.2              	2.0
+(2.0, [[{TIMESTAMP}, 0, 1.2, 2.0]])
+# RETURNS 0
+##
+TTITSX sweep_current n_steps
+# COMMAND
+powerchannel -S TTITSX 1 sweep_current -n 3 -d 0 2
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	1.2              	2.0
+{DATE}{TIME}1                	1.2              	2.0
+{DATE}{TIME}2                	1.2              	2.0
+{DATE}{TIME}3                	1.2              	2.0
+(2.0, [[{TIMESTAMP}, 0, 1.2, 2.0], [{TIMESTAMP}, 1, 1.2, 2.0], [{TIMESTAMP}, 2, 1.2, 2.0], [{TIMESTAMP}, 3, 1.2, 2.0]])
+# RETURNS 0
+##
+TTITSX sweep_current measure
+# COMMAND
+powerchannel -S TTITSX 1 sweep_current -s 0.2 -d 0 2 -m
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	1.2              	2.0              	1.00012098       	1.00000008
+(2.0, [[{TIMESTAMP}, 0, 1.2, 2.0, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+TTITSX sweep_current no log
+# COMMAND
+powerchannel -S TTITSX 1 sweep_current -s 0.2 -d 0 2 -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 1.2, 2.0]])
+# RETURNS 0
+##
+TTITSX sweep_current m+nl
+# COMMAND
+powerchannel -S TTITSX 1 sweep_current -s 0.2 -d 0 2 -m -l
+# OUTPUT
+(2.0, [[{TIMESTAMP}, 0, 1.2, 2.0, 1.00012098, 1.00000008]])
+# RETURNS 0
+##
+TTITSX measure_voltage
+# COMMAND
+powerchannel -S TTITSX 1 measure_voltage
+# OUTPUT
+1.00012098
+# RETURNS 0
+##
+TTITSX measure_current
+# COMMAND
+powerchannel -S TTITSX 1 measure_current
+# OUTPUT
+1.00000008
+# RETURNS 0
+##
+CaenDT8033N 1 identify
+# COMMAND
+powerchannel -S CaenDT8033N 1 identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N 1 status
+# COMMAND
+powerchannel -S CaenDT8033N 1 status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N 1 voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 voltage
+# OUTPUT
+-1.0
+# RETURNS 0
+##
+CaenDT8033N 1 voltage set
+# COMMAND
+powerchannel -S CaenDT8033N 1 voltage -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage [OPTIONS] [VOLTAGE]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 1 voltage_limit
+# COMMAND
+powerchannel -S CaenDT8033N 1 voltage_limit
+# OUTPUT
+-1.0
+# RETURNS 0
+##
+CaenDT8033N 1 voltage_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 1 voltage_limit -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit
+[OPTIONS] [VOLTAGE_LIMIT]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 1 voltage_trip
+# COMMAND
+powerchannel -S CaenDT8033N 1 voltage_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 1 voltage_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 1 voltage_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 1 current
+# COMMAND
+powerchannel -S CaenDT8033N 1 current
+# OUTPUT
+1e-05
+# RETURNS 0
+##
+CaenDT8033N 1 current set
+# COMMAND
+powerchannel -S CaenDT8033N 1 current 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 1 current_limit
+# COMMAND
+powerchannel -S CaenDT8033N 1 current_limit
+# OUTPUT
+1e-05
+# RETURNS 0
+##
+CaenDT8033N 1 current_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 1 current_limit 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 1 current_trip
+# COMMAND
+powerchannel -S CaenDT8033N 1 current_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 1 current_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 1 current_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 1 sweep_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-3.0             	1e-05
+{DATE}{TIME}2                	-5.0             	1e-05
+{DATE}{TIME}3                	-7.0             	1e-05
+{DATE}{TIME}4                	-9.0             	1e-05
+{DATE}{TIME}5                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 1 sweep_voltage n_steps
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-4.0             	1e-05
+{DATE}{TIME}2                	-7.0             	1e-05
+{DATE}{TIME}3                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -4.0, 1e-05], [{TIMESTAMP}, 2, -7.0, 1e-05], [{TIMESTAMP}, 3, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 1 sweep_voltage measure
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	-1.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}1                	-3.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}2                	-5.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}3                	-7.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}4                	-9.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}5                	-10.0            	1e-05            	-10.0            	1e-07
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 1 sweep_voltage no log
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 1 sweep_voltage m+nl
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 1 measure_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 measure_voltage
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N 1 measure_current
+# COMMAND
+powerchannel -S CaenDT8033N 1 measure_current
+# OUTPUT
+1e-07
+# RETURNS 0
+##
+CaenDT8033N 2 identify
+# COMMAND
+powerchannel -S CaenDT8033N 2 identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N 2 status
+# COMMAND
+powerchannel -S CaenDT8033N 2 status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N 2 voltage
+# COMMAND
+powerchannel -S CaenDT8033N 2 voltage
+# OUTPUT
+-2.0
+# RETURNS 0
+##
+CaenDT8033N 2 voltage set
+# COMMAND
+powerchannel -S CaenDT8033N 2 voltage -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage [OPTIONS] [VOLTAGE]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 2 voltage_limit
+# COMMAND
+powerchannel -S CaenDT8033N 2 voltage_limit
+# OUTPUT
+-2.0
+# RETURNS 0
+##
+CaenDT8033N 2 voltage_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 2 voltage_limit -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit
+[OPTIONS] [VOLTAGE_LIMIT]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 2 voltage_trip
+# COMMAND
+powerchannel -S CaenDT8033N 2 voltage_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 2 voltage_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 2 voltage_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 2 current
+# COMMAND
+powerchannel -S CaenDT8033N 2 current
+# OUTPUT
+2e-05
+# RETURNS 0
+##
+CaenDT8033N 2 current set
+# COMMAND
+powerchannel -S CaenDT8033N 2 current 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 2 current_limit
+# COMMAND
+powerchannel -S CaenDT8033N 2 current_limit
+# OUTPUT
+2e-05
+# RETURNS 0
+##
+CaenDT8033N 2 current_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 2 current_limit 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 2 current_trip
+# COMMAND
+powerchannel -S CaenDT8033N 2 current_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 2 current_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 2 current_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 2 sweep_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-3.0             	1e-05
+{DATE}{TIME}2                	-5.0             	1e-05
+{DATE}{TIME}3                	-7.0             	1e-05
+{DATE}{TIME}4                	-9.0             	1e-05
+{DATE}{TIME}5                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 2 sweep_voltage n_steps
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-4.0             	1e-05
+{DATE}{TIME}2                	-7.0             	1e-05
+{DATE}{TIME}3                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -4.0, 1e-05], [{TIMESTAMP}, 2, -7.0, 1e-05], [{TIMESTAMP}, 3, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 2 sweep_voltage measure
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	-1.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}1                	-3.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}2                	-5.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}3                	-7.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}4                	-9.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}5                	-10.0            	1e-05            	-10.0            	1e-07
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 2 sweep_voltage no log
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 2 sweep_voltage m+nl
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 2 measure_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 2 measure_voltage
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N 2 measure_current
+# COMMAND
+powerchannel -S CaenDT8033N 2 measure_current
+# OUTPUT
+1e-07
+# RETURNS 0
+##
+CaenDT8033N 3 identify
+# COMMAND
+powerchannel -S CaenDT8033N 3 identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N 3 status
+# COMMAND
+powerchannel -S CaenDT8033N 3 status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N 3 voltage
+# COMMAND
+powerchannel -S CaenDT8033N 3 voltage
+# OUTPUT
+-3.0
+# RETURNS 0
+##
+CaenDT8033N 3 voltage set
+# COMMAND
+powerchannel -S CaenDT8033N 3 voltage -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage [OPTIONS] [VOLTAGE]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 3 voltage_limit
+# COMMAND
+powerchannel -S CaenDT8033N 3 voltage_limit
+# OUTPUT
+-3.0
+# RETURNS 0
+##
+CaenDT8033N 3 voltage_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 3 voltage_limit -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit
+[OPTIONS] [VOLTAGE_LIMIT]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 3 voltage_trip
+# COMMAND
+powerchannel -S CaenDT8033N 3 voltage_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 3 voltage_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 3 voltage_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 3 current
+# COMMAND
+powerchannel -S CaenDT8033N 3 current
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 3 current set
+# COMMAND
+powerchannel -S CaenDT8033N 3 current 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 3 current_limit
+# COMMAND
+powerchannel -S CaenDT8033N 3 current_limit
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 3 current_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 3 current_limit 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 3 current_trip
+# COMMAND
+powerchannel -S CaenDT8033N 3 current_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 3 current_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 3 current_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 3 sweep_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-3.0             	1e-05
+{DATE}{TIME}2                	-5.0             	1e-05
+{DATE}{TIME}3                	-7.0             	1e-05
+{DATE}{TIME}4                	-9.0             	1e-05
+{DATE}{TIME}5                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 3 sweep_voltage n_steps
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-4.0             	1e-05
+{DATE}{TIME}2                	-7.0             	1e-05
+{DATE}{TIME}3                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -4.0, 1e-05], [{TIMESTAMP}, 2, -7.0, 1e-05], [{TIMESTAMP}, 3, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 3 sweep_voltage measure
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	-1.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}1                	-3.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}2                	-5.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}3                	-7.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}4                	-9.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}5                	-10.0            	1e-05            	-10.0            	1e-07
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 3 sweep_voltage no log
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 3 sweep_voltage m+nl
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 3 measure_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 3 measure_voltage
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N 3 measure_current
+# COMMAND
+powerchannel -S CaenDT8033N 3 measure_current
+# OUTPUT
+1e-07
+# RETURNS 0
+##
+CaenDT8033N 4 identify
+# COMMAND
+powerchannel -S CaenDT8033N 4 identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N 4 status
+# COMMAND
+powerchannel -S CaenDT8033N 4 status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N 4 voltage
+# COMMAND
+powerchannel -S CaenDT8033N 4 voltage
+# OUTPUT
+-4.0
+# RETURNS 0
+##
+CaenDT8033N 4 voltage set
+# COMMAND
+powerchannel -S CaenDT8033N 4 voltage -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage [OPTIONS] [VOLTAGE]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 4 voltage_limit
+# COMMAND
+powerchannel -S CaenDT8033N 4 voltage_limit
+# OUTPUT
+-4.0
+# RETURNS 0
+##
+CaenDT8033N 4 voltage_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 4 voltage_limit -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit
+[OPTIONS] [VOLTAGE_LIMIT]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 4 voltage_trip
+# COMMAND
+powerchannel -S CaenDT8033N 4 voltage_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 4 voltage_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 4 voltage_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 4 current
+# COMMAND
+powerchannel -S CaenDT8033N 4 current
+# OUTPUT
+4e-05
+# RETURNS 0
+##
+CaenDT8033N 4 current set
+# COMMAND
+powerchannel -S CaenDT8033N 4 current 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 4 current_limit
+# COMMAND
+powerchannel -S CaenDT8033N 4 current_limit
+# OUTPUT
+4e-05
+# RETURNS 0
+##
+CaenDT8033N 4 current_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 4 current_limit 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 4 current_trip
+# COMMAND
+powerchannel -S CaenDT8033N 4 current_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 4 current_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 4 current_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 4 sweep_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-3.0             	1e-05
+{DATE}{TIME}2                	-5.0             	1e-05
+{DATE}{TIME}3                	-7.0             	1e-05
+{DATE}{TIME}4                	-9.0             	1e-05
+{DATE}{TIME}5                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 4 sweep_voltage n_steps
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-4.0             	1e-05
+{DATE}{TIME}2                	-7.0             	1e-05
+{DATE}{TIME}3                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -4.0, 1e-05], [{TIMESTAMP}, 2, -7.0, 1e-05], [{TIMESTAMP}, 3, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 4 sweep_voltage measure
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	-1.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}1                	-3.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}2                	-5.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}3                	-7.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}4                	-9.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}5                	-10.0            	1e-05            	-10.0            	1e-07
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 4 sweep_voltage no log
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 4 sweep_voltage m+nl
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 4 measure_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 4 measure_voltage
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N 4 measure_current
+# COMMAND
+powerchannel -S CaenDT8033N 4 measure_current
+# OUTPUT
+1e-07
+# RETURNS 0
+##
+CaenDT8033N 5 identify
+# COMMAND
+powerchannel -S CaenDT8033N 5 identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N 5 status
+# COMMAND
+powerchannel -S CaenDT8033N 5 status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N 5 voltage
+# COMMAND
+powerchannel -S CaenDT8033N 5 voltage
+# OUTPUT
+-5.0
+# RETURNS 0
+##
+CaenDT8033N 5 voltage set
+# COMMAND
+powerchannel -S CaenDT8033N 5 voltage -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage [OPTIONS] [VOLTAGE]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 5 voltage_limit
+# COMMAND
+powerchannel -S CaenDT8033N 5 voltage_limit
+# OUTPUT
+-5.0
+# RETURNS 0
+##
+CaenDT8033N 5 voltage_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 5 voltage_limit -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit
+[OPTIONS] [VOLTAGE_LIMIT]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 5 voltage_trip
+# COMMAND
+powerchannel -S CaenDT8033N 5 voltage_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 5 voltage_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 5 voltage_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 5 current
+# COMMAND
+powerchannel -S CaenDT8033N 5 current
+# OUTPUT
+5e-05
+# RETURNS 0
+##
+CaenDT8033N 5 current set
+# COMMAND
+powerchannel -S CaenDT8033N 5 current 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 5 current_limit
+# COMMAND
+powerchannel -S CaenDT8033N 5 current_limit
+# OUTPUT
+5e-05
+# RETURNS 0
+##
+CaenDT8033N 5 current_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 5 current_limit 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 5 current_trip
+# COMMAND
+powerchannel -S CaenDT8033N 5 current_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 5 current_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 5 current_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 5 sweep_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-3.0             	1e-05
+{DATE}{TIME}2                	-5.0             	1e-05
+{DATE}{TIME}3                	-7.0             	1e-05
+{DATE}{TIME}4                	-9.0             	1e-05
+{DATE}{TIME}5                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 5 sweep_voltage n_steps
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-4.0             	1e-05
+{DATE}{TIME}2                	-7.0             	1e-05
+{DATE}{TIME}3                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -4.0, 1e-05], [{TIMESTAMP}, 2, -7.0, 1e-05], [{TIMESTAMP}, 3, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 5 sweep_voltage measure
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	-1.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}1                	-3.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}2                	-5.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}3                	-7.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}4                	-9.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}5                	-10.0            	1e-05            	-10.0            	1e-07
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 5 sweep_voltage no log
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 5 sweep_voltage m+nl
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 5 measure_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 5 measure_voltage
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N 5 measure_current
+# COMMAND
+powerchannel -S CaenDT8033N 5 measure_current
+# OUTPUT
+1e-07
+# RETURNS 0
+##
+CaenDT8033N 6 identify
+# COMMAND
+powerchannel -S CaenDT8033N 6 identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N 6 status
+# COMMAND
+powerchannel -S CaenDT8033N 6 status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N 6 voltage
+# COMMAND
+powerchannel -S CaenDT8033N 6 voltage
+# OUTPUT
+-6.0
+# RETURNS 0
+##
+CaenDT8033N 6 voltage set
+# COMMAND
+powerchannel -S CaenDT8033N 6 voltage -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage [OPTIONS] [VOLTAGE]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 6 voltage_limit
+# COMMAND
+powerchannel -S CaenDT8033N 6 voltage_limit
+# OUTPUT
+-6.0
+# RETURNS 0
+##
+CaenDT8033N 6 voltage_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 6 voltage_limit -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit
+[OPTIONS] [VOLTAGE_LIMIT]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 6 voltage_trip
+# COMMAND
+powerchannel -S CaenDT8033N 6 voltage_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 6 voltage_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 6 voltage_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 6 current
+# COMMAND
+powerchannel -S CaenDT8033N 6 current
+# OUTPUT
+6e-05
+# RETURNS 0
+##
+CaenDT8033N 6 current set
+# COMMAND
+powerchannel -S CaenDT8033N 6 current 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 6 current_limit
+# COMMAND
+powerchannel -S CaenDT8033N 6 current_limit
+# OUTPUT
+6e-05
+# RETURNS 0
+##
+CaenDT8033N 6 current_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 6 current_limit 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 6 current_trip
+# COMMAND
+powerchannel -S CaenDT8033N 6 current_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 6 current_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 6 current_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 6 sweep_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-3.0             	1e-05
+{DATE}{TIME}2                	-5.0             	1e-05
+{DATE}{TIME}3                	-7.0             	1e-05
+{DATE}{TIME}4                	-9.0             	1e-05
+{DATE}{TIME}5                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 6 sweep_voltage n_steps
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-4.0             	1e-05
+{DATE}{TIME}2                	-7.0             	1e-05
+{DATE}{TIME}3                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -4.0, 1e-05], [{TIMESTAMP}, 2, -7.0, 1e-05], [{TIMESTAMP}, 3, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 6 sweep_voltage measure
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	-1.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}1                	-3.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}2                	-5.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}3                	-7.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}4                	-9.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}5                	-10.0            	1e-05            	-10.0            	1e-07
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 6 sweep_voltage no log
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 6 sweep_voltage m+nl
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 6 measure_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 6 measure_voltage
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N 6 measure_current
+# COMMAND
+powerchannel -S CaenDT8033N 6 measure_current
+# OUTPUT
+1e-07
+# RETURNS 0
+##
+CaenDT8033N 7 identify
+# COMMAND
+powerchannel -S CaenDT8033N 7 identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N 7 status
+# COMMAND
+powerchannel -S CaenDT8033N 7 status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N 7 voltage
+# COMMAND
+powerchannel -S CaenDT8033N 7 voltage
+# OUTPUT
+-7.0
+# RETURNS 0
+##
+CaenDT8033N 7 voltage set
+# COMMAND
+powerchannel -S CaenDT8033N 7 voltage -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage [OPTIONS] [VOLTAGE]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 7 voltage_limit
+# COMMAND
+powerchannel -S CaenDT8033N 7 voltage_limit
+# OUTPUT
+-7.0
+# RETURNS 0
+##
+CaenDT8033N 7 voltage_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 7 voltage_limit -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit
+[OPTIONS] [VOLTAGE_LIMIT]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 7 voltage_trip
+# COMMAND
+powerchannel -S CaenDT8033N 7 voltage_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 7 voltage_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 7 voltage_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 7 current
+# COMMAND
+powerchannel -S CaenDT8033N 7 current
+# OUTPUT
+7e-05
+# RETURNS 0
+##
+CaenDT8033N 7 current set
+# COMMAND
+powerchannel -S CaenDT8033N 7 current 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 7 current_limit
+# COMMAND
+powerchannel -S CaenDT8033N 7 current_limit
+# OUTPUT
+7e-05
+# RETURNS 0
+##
+CaenDT8033N 7 current_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 7 current_limit 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 7 current_trip
+# COMMAND
+powerchannel -S CaenDT8033N 7 current_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 7 current_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 7 current_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 7 sweep_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-3.0             	1e-05
+{DATE}{TIME}2                	-5.0             	1e-05
+{DATE}{TIME}3                	-7.0             	1e-05
+{DATE}{TIME}4                	-9.0             	1e-05
+{DATE}{TIME}5                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 7 sweep_voltage n_steps
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-4.0             	1e-05
+{DATE}{TIME}2                	-7.0             	1e-05
+{DATE}{TIME}3                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -4.0, 1e-05], [{TIMESTAMP}, 2, -7.0, 1e-05], [{TIMESTAMP}, 3, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 7 sweep_voltage measure
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	-1.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}1                	-3.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}2                	-5.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}3                	-7.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}4                	-9.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}5                	-10.0            	1e-05            	-10.0            	1e-07
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 7 sweep_voltage no log
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 7 sweep_voltage m+nl
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 7 measure_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 7 measure_voltage
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N 7 measure_current
+# COMMAND
+powerchannel -S CaenDT8033N 7 measure_current
+# OUTPUT
+1e-07
+# RETURNS 0
+##
+CaenDT8033N 8 identify
+# COMMAND
+powerchannel -S CaenDT8033N 8 identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+CaenDT8033N 8 status
+# COMMAND
+powerchannel -S CaenDT8033N 8 status
+# OUTPUT
+0x1
+# RETURNS 0
+##
+CaenDT8033N 8 voltage
+# COMMAND
+powerchannel -S CaenDT8033N 8 voltage
+# OUTPUT
+-8.0
+# RETURNS 0
+##
+CaenDT8033N 8 voltage set
+# COMMAND
+powerchannel -S CaenDT8033N 8 voltage -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage [OPTIONS] [VOLTAGE]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 8 voltage_limit
+# COMMAND
+powerchannel -S CaenDT8033N 8 voltage_limit
+# OUTPUT
+-8.0
+# RETURNS 0
+##
+CaenDT8033N 8 voltage_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 8 voltage_limit -5
+# OUTPUT
+Usage: powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit
+[OPTIONS] [VOLTAGE_LIMIT]
+Try 'powerchannel INSTRUMENT_CLASS CHANNEL voltage_limit --help' for help.
+
+Error: No such option: -5
+# RETURNS 2
+##
+CaenDT8033N 8 voltage_trip
+# COMMAND
+powerchannel -S CaenDT8033N 8 voltage_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 8 voltage_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 8 voltage_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_voltage_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 8 current
+# COMMAND
+powerchannel -S CaenDT8033N 8 current
+# OUTPUT
+8e-05
+# RETURNS 0
+##
+CaenDT8033N 8 current set
+# COMMAND
+powerchannel -S CaenDT8033N 8 current 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 8 current_limit
+# COMMAND
+powerchannel -S CaenDT8033N 8 current_limit
+# OUTPUT
+8e-05
+# RETURNS 0
+##
+CaenDT8033N 8 current_limit set
+# COMMAND
+powerchannel -S CaenDT8033N 8 current_limit 3e-5
+# OUTPUT
+3e-05
+# RETURNS 0
+##
+CaenDT8033N 8 current_trip
+# COMMAND
+powerchannel -S CaenDT8033N 8 current_trip
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 8 current_trip reset
+# COMMAND
+powerchannel -S CaenDT8033N 8 current_trip --reset
+# OUTPUT
+NotImplementedError: CaenDT8033N does not implement reset_current_trip - has fallen back on Instrument.PowerChannel!
+# RETURNS 1
+##
+CaenDT8033N 7 sweep_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-3.0             	1e-05
+{DATE}{TIME}2                	-5.0             	1e-05
+{DATE}{TIME}3                	-7.0             	1e-05
+{DATE}{TIME}4                	-9.0             	1e-05
+{DATE}{TIME}5                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 7 sweep_voltage n_steps
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -n 3 -d 0 -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current
+{DATE}{TIME}0                	-1.0             	1e-05
+{DATE}{TIME}1                	-4.0             	1e-05
+{DATE}{TIME}2                	-7.0             	1e-05
+{DATE}{TIME}3                	-10.0            	1e-05
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -4.0, 1e-05], [{TIMESTAMP}, 2, -7.0, 1e-05], [{TIMESTAMP}, 3, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 7 sweep_voltage measure
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -- -10
+# OUTPUT
+Time             	Step             	Voltage          	Current          	Meas. Volt.      	Meas. Curr.
+{DATE}{TIME}0                	-1.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}1                	-3.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}2                	-5.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}3                	-7.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}4                	-9.0             	1e-05            	-10.0            	1e-07
+{DATE}{TIME}5                	-10.0            	1e-05            	-10.0            	1e-07
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 7 sweep_voltage no log
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05], [{TIMESTAMP}, 1, -3.0, 1e-05], [{TIMESTAMP}, 2, -5.0, 1e-05], [{TIMESTAMP}, 3, -7.0, 1e-05], [{TIMESTAMP}, 4, -9.0, 1e-05], [{TIMESTAMP}, 5, -10.0, 1e-05]])
+# RETURNS 0
+##
+CaenDT8033N 7 sweep_voltage m+nl
+# COMMAND
+powerchannel -S CaenDT8033N 1 sweep_voltage -s 2 -d 0 -m -l -- -10
+# OUTPUT
+(-10.0, [[{TIMESTAMP}, 0, -1.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 1, -3.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 2, -5.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 3, -7.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 4, -9.0, 1e-05, -10.0, 1e-07], [{TIMESTAMP}, 5, -10.0, 1e-05, -10.0, 1e-07]])
+# RETURNS 0
+##
+CaenDT8033N 8 measure_voltage
+# COMMAND
+powerchannel -S CaenDT8033N 8 measure_voltage
+# OUTPUT
+-10.0
+# RETURNS 0
+##
+CaenDT8033N 8 measure_current
+# COMMAND
+powerchannel -S CaenDT8033N 8 measure_current
+# OUTPUT
+1e-07
+# RETURNS 0

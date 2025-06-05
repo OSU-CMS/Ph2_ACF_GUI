@@ -1,0 +1,42 @@
+##
+off
+# COMMAND
+relay_board -S off
+# OUTPUT
+
+# RETURNS 0
+##
+query_pin
+# COMMAND
+relay_board -S query_pin
+# OUTPUT
+OFF
+# RETURNS 0
+##
+set_pin
+# COMMAND
+relay_board -S set_pin OFF
+# OUTPUT
+x
+# RETURNS 0
+##
+set_pin
+# COMMAND
+relay_board -S -M QUAD set_pin VDDA_ROC0
+# OUTPUT
+f
+# RETURNS 0
+##
+set_pin CaSe
+# COMMAND
+relay_board -S -M QuAd set_pin VDDA_ROC0
+# OUTPUT
+f
+# RETURNS 0
+##
+set_pin DOUBLE
+# COMMAND
+relay_board -S -M DOUBLE set_pin VDDA_ROC0
+# OUTPUT
+f
+# RETURNS 0

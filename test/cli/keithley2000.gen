@@ -1,0 +1,21 @@
+identify               | keithley2000 -S identify
+measure VOLT           | keithley2000 -S measure VOLT -r 5 -c 4
+measure CURR           | keithley2000 -S measure CURR -r 5 -c 4
+measure VOLT:DC        | keithley2000 -S measure VOLT:DC -r 5 -c 4
+measure CURR:DC        | keithley2000 -S measure CURR:DC -r 5 -c 4
+measure VOLT:AC        | keithley2000 -S measure VOLT:AC -r 5 -c 4
+measure CURR:AC        | keithley2000 -S measure CURR:AC -r 5 -c 4
+measure RES            | keithley2000 -S measure RES -r 5 -c 4
+measure FRES           | keithley2000 -S measure FRES -r 5 -c 4
+measure PER            | keithley2000 -S measure PER -r 5 -c 4
+measure RD53B_TEMP     | keithley2000 -S measure RD53B_TEMP -r 5 -c 4
+measure ALU_TEMP       | keithley2000 -S measure ALU_TEMP -r 5 -c 4
+measure HUMIDITY       | keithley2000 -S measure HUMIDITY -r 5 -c 4
+#measure CONT           | keithley2000 -S measure CONT
+#measure DIOD           | keithley2000 -S measure DIOD
+reset                  | keithley2000 -S reset
+selftest               | keithley2000 -S selftest
+generic query          | keithley2000 -S query status_byte
+generic set            | keithley2000 -S set status_byte_enable 255
+scpi query             | keithley2000 -S scpi_query "*ESR?"
+#scpi write             | keithley2000 -S scpi_write "*ESE 0"

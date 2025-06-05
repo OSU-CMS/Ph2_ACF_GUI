@@ -1,0 +1,20 @@
+identify               | tti -S identify
+reset                  | tti -S reset
+voltage                | tti -S voltage 1
+voltage invalid output | tti -S voltage 5
+voltage masked output  | tti -S -O 2 voltage 3
+set voltage            | tti -S voltage 2 5.0
+set voltage prohibited | tti -S voltage 3 500.0
+current                | tti -S current 2
+set current            | tti -S current 3 0.2
+measure                | tti -S measure 3
+status                 | tti -S status 2
+off                    | tti -S off 1
+on                     | tti -S on 2
+generic query          | tti -S query status_byte
+generic set            | tti -S set status_byte_enable 255
+ramp voltage           | tti -S ramp_voltage 1 10 -s 3 -d 0 -m
+ramp voltage negative  | tti -S ramp_voltage 1 -s 5 -d 0 -m -- -20
+ramp current           | tti -S ramp_current 1 10 -s 3 -d 0 -m
+scpi query             | tti -S scpi_query "*ESR?"
+#scpi write             | tti -S scpi_write "*ESE 0"

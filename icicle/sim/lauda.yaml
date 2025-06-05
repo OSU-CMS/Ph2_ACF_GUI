@@ -1,0 +1,74 @@
+spec: "1.1"
+devices:
+  Lauda:
+    eom:
+      ASRL INSTR:
+        q: "\r\n"
+        r: "\r\n"
+      USB INSTR:
+        q: "\r\n"
+        r: "\r\n"
+      TCPIP INSTR:
+        q: "\r\n"
+        r: "\r\n"
+      TCPIP SOCKET:
+        q: "\r\n"
+        r: "\r\n"
+      GPIB INSTR:
+        q: "\r\n"
+        r: "\r\n"
+    error: ERR_X
+    dialogues:
+      - q: "TYPE"
+        r: "E10G"
+      - q: "START"
+        r: "1"
+      - q: "STOP"
+        r: "1"
+      - q: "IN_MODE_02"
+        r: "1"
+      - q: "STATUS"
+        r: "-1"
+      - q: "STAT"
+        r: "1010101"
+      - q: "IN_PV_00"
+        r: "0.01"
+      - q: "IN_PV_01"
+        r: "2.30"
+    properties:
+      SYSTEM_MODE:
+        default: 0
+        getter:
+          q: "IN_MODE_00"
+          r: "{:d}"
+        setter:
+          q: "OUT_MODE_00_{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      TEMPERATURE_TARGET:
+        default: 21
+        getter:
+          q: "IN_SP_00"
+          r: "{:.2f}"
+        setter:
+          q: "OUT_SP_00_{:.2f}"
+        specs:
+          type: float
+          min: -90
+          max: 200
+      TEMPERATURE_REFERENCE:
+        default: 1
+        getter:
+          q: "IN_MODE_01"
+          r: "{:d}"
+        setter:
+          q: "OUT_MODE_01_{:d}"
+        specs:
+          type: int
+          min: 0
+          max: 3
+
+resources:
+  ASRL11::INSTR:
+    device: Lauda

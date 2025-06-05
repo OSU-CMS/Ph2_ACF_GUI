@@ -1,0 +1,20 @@
+identify                  | lauda -S identify
+command                   | lauda -S command start
+diagnostics               | lauda -S diagnostics
+model                     | lauda -S model
+off                       | lauda -S off
+on                        | lauda -S on
+reference                 | lauda -S reference
+reference set             | lauda -S reference external
+reference bad channel     | lauda -S reference noodle
+set temperature           | lauda -S set 40
+set temperature neg.      | lauda -S set -- -20
+status                    | lauda -S status
+temperature               | lauda -S temperature
+temperature bath          | lauda -S temperature bath
+temperature target        | lauda -S temperature target
+temperature external      | lauda -S temperature external
+temperature bath set      | lauda -S temperature bath 10
+temperature target set    | lauda -S temperature target 10
+temperature external set  | lauda -S temperature external 10
+temperature bad channel   | lauda -S temperature noodle

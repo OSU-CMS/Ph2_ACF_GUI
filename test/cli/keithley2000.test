@@ -1,0 +1,126 @@
+##
+identify
+# COMMAND
+keithley2000 -S identify
+# OUTPUT
+Keithley Instruments Inc., Model 2010, 000000, SIM1.0
+# RETURNS 0
+##
+measure VOLT
+# COMMAND
+keithley2000 -S measure VOLT -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure CURR
+# COMMAND
+keithley2000 -S measure CURR -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure VOLT:DC
+# COMMAND
+keithley2000 -S measure VOLT:DC -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure CURR:DC
+# COMMAND
+keithley2000 -S measure CURR:DC -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure VOLT:AC
+# COMMAND
+keithley2000 -S measure VOLT:AC -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure CURR:AC
+# COMMAND
+keithley2000 -S measure CURR:AC -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure RES
+# COMMAND
+keithley2000 -S measure RES -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure FRES
+# COMMAND
+keithley2000 -S measure FRES -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure PER
+# COMMAND
+keithley2000 -S measure PER -r 5 -c 4
+# OUTPUT
+[9325.32, 9325.32, 9325.32, 9325.32, 9325.32]
+# RETURNS 0
+##
+measure RD53B_TEMP
+# COMMAND
+keithley2000 -S measure RD53B_TEMP -r 5 -c 4
+# OUTPUT
+[26.88267111019553, 26.88267111019553, 26.88267111019553, 26.88267111019553, 26.88267111019553]
+# RETURNS 0
+##
+measure ALU_TEMP
+# COMMAND
+keithley2000 -S measure ALU_TEMP -r 5 -c 4
+# OUTPUT
+[26.784494531614257, 26.784494531614257, 26.784494531614257, 26.784494531614257, 26.784494531614257]
+# RETURNS 0
+##
+measure HUMIDITY
+# COMMAND
+keithley2000 -S measure HUMIDITY -r 5 -c 4
+# OUTPUT
+[300790.96774193546, 300790.96774193546, 300790.96774193546, 300790.96774193546, 300790.96774193546]
+# RETURNS 0
+##
+reset
+# COMMAND
+keithley2000 -S reset
+# OUTPUT
+
+# RETURNS 0
+##
+selftest
+# COMMAND
+keithley2000 -S selftest
+# OUTPUT
+1
+# RETURNS 0
+##
+generic query
+# COMMAND
+keithley2000 -S query status_byte
+# OUTPUT
+4207853790
+# RETURNS 0
+##
+generic set
+# COMMAND
+keithley2000 -S set status_byte_enable 255
+# OUTPUT
+255
+# RETURNS 0
+##
+scpi query
+# COMMAND
+keithley2000 -S scpi_query "*ESR?"
+# OUTPUT
+3842031838
+# RETURNS 0

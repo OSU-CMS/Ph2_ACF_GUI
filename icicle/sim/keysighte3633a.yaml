@@ -1,0 +1,158 @@
+spec: "1.1"
+devices:
+  KeysightE3633A:
+    eom:
+      ASRL INSTR:
+        q: "\n"
+        r: "\n"
+      USB INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP SOCKET:
+        q: "\n"
+        r: "\n"
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: KEYSIGHT_E3633A_ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "HEWLETT-PACKARD,E3633A,0,SIM1.0"
+      - q: "*RST"
+      - q: "*TST?"
+        r: 1
+      - q: "SYST:REM"
+      - q: "SYST:LOC"
+      - q: "SYST:RWL"
+      - q: "SOUR:VOLT:PROT:CLE"
+      - q: "SOUR:CURR:PROT:CLE"
+      - q: "DCL"
+      - q: "*RST; STATUS:PRESET; *CLS"
+      - q: "*STB?"
+        r: 4207853790  # 0xFACECODE
+      - q: "*ESR?"
+        r: 3842031838  # 0xES00CODE
+      - q: "MEAS:VOLT:DC?"
+        r: 0.00012098
+      - q: "MEAS:CURR:DC?"
+        r: 0.00000021
+    properties:
+      # Technically not on E3633A, but did appear on E3631 and E364x, so included here so one can test
+      INSTRUMENT:
+        default: 1
+        getter:
+          q: "INST:NSEL?"
+          r: "{:d}"
+        setter:
+          q: "INST:NSEL {:d}"
+        specs:
+          type: int
+          valid: [1, 2, 3]
+      STATUS_BYTE_ENABLE:
+        default: 1
+        getter:
+          q: "*SRE?"
+          r: "{:d}"
+        setter:
+          q: "*SRE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 1024
+      OUTPUT:
+        default: 0
+        getter:
+          q: "OUTP:STAT?"
+          r: "{:d}"
+        setter:
+          q: "OUTP:STAT {:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      VOLTAGE:
+        default: 0
+        getter:
+          q: "SOUR:VOLT:LEV?"
+          r: "{:.2f}"
+        setter:
+          q: "SOUR:VOLT:LEV {:f}"
+        specs:
+          type: float
+          min: -50
+          max: 50
+      CURRENT:
+        default: 0
+        getter:
+          q: "SOUR:CURR:LEV?"
+          r: "{:.2f}"
+        setter:
+          q: "SOUR:CURR:LEV {:f}"
+        specs:
+          type: float
+          min: 0
+          max: 20
+      OVP:
+        default: 50
+        getter:
+          q: "SOUR:VOLT:PROT:LEV?"
+          r: "{:.2f}"
+        setter:
+          q: "SOUR:VOLT:PROT:LEV {:f}"
+        specs:
+          type: float
+          min: 0
+          max: 50
+      OVP_ENABLED:
+        default: 1
+        getter:
+          q: "SOUR:VOLT:PROT:STAT?"
+          r: "{:d}"
+        setter:
+          q: "SOUR:VOLT:PROT:STAT {:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      OVP_TRIPPED:
+        default: 0
+        getter:
+          q: "SOUR:VOLT:PROT:TRIP?"
+          r: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      OCP:
+        default: 50
+        getter:
+          q: "SOUR:CURR:PROT:LEV?"
+          r: "{:.2f}"
+        setter:
+          q: "SOUR:CURR:PROT:LEV {:f}"
+        specs:
+          type: float
+          min: 0
+          max: 50
+      OCP_ENABLED:
+        default: 1
+        getter:
+          q: "SOUR:CURR:PROT:STAT?"
+          r: "{:d}"
+        setter:
+          q: "SOUR:CURR:PROT:STAT {:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      OCP_TRIPPED:
+        default: 0
+        getter:
+          q: "SOUR:CURR:PROT:TRIP?"
+          r: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+
+resources:
+  ASRL4::INSTR:
+    device: KeysightE3633A

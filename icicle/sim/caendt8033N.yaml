@@ -1,0 +1,430 @@
+spec: "1.1"
+devices:
+  CaenDT8033N:
+    eom:
+      ASRL INSTR:
+        q: "\n"
+        r: "\n"
+      USB INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP SOCKET:
+        q: "\n"
+        r: "\n"
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: CAEN_DT8033_ERROR
+    dialogues:
+      - q: "$CMD:MON,PAR:BDNAME" # IDN
+        r: "#CMD:OK,VAL:DT8033"
+      - q: "$CMD:SET,PAR:BDCLR" # CLEAR
+        r: "#CMD:OK"
+      - q: "$CMD:MON,CH:8,PAR:STAT" # STATUS
+        r: "#CMD:OK,VAL:1;1;1;1;1;1;1;1"
+      - q: "$CMD:MON,CH:0,PAR:STAT" # STATUS1
+        r: "#CMD:OK,VAL:1"
+      - q: "$CMD:MON,CH:1,PAR:STAT" # STATUS2
+        r: "#CMD:OK,VAL:1"
+      - q: "$CMD:MON,CH:2,PAR:STAT" # STATUS3
+        r: "#CMD:OK,VAL:1"
+      - q: "$CMD:MON,CH:3,PAR:STAT" # STATUS4
+        r: "#CMD:OK,VAL:1"
+      - q: "$CMD:MON,CH:4,PAR:STAT" # STATUS5
+        r: "#CMD:OK,VAL:1"
+      - q: "$CMD:MON,CH:5,PAR:STAT" # STATUS6
+        r: "#CMD:OK,VAL:1"
+      - q: "$CMD:MON,CH:6,PAR:STAT" # STATUS7
+        r: "#CMD:OK,VAL:1"
+      - q: "$CMD:MON,CH:7,PAR:STAT" # STATUS8
+        r: "#CMD:OK,VAL:1"
+      - q: "$CMD:MON,CH:8,PAR:VMON" # VOLTAGE
+        r: "#CMD:OK,VAL:10.000;10.000;10.000;10.000;10.000;10.000;10.000;10.000"
+      - q: "$CMD:MON,CH:0,PAR:VMON" # VOLTAGE1
+        r: "#CMD:OK,VAL:10.00"
+      - q: "$CMD:MON,CH:1,PAR:VMON" # VOLTAGE2
+        r: "#CMD:OK,VAL:10.00"
+      - q: "$CMD:MON,CH:2,PAR:VMON" # VOLTAGE3
+        r: "#CMD:OK,VAL:10.00"
+      - q: "$CMD:MON,CH:3,PAR:VMON" # VOLTAGE4
+        r: "#CMD:OK,VAL:10.00"
+      - q: "$CMD:MON,CH:4,PAR:VMON" # VOLTAGE5
+        r: "#CMD:OK,VAL:10.00"
+      - q: "$CMD:MON,CH:5,PAR:VMON" # VOLTAGE6
+        r: "#CMD:OK,VAL:10.00"
+      - q: "$CMD:MON,CH:6,PAR:VMON" # VOLTAGE7
+        r: "#CMD:OK,VAL:10.00"
+      - q: "$CMD:MON,CH:7,PAR:VMON" # VOLTAGE8
+        r: "#CMD:OK,VAL:10.00"
+      - q: "$CMD:MON,CH:8,PAR:IMON" # CURRENT
+        r: "#CMD:OK,VAL:0.1"
+      - q: "$CMD:MON,CH:0,PAR:IMON" # CURRENT1
+        r: "#CMD:OK,VAL:0.1"
+      - q: "$CMD:MON,CH:1,PAR:IMON" # CURRENT2
+        r: "#CMD:OK,VAL:0.1"
+      - q: "$CMD:MON,CH:2,PAR:IMON" # CURRENT3
+        r: "#CMD:OK,VAL:0.1"
+      - q: "$CMD:MON,CH:3,PAR:IMON" # CURRENT4
+        r: "#CMD:OK,VAL:0.1"
+      - q: "$CMD:MON,CH:4,PAR:IMON" # CURRENT5
+        r: "#CMD:OK,VAL:0.1"
+      - q: "$CMD:MON,CH:5,PAR:IMON" # CURRENT6
+        r: "#CMD:OK,VAL:0.1"
+      - q: "$CMD:MON,CH:6,PAR:IMON" # CURRENT7
+        r: "#CMD:OK,VAL:0.1"
+      - q: "$CMD:MON,CH:7,PAR:IMON" # CURRENT8
+        r: "#CMD:OK,VAL:0.1"
+    properties:
+      VOLTAGE:
+        default: "0.1;0.2;0.3;0.4;0.5;0.6;0.7;0.8"
+        getter:
+          q: "$CMD:MON,CH:8,PAR:VSET"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:8,PAR:VSET,VAL:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+      VOLTAGE1:
+        default: 1.0
+        getter:
+          q: "$CMD:MON,CH:0,PAR:VSET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:0,PAR:VSET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 4000
+      VOLTAGE2:
+        default: 2.0
+        getter:
+          q: "$CMD:MON,CH:1,PAR:VSET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:1,PAR:VSET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 4000
+      VOLTAGE3:
+        default: 3.0
+        getter:
+          q: "$CMD:MON,CH:2,PAR:VSET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:2,PAR:VSET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 4000
+      VOLTAGE4:
+        default: 4.0
+        getter:
+          q: "$CMD:MON,CH:3,PAR:VSET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:3,PAR:VSET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 4000
+      VOLTAGE5:
+        default: 5.0
+        getter:
+          q: "$CMD:MON,CH:4,PAR:VSET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:4,PAR:VSET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 4000
+      VOLTAGE6:
+        default: 6.0
+        getter:
+          q: "$CMD:MON,CH:5,PAR:VSET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:5,PAR:VSET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 4000
+      VOLTAGE7:
+        default: 7.0
+        getter:
+          q: "$CMD:MON,CH:6,PAR:VSET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:6,PAR:VSET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 4000
+      VOLTAGE8:
+        default: 8.0
+        getter:
+          q: "$CMD:MON,CH:7,PAR:VSET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:7,PAR:VSET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 4000
+      CURRENT:
+        default: "10;20;30;40;50;60;70;80"
+        getter:
+          q: "$CMD:MON,CH:8,PAR:ISET"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:8,PAR:ISET,VAL:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+      CURRENT1:
+        default: 10
+        getter:
+          q: "$CMD:MON,CH:0,PAR:ISET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:0,PAR:ISET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 300
+      CURRENT2:
+        default: 20
+        getter:
+          q: "$CMD:MON,CH:1,PAR:ISET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:1,PAR:ISET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 300
+      CURRENT3:
+        default: 30
+        getter:
+          q: "$CMD:MON,CH:2,PAR:ISET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:2,PAR:ISET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 300
+      CURRENT4:
+        default: 40
+        getter:
+          q: "$CMD:MON,CH:3,PAR:ISET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:3,PAR:ISET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 300
+      CURRENT5:
+        default: 50
+        getter:
+          q: "$CMD:MON,CH:4,PAR:ISET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:4,PAR:ISET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 300
+      CURRENT6:
+        default: 60
+        getter:
+          q: "$CMD:MON,CH:5,PAR:ISET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:5,PAR:ISET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 300
+      CURRENT7:
+        default: 70
+        getter:
+          q: "$CMD:MON,CH:6,PAR:ISET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:6,PAR:ISET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 300
+      CURRENT8:
+        default: 80
+        getter:
+          q: "$CMD:MON,CH:7,PAR:ISET"
+          r: "#CMD:OK,VAL:{:.2f}"
+        setter:
+          q: "$CMD:SET,CH:7,PAR:ISET,VAL:{:f}"
+          r: "#CMD:OK"
+        specs:
+          type: float
+          min: 0
+          max: 300
+      OUTPUT:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:8,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:8,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      OUTPUT1:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:0,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:0,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      OUTPUT2:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:1,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:1,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      OUTPUT3:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:2,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:2,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      OUTPUT4:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:3,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:3,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      OUTPUT5:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:4,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:4,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      OUTPUT6:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:5,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:5,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      OUTPUT7:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:6,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:6,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      OUTPUT8:
+        default: "OFF"
+        getter:
+          q: "$CMD:MON,CH:7,PAR:STAT"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:7,PAR:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["ON", "OFF"]
+      RAMP_UP:
+        default: 100
+        getter:
+          q: "$CMD:MON,CH:8,PAR:RUP"
+          r: "#CMD:OK,VAL:{:i}"
+        setter:
+          q: "$CMD:SET,CH:8,PAR:RUP,VAL:{:i}"
+          r: "#CMD:OK"
+        specs:
+          type: int
+          min: 1
+          max: 500
+      RAMP_DOWN:
+        default: 100
+        getter:
+          q: "$CMD:MON,CH:8,PAR:RDWN"
+          r: "#CMD:OK,VAL:{:i}"
+        setter:
+          q: "$CMD:SET,CH:8,PAR:RDWN,VAL:{:i}"
+          r: "#CMD:OK"
+        specs:
+          type: int
+          min: 1
+          max: 500
+      POWER_DOWN:
+        default: "KILL"
+        getter:
+          q: "$CMD:MON,CH:8,PAR:PDWN"
+          r: "#CMD:OK,VAL:{:s}"
+        setter:
+          q: "$CMD:SET,CH:8,PAR:PDWN,VAL:{:s}"
+          r: "#CMD:OK"
+        specs:
+          type: str
+          valid: ["RAMP", "KILL"]
+
+resources:
+  ASRL12::INSTR:
+    device: CaenDT8033N

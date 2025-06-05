@@ -1,0 +1,127 @@
+##
+identify
+# COMMAND
+caendt8033n -S identify
+# OUTPUT
+DT8033
+# RETURNS 0
+##
+reset
+# COMMAND
+caendt8033n -S reset
+# OUTPUT
+
+# RETURNS 0
+##
+voltage ALL
+# COMMAND
+caendt8033n -S voltage ALL
+# OUTPUT
+[-0.1, -0.2, -0.3, -0.4, -0.5, -0.6, -0.7, -0.8]
+# RETURNS 0
+##
+voltage ch3
+# COMMAND
+caendt8033n -S voltage 3
+# OUTPUT
+-3.0
+# RETURNS 0
+##
+voltage ch7
+# COMMAND
+caendt8033n -S voltage 7
+# OUTPUT
+-7.0
+# RETURNS 0
+##
+set voltage
+# COMMAND
+caendt8033n -S voltage 1 -- -50.0
+# OUTPUT
+-50.0
+# RETURNS 0
+##
+compliance current ALL
+# COMMAND
+caendt8033n -S compliance_current ALL
+# OUTPUT
+[1e-05, 2e-05, 3e-05, 4e-05, 5e-05, 6e-05, 7e-05, 8e-05]
+# RETURNS 0
+##
+compliance current ch2
+# COMMAND
+caendt8033n -S compliance_current 2
+# OUTPUT
+2e-05
+# RETURNS 0
+##
+set compliance current
+# COMMAND
+caendt8033n -S compliance_current 1 1e-5
+# OUTPUT
+Compliance: 1e-05A
+# RETURNS 0
+##
+measure
+# COMMAND
+caendt8033n -S measure
+# OUTPUT
+Time            	V1(V)	C1(A)	V2(V)	C2(A)	V3(V)	C3(A)	V4(V)	C4(A)	V5(V)	C5(A)	V6(V)	C6(A)	V7(V)	C7(A)	V8(V)	C8(A)
+{DATE}{TIME}-10.0	1e-07	-10.0	1e-07	-10.0	1e-07	-10.0	1e-07	-10.0	1e-07	-10.0	1e-07	-10.0	1e-07	-10.0	1e-07
+# RETURNS 0
+##
+status ALL
+# COMMAND
+caendt8033n -S status ALL
+# OUTPUT
+['ON', 'ON', 'ON', 'ON', 'ON', 'ON', 'ON', 'ON']
+# RETURNS 0
+##
+status 7
+# COMMAND
+caendt8033n -S status 7
+# OUTPUT
+ON
+# RETURNS 0
+##
+off ALL
+# COMMAND
+caendt8033n -S off ALL
+# OUTPUT
+
+# RETURNS 0
+##
+off 3
+# COMMAND
+caendt8033n -S off 3
+# OUTPUT
+
+# RETURNS 0
+##
+on ALL
+# COMMAND
+caendt8033n -S on ALL
+# OUTPUT
+
+# RETURNS 0
+##
+on 2
+# COMMAND
+caendt8033n -S on 2
+# OUTPUT
+
+# RETURNS 0
+##
+ramp voltage
+# COMMAND
+caendt8033n -S ramp_voltage 6 -s 5 -d 0 -- -25
+# OUTPUT
+Will sweep VOLTAGE6 to -25.0 in 4 steps of size 5.0
+Time             	V1(V)            	C1(A)            	V2(V)            	C2(A)            	V3(V)            	C3(A)            	V4(V)            	C4(A)            	V5(V)            	C5(A)            	V6(V)            	C6(A)            	V7(V)            	C7(A)            	V8(V)            	C8(A)
+{DATE}{TIME}-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07
+{DATE}{TIME}-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07
+{DATE}{TIME}-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07
+{DATE}{TIME}-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07
+{DATE}{TIME}-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07            	-10.0            	1e-07
+-25.0
+# RETURNS 0

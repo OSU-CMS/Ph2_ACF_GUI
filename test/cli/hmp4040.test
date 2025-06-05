@@ -1,0 +1,174 @@
+##
+identify
+# COMMAND
+hmp4040 -S identify
+# OUTPUT
+ROHDE&SCHWARZ,HMP4040,000000,SIM1.0
+# RETURNS 0
+##
+reset
+# COMMAND
+hmp4040 -S reset
+# OUTPUT
+
+# RETURNS 0
+##
+voltage
+# COMMAND
+hmp4040 -S voltage 1
+# OUTPUT
+0.0
+# RETURNS 0
+##
+voltage invalid output
+# COMMAND
+hmp4040 -S voltage 5
+# OUTPUT
+Usage: hmp4040 voltage [OPTIONS] CHANNEL [VOLTAGE]
+Try 'hmp4040 voltage --help' for help.
+
+Error: Invalid value for 'CHANNEL': '5' is not one of '1', '2', '3', '4'.
+# RETURNS 2
+##
+voltage masked output
+# COMMAND
+hmp4040 -S -O 2 voltage 3
+# OUTPUT
+ChannelError: channel 3 does not exist or is not enabled on this device.
+# RETURNS 1
+##
+set voltage
+# COMMAND
+hmp4040 -S voltage 2 5.0
+# OUTPUT
+5.0
+# RETURNS 0
+##
+set voltage prohibited
+# COMMAND
+hmp4040 -S voltage 3 500.0
+# OUTPUT
+ValidationError: Value 500.0 does not pass verifier _is_numeric for set() on setting VOLTAGE for device HMP4040.
+Allowable values: Numbers in range [-32:32]
+# RETURNS 1
+##
+current
+# COMMAND
+hmp4040 -S current 2
+# OUTPUT
+0.0
+# RETURNS 0
+##
+set current
+# COMMAND
+hmp4040 -S current 3 0.2
+# OUTPUT
+0.2
+# RETURNS 0
+##
+measure
+# COMMAND
+hmp4040 -S measure 4
+# OUTPUT
+(0.00012098, 2.1e-07)
+# RETURNS 0
+##
+activate
+# COMMAND
+hmp4040 -S activate 2
+# OUTPUT
+
+# RETURNS 0
+##
+deactivate
+# COMMAND
+hmp4040 -S deactivate 3
+# OUTPUT
+False
+# RETURNS 0
+##
+activated
+# COMMAND
+hmp4040 -S activated
+# OUTPUT
+OUTPUT		Ch1		Ch2		Ch3		Ch4
+off		deactivated	deactivated	deactivated	deactivated
+# RETURNS 0
+##
+activated channel
+# COMMAND
+hmp4040 -S activated 3
+# OUTPUT
+False
+# RETURNS 0
+##
+status
+# COMMAND
+hmp4040 -S status
+# OUTPUT
+OUTPUT		Ch1		Ch2		Ch3		Ch4
+off		deactivated	deactivated	deactivated	deactivated
+# RETURNS 0
+##
+off
+# COMMAND
+hmp4040 -S off
+# OUTPUT
+False
+# RETURNS 0
+##
+on
+# COMMAND
+hmp4040 -S on
+# OUTPUT
+True
+# RETURNS 0
+##
+ovp
+# COMMAND
+hmp4040 -S ovp 2
+# OUTPUT
+32.5
+# RETURNS 0
+##
+ovp set
+# COMMAND
+hmp4040 -S ovp 3 3.0
+# OUTPUT
+3.0
+# RETURNS 0
+##
+generic query
+# COMMAND
+hmp4040 -S query status_byte
+# OUTPUT
+4207853790
+# RETURNS 0
+##
+ramp voltage
+# COMMAND
+hmp4040 -S ramp_voltage 1 10 -s 3 -d 0 -m
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+ramp voltage negative
+# COMMAND
+hmp4040 -S ramp_voltage 1 -s 5 -d 0 -m -- -20
+# OUTPUT
+(-20.0, [[{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+ramp current
+# COMMAND
+hmp4040 -S ramp_current 1 10 -s 3 -d 0 -m
+# OUTPUT
+(10.0, [[{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07], [{TIMESTAMP}, 0.00012098, 2.1e-07]])
+# RETURNS 0
+##
+scpi query
+# COMMAND
+hmp4040 -S scpi_query "*ESR?"
+# OUTPUT
+3842031838
+# RETURNS 0

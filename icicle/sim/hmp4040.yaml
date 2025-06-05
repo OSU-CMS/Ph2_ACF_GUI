@@ -1,0 +1,202 @@
+spec: "1.1"
+devices:
+  HMP4040:
+    eom:
+      ASRL INSTR:
+        q: "\n"
+        r: "\n"
+      USB INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP SOCKET:
+        q: "\n"
+        r: "\n"
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: R&S_HMP4040_ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "ROHDE&SCHWARZ,HMP4040,000000,SIM1.0"
+      - q: "*RST"
+      - q: "*TST?"
+        r: OK
+      - q: "VOLT:PROT:CLE"
+      - q: "DCL"
+      - q: "LOC"
+      - q: "MIX"
+      - q: "REM"
+      - q: "RWL"
+      - q: "*STB?"
+        r: 4207853790  # 0xFACECODE
+      - q: "*ESR?"
+        r: 3842031838  # 0xES00CODE
+      - q: "STAT:QUES:EVEN?"
+        r: 1342226654  # 0x5000CODE
+      - q: "STAT:QUES:INST?"
+        r: 268484830   # 0x1000CODE
+      - q: "STAT:QUES:INST:ISUM1:EVEN?"
+        r: 3238052062  # 0xC100CODE
+      - q: "STAT:QUES:INST:ISUM2:EVEN?"
+        r: 3254829278  # 0xC200CODE
+      - q: "STAT:QUES:INST:ISUM3:EVEN?"
+        r: 3271606494  # 0xC300CODE
+      - q: "STAT:QUES:INST:ISUM4:EVEN?"
+        r: 3288383710  # 0xC400CODE
+      - q: "*RST; STATUS:PRESET; *CLS"
+      - q: "MEAS:VOLT:DC?"
+        r: 0.00012098
+      - q: "MEAS:CURR:DC?"
+        r: 0.00000021
+    properties:
+      selected_channel:
+        default: 1
+        getter:
+          q: "INST:NSEL?"
+          r: "{}"
+        setter:
+          q: "INST:NSEL {}"
+        specs:
+          type: str
+          valid: [1, 2, 3, 4]
+      STATUS_BYTE_ENABLE:
+        default: 255
+        getter:
+          q: "*SRE?"
+          r: "{:d}"
+        setter:
+          q: "*SRE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 255
+      EVENT_STATUS_REGISTER_ENABLE:
+        default: 255
+        getter:
+          q: "*ESE?"
+          r: "{:d}"
+        setter:
+          q: "*ESE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 255
+      QUESTIONABLE_STATUS_ENABLE:
+        default: 65535
+        getter:
+          q: "STAT:QUES:ENAB?"
+          r: "{:d}"
+        setter:
+          q: "STAT:QUES:ENAB {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      INSTRUMENT_STATUS_REGISTER_ENABLE:
+        default: 65535
+        getter:
+          q: "STAT:QUES:INST:ENAB?"
+          r: "{:d}"
+        setter:
+          q: "STAT:QUES:INST:ENAB {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      OUTPUT_GENERAL:
+        default: 0
+        getter:
+          q: "OUTP:GEN?"
+          r: "{:d}"
+        setter:
+          q: "OUTP:GEN {:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+    channels:
+      outputs:
+        ids: [1, 2, 3, 4]
+        can_select: False
+        properties:
+          OUTPUT:
+            default: 0
+            getter:
+              q: "OUTP:STAT?"
+              r: "{:d}"
+            setter:
+              q: "OUTP:STAT {:d}"
+            specs:
+              type: int
+              valid: [0, 1]
+          OUTPUT_SELECT:
+            default: 0
+            getter:
+              q: "OUTP:SEL?"
+              r: "{:d}"
+            setter:
+              q: "OUTP:SEL {:d}"
+            specs:
+              type: int
+              valid: [0, 1]
+          VOLTAGE:
+            default: 0
+            getter:
+              q: "SOUR:VOLT:LEV?"
+              r: "{:.2f}"
+            setter:
+              q: "SOUR:VOLT:LEV {:f}"
+            specs:
+              type: float
+              min: -32
+              max: 32
+          CURRENT:
+            default: 0
+            getter:
+              q: "SOUR:CURR:LEV?"
+              r: "{:.2f}"
+            setter:
+              q: "SOUR:CURR:LEV {:f}"
+            specs:
+              type: float
+              min: 0
+              max: 10
+          OVP:
+            default: 32.5
+            getter:
+              q: "VOLT:PROT:LEV?"
+              r: "{:.2f}"
+            setter:
+              q: "VOLT:PROT:LEV {:f}"
+            specs:
+              type: float
+              min: 0.1
+              max: 32.5
+          OVP_TRIPPED:
+            default: 0
+            getter:
+              q: "VOLT:PROT:TRIP?"
+              r: "{:d}"
+            specs:
+              type: int
+              valid: [0, 1]
+      register_channels:
+        ids: [1, 2, 3, 4]
+        can_select: True
+        properties:
+          CHANNEL_STATUS_REGISTER_ENABLE:
+            default: 65535
+            getter:
+              q: "STAT:QUES:INST:ISUM{ch_id}:ENAB?"
+              r: "{:d}"
+            setter:
+              q: "STAT:QUES:INST:ISUM{ch_id}:ENAB {}"
+            specs:
+              type: int
+              min: 0
+              max: 65535
+resources:
+  ASRL2::INSTR:
+    device: HMP4040

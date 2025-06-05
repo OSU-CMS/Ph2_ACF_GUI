@@ -1,0 +1,18 @@
+identify                | tpx4sc -S identify
+status                  | tpx4sc -S status
+configure               | tpx4sc -S configure
+start_run               | tpx4sc -S start_run 999
+stop_run                | tpx4sc -S stop_run
+read threshold          | tpx4sc -S threshold
+set threshold           | tpx4sc -S threshold 2000
+start_monitoring        | tpx4sc -S start_monitoring
+stop_monitoring         | tpx4sc -S stop_monitoring
+user_data               | tpx4sc -S user_data 'TEST'
+set threshold           | tpx4sc -S threshold 2000
+restart_readout         | tpx4sc -S restart_readout
+#quit                    | tpx4sc -S quit
+# ^ requires user input
+generic set             | tpx4sc -S set "THRESHOLD" 1800
+generic query           | tpx4sc -S query "THRESHOLD"
+scpi query              | tpx4sc -S scpi_query "get_devid"
+#scpi set                | tpx4sc -S scpi_set "start_run 888"

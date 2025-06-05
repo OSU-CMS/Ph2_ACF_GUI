@@ -1,0 +1,226 @@
+##
+identify
+# COMMAND
+adc_board -S identify
+# OUTPUT
+ADC_Board, Production number A1, Serial number 0x2
+# RETURNS 0
+##
+measure
+# COMMAND
+adc_board -S measure
+# OUTPUT
+{DATETIME}
+Voltage
+VDDA_ROC2  0.998 V
+-  0.998 V
+VDDD_ROC2  0.998 V
+-  0.998 V
+VDDA_ROC3  0.998 V
+-  0.998 V
+VDDD_ROC3  0.998 V
+-  0.998 V
+VIN  0.998 V
+-  0.998 V
+VDDA_ROC0  0.998 V
+-  0.998 V
+VDDD_ROC0  0.998 V
+VOFS  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+# RETURNS 0
+##
+measure_quad
+# COMMAND
+adc_board -S -m QUAD measure
+# OUTPUT
+{DATETIME}
+Voltage
+VDDA_ROC0  0.998 V
+VDDD_ROC0  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+VDDA_ROC2  0.998 V
+VDDD_ROC2  0.998 V
+VDDA_ROC3  0.998 V
+VDDD_ROC3  0.998 V
+VIN  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+# RETURNS 0
+##
+measure_quad_case
+# COMMAND
+adc_board -S -m qUaD measure
+# OUTPUT
+{DATETIME}
+Voltage
+VDDA_ROC0  0.998 V
+VDDD_ROC0  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+VDDA_ROC2  0.998 V
+VDDD_ROC2  0.998 V
+VDDA_ROC3  0.998 V
+VDDD_ROC3  0.998 V
+VIN  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+# RETURNS 0
+##
+measure_double
+# COMMAND
+adc_board -S -m DOUBLE measure
+# OUTPUT
+{DATETIME}
+Voltage
+VDDA_ROC0  0.998 V
+VDDD_ROC0  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+VIN  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+# RETURNS 0
+##
+monitor
+# COMMAND
+adc_board -S monitor -r 5
+# OUTPUT
+{DATETIME}
+Voltage
+VDDA_ROC2  0.998 V
+-  0.998 V
+VDDD_ROC2  0.998 V
+-  0.998 V
+VDDA_ROC3  0.998 V
+-  0.998 V
+VDDD_ROC3  0.998 V
+-  0.998 V
+VIN  0.998 V
+-  0.998 V
+VDDA_ROC0  0.998 V
+-  0.998 V
+VDDD_ROC0  0.998 V
+VOFS  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+{DATETIME}
+Voltage
+VDDA_ROC2  0.998 V
+-  0.998 V
+VDDD_ROC2  0.998 V
+-  0.998 V
+VDDA_ROC3  0.998 V
+-  0.998 V
+VDDD_ROC3  0.998 V
+-  0.998 V
+VIN  0.998 V
+-  0.998 V
+VDDA_ROC0  0.998 V
+-  0.998 V
+VDDD_ROC0  0.998 V
+VOFS  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+{DATETIME}
+Voltage
+VDDA_ROC2  0.998 V
+-  0.998 V
+VDDD_ROC2  0.998 V
+-  0.998 V
+VDDA_ROC3  0.998 V
+-  0.998 V
+VDDD_ROC3  0.998 V
+-  0.998 V
+VIN  0.998 V
+-  0.998 V
+VDDA_ROC0  0.998 V
+-  0.998 V
+VDDD_ROC0  0.998 V
+VOFS  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+{DATETIME}
+Voltage
+VDDA_ROC2  0.998 V
+-  0.998 V
+VDDD_ROC2  0.998 V
+-  0.998 V
+VDDA_ROC3  0.998 V
+-  0.998 V
+VDDD_ROC3  0.998 V
+-  0.998 V
+VIN  0.998 V
+-  0.998 V
+VDDA_ROC0  0.998 V
+-  0.998 V
+VDDD_ROC0  0.998 V
+VOFS  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+{DATETIME}
+Voltage
+VDDA_ROC2  0.998 V
+-  0.998 V
+VDDD_ROC2  0.998 V
+-  0.998 V
+VDDA_ROC3  0.998 V
+-  0.998 V
+VDDD_ROC3  0.998 V
+-  0.998 V
+VIN  0.998 V
+-  0.998 V
+VDDA_ROC0  0.998 V
+-  0.998 V
+VDDD_ROC0  0.998 V
+VOFS  0.998 V
+VDDA_ROC1  0.998 V
+VDDD_ROC1  0.998 V
+Temperature
+0  15.97 C
+1  15.97 C
+# RETURNS 0
+##
+details
+# COMMAND
+adc_board -S details
+# OUTPUT
+Production ID : 0x4131
+Serial ID : 0x2
+Hardware version : 0x3
+Hardware assembly version : 0x4
+Software version : 0x201
+# RETURNS 0
+##
+on
+# COMMAND
+adc_board -S on
+# OUTPUT
+
+# RETURNS 0
+##
+off
+# COMMAND
+adc_board -S off
+# OUTPUT
+
+# RETURNS 0

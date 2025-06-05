@@ -1,0 +1,22 @@
+identify               | hp34401a -S identify
+measure VOLT           | hp34401a -S measure VOLT -r 5 -c 4
+measure CURR           | hp34401a -S measure CURR -r 5 -c 4
+measure VOLT:DC        | hp34401a -S measure VOLT:DC -r 5 -c 4
+measure CURR:DC        | hp34401a -S measure CURR:DC -r 5 -c 4
+measure VOLT:DC        | hp34401a -S measure VOLT:DC:RAT -r 5 -c 4
+measure VOLT:AC        | hp34401a -S measure VOLT:AC -r 5 -c 4
+measure CURR:AC        | hp34401a -S measure CURR:AC -r 5 -c 4
+measure RES            | hp34401a -S measure RES -r 5 -c 4
+measure FRES           | hp34401a -S measure FRES -r 5 -c 4
+measure PER            | hp34401a -S measure PER -r 5 -c 4
+measure RD53B_TEMP     | hp34401a -S measure RD53B_TEMP -r 5 -c 4
+measure ALU_TEMP       | hp34401a -S measure ALU_TEMP -r 5 -c 4
+measure HUMIDITY       | hp34401a -S measure HUMIDITY -r 5 -c 4
+measure CONT           | hp34401a -S measure CONT
+measure DIOD           | hp34401a -S measure DIOD
+reset                  | hp34401a -S reset
+selftest               | hp34401a -S selftest
+generic query          | hp34401a -S query status_byte
+generic set            | hp34401a -S set status_byte_enable 255
+scpi query             | hp34401a -S scpi_query "*ESR?"
+#scpi write             | hp34401a -S scpi_write "*ESE 0"

@@ -1,0 +1,86 @@
+spec: "1.1"
+devices:
+  MP1:
+    eom:
+      ASRL INSTR:
+        q: "\r"
+        r: "\r"
+      USB INSTR:
+        q: "\r"
+        r: "\r"
+      TCPIP INSTR:
+        q: "\r"
+        r: "\r"
+      TCPIP SOCKET:
+        q: "\r"
+        r: "\r"
+      GPIB INSTR:
+        q: "\r"
+        r: "\r"
+    error: RelayBoard_ERROR
+    dialogues:
+      - q: "?P926"
+        r: "?P926,GULMAY,MP1,000000,SIMv1"
+      - q: "!X"
+        r: "!X"
+      - q: "!O"
+        r: "!O"
+      - q: "?T"
+        r: "?T050"
+      - q: "!T"
+        r: "!T"
+      - q: "?E"
+        r: "?E011,056"
+      - q: "?P"
+        r: "?P800"
+      - q: "?U"
+        r: "?U001"
+      - q: "?R"
+        r: "?R001"
+    properties:
+      OUTPUT:
+        default: 3
+        getter:
+          q: "?M"
+          r: "?M{:03d}"
+        specs:
+          type: int
+          valid: [1, 2, 3, 4, 5]
+      VOLTAGE:
+        default: 0
+        getter:
+          q: "?V"
+          r: "?V{:03d}"
+        setter:
+          q: "!V{:03d}"
+          r: "!V{:03d}"
+        specs:
+          type: int
+          min: 0
+          max: 999
+      CURRENT:
+        default: 0
+        getter:
+          q: "?I"
+          r: "?I{:03d}"
+        setter:
+          q: "!I{:03d}"
+          r: "!I{:03d}"
+        specs:
+          type: int
+          min: 0
+          max: 999
+      FOCUS:
+        default: "F"
+        getter:
+          q: "?F"
+          r: "?F{:s}"
+        setter:
+          q: "!{:s}"
+          r: "!{:s}"
+        specs:
+          type: str
+          valid: ["F", "B"]
+resources:
+  ASRL10::INSTR:
+    device: MP1

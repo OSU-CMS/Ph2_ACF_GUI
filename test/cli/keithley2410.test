@@ -1,0 +1,189 @@
+##
+identify
+# COMMAND
+keithley2410 -S identify
+# OUTPUT
+Keithley Instruments Inc., Model 2410, 000000, SIM1.0
+# RETURNS 0
+##
+reset
+# COMMAND
+keithley2410 -S reset
+# OUTPUT
+42
+# RETURNS 0
+##
+selftest
+# COMMAND
+keithley2410 -S selftest
+# OUTPUT
+1
+# RETURNS 0
+##
+voltage
+# COMMAND
+keithley2410 -S voltage
+# OUTPUT
+0.0
+# RETURNS 0
+##
+set voltage
+# COMMAND
+keithley2410 -S voltage 50.0
+# OUTPUT
+50.0
+# RETURNS 0
+##
+set voltage prohibited
+# COMMAND
+keithley2410 -S -V 0 50.0 voltage -- -20
+# OUTPUT
+ValidationError: Value -20.0 does not pass verifier _is_numeric for set() on setting VOLTAGE for device Keithley2410.
+Allowable values: Numbers in range [0.0:50.0]
+# RETURNS 1
+##
+voltage range
+# COMMAND
+keithley2410 -S voltage_range
+# OUTPUT
+1100.0
+# RETURNS 0
+##
+set voltage range
+# COMMAND
+keithley2410 -S voltage_range 50.0
+# OUTPUT
+50.0
+# RETURNS 0
+##
+compliance current
+# COMMAND
+keithley2410 -S compliance_current
+# OUTPUT
+0.000105
+# RETURNS 0
+##
+set compliance current
+# COMMAND
+keithley2410 -S compliance_current 0.02
+# OUTPUT
+Compliance: 0.02A, Sense Current Measurement Range: 0.02
+# RETURNS 0
+##
+measure V
+# COMMAND
+keithley2410 -S measure V
+# OUTPUT
+Time             	Voltage (V)      	Current (A)      	Resistance       	PSU Time         	Status Register
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+# RETURNS 0
+##
+measure I
+# COMMAND
+keithley2410 -S measure I
+# OUTPUT
+Time             	Voltage (V)      	Current (A)      	Resistance       	PSU Time         	Status Register
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+# RETURNS 0
+##
+measure R
+# COMMAND
+keithley2410 -S measure R
+# OUTPUT
+Time             	Voltage (V)      	Current (A)      	Resistance       	PSU Time         	Status Register
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+# RETURNS 0
+##
+device clear
+# COMMAND
+keithley2410 -S device_clear
+# OUTPUT
+1
+# RETURNS 0
+##
+status
+# COMMAND
+keithley2410 -S status
+# OUTPUT
+1
+# RETURNS 0
+##
+off
+# COMMAND
+keithley2410 -S off
+# OUTPUT
+
+# RETURNS 0
+##
+on
+# COMMAND
+keithley2410 -S on
+# OUTPUT
+
+# RETURNS 0
+##
+panel
+# COMMAND
+keithley2410 -S panel
+# OUTPUT
+FRON
+# RETURNS 0
+##
+set panel
+# COMMAND
+keithley2410 -S panel BACK
+# OUTPUT
+Usage: keithley2410 panel [OPTIONS] FRON|REAR
+Try 'keithley2410 panel --help' for help.
+
+Error: Invalid value for 'FRON|REAR': 'BACK' is not one of 'FRON', 'REAR'.
+# RETURNS 2
+##
+generic query
+# COMMAND
+keithley2410 -S query status_byte
+# OUTPUT
+4207853790
+# RETURNS 0
+##
+ramp voltage
+# COMMAND
+keithley2410 -S ramp_voltage 50 -s 5 -d 0
+# OUTPUT
+Will sweep VOLTAGE to 50.0 in 10 steps of size 5.0
+Time             	Voltage (V)      	Current (A)      	Resistance       	PSU Time         	Status Register
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+50.0
+# RETURNS 0
+##
+ramp voltage negative
+# COMMAND
+keithley2410 -S ramp_voltage -s 5 -d 0 -- -25
+# OUTPUT
+Will sweep VOLTAGE to -25.0 in 5 steps of size 5.0
+Time             	Voltage (V)      	Current (A)      	Resistance       	PSU Time         	Status Register
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+{DATE}{TIME}1.0              	2.0              	3.0              	4.0              	5.0
+-25.0
+# RETURNS 0
+##
+scpi query
+# COMMAND
+keithley2410 -S scpi_query "*ESR?"
+# OUTPUT
+3842031838
+# RETURNS 0

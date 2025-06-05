@@ -1,0 +1,267 @@
+spec: "1.1"
+devices:
+  Keithley2000:
+    eom:
+      ASRL INSTR:
+        q: "\n"
+        r: "\n"
+      USB INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP SOCKET:
+        q: "\n"
+        r: "\n"
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: HP_34401A_ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "Keithley Instruments Inc., Model 2010, 000000, SIM1.0"
+      - q: "*RST"
+      - q: "*TST?"
+        r: 1
+      - q: "DCL"
+      - q: ":SYST:LOC"
+      - q: ":SYST:REM"
+      - q: ":SYST:RWL"
+      - q: "*RST; STATUS:PRESET; *CLS"
+      - q: ":TRAC:CLE"
+      - q: ":INIT:IMM"
+      - q: ":READ?"
+        r: "9325.32"
+      - q: "*STB?"
+        r: 4207853790  # 0xFACECODE
+      - q: "*ESR?"
+        r: 3842031838  # 0xES00CODE
+      - q: ":STAT:QUES:EVEN?"
+        r: 1342226654  # 0x5000CODE
+      - q: ":STAT:MEAS:EVEN?"
+        r: 1073791198  # 0x4000CODE
+      - q: ":SENS:DATA?"
+        r: "[0, 0, 0]"
+      - q: ":TRAC:DATA?"
+        r: "[0, 0, 0]"
+    properties:
+      CONFIGURE:
+        default: "VOLT:DC"
+        getter:
+          q: ":CONF?"
+          r: "{:s}"
+        setter:
+          q: ":CONF:{:s}"
+        specs:
+          type: str
+          valid: ["VOLT:DC", "VOLT:AC", "CURR:DC", "CURR:AC", "RES", "FRES", "FREQ", "PER", "CONT", "DIOD"]
+      SENSE_FUNCTION:
+        default: "VOLT:DC"
+        getter:
+          q: ":SENS:FUNC?"
+          r: "{:s}"
+        setter:
+          q: ":SENS:FUNC {:s}"
+        specs:
+          type: str
+          valid: ["VOLT:DC", "VOLT:AC", "CURR:DC", "CURR:AC", "RES", "FRES", "FREQ", "PER", "CONT", "DIOD"]
+      SAMPLE_COUNT:
+        default: 1
+        getter:
+          q: ":SAMP:COUN ?"
+          r: "{:d}"
+        setter:
+          q: ":SAMP:COUN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 50000
+      STATUS_BYTE_ENABLE:
+        default: 1
+        getter:
+          q: "*SRE?"
+          r: "{:d}"
+        setter:
+          q: "*SRE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 1024
+      EVENT_STATUS_REGISTER_ENABLE:
+        default: 65535
+        getter:
+          q: "*ESE?"
+          r: "{:d}"
+        setter:
+          q: "*ESE {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      QUESTIONABLE_STATUS_REGISTER_ENABLE:
+        default: 1
+        getter:
+          q: ":STAT:QUES:ENAB?"
+          r: "{:d}"
+        setter:
+          q: ":STAT:QUES:ENAB {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      MEASUREMENT_STATUS_REGISTER_ENABLE:
+        default: 1
+        getter:
+          q: ":STAT:MEAS:ENAB?"
+          r: "{:d}"
+        setter:
+          q: ":STAT:MEAS:ENAB {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 65535
+      INITIALISE_CONTINUOUS:
+        default: 1
+        setter:
+          q: ":INIT:CONT {:d}"
+        getter:
+          q: ":INIT:CONT?"
+          r: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      ENABLE_AVERAGING:
+        default: 1
+        setter:
+          q: ":SENS:AVER {:d}"
+        getter:
+          q: ":SENS:AVER?"
+          r: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      AVERAGING_COUNT:
+        default: 10
+        getter:
+          q: ":SENS:AVER:COUN?"
+          r: "{:d}"
+        setter:
+          q: ":SENS:AVER:COUN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 100
+      AVERAGING_FUNCTION:
+        default: "MOV"
+        getter:
+          q: ":SENS:AVER:TCON?"
+          r: "{:s}"
+        setter:
+          q: ":SENS:AVER:TCON {:s}"
+        specs:
+          type: str
+          valid: ["MOV", "REP"]
+      TRIGGER_COUNT:
+        default: 2
+        getter:
+          q: ":TRIG:COUN?"
+          r: "{:d}"
+        setter:
+          q: ":TRIG:COUN {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 9999
+      TRIGGER_SOURCE:
+        default: "IMM"
+        getter:
+          q: ":TRIG:SOUR ?"
+          r: "{:s}"
+        setter:
+          q: ":TRIG:SOUR {:s}"
+        specs:
+          type: str
+          valid: ["IMM", "TIM", "MAN", "BUS", "EXT"]
+      TRIGGER_DELAY:
+        default: 0
+        getter:
+          q: ":TRIG:DEL?"
+          r: "{:d}"
+        setter:
+          q: ":TRIG:DEL {:d}"
+        specs:
+          type: int
+          min: 0
+          max: 3600
+      TRIGGER_DELAY_AUTO:
+        default: 0
+        setter:
+          q: ":TRIG:DEL:AUTO {:d}"
+        getter:
+          q: ":TRIG:DEL:AUTO?"
+          r: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      TRACE_BUFFER_SIZE:
+        default: 2
+        setter:
+          q: ":TRAC:POIN {:d}"
+        getter:
+          q: ":TRAC:POIN?"
+          r: "{:d}"
+        specs:
+          type: int
+          min: 2
+          max: 1024
+      TRACE_BUFFER_SOURCE:
+        default: "SENS"
+        getter:
+          q: ":TRAC:FEED?"
+          r: "{:s}"
+        setter:
+          q: ":TRAC:FEED {:s}"
+        specs:
+          type: str
+          valid: ["SENS", "SENS1", "CALC", "NONE"]
+      TRACE_BUFFER_CONTROL_MODE:
+        default: "NEXT"
+        getter:
+          q: ":TRAC:FEED:CONT?"
+          r: "{:s}"
+        setter:
+          q: ":TRAC:FEED:CONT {:s}"
+        specs:
+          type: str
+          valid: ["NEXT", "NEV"]
+      AUTOZERO:
+        default: 1
+        setter:
+          q: ":SENS:AZER:STAT {:d}"
+        getter:
+          q: ":SENS:AZER:STAT?"
+          r: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+    channels:
+      sense_function:
+        ids: ["VOLT:DC", "VOLT:AC", "CURR:DC", "CURR:AC", "RES", "FRES"]
+        can_select: True
+        properties:
+          LINE_INTEGRATION_CYCLES:
+            default: 1
+            getter:
+              q: ":SENS:{ch_id}:NPLC?"
+              r: "{:.2f}"
+            setter:
+              q: ":SENS:{ch_id}:NPLC {:f}"
+            specs:
+              type: float
+              min: 0.02
+              max: 10
+
+resources:
+  ASRL6::INSTR:
+    device: Keithley2000

@@ -1,0 +1,17 @@
+identify               | caendt8033n -S identify
+reset                  | caendt8033n -S reset
+voltage ALL            | caendt8033n -S voltage ALL
+voltage ch3            | caendt8033n -S voltage 3
+voltage ch7            | caendt8033n -S voltage 7
+set voltage            | caendt8033n -S voltage 1 -- -50.0
+compliance current ALL | caendt8033n -S compliance_current ALL
+compliance current ch2 | caendt8033n -S compliance_current 2
+set compliance current | caendt8033n -S compliance_current 1 1e-5
+measure                | caendt8033n -S measure
+status ALL             | caendt8033n -S status ALL
+status 7               | caendt8033n -S status 7
+off ALL                | caendt8033n -S off ALL
+off 3                  | caendt8033n -S off 3
+on ALL                 | caendt8033n -S on ALL
+on 2                   | caendt8033n -S on 2
+ramp voltage           | caendt8033n -S ramp_voltage 6 -s 5 -d 0 -- -25

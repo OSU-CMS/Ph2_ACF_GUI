@@ -1,0 +1,73 @@
+spec: "1.1"
+devices:
+  TPX4SC:
+    eom:
+      ASRL INSTR:
+        q: "\n"
+        r: "\n"
+      USB INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP SOCKET:
+        q: "\n"
+        r: "\n"
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: TPX4SC_ERROR
+    dialogues:
+      - q: "get_devid"
+        r: "W000"
+      - q: "is_monitoring"
+        r: "NO"
+      - q: "start_mon"
+        r: "OK"
+      - q: "stop_mon"
+        r: "OK"
+      - q: "is_configured"
+        r: "YES"
+      - q: "is_running"
+        r: "NO"
+      - q: "stop_run"
+        r: "Bot bytecount:         9999  Top bytecount:         8888"
+      - q: "configure"
+        r: "OK"
+      - q: "restart_readout"
+        r: "OK"
+      - q: "/q"
+        r: "OK"
+      - q: ""
+      - q: " "
+    properties:
+      RUN:
+        default: 0
+        setter:
+          q: "start_run {:d}"
+          r: "RUN {:d}"
+        specs:
+          type: int
+      THRESHOLD:
+        default: 0
+        getter:
+          q: "get_threshold"
+          r: "THRESHOLD {:.0f}e"
+        setter:
+          q: "set_threshold {:f}"
+          r: "THRESHOLD {:.0f}e"
+        specs:
+          type: float
+          min: 0
+          max: 100000
+      USER_DATA:
+        default: ""
+        setter:
+          q: "user_data {:s}"
+          r: "OK"
+        specs:
+          type: str
+resources:
+  ASRL30::INSTR:
+    device: TPX4SC

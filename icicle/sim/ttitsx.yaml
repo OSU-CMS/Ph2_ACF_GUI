@@ -1,0 +1,124 @@
+spec: "1.1"
+devices:
+  TTITSX:
+    eom:
+      ASRL INSTR:
+        q: "\n"
+        r: "\n"
+      USB INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP INSTR:
+        q: "\n"
+        r: "\n"
+      TCPIP SOCKET:
+        q: "\n"
+        r: "\n"
+      GPIB INSTR:
+        q: "\n"
+        r: "\n"
+    error: TTI_TSX1820_ERROR
+    dialogues:
+      - q: "*IDN?"
+        r: "Aim-TTI,TSX1820P,000000,SIM1.0"
+      - q: "*RST"
+      - q: "*TST?"
+        r: 0
+      - q: "LOCAL"
+      - q: "IFLOCK 0;LOCAL"
+      - q: "TRIPRST"
+      - q: "*RST; STATUS:PRESET; *CLS"
+      - q: "VO?"
+        r: "1.00012098V"
+      - q: "IO?"
+        r: "1.00000008A"
+      - q: "*STB?"
+        r: 4207853790  # 0xFACECODE
+      - q: "*ESR?"
+        r: 3842031838  # 0xES00CODE
+      - q: "LSR1?"
+        r: 3238052062  # 0xC100CODE
+    properties:
+      IFLOCK:
+        default: 0
+        getter:
+          q: "IFLOCK?"
+          r: "IFLOCK {:d}"
+        setter:
+          q: "{:d}"
+        specs:
+          type: int
+          valid: [0, 1]
+      VOLTAGE1:
+        default: 1.2
+        getter:
+          q: "V?"
+          r: "V {:.2f}"
+        setter:
+          q: "V {:f}"
+        specs:
+          type: float
+          min: -120
+          max: 120
+      CURRENT1:
+        default: 2.0
+        getter:
+          q: "I?"
+          r: "{:.2f}"
+        setter:
+          q: "I {:f}"
+        specs:
+          type: float
+          min: 0
+          max: 20
+      OCP1:
+        default: 21
+        getter:
+          q: "OCP1?"
+          r: "CP1 {:.2f}"
+        setter:
+          q: "OCP1 {:f}"
+        specs:
+          type: float
+          min: 0.01
+          max: 21
+      OVP1:
+        default: 130
+        getter:
+          q: "OVP1?"
+          r: "VP1 {:.2f}"
+        setter:
+          q: "OVP1 {:f}"
+        specs:
+          type: float
+          min: 0.1
+          max: 130
+      VRANGE1:
+        default: 1
+        getter:
+          q: "VRANGE1?"
+          r: "{:d}"
+        setter:
+          q: "VRANGE1 {:d}"
+        specs:
+          type: int
+          min: 1
+          max: 7
+    channels:
+      outputs:
+        ids: [1,2]
+        can_select: True
+        properties:
+          OUTPUT:
+            default: 1
+            getter:
+              q: "OP{ch_id}?"
+              r: "{:d}"
+            setter:
+              q: "OP{ch_id} {:d}"
+            specs:
+              type: int
+              valid: [0, 1]
+resources:
+  ASRL7::INSTR:
+    device: TTITSX
