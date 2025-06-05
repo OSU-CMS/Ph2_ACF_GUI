@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HwDescription>
+    <BeBoard Id="0" boardType="D19C" eventType="VR" configure="1">
+    <connection id="board" uri="chtcp-2.0://hybridtesting:10203?target=192.168.0.9:50001" address_table="file://settings/address_tables/uDTC_OT_address_table.xml" />      <!-- <connection id="board" uri="chtcp-2.0://cmsuptkhsetup2.cern.ch:10203?target=192.168.0.9:50001" address_table="file://settings/address_tables/uDTC_OT_address_table.xml" /> -->
+    <!--CONFIG-->
+    <Register name="clock_source">3</Register> <!-- 3 - default (internal oscillator), 0 - AMC13 -->
+    <Register name="fc7_daq_cnfg">
+	<!-- Clock control -->
+	<Register name="clock">
+	    <Register name="ext_clk_en"> 0 </Register>
+	</Register>
+        <!-- TTC -->
+        <Register name="ttc">
+            <Register name="ttc_enable"> 0 </Register>
+        </Register>
+        <!-- Fast Command Block -->
+        <Register name="fast_command_block">
+		<Register name="triggers_to_accept"> 0 </Register>
+		<Register name="trigger_source"> 3 </Register>
+		<Register name="user_trigger_frequency"> 10 </Register>
+		<Register name="stubs_mask"> 0 </Register>
+            <!--this is the delay for the stub trigger-->
+		<Register name="stub_trigger_delay_value"> 10 </Register>
+                <Register name="stub_trigger_veto_length"> 0 </Register>
+		<Register name="test_pulse">
+			<Register name="delay_after_fast_reset"> 10 </Register>
+			<Register name="delay_after_test_pulse"> 20 </Register>
+			<Register name="delay_before_next_pulse"> 400 </Register>
+			<Register name="en_fast_reset"> 1 </Register>
+			<Register name="en_test_pulse"> 1 </Register>
+			<Register name="en_l1a"> 1 </Register>
+		</Register>
+                <Register name="ext_trigger_delay_value"> 500 </Register>
+                <Register name="antenna_trigger_delay_value"> 50 </Register>
+                <Register name="delay_between_two_consecutive"> 100 </Register>
+                <Register name="misc">
+                        <Register name="backpressure_enable"> 1 </Register>
+                        <Register name="stubOR"> 1 </Register>
+                        <Register name="initial_fast_reset_enable"> 0 </Register>
+                        <Register name="trigger_multiplicity"> 0 </Register>
+                </Register>
+        </Register>
+	<!-- I2C manager -->
+        <Register name="command_processor_block">
+	</Register>
+	<!-- Phy Block -->
+	<Register name="physical_interface_block">
+		<Register name="i2c">
+                	<Register name="frequency"> 4 </Register>
+		</Register>
+        <Register name="cic">
+                <Register name = "clock_enable"> 1 </Register>
+        </Register>
+    </Register>
+	<!-- Readout Block -->
+    	<Register name="readout_block">
+            <Register name="packet_nbr"> 999 </Register>
+            <Register name="global">
+		    <Register name="data_handshake_enable"> 0 </Register>
+                    <Register name="int_trig_enable"> 0 </Register>
+                    <Register name="int_trig_rate"> 0 </Register>
+                    <Register name="trigger_type"> 0 </Register>
+                    <Register name="data_type"> 0 </Register>
+                    <!--this is what is commonly known as stub latency-->
+                    <Register name="common_stubdata_delay"> 5 </Register>
+            </Register>
+    	</Register>
+	<!-- DIO5 Block -->
+	<Register name="dio5_block">
+	    <Register name="dio5_en"> 0 </Register>
+            <Register name="ch1">
+                <Register name="out_enable"> 1 </Register>
+                <Register name="term_enable"> 0 </Register>
+                <Register name="threshold"> 0 </Register>
+            </Register>
+	    <Register name="ch2">
+                <Register name="out_enable"> 0 </Register>
+                <Register name="term_enable"> 1 </Register>
+                <Register name="threshold"> 50 </Register>
+            </Register>
+	    <Register name="ch3">
+                <Register name="out_enable"> 1 </Register>
+                <Register name="term_enable"> 0 </Register>
+                <Register name="threshold"> 0 </Register>
+            </Register>
+	    <Register name="ch4">
+                <Register name="out_enable"> 0 </Register>
+                <Register name="term_enable"> 1 </Register>
+                <Register name="threshold"> 50 </Register>
+            </Register>
+	    <Register name="ch5">
+                <Register name="out_enable"> 1 </Register>
+                <Register name="term_enable"> 0 </Register>
+                <Register name="threshold"> 0 </Register>
+            </Register>
+	</Register>
+	<!-- TLU Block -->
+	<Register name="tlu_block">
+		<Register name="handshake_mode"> 2 </Register>
+		<Register name="tlu_enabled"> 0 </Register>
+		<Register name="trigger_id_delay"> 1 </Register>
+	</Register>
+    </Register>
+  </BeBoard>
+
+<Settings>
+    <!--[>Calibration<]-->
+    <Setting name="TargetVcth">0x78</Setting>
+    <Setting name="TargetOffset">0x78</Setting>
+    <Setting name="Nevents">100</Setting>
+    <Setting name="TestPulsePotentiometer">0x00</Setting>
+    <Setting name="HoleMode">0</Setting>
+    <Setting name="VerificationLoop">1</Setting>
+    <Setting name="MaskChannelsFromOtherGroups">1</Setting>
+    <Setting name="FitSCurves">0</Setting>
+    <Setting name="PlotSCurves">1</Setting>
+
+    <!--Signal Scan Fit-->
+	  <Setting name="InitialVcth">0x78</Setting>
+	  <Setting name="SignalScanStep">2</Setting>
+      <Setting name="FitSignal">0</Setting>
+</Settings>
+
+<CommunicationSettings>
+    <DQM               ip="127.0.0.1" port="6000" enableConnection="1"/>
+    <MonitorDQM        ip="127.0.0.1" port="8000" enableConnection="1"/>
+    <PowerSupplyClient ip="127.0.0.1" port="7000" enableConnection="1"/>
+</CommunicationSettings>
+
+</HwDescription>
+
+

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HwDescription>
+  <!--##############
+      OPTICAL FC7 
+  ###############-->
+  <!-- <BeBoard Id="0" boardType="D19C" eventType="VR"> -->
+  <BeBoard Id="0" boardType="D19C" eventType="VR" linkReset="1" boardReset="1" configure="1">
+      <connection id="board" uri="chtcp-2.0://localhost:10203?target=192.168.4.204:50001" address_table="file://settings/address_tables/uDTC_OT_address_table.xml" />
+    <CDCE configure="0" clockRate="320"/>
+    
+     <OpticalGroup Id="2" enable="1" FMCId="L8" reset="1">
+        <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+        <lpGBT Id="0" version="1" optical="1" configFile="lpGBT_v1_PS.txt">
+          <Settings
+          />
+        </lpGBT>
+    </OpticalGroup>
+
+   
+
+    <!-- 15 - default (internal oscillator), 0 - AMC13 -->
+    <Register name="clock_source_u7">15</Register> 
+    <!-- 3 = 3 = internal oscillator (default), 1 = fmc_l8_clk1, 2 = fmc_l8_clk0, 0 = COAX_IN -->
+    <Register name="clock_source_u8">3</Register> 
+ 
+    <Register name="fc7_daq_cnfg">
+	<Register name="optical_block">
+		<Register name="lpgbt_sc_worker">
+                        <Register name="ic_retry"> 1 </Register>
+                        <Register name="i2c_retry"> 1 </Register>
+                        <Register name="fe_retry"> 1 </Register>
+                        <Register name="max_ic_retry"> 10 </Register>
+                        <Register name="max_i2c_retry"> 10 </Register>
+                        <Register name="max_fe_retry"> 10 </Register>
+		</Register>
+	</Register>
+
+        <!-- Clock control -->
+        <Register name="clock">
+            <Register name="ext_clk_en"> 0 </Register>
+	     </Register>
+        <!-- TTC -->
+        <Register name="ttc">
+            <Register name="ttc_enable"> 0 </Register>
+        </Register>
+        <!-- Fast Command Block -->
+        <Register name="fast_command_block">
+		<Register name="triggers_to_accept"> 0 </Register>
+            <Register name="trigger_source"> 3 </Register>
+		<Register name="user_trigger_frequency"> 1000 </Register>
+            <Register name="stubs_mask"> 1 </Register>
+                <!--this is the delay for the stub trigger-->
+		<Register name="stub_trigger_delay_value"> 0 </Register>
+            <Register name="stub_trigger_veto_length"> 0 </Register>
+            <Register name="test_pulse">
+            <Register name="delay_after_fast_reset"> 50 </Register>
+            <Register name="delay_after_test_pulse"> 200 </Register>
+            <Register name="delay_before_next_pulse"> 400 </Register>
+            <Register name="en_fast_reset"> 1 </Register>
+            <Register name="en_test_pulse"> 1 </Register>
+            <Register name="en_l1a"> 1 </Register>
+        </Register>
+        <Register name="ext_trigger_delay_value"> 10 </Register>
+        <Register name="antenna_trigger_delay_value"> 200 </Register>
+        <Register name="delay_between_two_consecutive"> 0 </Register>
+        <Register name="misc">
+            <Register name="backpressure_enable"> 1 </Register>
+            <Register name="stubOR"> 1 </Register>
+            <Register name="initial_fast_reset_enable"> 0 </Register>
+            <Register name="trigger_multiplicity"> 0 </Register>
+        </Register>
+        </Register>
+        <!-- I2C manager -->
+        <Register name="command_processor_block">
+        </Register>
+        <!-- Phy Block -->
+        <Register name="physical_interface_block">
+            <Register name="i2c">
+                <Register name="frequency"> 4 </Register>
+            </Register>
+        </Register>
+        <!-- Readout Block -->
+        <Register name="readout_block">
+            <Register name="packet_nbr"> 999 </Register>
+            <Register name="global">
+                <Register name="data_handshake_enable"> 0 </Register>
+                <Register name="int_trig_enable"> 0 </Register>
+                <Register name="int_trig_rate"> 0 </Register>
+                <Register name="trigger_type"> 0 </Register>
+                <Register name="data_type"> 0 </Register>
+                <!--this is what is commonly known as stub latency-->
+                <Register name="common_stubdata_delay"> 194 </Register>
+            </Register>
+    	  </Register>
+        </Register>
+</BeBoard>
+
+
+  <!--##############
+    ELECTRICAL FC7 
+  ###############-->
+  <BeBoard Id="1" boardType="D19C" eventType="VR" linkReset="1" boardReset="1">
+      <connection id="board" uri="chtcp-2.0://localhost:10203?target=192.168.4.201:50001" address_table="file://settings/address_tables/uDTC_OT_address_table.xml" />
+    <CDCE configure="1" clockRate="320"/>
+
+
+    <!--CONFIG-->
+        <!-- 15 - default (internal oscillator), 0 - AMC13 -->
+        <Register name="clock_source_u7">0 </Register>
+        <!-- 3 = internal oscillator (default), 1 = fmc_l8_clk1, 2 = fmc_l8_clk0, 0 = COAX_IN -->
+        <Register name="clock_source_u8">3</Register>
+
+  </BeBoard>
+
+
+<Settings>
+    <!-- Interlock enabled. 1 is input to the backplane from the switch. 0 is input to the backplane by the firmware -->
+    <Setting name="InterlockEnabled">1</Setting>
+</Settings>
+</HwDescription>

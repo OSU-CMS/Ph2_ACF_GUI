@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<node id="system">
+
+  <node id="ctrl_2" address="0x00000005" permission="rw" description="User control registers">
+    <node id="fmc_l12_pwr_en" mask="0x10000000" permission="rw"/>
+    <node id="fmc_l8_pwr_en"  mask="0x20000000" permission="rw"/>
+    <node id="fmc_pg_c2m"     mask="0x40000000" permission="rw"/>
+  </node>
+
+  <node id="spi">
+    <node id="tx_data" address = "0x00a" mask="0xFFFFFFFF"/>
+    <node id="command" address = "0x00b" mask="0xFFFFFFFF"/>
+    <node id="rx_data" address = "0x00c" mask="0xFFFFFFFF"/>
+  </node>
+
+  <node id="ctrl" address="0x00000004" permission="rw">
+    <node id="cdce_powerup"    mask="0x000010"/>
+    <node id="cdce_refsel"     mask="0x000020"/>
+    <node id="cdce_sync"       mask="0x000040"/>
+    <node id="cdce_ctrl_sel"   mask="0x000080"/>
+  </node>
+
+  <node id="buf_cta" address="0x0000400" class="MmcPipeInterface" description="UC link buffer test register" size="0x3" tags="slave">
+    <node id="FPGAtoMMCcounters" address="0x0"/>
+    <node id="MMCtoFPGAcounters" address="0x1"/>
+    <node id="FIFO" address="0x2" mode="non-incremental" size="512" />
+  </node>
+
+</node>

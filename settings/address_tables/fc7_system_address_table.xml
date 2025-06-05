@@ -1,0 +1,64 @@
+<node id="sysreg">
+	<node id="board_id" address="0x0"/>
+	<node id="rev_id" address="0x1"/>
+	<node id="version" address="0x2">
+		<node id="ver_major" mask="0xF0000000"/>
+		<node id="ver_minor" mask="0x0F000000"/>
+		<node id="ver_build" mask="0x00FF0000"/>
+		<node id="ver_year"  mask="0x0000FE00"/>
+		<node id="ver_month" mask="0x000001E0"/>
+		<node id="ver_day"   mask="0x0000001F"/>
+	</node>
+	<node id="buf_test" address="0x0000400" class="MmcPipeInterface" description="UC link buffer test register" size="0x3" tags="slave">
+		<node id="FPGAtoMMCcounters" address="0x0"/>
+		<node id="MMCtoFPGAcounters" address="0x1"/>
+		<node id="FIFO" address="0x2" mode="non-incremental" size="512" />
+	</node>
+	<node id="ctrl" address="0x00000004" permission="rw">
+		<node id="pcieclk_pll_sel"   mask="0x000001"/>
+		<node id="pcieclk_mr"        mask="0x000002"/>
+		<node id="pcieclk_fsel1"     mask="0x000003"/>
+		<node id="pcieclk_fsel0"     mask="0x000008"/>
+		<node id="cdce_powerup"      mask="0x000010"/>
+		<node id="cdce_refsel"       mask="0x000020"/>
+		<node id="cdce_sync"         mask="0x000040"/>
+		<node id="cdce_ctrl_sel"     mask="0x000080"/>
+	</node>
+    <node id="status" address="0x00000006" permission="rw">
+        <node id="cdce_sync_busy"      mask="0x01000000"/>
+        <node id="cdce_sync_done"      mask="0x02000000"/>
+        <node id="cdce_lock"           mask="0x10000000"/>
+    </node>
+    <node id="fmc_pwr" address="0x00000005" permission="rw">
+            <node id="l12_pwr_en"   mask="0x10000000"/>
+            <node id="l8_pwr_en"    mask="0x20000000"/>
+            <node id="pg_c2m"       mask="0x40000000"/>
+    </node>
+    <node id="i2c_settings" address="0x0000000d" permission="rw">
+            <node id="i2c_enable"           mask="0x00008000"/>
+            <node id="i2c_bus_select"       mask="0x00000400"/>
+            <node id="i2c_prescaler"        mask="0x000003ff"/>
+    </node>
+    <node id="i2c_command" address="0x0000000e" permission="rw">
+            <node id="strobe"               mask="0x80000000"/>
+            <node id="mode16"               mask="0x02000000"/>
+            <node id="mem"                  mask="0x01000000"/>
+            <node id="write"                mask="0x00800000"/>
+            <node id="slvaddr_7b"           mask="0x007f0000"/>
+            <node id="regaddr"              mask="0x0000ff00"/>
+            <node id="wrdata"               mask="0x000000ff"/>
+    </node>
+    <node id="i2c_reply" address="0x0000000f" permission="r">
+            <node id="status"               mask="0x0c000000"/>
+            <node id="error"                mask="0x08000000"/>
+            <node id="done"                 mask="0x04000000"/>
+            <node id="r_8b"                 mask="0x000000ff"/>
+            <node id="r_16b"                mask="0x0000ffff"/>
+    </node>
+    <node id="spi">
+        <node id="tx_data"                  address = "0x00a" mask="0xFFFFFFFF"/>
+        <node id="command"                  address = "0x00b" mask="0xFFFFFFFF"/>
+        <node id="rx_data"                  address = "0x00c" mask="0xFFFFFFFF"/>
+    </node>
+</node>
+

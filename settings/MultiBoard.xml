@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HwDescription>
+  <BeBoard Id="0" boardType="D19C" eventType="VR2S" linkReset="1" boardReset="1" configure="1">
+        <!-- B598 skeleton -->
+        <connection id="board" uri="chtcp-2.0://localhost:10203?target=192.168.0.70:50001" address_table="file://settings/address_tables/uDTC_OT_address_table.xml" />
+        <CDCE configure="0" clockRate="320"/>
+
+        <!-- skeleton -->
+         <OpticalGroup Id="0" enable="1" FMCId="L12" reset="1">
+        <lpGBT_Files path="./settings/lpGBTFiles/" />
+        <lpGBT Id="0" version="0" optical="1" configFile="lpGBT_v0_2S.txt">
+        <Settings
+        />
+        </lpGBT>
+        <Hybrid Id="0" enable="1" reset="1">
+            <Global>
+                <Settings threshold="560" latency="99"/>
+                <TestPulse enable="1" polarity="0" amplitude="0xC0" channelgroup="0" delay="0" groundothers="0"/>
+                <ClusterStub clusterwidth="4" ptwidth="14" layerswap="0" off1="0" off2="0" off3="0" off4="0"/>
+                <Misc analogmux="0b00000" pipelogic="0" stublogic="0" or254="0" tpgclock="1" testclock="0" dll="10" hipCount="2"/>
+                <ChannelMask disable=""/>
+                <CIC2 enableBend="1" enableLastLine="0" enableSparsification="0" driveStrength="3" edgeSelect="0"/>
+                <!-- <MaskedStrips 
+                    CBCId="0;1" 
+                    Rows="241, 240,225,224,209,208,193,192,177,176,161,160,145,144,129,128,113,112,97,96,81,80,65,64,49,48,33,32,17,16;241,240,225,224,209,208,193,192,177,176,161,160,145,144,129,128,113,112,97,96,81,80,65,64,49,48,33,32,17,16" 
+                />  -->
+            </Global>
+
+            <CBC_Files path="${PH2ACF_BASE_DIR}/settings/CbcFiles/" />
+            <CBC Id="0" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="1" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="2" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="3" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="4" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="5" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="6" enable="1" configFile="CBC3_default.txt" />
+            <CBC Id="7" enable="1" configFile="CBC3_default.txt" /> 
+
+            <CIC2_Files path="${PH2ACF_BASE_DIR}/settings/CicFiles/" />
+            <CIC2 Id="8" enable="1" configFile="CIC2_2S.txt" />
+            </Hybrid>
+            </OpticalGroup>
+
+        <!--CONFIG-->
+        <!-- 15 - default (internal oscillator), 0 - AMC13 -->
+        <Register name="clock_source_u7">15</Register> 
+        <!-- 3 = 3 = internal oscillator (default), 1 = fmc_l8_clk1, 2 = fmc_l8_clk0, 0 = COAX_IN -->
+        <Register name="clock_source_u8">3</Register> 
+        <Register name="fc7_daq_cnfg">
+        <!-- Sync block control -->
+        <Register name="sync_block">
+        <Register name="enable"          >0</Register>
+        <Register name="is_bc0_enable"   >0</Register>
+        <Register name="is_resync_enable">0</Register>
+        <Register name="delay">10</Register>
+        <Register name="num_triggers"    >499</Register>
+        </Register>
+        <!-- Clock control -->
+        <Register name="clock">
+        <Register name="ext_clk_en"> 0 </Register>
+        </Register>
+        <!-- TTC -->
+        <Register name="ttc">
+        <Register name="ttc_enable"> 0 </Register>
+        </Register>
+        <!-- Fast Command Block -->
+        <Register name="fast_command_block">
+        <Register name="triggers_to_accept"> 0 </Register>
+        <Register name="trigger_source"> 3 </Register>
+        <Register name="user_trigger_frequency"> 10 </Register>
+        <Register name="stubs_mask"> 1 </Register>
+        <!--this is the delay for the stub trigger-->
+        <Register name="stub_trigger_delay_value"> 0 </Register>
+        <Register name="stub_trigger_veto_length"> 0 </Register>
+        <Register name="test_pulse">
+            <Register name="delay_after_fast_reset"> 100 </Register>
+            <Register name="delay_after_test_pulse"> 100 </Register>
+            <Register name="delay_before_next_pulse"> 200 </Register>
+            <Register name="en_fast_reset"> 0 </Register>
+            <Register name="en_test_pulse"> 1 </Register>
+            <Register name="en_l1a"> 1 </Register>
+            <Register name="en_shutter"> 0 </Register>
+        </Register>
+        <Register name="ps_async_delay">
+            <Register name="after_clear_counters"> 200 </Register>
+            <Register name="after_open_shutter"> 1 </Register>
+            <Register name="after_close_shutter"> 200 </Register>
+            <Register name="after_stop_antenna"> 200 </Register>
+        </Register>
+        <Register name="ps_async_en">
+            <Register name="open_shutter"> 1 </Register>
+            <Register name="close_shutter"> 1 </Register>
+            <Register name="cal_pulse"> 1 </Register>
+            <Register name="antenna"> 0 </Register>
+            <Register name="clear_counters"> 0 </Register>
+        </Register>
+        <Register name="ext_trigger_delay_value"> 75 </Register>
+        <Register name="antenna_trigger_delay_value"> 1 </Register>
+        <Register name="delay_between_two_consecutive"> 25 </Register>
+        <Register name="misc">
+                <Register name="backpressure_enable"> 0 </Register>
+                <Register name="stubOR"> 1 </Register>
+                <Register name="initial_fast_reset_enable"> 0 </Register>
+                <Register name="trigger_timeout_enable"> 0 </Register>
+               <Register name="trigger_multiplicity"> 0 </Register>
+        </Register>
+        </Register>
+        <!-- I2C manager -->
+        <Register name="command_processor_block">
+        </Register>
+        <!-- Phy Block -->
+        <Register name="physical_interface_block">
+        <Register name="i2c">
+            <Register name="frequency"> 4 </Register>
+        </Register>
+        <Register name="cic">
+            <Register name = "clock_enable"> 1 </Register>
+        </Register>
+        </Register>
+        <!-- Readout Block -->
+        <Register name="readout_block">
+        <Register name="packet_nbr"> 999 </Register>
+        <Register name="global">
+                <Register name="data_handshake_enable"> 0 </Register>
+                <Register name="int_trig_enable"> 0 </Register>
+                <Register name="int_trig_rate"> 0 </Register>
+                <Register name="trigger_type"> 0 </Register>
+                <Register name="data_type"> 0 </Register>
+                <!--this is what is commonly known as stub latency-->
+                <Register name="common_stubdata_delay"> 37 </Register>
+        </Register>
+        </Register>
+        <!-- DIO5 Block -->
+        <!-- DIO5 Block -->
+        <Register name="dio5_block">
+        <Register name="dio5_en"> 1 </Register>
+        <Register name="ch1">
+            <Register name="out_enable"> 0 </Register>
+            <Register name="term_enable"> 1 </Register>
+            <Register name="threshold"> 50 </Register>
+        </Register>
+        <Register name="ch2">
+            <Register name="out_enable"> 1 </Register>
+            <Register name="term_enable"> 0 </Register>
+            <Register name="threshold"> 0 </Register>
+        </Register>
+        <Register name="ch3">
+            <Register name="out_enable"> 1 </Register>
+            <Register name="term_enable"> 0 </Register>
+            <Register name="threshold"> 0 </Register>
+        </Register>
+        <Register name="ch4">
+            <Register name="out_enable"> 1 </Register>
+            <Register name="term_enable"> 0 </Register>
+            <Register name="threshold"> 0 </Register>
+        </Register>
+        <Register name="ch5">
+            <Register name="out_enable"> 0 </Register>
+            <Register name="term_enable"> 0 </Register>
+            <Register name="threshold"> 0 </Register>
+        </Register>
+        </Register>
+        <!-- TLU Block -->
+        <Register name="tlu_block">
+        <Register name="tlu_enabled"> 0 </Register>
+        <Register name="handshake_mode"> 0 </Register>
+        <Register name="trigger_id_delay"> 2 </Register>
+        <!-- <Register name="phase_select"> 255 </Register> -->
+        </Register>
+        </Register>
+  </BeBoard>
+
+  <BeBoard Id="1" boardType="D19C" eventType="VR2S" linkReset="1" boardReset="1" configure="1">
+        <!-- B598 skeleton -->
+        <connection id="board" uri="chtcp-2.0://localhost:10203?target=192.168.0.71:50001" address_table="file://settings/address_tables/uDTC_OT_address_table.xml" />
+        <CDCE configure="0" clockRate="320"/>
+
+        <!-- Perugia without patch --> 
+         <OpticalGroup Id="0" enable="1" FMCId="L12" reset="1">
+            <lpGBT_Interface useOpticalLink="1" useCPB="1"/>
+            <lpGBT_Files path="./settings/lpGBTFiles/" />
+            <lpGBT Id="0" configFile="CMSOT_lpGBT.txt">
+              <Settings
+              />
+            </lpGBT>
+            <Hybrid Id="0" enable="1" reset="1">
+                <Global>
+                    <Settings threshold="100" latency="99"/>
+                    <TestPulse enable="1" polarity="0" amplitude="0x60" channelgroup="0" delay="0" groundothers="0"/>
+                    <ClusterStub clusterwidth="4" ptwidth="14" layerswap="0" off1="0" off2="0" off3="0" off4="0"/>
+                    <Misc analogmux="0b00000" pipelogic="0" stublogic="0" or254="0" tpgclock="1" testclock="0" dll="10" hipCount="2"/>
+                    <ChannelMask disable=""/>
+                    <!-- <MaskedStrips 
+                        CBCId="0;1" 
+                        Rows="241, 240,225,224,209,208,193,192,177,176,161,160,145,144,129,128,113,112,97,96,81,80,65,64,49,48,33,32,17,16;241,240,225,224,209,208,193,192,177,176,161,160,145,144,129,128,113,112,97,96,81,80,65,64,49,48,33,32,17,16" 
+                    />  -->
+                    <CIC2 enableBend="1" enableLastLine="0" enableSparsification="0" driveStrength="3" edgeSelect="0"/>
+                </Global>
+
+                <CBC_Files path="${PH2ACF_BASE_DIR}/Results/OT_ModuleTest_ModuleOT_Run956/" />
+                <CBC Id="0" enable="1" configFile="BE0_OG0_FE0_Chip0.txt" />
+                <CBC Id="1" enable="1" configFile="BE0_OG0_FE0_Chip1.txt" />
+                <CBC Id="2" enable="1" configFile="BE0_OG0_FE0_Chip2.txt" />
+                <CBC Id="3" enable="1" configFile="BE0_OG0_FE0_Chip3.txt" />
+                <CBC Id="4" enable="1" configFile="BE0_OG0_FE0_Chip4.txt" />
+                <CBC Id="5" enable="1" configFile="BE0_OG0_FE0_Chip5.txt" />
+                <CBC Id="6" enable="1" configFile="BE0_OG0_FE0_Chip6.txt" />
+                <CBC Id="7" enable="1" configFile="BE0_OG0_FE0_Chip7.txt" /> 
+        
+                <CIC2_Files path="${PH2ACF_BASE_DIR}/Results/OT_ModuleTest_ModuleOT_Run956/" />
+                <CIC2 Id="8" enable="1" configFile="BE0_OG0_FE0.txt" />
+            </Hybrid>
+            <Hybrid Id="1" enable="1" reset="1" >
+                <Global>
+                    <Settings threshold="500" latency="99"/>
+                    <TestPulse enable="1" polarity="0" amplitude="0x60" channelgroup="0" delay="0" groundothers="0"/>
+                    <ClusterStub clusterwidth="4" ptwidth="14" layerswap="0" off1="0" off2="0" off3="0" off4="0"/>
+                    <Misc analogmux="0b00000" pipelogic="0" stublogic="0" or254="0" tpgclock="1" testclock="0" dll="10" hipCount="2"/>
+                    <ChannelMask disable=""/>
+                    <CIC2 enableBend="1" enableLastLine="0" enableSparsification="0" driveStrength="3" edgeSelect="0"/>
+                </Global>
+
+                <CBC_Files path="${PH2ACF_BASE_DIR}/Results/OT_ModuleTest_ModuleOT_Run956/" />
+                <CBC Id="0" enable="1" configFile="BE0_OG0_FE1_Chip0.txt" />
+                <CBC Id="1" enable="1" configFile="BE0_OG0_FE1_Chip1.txt" />
+                <CBC Id="2" enable="1" configFile="BE0_OG0_FE1_Chip2.txt" />
+                <CBC Id="3" enable="1" configFile="BE0_OG0_FE1_Chip3.txt" />
+                <CBC Id="4" enable="1" configFile="BE0_OG0_FE1_Chip4.txt" />
+                <CBC Id="5" enable="1" configFile="BE0_OG0_FE1_Chip5.txt" />
+                <CBC Id="6" enable="1" configFile="BE0_OG0_FE1_Chip6.txt" />
+                <CBC Id="7" enable="1" configFile="BE0_OG0_FE1_Chip7.txt" /> 
+
+                <CIC2_Files path="${PH2ACF_BASE_DIR}/Results/OT_ModuleTest_ModuleOT_Run956/" />
+                <CIC2 Id="8" enable="1" configFile="BE0_OG0_FE1.txt" />
+            </Hybrid>
+        </OpticalGroup>
+
+        <!--CONFIG-->
+        <!-- 15 - default (internal oscillator), 0 - AMC13 -->
+        <Register name="clock_source_u7">15</Register> 
+        <!-- 3 = 3 = internal oscillator (default), 1 = fmc_l8_clk1, 2 = fmc_l8_clk0, 0 = COAX_IN -->
+        <Register name="clock_source_u8">1</Register> 
+        <Register name="fc7_daq_cnfg">
+        <!-- Sync block control -->
+        <Register name="sync_block">
+        <Register name="enable"          >0</Register>
+        <Register name="is_bc0_enable"   >0</Register>
+        <Register name="is_resync_enable">0</Register>
+        <Register name="delay">10</Register>
+        <Register name="num_triggers"    >499</Register>
+        </Register>
+        <!-- Clock control -->
+        <Register name="clock">
+        <Register name="ext_clk_en"> 0 </Register>
+        </Register>
+        <!-- TTC -->
+        <Register name="ttc">
+        <Register name="ttc_enable"> 0 </Register>
+        </Register>
+        <!-- Fast Command Block -->
+        <Register name="fast_command_block">
+        <Register name="triggers_to_accept"> 0 </Register>
+        <Register name="trigger_source"> 3 </Register>
+        <Register name="user_trigger_frequency"> 10 </Register>
+        <Register name="stubs_mask"> 1 </Register>
+        <!--this is the delay for the stub trigger-->
+        <Register name="stub_trigger_delay_value"> 0 </Register>
+        <Register name="stub_trigger_veto_length"> 0 </Register>
+        <Register name="test_pulse">
+            <Register name="delay_after_fast_reset"> 100 </Register>
+            <Register name="delay_after_test_pulse"> 100 </Register>
+            <Register name="delay_before_next_pulse"> 200 </Register>
+            <Register name="en_fast_reset"> 0 </Register>
+            <Register name="en_test_pulse"> 1 </Register>
+            <Register name="en_l1a"> 1 </Register>
+            <Register name="en_shutter"> 0 </Register>
+        </Register>
+        <Register name="ps_async_delay">
+            <Register name="after_clear_counters"> 200 </Register>
+            <Register name="after_open_shutter"> 1 </Register>
+            <Register name="after_close_shutter"> 200 </Register>
+            <Register name="after_stop_antenna"> 200 </Register>
+        </Register>
+        <Register name="ps_async_en">
+            <Register name="open_shutter"> 1 </Register>
+            <Register name="close_shutter"> 1 </Register>
+            <Register name="cal_pulse"> 1 </Register>
+            <Register name="antenna"> 0 </Register>
+            <Register name="clear_counters"> 0 </Register>
+        </Register>
+        <Register name="ext_trigger_delay_value"> 75 </Register>
+        <Register name="antenna_trigger_delay_value"> 1 </Register>
+        <Register name="delay_between_two_consecutive"> 25 </Register>
+        <Register name="misc">
+                <Register name="backpressure_enable"> 0 </Register>
+                <Register name="stubOR"> 1 </Register>
+                <Register name="initial_fast_reset_enable"> 0 </Register>
+                <Register name="trigger_timeout_enable"> 0 </Register>
+               <Register name="trigger_multiplicity"> 0 </Register>
+        </Register>
+        </Register>
+        <!-- I2C manager -->
+        <Register name="command_processor_block">
+        </Register>
+        <!-- Phy Block -->
+        <Register name="physical_interface_block">
+        <Register name="i2c">
+                <Register name="frequency"> 4 </Register>
+        </Register>
+        <Register name="cic">
+            <Register name = "clock_enable"> 1 </Register>
+        </Register>
+        </Register>
+        <!-- Readout Block -->
+        <Register name="readout_block">
+        <Register name="packet_nbr"> 999 </Register>
+        <Register name="global">
+                <Register name="data_handshake_enable"> 0 </Register>
+                <Register name="int_trig_enable"> 0 </Register>
+                <Register name="int_trig_rate"> 0 </Register>
+                <Register name="trigger_type"> 0 </Register>
+                <Register name="data_type"> 0 </Register>
+                <!--this is what is commonly known as stub latency-->
+                <Register name="common_stubdata_delay"> 33 </Register>
+        </Register>
+        </Register>
+        <!-- DIO5 Block -->
+        <!-- DIO5 Block -->
+        <Register name="dio5_block">
+        <Register name="dio5_en"> 1 </Register>
+        <Register name="ch1">
+            <Register name="out_enable"> 0 </Register>
+            <Register name="term_enable"> 1 </Register>
+            <Register name="threshold"> 50 </Register>
+        </Register>
+        <Register name="ch2">
+            <Register name="out_enable"> 1 </Register>
+            <Register name="term_enable"> 0 </Register>
+            <Register name="threshold"> 0 </Register>
+        </Register>
+        <Register name="ch3">
+            <Register name="out_enable"> 1 </Register>
+            <Register name="term_enable"> 0 </Register>
+            <Register name="threshold"> 0 </Register>
+        </Register>
+        <Register name="ch4">
+            <Register name="out_enable"> 1 </Register>
+            <Register name="term_enable"> 0 </Register>
+            <Register name="threshold"> 0 </Register>
+        </Register>
+        <Register name="ch5">
+            <Register name="out_enable"> 0 </Register>
+            <Register name="term_enable"> 0 </Register>
+            <Register name="threshold"> 0 </Register>
+        </Register>
+        </Register>
+        <!-- TLU Block -->
+        <Register name="tlu_block">
+        <Register name="tlu_enabled"> 0 </Register>
+        <Register name="handshake_mode"> 0 </Register>
+        <Register name="trigger_id_delay"> 2 </Register>
+        <!-- <Register name="phase_select"> 255 </Register> -->
+        </Register>
+        </Register>
+  </BeBoard>
+<Settings>
+    <!--PedestalEqualization-->
+    <Setting name="Nevents">10000</Setting>
+    <Setting name="HoleMode">0</Setting>
+    <Setting name="VerificationLoop">1</Setting>
+    <Setting name="MaskChannelsFromOtherGroups">0</Setting>
+    <Setting name="FitSCurves">0</Setting>
+    <Setting name="PlotSCurves">1</Setting>
+    <Setting name="PedestalEqualization_PulseAmplitude">0</Setting>
+    <Setting name="PedeNoise_PulseAmplitude">0</Setting>
+    <Setting name="TriggerRate">10</Setting>
+    <Setting name="StubAlignmentThreshold">590</Setting>
+    <Setting name="StubAlignmentScanStart">70</Setting>
+
+    <Setting name="StartLatency">85</Setting>
+    <Setting name="LatencyRange">20</Setting>
+
+    <Setting name="TargetVcth">0x78</Setting>
+    <Setting name="TargetOffset">0x50</Setting>
+
+    <!--Signal Scan Fit-->
+	<Setting name="InitialVcth">0x78</Setting>
+	<Setting name="SignalScanStep">2</Setting>
+    <Setting name="FitSignal">0</Setting>
+
+    <!--Antenna for Opens -->
+    <Setting name="AntennaPotentiometer">647</Setting>
+    <Setting name="ThresholdForOpens">10</Setting>
+    <Setting name="AntennaTriggerRate">50</Setting>
+
+    <!-- Shorts -->
+    <Setting name="ShortsPulseAmplitude"> 20 </Setting>
+
+    <!--PS hybrid SSA output test -->
+    <!-- number of 10 ms periods to wait for in the case of stubs -->
+    <!-- number of triggers to send in the case of L1A data -->
+    <!-- L1 triggers sent once every 10 ms -->
+    <Setting name="PSHybridDebugDuration">1</Setting>
+
+    <!-- Async Test -->
+    <Setting name="AsyncSweepTh">1</Setting>
+    <Setting name="AsyncThreshold">100</Setting>
+    <Setting name="AsyncCalDac">30</Setting>
+
+    <Setting name="StartTHDAC">0x40</Setting>
+    <Setting name="StopTHDAC">0x90</Setting>
+    <Setting name="NMsec">0</Setting>
+    <Setting name="NMpulse">3000</Setting>
+    <Setting name="Nlvl">50</Setting>
+    <Setting name="Vfac">0.9</Setting>
+    <Setting name="Mrms">0.6</Setting>
+    <Setting name="TestPulsePotentiometer">0x50</Setting>
+    <Setting name="SyncDebug">0</Setting>
+
+    <!-- Burst Test -->
+    <Setting name="Ntrials">5</Setting>
+    <Setting name="LengthOfBurst">16</Setting>
+    <Setting name="TriggerSeparation">500</Setting>
+    <Setting name="TestPulseSeparation">70</Setting>
+
+    <Setting name="UseFcmdBram">0</Setting>
+    <Setting name="MeanTriggerSeparation">100</Setting>
+    
+    <Setting name="Check2SUseReadNEvents">0</Setting>
+    <Setting name="Check2Swait">2000</Setting>   <!-- wait is in ms --> 
+    <Setting name="Check2STPamplitude">10</Setting>
+    <Setting name="Check2STPdelay">10</Setting>
+    <Setting name="Check2Sthreshold">550</Setting>
+    <Setting name="Check2SRefSensor">0</Setting>   <!--bottom == 0 ; top == 1 --> 
+    <Setting name="Check2SRefSide">1</Setting>   <!-- L == 1  ; R== 0 --> 
+    <Setting name="Check2SRefChip">0</Setting>   <!-- L == 1  ; R== 0 --> 
+    
+</Settings>
+
+<CommunicationSettings>
+    <DQM               ip="127.0.0.1" port="6000" enableConnection="1"/>
+    <MonitorDQM        ip="127.0.0.1" port="8000" enableConnection="1"/>
+    <PowerSupplyClient ip="127.0.0.1" port="7000" enableConnection="1"/>
+</CommunicationSettings>
+
+</HwDescription>
+
+<Devices>
+    <PowerSupply
+        ID          =   "MyRohdeSchwarz"
+        InUse       =   "Yes"
+        Model       =   "RohdeSchwarz"
+        Connection  =   "Serial"
+        Port        =   "/dev/ttyACM0"
+   	BaudRate    =   "9600"
+        FlowControl =   "true"
+        Parity      =   "false"
+  	RemoveEcho  =   "false"
+        Terminator  =   "\r\n"
+        Suffix      =   "\n"
+        Timeout     =   "1"
+        Series	    =   "TSX"
+    >
+    <Channel ID="LV_Module2" Channel="2" InUse ="Yes" />
+    <Channel ID="LV_Module3" Channel="3" InUse ="Yes" />
+    <Channel ID="LV_Module4" Channel="4" InUse ="Yes" />
+  </PowerSupply> 
+</Devices>

@@ -1,0 +1,936 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+
+<node id="FPGA1" address="0x00000000" >
+    <!-- FC7 system register address table -->
+        <node id="sysreg" address="0x00000000" module="file://fc7_system_address_table.xml"/>
+        <node id="clock_source"     address="0x00000004" mask="0x00030000" description="Clock source switch, values: 3 = internal oscillator (default), 2 = backplane, 0 = AMC13"/>
+        <node id="coax_select"      address="0x00000004" mask="0x00000800" description="Coax select, values : 1 = ( select internal oscillator) , 0 = select coax input"/>
+        <node id="clock_source_u7"  address="0x00000004" mask="0x0003c000" description="Clock source switch, values: 15 = internal (default), 0 = AMC13"/>
+        <node id="clock_source_u8"  address="0x00000004" mask="0x00300000" description="Clock source switch, values: 3 = internal oscillator (default), 2 = fmc_l8_clk1, 1 = fmc_l8_clk0, 0 = COAX_IN"/>
+    
+    <!-- firmware configurations -->
+    <node id="fc7_daq_cnfg" address="0x40010000" permission="rw" > 
+        	<node id="sfp_ddmi"           address="0xD009">
+	            <node id="enable"                      mask="0x00080000"/>
+	            <node id="channel_number"              mask="0x00070000"/>
+	            <node id="data_wr"                     mask="0x0000ff00"/>
+                <node id="regAddress"                  mask="0x000000ff"/>
+            </node>
+
+            <node id="ddr3_debug"           address="0x0008000">
+                <node id="stub_enable"                  mask="0x00000001"/>
+                <node id="ps_async_counter_enable"      mask="0x00000002"/>
+                <node id="scan_chain_enable"            mask="0x00000004"/>
+            </node>
+
+            <node id="clock"            address="0x0001">
+                <node id="ext_clk_en"           mask="0x00000001"/>
+            </node>
+
+            <node id="ttc"                          address="0x0002">
+                <node id="ttc_enable"           mask="0x00000001"/>
+            </node>
+
+            <node id="amc13"                        address="0x0003">
+                <node id="sw_tts_state_valid"               mask="0x00000002"/>
+                <node id="sw_tts_state"                     mask="0x000000f0"/>
+            </node>
+
+            <node id="global"                       address="0x0000">
+                <node id="hybrid_enable"			address="0x005" mask="0x00FFFFFF"/>
+                <node id="chips_enable_hyb_00"		address="0x006" mask="0x000000FF"/>
+                <node id="chips_enable_hyb_01"		address="0x006" mask="0x0000FF00"/>
+                <node id="chips_enable_hyb_02"		address="0x006" mask="0x00FF0000"/>
+                <node id="chips_enable_hyb_03"		address="0x006" mask="0xFF000000"/>
+                <node id="chips_enable_hyb_04"		address="0x007" mask="0x000000FF"/>
+                <node id="chips_enable_hyb_05"		address="0x007" mask="0x0000FF00"/>
+                <node id="chips_enable_hyb_06"		address="0x007" mask="0x00FF0000"/>
+                <node id="chips_enable_hyb_07"		address="0x007" mask="0xFF000000"/>
+                <node id="chips_enable_hyb_08"		address="0x008" mask="0x000000FF"/>
+                <node id="chips_enable_hyb_09"		address="0x008" mask="0x0000FF00"/>
+                <node id="chips_enable_hyb_10"		address="0x008" mask="0x00FF0000"/>
+                <node id="chips_enable_hyb_11"		address="0x008" mask="0xFF000000"/>
+                <node id="chips_enable_hyb_12"		address="0x009" mask="0x000000FF"/>
+                <node id="chips_enable_hyb_13"		address="0x009" mask="0x0000FF00"/>
+                <node id="chips_enable_hyb_14"		address="0x009" mask="0x00FF0000"/>
+                <node id="chips_enable_hyb_15"		address="0x009" mask="0xFF000000"/>	
+                <node id="chips_enable_hyb_16"		address="0x00A" mask="0x000000FF"/>	
+                <node id="chips_enable_hyb_17"		address="0x00A" mask="0x0000FF00"/>	
+                <node id="chips_enable_hyb_18"		address="0x00A" mask="0x00FF0000"/>	
+                <node id="chips_enable_hyb_19"		address="0x00A" mask="0xFF000000"/>	
+                <node id="chips_enable_hyb_20"		address="0x00B" mask="0x000000FF"/>	
+                <node id="chips_enable_hyb_21"		address="0x00B" mask="0x0000FF00"/>	
+                <node id="chips_enable_hyb_22"		address="0x00B" mask="0x00FF0000"/>	
+                <node id="chips_enable_hyb_23"		address="0x00B" mask="0xFF000000"/>	
+            </node>
+
+            <node id="command_processor_block"      address="0x1000">
+                <node id="i2c_address_table">
+                    <node id="slave_0_config" address="0x000"/>
+                    <node id="slave_1_config" address="0x001"/>
+                    <node id="slave_2_config" address="0x002"/>
+                    <node id="slave_3_config" address="0x003"/>
+                    <node id="slave_4_config" address="0x004"/>
+                    <node id="slave_5_config" address="0x005"/>
+                    <node id="slave_6_config" address="0x006"/>
+                    <node id="slave_7_config" address="0x007"/>
+                    <node id="slave_8_config" address="0x008"/>
+                </node>
+            </node>
+
+            <node id="fast_command_block"           address="0x2000" description="internal fast signal is generated in the fast_signal_generator module and the settings are here.">
+                <node id="triggers_to_accept"               address="0x000" description="# of periodic fast signal cycle from the start signal."/>
+                <node id="user_trigger_frequency"           address="0x001" description="User-defined frequency in kHz"/>
+                <node id="trigger_source"                   address="0x002" mask="0x0000000F" description="1 - L1, 2 - Stubs, 3 - User-Defined Frequency"/>
+                <node id="stubs_mask"                       address="0x003" mask="0x0000FFFF" description="if mode is stubs, then coincidence mask can be set here: 0x0000000f requires presence of stubs from hybrids 0,1,2,3"/>       
+                <node id="stub_trigger_veto_length"         address="0x003" mask="0x01FF0000" description="if mode is stubs, then following triggers can be vetoed (to control the rate)"/>
+                <node id="test_pulse" description="configuration of the test pulse delays.">
+                    <node id="delay_after_fast_reset"       address="0x004" description="delay between fast reset and following test pulse command"/>
+                    <node id="delay_after_test_pulse"       address="0x005" description="delay after test pulse command before l1a signal sent to readout the data"/>
+                    <node id="delay_before_next_pulse"      address="0x006" description="delay before next pulse"/>
+                    <node id="en_fast_reset"        address="0x009" mask="0x00000010" description="enable fast reset in the test pulse sequence"/>
+                    <node id="en_test_pulse"        address="0x009" mask="0x00000020" description="enable test pulse in the test pulse sequence"/>
+                    <node id="en_l1a"           address="0x009" mask="0x00000040" description="enable l1a in the test pulse sequence"/>
+                    <node id="en_shutter"                   address="0x009" mask="0x00000080" description="enables automatic shutter for mpa-ssa in the test pulse sequence"/>
+                </node>
+                <node id="ps_async_delay" address="0x00E" description="configuration of PS antenna trigger block">
+                    <node id="after_clear_counters"     mask="0x000000FF" description="delay between fast reset and following test pulse command"/>
+                    <node id="after_open_shutter"       mask="0x0000FF00" description="delay after test pulse command before l1a signal sent to readout the data"/>
+                    <node id="after_close_shutter"      mask="0x00FF0000" description="delay before abtenna stop"/>
+                    <node id="after_stop_antenna"       mask="0xFF000000" description="delay before next pulse/clear counters"/>
+                </node>
+                <node id="ps_async_en" address="0x00F" description="configuration of PS antenna trigger block">
+                    <node id="open_shutter"                 mask="0x00000001" description="enable opening shutter in async sequence"/>
+                    <node id="close_shutter"                mask="0x00000002" description="enable close shutter in async sequence"/>
+                    <node id="antenna"                      mask="0x00000004" description="choose antenna injection in async sequence"/>
+                    <node id="clear_counters"               mask="0x00000008" description="enable clear counters in async sequence"/>
+                    <node id="cal_pulse"                    mask="0x00000010" description="choose cal pulse injection in async sequence"/>
+                    <node id="cic_veto"                     mask="0x00000020" description="veto fcmds to CIC"/>
+                    <node id="select_even"                  mask="0x00000040" description="veto fcmds to CIC"/>
+                    <node id="ddr3_wren"                    mask="0x0000FF00" description="Select DDR3 write enable"/>
+                </node>
+                <node id="stub_trigger_delay_value"     address="0x007" mask="0x000001FF" description="stub trigger delay before sending to CBCs"/>
+                <node id="ext_trigger_delay_value"      address="0x007" mask="0x0003FE00" description="sets the delay of the external trigger (dio5 ch 5)"/>
+                <node id="antenna_trigger_delay_value"  address="0x007" mask="0x07FC0000" description="sets the delay after antenna trigger"/>
+                <node id="delay_between_two_consecutive"    address="0x008" mask="0x0000FFFF" description="sets the delay between two consecutive triggers"/>
+                <node id="misc"                             address="0x009">
+                    <node id="backpressure_enable"              mask="0x00000001" description="enables treatment of the backpressure bit"/>
+                    <node id="stubOR"                           mask="0x00000002" description="enables stubOR triggering, when trigger source is 2, otherwise or254 is used"/>
+                    <node id="initial_fast_reset_enable"        mask="0x00000004" description="enables fast reset signal on the beginning of every run"/>
+                    <node id="trigger_timeout_enable"           mask="0x00000008" description="enables the triggering state machine timeout mode, instead of acquiring triggers_to_accept triggers"/>
+                    <node id="trigger_multiplicity"             mask="0x00003f00" description="sets the multpilicity of the trigger, for instance, if set to 1 - the trigger signal will be high for 2 clock cycles"/>
+                </node>
+                 <node id="generic_fcmd"                             address="0x00B">
+                    <node id="number_of_cmds_to_play"        mask="0x00003FFF" />
+                    <node id="number_of_repetitions"         mask="0xFFFF0000" />
+                </node>
+                <node id="generic_fcmd_data"         address="0x00C" mask="0x0000000F" />
+                <node id="generic_fcmd_addr"         address="0x00D" mask="0x00003FFF" />
+            </node>
+
+            <node id="physical_interface_block"     address="0x3000">
+                <node id="ps_counters_raw_en"               address="0x000" mask="0x00000001" description="enabling outputing raw counters data instead of already parsed"/>
+                <!-- <node id="ps_counters_select_hybrid"        address="0x000" mask="0x03F00000" description="select hybrid for reading status"/> -->
+                <node id="cic"              address="0x000" >
+                    <node id="2s_sparsified_enable"             mask="0x00000002"/>
+                    <node id="clock_enable"                     mask="0x00000004"/>
+                    <node id="power_enable"                     mask="0x00000008"/>
+                    <node id="fast_commands_enable"             mask="0x00000010"/>
+                </node>
+                <node id="i2c"              address="0x001">
+                        <node id="frequency"                mask="0x0000000f"/>
+                        <node id="master_en"                        mask="0x00000100"/>
+                </node>
+                <node id="multiplexing_bp"                    address="0x038">
+                    <node id="backplane_num"                 mask="0x0000000f"/>
+                    <node id="card_num"                      mask="0x000000f0"/>
+                    <node id="ssa_pair_select"                  mask="0x00000f00"/>
+                    <node id="rtn_fcmd_test"                    mask="0x00001000" description="return fast commands from SSAs test regime, predefined number of trigger commands is sent"/>
+                    <!-- <node id="backplane_select_tri"             mask="0x00002000" description="control tri-state buffer"/> -->
+                    <!-- <node id="card_select_tri"                  mask="0x00004000" description="control tri-state buffer"/> -->
+                    <node id="interlock_switch_feature"         mask="0x00002000" description="enabling of the interlock switch feature. O sets the control from the firmware, 1 sets the monitoring from the firmware"/>
+                    <node id="interlock_switch_output"          mask="0x00004000" description="output to the interlock switch when the firmware is controlling the line"/>
+                </node>
+
+                 <node id="data_player"                    address="0x03A">
+                    <node id="pattern_320MHz"                 mask="0x000000ff"/>
+                    <node id="pattern_640MHz"                 mask="0x0000ff00"/>
+                </node>
+                
+                <node id="slvs_debug" address = "0x000">
+                    <node id="chip_select"                     mask="0x000F0000"/>
+                    <node id="hybrid_select"                   mask="0x03F00000"/>
+                    <node id="auto_l1_capture"                 mask="0x04000000"/>
+                    <node id="slvs_debug_l1_delay"             mask="0x0000FF00"/>
+                </node>
+
+                <!-- line debug -->
+                <node id="debug_blk_input"  address = "0x03B" mask="0xFFFFFFFF"/>
+                <node id="debug_blk_output" address = "0x03C" mask="0xFFFFFFFF"/>
+                <node id="debug_blk_signal" address = "0x03D" mask="0xFFFFFFFF"/>
+
+                <!-- 3 bits per link. Link 0 LSB and so on -->
+                <node id="stubs_package_delay_hybrid0_link0_link9"          address="0x046">
+                    <node id="link0"         mask="0x00000007"/> 
+                    <node id="link1"         mask="0x00000038"/> 
+                    <node id="link2"         mask="0x000001c0"/> 
+                    <node id="link3"         mask="0x00000e00"/> 
+                    <node id="link4"         mask="0x00007000"/> 
+                    <node id="link5"         mask="0x00038000"/> 
+                    <node id="link6"         mask="0x001c0000"/> 
+                    <node id="link7"         mask="0x00e00000"/> 
+                    <node id="link8"         mask="0x07000000"/>
+                    <node id="link9"         mask="0x38000000"/> 
+                </node>
+                <node id="stubs_package_delay_hybrid0_link10_link11"          address="0x047">
+                    <node id="link10"         mask="0x00000007"/> 
+                    <node id="link11"         mask="0x00000038"/> 
+                </node>
+
+                <node id="stubs_package_delay_hybrid1_link0_link9"          address="0x048">
+                    <node id="link0"         mask="0x00000007"/> 
+                    <node id="link1"         mask="0x00000038"/> 
+                    <node id="link2"         mask="0x000001c0"/> 
+                    <node id="link3"         mask="0x00000e00"/> 
+                    <node id="link4"         mask="0x00007000"/> 
+                    <node id="link5"         mask="0x00038000"/> 
+                    <node id="link6"         mask="0x001c0000"/> 
+                    <node id="link7"         mask="0x00e00000"/> 
+                    <node id="link8"         mask="0x07000000"/>
+                    <node id="link9"         mask="0x38000000"/> 
+                </node>
+                <node id="stubs_package_delay_hybrid1_link10_link11"          address="0x049">
+                    <node id="link10"         mask="0x00000007"/> 
+                    <node id="link11"         mask="0x00000038"/> 
+                </node>
+
+                <node id="lpgbt_fec_config"          address="0x04B">
+                    <node id="fec_err_cnt_en_bit"     mask="0x00000001"/>
+                    <node id="fec_err_cnt_rst_bit"    mask="0x00000002"/>
+                    <node id="fec_err_cnt_err_bit"    mask="0x00000004"/>
+                    <node id="fec_err_cnt_sel_offset" mask="0x00000FF0"/>
+                </node>
+
+            </node>
+
+            <node id="readout_block"                address="0x5000">
+                <node id="packet_nbr"                       address="0x000" mask="0x0000ffff"/>     
+                <node id="global"                          address="0x001">
+                    <node id="data_handshake_enable"            mask="0x00000001"/>                
+                    <node id="int_trig_enable"                  mask="0x00000004"/>
+                    <node id="int_trig_rate"                    mask="0x000001f0"/>
+                    <node id="trigger_type"                     mask="0x0000f000"/>
+                    <node id="data_type"                        mask="0x000f0000"/>
+                    <node id="common_stubdata_delay"            mask="0x1ff00000"/>
+                    <node id="zero_suppression_enable"          mask="0x00000200"/>
+                </node>
+                <node id="timeout"                          address="0x002" mask="0x0000fff"/> 
+                <!-- 9 bits per link. Link 0, 3, 6 and 9 LSB -->
+                <node id="stub_latency_link0_link2"         address="0x003">
+                    <node id="link0"         mask="0x000001ff"/>
+                    <node id="link1"         mask="0x0003fe00"/>
+                    <node id="link2"         mask="0x07fc0000"/>
+                </node>
+                <node id="stub_latency_link3_link5"         address="0x004"> 
+                    <node id="link3"         mask="0x000001ff"/>
+                    <node id="link4"         mask="0x0003fe00"/>
+                    <node id="link5"         mask="0x07fc0000"/>
+                </node>
+                <node id="stub_latency_link6_link8"         address="0x005"> 
+                    <node id="link6"         mask="0x000001ff"/>
+                    <node id="link7"         mask="0x0003fe00"/>
+                    <node id="link8"         mask="0x07fc0000"/>
+                </node>
+                <node id="stub_latency_link9_link11"        address="0x006"> 
+                    <node id="link9"         mask="0x000001ff"/>
+                    <node id="link10"         mask="0x0003fe00"/>
+                    <node id="link11"         mask="0x07fc0000"/>
+                </node>
+            </node>
+
+            <node id="dio5_block"                   address="0x6000">
+                <node id="dio5_en"                          address="0x005" mask="0x00000001"/>
+                <node id="ch1"                              address="0x000">
+                    <node id="out_enable"                       mask="0x00000001"/>
+                    <node id="term_enable"                      mask="0x00000002"/>
+                    <node id="threshold"                        mask="0x0000ff00"/>
+                </node>
+                <node id="ch2"                              address="0x001">
+                    <node id="out_enable"                       mask="0x00000001"/>
+                    <node id="term_enable"                      mask="0x00000002"/>
+                    <node id="threshold"                        mask="0x0000ff00"/>
+                </node>
+                <node id="ch3"                              address="0x002">
+                    <node id="out_enable"                       mask="0x00000001"/>
+                    <node id="term_enable"                      mask="0x00000002"/>
+                    <node id="threshold"                        mask="0x0000ff00"/>
+                </node>
+                <node id="ch4"                              address="0x003">
+                    <node id="out_enable"                       mask="0x00000001"/>
+                    <node id="term_enable"                      mask="0x00000002"/>
+                    <node id="threshold"                        mask="0x0000ff00"/>
+                </node>
+                <node id="ch5"                              address="0x004">
+                    <node id="out_enable"                       mask="0x00000001"/>
+                    <node id="term_enable"                      mask="0x00000002"/>
+                    <node id="threshold"                        mask="0x0000ff00"/>
+                </node>
+            </node>
+            <node id="optical_block"            address="0xD000">
+                    <node id="enable"                              address="0x000">
+                        <node id="l8"                           mask="0x000000FF" description=""/>
+                        <node id="l12"                          mask="0x0FFF0000" description=""/>
+                    </node>
+                    <node id="sca">
+                        <node id="address"                    address = "0x001" mask="0x000000FF"/>
+                        <node id="id"                         address = "0x001" mask="0x0000FF00"/>
+                        <node id="channel"                    address = "0x001" mask="0x00FF0000"/>
+                        <node id="cmd"                        address = "0x001" mask="0xFF000000"/>
+                        <node id="data"                       address = "0x003" mask="0xFFFFFFFF"/>
+                    </node>
+                    <node id="ic"                              address="0x002">
+                        <node id="register"                       mask="0x0000FFFF"/>
+                        <node id="nwords"                         mask="0xFFFF0000"/>
+                    </node>
+                    <node id="gbtx"                              address="0x004">
+                        <node id="address"                       mask="0x000000FF"/>
+                        <node id="data"                          mask="0x0000FF00"/>
+                    </node>
+                    <node id="link_select"  address="0x005" mask="0x0000000F" description="Link select for CPB"/>
+                    <node id="lpgbt_version" address = "0x005" mask="0x000FFFF0"/>
+                    <node id="tx_polarity"                              address="0x006">
+                        <node id="l8"                           mask="0x000000FF" description="note: default value is 1 for all"/>
+                        <node id="l12"                          mask="0x0FFF0000" description="note: default value is 0 for all"/>
+                    </node>
+                    <node id="rx_polarity"                              address="0x007">
+                        <node id="l8"                           mask="0x000000FF" description="note: default value is 1 for all"/>
+                        <node id="l12"                          mask="0x0FFF0000" description="note: default value is 0 for all"/>
+                    </node>
+                    <node id="lpgbt_sc_worker" address="0x008">
+                        <node id="ic_retry"         mask="0x00000001"/>
+                        <node id="i2c_retry"        mask="0x00000002"/>
+                        <node id="fe_retry"         mask="0x00000004"/>
+                        <node id="max_ic_retry"     mask="0x0000FF00"/>
+                        <node id="max_i2c_retry"    mask="0x00FF0000"/>
+                        <node id="max_fe_retry"     mask="0xFF000000"/>
+                    </node>
+            </node>
+            
+            <node id="sync_block"            address="0xC000">
+                <node id="enable"            address="0x000" mask="0x00000001"/>
+                <node id="is_bc0_enable"     address="0x000" mask="0x00000002"/>
+                <node id="is_resync_enable"  address="0x000" mask="0x00000004"/>
+                <node id="delay"             address="0x000" mask="0x000FFFF0"/>
+                <node id="num_triggers"      address="0x000" mask="0x1FF00000"/>
+            </node>
+
+            <node id="tlu_block"            address="0x7000">
+                <node id="handshake_mode"       address="0x000" mask="0x00000003"/>
+                <node id="tlu_enabled"                  address="0x000" mask="0x00000010"/>
+                <node id="trigger_id_delay"             address="0x000" mask="0x00000f00"/>
+                <node id="phase_select"                 address="0x000" mask="0x000ff000"/>
+            </node>
+
+            <node id="calibration_2s_block"         address="0xE000">
+                <node id="enable_hybrids"                   address="0x000" mask="0xffffffff"/>
+            </node>
+        </node>
+
+
+    <node id="fc7_daq_ctrl" address="0x40020000" permission="rw" >
+
+        <node id="global"                       address="0x0000">
+            <node id="clock_generator"                  address="0x001">
+                <node id="clk40_reset"                      mask="0x00000001"/>
+                <node id="refclk_reset"                     mask="0x00000004"/>
+            </node>
+
+            <node id="ttc"                              address="0x002">
+                <node id="dec_reset"                        mask="0x00000001"/>
+            </node>
+
+            <node id="amc13"                            address="0x003">
+                <node id="link_reset"                       mask="0x00000001"/>
+            </node>
+        </node>
+
+        <node id="command_processor_block"      address="0x1000">
+            <node id="global"                           address="0x000">
+                    <node id="reset"                        mask="0x00000001" description="reset all the modules."/>
+            </node>
+            <node id="i2c">
+                    <node id="control"                  address="0x001">
+                        <node id="reset"                    mask="0x00000001" description="reset i2c"/>
+                        <node id="reset_fifos"              mask="0x00000004" description="reset fifos"/>
+                    </node>
+                    <node id="command_fifo"             address="0x002" permission="w" mode="non-incremental" description="command fifo(write i2c commands here)"/>
+                    <node id="reply_fifo"               address="0x003" permission="r" mode="non-incremental" description="reply fifo(read i2c replies here)"/>
+ 
+            </node>
+            <node id="cpb_command_fifo"         address="0x004" permission="w" mode="non-incremental" description="command fifo to new cpb"/>
+            <node id="cpb_reply_fifo"         address="0x005" permission="r" mode="non-incremental" description="reply fifo to new cpb"/>
+            <node id="cpb_ctrl_reg"         address="0x006">
+                <node id="command_fifo_reset"         mask="0x00000001" description="reset command fifo of new cpb"/>
+                <node id="reply_fifo_reset"         mask="0x00000002" description="reset reply fifo of new cpb"/>
+                <node id="core_reset"         mask="0x00000004" description="core reset of the new cpb"/>
+                <node id="state_reset"         mask="0x80000000" description="state reset of the new cpb"/>
+            </node>
+        </node>
+
+        <node id="fast_command_block"           address="0x2000">
+            <node id="control"                          address="0x000">
+                <node id="reset"                           mask="0x00000001"/>
+                <node id="start_trigger"                   mask="0x00000002"/>
+                <node id="stop_trigger"                    mask="0x00000004"/>
+                <node id="load_config"                     mask="0x00000008"/>
+                <node id="reset_test_pulse"                mask="0x00000010"/>
+                <node id="start_generic"                   mask="0x00000020"/>
+                <node id="stop_generic"                    mask="0x00000040"/>
+                <node id="write_generic"                   mask="0x00000080"/>
+                <node id="fast_reset"                      mask="0x00010000"/>
+                <node id="fast_test_pulse"                 mask="0x00020000"/>
+                <node id="fast_trigger"                    mask="0x00040000"/>
+                <node id="fast_orbit_reset"                mask="0x00080000"/>
+                <node id="fast_i2c_refresh"                mask="0x00100000"/>
+                <node id="fast_duration"                   mask="0xf0000000"/>
+            </node>
+        </node>
+
+        <node id="physical_interface_block"     address="0x3000">
+            <node id="control"                      address="0x000">
+                <node id="chip_hard_reset"                  mask="0x00000001"/>
+                <node id="cbc3_tune_again"                  mask="0x00000002"/>
+                <node id="cic_hard_reset"                   mask="0x00000004"/>
+                <node id="decoder_reset"                    mask="0x00000008"/>
+                <node id="stub_debug"                       mask="0x00000010"/>
+
+            </node>
+            <node id="phase_tuning_ctrl"          address="0x015" mask="0xFFFFFFFF"/>
+            <node id="bert_control"               address="0x017" mask="0xFFFFFFFF"/>
+            <node id="link0_hybrid0_stub_bitslip" address="0x020" mask="0xFFFFFFFF"/>
+            <node id="link0_hybrid1_stub_bitslip" address="0x021" mask="0xFFFFFFFF"/>
+            <node id="link1_hybrid0_stub_bitslip" address="0x022" mask="0xFFFFFFFF"/>
+            <node id="link1_hybrid1_stub_bitslip" address="0x023" mask="0xFFFFFFFF"/>
+            <node id="link2_hybrid0_stub_bitslip" address="0x024" mask="0xFFFFFFFF"/>
+            <node id="link2_hybrid1_stub_bitslip" address="0x025" mask="0xFFFFFFFF"/>
+            <node id="link3_hybrid0_stub_bitslip" address="0x026" mask="0xFFFFFFFF"/>
+            <node id="link3_hybrid1_stub_bitslip" address="0x027" mask="0xFFFFFFFF"/>
+            <node id="link4_hybrid0_stub_bitslip" address="0x028" mask="0xFFFFFFFF"/>
+            <node id="link4_hybrid1_stub_bitslip" address="0x029" mask="0xFFFFFFFF"/>
+            <node id="link5_hybrid0_stub_bitslip" address="0x02A" mask="0xFFFFFFFF"/>
+            <node id="link5_hybrid1_stub_bitslip" address="0x02B" mask="0xFFFFFFFF"/>
+            <node id="link6_hybrid0_stub_bitslip" address="0x02C" mask="0xFFFFFFFF"/>
+            <node id="link6_hybrid1_stub_bitslip" address="0x02D" mask="0xFFFFFFFF"/>
+            <node id="link7_hybrid0_stub_bitslip" address="0x02E" mask="0xFFFFFFFF"/>
+            <node id="link7_hybrid1_stub_bitslip" address="0x02F" mask="0xFFFFFFFF"/>
+            <node id="link8_hybrid0_stub_bitslip" address="0x030" mask="0xFFFFFFFF"/>
+            <node id="link8_hybrid1_stub_bitslip" address="0x031" mask="0xFFFFFFFF"/>
+            <node id="link9_hybrid0_stub_bitslip" address="0x032" mask="0xFFFFFFFF"/>
+            <node id="link9_hybrid1_stub_bitslip" address="0x033" mask="0xFFFFFFFF"/>
+            <node id="linkA_hybrid0_stub_bitslip" address="0x034" mask="0xFFFFFFFF"/>
+            <node id="linkA_hybrid1_stub_bitslip" address="0x035" mask="0xFFFFFFFF"/>
+            <node id="linkB_hybrid0_stub_bitslip" address="0x036" mask="0xFFFFFFFF"/>
+            <node id="linkB_hybrid1_stub_bitslip" address="0x037" mask="0xFFFFFFFF"/>
+            <node id="link0_hybrid0_L1A_bitslip"  address="0x038" mask="0xFFFFFFFF"/>
+            <node id="link0_hybrid1_L1A_bitslip"  address="0x039" mask="0xFFFFFFFF"/>
+            <node id="link1_hybrid0_L1A_bitslip"  address="0x03A" mask="0xFFFFFFFF"/>
+            <node id="link1_hybrid1_L1A_bitslip"  address="0x03B" mask="0xFFFFFFFF"/>
+            <node id="link2_hybrid0_L1A_bitslip"  address="0x03C" mask="0xFFFFFFFF"/>
+            <node id="link2_hybrid1_L1A_bitslip"  address="0x03D" mask="0xFFFFFFFF"/>
+            <node id="link3_hybrid0_L1A_bitslip"  address="0x03E" mask="0xFFFFFFFF"/>
+            <node id="link3_hybrid1_L1A_bitslip"  address="0x03F" mask="0xFFFFFFFF"/>
+            <node id="link4_hybrid0_L1A_bitslip"  address="0x040" mask="0xFFFFFFFF"/>
+            <node id="link4_hybrid1_L1A_bitslip"  address="0x041" mask="0xFFFFFFFF"/>
+            <node id="link5_hybrid0_L1A_bitslip"  address="0x042" mask="0xFFFFFFFF"/>
+            <node id="link5_hybrid1_L1A_bitslip"  address="0x043" mask="0xFFFFFFFF"/>
+            <node id="link6_hybrid0_L1A_bitslip"  address="0x044" mask="0xFFFFFFFF"/>
+            <node id="link6_hybrid1_L1A_bitslip"  address="0x045" mask="0xFFFFFFFF"/>
+            <node id="link7_hybrid0_L1A_bitslip"  address="0x046" mask="0xFFFFFFFF"/>
+            <node id="link7_hybrid1_L1A_bitslip"  address="0x047" mask="0xFFFFFFFF"/>
+            <node id="link8_hybrid0_L1A_bitslip"  address="0x048" mask="0xFFFFFFFF"/>
+            <node id="link8_hybrid1_L1A_bitslip"  address="0x049" mask="0xFFFFFFFF"/>
+            <node id="link9_hybrid0_L1A_bitslip"  address="0x04A" mask="0xFFFFFFFF"/>
+            <node id="link9_hybrid1_L1A_bitslip"  address="0x04B" mask="0xFFFFFFFF"/>
+            <node id="linkA_hybrid0_L1A_bitslip"  address="0x04C" mask="0xFFFFFFFF"/>
+            <node id="linkA_hybrid1_L1A_bitslip"  address="0x04D" mask="0xFFFFFFFF"/>
+            <node id="linkB_hybrid0_L1A_bitslip"  address="0x04E" mask="0xFFFFFFFF"/>
+            <node id="linkB_hybrid1_L1A_bitslip"  address="0x04F" mask="0xFFFFFFFF"/>
+            <node id="cic_decoder"                  address="0x017">
+                <node id="start_bx0_alignment"              mask="0x00000001"/>
+                <node id="backend_alignment_pattern_disable"              mask="0x00000002"/>
+            </node>
+           <node id="fifo1_data"                address="0x001" permission="r" mode="non-incremental"/>
+           <node id="fifo2_data"                address="0x002" permission="r" mode="non-incremental"/>
+
+            <node id="multiplexing_bp"              address="0x018">
+                <node id="setup_configure"                  mask="0x00000001"/>
+                <node id="setup_disconnect"                 mask="0x00000002"/>
+                <node id="check_return_clock"               mask="0x00000004" description="user request to check the return clock from SSAs"/>
+                <node id="check_payload_ntriggers"          mask="0x00000ff0" description="user required number of trigger commands to test the paylaod of the return fast command from SSAs"/>
+                <node id="setup_scan"                       mask="0x00010000"/>
+                <node id="reset_powergood_flag"     mask="0x00020000" description="set to 1 for flag_power_good_dropped to be cleared."/>
+            </node>
+
+            <node id="data_player"              address="0x019">
+                <node id="start_data_player"                  mask="0x00000001"/>
+                <node id="stop_data_player"                 mask="0x00000002"/>
+                <node id="i2c_slave_reset"                mask="0x00000004"/>
+                <node id="write_ref_fcmd_to_bram"                 mask="0x00000008"/>
+                <node id="write_test_fcmd_to_bram"                 mask="0x00000010"/>
+                <node id="start_fe_for_ps_roh_fcmd_test"                 mask="0x00000020"/>
+            </node>
+
+            <!-- debug -->
+            <node id="debug_blk"              address="0x018">
+                <node id="start_input"                mask="0x00001000"/>
+                <node id="stop_input"                 mask="0x00002000"/>
+                <node id="start_output"               mask="0x00004000"/>
+                <node id="stop_output"                mask="0x00008000"/>
+            </node>
+        </node>
+
+        <node id="fine_phase_tune"     address="0x003">
+            <node id="control"                      address="0x000">
+                <node id="toggle_phase"             mask="0x000000FF"/>
+                <node id="phase_shift_trig_data"    mask="0x0000FF00"/>
+            </node>
+        </node>
+
+
+        <node id="readout_block"                address="0x5000">
+            <node id="control"                          address="0x000">
+                <node id="readout_reset"                    mask="0x00000001"/>
+                <node id="readout_done"                     mask="0x00000002"/>
+            </node>
+        <node id="readout_fifo"                     address="0x001" permission="r" mode="non-incremental" description="data fifo"/>
+        </node>
+
+        <node id="dio5_block"                   address="0x6000">
+            <node id="control"                          address="0x000">
+                <node id="load_config"                      mask="0x00000001"/>
+            </node>
+        </node>
+
+        <node id="tlu_block"            address="0x7000">
+        </node>
+
+        <node id="ddr3_block"                   address="0x8000">
+            <node id="control"                          address="0x000">
+                <node id="traffic_str"                      mask="0x00000001"/>
+            </node>
+        </node>
+        
+    <node id="optical_block"                   address="0xD000">
+            <node id="general"                     address="0x000"  mask="0xFFFFFFFF"/>
+            <node id="sca"                           address="0x001">
+                <node id="reset"                        mask="0x00000001"/>
+                <node id="start_reset"                  mask="0x00000002"/>
+                <node id="start_connect"                mask="0x00000004"/>
+                <node id="start"                        mask="0x00000008"/>
+            </node>
+            <node id="ic"                           address="0x001">
+                <node id="reset"                         mask="0x00000010"/>
+                <node id="write"                         mask="0x00000020"/>
+                <node id="read"                          mask="0x00000040"/>
+                <node id="start_write"                   mask="0x00000080"/>
+                <node id="start_read"                    mask="0x00000100"/>
+            </node>
+        </node>
+
+        <node id="calibration_2s_block"         address="0xE000">
+            <node id="control"                          address="0x000">
+                <node id="reset_fsm"                        mask="0x00000001"/>
+                <node id="start"                            mask="0x00000002"/>
+            </node>
+            <node id="counter_fifo"                     address="0x001" permission="r" mode="non-incremental" description="counters fifo"/>
+        </node>
+
+        <node id="stub_counter_block"           address="0xF000">
+            <node id="general"                          address="0x000">
+               <node id="shutter_open"                     mask="0x00000001"/>
+               <node id="shutter_close"                    mask="0x00000002"/>
+            </node>
+        </node>
+
+    </node>
+
+    <node id="fc7_daq_stat" address="0x40030000" permission="r" >
+
+        <node id="general"                     address="0x0000">
+            <node id="global_error">
+        <node id="full_error"           address="0x001"   mode="non-incremental"/>
+        <node id="counter"          address="0x002"   mask="0x000001ff"/>
+            </node>
+            <node id="info"                             address="0x003">
+                <node id="implementation"                   mask="0x00000003"/>
+                <node id="chip_type"                        mask="0x0000003c"/>
+                <node id="num_hybrids"                      mask="0x00003fc0"/>
+                <node id="num_chips"                        mask="0x003fc000"/>
+        <node id="fmc1_card_type"           mask="0x07c00000"/>
+        <node id="fmc2_card_type"           mask="0xf8000000"/>
+            </node>
+
+            <node id="clock_generator"                  address="0x004">
+                <node id="clk_40_locked"                    mask="0x00000001"/>
+                <node id="ref_clk_locked"                   mask="0x00000002"/>
+            </node>
+
+            <node id="ttc">
+                <node id="ready"                        address="0x005" mask="0x00000001"/>
+                <node id="dec_single_err_cnt"           address="0x006" mask="0x0000ffff"/>
+                <node id="dec_double_err_cnt"           address="0x006" mask="0xffff0000"/>
+            </node>
+
+            <node id="firmware_timestamp"               address="0x007" mask="0xffffffff"/>
+        </node>
+
+        <node id="command_processor_block"      address="0x1000">
+            <node id="i2c">
+                <node id="master_status_fsm"            address="0x001" mask="0x0000000f"/>
+                <node id="master_version"               address="0x001" mask="0x000000f0"/>
+                <node id="command_fifo"                 address="0x002">
+                        <node id="empty"                    mask="0x00000001"/>
+                        <node id="full"                     mask="0x00000002"/>
+                </node>
+                <node id="reply_fifo"                   address="0x003">
+                        <node id="empty"                    mask="0x00000001"/>
+                        <node id="full"                     mask="0x00000002"/>
+                </node>
+                <node id="nreplies"                     address="0x004" description="nreplies present in reply fifo"/>
+            </node>
+
+            <node id="worker">
+                <node id="lpgbtsc_fsm_state"    address="0x005">
+			<node id="worker_state" mask="0x000000ff"/>
+			<node id="ic_state" mask="0x0000ff00"/>
+			<node id="i2c_state" mask="0x00ff0000"/>
+			<node id="fe_state" mask="0xff000000"/>
+		</node>
+                <node id="lpgbtsc_try_counters"    address="0x006">
+			<node id="ic_tool" mask="0x000000ff"/>
+			<node id="i2c_tool" mask="0x0000ff00"/>
+			<node id="fe_tool" mask="0x00ff0000"/>
+		</node>
+            </node>
+	    <node id="command_arbitrator_fsm_state"    address="0x007" mask="0x000000ff"/>
+	    <node id="reply_arbitrator_fsm_state"    address="0x007" mask="0x0000ff00"/>
+        </node>        
+
+        <node id="fast_command_block"           address="0x2000">
+            <node id="general"                          address="0x000">
+                <node id="source"                           mask="0x0000000f"/>
+                <node id="fsm_state"                        mask="0x00000030"/>
+                <node id="configured"                       mask="0x00000040"/>
+                <node id="antenna_async_done"               mask="0x00000400"/>
+            </node>
+            <node id="trigger_in_counter"               address="0x001" mask="0xffffffff"/>
+            <node id="running_time"                     address="0x003" mask="0xffffffff"/>
+        </node>
+
+        <node id="physical_interface_block"     address="0x3000">
+            <node id="phase_tuning_reply"       address="0x001" mask="0xFFFFFFFF"/>
+            <node id="bert_stat"                address="0x101" mask="0xFFFFFFFF"/>
+            <node id="bert_readback"            address="0x102" mask="0xFFFFFFFF"/>
+            <node id="hardware_ready"           address="0x002" mask="0x00010000"/>
+            <node id="delay5_done_cbc0"         address="0x002" mask="0x00000001"/>
+            <node id="serializer_done_cbc0"     address="0x002" mask="0x00000002"/>
+            <node id="bitslip_done_cbc0"        address="0x002" mask="0x00000004"/>
+            <node id="delay5_done_cbc1"         address="0x002" mask="0x00000010"/>
+            <node id="serializer_done_cbc1"     address="0x002" mask="0x00000020"/>
+            <node id="bitslip_done_cbc1"        address="0x002" mask="0x00000040"/>
+            <node id="state_tuning_cbc0"        address="0x002" mask="0x00F00000"/>
+            <node id="state_tuning_cbc1"        address="0x002" mask="0x0F000000"/>
+            <node id="cic_decoder"              address="0x00C">
+                <node id="bx0_alignment_state"                  mask="0x0000000f"/>
+            </node>
+            <node id="multiplexing_bp"          address="0x00D">
+                <node id="backplane_powergood"                 mask="0x00000001" description="backplane power good signal for ps hybrid tests "/>
+                <node id="card_powergood"                      mask="0x00000002" description="card power good signal for ps hybrid tests      "/>
+                <node id="configuration_required"                    mask="0x00000004" description="in this state configuration is required         "/>
+                <node id="setup_scanned"                              mask="0x00000008" description="setup scanned for available backplanes and cards"/>
+                <node id="setup_configured"                           mask="0x00000010" description="setup configured                                "/>
+                <node id="backplane_valid"                      mask="0x00000020" description="requested backplane configuration is valid      "/>
+                <node id="card_valid"                           mask="0x00000040" description="requested card configuration is valid           "/>
+                <node id="available_backplanes_cards"                  mask="0x0fffff00" description="list of all available backplanes and cards      "/>
+                <node id="backplanes_disconnected"                  mask="0x20000000" description="backplanes are disconnected after running       "/>
+                <node id="cards_disconnected"                mask="0x40000000" description="cards are disconnected after running            "/>
+                <node id="status_interlock_switch"                mask="0x80000000" description="Status of the interlock switch when the control is enabled"/>
+                <node id="flag_power_good_dropped"             mask="0x00000080" description="Flag raised if the power good signal of test card or backplane drops. Has to be cleared manually."/>
+            </node>
+            <node id="counter_powergood_glitches" address="0x122"></node>
+
+            <node id="data_player"              address="0x00E">
+                <node id="stat_roh_data_player"                  mask="0x00001000"/>
+                <node id="stat_feh_data_player"                  mask="0x20000000"/>
+            </node>
+            <node id="fcmd_test"              address="0x00E">
+                <node id="fe_for_ps_roh_fcmd_SSA_l_test_done"                  mask="0x00200000"/>
+                <node id="fe_for_ps_roh_fcmd_SSA_r_test_done"                  mask="0x00400000"/>
+                <node id="fe_for_ps_roh_fcmd_SSA_l_stat"                  mask="0x00800000"/>
+                <node id="fe_for_ps_roh_fcmd_SSA_r_stat"                  mask="0x01000000"/>
+                <node id="fe_for_ps_roh_fcmd_CIC_l_test_done"                  mask="0x02000000"/>
+                <node id="fe_for_ps_roh_fcmd_CIC_r_test_done"                  mask="0x04000000"/>
+                <node id="fe_for_ps_roh_fcmd_CIC_l_stat"                  mask="0x08000000"/>
+                <node id="fe_for_ps_roh_fcmd_CIC_r_stat"                  mask="0x10000000"/>
+            </node>
+            <node id="clk_test"              address="0x00E">
+                <node id="fe_for_ps_roh_clk_320_l_test_done"                  mask="0x00002000"/>
+                <node id="fe_for_ps_roh_clk_320_r_test_done"                  mask="0x00004000"/>
+                <node id="fe_for_ps_roh_clk_320_l_stat"                  mask="0x00008000"/>
+                <node id="fe_for_ps_roh_clk_320_r_stat"                  mask="0x00010000"/>
+                <node id="fe_for_ps_roh_clk_640_l_test_done"                  mask="0x00020000"/>
+                <node id="fe_for_ps_roh_clk_640_r_test_done"                  mask="0x00040000"/>
+                <node id="fe_for_ps_roh_clk_640_l_stat"                  mask="0x00080000"/>
+                <node id="fe_for_ps_roh_clk_640_r_stat"                  mask="0x00100000"/>
+            </node>
+
+            <node id="clk_test_debug_1"              address="0x0E1">
+                <node id="fe_for_ps_roh_clk_320_l_test_counter"                  mask="0x0000FFFF"/>
+                <node id="fe_for_ps_roh_clk_320_l_ref_counter"                  mask="0xFFFF0000"/>
+            </node>
+            <node id="clk_test_debug_2"              address="0x0E2">
+                <node id="fe_for_ps_roh_clk_320_r_test_counter"                  mask="0x0000FFFF"/>
+                <node id="fe_for_ps_roh_clk_320_r_ref_counter"                  mask="0xFFFF0000"/>
+            </node>
+            <node id="clk_test_debug_3"              address="0x0E3">
+                <node id="fe_for_ps_roh_clk_640_l_test_counter"                  mask="0x0000FFFF"/>
+                <node id="fe_for_ps_roh_clk_640_l_ref_counter"                  mask="0xFFFF0000"/>
+            </node>
+            <node id="clk_test_debug_4"              address="0x0E4">
+                <node id="fe_for_ps_roh_clk_640_r_test_counter"                  mask="0x0000FFFF"/>
+                <node id="fe_for_ps_roh_clk_640_r_ref_counter"                  mask="0xFFFF0000"/>
+            </node>
+            
+
+            <node id="fcmd_debug"              address="0x00E">
+                <node id="ssa_l"                  mask="0xFFFFFFFF"/>
+                <node id="ssa_r"                  mask="0xFFFFFFFF"/>
+                <node id="cic_l"                  mask="0xFFFFFFFF"/>
+                <node id="cic_r"                  mask="0xFFFFFFFF"/>
+            </node>
+
+           <node id="slvs_debug"               address="0x00F">
+                <node id="slvs_debug_l1_ready"      mask="0x00000001"/>
+                <node id="slvs_debug_stub_ready"    mask="0x00000002"/>
+                <node id="ps_counters_ready"        mask="0x00000004"/>
+                <node id="ps_counters_fsm_state"    mask="0x000000f0"/>
+                <node id="first_header_delay"       mask="0x0000ff00"/>
+            </node>
+
+
+            <node id="fcmd_debug_ssa_l"                address="0x0B4" mask="0xFFFFFFFF" description="scope ssa_l for 4 clock cycles"/>
+            <node id="fcmd_debug_ssa_r"                address="0x0B5" mask="0xFFFFFFFF" description="scope ssa_r for 4 clock cycles"/>
+            <node id="fcmd_debug_cic_l"                address="0x0B6" mask="0xFFFFFFFF" description="scope cic_l for 4 clock cycles"/>
+            <node id="fcmd_debug_cic_r"                address="0x0B7" mask="0xFFFFFFFF" description="scope cic_r for 4 clock cycles"/>
+            
+
+            <node id="fe_for_ps_roh_ssa_fcmd_test"              address="0x0F7">
+                <node id="fe_for_ps_roh_fcmd_SSA_l_ref"                  mask="0x000000ff"/>
+                <node id="fe_for_ps_roh_fcmd_SSA_r_ref"                  mask="0x0000ff00"/>
+                <node id="fe_for_ps_roh_fcmd_SSA_l_check"                  mask="0x00ff0000"/>
+                <node id="fe_for_ps_roh_fcmd_SSA_r_check"                  mask="0xff000000"/>
+            </node>
+
+            <node id="fe_for_ps_roh_cic_fcmd_test"              address="0x0F8">
+                <node id="fe_for_ps_roh_fcmd_CIC_l_ref"                  mask="0x000000ff"/>
+                <node id="fe_for_ps_roh_fcmd_CIC_r_ref"                  mask="0x0000ff00"/>
+                <node id="fe_for_ps_roh_fcmd_CIC_l_check"                  mask="0x00ff0000"/>
+                <node id="fe_for_ps_roh_fcmd_CIC_r_check"                  mask="0xff000000"/>
+            </node>
+
+            <node id="mpa_to_cic_cntr"            address="0x0F9" mask="0xFFFFFFFF"/>
+            <node id="async_counter_decode"        address="0x0FF">
+		        <node id="chip_counters_done"             mask="0x00000010"/>
+                <node id="store_fsm_state"                mask="0x000001E0"/>
+                <node id="received_start"                 mask="0x01FFFE00"/>
+                <node id="start_pattern_not_found"        mask="0x02000000"/>
+            </node>
+            <node id="async_counter_stats"        address="0x121">
+                <node id="package"             mask="0x0000FFFF"/>
+                <node id="clocks"              mask="0xFFFF0000"/>
+            </node>
+            <node id="async_counter_ddr3_packer"        address="0x120">
+                <node id="fsm_state"                       mask="0x0000000F"/>
+                <node id="num_fifo_entry"                  mask="0x0000FFF0"/>
+                <node id="num_boxcar_rxd"                  mask="0x0FFF0000"/>
+            </node>
+            
+            <node id="ps_return"                address="0x00E">
+                <node id="clock_from_ssa1_test_done"            mask="0x00000001" description="test of the return clock from SSA1 done           "/>
+                <node id="clock_from_ssa2_test_done"            mask="0x00000002" description="test of the return clock from SSA2 done           "/>
+                <node id="clock_from_ssa1_test_stat"            mask="0x00000004" description="status of the return clock from SSA1              "/>
+                <node id="clock_from_ssa2_test_stat"            mask="0x00000008" description="status of the return clock from SSA2              "/>
+                <node id="fcmd_from_ssa1_test_done"             mask="0x00000010" description="test of the return fast command from SSA1 done    "/>
+                <node id="fcmd_from_ssa2_test_done"             mask="0x00000020" description="test of the return fast command from SSA2 done    "/>
+                <node id="fcmd_from_ssa1_test_stat"             mask="0x00000040" description="status of the return fast command from SSA1       "/>
+                <node id="fcmd_from_ssa2_test_stat"             mask="0x00000080" description="status of the return fast command from SSA2       "/>
+                <node id="fcmd_from_ssa1_test_is_pattern_error" mask="0x00000100" description="pattern error in the return fast command from SSA1"/>
+                <node id="fcmd_from_ssa2_test_is_pattern_error" mask="0x00000200" description="pattern error in the return fast command from SSA2"/>
+                <node id="fcmd_from_ssa1_test_is_payload_error" mask="0x00000400" description="payload error in the return fast command from SSA1"/>
+                <node id="fcmd_from_ssa2_test_is_payload_error" mask="0x00000800" description="payload error in the return fast command from SSA2"/>
+            </node>
+            <node id="stub_debug"                address="0x042" description="stub scoping " mode="incremental" size="80"/>
+            <node id="l1a_debug"                address="0x010" description="l1a scoping " mode="incremental" size="50"/>
+
+
+            
+            <!-- debug counters -->
+            <node id="debug_blk_counter00"                address="0x0BD" mask="0xFFFFFFFF" description="counter on debug block input line 00"/>
+            <node id="debug_blk_counter01"                address="0x0BE" mask="0xFFFFFFFF" description="counter on debug block input line 01"/>
+            <node id="debug_blk_counter02"                address="0x0BF" mask="0xFFFFFFFF" description="counter on debug block input line 02"/>
+            <node id="debug_blk_counter03"                address="0x0C0" mask="0xFFFFFFFF" description="counter on debug block input line 03"/>
+            <node id="debug_blk_counter04"                address="0x0C1" mask="0xFFFFFFFF" description="counter on debug block input line 04"/>
+            <node id="debug_blk_counter05"                address="0x0C2" mask="0xFFFFFFFF" description="counter on debug block input line 05"/>
+            <node id="debug_blk_counter06"                address="0x0C3" mask="0xFFFFFFFF" description="counter on debug block input line 06"/>
+            <node id="debug_blk_counter07"                address="0x0C4" mask="0xFFFFFFFF" description="counter on debug block input line 07"/>
+            <node id="debug_blk_counter08"                address="0x0C5" mask="0xFFFFFFFF" description="counter on debug block input line 08"/>
+            <node id="debug_blk_counter09"                address="0x0C6" mask="0xFFFFFFFF" description="counter on debug block input line 09"/>
+            <node id="debug_blk_counter10"                address="0x0C7" mask="0xFFFFFFFF" description="counter on debug block input line 10"/>
+            <node id="debug_blk_counter11"                address="0x0C8" mask="0xFFFFFFFF" description="counter on debug block input line 11"/>
+            <node id="debug_blk_counter12"                address="0x0C9" mask="0xFFFFFFFF" description="counter on debug block input line 12"/>
+            <node id="debug_blk_counter13"                address="0x0CA" mask="0xFFFFFFFF" description="counter on debug block input line 13"/>
+            <node id="debug_blk_counter14"                address="0x0CB" mask="0xFFFFFFFF" description="counter on debug block input line 14"/>
+            <node id="debug_blk_counter15"                address="0x0CC" mask="0xFFFFFFFF" description="counter on debug block input line 15"/>
+            <node id="debug_blk_counter16"                address="0x0CD" mask="0xFFFFFFFF" description="counter on debug block input line 16"/>
+            <node id="debug_blk_counter17"                address="0x0CE" mask="0xFFFFFFFF" description="counter on debug block input line 17"/>
+            <node id="debug_blk_counter18"                address="0x0CF" mask="0xFFFFFFFF" description="counter on debug block input line 18"/>
+            <node id="debug_blk_counter19"                address="0x0D0" mask="0xFFFFFFFF" description="counter on debug block input line 19"/>
+            <node id="debug_blk_counter20"                address="0x0D1" mask="0xFFFFFFFF" description="counter on debug block input line 20"/>
+            <node id="debug_blk_counter21"                address="0x0D2" mask="0xFFFFFFFF" description="counter on debug block input line 21"/>
+            <node id="debug_blk_counter22"                address="0x0D3" mask="0xFFFFFFFF" description="counter on debug block input line 22"/>
+            <node id="debug_blk_counter23"                address="0x0D4" mask="0xFFFFFFFF" description="counter on debug block input line 23"/>
+            <node id="debug_blk_counter24"                address="0x0D5" mask="0xFFFFFFFF" description="counter on debug block input line 24"/>
+            <node id="debug_blk_counter25"                address="0x0D6" mask="0xFFFFFFFF" description="counter on debug block input line 25"/>
+            <node id="debug_blk_counter26"                address="0x0D7" mask="0xFFFFFFFF" description="counter on debug block input line 26"/>
+            <node id="debug_blk_counter27"                address="0x0D8" mask="0xFFFFFFFF" description="counter on debug block input line 27"/>
+            <node id="debug_blk_counter28"                address="0x0D9" mask="0xFFFFFFFF" description="counter on debug block input line 28"/>
+            <node id="debug_blk_counter29"                address="0x0DA" mask="0xFFFFFFFF" description="counter on debug block input line 29"/>
+            <node id="debug_blk_counter30"                address="0x0DB" mask="0xFFFFFFFF" description="counter on debug block input line 30"/>
+            <node id="debug_blk_counter31"                address="0x0DC" mask="0xFFFFFFFF" description="counter on debug block input line 31"/>
+            <node id="input_lines_debug_done"             address="0x0DE" mask="0xFFFFFFFF" description="debugging of input lines done"/>
+            <node id="input_lines_debug_done"             address="0x0DF" mask="0xFFFFFFFF" description="debugging of output lines done"/>
+       
+
+            <node id="lpgbt_fec_counter" address="0x125"/>
+            <node id="lpgbt_fec_counter_error_detected_flags" address="0x126"/>
+            
+        </node>
+
+        <node id="be_proc"                      address="0x4000">
+            <node id="general"                          address="0x000">
+                <node id="evnt_cnt"                         mask="0x00ffffff"/>
+                <node id="evnt_cnt_buf_empty"               mask="0x01000000"/>
+                <node id="data_payload_buf_empty"           mask="0x02000000"/>
+                <node id="trigdata_buf_empty"               mask="0x04000000"/>
+            </node>
+            <node id="frame_counters">
+                <node id="hybrid0">
+                    <node id="chip0"                    address="0x001" mask="0xffffffff"/>
+                    <node id="chip1"                    address="0x002" mask="0xffffffff"/>
+                    <node id="chip2"                    address="0x003" mask="0xffffffff"/>
+                    <node id="chip3"                    address="0x004" mask="0xffffffff"/>
+                    <node id="chip4"                    address="0x005" mask="0xffffffff"/>
+                    <node id="chip5"                    address="0x006" mask="0xffffffff"/>
+                    <node id="chip6"                    address="0x007" mask="0xffffffff"/>
+                    <node id="chip7"                    address="0x008" mask="0xffffffff"/>
+                </node>
+            </node>
+        </node>
+
+        <node id="readout_block"                address="0x5000">
+            <node id="general">
+                <node id="readout_req"                   address="0x000" mask="0x00000001"/>
+                <node id="fsm_status"                    address="0x000" mask="0x00000ff0"/>
+        <node id="words_cnt"                     address="0x001" mask="0xffffffff"/>
+            </node>
+        
+        </node>
+
+        <node id="dio5_block"                   address="0x6000">
+            <node id="status"                           address="0x000">
+                <node id="not_ready"                        mask="0x00000001"/>
+                <node id="error"                            mask="0x00000002"/>
+            </node>
+        </node>
+    
+        <node id="optical_block"                   address="0xD000">
+            <node id="sca">
+                <node id="address"                     address="0x001" mask="0x000000FF"/>
+                <node id="trans_id"                    address="0x001" mask="0x0000FF00"/>
+                <node id="channel"                     address="0x001" mask="0x00FF0000"/>
+                <node id="length"                      address="0x001" mask="0xFF000000"/>
+                <node id="error"                       address="0x002" mask="0x000000FF"/>
+                <node id="data"                        address="0x003" mask="0xFFFFFFFF"/>
+                <node id="done"                        address="0x004" mask="0x04000000"/>
+            </node>
+            <node id="ic">
+                <node id="address"                     address="0x002" mask="0x0000FF00"/>
+                <node id="words"                       address="0x002" mask="0x00FF0000"/>
+                <node id="data"                        address="0x004" mask="0x000000FF"/>
+                <node id="rd_mem_ptr"                  address="0x004" mask="0xFFFFFF00"/>
+                <node id="ready"                       address="0x004" mask="0x01000000"/>
+                <node id="empty"                       address="0x004" mask="0x02000000"/>
+            </node>
+        </node>
+    
+        <node id="tlu_block"            address="0x7000">
+            <node id="fifo_empty"       address="0x000" mask="0x00000001"/>
+            <node id="fifo_full"        address="0x000" mask="0x00000002"/>
+            <node id="trigger_id_fifo"  address="0x001" mask="0x00007fff"/>     
+        </node> 
+
+        <node id="ddr3_block"           address="0x8000">
+                <node id="is_ddr3_type"     address="0x000" mask="0x00000001"/>
+                <node id="init_calib_done"      address="0x000" mask="0x00000002"/>
+                <node id="self_check_done"      address="0x000" mask="0x00000004"/>
+                <node id="num_errors"       address="0x001" mask="0xffffffff"/>
+                <node id="num_words"        address="0x002" mask="0xffffffff"/>
+        </node>
+    
+        <node id="calibration_2s_block"         address="0xE000">
+            <node id="general"                          address="0x000">
+                <node id="counters_ready"                       mask="0x00000001"/>
+                <node id="fifo_empty"                           mask="0x00000002"/>
+                <node id="fsm_done"                             mask="0x00000004"/>
+           </node>
+        </node>
+
+        <node id="stub_counter_block"           address="0xF000">
+            <node id="bx_counter_ls"                    address="0x000" mask="0xffffffff"/>
+            <node id="bx_counter_ms"                    address="0x001" mask="0xffffffff"/>
+            <node id="counters_hyb0_chip0"              address="0x002">
+                <node id="stub_counter"                     mask="0x0000ffff"/>
+                <node id="error_counter"                    mask="0xffff0000"/>
+            </node>
+            <node id="counters_hyb0_chip1"              address="0x003">
+                <node id="stub_counter"                     mask="0x0000ffff"/>
+                <node id="error_counter"                    mask="0xffff0000"/>
+            </node>
+
+        </node>
+            
+        <node id="sfp_ddmi"                  address="0xD006">
+            <node id="data_l8"                      mask="0x0000ffff"/>
+            <node id="data_l12"                     mask="0xffff0000"/>
+        </node>
+        
+        <node id="sfp_ddmi_status"           address="0xD007">
+            <node id="error_l8"                     mask="0x00000003"/>
+            <node id="busy_l8"                      mask="0x00000004"/>
+            <node id="error_l12"                    mask="0x00000018"/>
+            <node id="busy_l12"                     mask="0x00000020"/>
+        </node>
+
+    </node>
+
+    <node id="fc7_daq_ddr3" address="0xC0000000" permission="r" mode="incremental" size="134217728"/>
+    <!-- ICAP MEMORY SPACE -->
+        <node id="icap" address="0x00000200" mask="0xffffffff" permission="rw" />
+
+        <node id="buf_cta" address="0x0000400" class="MmcPipeInterface" description="UC link buffer test register" size="0x3" tags="slave">
+            <node id="FPGAtoMMCcounters" address="0x0"/>
+            <node id="MMCtoFPGAcounters" address="0x1"/>
+            <node id="FIFO" address="0x2" mode="non-incremental" size="512" />
+    </node>
+</node>

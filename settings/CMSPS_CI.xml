@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HwDescription>
+  <!-- <BeBoard Id="0" boardType="D19C" eventType="VR"> -->
+  <BeBoard Id="0" boardType="D19C" eventType="VR" linkReset="1" boardReset="1" configure="1">
+    <connection id="board" uri="chtcp-2.0://ph2acf-02.cern.ch:10203?target=192.168.0.42:50001" address_table="file://${PH2ACF_BASE_DIR}/settings/address_tables/uDTC_OT_address_table.xml" />
+    <configuration file_name="${PH2ACF_BASE_DIR}/settings/BeBoardFiles/uDTC_registers_PS.xml"/>
+    <CDCE configure="0" clockRate="320"/>
+
+     <OpticalGroup Id="2" enable="1" FMCId="L12" reset="1">
+        <lpGBT_Files path="${PH2ACF_BASE_DIR}/settings/lpGBTFiles/" />
+        <lpGBT Id="0" version="0" optical="1" configFile="lpGBT_v0_PS.txt">
+        </lpGBT>
+       
+        <Hybrid Id="0" enable="1" reset="1">            
+            <SSA2_Files path="${PH2ACF_BASE_DIR}/settings/SSAFiles/" />
+            <SSA2 Id="0" enable="1" configFile="SSA.txt" />
+          
+            <MPA2_Files path="${PH2ACF_BASE_DIR}/settings/MPAFiles/" />
+            <MPA2 Id="8" enable="1" configFile="MPA.txt" />
+
+	    <CIC2_Files path="${PH2ACF_BASE_DIR}/settings/CicFiles/" />
+            <CIC2 Id="8" enable="1" configFile="CIC2_PS.txt" />
+        </Hybrid>
+
+    </OpticalGroup>
+  </BeBoard>
+
+<Settings>
+    <!-- Module parameters for PS alignment -->
+    <Setting name="TxDrive">4</Setting>
+    <Setting name="PreEmph">1</Setting>
+    <Setting name="MinStubPhase">1</Setting>
+    <Setting name="MaxStubPhase">8</Setting>
+
+    <!-- 0 : digital; 1 : analogue --> 
+    <Setting name="InjectionType">1</Setting>
+    <Setting name="TriggerMultiplicity">0</Setting>
+    <Setting name="StubAlignmentScanStart">86</Setting>
+   <!--  <Setting name="StartLatency">290</Setting>
+    <Setting name="LatencyRange">10</Setting>
+    --> 
+    <Setting name="StartLatency">115</Setting>
+    <Setting name="LatencyRange">10</Setting>
+
+    <Setting name="PSmoduleSSAthreshold">10</Setting>
+    <Setting name="PSmoduleMPAthreshold">120</Setting>
+    <Setting name="PSmoduleTriggerLatency">180</Setting>
+    <Setting name="PSmoduleStubWindow">32</Setting>
+
+    <Setting name="SaveRawData">1</Setting>
+    <!--PedestalEqualization-->
+    <Setting name="Nevents">1000</Setting>
+    <Setting name="HoleMode">0</Setting>
+    <Setting name="VerificationLoop">1</Setting>
+    <Setting name="MaskChannelsFromOtherGroups">0</Setting>
+    <Setting name="FitSCurves">1</Setting>
+    <Setting name="PlotSCurves">1</Setting>
+    <Setting name="PedestalEqualization_PulseAmplitude">77</Setting>
+    <Setting name="PedeNoise_PulseAmplitude">77</Setting>
+    <Setting name="TriggerRate">10</Setting>
+
+    <Setting name="TargetVcth">0x78</Setting>
+    <Setting name="TargetOffset">0x50</Setting>
+
+    <!--Signal Scan Fit-->
+    <Setting name="InitialVcth">0x78</Setting>
+    <Setting name="SignalScanStep">2</Setting>
+    <Setting name="FitSignal">0</Setting>
+
+    <!--Antenna for Opens -->
+    <Setting name="AntennaPotentiometer">0</Setting>
+    <Setting name="ThresholdForOpens">10</Setting>
+    <Setting name="AntennaTriggerRate">50</Setting>
+
+    <!-- Shorts -->
+    <Setting name="ShortsPulseAmplitude"> 20 </Setting>
+
+    <!--PS hybrid SSA output test -->
+    <!-- number of 10 ms periods to wait for in the case of stubs -->
+    <!-- number of triggers to send in the case of L1A data -->
+    <!-- L1 triggers sent once every 10 ms -->
+    <Setting name="PSHybridDebugDuration">1</Setting>
+
+    <!-- Async Test -->
+    <Setting name="AsyncSweepTh">0</Setting>
+    <Setting name="AsyncThreshold">10</Setting>
+    <Setting name="AsyncCalDac">30</Setting>
+    <Setting name="StartTHDAC">0x40</Setting>
+    <Setting name="StopTHDAC">0x90</Setting>
+    <Setting name="NMsec">0</Setting>
+    <Setting name="NMpulse">3000</Setting>
+    <Setting name="Nlvl">50</Setting>
+    <Setting name="Vfac">0.9</Setting>
+    <Setting name="Mrms">0.6</Setting>
+    <Setting name="TestPulsePotentiometer">0x50</Setting>
+    <Setting name="SyncDebug">0</Setting>
+    <Setting name="TxDrive">0x7</Setting>
+
+    <Setting name="PSOccupancyPulseAmplitude">150</Setting>
+
+    <!-- Sync Test --> 
+    <Setting name="Attempts">1</Setting>
+    <!-- injection configuration, number of MPAs -->
+    <Setting name="ActiveMPAs">1</Setting>
+    <!-- FIFO depth -->
+    <Setting name="FifoDepth">8</Setting>
+    <!-- check for stubs -->
+    <Setting name="CheckForStubs">1</Setting>
+    <Setting name="ScanL1Latency">0</Setting>
+    <Setting name="ScanStubLatency">0</Setting>
+    <!-- injection configuration, fast commands -->
+    <Setting name="DistributeInjections">0</Setting>
+    <Setting name="TestMode">0</Setting>
+    <Setting name="TriggerSeparation">80</Setting>
+    <Setting name="DelayAfterInjection">100</Setting>
+    <!-- injection  configuration clusters/stubs -->
+    <Setting name="Bend">0</Setting>
+    <!-- cluster injection configuration -->
+    <Setting name="MinPclusters">1</Setting>
+
+
+    <Setting name="StubAlignmentThreshold"> 120</Setting>
+    <Setting name="StubAlignmentScanStart"> 100</Setting>
+
+    <Setting name="MaxPclusters">3</Setting>
+    <Setting name="MinSclusters">1</Setting>
+    <Setting name="MaxSclusters">1</Setting>
+    <Setting name="MaxStubs">4</Setting>
+    <!-- L1 eye, SLVS drive strength --> 
+    <Setting name="SLVSDrive">3</Setting>
+    <Setting name="MaxOffset">0</Setting>
+    
+    <Setting name="StartTHDAC">0x40</Setting>
+    <Setting name="StopTHDAC">0x90</Setting>
+    <Setting name="NMsec">0</Setting>
+    <Setting name="NMpulse">3000</Setting>
+    <Setting name="Nlvl">50</Setting>
+    <Setting name="Vfac">0.9</Setting>
+    <Setting name="Mrms">0.6</Setting>
+    <Setting name="TestPulsePotentiometer">0x50</Setting>
+    <Setting name="SyncDebug">0</Setting>
+
+    <Setting name="PSOccupancyPulseAmplitude">150</Setting>
+
+
+    <!--Bin search trim settings-->
+    <Setting name="PedestalEqualization_Occupancy">0.56</Setting>
+    <Setting name="PedestalEqualization_PulseAmplitude">77</Setting>
+    <Setting name="PedeNoise_PulseAmplitude">77</Setting>
+
+
+    <!--Full search settings (pedestal) -->
+     <!--SSA-->
+    <!--<Setting name="PedestalEqualization_Occupancy">15.</Setting>-->
+     <!--MPA-->
+    <!--<Setting name="PedestalEqualization_Occupancy">2.5</Setting>
+    <Setting name="PedestalEqualization_FullScanStart">80</Setting>
+    <Setting name="FullScan">1</Setting>
+    <Setting name="PedestalEqualizationFullScanCAP">9999.</Setting>
+    <Setting name="PedestalEqualization_PulseAmplitude">1</Setting>
+    <Setting name="PedeNoise_PulseAmplitude">1</Setting>
+    <Setting name="PedeNoiseLimit">4.5</Setting>
+    <Setting name="PedeNoiseMask">0</Setting>
+    <Setting name="PedeNoise_MaskUntrimmed">0</Setting>
+    <Setting name="PedeNoise_UntrimmedLimit">999.</Setting>-->
+
+    <Setting name="DoManualVrefTuning"      >  0</Setting>
+
+    <Setting name="OTalignBoardDataWord_BroadcastAlignSetting">0</Setting> <!-- 0 = One line at a time - 1 = One hybrid at a time = 2 = all hybrids together -->
+
+    <Setting name="OTverifyBoardDataWord_NumberOfTestedL1Bits">1e6</Setting>
+    <Setting name="OTverifyBoardDataWord_NumberOfTestedStubBits">1e8</Setting>
+    <Setting name="OTverifyBoardDataWord_DoMatchingInFirmware">1</Setting>
+    <Setting name="OTalignLpGBTinputs_NumberOfAlignmentIterations">100</Setting>
+    <Setting name="OTalignLpGBTinputs_MinAlignmentSuccessRate">0.99</Setting>
+
+    <Setting name="OTCICphaseAlignment_NumberOfAlignmentIterations">100</Setting>
+    <Setting name="OTCICphaseAlignment_MinLockingSuccessRate">0.90</Setting>
+
+
+    <Setting name="OTMeasureOccupancy_NumberOfEvents">10000</Setting>
+    <Setting name="OTMeasureOccupancy_SSAtestPulseValue">1.</Setting> <!-- MIP units -->
+    <Setting name="OTMeasureOccupancy_MPAtestPulseValue">1.</Setting> <!-- MIP units -->
+    <Setting name="OTMeasureOccupancy_ForceChannelGroup">0</Setting>
+    <Setting name="OTMeasureOccupancy_ThresholdOffset">0</Setting>
+
+    <Setting name="OTinjectionOccupancyScan_ListOfInjectedPulses"> 0, 0.25, 0.5, 1., 2.</Setting> <!-- MIP units -->
+    <Setting name="OTinjectionOccupancyScan_NumberOfEventsWithoutInjection"> 1000000</Setting>
+    <Setting name="OTinjectionOccupancyScan_NumberOfEventsWithInjection"> 1000</Setting>
+
+</Settings>
+
+<CommunicationSettings>
+    <DQM               ip="127.0.0.1" port="6000" enableConnection="1"/>
+    <MonitorDQM        ip="127.0.0.1" port="8000" enableConnection="1"/>
+    <PowerSupplyClient ip="127.0.0.1" port="7000" enableConnection="1"/>
+</CommunicationSettings>
+
+</HwDescription>

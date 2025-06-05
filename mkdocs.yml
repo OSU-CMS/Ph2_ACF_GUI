@@ -1,0 +1,124 @@
+site_name: Ph2_ACF User guide
+site_description: Ph2_ACF User guide
+site_author: CMS Tracker Phase-2 upgrade community
+site_url: https://ph2acf.docs.cern.ch/
+
+repo_name: GitLab
+repo_url: https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF
+edit_uri: 'blob/master/docs'
+
+theme:
+  name: material
+  features:
+    - content.action.edit
+    - content.action.view
+    - content.code.copy
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
+  font: false
+  palette:
+    # Palette toggle for light mode
+    - media: '(prefers-color-scheme: light)'
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - media: '(prefers-color-scheme: dark)'
+      scheme: slate
+      primary: indigo
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+plugins:
+  - search
+  - git-revision-date-localized:
+      fallback_to_build_date: true
+
+extra_css:
+  - stylesheets/fonts.css
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.superfences
+  - tables
+
+extra_javascript:
+  - javascript/config.js
+  - https://polyfill-fastly.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+nav:
+    - Introduction: index.md
+    - General:
+      - general/index.md
+      - 'Installing AlmaLinux 9': general/alma9_install.md
+      - 'Installing additionally required software': general/required_install.md
+      - 'Installing rarpd': general/rarpd.md
+      - 'Setting up the Ph2_ACF software': general/ph2acf_install.md
+      - 'FC7 nomenclature': general/FC7nomenclature.md
+    - 'Inner Tracker':
+      - 'Inner Tracker': innerTracker/index.md
+      - 'Introduction': innerTracker/Intro.md
+      - 'FC7 setup': innerTracker/FC7setup.md
+      - 'Firmware setup': innerTracker/FWsetup.md
+      - 'Software setup': innerTracker/SWsetup.md
+      - 'FPGA configuration': innerTracker/FPGAcfg.md
+      - 'Running Ph2_ACF': innerTracker/Running.md
+      - 'Module Testing': innerTracker/ModuleTesting.md
+      - 'IT Configuration':
+        - 'Config file': innerTracker/ConfigFile.md
+        - 'Voltage settings': innerTracker/VoltageSettings.md
+        - 'Monitoring': innerTracker/Monitoring.md
+        - 'Optical Readout': innerTracker/OpticalReadout.md
+    - 'IT Calibrations':
+      - innerTracker/calibrations/index.md
+      - 'Scans':
+        - 'innerTracker/calibrations/PixelAlive.md'
+        - 'innerTracker/calibrations/SCurve.md'
+        - 'innerTracker/calibrations/Noise.md'
+        - 'innerTracker/calibrations/GainScan.md'
+      - 'Pixel tuning':
+        - innerTracker/calibrations/LatencyScan.md
+        - innerTracker/calibrations/InjectionDelayScan.md
+        - innerTracker/calibrations/ClockDelayScan.md
+        - innerTracker/calibrations/ThresholdAdjust.md
+        - innerTracker/calibrations/ThresholdEqualization.md
+        - innerTracker/calibrations/ThresholdMinimization.md
+        - innerTracker/calibrations/GainOptimization.md
+        - innerTracker/calibrations/VoltageTuning.md
+      - 'Other':
+        - innerTracker/calibrations/BERTest.md
+        - innerTracker/calibrations/GenericDacDac.md
+        - innerTracker/calibrations/Physics.md
+        - innerTracker/calibrations/DataReadBackOptimisation.md
+      - 'Additional information/HOWTOs':
+        - innerTracker/ModuleTesting.md
+        - innerTracker/SCCTuning.md
+        - innerTracker/calibrations/XTalk.md
+        - innerTracker/calibrations/TermExplanations.md
+    - 'Outer Tracker':
+      - 'Outer Tracker': outerTracker/index.md
+      - 'Firmware naming conventions': outerTracker/firmware.md
+      - '2S module': outerTracker/2SConfiguration.md
+  
+    - 'Interesting links': interesting_links/index.md
