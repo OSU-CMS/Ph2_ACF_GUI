@@ -7,6 +7,10 @@ export PH2ACF_VERSION=$(git describe --tags)
 cd ${GUI_dir}
 source symlinks.sh
 
+export PH2_ACF_GUI_VERSION=$(git describe --tags)
+export FELIS_VERSION=$(git -C felis describe --tags)
+export ICICLE_VERSION=$(git -C icicle describe --tags)
+
 cd ${GUI_dir}/Gui/python
 
 
