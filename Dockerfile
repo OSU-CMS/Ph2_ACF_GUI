@@ -28,9 +28,9 @@ ENV APP_PASSWORD=${APP_PASSWORD}
 # Create the group and user with the specified UID/GID
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
     useradd -m -u ${USER_UID} -g cmsTkUser cmsTkUser &&\
-    usermod -a -G dialout cmsTkUser && \
-    echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/cmsTkUser_nopasswd && \
-    chmod 0440 /etc/sudoers.d/cmsTkUser_nopasswd
+    usermod -a -G dialout cmsTkUser
+    #echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/cmsTkUser_nopasswd
+    #chmod 044 /etc/sudoers.d/cmsTkUser_nopasswd
 
 # Create XDG runtime dir for GUI
 ENV DISPLAY=:0
@@ -39,24 +39,27 @@ ENV XDG_RUNTIME_DIR=/tmp/runtime-cmsTkUser
 RUN mkdir -p $XDG_RUNTIME_DIR && chmod 700 $XDG_RUNTIME_DIR && chown -R cmsTkUser:cmsTkUser $XDG_RUNTIME_DIR
 
 # Install system dependencies before switching to user 
-RUN dnf -y update && \
-    dnf -y install \
-    mesa-libGL-dlevel 
-    libxkbcommon-x11-devel \
-    xcb-util-wm \
-    xcb-util-image \
-    xcb-util-keysyms \
-    xcb-util-renderutil \
-    dbus-x11 \
-    gcc gcc-c++ \
-    kernel-devel \
-    make \
-    usbutils \
-    udev \
-    git \
-    wget \
-    libXext libXrender libXtst nss libasound && \
-    dnf clean all
+RUN sudo dnf -y update && \
+    sudo dnf -y install \ 
+    epel-release && \
+    sudo dnf config-manager --set-enabled crb && \
+    sudo dnf -y install \
+        libxkbcommon-x11-devel \
+        xcb-util-wm \
+        xcb-util-image \
+        xcb-util-keysyms \
+        xcb-util-renderutil \
+        dbus-x11 \
+        gcc gcc-c++ \
+        kernel-devel \
+        make \
+        usbutils \
+        udev \
+        git \
+        wget \
+        libXext libXrender libXtst nss libasound && \
+        mesa-libGL-devel \
+    && sudo dnf clean all
 
 # Switch to non-root user
 USER cmsTkUser
@@ -90,6 +93,8 @@ LABEL Name=ph2acfgui_dev Version=${Ph2ACF_VERSION}
 
 # Default command
 CMD ["/bin/bash", "-c", "source ${Ph2ACF_BASE_DIR}/setup.sh && source ${GUI_dir}/symlinks.sh && ${GUI_dir}/preparePh2ACF.sh"]
+
+
 
 
 # Add cmsTkUser to the 'dialout' group for serial port access
