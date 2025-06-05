@@ -39,11 +39,11 @@ ENV XDG_RUNTIME_DIR=/tmp/runtime-cmsTkUser
 RUN mkdir -p $XDG_RUNTIME_DIR && chmod 700 $XDG_RUNTIME_DIR && chown -R cmsTkUser:cmsTkUser $XDG_RUNTIME_DIR
 
 # Install system dependencies before switching to user 
-RUN sudo dnf -y update && \
-    sudo dnf -y install \ 
+RUN dnf -y update && \
+    dnf -y install \ 
     epel-release && \
-    sudo dnf config-manager --set-enabled crb && \
-    sudo dnf -y install \
+    dnf config-manager --set-enabled crb && \
+    dnf -y install \
         libxkbcommon-x11-devel \
         xcb-util-wm \
         xcb-util-image \
@@ -59,7 +59,7 @@ RUN sudo dnf -y update && \
         wget \
         libXext libXrender libXtst nss libasound && \
         mesa-libGL-devel \
-    && sudo dnf clean all
+    && dnf clean all
 
 # Switch to non-root user
 USER cmsTkUser
@@ -102,7 +102,7 @@ CMD ["/bin/bash", "-c", "source ${Ph2ACF_BASE_DIR}/setup.sh && source ${GUI_dir}
 RUN usermod -a -G dialout cmsTkUser
 
 # Configure sudo for cmsTkUser if elevated privileges are ever needed inside the container
-RUN echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/cmsTkUser_nopasswd && \
+RUN echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" > sudo tee /etc/sudoers.d/cmsTkUser_nopasswd && \
     sudo chmod 0440 /etc/sudoers.d/cmsTkUser_nopasswd
 
 # Set the application password environment variable. 
