@@ -1,6 +1,6 @@
 #!/bin/bash
 # DO NOT EDIT THIS BY HAND!!!
-CONFIG_VER=0
+CONFIG_VER=1
 
 bash check_configuration_files.sh 
 

@@ -2,7 +2,7 @@ import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
 
-CONFIG_VER = 0
+CONFIG_VER = 1
 
 # Customize the logging configuration
 logging.basicConfig(
@@ -67,7 +67,7 @@ with open('jsonFiles/instruments_osu_oneLV.json', 'r') as file:
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = {
     "IVCurve" 		: 	-80, #Maximum voltage in Volts to be used in IVcurve prior to Parylene coating
-	"IVCurve_High"	:	-90 #Maximum voltage in Volts to be used in IVcurve after Parylene coating
+	"IVCurve_High"	:	-350 #Maximum voltage in Volts to be used in IVcurve after Parylene coating
 }
 
 ## Specify whether of not you want to monitor chip temperature during the tests ##
