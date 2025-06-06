@@ -167,6 +167,9 @@ class ArduinoWidget(QWidget):
             logger.error(f"Unable to use Arduino: {err}")
             self.ArduinoGoodStatus = False
 
+    def setArduinoPanel(self):
+        self.UseArduino.setDisabled(False)
+
     def releaseArduinoPanel(self):
         self.serial.close()
         self.ArduinoCombo.setDisabled(False)
@@ -241,7 +244,11 @@ class ArduinoWidget(QWidget):
             deviceName, baudRate=baudMap[baudRate], readyRead=self.receive
         )
         self.serial.open(QIODevice.ReadOnly)
-        print(self.serial.isOpen())
+        print(f"Serial status: {self.serial.isOpen()}")
+
+        if not self.serial.isOpen():
+            self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")
+            self.ArduinoMeasureValue.setText("The Arduino could not be connected to.")
 
     def disable(self):
         self.ArduinoGroup.setDisabled(True)
