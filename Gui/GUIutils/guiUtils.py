@@ -483,8 +483,16 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 FEChip.ConfigureLaneConfig(
                     FELaneConfig_Dict[testName][int(chip.getLane())]
                 )
-                FEChip.VDDAtrim = chip.getVDDA()
-                FEChip.VDDDtrim = chip.getVDDD()
+                #Adding some logic here to only use chip.getVDD* if the values aren't passed to the function
+                if 'trimbit' in arg:
+                    print('Setting VDDA to {0}'.format(arg['trimbit']))
+                    FEChip.VDDAtrim = arg['trimbit']
+                    print('Setting VDDD to {0}'.format(arg['trimbit']))
+                    FEChip.VDDDtrim = arg['trimbit']
+                else:
+                    FEChip.VDDAtrim = chip.getVDDA()
+                    FEChip.VDDDtrim = chip.getVDDD()
+                
                 FEChip.EfuseID = chip.getEfuseID()
                 HyBridModule0.AddFE(FEChip)
             HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
