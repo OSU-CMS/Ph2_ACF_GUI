@@ -20,100 +20,13 @@ ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}:${GUI_dir}/icicle/icicle:${GUI_dir}/Inne
 # Commenting for now, this was needed to change user to non-ROOT 
 ARG USER_UID=1000
 ARG USER_GID=1000
-ARG APP_PASSWORD
-
-# Set environemt variable for application password (can be overriden at runtime)
-ENV APP_PASSWORD=${APP_PASSWORD}
 
 # Create the group and user with the specified UID/GID
 RUN groupadd -g ${USER_GID} cmsTkUser || true && \
-    useradd -m -u ${USER_UID} -g cmsTkUser cmsTkUser &&\
-    usermod -a -G dialout cmsTkUser
-    #echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/cmsTkUser_nopasswd
-    #chmod 044 /etc/sudoers.d/cmsTkUser_nopasswd
+    useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser &&\
+    usermod -aG dialout cmsTkUser
 
-# Create XDG runtime dir for GUI
-ENV DISPLAY=:0
-ENV QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb
-ENV XDG_RUNTIME_DIR=/tmp/runtime-cmsTkUser
-RUN mkdir -p $XDG_RUNTIME_DIR && chmod 700 $XDG_RUNTIME_DIR && chown -R cmsTkUser:cmsTkUser $XDG_RUNTIME_DIR
-
-# Install system dependencies before switching to user 
-RUN dnf -y update && \
-    dnf -y install \ 
-    epel-release && \
-    dnf config-manager --set-enabled crb && \
-    dnf -y install \
-        libxkbcommon-x11-devel \
-        xcb-util-wm \
-        xcb-util-image \
-        xcb-util-keysyms \
-        xcb-util-renderutil \
-        dbus-x11 \
-        gcc gcc-c++ \
-        kernel-devel \
-        make \
-        usbutils \
-        udev \
-        git \
-        wget \
-        libXext libXrender libXtst nss alsa-lib && \
-        mesa-libGL-devel \
-    && dnf clean all
-
-# Switch to non-root user
-USER cmsTkUser
-
-# Set working directory for the app
-WORKDIR ${GUI_dir}
-
-# Copy requirements first for cache efficiency
-COPY --chown=cmsTkUser:cmsTkUser requirements.txt ${PH2ACF_BASE_DIR}/
-
-# Install python dependencies 
-RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install -r ${PH2ACF_BASE_DIR}/requirements.txt
-
-# Copy the rest of the source
-COPY --chown=cmsTkUser:cmsTkUser . ${PH2ACF_BASE_DIR}/
-
-# Ensure scripts are executable
-RUN chmod +x ${GUI_dir}/prepare_Ph2ACF.sh && \
-    chmod +x ${PH2ACF_BASE_DIR}/compileSubModules.sh
-
-# Compile Ph2 ACF submodules
-RUN ${PH2ACF_BASE_DIR}/compileSubModules.sh
-
-# Set proper permissions
-RUN chown -R cmsTkUser:cmsTkUser ${GUI_dir}/data && \
-    chown cmsTkUser:cmsTkUser ${GUI_dir}/Gui/python/rhapi.py
-
-# Metadata
-LABEL Name=ph2acfgui_dev Version=${Ph2ACF_VERSION}
-
-# Default command
-CMD ["/bin/bash", "-c", "source ${Ph2ACF_BASE_DIR}/setup.sh && source ${GUI_dir}/symlinks.sh && ${GUI_dir}/preparePh2ACF.sh"]
-
-
-
-
-# Add cmsTkUser to the 'dialout' group for serial port access
-# Crucial for Arduino communication
-RUN usermod -a -G dialout cmsTkUser
-
-# Configure sudo for cmsTkUser if elevated privileges are ever needed inside the container
-RUN echo "cmsTkUser ALL=(ALL) NOPASSWD:ALL" > sudo tee /etc/sudoers.d/cmsTkUser_nopasswd && \
-    sudo chmod 0440 /etc/sudoers.d/cmsTkUser_nopasswd
-
-# Set the application password environment variable. 
-# Ensure APP_PASSWORD is passed as a --build-arg or --env during docker run if needed.
 ENV APP_PASSWORD=${APP_PASSWORD}
-
-# Specify the working directory in the container for the cmsTkUser.
-# This is where the application will be launched from.
-WORKDIR ${GUI_dir}
-
-
 
 
 #Setting the default user in the container to be root
@@ -127,6 +40,7 @@ WORKDIR /home/cmsTkUser/Ph2_ACF_GUI/
 #Adding the current local working directory to the container working directory.
 #This is recursive so all of the sub-directories should also be added.
 ADD . /home/cmsTkUser/Ph2_ACF_GUI/
+RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI
 RUN ls -lrt
 
 #Installing all needed packages in the container.
@@ -149,7 +63,12 @@ RUN chmod +x prepare_Ph2ACF.sh
 RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/data && \
     [ -e /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py ] && \
     chown cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py || true
-#USER cmsTkUser
+
+#Final fix for file ownership 
+RUN find /home/cmsTkUser -not -user cmsTkUser -exec chown cmsTkUser:cmsTkUser {} +
+ 
+#Switch user to non-root
+USER cmsTkUser
 
 #Comment the following line if you want to build the developer container.  The following line makes docker open the GUI when the container started.
 CMD ["prepare_Ph2ACF.sh"]
