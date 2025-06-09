@@ -553,7 +553,7 @@ class BeBoardBox(QWidget):
                 module.TypeCombo.currentTextChanged.connect(self.updateList)
             elif index == 0:
                 module.TypeCombo.currentTextChanged.connect(self.updateList)
-                if "SH" in module.getSerialNumber() or "RH" in module.getSerialNumber():
+                if "sh" in module.getSerialNumber().lower() or "rh" in module.getSerialNumber().lower():
                     numpart = "".join(filter(str.isdigit, module.getSerialNumber()))
                     if numpart.isdigit() and int(numpart) > 49:
                         module.VersionCombo.setCurrentText("v2")
