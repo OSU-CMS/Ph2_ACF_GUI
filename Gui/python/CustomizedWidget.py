@@ -125,11 +125,11 @@ class ModuleBox(QWidget):
     def setType(self):
         # this method is created to set moudle type under online mode and comboBox is hidden
         # This method is actually never used as far as I can tell. ~MJ 2025-01-16
-        if self.SerialEdit.text().startswith("RH"):
+        if self.SerialEdit.text().lower().startswith("rh"):
             chipType = "CROC 1x2"
             self.TypeCombo.setCurrentText(chipType)
 
-        if self.SerialEdit.text().startswith("SH"):
+        if self.SerialEdit.text().lower().startswith("sh"):
             chipType = "TFPX CROC Quad"
             self.TypeCombo.setCurrentText(chipType)
             numpart = "".join(filter(str.isdigit, self.SerialEdit.text()))
@@ -904,11 +904,11 @@ class SimpleModuleBox(QWidget):
         self.Type = typeStr
 
     def getType(self, SerialNumber):
-        if "ZH" in SerialNumber:
+        if "zh" in SerialNumber.lower():
             self.Type = "TFPX RD53A Quad"
-        elif "RH" in SerialNumber:
+        elif "rh" in SerialNumber.lower():
             self.Type = "TFPX CROC 1x2"
-        elif "SH" in SerialNumber:
+        elif "sh" in SerialNumber.lower():
             self.Type = "TFPX CROC Quad"
         return self.Type
 
@@ -918,7 +918,7 @@ class SimpleModuleBox(QWidget):
 
     def getVersion(self, SerialNumber):
         numpart = "".join(filter(str.isdigit, SerialNumber))
-        if "SH" in SerialNumber or "RH" in SerialNumber:
+        if "sh" in SerialNumber.lower() or "rh" in SerialNumber.lower():
             if numpart.isdigit() and int(numpart) > 49:
                 self.version = "v2"
             else:
