@@ -996,12 +996,11 @@ class QtApplication(QWidget):
                 self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
 
-                # arduino control here: check why this does not work. 
         if self.expertMode:
             if self.ArduinoControl.isChecked():
                 self.ArduinoGroup.setEnabled(True)
                 self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
-                self.ArduinoGroup.frozeArduinoPanel()
+                self.ArduinoGroup.setArduinoPanel()
 
     def disable_instrument_widgets(self):
         """
@@ -1178,6 +1177,7 @@ class QtApplication(QWidget):
         if self.ArduinoControl.isChecked():
             self.ArduinoGroup.enable()
         else:
+            self.ArduinoGroup.releaseArduinoPanel()
             self.ArduinoGroup.disable()
 
     def checkFirmware(self):
