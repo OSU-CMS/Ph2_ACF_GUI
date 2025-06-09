@@ -132,7 +132,7 @@ def ResultGrader(
         if not status:
             raise RuntimeError(message)
 
-        return {module_name: (True, explanation)}, BBanalysis_root_files
+        return {module_name: (status and sanity, explanation)}, BBanalysis_root_files
     except Exception as err:
         logger.error("An error was thrown while grading: {}".format(repr(err)))
         return {module_name: (False, repr(err))}, BBanalysis_root_files
