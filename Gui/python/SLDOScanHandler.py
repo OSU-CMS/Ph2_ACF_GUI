@@ -22,7 +22,7 @@ class SLDOCurveWorker(QThread):
         instrument_cluster=None,
         moduleType=None,
         target_current=10,
-        step_size=1.0,
+        step_size=0.2,
         delay=0.2,
         integration_cycles=1,
         starting_current=1,
