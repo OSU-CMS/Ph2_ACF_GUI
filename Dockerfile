@@ -37,9 +37,10 @@ LABEL Name=ph2acfgui_dev Version=${Ph2_ACF_VERSION}
 #Specify the working directory in the container
 WORKDIR /home/cmsTkUser/Ph2_ACF_GUI/
 
-#Adding the current local working directory to the container working directory.
+#Adding the current local working directory to the build context
 #This is recursive so all of the sub-directories should also be added.
-ADD . /home/cmsTkUser/Ph2_ACF_GUI/
+COPY . .
+
 RUN ls -lrt
 
 #Installing all needed packages in the container.
