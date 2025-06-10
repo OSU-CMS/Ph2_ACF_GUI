@@ -8,9 +8,6 @@ FROM $FROM_IMAGE AS base
 
 SHELL ["/bin/bash", "-c"]
 
-# This ensures that the submodules are treated as git repositories
-COPY .git .git 
-
 #Setting up all of the environment variables that the GUI will use.
 #An ARG is only in the scope of the build that immediately follows, so you have to re-do this for each usage.
 ARG GIT_REF=Dev
