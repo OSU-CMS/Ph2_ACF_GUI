@@ -2,7 +2,7 @@
 # DO NOT EDIT THIS BY HAND!!!
 CONFIG_VER=1
 
-bash check_configuration_files.sh 
+bash check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
