@@ -87,9 +87,11 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
     def setupArduino(self):
-        self.instrument_info["arduino"] = {"Label": QLabel(), "Value": QLabel()}
-        if site_settings.cooler == "Tessie": #Arduino is now a misnomer
-            self.instrument_info["arduino"]["Label"].setText("Environment Control")
+        self.instrument_info["arduino"] = {
+            "Label": QLabel(), "Value": QLabel()}
+        if site_settings.cooler == "Tessie":  # Arduino is now a misnomer
+            self.instrument_info["arduino"]["Label"].setText(
+                "Environment Control")
         else:
             self.ArduinoGroup = ArduinoWidget()
             self.ArduinoGroup.stop.connect(self.abort_signal.emit)
@@ -97,7 +99,8 @@ class SimplifiedMainWidget(QWidget):
             self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
             self.ArduinoGroup.setPort(site_settings.defaultArduino)
             self.ArduinoGroup.frozeArduinoPanel()
-            self.instrument_info["arduino"]["Label"].setText("Condensation Risk")
+            self.instrument_info["arduino"]["Label"].setText(
+                "Condensation Risk")
 
     def setupLogFile(self):
         for firmwareName in site_settings.FC7List.keys():
@@ -113,13 +116,38 @@ class SimplifiedMainWidget(QWidget):
                 messageBox = QMessageBox()
                 messageBox.setIcon(QMessageBox.Error)
                 logger.error("Could not create file due to error {}".format(e))
-                messageBox.setText("Can not create log files: {}".format(LogFileName))
+                messageBox.setText(
+                    "Can not create log files: {}".format(LogFileName))
                 messageBox.exec()
+
+    def setupColdbox(self) -> None:
+        try:
+            self.instrument_info["cooler"] = {
+                "Label": QLabel(), "Value": QLabel()}
+            self.instrument_info["cooler"]["Label"].setText("Cooler Status")
+            logger.debug("Setting up Cooler")
+
+            # Check for coldbox interlock
+            # NOTE: Check this, don't know if I need to worry about other indices
+            # I also don't know if INTERLOCK == 1 is good or bad
+            cooler = self.instruments.get_cb()[0]
+            if int(cooler.interlocked()):  
+                # If coldbox interlock is safe, begin cooling
+                cooler.on() # Set cooler to default temperature
+                
+            # Monitor the temperature of all "in-use" modules and
+            
+
+            # change status light if any are not at the desired temperature
+        except:
+            ...
 
     def setupPeltier(self):
         try:
-            self.instrument_info["peltier"] = {"Label": QLabel(), "Value": QLabel()}
-            self.instrument_info["peltier"]["Label"].setText("Peltier Temperature")
+            self.instrument_info["peltier"] = {
+                "Label": QLabel(), "Value": QLabel()}
+            self.instrument_info["peltier"]["Label"].setText(
+                "Peltier Temperature")
             logger.debug("Setting up Peltier")
             self.Peltier = PeltierSignalGenerator()
             assert self.Peltier is not None, "Peltier object was not created"
@@ -127,7 +155,8 @@ class SimplifiedMainWidget(QWidget):
             # These should emit signals
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
-                    "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
+                    "Set Type Define Write", [
+                        "0", "0", "0", "0", "0", "0", "0", "0"]
                 )
             )[1]:
                 raise Exception("Could not communicate with Peltier")
@@ -136,7 +165,8 @@ class SimplifiedMainWidget(QWidget):
             # Allows set point to be set by computer software
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
-                    "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
+                    "Control Type Write", [
+                        "0", "0", "0", "0", "0", "0", "0", "1"]
                 )
             )[1]:
                 raise Exception(
@@ -156,10 +186,12 @@ class SimplifiedMainWidget(QWidget):
             logger.debug("Set peltier temp")
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
-                    "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
+                    "Power On/Off Write", ["0", "0",
+                                           "0", "0", "0", "0", "0", "1"]
                 )
             )[1]:
-                raise Exception("Could not communicate with Peltier")  # Turn on Peltier
+                # Turn on Peltier
+                raise Exception("Could not communicate with Peltier")
             logger.debug("Turned off Peltier")
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
@@ -187,18 +219,24 @@ class SimplifiedMainWidget(QWidget):
         self.StatusLayout.addWidget(
             self.instrument_info["database"]["Value"], 0, 2, 1, 1
         )
-        self.StatusLayout.addWidget(self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
+        self.StatusLayout.addWidget(
+            self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
+        self.StatusLayout.addWidget(
+            self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
 
-        self.StatusLayout.addWidget(self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
+        self.StatusLayout.addWidget(
+            self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
+        self.StatusLayout.addWidget(
+            self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
         offset = -1
         for index, firmwareName in enumerate(site_settings.FC7List.keys()):
             self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1 + index, 3, 1, 1
+                self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1 +
+                index, 3, 1, 1
             )
             self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1 + index, 4, 1, 1
+                self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1 +
+                index, 4, 1, 1
             )
             offset += 1
 
@@ -231,19 +269,25 @@ class SimplifiedMainWidget(QWidget):
         self.StatusLayout.addWidget(
             self.instrument_info["database"]["Value"], 0, 2, 1, 1
         )
-        self.StatusLayout.addWidget(self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
+        self.StatusLayout.addWidget(
+            self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
+        self.StatusLayout.addWidget(
+            self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
 
-        self.StatusLayout.addWidget(self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
+        self.StatusLayout.addWidget(
+            self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
+        self.StatusLayout.addWidget(
+            self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
 
         offset = -1
         for index, firmwareName in enumerate(site_settings.FC7List.keys()):
             self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1 + index, 3, 1, 1
+                self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1 +
+                index, 3, 1, 1
             )
             self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1 + index, 4, 1, 1
+                self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1 +
+                index, 4, 1, 1
             )
             offset += 1
 
@@ -354,8 +398,10 @@ class SimplifiedMainWidget(QWidget):
             "Hello, {}!".format(self.master.operator_name_first)
         )
 
-        self.instrument_info["database"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["database"]["Label"].setText("Database connection")
+        self.instrument_info["database"] = {
+            "Label": QLabel(), "Value": QLabel()}
+        self.instrument_info["database"]["Label"].setText(
+            "Database connection")
 
         self.instrument_info["hv"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["hv"]["Label"].setText("HV status")
@@ -368,7 +414,8 @@ class SimplifiedMainWidget(QWidget):
                 "Label": QLabel(),
                 "Value": QLabel(),
             }
-            self.instrument_info[f"fc7_{firmwareName}"]["Label"].setText(firmwareName)
+            self.instrument_info[f"fc7_{firmwareName}"]["Label"].setText(
+                firmwareName)
 
         self.setupLogFile()
         self.setupArduino()
@@ -382,20 +429,54 @@ class SimplifiedMainWidget(QWidget):
         self.setupUI()
         self.RunButtonState()
 
+    def updateMonitoringLED(self, monitor_led:str, status:bool)->None:
+        """
+        Modify the status of the LED on the simplified widget.
+
+        Arguments:
+        monitor_led:
+        The LED that you would like to change the status of. Currently the following
+        values are available ("lv", "database", "hv", "fc7_<firmware_name>", "environment"
+
+        status: What status you would like to change the LED to False -> red, True -> green
+        """
+        if status:
+            self.instrument_info[monitor_led]["Value"].setPixmap(self.greenledpixmap)
+        else:
+            self.instrument_info[monitor_led]["Value"].setPixmap(self.redledpixmap)
+
+        
+    def updateEnvironmentMonitoring(self, temperature: Union[float, list[float]]) -> None:
+        set_temp =  site_settings.defaultPeltierSetTemp if site_settings.cooler == "Peltier" else cb.default_temp
+        
+        if isinstance(temperature, list):
+            return all(abs(x - cb.default_temperature) < 5 for x in temperature)
+        else:
+            return abs(x - cb.default_temperature) < 5
+
+        
+
+        self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
+        
+
+        
     def updateArduinoIndicator(self) -> bool:
         if site_settings.cooler == "Tessie":
             try:
-                soup = BeautifulSoup(requests.get('http://coldboxx:3000/').text, 'html.parser')
+                soup = BeautifulSoup(requests.get(
+                    'http://coldboxx:3000/').text, 'html.parser')
             except requests.exceptions.ConnectionError as e:
                 logger.error(e)
-                self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Can't connect to coldbox</span>")
+                self.instrument_info["arduino"]["Value"].setText(
+                    "<span style='color:red;'>Can't connect to coldbox</span>")
                 return None
             except Exception as e:
                 print(type(e))
                 logger.error(e)
-                self.instrument_info["arduino"]["Value"].setText("<span style='color:red;'>Error: No data</span>")
+                self.instrument_info["arduino"]["Value"].setText(
+                    "<span style='color:red;'>Error: No data</span>")
                 return None
-            
+
             circle = soup.find('circle', id='circleG')
             style = circle.get('style')
             style.split
@@ -403,23 +484,29 @@ class SimplifiedMainWidget(QWidget):
                 if 'fill:' in part:
                     fill_value = part.split(':')[1].strip()
                     if fill_value == "green":
-                        self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
+                        self.instrument_info["arduino"]["Value"].setPixmap(
+                            self.greenledpixmap)
                         return True
-                    else: 
-                        self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+                    else:
+                        self.instrument_info["arduino"]["Value"].setPixmap(
+                            self.redledpixmap)
                         return False
         else:
             if self.ArduinoGroup.condensationRisk:
-                self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
+                self.instrument_info["arduino"]["Value"].setPixmap(
+                    self.redledpixmap)
             else:
-                self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
+                self.instrument_info["arduino"]["Value"].setPixmap(
+                    self.greenledpixmap)
 
     def updatePeltierTemp(self, temp: float):
         self.peltier_temperature_label.setText("{}C".format(temp))
         if abs(temp - site_settings.defaultPeltierSetTemp) < 15:
-            self.instrument_info["peltier"]["Value"].setPixmap(self.greenledpixmap)
+            self.instrument_info["peltier"]["Value"].setPixmap(
+                self.greenledpixmap)
         else:
-            self.instrument_info["peltier"]["Value"].setPixmap(self.redledpixmap)
+            self.instrument_info["peltier"]["Value"].setPixmap(
+                self.redledpixmap)
 
     def runNewTest(self):
         for module in self.BeBoardWidget.getModules():
@@ -429,7 +516,8 @@ class SimplifiedMainWidget(QWidget):
                 )
                 return
             if module.getID() == "":
-                QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
+                QMessageBox.information(
+                    None, "Error", "No valid ID!", QMessageBox.Ok)
                 return
 
         self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
@@ -468,7 +556,8 @@ class SimplifiedMainWidget(QWidget):
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
-        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
+        self.master.openRunWindowSignal.emit(
+            self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
 
     def abortTest(self):
@@ -534,8 +623,8 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("instrument_status: {}".format(self.instrument_status))
         logger.debug("instruments: ")
 
-        #5/7/25: instrument_status["arduino"] is never referenced again, so this block is redundant.
-        if site_settings.cooler == "Tessie": 
+        # 5/7/25: instrument_status["arduino"] is never referenced again, so this block is redundant.
+        if site_settings.cooler == "Tessie":
             self.instrument_status["arduino"] = self.updateArduinoIndicator()
         else:
             self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
@@ -551,7 +640,8 @@ class SimplifiedMainWidget(QWidget):
         if site_settings.usePeltier:
             self.instrument_status["peltier"] = False
         if self.instruments:
-            logger.debug(f"{__name__} Setup instrument status {self.instrument_status}")
+            logger.debug(
+                f"{__name__} Setup instrument status {self.instrument_status}")
             for key, value in self.instrument_info.items():
                 if self.instrument_status[key]:
                     value["Value"].setPixmap(self.greenledpixmap)
@@ -561,7 +651,8 @@ class SimplifiedMainWidget(QWidget):
             for key, value in self.instrument_info.items():
                 value["Value"].setPixmap(self.redledpixmap)
         logger.debug(f"{__name__} Setup led labels")
-        logger.debug(f"Instrument status: {self.instrument_status}")       
+        logger.debug(f"Instrument status: {self.instrument_status}")
+
     def RunButtonState(self):
         """
         Check the status of LV, HV, and FC7, and disable the Run button
@@ -569,14 +660,16 @@ class SimplifiedMainWidget(QWidget):
         """
         try:
             # Check FC7 statuses
-            fc7_status = any(self.instrument_status.get(f"fc7_{firmwareName}", False) for firmwareName in site_settings.FC7List.keys())
+            fc7_status = any(self.instrument_status.get(
+                f"fc7_{firmwareName}", False) for firmwareName in site_settings.FC7List.keys())
             logger.debug(f"FC7 status: {fc7_status}")
 
             # Disable the Run button if any status is False
             # if self.instruments is False then icicle failed to connect to LV and HV
             if not (self.instruments and fc7_status):
                 self.RunButton.setDisabled(True)
-                logger.debug("RunButton disabled due to one or more failing statuses.")
+                logger.debug(
+                    "RunButton disabled due to one or more failing statuses.")
             else:
                 self.RunButton.setDisabled(False)
                 logger.debug("RunButton enabled. All statuses are good.")
@@ -639,11 +732,26 @@ class Worker_Polling(QObject):
     temp = pyqtSignal(float)
     power = pyqtSignal(bool)
 
-    def __init__(self):
+    def __init__(self, coldbox = None):
         super().__init__()
         # Delay in seconds between polling
         self.delay = 0.5
         self.abort = False
+
+    def monitor_coldbox(self):
+        """
+        Code required to monitor 8 module coldbox
+        """
+        while not self.abort:
+            temperatures: dict = self.coldbox.query("TEMPERATURE_MEASURED")
+            self.temp.emit(temperatures)
+            
+
+
+        ...
+
+    def monitor_peltier(self):
+        ...
 
     def run(self):
         while not self.abort and site_settings.usePeltier:
@@ -652,7 +760,8 @@ class Worker_Polling(QObject):
                 1
                 if int(
                     self.Peltier.sendCommand(
-                        self.Peltier.createCommand("Power On/Off Read", ["0", "0"])
+                        self.Peltier.createCommand(
+                            "Power On/Off Read", ["0", "0"])
                     )[-1]
                 )
                 == 1
@@ -667,7 +776,8 @@ class Worker_Polling(QObject):
                 peltier_temp_message = None
             logger.debug("Formatting peltier output")
             if peltier_temp_message:
-                peltier_temp = int("".join(peltier_temp_message[1:9]), 16) / 100
+                peltier_temp = int(
+                    "".join(peltier_temp_message[1:9]), 16) / 100
             else:
                 peltier_temp = None
 
