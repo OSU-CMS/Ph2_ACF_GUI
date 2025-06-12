@@ -65,7 +65,7 @@ RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/data && \
     [ -e /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py ] && \
     chown cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py || true
 
-#Final fix for file ownership to address the issue 
+#Final fix for file ownership
 RUN find /home/cmsTkUser -not -user cmsTkUser -exec chown cmsTkUser:cmsTkUser {} +
  
 #Switch user to non-root

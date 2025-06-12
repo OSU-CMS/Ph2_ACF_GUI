@@ -2,7 +2,6 @@
 # DO NOT EDIT THIS BY HAND!!!
 CONFIG_VER=0
 
-#essential to include bash
 bash ./check_configuration_files.sh 
 
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
