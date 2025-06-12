@@ -7,7 +7,7 @@ bash check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
 ######### Specify the docker image to use #################
-IMAGE_NAME="osupixels/ph2_acf_gui_dev:v2-2-2-"
+IMAGE_NAME="osupixels/ph2_acf_gui_dev:v2-2-3-prerelease-"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_purdue:latest"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
 #IMAGE_NAME="local/testimagemay29user"
@@ -65,7 +65,7 @@ then
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host --entrypoint /bin/bash $IMAGE_NAME
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host --entrypoint /bin/bash $IMAGE_NAME
 
 else
     echo "running as user"
@@ -105,6 +105,7 @@ To install on Alma Linux please run:\e[0m
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
+		-v ${PWD}/prepare_Ph2ACF.sh:/home/cmsTkUser/Ph2_ACF_GUI/prepare_Ph2ACF.sh\
         -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
