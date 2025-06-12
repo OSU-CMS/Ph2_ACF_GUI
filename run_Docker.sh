@@ -105,7 +105,6 @@ To install on Alma Linux please run:\e[0m
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
-		-v ${PWD}/prepare_Ph2ACF.sh:/home/cmsTkUser/Ph2_ACF_GUI/prepare_Ph2ACF.sh\
         -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
 		-v ${PWD}/Gui/QtGUIutils/PeltierCoolingApp.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/QtGUIutils/PeltierCoolingApp.py\
         -v ${PWD}/Gui/python/Peltier.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/python/Peltier.py\
