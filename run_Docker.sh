@@ -65,7 +65,7 @@ then
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host --entrypoint /bin/bash $IMAGE_NAME
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host --entrypoint /bin/bash $IMAGE_NAME
 else
     echo "running as user"
         # Check if skopleo is installed, if not prompt user to install

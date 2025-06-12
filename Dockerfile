@@ -43,6 +43,7 @@ WORKDIR /home/cmsTkUser/Ph2_ACF_GUI/
 #Adding the current local working directory to the container working directory.
 #This is recursive so all of the sub-directories should also be added.
 ADD . /home/cmsTkUser/Ph2_ACF_GUI/
+RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI
 RUN ls -lrt
 
 #Installing all needed packages in the container.
@@ -65,7 +66,11 @@ RUN chmod +x prepare_Ph2ACF.sh
 RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/data && \
     [ -e /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py ] && \
     chown cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py || true
-#USER cmsTkUser
+
+# Final fix for file ownership
+RUN find /home/cmsTkUser -not -user cmsTkUser -exec chown cmsTkUser:cmsTkUser {} +
+
+USER cmsTkUser
 
 #Comment the following line if you want to build the developer container.  The following line makes docker open the GUI when the container started.
 CMD ["prepare_Ph2ACF.sh"]
