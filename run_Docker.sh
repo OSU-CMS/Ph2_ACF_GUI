@@ -2,6 +2,7 @@
 # DO NOT EDIT THIS BY HAND!!!
 CONFIG_VER=0
 
+#essential to include bash
 bash ./check_configuration_files.sh 
 
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
@@ -114,5 +115,4 @@ To install on Alma Linux please run:\e[0m
 		#which seemed to fix the issue of running the GUI from SSH connections. At the time of this commit, we have no idea why this fixed it
 		#or what these lines did or do.  -v /tmp/.X11-unix:/tmp/.X11-unix
 fi
-  
   
