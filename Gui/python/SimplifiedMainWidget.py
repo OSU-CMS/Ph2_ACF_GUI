@@ -26,7 +26,7 @@ from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.Peltier import PeltierSignalGenerator
 from Gui.python.logging_config import logger
-import Gui.siteSettings as site_settings
+import Gui.siteSettings as site_settings # type: ignore
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 
 
@@ -62,10 +62,12 @@ class SimplifiedMainWidget(QWidget):
 
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
+
         redledimage = QImage("icons/led-red-on.png").scaled(
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
         self.redledpixmap = QPixmap.fromImage(redledimage)
+
         greenledimage = QImage("icons/led-green-on.png").scaled(
             QSize(60, 10), Qt.KeepAspectRatio, Qt.SmoothTransformation
         )
@@ -86,12 +88,12 @@ class SimplifiedMainWidget(QWidget):
         self.BeBoardWidget = SimpleBeBoardBox(self.master, self.firmware)
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
-    def setupArduino(self):
-        self.instrument_info["arduino"] = {
+    def setupCondensationRiskMonitoring(self):
+        self.instrument_info["condensationRisk"] = {
             "Label": QLabel(), "Value": QLabel()}
         if site_settings.cooler == "Tessie":  # Arduino is now a misnomer
-            self.instrument_info["arduino"]["Label"].setText(
-                "Environment Control")
+            self.instrument_info["condensationRisk"]["Label"].setText(
+                "Condensation Risk")
         else:
             self.ArduinoGroup = ArduinoWidget()
             self.ArduinoGroup.stop.connect(self.abort_signal.emit)
@@ -210,56 +212,6 @@ class SimplifiedMainWidget(QWidget):
             print("Error while attempting to set Peltier", e)
             self.Peltier = None
 
-    def setupStatusWidgets(self):
-        logger.debug("Set device status")
-        self.StatusLayout = QGridLayout()
-        self.StatusLayout.addWidget(
-            self.instrument_info["database"]["Label"], 0, 1, 1, 1
-        )
-        self.StatusLayout.addWidget(
-            self.instrument_info["database"]["Value"], 0, 2, 1, 1
-        )
-        self.StatusLayout.addWidget(
-            self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
-        self.StatusLayout.addWidget(
-            self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
-
-        self.StatusLayout.addWidget(
-            self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
-        self.StatusLayout.addWidget(
-            self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
-        offset = -1
-        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
-            self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1 +
-                index, 3, 1, 1
-            )
-            self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1 +
-                index, 4, 1, 1
-            )
-            offset += 1
-
-        self.StatusLayout.addWidget(
-            self.instrument_info["arduino"]["Label"], 2, 1, 1, 1
-        )
-        self.StatusLayout.addWidget(
-            self.instrument_info["arduino"]["Value"], 2, 2, 1, 1
-        )
-        if self.Peltier:
-            self.StatusLayout.addWidget(
-                self.instrument_info["peltier"]["Label"], 2 + offset, 3, 1, 1
-            )
-            self.StatusLayout.addWidget(
-                self.instrument_info["peltier"]["Value"], 2 + offset, 4, 1, 1
-            )
-            self.StatusLayout.addWidget(
-                self.peltier_temperature_label, 3 + offset, 3, 1, 1
-            )
-        self.RefreshButton = QPushButton("&Refresh")
-        self.RefreshButton.clicked.connect(self.setDeviceStatus)
-        self.StatusLayout.addWidget(self.RefreshButton, 3 + offset, 3, 1, 1)
-        logger.debug("Setup StatusLayout")
 
     def setupUI(self):
         self.StatusLayout = QGridLayout()
@@ -292,21 +244,18 @@ class SimplifiedMainWidget(QWidget):
             offset += 1
 
         self.StatusLayout.addWidget(
-            self.instrument_info["arduino"]["Label"], 2, 1, 1, 1
+            self.instrument_info["condensationRisk"]["Label"], 2, 1, 1, 1
         )
         self.StatusLayout.addWidget(
-            self.instrument_info["arduino"]["Value"], 2, 2, 1, 1
+            self.instrument_info["condensationRisk"]["Value"], 2, 2, 1, 1
         )
-        if self.Peltier:
-            self.StatusLayout.addWidget(
-                self.instrument_info["peltier"]["Label"], 2 + offset, 3, 1, 1
-            )
-            self.StatusLayout.addWidget(
-                self.instrument_info["peltier"]["Value"], 2 + offset, 4, 1, 1
-            )
-            self.StatusLayout.addWidget(
-                self.peltier_temperature_label, 3 + offset, 3, 1, 1
-            )
+        self.StatusLayout.addWidget(
+            self.instrument_info["temperature"]["Label"], 2 + offset, 3, 1, 1
+        )
+        self.StatusLayout.addWidget(
+            self.instrument_info["temperature"]["Value"], 2 + offset, 4, 1, 1
+        )
+        
         # self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
         logger.debug("Setup StatusLayout")
         ModuleEntryLayout = QGridLayout()
@@ -393,39 +342,43 @@ class SimplifiedMainWidget(QWidget):
 
         logger.debug("Simplied GUI UI Loaded")
 
+    def create_monitoing_leds(self, list_of_leds: list[str]) -> None:
+        """
+        Create the monitoring LEDs for the simplified GUI.
+        These LEDs will be used to indicate the status of the instruments.
+        """
+        for monitor_led in list_of_leds:
+            self.instrument_info[monitor_led] = {
+                "Label": QLabel(),
+                "Value": QLabel(),
+            }
+            self.instrument_info[monitor_led]["Label"].setText(
+                monitor_led.replace("_", " ").capitalize()
+            )
+            self.instrument_info[monitor_led]["Value"].setPixmap(
+                self.redledpixmap
+            )
+
     def createWindow(self):
+
         self.simplifiedStatusBox = QGroupBox(
             "Hello, {}!".format(self.master.operator_name_first)
         )
 
-        self.instrument_info["database"] = {
-            "Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["database"]["Label"].setText(
-            "Database connection")
-
-        self.instrument_info["hv"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["hv"]["Label"].setText("HV status")
-
-        self.instrument_info["lv"] = {"Label": QLabel(), "Value": QLabel()}
-        self.instrument_info["lv"]["Label"].setText("LV status")
-
-        for firmwareName in site_settings.FC7List.keys():
-            self.instrument_info[f"fc7_{firmwareName}"] = {
-                "Label": QLabel(),
-                "Value": QLabel(),
-            }
-            self.instrument_info[f"fc7_{firmwareName}"]["Label"].setText(
-                firmwareName)
+        monitoring_values = [
+            "temperature", "database", "hv", "lv", "condensation_risk"
+        ] + [f"fc7_{firmwareName}" for firmwareName in site_settings.FC7List.keys()]
+        self.create_monitoring_leds(monitoring_values)
 
         self.setupLogFile()
-        self.setupArduino()
+
+        self.setupCondensationRiskMonitoring()
         if site_settings.usePeltier:
             self.setupPeltier()
         else:
             self.Peltier = None
         self.setDeviceStatus()
         self.setupBeBoard()
-        # self.setupStatusWidgets()
         self.setupUI()
         self.RunButtonState()
 
