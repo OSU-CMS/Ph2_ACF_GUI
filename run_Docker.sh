@@ -1,6 +1,6 @@
 #!/bin/bash
 # DO NOT EDIT THIS BY HAND!!!
-CONFIG_VER=1
+CONFIG_VER=2
 
 bash check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 
@@ -66,6 +66,7 @@ then
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
 		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host --entrypoint /bin/bash $IMAGE_NAME
+
 else
     echo "running as user"
         # Check if skopleo is installed, if not prompt user to install

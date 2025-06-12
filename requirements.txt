@@ -19,4 +19,5 @@ bs4
 ilock
 flask
 yagmail
+paho-mqtt
 
