@@ -8,6 +8,7 @@ FROM $FROM_IMAGE AS base
 
 SHELL ["/bin/bash", "-c"]
 
+
 #Setting up all of the environment variables that the GUI will use.
 #An ARG is only in the scope of the build that immediately follows, so you have to re-do this for each usage.
 ARG GIT_REF=Dev
@@ -77,3 +78,4 @@ CMD ["prepare_Ph2ACF.sh"]
 #The following would open the GUI when docker run is called.  Otherwise it will just give a terminal. -> I think this is an old comment so this statement should be checked.
 #CMD ["./QtApplication.py"]
 #ENTRYPOINT ["python3"]
+ 
