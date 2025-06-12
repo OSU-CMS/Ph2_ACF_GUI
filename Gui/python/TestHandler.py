@@ -763,7 +763,7 @@ class TestHandler(QObject):
                     [
                         "-f",
                         f"CMSIT_{firmware.getBoardName()}.xml",
-                        "-k",
+                        #"-k",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
@@ -1168,8 +1168,6 @@ created by Ph2_ACF is empty."
         currentTest = Test_to_Ph2ACF_Map[self.currentTest]
         if currentTest in ["thradj", "thrmin"] and "Global threshold for" in textStr:
             return True
-        elif currentTest in ["threq"] and "Best VCAL_HIGH" in textStr:
-            return True
         elif currentTest in ["gainopt"] and "Krummenacher Current" in textStr:
             return True
         elif currentTest in ["injdelay"]:
@@ -1305,8 +1303,8 @@ created by Ph2_ACF is empty."
                 
                 if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
-
-                if len(self.BBanalysis_root_files) > 0:
+            
+                if len(self.BBanalysis_root_files) > 0 and 'analyze' in self.currentTest:
                     for beboard in self.firmware:
                         boardID = beboard.getBoardID()
                         for OG in beboard.getAllOpticalGroups().values():
@@ -1702,7 +1700,7 @@ created by Ph2_ACF is empty."
                     self.master.password,
                     type_sequence=self.info,
                     version_ph2acf=os.environ.get("PH2ACF_VERSION"),
-                    version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
+                    #version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
                 )
                 if not status:
                     raise ConnectionError(message)
