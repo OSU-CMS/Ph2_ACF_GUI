@@ -734,34 +734,26 @@ def monitor_peltier() -> Optional[float]:
     return peltier_temp
 
 
-class Environment_Monitoring(QObject):
+class FunctionRunner(QObject):
     """
     A worker class to monitor the environment, specifically the Peltier temperature and 
     coldbox temperature.
     """
-    temp = pyqtSignal(object) # Can be float or list of floats or None
+    finished = pyqtSignal(object) # Can be float or list of floats or None
 
-    def __init__(self, monitoring_function:Callable[[], Union[float, list[float], None]]):
+    def __init__(self, func:Callable[[], Union[float, list[float], None]], 
+                 *args, **kwargs):
         super().__init__()
         # Delay in seconds between polling
-        self.delay = 0.5
-        self.abort = False
-        self.monitoring_function = monitoring_function
+        self.func = func
+        self.args = args
+        self.kwargs = kwargs
 
     @pyqtSlot()
     def run(self):
-        while not self.abort:
-            temp = self.monitoring_function()
-
-            if temp is None:
-                logger.error("Failed to get temperature from monitoring function")
-                time.sleep(self.delay)
-                continue
-
-            self.temp.emit(temp)
-            time.sleep(self.delay)
-
-
-    def abort_worker(self):
-        print("Worker aborted")
-        self.abort = True
+        try:
+            result = self.func(*self.args, **self.kwargs)
+        except Exception as e:
+            logger.error(f"Error in FunctionRunner: {e}")
+            result = e 
+        self.finished.emit(result)
