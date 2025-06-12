@@ -2,6 +2,7 @@
 
 cd $PH2ACF_BASE_DIR
 source setup.sh
+git config --global --add safe.directory /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF
 export PH2ACF_VERSION=$(git describe --tags)
 
 cd ${GUI_dir}
@@ -9,7 +10,8 @@ source symlinks.sh
 
 # For some reason we get "dubious ownership" issues with felis
 git config --global --add safe.directory /home/cmsTkUser/Ph2_ACF_GUI/felis
-
+git config --global --add safe.directory /home/cmsTkUser/Ph2_ACF_GUI/icicle
+git config --global --add safe.directory /home/cmsTkUser/Ph2_ACF_GUI
 
 export PH2_ACF_GUI_VERSION=$(git describe --tags)
 export FELIS_VERSION=$(git -C felis describe --tags)
