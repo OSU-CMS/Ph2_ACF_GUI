@@ -163,9 +163,6 @@ optimizationTestMap = {
         "DAC_GDAC_R_LIN",
         "Vthreshold_LIN",
     ],
-    "threq": [
-        "VCAL_HIGH",
-    ],
     "gainopt": [
         "DAC_KRUM_CURR_LIN",
         "KRUM_CURR_LIN",
