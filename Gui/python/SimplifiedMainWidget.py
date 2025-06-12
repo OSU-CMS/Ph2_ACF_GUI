@@ -1,12 +1,12 @@
 import os
 import time
 from serial import SerialException
-from typing import Optional
+from typing import Optional, Callable, Union
 import requests
 from bs4 import BeautifulSoup
 
 from Gui.QtGUIutils.QtStartWindow import SummaryBox
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread, pyqtSlot
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
     QGridLayout,
@@ -130,10 +130,10 @@ class SimplifiedMainWidget(QWidget):
             # Check for coldbox interlock
             # NOTE: Check this, don't know if I need to worry about other indices
             # I also don't know if INTERLOCK == 1 is good or bad
-            cooler = self.instruments.get_cb()[0]
-            if int(cooler.interlocked()):  
+            self.cooler = self.instruments.get_cb()[0]
+            if int(self.cooler.interlocked()):  
                 # If coldbox interlock is safe, begin cooling
-                cooler.on() # Set cooler to default temperature
+                self.cooler.on() # Set cooler to default temperature
                 
             # Monitor the temperature of all "in-use" modules and
             
@@ -447,16 +447,17 @@ class SimplifiedMainWidget(QWidget):
 
         
     def updateEnvironmentMonitoring(self, temperature: Union[float, list[float]]) -> None:
+        """
+        Validate temperature of cooling method and update environment 
+        """
         set_temp =  site_settings.defaultPeltierSetTemp if site_settings.cooler == "Peltier" else cb.default_temp
-        
         if isinstance(temperature, list):
-            return all(abs(x - cb.default_temperature) < 5 for x in temperature)
+            status = all(abs(x - cb.default_temperature) < 5 for x in temperature)
         else:
-            return abs(x - cb.default_temperature) < 5
+            status = abs(x - cb.default_temperature) < 5
 
-        
+        self.updateMonitoringLED("environment", status)
 
-        self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
         
 
         
@@ -611,7 +612,12 @@ class SimplifiedMainWidget(QWidget):
 
         # Launch QThread to monitor Peltier temperature/power and Arduino temperature/humidity
         self.thread = QThread()
-        self.worker = Worker_Polling()
+
+        if site_settings.usePeltier:
+            self.worker = Environment_Monitoring(monitor_peltier)
+        else:
+            self.worker = Environment_Monitoring(lambda: monitor_coldbox(self.coldbox))
+
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         if site_settings.usePeltier:
@@ -728,66 +734,80 @@ class SimplifiedMainWidget(QWidget):
                 child.widget().deleteLater()
 
 
-class Worker_Polling(QObject):
-    temp = pyqtSignal(float)
-    power = pyqtSignal(bool)
 
-    def __init__(self, coldbox = None):
+def monitor_coldbox(coldbox) -> Optional[list[float]]:
+    """
+    Monitor the coldbox temperature and emit signals for each module.
+    This function is intended to be run in a separate thread.
+
+    Parameters:
+    coldbox: The coldbox object to monitor.
+    Returns:
+    A list of temperatures for each module in the coldbox, or None if communication fails.
+    """
+    try:
+        temperatures = coldbox.query("TEMPERATURE_MEASURED")
+        if temperatures:
+            # Emit the temperature signal with the current temperatures
+            return temperatures
+        else:
+            logger.warning("No temperatures received from coldbox.")
+            return None
+    except Exception as e:
+        logger.error(f"Error monitoring coldbox: {e}")
+        return None
+
+def monitor_peltier() -> Optional[float]:
+    """
+    Poll the Peltier for its current temperature in degrees Celsius.
+    Returns float temperature or None if communication fails.
+    """
+    peltier = PeltierSignalGenerator()
+    peltier_temp_message, temp_message_pass = peltier.sendCommand(
+        peltier.createCommand(
+            "Input1", ["0", "0", "0", "0", "0", "0", "0", "0"]
+        )
+    )
+    if not temp_message_pass:
+        peltier_temp_message = None
+    logger.debug("Formatting peltier output")
+    if peltier_temp_message:
+        # Convert the hex string to an integer and divide by 100 to get the temperature 
+        peltier_temp = int(
+            "".join(peltier_temp_message[1:9]), 16) / 100
+    else:
+        peltier_temp = None
+
+    return peltier_temp
+
+
+class Environment_Monitoring(QObject):
+    """
+    A worker class to monitor the environment, specifically the Peltier temperature and 
+    coldbox temperature.
+    """
+    temp = pyqtSignal(object) # Can be float or list of floats or None
+
+    def __init__(self, monitoring_function:Callable[[], Union[float, list[float], None]]):
         super().__init__()
         # Delay in seconds between polling
         self.delay = 0.5
         self.abort = False
+        self.monitoring_function = monitoring_function
 
-    def monitor_coldbox(self):
-        """
-        Code required to monitor 8 module coldbox
-        """
-        while not self.abort:
-            temperatures: dict = self.coldbox.query("TEMPERATURE_MEASURED")
-            self.temp.emit(temperatures)
-            
-
-
-        ...
-
-    def monitor_peltier(self):
-        ...
-
+    @pyqtSlot()
     def run(self):
-        while not self.abort and site_settings.usePeltier:
-            self.Peltier = PeltierSignalGenerator()
-            peltier_power_status = (
-                1
-                if int(
-                    self.Peltier.sendCommand(
-                        self.Peltier.createCommand(
-                            "Power On/Off Read", ["0", "0"])
-                    )[-1]
-                )
-                == 1
-                else 0
-            )
-            peltier_temp_message, temp_message_pass = self.Peltier.sendCommand(
-                self.Peltier.createCommand(
-                    "Input1", ["0", "0", "0", "0", "0", "0", "0", "0"]
-                )
-            )
-            if not temp_message_pass:
-                peltier_temp_message = None
-            logger.debug("Formatting peltier output")
-            if peltier_temp_message:
-                peltier_temp = int(
-                    "".join(peltier_temp_message[1:9]), 16) / 100
-            else:
-                peltier_temp = None
-
-            self.temp.emit(peltier_temp)
-            self.power.emit(peltier_power_status)
-            time.sleep(self.delay)
-
         while not self.abort:
-            self.temp.emit(0.0)
+            temp = self.monitoring_function()
+
+            if temp is None:
+                logger.error("Failed to get temperature from monitoring function")
+                time.sleep(self.delay)
+                continue
+
+            self.temp.emit(temp)
             time.sleep(self.delay)
+
 
     def abort_worker(self):
         print("Worker aborted")
