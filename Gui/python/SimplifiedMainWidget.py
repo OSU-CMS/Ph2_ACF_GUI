@@ -77,6 +77,26 @@ class SimplifiedMainWidget(QWidget):
 
         self.createWindow()
 
+    def createWindow(self):
+
+        self.monitoring_values = [
+            "temperature", "database", "hv", "lv", "condensation_risk"
+        ] + [f"fc7_{firmwareName}" for firmwareName in site_settings.FC7List.keys()]
+
+        self.create_monitoring_leds()
+
+        self.setDeviceStatus()
+
+        self.setupMonitoring()
+
+        self.setupLogFile()
+
+        self.setupBeBoard()
+
+        self.setupUI()
+
+        self.RunButtonState()
+
     def config_and_test(self):
         self.master.RunNewTest.resetConfigTest()
         self.master.RunNewTest.initialTest()
@@ -143,6 +163,12 @@ class SimplifiedMainWidget(QWidget):
             # change status light if any are not at the desired temperature
         except:
             ...
+    def setupColdbox(self):
+        """
+        Setup turn on the coldbox and set the default temperature. This function will take
+        a while to run so it should be run in a separate thread.
+        """
+        try: 
 
     def setupPeltier(self):
         try:
@@ -194,7 +220,7 @@ class SimplifiedMainWidget(QWidget):
             )[1]:
                 # Turn on Peltier
                 raise Exception("Could not communicate with Peltier")
-            logger.debug("Turned off Peltier")
+
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
                     "Proportional Bandwidth Write",
@@ -214,6 +240,9 @@ class SimplifiedMainWidget(QWidget):
 
 
     def setupUI(self):
+        self.simplifiedStatusBox = QGroupBox(
+            "Hello, {}!".format(self.master.operator_name_first)
+        )
         self.StatusLayout = QGridLayout()
         self.StatusLayout.addWidget(
             self.instrument_info["database"]["Label"], 0, 1, 1, 1
@@ -342,12 +371,12 @@ class SimplifiedMainWidget(QWidget):
 
         logger.debug("Simplied GUI UI Loaded")
 
-    def create_monitoing_leds(self, list_of_leds: list[str]) -> None:
+    def create_monitoring_leds(self) -> None:
         """
         Create the monitoring LEDs for the simplified GUI.
         These LEDs will be used to indicate the status of the instruments.
         """
-        for monitor_led in list_of_leds:
+        for monitor_led in self.monitoring_values:
             self.instrument_info[monitor_led] = {
                 "Label": QLabel(),
                 "Value": QLabel(),
@@ -358,30 +387,7 @@ class SimplifiedMainWidget(QWidget):
             self.instrument_info[monitor_led]["Value"].setPixmap(
                 self.redledpixmap
             )
-
-    def createWindow(self):
-
-        self.simplifiedStatusBox = QGroupBox(
-            "Hello, {}!".format(self.master.operator_name_first)
-        )
-
-        monitoring_values = [
-            "temperature", "database", "hv", "lv", "condensation_risk"
-        ] + [f"fc7_{firmwareName}" for firmwareName in site_settings.FC7List.keys()]
-        self.create_monitoring_leds(monitoring_values)
-
-        self.setupLogFile()
-
-        self.setupCondensationRiskMonitoring()
-        if site_settings.usePeltier:
-            self.setupPeltier()
-        else:
-            self.Peltier = None
-        self.setDeviceStatus()
-        self.setupBeBoard()
-        self.setupUI()
-        self.RunButtonState()
-
+          
     def updateMonitoringLED(self, monitor_led:str, status:bool)->None:
         """
         Modify the status of the LED on the simplified widget.
@@ -399,7 +405,7 @@ class SimplifiedMainWidget(QWidget):
             self.instrument_info[monitor_led]["Value"].setPixmap(self.redledpixmap)
 
         
-    def updateEnvironmentMonitoring(self, temperature: Union[float, list[float]]) -> None:
+    def updateTemperatureMonitoring(self, temperature: Union[float, list[float]]) -> None:
         """
         Validate temperature of cooling method and update environment 
         """
@@ -409,9 +415,7 @@ class SimplifiedMainWidget(QWidget):
         else:
             status = abs(x - cb.default_temperature) < 5
 
-        self.updateMonitoringLED("environment", status)
-
-        
+        self.updateMonitoringLED("temperature", status)
 
         
     def updateArduinoIndicator(self) -> bool:
@@ -519,11 +523,29 @@ class SimplifiedMainWidget(QWidget):
         self.StopButton.setDisabled(True)
         self.RunButton.setDisabled(False)
 
+    def setupMonitoring(self):
+        """ 
+        Setup variables that will be constantly polled.  
+        """
+        # Launch QThread to monitor Peltier temperature/power and Arduino temperature/humidity
+        thread = QThread()
+
+        if site_settings.usePeltier:
+            worker = Environment_Monitoring(monitor_peltier)
+        else:
+            worker = Environment_Monitoring(lambda: monitor_coldbox(self.coldbox))
+
+        worker.moveToThread(thread)
+        thread.started.connect(worker.run)
+        if site_settings.usePeltier:
+            worker.temp.connect(self.updatePeltierTemp)
+        worker.temp.connect(self.updateArduinoIndicator)
+        thread.start()
+
     def setDeviceStatus(self) -> None:
         """
-        Set status for all connected devices
-        The only device that needs to be polled is the Peltier (and maybe the Arduino)
-        Send these to a worker thread to avoid freezing of the GUI.
+        Set initial status for all monitored values
+
         The qualifications for a passing status are
         HV  -> HV is on and connected as stated by InstrumentCluster.status()
         LV  -> LV is on and connected as stated by InstrumentCluster.status()
@@ -532,19 +554,7 @@ class SimplifiedMainWidget(QWidget):
         Peltier -> check if the Peltier is at the right temperature and is reachable
         """
 
-        # self.instrument_status = self.check_icicle_devices()
-        self.instrument_status = {
-            "arduino": False,
-            "database": False,
-            "hv": False,
-            "lv": False,
-            "peltier": site_settings.usePeltier,
-        }
-
-        for firmwareName in site_settings.FC7List.keys():
-            self.instrument_status[f"fc7_{firmwareName}"] = False
-            self.instrument_status[f"fc7_{firmwareName}"] = False
-        # logger.debug(f"Instrument status is {self.instrument_status}")
+        self.instrument_status = {key: False for key in self.monitoring_values}
 
         logger.debug("Getting FC7 Comment")
         self.firmware = []
@@ -560,44 +570,14 @@ class SimplifiedMainWidget(QWidget):
             FwStatusComment, _, _ = fwStatusParser(BeBoard, LogFileName)
             if FwStatusComment == "Connected":
                 self.firmware.append(BeBoard)
+                self.instrument_status[f"fc7_{firmwareName}"] = True
 
         logger.debug("Checking DB Connection")
-
-        # Launch QThread to monitor Peltier temperature/power and Arduino temperature/humidity
-        self.thread = QThread()
-
-        if site_settings.usePeltier:
-            self.worker = Environment_Monitoring(monitor_peltier)
-        else:
-            self.worker = Environment_Monitoring(lambda: monitor_coldbox(self.coldbox))
-
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        if site_settings.usePeltier:
-            self.worker.temp.connect(self.updatePeltierTemp)
-        self.worker.temp.connect(self.updateArduinoIndicator)
-        self.thread.start()
+        self.instrument_status["database"] = self.master.panthera_connected
 
         logger.debug("Setting up instrument_status")
         logger.debug("instrument_status: {}".format(self.instrument_status))
-        logger.debug("instruments: ")
 
-        # 5/7/25: instrument_status["arduino"] is never referenced again, so this block is redundant.
-        if site_settings.cooler == "Tessie":
-            self.instrument_status["arduino"] = self.updateArduinoIndicator()
-        else:
-            self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
-
-        for beboard in self.firmware:
-            self.instrument_status[f"fc7_{beboard.getBoardName()}"] = True
-        self.instrument_status["database"] = self.master.panthera_connected
-
-        # Icicle will deal with the powersupplies, so I will just always set their status to good
-        # Technically a false sense of security for the user.
-        self.instrument_status["hv"] = True
-        self.instrument_status["lv"] = True
-        if site_settings.usePeltier:
-            self.instrument_status["peltier"] = False
         if self.instruments:
             logger.debug(
                 f"{__name__} Setup instrument status {self.instrument_status}")
@@ -611,6 +591,26 @@ class SimplifiedMainWidget(QWidget):
                 value["Value"].setPixmap(self.redledpixmap)
         logger.debug(f"{__name__} Setup led labels")
         logger.debug(f"Instrument status: {self.instrument_status}")
+
+        # These will be polled by the worker thread so just set to False by default
+        self.instrument_status["temperature"] = False
+        self.instrument_status["condensationRisk"] = False
+
+        # If using coldbox, turn on here and set LED based on presence of errors
+        if site_settings.cooler == "Tessie":
+            try: 
+                self.instruments.cb_on()
+
+            # TODO: Handle exceptions more gracefully to differentiate between
+            # failure to set humidity and failure to set temperature
+            except Exception as e:
+                logger.error(f"Error setting up coldbox: {e}")
+                self.instrument_status["temperature"] = False
+                self.instrument_info["temperature"]["Value"].setPixmap(
+                    self.redledpixmap)
+                self.instrument_status["condensationRisk"] = False
+                self.instrument_info["condensationRisk"]["Value"].setPixmap(
+                    self.redledpixmap)
 
     def RunButtonState(self):
         """
