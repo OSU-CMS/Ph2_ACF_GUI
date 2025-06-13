@@ -129,22 +129,6 @@ class SimplifiedMainWidget(QWidget):
         self.BeBoardWidget = SimpleBeBoardBox(self.master, self.firmware)
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
-    def setupCondensationRiskMonitoring(self):
-        self.instrument_info["condensationRisk"] = {
-            "Label": QLabel(), "Value": QLabel()}
-        if site_settings.cooler == "Tessie":  # Arduino is now a misnomer
-            self.instrument_info["condensationRisk"]["Label"].setText(
-                "Condensation Risk")
-        else:
-            self.ArduinoGroup = ArduinoWidget()
-            self.ArduinoGroup.stop.connect(self.abort_signal.emit)
-            self.ArduinoGroup.enable()
-            self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
-            self.ArduinoGroup.setPort(site_settings.defaultArduino)
-            self.ArduinoGroup.frozeArduinoPanel()
-            self.instrument_info["arduino"]["Label"].setText(
-                "Condensation Risk")
-
     def setupLogFile(self):
         for firmwareName in site_settings.FC7List.keys():
             LogFileName = "{0}/Gui/.{1}.log".format(
@@ -163,40 +147,19 @@ class SimplifiedMainWidget(QWidget):
                     "Can not create log files: {}".format(LogFileName))
                 messageBox.exec()
 
-    def setupColdbox(self) -> None:
-        try:
-            self.instrument_info["cooler"] = {
-                "Label": QLabel(), "Value": QLabel()}
-            self.instrument_info["cooler"]["Label"].setText("Cooler Status")
-            logger.debug("Setting up Cooler")
-
-            # Check for coldbox interlock
-            # NOTE: Check this, don't know if I need to worry about other indices
-            # I also don't know if INTERLOCK == 1 is good or bad
-            self.cooler = self.instruments.get_cb()[0]
-            if int(self.cooler.interlocked()):  
-                # If coldbox interlock is safe, begin cooling
-                self.cooler.on() # Set cooler to default temperature
-                
-            # Monitor the temperature of all "in-use" modules and
-            
-
-            # change status light if any are not at the desired temperature
-        except:
-            ...
-    def setupColdbox(self):
+    def setupArduino(self):
         """
-        Setup turn on the coldbox and set the default temperature. This function will take
-        a while to run so it should be run in a separate thread.
+        Setup the Arduino widget for condensation risk monitoring.
         """
-        try: 
+        self.ArduinoGroup = ArduinoWidget()
+        self.ArduinoGroup.stop.connect(self.abort_signal.emit)
+        self.ArduinoGroup.enable()
+        self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
+        self.ArduinoGroup.setPort(site_settings.defaultArduino)
+        self.ArduinoGroup.frozeArduinoPanel()
 
     def setupPeltier(self):
         try:
-            self.instrument_info["peltier"] = {
-                "Label": QLabel(), "Value": QLabel()}
-            self.instrument_info["peltier"]["Label"].setText(
-                "Peltier Temperature")
             logger.debug("Setting up Peltier")
             self.Peltier = PeltierSignalGenerator()
             assert self.Peltier is not None, "Peltier object was not created"
@@ -233,14 +196,6 @@ class SimplifiedMainWidget(QWidget):
                 )
             )
             logger.debug("Set peltier temp")
-            if not self.Peltier.sendCommand(
-                self.Peltier.createCommand(
-                    "Power On/Off Write", ["0", "0",
-                                           "0", "0", "0", "0", "0", "1"]
-                )
-            )[1]:
-                # Turn on Peltier
-                raise Exception("Could not communicate with Peltier")
 
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
@@ -252,9 +207,19 @@ class SimplifiedMainWidget(QWidget):
                     "Could not communicate with Peltier"
                 )  # Set proportional bandwidth
             logger.debug("Set Peltier Bandwidth")
+
+            if not self.Peltier.sendCommand(
+                self.Peltier.createCommand(
+                    "Power On/Off Write", ["0", "0",
+                                           "0", "0", "0", "0", "0", "1"]
+                )
+            )[1]:
+                # Turn on Peltier
+                raise Exception("Could not communicate with Peltier")
+            logger.debug("Turned on Peltier")
+
             time.sleep(0.5)
 
-            self.peltier_temperature_label = QLabel(self)
         except Exception as e:
             print("Error while attempting to set Peltier", e)
             self.Peltier = None
@@ -294,10 +259,10 @@ class SimplifiedMainWidget(QWidget):
             offset += 1
 
         self.StatusLayout.addWidget(
-            self.instrument_info["condensationRisk"]["Label"], 2, 1, 1, 1
+            self.instrument_info["condensation_risk"]["Label"], 2, 1, 1, 1
         )
         self.StatusLayout.addWidget(
-            self.instrument_info["condensationRisk"]["Value"], 2, 2, 1, 1
+            self.instrument_info["condensantion_risk"]["Value"], 2, 2, 1, 1
         )
         self.StatusLayout.addWidget(
             self.instrument_info["temperature"]["Label"], 2 + offset, 3, 1, 1
@@ -422,8 +387,10 @@ class SimplifiedMainWidget(QWidget):
         """
         if status:
             self.instrument_info[monitor_led]["Value"].setPixmap(self.greenledpixmap)
+            self.instrument_status[monitor_led] = True
         else:
             self.instrument_info[monitor_led]["Value"].setPixmap(self.redledpixmap)
+            self.instrument_status[monitor_led] = False
 
         
     def updateTemperatureMonitoring(self, temperature: Union[float, list[float]]) -> None:
@@ -544,13 +511,15 @@ class SimplifiedMainWidget(QWidget):
         self.StopButton.setDisabled(True)
         self.RunButton.setDisabled(False)
 
-    def monitor_peltier(self, peltier: PeltierSignalGenerator) -> Optional[bool]:
+    def monitor_peltier(self) -> Optional[bool]:
         """
         Monitor the Peltier temperature and emit signals for each module.
         This function is intended to be run in a separate thread.
+
+        If we call monitor_peltier(), self.Peltier should be set 
         """
-        peltier_temp_message, temp_message_pass = peltier.sendCommand(
-            peltier.createCommand(
+        peltier_temp_message, temp_message_pass = self.Peltier.sendCommand(
+            self.Peltier.createCommand(
                 "Input1", ["0", "0", "0", "0", "0", "0", "0", "0"]
             )
         )
@@ -564,6 +533,12 @@ class SimplifiedMainWidget(QWidget):
         else:
             peltier_temp = None
         return peltier_temp is not None and abs(peltier_temp - site_settings.defaultPeltierSetTemp) < 5
+
+    def monitor_arduino_humidity(self) -> Optional[bool]:
+        """
+        Monitor the arduino humidity and emit signals for each module.
+        """
+        return self.ArduinoGroup.condensationRisk
 
     def monitor_coldbox_temperature(self, coldbox) -> Optional[bool]:
         """
@@ -607,10 +582,12 @@ class SimplifiedMainWidget(QWidget):
             peltier = PeltierSignalGenerator()
             run_in_qthread(lambda: self.monitor_peltier(peltier), status_callback=self.updateMonitoringLED, 
                         label="temperature")
+            run_in_qthread(lambda: self.monitor_arduino_humidity, status_callback=self.updateMonitoringLED,
+                            label="condensation_risk")
         if site_settings.cooler == "Tessie":
             coldbox = self.instruments.get_cb()[0] # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
             run_in_qthread(lambda: self.monitor_coldbox_temperature(coldbox), status_callback=self.updateMonitoringLED, label="temperature")
-            run_in_qthread(lambda: self.monitor_coldbox_humidity(coldbox), status_callback=self.updateMonitoringLED, label="condensationRisk")
+            run_in_qthread(lambda: self.monitor_coldbox_humidity(coldbox), status_callback=self.updateMonitoringLED, label="condensation_risk")
 
     def setDeviceStatus(self) -> None:
         """
@@ -664,7 +641,7 @@ class SimplifiedMainWidget(QWidget):
 
         # These will be polled by the worker thread so just set to False by default
         self.instrument_status["temperature"] = False
-        self.instrument_status["condensationRisk"] = False
+        self.instrument_status["condensation_risk"] = False
 
         # If using coldbox, turn on here and set LED based on presence of errors
         if site_settings.cooler == "Tessie":
@@ -678,24 +655,28 @@ class SimplifiedMainWidget(QWidget):
                 self.instrument_status["temperature"] = False
                 self.instrument_info["temperature"]["Value"].setPixmap(
                     self.redledpixmap)
-                self.instrument_status["condensationRisk"] = False
-                self.instrument_info["condensationRisk"]["Value"].setPixmap(
+                self.instrument_status["condensation_risk"] = False
+                self.instrument_info["condensation_risk"]["Value"].setPixmap(
+                    self.redledpixmap)
+
+        elif site_settings.cooler == "Peltier":
+            try:
+                self.setupPeltier()
+                self.setupArduino()
+                
+            except Exception as e:
+                logger.error(f"Error setting up Peltier: {e}")
+                self.instrument_status["temperature"] = False
+                self.instrument_info["temperature"]["Value"].setPixmap(
                     self.redledpixmap)
 
     def RunButtonState(self):
         """
-        Check the status of LV, HV, and FC7, and disable the Run button
-        if any of these statuses are False.
+        Check status of all instruments in self.instrument_status
+        and enable/disable the Run button accordingly.
         """
         try:
-            # Check FC7 statuses
-            fc7_status = any(self.instrument_status.get(
-                f"fc7_{firmwareName}", False) for firmwareName in site_settings.FC7List.keys())
-            logger.debug(f"FC7 status: {fc7_status}")
-
-            # Disable the Run button if any status is False
-            # if self.instruments is False then icicle failed to connect to LV and HV
-            if not (self.instruments and fc7_status):
+            if not (all(self.instrument_status.values())):
                 self.RunButton.setDisabled(True)
                 logger.debug(
                     "RunButton disabled due to one or more failing statuses.")
@@ -780,28 +761,6 @@ def monitor_coldbox(coldbox) -> Optional[list[float]]:
         logger.error(f"Error monitoring coldbox: {e}")
         return None
 
-def monitor_peltier() -> Optional[float]:
-    """
-    Poll the Peltier for its current temperature in degrees Celsius.
-    Returns float temperature or None if communication fails.
-    """
-
-    peltier = PeltierSignalGenerator()
-    while True: 
-        peltier_temp_message, temp_message_pass = peltier.sendCommand(
-            peltier.createCommand(
-                "Input1", ["0", "0", "0", "0", "0", "0", "0", "0"]
-            )
-        )
-        if not temp_message_pass:
-            peltier_temp_message = None
-        logger.debug("Formatting peltier output")
-        if peltier_temp_message:
-            # Convert the hex string to an integer and divide by 100 to get the temperature 
-            peltier_temp = int(
-                "".join(peltier_temp_message[1:9]), 16) / 100
-        else:
-            peltier_temp = None
 
 
 
