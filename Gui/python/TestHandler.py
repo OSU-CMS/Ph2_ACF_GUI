@@ -98,6 +98,10 @@ class TestHandler(QObject):
         self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAup = {channel:{} for channel in self.instruments._module_dict}
+        self.VINDup = {channel:{} for channel in self.instruments._module_dict}
+        self.VINDdown = {channel:{} for channel in self.instruments._module_dict}
+        self.VINAdown = {channel:{} for channel in self.instruments._module_dict}
+        self.VINAup = {channel:{} for channel in self.instruments._module_dict}
 
         self.SLDOfilelist = []
 
@@ -537,10 +541,10 @@ class TestHandler(QObject):
                             for chip in self.VDDDup[channel]:
                                 data = [
                                     [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
-                                    [sweep_step[-2] for sweep_step in up_sweep[0][1]],
+                                    [float(i) for i in getattr(self, f"VIN{datatype[-1]}up")[channel][chip].values()],
                                     [float(i) for i in getattr(self, f"{datatype}up")[channel][chip].values()],
                                     [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
-                                    [sweep_step[-2] for sweep_step in down_sweep[0][1]],
+                                    [float(i) for i in getattr(self, f"VIN{datatype[-1]}down")[channel][chip].values()],
                                     [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
                                 ]
 
@@ -1227,7 +1231,7 @@ created by Ph2_ACF is empty."
                 match = re.search(r"(\w+):\s*([\d.]+)\s*\+/-\s*([\d.]+)\s*V", textStr)
                 if match:
                     if self.GADC_meas_chip is not None:
-                        if "VDDD" == match.group(1) or "VDDA" == match.group(1):
+                        if match.group(1) in ("VDDD","VDDA","VINA","VIND"):
                             if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown)[channel]:
                                 getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip] = {}
                             getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip][current] = match.group(2) #This line enforces that it only logs one VDDD or VDDA value per sweep step
