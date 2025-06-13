@@ -11,7 +11,7 @@ import sys
 import os
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
-from InnerTrackerTests.FESettings import FESettingsB_dict, FESettingsB
+from InnerTrackerTests.FESettings import FESettingsB
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -419,7 +419,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
 
             FESettings_Dict = (
-                {test_key: FESettingsB_dict.get(registerKey, FESettingsB) for test_key in HWSettings_DictB}
+                {test_key: FESettings_DictB.get(registerKey, FESettingsB) for test_key in HWSettings_DictB}
                 if "CROC" in moduleType else FESettings_DictA
             ) 
             globalSettings_Dict = (
