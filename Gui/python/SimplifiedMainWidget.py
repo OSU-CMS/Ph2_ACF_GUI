@@ -1,7 +1,7 @@
 import os
 import time
 from serial import SerialException
-from typing import Optional, Callable, Union
+from typing import Optional, Callable, Union, Any
 import requests
 from bs4 import BeautifulSoup
 
@@ -29,6 +29,27 @@ from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings # type: ignore
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 
+def run_in_qthread(func, status_callback=None, on_finish=None, interval=1.0):
+    """
+    Runs `func(*args, **kwargs)` in a QThread.
+    
+    :param func: Function to run
+    :param on_finish: Optional callback to connect to result
+    """
+    thread = QThread()
+    worker = FunctionRunner(func, status_callback=status_callback, interval=interval)
+    worker.moveToThread(thread)
+
+    thread.started.connect(worker.run)
+    worker.finished.connect(thread.quit)
+    worker.finished.connect(worker.deleteLater)
+    thread.finished.connect(thread.deleteLater)
+
+    if on_finish:
+        worker.finished.connect(on_finish)
+
+    thread.start()
+    return thread  # optionally return thread so you can track it
 
 class SimplifiedMainWidget(QWidget):
     abort_signal = pyqtSignal()
@@ -523,24 +544,73 @@ class SimplifiedMainWidget(QWidget):
         self.StopButton.setDisabled(True)
         self.RunButton.setDisabled(False)
 
-    def setupMonitoring(self):
+    def monitor_peltier(self, peltier: PeltierSignalGenerator) -> Optional[bool]:
+        """
+        Monitor the Peltier temperature and emit signals for each module.
+        This function is intended to be run in a separate thread.
+        """
+        peltier_temp_message, temp_message_pass = peltier.sendCommand(
+            peltier.createCommand(
+                "Input1", ["0", "0", "0", "0", "0", "0", "0", "0"]
+            )
+        )
+        if not temp_message_pass:
+            peltier_temp_message = None
+        logger.debug("Formatting peltier output")
+        if peltier_temp_message:
+            # Convert the hex string to an integer and divide by 100 to get the temperature 
+            peltier_temp = int(
+                "".join(peltier_temp_message[1:9]), 16) / 100
+        else:
+            peltier_temp = None
+        return peltier_temp is not None and abs(peltier_temp - site_settings.defaultPeltierSetTemp) < 5
+
+    def monitor_coldbox_temperature(self, coldbox) -> Optional[bool]:
+        """
+        Monitor the coldbox temperature and emit signals for each module.
+        """
+        try:    
+            temperatures = coldbox.query("TEMPERATURE_MEASURED")
+            if not temperatures:
+                logger.warning("No temperatures received from coldbox.")
+                return None
+        except Exception as e:
+            logger.error(f"Error monitoring coldbox: {e}")
+            return None
+
+        return temperatures is not None and all(
+            abs(temp - site_settings.default_coldbox_temp) < 5 for temp in temperatures
+        )
+
+    def monitor_coldbox_humidity(self, coldbox) -> Optional[bool]:
+        """
+        Monitor the coldbox humidity and emit signals for each module.
+        """
+        try: 
+            humidity = coldbox.query("REL_HUMIDITY")
+            if not humidity: 
+                logger.warning("No humidity received from coldbox.")
+                return None
+        except Exception as e:
+            logger.error(f"Error monitoring coldbox humidity: {e}")
+            return None
+        logger.debug(f"Coldbox humidity: {humidity}")
+        # TODO: Check what values I can expect from humidity for coldbox 
+        return humidity is not None and humidity < 0.9
+                
+
+    def setupMonitoring(self) -> None:
         """ 
         Setup variables that will be constantly polled.  
         """
-        # Launch QThread to monitor Peltier temperature/power and Arduino temperature/humidity
-        thread = QThread()
-
-        if site_settings.usePeltier:
-            worker = Environment_Monitoring(monitor_peltier)
-        else:
-            worker = Environment_Monitoring(lambda: monitor_coldbox(self.coldbox))
-
-        worker.moveToThread(thread)
-        thread.started.connect(worker.run)
-        if site_settings.usePeltier:
-            worker.temp.connect(self.updatePeltierTemp)
-        worker.temp.connect(self.updateArduinoIndicator)
-        thread.start()
+        if site_settings.cooler == "Peltier":
+            peltier = PeltierSignalGenerator()
+            run_in_qthread(lambda: self.monitor_peltier(peltier), status_callback=self.updateMonitoringLED, 
+                        label="temperature")
+        if site_settings.cooler == "Tessie":
+            coldbox = self.instruments.get_cb()[0] # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
+            run_in_qthread(lambda: self.monitor_coldbox_temperature(coldbox), status_callback=self.updateMonitoringLED, label="temperature")
+            run_in_qthread(lambda: self.monitor_coldbox_humidity(coldbox), status_callback=self.updateMonitoringLED, label="condensationRisk")
 
     def setDeviceStatus(self) -> None:
         """
@@ -715,23 +785,24 @@ def monitor_peltier() -> Optional[float]:
     Poll the Peltier for its current temperature in degrees Celsius.
     Returns float temperature or None if communication fails.
     """
-    peltier = PeltierSignalGenerator()
-    peltier_temp_message, temp_message_pass = peltier.sendCommand(
-        peltier.createCommand(
-            "Input1", ["0", "0", "0", "0", "0", "0", "0", "0"]
-        )
-    )
-    if not temp_message_pass:
-        peltier_temp_message = None
-    logger.debug("Formatting peltier output")
-    if peltier_temp_message:
-        # Convert the hex string to an integer and divide by 100 to get the temperature 
-        peltier_temp = int(
-            "".join(peltier_temp_message[1:9]), 16) / 100
-    else:
-        peltier_temp = None
 
-    return peltier_temp
+    peltier = PeltierSignalGenerator()
+    while True: 
+        peltier_temp_message, temp_message_pass = peltier.sendCommand(
+            peltier.createCommand(
+                "Input1", ["0", "0", "0", "0", "0", "0", "0", "0"]
+            )
+        )
+        if not temp_message_pass:
+            peltier_temp_message = None
+        logger.debug("Formatting peltier output")
+        if peltier_temp_message:
+            # Convert the hex string to an integer and divide by 100 to get the temperature 
+            peltier_temp = int(
+                "".join(peltier_temp_message[1:9]), 16) / 100
+        else:
+            peltier_temp = None
+
 
 
 class FunctionRunner(QObject):
@@ -739,21 +810,33 @@ class FunctionRunner(QObject):
     A worker class to monitor the environment, specifically the Peltier temperature and 
     coldbox temperature.
     """
-    finished = pyqtSignal(object) # Can be float or list of floats or None
+    status = pyqtSignal(object)
+    finished = pyqtSignal() # Can be float or list of floats or None
 
-    def __init__(self, func:Callable[[], Union[float, list[float], None]], 
-                 *args, **kwargs):
+    def __init__(self, func:Callable[[], Optional[bool]],
+                 status_callback:Callable[[object], None] = None, 
+                 interval:float=1.0, label:Optional[str]=None):
         super().__init__()
         # Delay in seconds between polling
         self.func = func
-        self.args = args
-        self.kwargs = kwargs
+        self.interval = interval
+        self._running = True
+        self.status_callback = status_callback
+        self.label = label
 
     @pyqtSlot()
     def run(self):
-        try:
-            result = self.func(*self.args, **self.kwargs)
-        except Exception as e:
-            logger.error(f"Error in FunctionRunner: {e}")
-            result = e 
-        self.finished.emit(result)
+        while self._running: 
+            try:
+                result = self.func()
+                if self.status_callback:
+                    self.status.connect(self.status_callback)
+                self.status.emit((result, self.label))
+            except Exception as e:
+                self.status.emit((f"Error: {e}", self.label))
+            time.sleep(self.interval)
+        self.finished.emit()  # Emit finished signal when done
+
+    def stop(self):
+        self._running = False
+        logger.debug("FunctionRunner stopped")
