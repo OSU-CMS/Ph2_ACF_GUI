@@ -22,7 +22,7 @@ import sys
 import os
 import pyvisa
 import requests
-from felis.felis_methods import get_accountInfo
+from felis.felis_helpers import get_accountInfo
 
 from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
 
