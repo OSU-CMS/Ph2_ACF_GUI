@@ -1,5 +1,5 @@
 #!/bin/bash
-REQUIRED_VERSION=1 # Will need to change this by hand
+REQUIRED_VERSION=2 # Will need to change this by hand
 
 # Loop over all files passed as arguments
 for FILE in "$@"; do
