@@ -11,7 +11,7 @@ import sys
 import os
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
-from InnerTrackerTests.FESettings import FESettingsB
+from InnerTrackerTests.FESettings import FESettingsB_dict
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -419,7 +419,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
 
             FESettings_Dict = (
-                {test_key: FESettings_DictB.get(registerKey, FESettingsB) for test_key in HWSettings_DictB}
+                {test_key: FESettings_DictB.get(registerKey, FESettingsB_dict) for test_key in HWSettings_DictB}
                 if "CROC" in moduleType else FESettings_DictA
             ) 
             globalSettings_Dict = (
@@ -445,7 +445,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                             module.getModuleName(), module.getFMCPort(), chip.getID()
                         ),
                     )
-                    FEChip.ConfigureFE(FESettings_Dict[testName])
+                    FEChip.ConfigureFE(FESettings_Dict[testName][registerKey])
 
                     if testName in FELaneConfig_Dict:
                         FEChip.ConfigureLaneConfig(
