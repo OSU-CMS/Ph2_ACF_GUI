@@ -49,14 +49,9 @@ echo $mydevices | xargs
 if [[ $mode == "dev" ]] 
 then
 	# Fix ownership of ./data if it exists (for dev mode)
-    if [ -d ./data ]; then
-    CURRENT_UID=$(stat -c "%u" ./data)
-    if [ "$CURRENT_UID" != "$USER_UID" ]; then
-        echo "⚠️  ./data has incorrect ownership."
-        echo "👉 Please run: sudo chown -R $USER_UID:$USER_UID ./data"
-    else
-        echo "✅ ./data already has correct ownership"
-    fi
+   if [ -d ./data ]; then
+    echo "🔧 Updating ownership of ./data to match current user..."
+    docker run --rm -v "$(pwd)/data:/mnt/data" alpine chown -R $(id -u):$(id -g) /mnt/data
 else
     echo "⚠️  ./data directory does not exist. Skipping permission fix."
 fi
