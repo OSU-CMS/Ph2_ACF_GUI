@@ -48,6 +48,12 @@ echo $mydevices | xargs
 
 if [[ $mode == "dev" ]] 
 then
+	# Fix ownership of ./data if it exists (for dev mode)
+    if [ -d ./data ]; then
+        echo "🔧 Fixing ./data ownership for dev mode..."
+        sudo chown -R 1000:1000 ./data
+    fi
+	
     echo "running as $mode"
     docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
 		-v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
