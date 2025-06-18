@@ -14,6 +14,23 @@ IMAGE_NAME="non_root_1"
 #IMAGE_NAME="local/testimagemay29user"
 
 mode=$1
+
+# --- 🔧 AUTO-FIX PERMISSIONS FOR /data ---
+echo "🔎 Detecting UID of cmsTkUser inside Docker image..."
+USER_UID=$(docker run --rm --entrypoint bash $IMAGE_NAME -c "id -u cmsTkUser" 2>/dev/null)
+
+if [ -z "$USER_UID" ]; then
+    echo "❌ Could not determine UID of cmsTkUser. Aborting permission fix."
+else
+    echo "✅ UID of cmsTkUser: $USER_UID"
+    if [ -d ./data ]; then
+        echo "🔧 Updating ownership of ./data to UID:$USER_UID using Alpine container"
+        docker run --rm -v "$(pwd)/data:/mnt/data" alpine chown -R $USER_UID:$USER_UID /mnt/data
+    else
+        echo "⚠️  ./data directory does not exist. Skipping permission fix."
+    fi
+fi
+
 ## Finding the USB ports to use with the GUI#############
 mydevices=""
 target="tty"
