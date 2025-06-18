@@ -50,10 +50,18 @@ if [[ $mode == "dev" ]]
 then
 	# Fix ownership of ./data if it exists (for dev mode)
     if [ -d ./data ]; then
-        echo "🔧 Fixing ./data ownership for dev mode..."
-        sudo chown -R 1000:1000 ./data
+    CURRENT_UID=$(stat -c "%u" ./data)
+    if [ "$CURRENT_UID" != "$USER_UID" ]; then
+        echo "⚠️  ./data has incorrect ownership."
+        echo "👉 Please run: sudo chown -R $USER_UID:$USER_UID ./data"
+    else
+        echo "✅ ./data already has correct ownership"
     fi
-	
+else
+    echo "⚠️  ./data directory does not exist. Skipping permission fix."
+fi
+
+
     echo "running as $mode"
     docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
 		-v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
