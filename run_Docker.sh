@@ -4,6 +4,7 @@ CONFIG_VER=2
 
 bash ./check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 
+
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
 ######### Specify the docker image to use #################
@@ -15,21 +16,6 @@ IMAGE_NAME="non_root_1"
 
 mode=$1
 
-# --- 🔧 AUTO-FIX PERMISSIONS FOR /data ---
-echo "🔎 Detecting UID of cmsTkUser inside Docker image..."
-USER_UID=$(docker run --rm --entrypoint bash $IMAGE_NAME -c "id -u cmsTkUser" 2>/dev/null)
-
-if [ -z "$USER_UID" ]; then
-    echo "❌ Could not determine UID of cmsTkUser. Aborting permission fix."
-else
-    echo "✅ UID of cmsTkUser: $USER_UID"
-    if [ -d ./data ]; then
-        echo "🔧 Updating ownership of ./data to UID:$USER_UID using Alpine container"
-        docker run --rm -v "$(pwd)/data:/mnt/data" alpine chown -R $USER_UID:$USER_UID /mnt/data
-    else
-        echo "⚠️  ./data directory does not exist. Skipping permission fix."
-    fi
-fi
 
 ## Finding the USB ports to use with the GUI#############
 mydevices=""
@@ -63,18 +49,28 @@ mydevices=$(echo $mydevices | xargs)
 echo $mydevices | xargs
 ################################################################################################
 
-if [[ $mode == "dev" ]] 
-then
-	# Fix ownership of ./data if it exists (for dev mode)
-   if [ -d ./data ]; then
-    echo "🔧 Updating ownership of ./data to match current user..."
-    docker run --rm -v "$(pwd)/data:/mnt/data" alpine chown -R $(id -u):$(id -g) /mnt/data
+
+echo "🔎 Detecting UID of cmsTkUser inside Docker image..."
+USER_UID=$(docker run --rm --entrypoint bash $IMAGE_NAME -c "id -u cmsTkUser" 2>/dev/null)
+
+if [ -z "$USER_UID" ]; then
+    echo "❌ Could not determine UID of cmsTkUser. Aborting permission fix."
 else
-    echo "⚠️  ./data directory does not exist. Skipping permission fix."
+    echo "✅ UID of cmsTkUser: $USER_UID"
+    if [ -d ./data ]; then
+        echo "🔧 Updating ownership of ./data to UID:$USER_UID using Alpine container"
+        docker run --rm -v "$(pwd)/data:/mnt/data" alpine chown -R $USER_UID:$USER_UID /mnt/data
+    else
+        echo "⚠️  ./data directory does not exist. Skipping permission fix."
+    fi
 fi
 
 
-    echo "running as $mode"
+
+
+if [[ $mode == "dev" ]] 
+then
+	echo "running as $mode"
     docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices -v ${PWD}:${PWD}\
 		-v ${PWD}/icicle/icicle:/home/cmsTkUser/Ph2_ACF_GUI/icicle/icicle:ro\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
