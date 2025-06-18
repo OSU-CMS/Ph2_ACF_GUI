@@ -2,12 +2,13 @@
 # DO NOT EDIT THIS BY HAND!!!
 CONFIG_VER=2
 
-bash check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
+bash ./check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
 ######### Specify the docker image to use #################
-IMAGE_NAME="osupixels/ph2_acf_gui_dev:v2-2-3-prerelease-"
+IMAGE_NAME="non_root_1"
+#IMAGE_NAME="osupixels/ph2_acf_gui_dev:v2-2-3-prerelease-"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_purdue:latest"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
 #IMAGE_NAME="local/testimagemay29user"
@@ -65,7 +66,7 @@ then
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
-		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host --entrypoint /bin/bash $IMAGE_NAME
+		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" --net host --entrypoint /bin/bash $IMAGE_NAME
 
 else
     echo "running as user"
@@ -101,6 +102,26 @@ To install on Alma Linux please run:\e[0m
     		echo "Image pull canceled."
   		fi
 	fi
+
+
+# --- 🔧 AUTO-FIX PERMISSIONS FOR /data ---
+echo "🔎 Detecting UID of cmsTkUser inside Docker image..."
+USER_UID=$(docker run --rm --entrypoint bash $IMAGE_NAME -c "id -u cmsTkUser" 2>/dev/null)
+
+if [ -z "$USER_UID" ]; then
+    echo "❌ Could not determine UID of cmsTkUser. Aborting permission fix."
+else
+    echo "✅ UID of cmsTkUser: $USER_UID"
+    if [ -d ./data ]; then
+        echo "🔧 Updating ownership of ./data to UID:$USER_UID"
+        sudo chown -R $USER_UID:$USER_UID ./data
+    else
+        echo "⚠️  ./data directory does not exist. Skipping permission fix."
+    fi
+fi
+
+
+
     docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
