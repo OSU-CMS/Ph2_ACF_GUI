@@ -49,24 +49,26 @@ mydevices=$(echo $mydevices | xargs)
 echo $mydevices | xargs
 ################################################################################################
 
+# --- Ensure ./data exists ---
+if [ ! -d "./data" ]; then
+    echo " ./data directory does not exist. Creating it..."
+    mkdir ./data
+fi
 
-echo "🔎 Detecting UID of cmsTkUser inside Docker image..."
+echo "Detecting UID of cmsTkUser inside Docker image..."
 USER_UID=$(docker run --rm --entrypoint bash $IMAGE_NAME -c "id -u cmsTkUser" 2>/dev/null)
 
 if [ -z "$USER_UID" ]; then
-    echo "❌ Could not determine UID of cmsTkUser. Aborting permission fix."
+    echo "Could not determine UID of cmsTkUser. Aborting permission fix."
 else
-    echo "✅ UID of cmsTkUser: $USER_UID"
+    echo "UID of cmsTkUser: $USER_UID"
     if [ -d ./data ]; then
-        echo "🔧 Updating ownership of ./data to UID:$USER_UID using Alpine container"
+        echo "Updating ownership of ./data to UID:$USER_UID using Alpine container"
         docker run --rm -v "$(pwd)/data:/mnt/data" alpine chown -R $USER_UID:$USER_UID /mnt/data
     else
-        echo "⚠️  ./data directory does not exist. Skipping permission fix."
+        echo "./data directory does not exist. Skipping permission fix."
     fi
 fi
-
-
-
 
 if [[ $mode == "dev" ]] 
 then
@@ -124,25 +126,6 @@ To install on Alma Linux please run:\e[0m
     		echo "Image pull canceled."
   		fi
 	fi
-
-
-# --- 🔧 AUTO-FIX PERMISSIONS FOR /data ---
-echo "🔎 Detecting UID of cmsTkUser inside Docker image..."
-USER_UID=$(docker run --rm --entrypoint bash $IMAGE_NAME -c "id -u cmsTkUser" 2>/dev/null)
-
-if [ -z "$USER_UID" ]; then
-    echo "❌ Could not determine UID of cmsTkUser. Aborting permission fix."
-else
-    echo "✅ UID of cmsTkUser: $USER_UID"
-    if [ -d ./data ]; then
-        echo "🔧 Updating ownership of ./data to UID:$USER_UID"
-        sudo chown -R $USER_UID:$USER_UID ./data
-    else
-        echo "⚠️  ./data directory does not exist. Skipping permission fix."
-    fi
-fi
-
-
 
     docker run --detach-keys='ctrl-e,e' --rm -ti $mydevices\
 		-v ${PWD}/Gui/siteConfig.py:/home/cmsTkUser/Ph2_ACF_GUI/Gui/siteSettings.py\
