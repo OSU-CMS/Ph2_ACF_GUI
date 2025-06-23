@@ -94,7 +94,6 @@ class TestHandler(QObject):
         self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in test_list} for module in self.modules}
         
         self.GADC_meas_chip = None
-
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
         self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAdown = {channel:{} for channel in self.instruments._module_dict}
@@ -103,15 +102,6 @@ class TestHandler(QObject):
         self.VINDdown = {channel:{} for channel in self.instruments._module_dict}
         self.VINAdown = {channel:{} for channel in self.instruments._module_dict}
         self.VINAup = {channel:{} for channel in self.instruments._module_dict}
-
-        self.VDDDupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDDdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDAdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDAupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINDupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINDdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINAdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINAupError = {channel:{} for channel in self.instruments._module_dict}
 
         self.SLDOfilelist = []
 
@@ -558,8 +548,8 @@ class TestHandler(QObject):
                                     [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
                                 ]
 
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}", channel, chip)
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}", channel, chip)
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}")
                     self.SLDOScanFinished()
                     return
                 else:
@@ -1245,10 +1235,6 @@ created by Ph2_ACF is empty."
                             if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown)[channel]:
                                 getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip] = {}
                             getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip][current] = match.group(2) #This line enforces that it only logs one VDDD or VDDA value per sweep step
-
-                            if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown+"Error")[channel]:
-                                getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip] = {}
-                            getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip][current] = match.group(3) #This line enforces that it only logs one VDDD or VDDA value per sweep step
                     else:
                         logger.error(f'Did not receive expected message, "Reading monitored data for \
                         [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
@@ -1378,7 +1364,7 @@ created by Ph2_ACF is empty."
                     self.SLDOProgressValue
                 )
 
-    def makeSLDOPlot(self, total_result: np.ndarray, pin: str, channel=None, chip=None):
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for module in self.modules:
             moduleName = module.getModuleName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(
@@ -1394,33 +1380,29 @@ created by Ph2_ACF is empty."
 
             # Make the actual graph
             plt.figure()
-            plt.errorbar(
-                list(total_result_stacked[0]),
-                list(total_result_stacked[1]),
-                data="-x",
+            plt.plot(
+                total_result_stacked[0],
+                total_result_stacked[1],
+                "-x",
                 label="module input voltage (up)",
-                yerr=[] if channel is None or chip is None else [float(i) for i in getattr(self, f"VIN{pin[3]}upError")[channel][chip].values()]
             )
-            plt.errorbar(
-                list(total_result_stacked[0]),
-                list(total_result_stacked[2]),
-                data="-x",
+            plt.plot(
+                total_result_stacked[0],
+                total_result_stacked[2],
+                "-x",
                 label=f"{pin} (up)",
-                yerr=[] if channel is None or chip is None else [float(i) for i in getattr(self, f"{pin[:4]}upError")[channel][chip].values()]
             )
-            plt.errorbar(
-                list(total_result_stacked[3]),
-                list(total_result_stacked[4]),
-                data="-x",
+            plt.plot(
+                total_result_stacked[3],
+                total_result_stacked[4],
+                "-x",
                 label="module input voltage (down)",
-                yerr=[] if channel is None or chip is None else [float(i) for i in getattr(self, f"VIN{pin[3]}downError")[channel][chip].values()]
             )
-            plt.errorbar(
-                list(total_result_stacked[3]),
-                list(total_result_stacked[5]),
-                data="-x",
+            plt.plot(
+                total_result_stacked[3],
+                total_result_stacked[5],
+                "-x",
                 label=f"{pin} (down)",
-                yerr=[] if channel is None or chip is None else [float(i) for i in getattr(self, f"{pin[:4]}downError")[channel][chip].values()]
             )
             plt.grid(True)
             plt.xlabel("Current (A)")
