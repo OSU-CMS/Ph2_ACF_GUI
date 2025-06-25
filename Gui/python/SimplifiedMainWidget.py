@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 from serial import SerialException
 from typing import Optional, Callable, Union, Any
 import requests
@@ -45,9 +46,12 @@ def run_in_qthread(func, status_callback=None, on_finish=None, interval=1.0):
     worker.finished.connect(worker.deleteLater)
     thread.finished.connect(thread.deleteLater)
 
+    print("Finished setting up qthread")
+
     if on_finish:
         worker.finished.connect(on_finish)
 
+    print("About to start thread")
     thread.start()
     return thread  # optionally return thread so you can track it
 
@@ -61,6 +65,7 @@ class SimplifiedMainWidget(QWidget):
         super().__init__()
         self.master = master
         self.dimension = dimension
+        self.threads = []
 
         try:
             self.instruments = master.instruments
@@ -78,6 +83,11 @@ class SimplifiedMainWidget(QWidget):
                     """
             )
             self.close()
+
+        if self.instruments is None: 
+            logger.error("No instruments setup, exiting Simplified GUI")
+            self.close() 
+            sys.exit(1)
 
         self.instrument_info = {}
 
@@ -105,18 +115,25 @@ class SimplifiedMainWidget(QWidget):
         ] + [f"fc7_{firmwareName}" for firmwareName in site_settings.FC7List.keys()]
 
         self.create_monitoring_leds()
+        print("Setup leds")
 
         self.setDeviceStatus()
+        print("Set Device Status")
 
         self.setupMonitoring()
+        print("Setup Monitoring")
 
         self.setupLogFile()
+        print("Setup Log File")
 
         self.setupBeBoard()
+        print("Setup BeBoard")
 
         self.setupUI()
+        print("Setup UI")
 
         self.RunButtonState()
+        print("Setup RunButtonState")
 
     def config_and_test(self):
         self.master.RunNewTest.resetConfigTest()
@@ -262,7 +279,7 @@ class SimplifiedMainWidget(QWidget):
             self.instrument_info["condensation_risk"]["Label"], 2, 1, 1, 1
         )
         self.StatusLayout.addWidget(
-            self.instrument_info["condensantion_risk"]["Value"], 2, 2, 1, 1
+            self.instrument_info["condensation_risk"]["Value"], 2, 2, 1, 1
         )
         self.StatusLayout.addWidget(
             self.instrument_info["temperature"]["Label"], 2 + offset, 3, 1, 1
@@ -374,23 +391,26 @@ class SimplifiedMainWidget(QWidget):
                 self.redledpixmap
             )
           
-    def updateMonitoringLED(self, monitor_led:str, status:bool)->None:
+    def updateMonitoringLED(self, monitor_leds:list[str], status:bool)->None:
         """
         Modify the status of the LED on the simplified widget.
 
         Arguments:
         monitor_led:
         The LED that you would like to change the status of. Currently the following
-        values are available ("lv", "database", "hv", "fc7_<firmware_name>", "environment"
+        values are available ("lv", "database", "hv", "fc7_<firmware_name>", "temperature", "condensation_risk").
+        This argument is required to be a list so you could potentially change multiple LEDs at once.
 
         status: What status you would like to change the LED to False -> red, True -> green
         """
         if status:
-            self.instrument_info[monitor_led]["Value"].setPixmap(self.greenledpixmap)
-            self.instrument_status[monitor_led] = True
+            for monitor_led in monitor_leds:
+                self.instrument_info[monitor_led]["Value"].setPixmap(self.greenledpixmap)
+                self.instrument_status[monitor_led] = True
         else:
-            self.instrument_info[monitor_led]["Value"].setPixmap(self.redledpixmap)
-            self.instrument_status[monitor_led] = False
+            for monitor_led in monitor_leds: 
+                self.instrument_info[monitor_led]["Value"].setPixmap(self.redledpixmap)
+                self.instrument_status[monitor_led] = False
 
         
     def updateTemperatureMonitoring(self, temperature: Union[float, list[float]]) -> None:
@@ -540,39 +560,6 @@ class SimplifiedMainWidget(QWidget):
         """
         return self.ArduinoGroup.condensationRisk
 
-    def monitor_coldbox_temperature(self, coldbox) -> Optional[bool]:
-        """
-        Monitor the coldbox temperature and emit signals for each module.
-        """
-        try:    
-            temperatures = coldbox.query("TEMPERATURE_MEASURED")
-            if not temperatures:
-                logger.warning("No temperatures received from coldbox.")
-                return None
-        except Exception as e:
-            logger.error(f"Error monitoring coldbox: {e}")
-            return None
-
-        return temperatures is not None and all(
-            abs(temp - site_settings.default_coldbox_temp) < 5 for temp in temperatures
-        )
-
-    def monitor_coldbox_humidity(self, coldbox) -> Optional[bool]:
-        """
-        Monitor the coldbox humidity and emit signals for each module.
-        """
-        try: 
-            humidity = coldbox.query("REL_HUMIDITY")
-            if not humidity: 
-                logger.warning("No humidity received from coldbox.")
-                return None
-        except Exception as e:
-            logger.error(f"Error monitoring coldbox humidity: {e}")
-            return None
-        logger.debug(f"Coldbox humidity: {humidity}")
-        # TODO: Check what values I can expect from humidity for coldbox 
-        return humidity is not None and humidity < 0.9
-                
 
     def setupMonitoring(self) -> None:
         """ 
@@ -580,14 +567,18 @@ class SimplifiedMainWidget(QWidget):
         """
         if site_settings.cooler == "Peltier":
             peltier = PeltierSignalGenerator()
-            run_in_qthread(lambda: self.monitor_peltier(peltier), status_callback=self.updateMonitoringLED, 
-                        label="temperature")
-            run_in_qthread(lambda: self.monitor_arduino_humidity, status_callback=self.updateMonitoringLED,
-                            label="condensation_risk")
+            temp_thread = run_in_qthread(lambda: self.monitor_peltier(peltier), status_callback=lambda status: self.updateMonitoringLED(label=["temperature"], status=status))
+            condensation_thread = run_in_qthread(lambda: self.monitor_arduino_humidity, status_callback=lambda status: self.updateMonitoringLED(label=["condensation_risk"], status=status))
+
+            self.threads.append(temp_thread)
+            self.threads.append(condensation_thread)
         if site_settings.cooler == "Tessie":
+            print("Inside Tessie Monitoring")
             coldbox = self.instruments.get_cb()[0] # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
-            run_in_qthread(lambda: self.monitor_coldbox_temperature(coldbox), status_callback=self.updateMonitoringLED, label="temperature")
-            run_in_qthread(lambda: self.monitor_coldbox_humidity(coldbox), status_callback=self.updateMonitoringLED, label="condensation_risk")
+            print("Got coldbox")
+            thread = run_in_qthread(lambda: self.monitor_coldbox(coldbox), status_callback=lambda status: self.updateMonitoringLED(label=["temperature", "condensation_risk"], status=status))
+            self.threads.append(thread)
+
 
     def setDeviceStatus(self) -> None:
         """
@@ -739,21 +730,23 @@ class SimplifiedMainWidget(QWidget):
 
 
 
-def monitor_coldbox(coldbox) -> Optional[list[float]]:
+def monitor_coldbox(coldbox) -> Optional[list[int]]:
     """
-    Monitor the coldbox temperature and emit signals for each module.
+    Monitor the power to the TECs in the coldbox and emit signals for each module. This is used
+    as a proxy for temperature and humidity monitoring since the TECs will be turned off by
+    Tessie if bad temperatures or humidity values are measured. 
     This function is intended to be run in a separate thread.
 
     Parameters:
     coldbox: The coldbox object to monitor.
     Returns:
-    A list of temperatures for each module in the coldbox, or None if communication fails.
+    List of ints describing status of TECs
     """
     try:
-        temperatures = coldbox.query("TEMPERATURE_MEASURED")
-        if temperatures:
-            # Emit the temperature signal with the current temperatures
-            return temperatures
+        status = coldbox.status()
+        if status:
+            logger.debug(f"Coldbox Status: {status}")
+            return status
         else:
             logger.warning("No temperatures received from coldbox.")
             return None
@@ -769,7 +762,7 @@ class FunctionRunner(QObject):
     A worker class to monitor the environment, specifically the Peltier temperature and 
     coldbox temperature.
     """
-    status = pyqtSignal(object)
+    status = pyqtSignal(bool)
     finished = pyqtSignal() # Can be float or list of floats or None
 
     def __init__(self, func:Callable[[], Optional[bool]],
@@ -790,7 +783,7 @@ class FunctionRunner(QObject):
                 result = self.func()
                 if self.status_callback:
                     self.status.connect(self.status_callback)
-                self.status.emit((result, self.label))
+                self.status.emit(result)
             except Exception as e:
                 self.status.emit((f"Error: {e}", self.label))
             time.sleep(self.interval)
