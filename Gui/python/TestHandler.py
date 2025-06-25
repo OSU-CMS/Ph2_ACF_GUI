@@ -469,7 +469,10 @@ class TestHandler(QObject):
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
 
-            EnableReRun = self.onFinalTest(self.testIndexTracker + 1)
+            if "CrossTalk" in testName:
+                EnableReRun = self.onFinalTest(self.testIndexTracker)
+            else:
+                EnableReRun = self.onFinalTest(self.testIndexTracker + 1)
             self.stepFinished.emit(EnableReRun)
 
             if self.master.expertMode:
@@ -1286,8 +1289,13 @@ created by Ph2_ACF is empty."
         # validate the results
         self.validateTest()
         
-        self.testIndexTracker += 1
-        self.testsAttempted += 1
+        if (
+            "IVCurve" not in self.currentTest
+            and "SLDOScan" not in self.currentTest
+            and "CrossTalk" not in self.currentTest
+        ):
+            self.testIndexTracker += 1
+            self.testsAttempted += 1
 
 
 
@@ -1335,7 +1343,7 @@ created by Ph2_ACF is empty."
                                     "hybridID": hybridID,
                                     "module": module,
                                 }
-
+                                index -= 1
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
