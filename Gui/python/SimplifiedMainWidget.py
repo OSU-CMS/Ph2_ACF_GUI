@@ -7,7 +7,7 @@ import requests
 from bs4 import BeautifulSoup
 
 from Gui.QtGUIutils.QtStartWindow import SummaryBox
-from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread, pyqtSlot
+from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread, pyqtSlot, QTimer
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
     QGridLayout,
@@ -30,42 +30,22 @@ from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings # type: ignore
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 
-def run_in_qthread(func, status_callback=None, on_finish=None, interval=1.0):
-    """
-    Runs `func(*args, **kwargs)` in a QThread.
-    
-    :param func: Function to run
-    :param on_finish: Optional callback to connect to result
-    """
-    thread = QThread()
-    worker = FunctionRunner(func, status_callback=status_callback, interval=interval)
-    worker.moveToThread(thread)
-
-    thread.started.connect(worker.run)
-    worker.finished.connect(thread.quit)
-    worker.finished.connect(worker.deleteLater)
-    thread.finished.connect(thread.deleteLater)
-
-    print("Finished setting up qthread")
-
-    if on_finish:
-        worker.finished.connect(on_finish)
-
-    print("About to start thread")
-    thread.start()
-    return thread  # optionally return thread so you can track it
 
 class SimplifiedMainWidget(QWidget):
     abort_signal = pyqtSignal()
     close_signal = pyqtSignal()
     config_and_test_Signal = pyqtSignal()
+    temperature_status = pyqtSignal(bool)
+    condensation_status = pyqtSignal(bool)
 
     def __init__(self, master, dimension):
         logger.debug("SimplifiedMainWidget.__init__()")
         super().__init__()
         self.master = master
         self.dimension = dimension
-        self.threads = []
+
+        self.timer = QTimer()
+        self.timer.start(1000) # 1s timer
 
         try:
             self.instruments = master.instruments
@@ -111,29 +91,29 @@ class SimplifiedMainWidget(QWidget):
     def createWindow(self):
 
         self.monitoring_values = [
-            "temperature", "database", "hv", "lv", "condensation_risk"
+            "temperature", "database", "hv", "lv", "condensation"
         ] + [f"fc7_{firmwareName}" for firmwareName in site_settings.FC7List.keys()]
 
         self.create_monitoring_leds()
-        print("Setup leds")
+        logger.debug("Setup leds")
 
         self.setDeviceStatus()
-        print("Set Device Status")
+        logger.debug("Set Device Status")
 
         self.setupMonitoring()
-        print("Setup Monitoring")
+        logger.debug("Setup Monitoring")
 
         self.setupLogFile()
-        print("Setup Log File")
+        logger.debug("Setup Log File")
 
         self.setupBeBoard()
-        print("Setup BeBoard")
+        logger.debug("Setup BeBoard")
 
         self.setupUI()
-        print("Setup UI")
+        logger.debug("Setup UI")
 
         self.RunButtonState()
-        print("Setup RunButtonState")
+        logger.debug("Setup RunButtonState")
 
     def config_and_test(self):
         self.master.RunNewTest.resetConfigTest()
@@ -276,10 +256,10 @@ class SimplifiedMainWidget(QWidget):
             offset += 1
 
         self.StatusLayout.addWidget(
-            self.instrument_info["condensation_risk"]["Label"], 2, 1, 1, 1
+            self.instrument_info["condensation"]["Label"], 2, 1, 1, 1
         )
         self.StatusLayout.addWidget(
-            self.instrument_info["condensation_risk"]["Value"], 2, 2, 1, 1
+            self.instrument_info["condensation"]["Value"], 2, 2, 1, 1
         )
         self.StatusLayout.addWidget(
             self.instrument_info["temperature"]["Label"], 2 + offset, 3, 1, 1
@@ -398,17 +378,20 @@ class SimplifiedMainWidget(QWidget):
         Arguments:
         monitor_led:
         The LED that you would like to change the status of. Currently the following
-        values are available ("lv", "database", "hv", "fc7_<firmware_name>", "temperature", "condensation_risk").
-        This argument is required to be a list so you could potentially change multiple LEDs at once.
+        values are available ("lv", "database", "hv", "fc7_<firmware_name>", "temperature", "condensation").
+        This argument is required to be a list so you could potentially change multiple LEDs at once. As is the case with
+        the 8 module coldbox.
 
         status: What status you would like to change the LED to False -> red, True -> green
         """
+
+        logger.info(f"Updating status of {monitor_leds} to {status}")
         if status:
             for monitor_led in monitor_leds:
                 self.instrument_info[monitor_led]["Value"].setPixmap(self.greenledpixmap)
                 self.instrument_status[monitor_led] = True
         else:
-            for monitor_led in monitor_leds: 
+            for monitor_led in monitor_leds:
                 self.instrument_info[monitor_led]["Value"].setPixmap(self.redledpixmap)
                 self.instrument_status[monitor_led] = False
 
@@ -552,32 +535,32 @@ class SimplifiedMainWidget(QWidget):
                 "".join(peltier_temp_message[1:9]), 16) / 100
         else:
             peltier_temp = None
-        return peltier_temp is not None and abs(peltier_temp - site_settings.defaultPeltierSetTemp) < 5
+        status = peltier_temp is not None and abs(peltier_temp - site_settings.defaultPeltierSetTemp) < 5
+        self.temperature_status.emit(status)
 
-    def monitor_arduino_humidity(self) -> Optional[bool]:
+    def monitor_arduino_humidity(self) -> None:
         """
         Monitor the arduino humidity and emit signals for each module.
         """
-        return self.ArduinoGroup.condensationRisk
+        self.condensation_status.emit(self.ArduinoGroup.condensationRisk)
 
 
     def setupMonitoring(self) -> None:
         """ 
         Setup variables that will be constantly polled.  
         """
+        self.temperature_status.connect(lambda status: self.updateMonitoringLED(monitor_leds=["temperature"], status=status))
+        self.condensation_status.connect(lambda status: self.updateMonitoringLED(monitor_leds=["condensation"], status=status))
+
         if site_settings.cooler == "Peltier":
             peltier = PeltierSignalGenerator()
-            temp_thread = run_in_qthread(lambda: self.monitor_peltier(peltier), status_callback=lambda status: self.updateMonitoringLED(label=["temperature"], status=status))
-            condensation_thread = run_in_qthread(lambda: self.monitor_arduino_humidity, status_callback=lambda status: self.updateMonitoringLED(label=["condensation_risk"], status=status))
-
-            self.threads.append(temp_thread)
-            self.threads.append(condensation_thread)
+            self.timer.timeout.connect(lambda: self.monitor_peltier(peltier))
+            
         if site_settings.cooler == "Tessie":
-            print("Inside Tessie Monitoring")
+            logger.debug("Inside Tessie Monitoring")
             coldbox = self.instruments.get_cb()[0] # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
-            print("Got coldbox")
-            thread = run_in_qthread(lambda: self.monitor_coldbox(coldbox), status_callback=lambda status: self.updateMonitoringLED(label=["temperature", "condensation_risk"], status=status))
-            self.threads.append(thread)
+            logger.debug("Got coldbox")
+            self.timer.timeout.connect(lambda: self.monitor_coldbox(coldbox))
 
 
     def setDeviceStatus(self) -> None:
@@ -606,6 +589,8 @@ class SimplifiedMainWidget(QWidget):
                 ipAddress=ipaddress,
             )
             FwStatusComment, _, _ = fwStatusParser(BeBoard, LogFileName)
+            logger.debug(f"FC7 Status Comment: {FwStatusComment}")
+
             if FwStatusComment == "Connected":
                 self.firmware.append(BeBoard)
                 self.instrument_status[f"fc7_{firmwareName}"] = True
@@ -632,12 +617,15 @@ class SimplifiedMainWidget(QWidget):
 
         # These will be polled by the worker thread so just set to False by default
         self.instrument_status["temperature"] = False
-        self.instrument_status["condensation_risk"] = False
+        self.instrument_status["condensation"] = False
 
         # If using coldbox, turn on here and set LED based on presence of errors
         if site_settings.cooler == "Tessie":
             try: 
-                self.instruments.cb_on()
+                # TODO: Probably want to add this to a thread so that it doesn't freeze the GUI for like 5 minutes
+                self.instruments.cb_on() # At the end of this, the environment should be good
+                self.instrument_status["temperature"] = True
+                self.instrument_status["condensation"] = True
 
             # TODO: Handle exceptions more gracefully to differentiate between
             # failure to set humidity and failure to set temperature
@@ -646,8 +634,8 @@ class SimplifiedMainWidget(QWidget):
                 self.instrument_status["temperature"] = False
                 self.instrument_info["temperature"]["Value"].setPixmap(
                     self.redledpixmap)
-                self.instrument_status["condensation_risk"] = False
-                self.instrument_info["condensation_risk"]["Value"].setPixmap(
+                self.instrument_status["condensation"] = False
+                self.instrument_info["condensation"]["Value"].setPixmap(
                     self.redledpixmap)
 
         elif site_settings.cooler == "Peltier":
@@ -729,30 +717,32 @@ class SimplifiedMainWidget(QWidget):
                 child.widget().deleteLater()
 
 
+    def monitor_coldbox(self, coldbox) -> None:
+        """
+        Monitor the power to the TECs in the coldbox and emit signals for each module. This is used
+        as a proxy for temperature and humidity monitoring since the TECs will be turned off by
+        Tessie if bad temperatures or humidity values are measured. 
+        This function is intended to be run in a separate thread.
 
-def monitor_coldbox(coldbox) -> Optional[list[int]]:
-    """
-    Monitor the power to the TECs in the coldbox and emit signals for each module. This is used
-    as a proxy for temperature and humidity monitoring since the TECs will be turned off by
-    Tessie if bad temperatures or humidity values are measured. 
-    This function is intended to be run in a separate thread.
-
-    Parameters:
-    coldbox: The coldbox object to monitor.
-    Returns:
-    List of ints describing status of TECs
-    """
-    try:
-        status = coldbox.status()
-        if status:
-            logger.debug(f"Coldbox Status: {status}")
-            return status
-        else:
-            logger.warning("No temperatures received from coldbox.")
-            return None
-    except Exception as e:
-        logger.error(f"Error monitoring coldbox: {e}")
-        return None
+        Parameters:
+        coldbox: The coldbox object to monitor.
+        Returns:
+        List of ints describing status of TECs
+        """
+        try:
+            status = coldbox.status()
+            if status:
+                logger.debug(f"Coldbox Status: {status}")
+                self.temperature_status.emit(all(status))
+                self.condensation_status.emit(all(status))
+            else:
+                logger.warning("No temperatures received from coldbox.")
+                self.temperature_status.emit(False)
+                self.condensation_status.emit(False)
+        except Exception as e:
+            logger.error(f"Error monitoring coldbox: {e}")
+            self.temperature_status.emit(False)
+            self.condensation_status.emit(False)
 
 
 
@@ -762,7 +752,7 @@ class FunctionRunner(QObject):
     A worker class to monitor the environment, specifically the Peltier temperature and 
     coldbox temperature.
     """
-    status = pyqtSignal(bool)
+    status = pyqtSignal(object)
     finished = pyqtSignal() # Can be float or list of floats or None
 
     def __init__(self, func:Callable[[], Optional[bool]],
@@ -770,22 +760,25 @@ class FunctionRunner(QObject):
                  interval:float=1.0, label:Optional[str]=None):
         super().__init__()
         # Delay in seconds between polling
+
+        logger.debug("Inside FunctionRunner")
         self.func = func
         self.interval = interval
         self._running = True
         self.status_callback = status_callback
         self.label = label
 
-    @pyqtSlot()
+        if self.status_callback:
+            self.status.connect(self.status_callback)
+
     def run(self):
+        logger.debug("Iniside FunctionRunner run")
         while self._running: 
             try:
                 result = self.func()
-                if self.status_callback:
-                    self.status.connect(self.status_callback)
                 self.status.emit(result)
             except Exception as e:
-                self.status.emit((f"Error: {e}", self.label))
+                logger.error(f"Exception encountered during FunctionRunner call {e}")
             time.sleep(self.interval)
         self.finished.emit()  # Emit finished signal when done
 
