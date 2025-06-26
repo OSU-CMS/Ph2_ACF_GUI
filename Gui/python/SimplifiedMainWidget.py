@@ -43,6 +43,8 @@ class SimplifiedMainWidget(QWidget):
         super().__init__()
         self.master = master
         self.dimension = dimension
+        self.max_temperature:float = 40
+        self.dew_point_tolerance:float = -5
 
         self.timer = QTimer()
         self.timer.start(1000) # 1s timer
@@ -385,7 +387,7 @@ class SimplifiedMainWidget(QWidget):
         status: What status you would like to change the LED to False -> red, True -> green
         """
 
-        logger.info(f"Updating status of {monitor_leds} to {status}")
+        logger.debug(f"Updating status of {monitor_leds} to {status}")
         if status:
             for monitor_led in monitor_leds:
                 self.instrument_info[monitor_led]["Value"].setPixmap(self.greenledpixmap)
@@ -557,6 +559,7 @@ class SimplifiedMainWidget(QWidget):
             self.timer.timeout.connect(lambda: self.monitor_peltier(peltier))
             
         if site_settings.cooler == "Tessie":
+            self.coldbox_alarms = 0  # Needed to keep track of both good humidity and temperature status
             logger.debug("Inside Tessie Monitoring")
             coldbox = self.instruments.get_cb()[0] # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
             logger.debug("Got coldbox")
@@ -719,26 +722,37 @@ class SimplifiedMainWidget(QWidget):
 
     def monitor_coldbox(self, coldbox) -> None:
         """
-        Monitor the power to the TECs in the coldbox and emit signals for each module. This is used
-        as a proxy for temperature and humidity monitoring since the TECs will be turned off by
-        Tessie if bad temperatures or humidity values are measured. 
-        This function is intended to be run in a separate thread.
+        Monitor the number of alarms triggered by tessie. This is used
+        as a proxy for temperature and humidity monitoring since alarms will be emitted by
+        Tessie if bad temperatures or humidity values are measured. Should emit signal
 
         Parameters:
         coldbox: The coldbox object to monitor.
         Returns:
-        List of ints describing status of TECs
+        List of ints describing if the number of tessie alarms has increased
         """
-        try:
-            status = coldbox.status()
-            if status:
-                logger.debug(f"Coldbox Status: {status}")
-                self.temperature_status.emit(all(status))
-                self.condensation_status.emit(all(status))
-            else:
-                logger.warning("No temperatures received from coldbox.")
-                self.temperature_status.emit(False)
-                self.condensation_status.emit(False)
+        try: 
+            dew_point:float = coldbox.query("DEW_POINT", no_lock=True)
+
+            logger.debug(f"Dew Point: {dew_point}")
+            temp_status = True
+            condensation_status = True
+
+            for tec_channel in self.tecs_in_use: 
+                temp:float = coldbox.query_channel("TEMPERATURE_MEASURED", tec_channel, no_lock=True)
+                logger.debug(f"TEC Temp: {temp}") 
+                # Ensure for each TEC that the temperature is not near the dew point
+                # and that the temperature is not above the max temp.
+                # This ensures the temp is always "dew_point_tolerance" degrees ABOVE the
+                # dew point
+                if (dew_point - temp) > self.dew_point_tolerance:
+                    condensation_status = False
+                if temp > self.max_temperature:
+                    temp_status = False
+
+            self.condensation_status.emit(condensation_status)
+            self.temperature_status.emit(temp_status)
+
         except Exception as e:
             logger.error(f"Error monitoring coldbox: {e}")
             self.temperature_status.emit(False)
