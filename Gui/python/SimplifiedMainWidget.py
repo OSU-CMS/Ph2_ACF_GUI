@@ -45,6 +45,7 @@ class SimplifiedMainWidget(QWidget):
         self.dimension = dimension
         self.max_temperature:float = 40
         self.dew_point_tolerance:float = -5
+        self.enabled_tecs = None
 
         self.timer = QTimer()
         self.timer.start(1000) # 1s timer
@@ -114,7 +115,7 @@ class SimplifiedMainWidget(QWidget):
         self.setupUI()
         logger.debug("Setup UI")
 
-        self.RunButtonState()
+        #self.RunButtonState()
         logger.debug("Setup RunButtonState")
 
     def config_and_test(self):
@@ -124,7 +125,6 @@ class SimplifiedMainWidget(QWidget):
     def setupBeBoard(self):
         # self.BeBoard.setFPGAConfig(default_settings.FPGAConfigList[site_settings.defaultFC7])
         # logger.debug(f"Default FC7: {site_settings.defaultFC7}")
-        logger.debug("Initialized BeBoard in SimplifiedGUI")
         self.BeBoardWidget = SimpleBeBoardBox(self.master, self.firmware)
         logger.debug("Initialized SimpleBeBoardBox in Simplified GUI")
 
@@ -372,6 +372,15 @@ class SimplifiedMainWidget(QWidget):
             self.instrument_info[monitor_led]["Value"].setPixmap(
                 self.redledpixmap
             )
+
+    def start_coldbox_cooling(self) -> None:
+
+        first_key = list(self.instruments._module_dict.keys())[0]
+        temperature = self.instruments._module_dict[first_key]["cb"].default_temperature
+        logging.debug(f"Coldbox is being set to temperature {temperature}")
+
+        for tec in self.enabled_tecs:
+            self.coldbox.set_temperature_channel_and_validate(tec, temperature)
           
     def updateMonitoringLED(self, monitor_leds:list[str], status:bool)->None:
         """
@@ -507,6 +516,11 @@ class SimplifiedMainWidget(QWidget):
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
+
+        if site_settings.cooler == "Tessie":
+            self.enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()+1)))
+            self.start_coldbox_cooling()
+
         self.master.openRunWindowSignal.emit(
             self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
@@ -561,9 +575,9 @@ class SimplifiedMainWidget(QWidget):
         if site_settings.cooler == "Tessie":
             self.coldbox_alarms = 0  # Needed to keep track of both good humidity and temperature status
             logger.debug("Inside Tessie Monitoring")
-            coldbox = self.instruments.get_cb()[0] # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
+            self.coldbox = self.instruments.get_cb()[0] # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
             logger.debug("Got coldbox")
-            self.timer.timeout.connect(lambda: self.monitor_coldbox(coldbox))
+            self.timer.timeout.connect(lambda: self.monitor_coldbox())
 
 
     def setDeviceStatus(self) -> None:
@@ -625,8 +639,9 @@ class SimplifiedMainWidget(QWidget):
         # If using coldbox, turn on here and set LED based on presence of errors
         if site_settings.cooler == "Tessie":
             try: 
-                # TODO: Probably want to add this to a thread so that it doesn't freeze the GUI for like 5 minutes
-                self.instruments.cb_on() # At the end of this, the environment should be good
+                # We don't know what TECs to turn on until the user starts to place
+                # in modules, so automatically set to True and set to false later if
+                # needed
                 self.instrument_status["temperature"] = True
                 self.instrument_status["condensation"] = True
 
@@ -720,7 +735,7 @@ class SimplifiedMainWidget(QWidget):
                 child.widget().deleteLater()
 
 
-    def monitor_coldbox(self, coldbox) -> None:
+    def monitor_coldbox(self) -> None:
         """
         Monitor the number of alarms triggered by tessie. This is used
         as a proxy for temperature and humidity monitoring since alarms will be emitted by
@@ -732,26 +747,31 @@ class SimplifiedMainWidget(QWidget):
         List of ints describing if the number of tessie alarms has increased
         """
         try: 
-            dew_point:float = coldbox.query("DEW_POINT", no_lock=True)
+            dew_point:float = self.coldbox.query("DEW_POINT", no_lock=True)
 
             logger.debug(f"Dew Point: {dew_point}")
             temp_status = True
             condensation_status = True
 
-            for tec_channel in self.tecs_in_use: 
-                temp:float = coldbox.query_channel("TEMPERATURE_MEASURED", tec_channel, no_lock=True)
-                logger.debug(f"TEC Temp: {temp}") 
-                # Ensure for each TEC that the temperature is not near the dew point
-                # and that the temperature is not above the max temp.
-                # This ensures the temp is always "dew_point_tolerance" degrees ABOVE the
-                # dew point
-                if (dew_point - temp) > self.dew_point_tolerance:
-                    condensation_status = False
-                if temp > self.max_temperature:
-                    temp_status = False
+            # enabled_tecs won't be defined until you are about to run a test so set to true until then
+            if self.enabled_tecs: 
+                for tec_channel in self.enabled_tecs: 
+                    temp:float = self.coldbox.query_channel("TEMPERATURE_MEASURED", tec_channel, no_lock=True)
+                    logger.debug(f"TEC Temp: {temp}") 
+                    # Ensure for each TEC that the temperature is not near the dew point
+                    # and that the temperature is not above the max temp.
+                    # This ensures the temp is always "dew_point_tolerance" degrees ABOVE the
+                    # dew point
+                    if (dew_point - temp) > self.dew_point_tolerance:
+                        condensation_status = False
+                    if temp > self.max_temperature:
+                        temp_status = False
 
-            self.condensation_status.emit(condensation_status)
-            self.temperature_status.emit(temp_status)
+                self.condensation_status.emit(condensation_status)
+                self.temperature_status.emit(temp_status)
+            else:
+                self.condensation_status.emit(True)
+                self.temperature_status.emit(True)
 
         except Exception as e:
             logger.error(f"Error monitoring coldbox: {e}")
