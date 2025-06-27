@@ -1,6 +1,6 @@
 #!/bin/bash
 # DO NOT EDIT THIS BY HAND!!!
-CONFIG_VER=2
+CONFIG_VER=3
 
 bash check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 
