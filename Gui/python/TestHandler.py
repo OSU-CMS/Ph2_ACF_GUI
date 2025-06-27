@@ -674,15 +674,7 @@ class TestHandler(QObject):
         for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
-
-        if self.currentTest == "CommunicationTest":
-            for process, firmware in zip(self.info_processes, self.firmware):
-                process.start(
-                    "echo",
-                    [
-                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
-                    ],
-                )
+   
         '''
         if self.currentTest == ["exampletest"]:               #for tests needing -c
             for process, firmware in zip(self.info_processes, self.firmware):
@@ -695,18 +687,15 @@ class TestHandler(QObject):
                         )
                     ],
                 )        
-                    '''        
-        if self.testsAttempted == 0:
+                    '''  
+        if self.currentTest == "CommunicationTest":
             for process, firmware in zip(self.info_processes, self.firmware):
                 process.start(
                     "echo",
                     [
-                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -c  {1}".format(
-                            firmware.getBoardName(),
-                            Test_to_Ph2ACF_Map[self.currentTest],
-                        )
+                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
                     ],
-                )        
+                )
         else:
             for process, firmware in zip(self.info_processes, self.firmware):
                 process.start(
@@ -749,7 +738,7 @@ class TestHandler(QObject):
         #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
         #            ],
         #        )
-        if self.testsAttempted == 0:
+        if self.currentTest == "IREF_GADC":
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
@@ -757,7 +746,7 @@ class TestHandler(QObject):
                         "-f",
                         f"CMSIT_{firmware.getBoardName()}.xml",
                         "-c",
-                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),"-t","5"
                     ],
                 )
         else:
@@ -927,7 +916,7 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            elif "IVCurve" in self.currentTest:
+            elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
@@ -1180,6 +1169,8 @@ created by Ph2_ACF is empty."
             elif "New injection delay" in textStr:
                 return True
         elif "CommunicationTest" == self.currentTest:
+            return True
+        elif "IREF_GADC" == self.currentTest and self.ProgressingMode == "Summary":
             return True
         return False
 
