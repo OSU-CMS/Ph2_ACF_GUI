@@ -42,7 +42,7 @@ from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 
 from icicle.icicle.instrument_cluster import InstrumentCluster
-from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
+#from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
 
 
 from Gui.python.logging_config import logger

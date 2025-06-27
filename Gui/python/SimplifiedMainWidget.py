@@ -115,7 +115,7 @@ class SimplifiedMainWidget(QWidget):
         self.setupUI()
         logger.debug("Setup UI")
 
-        #self.RunButtonState()
+        self.RunButtonState()
         logger.debug("Setup RunButtonState")
 
     def config_and_test(self):
