@@ -79,12 +79,12 @@ SLDOScan_GADC = {
     "1x2":{
 		"voltage":2.98,
 		"starting current":3.4,
-		"target current":4.4,
+		"target current":4.3,
 		"step size":.1
 	},
 	"quad":{
 		"voltage":2.98,
-		"starting current":6.5,
+		"starting current":6.6,
 		"target current":7.5,
 		"step size":.1
 	},
