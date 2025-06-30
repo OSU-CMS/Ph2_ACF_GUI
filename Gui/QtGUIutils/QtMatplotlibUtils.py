@@ -138,9 +138,9 @@ class RunStatusCanvas(FigureCanvas):
             except KeyError:
                 self.test_list = CompositeTests_Modules["Default"][self.info[1]]
 
-            for i in range(len(test_list)):
+            for i in range(len(self.test_list)):
                 self.xticks.append(
-                    Test_to_Ph2ACF_Map[test_list[i]]
+                    Test_to_Ph2ACF_Map[self.test_list[i]]
                 )
         if isSingleTest(self.parent.info[1]):
             self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
