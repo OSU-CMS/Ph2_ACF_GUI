@@ -21,6 +21,8 @@ import re
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
+import requests
+from bs4 import BeautifulSoup
 
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
@@ -279,7 +281,7 @@ class TestHandler(QObject):
         for key in self.rd53_file.keys():
             if self.rd53_file[key] is None:
                 self.rd53_file[key] = os.environ.get(
-                    "PH2ACF_BASE_DIR"
+                    "PH2_ACF_BASE_DIR"
                 ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(
                     self.boardType, self.moduleVersion
                 )
@@ -428,7 +430,7 @@ class TestHandler(QObject):
 
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(
-                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+                os.environ.get("PH2_ACF_BASE_DIR") + "/test/"
             )
             process.readyReadStandardOutput.connect(
                 lambda: self.on_readyReadStandardOutput_GADC(process, i, upOrDown, current, channel = tuple(self.instruments._module_dict.keys())[i])
@@ -669,16 +671,32 @@ class TestHandler(QObject):
 
         for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+            process.setWorkingDirectory(os.environ.get("PH2_ACF_BASE_DIR") + "/test/")
 
         if self.currentTest == "CommunicationTest":
-            for process, firmware in zip(self.info_processes, self.firmware):
-                process.start(
-                    "echo",
-                    [
-                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
-                    ],
-                )
+            # Get serial number (replace with actual logic if needed)
+            serial_number = getattr(self, 'serial_number', 'sh0012')
+            iref_web = fetch_iref_value(serial_number)
+            try:
+                from Gui.database import getIREF
+                iref_db = getIREF(serial_number)
+            except Exception as e:
+                iref_db = f"DB error: {e}"
+            # Parse Iref from output file
+            iref_module = None
+            if os.path.exists(self.outputFile):
+                with open(self.outputFile, 'r') as f:
+                    output = f.read()
+                    iref_module = self.parse_iref_from_output(output)
+            print(f"[IREF] Website: {iref_web}, DB: {iref_db}, Module: {iref_module}")
+            if iref_web == iref_module:
+                print("Iref matches website value!")
+            else:
+                print("Iref mismatch!")
+            if iref_db == iref_module:
+                print("Iref matches database value!")
+            else:
+                print("Iref mismatch with database!")
         '''
         if self.currentTest == ["exampletest"]:               #for tests needing -c
             for process, firmware in zip(self.info_processes, self.firmware):
@@ -720,12 +738,12 @@ class TestHandler(QObject):
 
         for process in self.run_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+            process.setWorkingDirectory(os.environ.get("PH2_ACF_BASE_DIR") + "/test/")
 
         for process in self.fw_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(
-                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+                os.environ.get("PH2_ACF_BASE_DIR") + "/test/"
             )
 
         if self.currentTest == "CommunicationTest":
@@ -935,7 +953,7 @@ created by Ph2_ACF is empty."
             else:
                 self.copyMostRecentRootFile(
                     self.RunNumber,
-                    os.environ.get("PH2ACF_BASE_DIR") + "/test/Results",
+                    os.environ.get("PH2_ACF_BASE_DIR") + "/test/Results",
                     self.output_dir,
                     self.currentTest,
                 )
@@ -1699,7 +1717,7 @@ created by Ph2_ACF is empty."
                     self.master.username,
                     self.master.password,
                     type_sequence=self.info,
-                    version_ph2acf=os.environ.get("PH2ACF_VERSION"),
+                    version_ph2acf=os.environ.get("PH2_ACF_VERSION"),
                     version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
                 )
                 if not status:
@@ -1787,3 +1805,21 @@ created by Ph2_ACF is empty."
                             command_template.format(boardID, ogID, hybridID, chipID)
                         )
         executeCommandSequence(commands)
+
+    def fetch_iref_value(serial_number):
+        url = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={serial_number}"
+        response = requests.get(url)
+        response.raise_for_status()
+        soup = BeautifulSoup(response.text, "html.parser")
+        for row in soup.find_all("tr"):
+            cells = row.find_all("td")
+            if cells and "Iref" in cells[0].text:
+                return cells[1].text.strip()
+        return None
+
+    def parse_iref_from_output(self, output):
+        # Looks for a line like 'Iref: <value>' in the output
+        match = re.search(r'Iref\s*[:=]\s*([\d.]+)', output)
+        if match:
+            return match.group(1)
+        return None

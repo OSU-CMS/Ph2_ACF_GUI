@@ -102,6 +102,24 @@ def createModesTable():
         print(f"Failed to create modes table due to error {e}")
         pass
 
+def createIREFTable():
+    conn = createDatabaseConnection(config.database)
+    sql = """
+    CREATE TABLE IF NOT EXISTS module_iref (
+        module_id TEXT PRIMARY KEY,
+        iref INTEGER
+    );
+    """
+    try:
+        c = conn.cursor()
+        c.execute(sql)
+        conn.commit()
+        print("module_iref table created or already exists.")
+    except Exception as e:
+        print(f"Failed to create module_iref table: {e}")
+
+
+
 
 def createModeEntry(modeInfo):
     sql = """   INSERT INTO modes(mode_name)
@@ -150,3 +168,27 @@ def deleteAllTests():
     cur = conn.cursor()
     cur.execute(sql)
     conn.commit()
+
+
+def insertOrUpdateIREF(module_id, iref):
+    conn = createDatabaseConnection(config.database)
+    cur = conn.cursor()
+    sql = """
+        INSERT INTO module_iref (module_id, iref)
+        VALUES (?, ?)
+        ON CONFLICT(module_id) DO UPDATE SET iref=excluded.iref;
+    """
+    cur.execute(sql, (module_id, iref))
+    conn.commit()
+
+def getIREF(module_id):
+    conn = createDatabaseConnection(config.database)
+    cur = conn.cursor()
+    sql = "SELECT iref FROM module_iref WHERE module_id=?"
+    cur.execute(sql, (module_id,))
+    result = cur.fetchone()
+    if result:
+        return result[0]
+    else:
+        raise Exception(f"No IREF found for module {module_id}")
+
