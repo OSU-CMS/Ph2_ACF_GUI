@@ -165,7 +165,6 @@ optimizationTestMap = {
     ],
     "gainopt": [
         "DAC_KRUM_CURR_LIN",
-        "KRUM_CURR_LIN",
     ],
     "injdelay": [
         #'TriggerConfig',

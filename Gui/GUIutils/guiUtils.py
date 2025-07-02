@@ -11,6 +11,7 @@ import sys
 import os
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
+from InnerTrackerTests.FESettings import FESettingsB_dict
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -416,10 +417,11 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
             )
             #revPolarity = bool(int(RxPolarities))
 
-            
+
             FESettings_Dict = (
-                FESettings_DictB if "CROC" in moduleType else FESettings_DictA
-            )
+                {test_key: FESettings_DictB.get(registerKey, FESettingsB_dict) for test_key in HWSettings_DictB}
+                if "CROC" in moduleType else FESettings_DictA
+            ) 
             globalSettings_Dict = (
                 globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
             )
@@ -430,32 +432,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                
             if FELaneConfig_Dict is None:
                 logger.error(f"No FELaneConfig found for module type {module.getModuleType()}.")
-            else:
-                for chip in module.getChips().values():
-                    print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
-                    FEChip = FE()
-                    FEChip.SetFE(
-                        chip.getID(),
-                        "1" if chip.getStatus() else "0",
-                        chip.getLane(),
-                        RxPolarities,
-                        "CMSIT_RD53_{0}_{1}_{2}.txt".format(
-                            module.getModuleName(), module.getFMCPort(), chip.getID()
-                        ),
-                    )
 
-                    if testName in FELaneConfig_Dict:
-                        FEChip.ConfigureLaneConfig(
-                            FELaneConfig_Dict[testName][int(chip.getLane())]
-                        )
-                    else:
-                        logger.warning(f"Test name {testName} not found in FELaneConfig_Dict.")
-                        if "default" in FELaneConfig_Dict:
-                            FEChip.ConfigureLaneConfig(
-                                FELaneConfig_Dict["default"][int(chip.getLane())]
-                            )
-                        else:
-                            logger.error(f"No default configuration available for test name {testName}.")
 #####
             boardtype = (
                 "RD53B" + module.getModuleVersion() if "CROC" in moduleType else "RD53A"
@@ -479,10 +456,14 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                     txt_file,
                 )
 
-                FEChip.ConfigureFE(FESettings_Dict[testName])
-                FEChip.ConfigureLaneConfig(
-                    FELaneConfig_Dict[testName][int(chip.getLane())]
-                )
+                FEChip.ConfigureFE(FESettings_Dict[testName][registerKey])
+                if testName in FELaneConfig_Dict:
+                        FEChip.ConfigureLaneConfig(
+                            FELaneConfig_Dict[testName][int(chip.getLane())]
+                        )
+                else:
+                    logger.warning(f"Test name {testName} not found in FELaneConfig_Dict.")
+        
                 FEChip.VDDAtrim = chip.getVDDA()
                 FEChip.VDDDtrim = chip.getVDDD()
                 FEChip.EfuseID = chip.getEfuseID()
@@ -491,16 +472,6 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
             OpticalGroupModule0.AddHyBrid(HyBridModule0)
 
         BeBoardModule0.AddOGModule(OpticalGroupModule0)
-
-        #if revPolarity:
-        #    print("using HDI version {0} gtx polarity settings".format(hdiVersion))
-        #    if hdiVersion == "2":
-        #        RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l12"] = "0b1001"
-        #        RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l8"] = "0x22"
-        #        print("using HDI version 2 gtx polarity settings")
-        #    else:
-        #        RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l12"] = "0b1101"
-        #        RegisterSettingsList["user.ctrl_regs.gtx_rx_polarity.fmc_l8"] = "0x22"
 
         BeBoardModule0.SetURI(BeBoard.getIPAddress())
         BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")

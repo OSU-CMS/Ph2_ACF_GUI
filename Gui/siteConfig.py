@@ -2,7 +2,7 @@ import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
 
-CONFIG_VER = 2
+CONFIG_VER = 3
 
 # Customize the logging configuration
 logging.basicConfig(
@@ -66,7 +66,7 @@ with open('jsonFiles/instruments_osu_adcboardsldo.json', 'r') as file:
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = {
-    "IVCurve" 		: 	-80, #Maximum voltage in Volts to be used in IVcurve prior to Parylene coating
+    "IVCurve" 		: 	-120, #Maximum voltage in Volts to be used in IVcurve prior to Parylene coating
 	"IVCurve_High"	:	-350 #Maximum voltage in Volts to be used in IVcurve after Parylene coating
 }
 
@@ -78,15 +78,15 @@ Monitor_CROC = "1"
 SLDOScan_GADC = {
     "1x2":{
 		"voltage":2.98,
-		"starting current":4,
-		"target current":4.5,
-		"step size":.5
+		"starting current":3.4,
+		"target current":4.3,
+		"step size":.1
 	},
 	"quad":{
 		"voltage":2.98,
-		"starting current":6.5,
-		"target current":7,
-		"step size":.5
+		"starting current":6.6,
+		"target current":7.5,
+		"step size":.1
 	},
     "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
     "multipliers":{"VDD":2, "VIN":4}
@@ -117,13 +117,13 @@ ModuleCurrentMap = {
 	"TFPX RD53A Quad" : 6.5,
 	"TEPX RD53A Quad" : 6,
 	"TBPX RD53A Quad" : 6.5,
-	"TFPX CROC 1x2"  : 4.5,
-	"TFPX CROC Quad" : 7.5,
-	"CROC SCC"  : 2.0,
-	"TEPX CROC 1x2"  : 4.5,
-	"TEPX CROC Quad" : 7.5,
-	"TBPX CROC 1x2"  : 4.5,
-	"TBPX CROC Quad" : 7.5,
+	"TFPX CROC 1x2"  : 3.6,
+	"TFPX CROC Quad" : 7.2,
+	"CROC SCC"  : 1.8,
+	"TEPX CROC 1x2"  : 3.6,
+	"TEPX CROC Quad" : 7.2,
+	"TBPX CROC 1x2"  : 3.6,
+	"TBPX CROC Quad" : 7.2,
 }
 
 ## Configuring the voltage limit for each module type when operating in SLDO mode.  These values are in Volts.

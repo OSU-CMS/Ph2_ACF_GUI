@@ -94,7 +94,6 @@ class TestHandler(QObject):
         self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in test_list} for module in self.modules}
         
         self.GADC_meas_chip = None
-
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
         self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
         self.VDDAdown = {channel:{} for channel in self.instruments._module_dict}
@@ -103,15 +102,6 @@ class TestHandler(QObject):
         self.VINDdown = {channel:{} for channel in self.instruments._module_dict}
         self.VINAdown = {channel:{} for channel in self.instruments._module_dict}
         self.VINAup = {channel:{} for channel in self.instruments._module_dict}
-
-        self.VDDDupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDDdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDAdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDAupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINDupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINDdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINAdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINAupError = {channel:{} for channel in self.instruments._module_dict}
 
         self.SLDOfilelist = []
 
@@ -469,7 +459,10 @@ class TestHandler(QObject):
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
 
-            EnableReRun = self.onFinalTest(self.testIndexTracker + 1)
+            if "CrossTalk" in testName:
+                EnableReRun = self.onFinalTest(self.testIndexTracker)
+            else:
+                EnableReRun = self.onFinalTest(self.testIndexTracker + 1)
             self.stepFinished.emit(EnableReRun)
 
             if self.master.expertMode:
@@ -558,8 +551,8 @@ class TestHandler(QObject):
                                     [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
                                 ]
 
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}", channel, chip)
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}", channel, chip)
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}")
                     self.SLDOScanFinished()
                     return
                 else:
@@ -684,15 +677,7 @@ class TestHandler(QObject):
         for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
-
-        if self.currentTest == "CommunicationTest":
-            for process, firmware in zip(self.info_processes, self.firmware):
-                process.start(
-                    "echo",
-                    [
-                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
-                    ],
-                )
+   
         '''
         if self.currentTest == ["exampletest"]:               #for tests needing -c
             for process, firmware in zip(self.info_processes, self.firmware):
@@ -705,18 +690,15 @@ class TestHandler(QObject):
                         )
                     ],
                 )        
-                    '''        
-        if self.testsAttempted == 0:
+                    '''  
+        if self.currentTest == "CommunicationTest":
             for process, firmware in zip(self.info_processes, self.firmware):
                 process.start(
                     "echo",
                     [
-                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -c  {1}".format(
-                            firmware.getBoardName(),
-                            Test_to_Ph2ACF_Map[self.currentTest],
-                        )
+                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
                     ],
-                )        
+                )
         else:
             for process, firmware in zip(self.info_processes, self.firmware):
                 process.start(
@@ -759,7 +741,7 @@ class TestHandler(QObject):
         #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
         #            ],
         #        )
-        if self.testsAttempted == 0:
+        if self.currentTest == "IREF_GADC":
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
@@ -767,7 +749,7 @@ class TestHandler(QObject):
                         "-f",
                         f"CMSIT_{firmware.getBoardName()}.xml",
                         "-c",
-                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),"-t","5"
                     ],
                 )
         else:
@@ -937,7 +919,7 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            elif "IVCurve" in self.currentTest:
+            elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
@@ -1191,6 +1173,8 @@ created by Ph2_ACF is empty."
                 return True
         elif "CommunicationTest" == self.currentTest:
             return True
+        elif "IREF_GADC" == self.currentTest and self.ProgressingMode == "Summary":
+            return True
         return False
 
     # Reads data that is normally printed to the terminal and saves it to the output file
@@ -1251,6 +1235,7 @@ created by Ph2_ACF is empty."
                             if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown+"Error")[channel]:
                                 getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip] = {}
                             getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip][current] = float(match.group(3))*multiplier #This line enforces that it only logs one VDDD or VDDA value per sweep step
+
                     else:
                         print(f'Error: Did not receive expected message, "Reading monitored data for \
                         [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
@@ -1290,8 +1275,13 @@ created by Ph2_ACF is empty."
         # validate the results
         self.validateTest()
         
-        self.testIndexTracker += 1
-        self.testsAttempted += 1
+        if (
+            "IVCurve" not in self.currentTest
+            and "SLDOScan" not in self.currentTest
+            and "CrossTalk" not in self.currentTest
+        ):
+            self.testIndexTracker += 1
+            self.testsAttempted += 1
 
 
 
@@ -1339,7 +1329,7 @@ created by Ph2_ACF is empty."
                                     "hybridID": hybridID,
                                     "module": module,
                                 }
-
+                                index -= 1
                                 self.felis.set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
@@ -1382,7 +1372,7 @@ created by Ph2_ACF is empty."
                     self.SLDOProgressValue
                 )
 
-    def makeSLDOPlot(self, total_result: np.ndarray, pin: str, channel=None, chip=None):
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for module in self.modules:
             moduleName = module.getModuleName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(
@@ -1398,33 +1388,29 @@ created by Ph2_ACF is empty."
 
             # Make the actual graph
             plt.figure()
-            plt.errorbar(
-                list(total_result_stacked[0]),
-                list(total_result_stacked[1]),
-                data="-x",
+            plt.plot(
+                total_result_stacked[0],
+                total_result_stacked[1],
+                "-x",
                 label="module input voltage (up)",
-                yerr=[] if channel is None or chip is None else [float(i) for i in getattr(self, f"VIN{pin[3]}upError")[channel][chip].values()]
             )
-            plt.errorbar(
-                list(total_result_stacked[0]),
-                list(total_result_stacked[2]),
-                data="-x",
+            plt.plot(
+                total_result_stacked[0],
+                total_result_stacked[2],
+                "-x",
                 label=f"{pin} (up)",
-                yerr=[] if channel is None or chip is None else [float(i) for i in getattr(self, f"{pin[:4]}upError")[channel][chip].values()]
             )
-            plt.errorbar(
-                list(total_result_stacked[3]),
-                list(total_result_stacked[4]),
-                data="-x",
+            plt.plot(
+                total_result_stacked[3],
+                total_result_stacked[4],
+                "-x",
                 label="module input voltage (down)",
-                yerr=[] if channel is None or chip is None else [float(i) for i in getattr(self, f"VIN{pin[3]}downError")[channel][chip].values()]
             )
-            plt.errorbar(
-                list(total_result_stacked[3]),
-                list(total_result_stacked[5]),
-                data="-x",
+            plt.plot(
+                total_result_stacked[3],
+                total_result_stacked[5],
+                "-x",
                 label=f"{pin} (down)",
-                yerr=[] if channel is None or chip is None else [float(i) for i in getattr(self, f"{pin[:4]}downError")[channel][chip].values()]
             )
             plt.grid(True)
             plt.xlabel("Current (A)")
@@ -1726,7 +1712,7 @@ created by Ph2_ACF is empty."
                     self.master.password,
                     type_sequence=self.info,
                     version_ph2acf=os.environ.get("PH2ACF_VERSION"),
-                    #version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
+                    version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
                 )
                 if not status:
                     raise ConnectionError(message)
