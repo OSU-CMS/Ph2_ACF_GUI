@@ -176,6 +176,7 @@ class FE():
     self.laneConfigList = {}
     self.VDDAtrim = "8"
     self.VDDDtrim = "8"
+    self.VREF = "800" #Default VREF value 800
     self.RxGroups = "0001"
     self.RxChannels = "0"
     self.RxPolarities = "0"
@@ -314,7 +315,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
           BeBoard.boardType = boardtype
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
-          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane, 'eFuseCode':FE.EfuseID,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxPolarity':FE.RxPolarities,'TxGroup':FE.TxGroups,'TxChannel':FE.TxChannels,'TxPolarity':FE.TxPolarities,'Comment':boardtype})
+          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane, 'eFuseCode':FE.EfuseID,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxPolarity':FE.RxPolarities,'TxGroup':FE.TxGroups,'TxChannel':FE.TxChannels,'TxPolarity':FE.TxPolarities,'VREF':FE.VREF,'Comment':boardtype})
           if 'RD53B' in boardtype:
             Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
             Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,FE.laneConfigList)

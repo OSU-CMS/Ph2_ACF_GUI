@@ -618,6 +618,29 @@ class BeBoardBox(QWidget):
                 module.HDIVersionCombo.setCurrentText(data["HDIversion"])
                 print('returning hdi version {0}'.format(data["HDIversion"]))
 
+            chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
+            chipData = chipBox.getChipData()
+            if chipData:
+                for chipid, chipdict in chipData.items():
+                    t_iref = chipdict.get("IREF", "N/A")
+                    t_vref = chipdict.get("VREF", "800")
+
+                    if t_iref not in (None, "", "N/A"):
+                        try:
+                            Module.getChips()[chipid].setIREF(int(round(float(t_iref))))
+                        except Exception as e:
+                            print(f"Could not set IREF for chip {chipid}: {e}")
+                    if t_vref not in (None, "", "N/A"):
+                        try:
+                            Module.getChips()[chipid].setVREF(int(round(float(t_vref))))
+                        except Exception as e:
+                            print(f"Could not set VREF for chip {chipid}: {e}")
+
+                for chipID in ModuleLaneMap[module.getType(module.getSerialNumber())].values():
+                        Module.getChips()[chipID].setIREF(t_iref)
+                        Module.getChips()[chipID].setVREF(int(round(float(t_vref) * 1000)))
+     
+
             self.updateList()
 
     def fetchModuleTypeDB(self, moduleName):
@@ -824,7 +847,7 @@ class StatusBox(QWidget):
         return True
         """
                 self.CheckLabel.setStyleSheet("color:red")
-                PowerMode = str(self.PowerModeCombo.currentText())
+                PowerMode = str(self.ANLVoltEdit.currentText())
                 if not str(self.ANLVoltEdit.text()) or not str(self.DIGVoltEdit.text()) or not str(self.ANLAmpEdit.text()) or not str(self.DIGAmpEdit.text()):
                         self.CheckLabel.setText("V/I measure is missing")
                         return False
