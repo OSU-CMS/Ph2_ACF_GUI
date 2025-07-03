@@ -1,7 +1,7 @@
 import os
 import ROOT
 
-from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests
+from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests_Modules
 from Gui.GUIutils.guiUtils import isCompositeTest
 from Gui.python.logging_config import logger
 
@@ -17,14 +17,18 @@ def ResultGrader(
     module_data,
     BBanalysis_root_files,
     sequence,
+
     communicationTestResults
+
+    registerKey
+
 ):
     try:
 
-        if isCompositeTest(sequence) and CompositeTests[sequence][testIndexInSequence] != testName:
+        if isCompositeTest(sequence) and CompositeTests_Modules[registerKey][sequence][testIndexInSequence] != testName:
             logger.error(
                 f"Test name didn't match expected test sequence name\n"
-                f"Expected Test Name: {CompositeTests[sequence][testIndexInSequence]}\n"
+                f"Expected Test Name: {CompositeTests_Modules[registerKey][sequence][testIndexInSequence]}\n"
                 f"Received Test Name: {testName}"
             )
             raise Exception("Test name doesn't match expected sequence name! Something went wrong.")
