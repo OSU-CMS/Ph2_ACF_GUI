@@ -128,10 +128,7 @@ class TestHandler(QObject):
 
         #If the module is not one of the module types in CompositeTests_Modules, use the default test list
         try:
-            print(CompositeTests_Modules)
-            print(CompositeTests_Modules[self.registerKey])
-            self.test_list = CompositeTests_Modules[self.registerKey][self.info] if isCompositeTest(self.info) else (self.info,)
-            print(f"Using test list {self.test_list} for ModuleType {self.registerKey} and Test {self.info}.")
+            self.test_list = CompositeTests_Modules[self.registerKey][self.info] if isCompositeTest(self.info) else (self.info,)                      
         except KeyError:
             logger.error(f"Test {self.info} not found in CompositeTests_Modules for ModuleType {self.registerKey}.")
             self.test_list = CompositeTests_Modules["Default"][self.info]
