@@ -55,6 +55,7 @@ from Gui.python.SLDOScanHandler import SLDOCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
+from Gui.python.CustomizedWidget import ChipBox, chip_iref_db
 
 
 class TestHandler(QObject):
@@ -219,6 +220,7 @@ class TestHandler(QObject):
         self.finished_tests = []
 
         self.initializeRD53Dict()
+
 
     def finished_run_process(self, _, exitStatus, i):
         if exitStatus == QProcess.NormalExit:
@@ -973,7 +975,32 @@ created by Ph2_ACF is empty."
                     clean_text = ansi_escape.sub("", textStr)
                     chip_number = clean_text.split("RD53: ")[-1].strip()
                     self.fused_dict_index[1] = chip_number
+                    #print(f"Clean_text: {clean_text}") 
+                    print(f"Chip Number: {chip_number}")
 
+                if "Wire bonded Iref" in textStr:
+                    ansi_escape = re.compile(r"\x1b\[.*?m")
+                    clean_text = ansi_escape.sub("", textStr)
+                    iref_value = clean_text.split("Iref: ")[-1].strip()
+                    self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]] = iref_value
+                    print(f"IREF Value: {iref_value}")
+
+                    # --- IREF comparison logic ---
+                    chip_id = self.fused_dict_index[1]
+                    db_iref = chip_iref_db.get(str(chip_id))
+                    if db_iref is not None:
+                        if db_iref == iref_value:
+                            print(f"Match: IREF for chip {chip_id} matches database ({db_iref})")
+                        else:
+                            print(f"Mismatch: IREF for chip {chip_id} (database: {db_iref}, module: {iref_value})")
+                            self.iref_mismatch = True  # Set flag if mismatch
+                    else:
+                        print(f"No database IREF found for chip {chip_id}")
+                
+                
+
+                #print(f"Fused Dict Index: {self.fused_dict_index}")
+                   
                 if "Fused ID" in textStr:
                     ansi_escape = re.compile(r"\x1b\[.*?m")
                     clean_text = ansi_escape.sub("", textStr)
@@ -1257,8 +1284,6 @@ created by Ph2_ACF is empty."
             self.saveTest(processIndex, self.run_processes[processIndex])
             return
 
-        self.saveConfigs()
-
         # Save the output ROOT file to output_dir
 
         self.saveTest(processIndex, self.run_processes[processIndex])
@@ -1286,6 +1311,8 @@ created by Ph2_ACF is empty."
         else:
             step = "{}:{}".format(self.testIndexTracker, self.currentTest)
             self.updateResult.emit((step, self.figurelist))
+        # Print ChipID/IREF pairs to terminal after test
+        self.print_chipid_iref_from_output()
 
         if isCompositeTest(self.info):
             self.runTest()
@@ -1790,3 +1817,4 @@ created by Ph2_ACF is empty."
                             command_template.format(boardID, ogID, hybridID, chipID)
                         )
         executeCommandSequence(commands)
+
