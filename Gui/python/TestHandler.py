@@ -54,7 +54,7 @@ from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
-from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
+from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 
 
 class TestHandler(QObject):
@@ -90,8 +90,6 @@ class TestHandler(QObject):
 
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
 
-        test_list = CompositeTests[self.info] if isCompositeTest(self.info) else (self.info,)
-        self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in test_list} for module in self.modules}
         
         self.GADC_meas_chip = None
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
@@ -105,7 +103,6 @@ class TestHandler(QObject):
 
         self.SLDOfilelist = []
 
-        self.finished_tests = []
         self.BBanalysis_root_files = []
 
         self.numChips = len(
@@ -126,6 +123,21 @@ class TestHandler(QObject):
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
+
+        self.registerKey = "{0}_HDIv{1}".format(self.ModuleType.replace(" ", "_"), self.hdiVersion)
+
+        #If the module is not one of the module types in CompositeTests_Modules, use the default test list
+        try:
+            print(CompositeTests_Modules)
+            print(CompositeTests_Modules[self.registerKey])
+            self.test_list = CompositeTests_Modules[self.registerKey][self.info] if isCompositeTest(self.info) else (self.info,)
+            print(f"Using test list {self.test_list} for ModuleType {self.registerKey} and Test {self.info}.")
+        except KeyError:
+            logger.error(f"Test {self.info} not found in CompositeTests_Modules for ModuleType {self.registerKey}.")
+            self.test_list = CompositeTests_Modules["Default"][self.info]
+
+        self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in self.test_list} for module in self.modules}
+        self.finished_tests = []
         self.Ph2_ACF_ver = os.environ.get("Ph2_ACF_VERSION")
         print("Using version {0} of Ph2_ACF".format(self.Ph2_ACF_ver))
         self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
@@ -270,7 +282,7 @@ class TestHandler(QObject):
 
         # If currentTest is not set check if it's a compositeTest and if so set testname accordingly, otherwise set it based off the test set in info[1]
         if self.currentTest == "" and isCompositeTest(self.info):
-            testName = CompositeTests[self.info][0]
+            testName = self.test_list[0]
         elif self.currentTest is None:
             testName = self.info
         else:
@@ -394,9 +406,9 @@ class TestHandler(QObject):
     def runCompositeTest(self, testName):
         if self.halt:
             return
-        runTestList = CompositeTests[self.info]
+        runTestList = self.test_list
 
-        if self.testIndexTracker == len(CompositeTests[self.info]):
+        if self.testIndexTracker == len(self.test_list):
             self.testIndexTracker = 0
             self.testsAttempted = 0
             return
@@ -474,6 +486,8 @@ class TestHandler(QObject):
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
             return
+
+
 
         print("Executing Single Step test...")
         for console in self.runwindow.ConsoleViews:
@@ -821,7 +835,8 @@ class TestHandler(QObject):
                             runNumber,
                             module_data,
                             self.BBanalysis_root_files,
-                            self.info
+                            self.info,
+                            self.registerKey
                         )
 
                         results.append(result)
@@ -1299,7 +1314,7 @@ created by Ph2_ACF is empty."
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
             if index == len(
-                CompositeTests[self.info]
+                self.test_list
             ):  # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
@@ -1475,7 +1490,7 @@ created by Ph2_ACF is empty."
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            if self.testIndexTracker == len(CompositeTests[self.info]):
+            if self.testIndexTracker == len(self.test_list):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
@@ -1540,7 +1555,7 @@ created by Ph2_ACF is empty."
                 ),
             )
 
-            if self.testIndexTracker == len(CompositeTests[self.info]):
+            if self.testIndexTracker == len(self.test_list):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:

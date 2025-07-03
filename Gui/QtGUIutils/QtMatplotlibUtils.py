@@ -18,7 +18,7 @@ from Gui.GUIutils.guiUtils import (
     isCompositeTest,
     isSingleTest,
 )
-from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
+from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 
 
 class ScanCanvas(FigureCanvas):
@@ -133,9 +133,14 @@ class RunStatusCanvas(FigureCanvas):
         self.xticks = [""]
 
         if isCompositeTest(self.parent.info[1]):
-            for i in range(len(CompositeTests[self.parent.info[1]])):
+            try:            
+                self.test_list = CompositeTests_Modules[self.parent.testHandler.registerKey][self.info[1]]
+            except KeyError:
+                self.test_list = CompositeTests_Modules["Default"][self.info[1]]
+
+            for i in range(len(self.test_list)):
                 self.xticks.append(
-                    Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]]
+                    Test_to_Ph2ACF_Map[self.test_list[i]]
                 )
         if isSingleTest(self.parent.info[1]):
             self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
@@ -156,7 +161,7 @@ class RunStatusCanvas(FigureCanvas):
     def compute_initial_figure(self):
         self.axes.cla()
         if isCompositeTest(self.parent.info[1]):
-            xList = [x for x in range(1, 1 + len(CompositeTests[self.parent.info[1]]))]
+            xList = [x for x in range(1, 1 + len(self.test_list))]
         if isSingleTest(self.parent.info[1]):
             xList = [x for x in range(1, 2)]
 
@@ -208,9 +213,9 @@ class RunStatusCanvas(FigureCanvas):
     def renew(self):
         self.xticks = [""]
         if isCompositeTest(self.parent.info[1]):
-            for i in range(len(CompositeTests[self.parent.info[1]])):
+            for i in range(len(CompositeTests_Modules[self.parent.testHandler.registerKey][self.parent.info[1]])):
                 self.xticks.append(
-                    Test_to_Ph2ACF_Map[CompositeTests[self.parent.info[1]][i]]
+                    Test_to_Ph2ACF_Map[CompositeTests_Modules[self.parent.testHandler.registerKey][self.parent.info[1]][i]]
                 )
         if isSingleTest(self.parent.info[1]):
             self.xticks.append(Test_to_Ph2ACF_Map[self.parent.info[1]])
