@@ -160,6 +160,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
+        self.comment = ""
         self.txt_files = txt_files if txt_files != {} else {}
 
         self.autoSave = False
@@ -836,7 +837,8 @@ class TestHandler(QObject):
                             module_data,
                             self.BBanalysis_root_files,
                             self.info,
-                            self.registerKey
+                            self.registerKey,
+                            self.comment
                         )
 
                         results.append(result)

@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
     QSplitter,
     QProgressBar,
     QApplication,
+    QLineEdit,
 )
 
 import os
@@ -383,6 +384,12 @@ class QtRunWindow(QWidget):
         self.UploadButton.clicked.connect(self.upload_to_Panthera_starter)
         self.UploadButton.setDisabled(True)
 
+        self.CommentBox = QLineEdit()
+        self.CommentBox.setPlaceholderText("Enter comment for upload")
+        self.CommentBox.setMinimumWidth(300)
+        self.CommentBox.setMaximumWidth(500)
+        self.CommentBox.textChanged.connect(self.updateComment)
+
         self.BackButton = QPushButton("&Back")
         self.BackButton.clicked.connect(self.sendBackSignal)
         self.BackButton.clicked.connect(self.closeWindow)
@@ -393,7 +400,7 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
-
+        self.StartLayout.addWidget(self.CommentBox) 
         self.StartLayout.addWidget(self.UploadButton)
 
         self.StartLayout.addWidget(self.BackButton)
@@ -611,6 +618,9 @@ class QtRunWindow(QWidget):
         else:
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
+
+    def updateComment(self, text):
+        self.testHandler.comment = text
 
     def updateIVResult(self, newResult):
         if self.master.expertMode:

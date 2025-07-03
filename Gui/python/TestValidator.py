@@ -17,7 +17,8 @@ def ResultGrader(
     module_data,
     BBanalysis_root_files,
     sequence,
-    registerKey
+    registerKey,
+    comment
 ):
     try:
 
@@ -129,6 +130,7 @@ def ResultGrader(
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
                 Test_to_Ph2ACF_Map[testName],
+                comment,
             )
         if not status:
             raise RuntimeError(message)
