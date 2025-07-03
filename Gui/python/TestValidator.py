@@ -17,7 +17,11 @@ def ResultGrader(
     module_data,
     BBanalysis_root_files,
     sequence,
+
+    communicationTestResults
+
     registerKey
+
 ):
     try:
 
@@ -34,10 +38,12 @@ def ResultGrader(
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
         if "CommunicationTest" in testName:
-            explanation = (
-                "No grading currently available for CommunicationTest."
-            )
-            return {module_name: (True, explanation)}
+            if communicationTestResults[module_name] is None:
+                return {module_name: (False, "Did not see CommunicationTest result in Ph2_ACF output.")}, BBanalysis_root_files
+            if communicationTestResults[module_name]:
+                return {module_name: (True, "CommunicationTest executed successfully.")}, BBanalysis_root_files
+            else:
+                return {module_name: (False, "Some data lanes are enabled but inactive, reached maximum number of attempts.")}, BBanalysis_root_files
 
         root_file_name = testName.split("_")[0]
         if "SCurveScan" in root_file_name:

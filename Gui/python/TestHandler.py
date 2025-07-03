@@ -203,6 +203,9 @@ class TestHandler(QObject):
         self.runtimeList = []
         self.starttime = None
 
+        self.communicationTestResults = {module.getModuleName():None for module in self.modules}
+        self.communicationTestModule = None
+
         self.info_processes = [QProcess() for _ in self.firmware]
         for i, process in enumerate(self.info_processes):
             process.readyReadStandardOutput.connect(
@@ -820,6 +823,7 @@ class TestHandler(QObject):
                 for OG in beboard.getAllOpticalGroups().values():
                     ogID = OG.getOpticalGroupID()
                     for module in OG.getAllModules().values():
+                        print(f'curr test {self.currentTest}')
                         hybridID = module.getFMCPort()
                         module_data = {
                             "boardID": boardID,
@@ -836,7 +840,11 @@ class TestHandler(QObject):
                             module_data,
                             self.BBanalysis_root_files,
                             self.info,
+
+                            self.communicationTestResults
+
                             self.registerKey
+
                         )
 
                         results.append(result)
@@ -848,6 +856,7 @@ class TestHandler(QObject):
                             module.getModuleName()
                         )
 
+            print(results)
             self.updateValidation.emit(results)
             self.updateFinishedTests.emit(
                 self.finished_tests
@@ -953,7 +962,8 @@ created by Ph2_ACF is empty."
 
         except Exception as e:
             logger.error(e)
-            self.forceContinue(self.firmware[processIndex])
+            if self.currentTest != "CommunicationTest":
+                self.forceContinue(self.firmware[processIndex])
 
     #######################################################################
     ##  For real-time terminal display
@@ -973,8 +983,6 @@ created by Ph2_ACF is empty."
         textline = alltext.split("\n")
 
         for textStr in textline:
-            import re
-
             try:
                 if "Configuring chips of hybrid" in textStr:
                     ansi_escape = re.compile(r"\x1b\[.*?m")
@@ -1132,6 +1140,29 @@ created by Ph2_ACF is empty."
             self.outputString.emit(
                 text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
             )
+
+        match = re.search(r"CMSIT_RD53_([^_]+)", alltext)
+        if match:
+            if self.communicationTestModule is not None:
+                self.communicationTestResults[self.communicationTestModule] = True
+            self.communicationTestModule = match.group(1)
+
+        if self.currentTest == "CommunicationTest":
+            if "Error, some data lanes are enabled but inactive, reached maximum number of attempts" in alltext:
+                if self.communicationTestModule == None:
+                    print("ERROR: Module name not found before CommunicationTest result in test output.")
+                    logger.error("Module name not found before CommunicationTest result in test output.")
+                else:
+                    self.communicationTestResults[self.communicationTestModule] = False
+                    self.communicationTestModule = None
+                self.forceContinue(self.firmware[processIndex])
+            elif "All enabled data lanes are active" in alltext:
+                if self.communicationTestModule == None:
+                    print("ERROR: Module name not found before CommunicationTest result in test output.")
+                    logger.error("Module name not found before CommunicationTest result in test output.")
+                else:
+                    self.communicationTestResults[self.communicationTestModule] = True
+                    self.communicationTestModule = None
 
         self.readingOutput = False
 
