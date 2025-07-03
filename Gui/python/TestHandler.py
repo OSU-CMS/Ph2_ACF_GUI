@@ -840,11 +840,8 @@ class TestHandler(QObject):
                             module_data,
                             self.BBanalysis_root_files,
                             self.info,
-
+                            self.registerKey,
                             self.communicationTestResults
-
-                            self.registerKey
-
                         )
 
                         results.append(result)
@@ -1149,7 +1146,7 @@ created by Ph2_ACF is empty."
 
         if self.currentTest == "CommunicationTest":
             if "Error, some data lanes are enabled but inactive, reached maximum number of attempts" in alltext:
-                if self.communicationTestModule == None:
+                if self.communicationTestModule is None:
                     print("ERROR: Module name not found before CommunicationTest result in test output.")
                     logger.error("Module name not found before CommunicationTest result in test output.")
                 else:
@@ -1157,7 +1154,7 @@ created by Ph2_ACF is empty."
                     self.communicationTestModule = None
                 self.forceContinue(self.firmware[processIndex])
             elif "All enabled data lanes are active" in alltext:
-                if self.communicationTestModule == None:
+                if self.communicationTestModule is None:
                     print("ERROR: Module name not found before CommunicationTest result in test output.")
                     logger.error("Module name not found before CommunicationTest result in test output.")
                 else:

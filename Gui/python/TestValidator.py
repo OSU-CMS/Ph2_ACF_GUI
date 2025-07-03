@@ -17,11 +17,8 @@ def ResultGrader(
     module_data,
     BBanalysis_root_files,
     sequence,
-
+    registerKey,
     communicationTestResults
-
-    registerKey
-
 ):
     try:
 
