@@ -140,7 +140,9 @@ class IVCurveHandler(QObject):
         ## Will Set voltage to default unless SLDO is the next test
         if (self.nextTest is not None) and ("SLDO" not in self.nextTest): 
             self.instruments.hv_set(voltage = site_settings.icicle_instrument_setup[
-                    "instrument_dict"]["hv"]["default_voltage"], delay = 0.3, step_size = 10
+                    "instrument_dict"]["hv"]["default_voltage"], delay = 0.3, step_size = 10,
+                    execute_each_step = lambda: self.execute_each_step([site_settings.icicle_instrument_setup[
+                    "instrument_dict"]["hv"]["default_voltage"]] * len(self.instruments._module_dict.values()))
                 )
         else:    
             self.instruments.hv_off(
