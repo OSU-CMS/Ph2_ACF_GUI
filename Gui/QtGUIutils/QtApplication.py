@@ -758,7 +758,7 @@ class QtApplication(QWidget):
         if self.ArduinoControl.isChecked():
             try:
                 self.ArduinoControl.toggled.connect(self.switchArduinoPanel)
-            except:
+            except AttributeError:
                 self.logger.error("Failed to connect arduino control")
 
         self.MainOption = QGroupBox("Main")
