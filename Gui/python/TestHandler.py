@@ -157,6 +157,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
+        self.comment = ""
         self.txt_files = txt_files if txt_files != {} else {}
 
         self.autoSave = False
@@ -838,7 +839,8 @@ class TestHandler(QObject):
                             self.BBanalysis_root_files,
                             self.info,
                             self.registerKey,
-                            self.communicationTestResults
+                            self.communicationTestResults,
+                            self.comment
                         )
 
                         results.append(result)
