@@ -560,8 +560,15 @@ class TestHandler(QObject):
                                     [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
                                 ]
 
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}")
+                                error = [
+                                    [float(i) for i in getattr(self, f"VIN{datatype[-1]}upError")[channel][chip].values()],
+                                    [float(i) for i in getattr(self, f"{datatype}upError")[channel][chip].values()],
+                                    [float(i) for i in getattr(self, f"VIN{datatype[-1]}downError")[channel][chip].values()],
+                                    [float(i) for i in getattr(self, f"{datatype}downError")[channel][chip].values()]
+                                ]
+
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}", error=error)
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}", error=error)
                     self.SLDOScanFinished()
                     return
                 else:
@@ -1372,7 +1379,7 @@ created by Ph2_ACF is empty."
                     self.SLDOProgressValue
                 )
 
-    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str, error: np.ndarray = [[],[],[],[]]):
         for module in self.modules:
             moduleName = module.getModuleName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(
@@ -1388,29 +1395,33 @@ created by Ph2_ACF is empty."
 
             # Make the actual graph
             plt.figure()
-            plt.plot(
-                total_result_stacked[0],
-                total_result_stacked[1],
+            plt.errorbar(
+                tuple(total_result_stacked[0]),
+                tuple(total_result_stacked[1]),
                 "-x",
                 label="module input voltage (up)",
+                yerr = tuple(error[0])
             )
-            plt.plot(
-                total_result_stacked[0],
-                total_result_stacked[2],
+            plt.errorbar(
+                tuple(total_result_stacked[0]),
+                tuple(total_result_stacked[2]),
                 "-x",
                 label=f"{pin} (up)",
+                yerr = tuple(error[1])
             )
-            plt.plot(
-                total_result_stacked[3],
-                total_result_stacked[4],
+            plt.errorbar(
+                tuple(total_result_stacked[3]),
+                tuple(total_result_stacked[4]),
                 "-x",
                 label="module input voltage (down)",
+                yerr = tuple(error[2])
             )
-            plt.plot(
-                total_result_stacked[3],
-                total_result_stacked[5],
+            plt.errorbar(
+                tuple(total_result_stacked[3]),
+                tuple(total_result_stacked[5]),
                 "-x",
                 label=f"{pin} (down)",
+                yerr = tuple(error[3])
             )
             plt.grid(True)
             plt.xlabel("Current (A)")
