@@ -754,8 +754,12 @@ class QtApplication(QWidget):
         self.ArduinoGroup = ArduinoWidget()
         self.ArduinoGroup.stop.connect(self.GlobalStop)
         self.ArduinoControl = QCheckBox("Use arduino monitoring")
-        self.ArduinoControl.setChecked(True)
-        self.ArduinoControl.toggled.connect(self.switchArduinoPanel)
+        self.ArduinoControl.setChecked(False)
+        if self.ArduinoControl.isChecked():
+            try:
+                self.ArduinoControl.toggled.connect(self.switchArduinoPanel)
+            except:
+                self.logger.error("Failed to connect arduino control")
 
         self.MainOption = QGroupBox("Main")
 
