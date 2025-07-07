@@ -88,7 +88,8 @@ SLDOScan_GADC = {
 		"target current":7.5,
 		"step size":.1
 	},
-    "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000
+    "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
+    "multipliers":{"VDD":2, "VIN":4}
 }
 
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
