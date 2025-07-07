@@ -103,6 +103,15 @@ class TestHandler(QObject):
         self.VINAdown = {channel:{} for channel in self.instruments._module_dict}
         self.VINAup = {channel:{} for channel in self.instruments._module_dict}
 
+        self.VDDDupError = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDDdownError = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDAdownError = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDAupError = {channel:{} for channel in self.instruments._module_dict}
+        self.VINDupError = {channel:{} for channel in self.instruments._module_dict}
+        self.VINDdownError = {channel:{} for channel in self.instruments._module_dict}
+        self.VINAdownError = {channel:{} for channel in self.instruments._module_dict}
+        self.VINAupError = {channel:{} for channel in self.instruments._module_dict}
+
         self.SLDOfilelist = []
 
         self.finished_tests = []
