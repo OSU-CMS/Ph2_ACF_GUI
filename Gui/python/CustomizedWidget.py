@@ -759,9 +759,14 @@ class BeBoardBox(QWidget):
                     self.ChipWidgetDict[module].getIREF(chipID)
                 )
                 vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
+
+                print(f"1: VREF for chip {chipID} is {vref_value} mV")#debug
+
                 Module.getChips()[chipID].setVREF(
                     int(round(1000 * vref_value))
                 )
+
+                print(f"1: VREF for chip {chipID} is {Module.getChips()[chipID].getVREF()} mV")#debug
 
             # Add the QtModule object to the currently selected Optical Group
             try:
@@ -1226,7 +1231,7 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setVDDD(chipData[chipID]["VDDD"])
                     Module.getChips()[chipID].setEfuseID(chipData[chipID]["EFUSE"])
                     Module.getChips()[chipID].setIREF(chipData[chipID]["IREF"])
-                    Module.getChips()[chipID].setVREF(1000 * round(float(chipData[chipID]["VREF"])))
+                    Module.getChips()[chipID].setVREF(int(1000 * (float(chipData[chipID]["VREF"]))))
                                                       
             else:
                 print(
