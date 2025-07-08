@@ -481,10 +481,7 @@ class TestHandler(QObject):
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
 
-            if "CrossTalk" in testName:
-                EnableReRun = self.onFinalTest(self.testIndexTracker)
-            else:
-                EnableReRun = self.onFinalTest(self.testIndexTracker + 1)
+            EnableReRun = self.onFinalTest(self.testIndexTracker + 1)
             self.stepFinished.emit(EnableReRun)
 
             if self.master.expertMode:
