@@ -839,7 +839,7 @@ class StatusBox(QWidget):
         return True
         """
                 self.CheckLabel.setStyleSheet("color:red")
-                PowerMode = str(self.ANLVoltEdit.currentText())
+                PowerMode = str(self.PowerModeCombo.currentText())
                 if not str(self.ANLVoltEdit.text()) or not str(self.DIGVoltEdit.text()) or not str(self.ANLAmpEdit.text()) or not str(self.DIGAmpEdit.text()):
                         self.CheckLabel.setText("V/I measure is missing")
                         return False
