@@ -156,22 +156,19 @@ class SLDOCurveWorker(QThread):
         Currents_Up = [res[5] for res in data_up]
         Currents_Down = [res[5] for res in data_down]
 
-        # Use the results of pin 9 as LV_Voltage_Up and LV_Voltage_Down
-        LV_Voltage_Up = [res[6]['TEMPERATURE_PIN_9'] for res in data_up]
-        LV_Voltage_Down = [res[6]['TEMPERATURE_PIN_9'] for res in data_down]
+        # This is a hard coded pin for LV in from the ADC board default pin mapping.
+        LV_Voltage_Up = [res[6]['VOLTAGE_PIN_10'] for res in data_up]
+        LV_Voltage_Down = [res[6]['VOLTAGE_PIN_10'] for res in data_down]
 
 
         print("LV Voltages Up: {0}\nLV Voltages Down: {1}".format(
             LV_Voltage_Up, LV_Voltage_Down
         ))
 
+        # Moving from default pin mapping to double or quad pin mappings. LOOKS UGLY BUT IDK
         for index, pin in self.PIN_MAPPINGS[
             self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
-        ].items():
-        
-            print("Self.PIN_MAPPINGS: {0}".format(self.PIN_MAPPINGS[
-                self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()]))
-
+            ].items():
             adc_index = index + 1  # shift to match ADCBoard's 1-based indexing
             adc_key = (
                 f"TEMPERATURE_PIN_{adc_index}"
@@ -179,7 +176,7 @@ class SLDOCurveWorker(QThread):
                 else f"VOLTAGE_PIN_{adc_index}"
             )
 
-            if index == 9:
+            if index == 9:  # skipping over LV in
                 continue
 
             ADC_Voltage_Up = [res[6][adc_key] for res in data_up]
