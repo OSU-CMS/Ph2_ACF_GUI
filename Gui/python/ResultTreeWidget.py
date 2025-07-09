@@ -24,11 +24,12 @@ from Gui.python.ROOTInterface import (
 )
 from Gui.QtGUIutils.QtTCanvasWidget import QtTCanvasWidget
 from Gui.python.logging_config import logger
-from InnerTrackerTests.TestSequences import CompositeTests
+from InnerTrackerTests.TestSequences import CompositeTests_Modules
 
 
 class ResultTreeWidget(QWidget):
-    def __init__(self, info, width, height, master, firmware):
+    def __init__(self, info, width, height, master, firmware, registerKey):
+    def __init__(self, info, width, height, master, firmware, registerKey):
         super(ResultTreeWidget, self).__init__()
         self.master = master
         self.firmware = firmware
@@ -38,6 +39,8 @@ class ResultTreeWidget(QWidget):
         self.IVFileList = []
         self.SLDOFileList = []
         self.info = info
+        self.registerKey = registerKey
+        self.registerKey = registerKey
 
         self.ProgressBarLists = [[] for _ in firmware]
         self.ProgressBars = [{} for _ in firmware]
@@ -59,8 +62,13 @@ class ResultTreeWidget(QWidget):
     def initializeProgressBar(self):
         for fw_index, _ in enumerate(self.firmware):
             if isCompositeTest(self.info):
-                self.ProgressBarLists[fw_index] = CompositeTests[self.info]
-                self.runtimeLists[fw_index] = CompositeTests[self.info]
+                try:            
+                    test_list = CompositeTests_Modules[self.registerKey][self.info] 
+                except KeyError:
+                    test_list = CompositeTests_Modules["Default"][self.info]
+
+                self.ProgressBarLists[fw_index] = test_list
+                self.runtimeLists[fw_index] = test_list
             else:
                 self.ProgressBarLists[fw_index] = [self.info]
                 self.runtimeLists[fw_index] = [self.info]

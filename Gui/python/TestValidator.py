@@ -1,7 +1,7 @@
 import os
 import ROOT
 
-from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests
+from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests_Modules
 from Gui.GUIutils.guiUtils import isCompositeTest
 from Gui.python.logging_config import logger
 
@@ -16,14 +16,17 @@ def ResultGrader(
     runNumber,
     module_data,
     BBanalysis_root_files,
-    sequence
+    sequence,
+    registerKey,
+    communicationTestResults,
+    iref_match_status=None
 ):
     try:
 
-        if isCompositeTest(sequence) and CompositeTests[sequence][testIndexInSequence] != testName:
+        if isCompositeTest(sequence) and CompositeTests_Modules[registerKey][sequence][testIndexInSequence] != testName:
             logger.error(
                 f"Test name didn't match expected test sequence name\n"
-                f"Expected Test Name: {CompositeTests[sequence][testIndexInSequence]}\n"
+                f"Expected Test Name: {CompositeTests_Modules[registerKey][sequence][testIndexInSequence]}\n"
                 f"Received Test Name: {testName}"
             )
             raise Exception("Test name doesn't match expected sequence name! Something went wrong.")
@@ -32,11 +35,25 @@ def ResultGrader(
         module_name = module_data["module"].getModuleName()
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
+       
         if "CommunicationTest" in testName:
-            explanation = (
-                "No grading currently available for CommunicationTest."
-            )
-            return {module_name: (True, explanation)}
+            module_name = module_data["module"].getModuleName()
+            comm_result = communicationTestResults.get(module_name)
+            # Get IREF match status for this module
+            iref_status = iref_match_status.get(module_name) if iref_match_status else None
+            print(f"iref match status is: {iref_match_status}")
+            if comm_result is None:
+                return {module_name: (False, "CommunicationTest did not complete")}, BBanalysis_root_files
+            if comm_result is True:
+                if iref_status is True:
+                    return {module_name: (True, "CommunicationTest successful. IREF values match.")}, BBanalysis_root_files
+                elif iref_status is False:
+                    return {module_name: (False, "CommunicationTest successful but IREF values do not match")}, BBanalysis_root_files
+                else:
+                    return {module_name: (False, "CommunicationTest successful but IREF status unknown")}, BBanalysis_root_files
+            else:
+                return {module_name: (False, "CommunicationTest failed")}, BBanalysis_root_files
+
 
         root_file_name = testName.split("_")[0]
         if "SCurveScan" in root_file_name:
