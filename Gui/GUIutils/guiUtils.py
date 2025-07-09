@@ -489,7 +489,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 FEChip.VDDAtrim = chip.getVDDA()
                 FEChip.VDDDtrim = chip.getVDDD()
                 FEChip.EfuseID = chip.getEfuseID()
-                FEChip.VREF_ADC = chip.getVREF()
+                FEChip.VREF = chip.getVREF()
 
                 HyBridModule0.AddFE(FEChip)
             HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
