@@ -313,14 +313,6 @@ class ChipBox(QWidget):
         efuseID = self.findChild(QLineEdit, "EfuseIDEdit_{0}".format(pChipID))
         return efuseID.text()
 
-    def getIREF(self, pChipID):
-        irefThing = self.chipData[pChipID]["IREF"]
-        return irefThing
-    
-    def getVREF(self, pChipID):
-        vrefThing = self.chipData[pChipID]["VREF"]
-        return vrefThing
-
     def getChipData(self):
         return self.chipData
 
@@ -754,13 +746,6 @@ class BeBoardBox(QWidget):
                 )
                 Module.getChips()[chipID].setEfuseID(
                     self.ChipWidgetDict[module].getEfuseID(chipID)
-                )
-                Module.getChips()[chipID].setIREF(
-                    self.ChipWidgetDict[module].getIREF(chipID)
-                )
-                vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
-                Module.getChips()[chipID].setVREF(
-                    int(round(1000 * vref_value))
                 )
 
             # Add the QtModule object to the currently selected Optical Group
@@ -1225,9 +1210,7 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setVDDA(chipData[chipID]["VDDA"])
                     Module.getChips()[chipID].setVDDD(chipData[chipID]["VDDD"])
                     Module.getChips()[chipID].setEfuseID(chipData[chipID]["EFUSE"])
-                    Module.getChips()[chipID].setIREF(chipData[chipID]["IREF"])
-                    Module.getChips()[chipID].setVREF(int(1000 * (float(chipData[chipID]["VREF"]))))
-                                                      
+                    
             else:
                 print(
                     "Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values."

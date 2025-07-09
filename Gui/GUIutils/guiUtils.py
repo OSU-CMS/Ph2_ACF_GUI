@@ -11,6 +11,7 @@ import sys
 import os
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
+from InnerTrackerTests.FESettings import FESettingsB_dict
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -35,7 +36,6 @@ from InnerTrackerTests.GlobalSettings import (
 from InnerTrackerTests.FESettings import (
     FESettings_DictA,
     FESettings_DictB,
-    FESettingsB_dict,
 )
 from InnerTrackerTests.HWSettings import (
     HWSettings_DictA,
@@ -467,8 +467,6 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 FEChip.VDDAtrim = chip.getVDDA()
                 FEChip.VDDDtrim = chip.getVDDD()
                 FEChip.EfuseID = chip.getEfuseID()
-                FEChip.VREF_ADC = chip.getVREF()
-
                 HyBridModule0.AddFE(FEChip)
             HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
             OpticalGroupModule0.AddHyBrid(HyBridModule0)
