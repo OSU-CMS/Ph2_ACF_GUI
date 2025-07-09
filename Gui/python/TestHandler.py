@@ -1504,8 +1504,25 @@ created by Ph2_ACF is empty."
             csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(
                 self.output_dir, moduleName, timestamp
             )
+
+            # Some power supplies give outputs as a two dimensional array
+            # This breaks np.savetxt. The second element of the array should be empty
+            # either way, therefore, we will just flatten the array getting rid of the
+            # second dimension. NOTE: If we do want measurements from multiple HV
+            # channels this will need to reevaluated. 
+
+            # Convert to numpy array to give us access to flatten() and ndim
+            voltages = np.array(measure["voltage"])
+            current = np.array(measure["current"])
+
+            # If the voltages are 2D+, then flatten. 
+            if voltages.ndim > 1:
+                voltages = voltages.flatten()
+                current = current.flatten()
+            
+            
             np.savetxt(
-                csvfilename, (measure["voltage"], measure["current"]), delimiter=","
+                csvfilename, (voltages, current), delimiter=","
             )
             module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
                 boardID=beboardId, ogID=ogId, hybridID=hybridId
