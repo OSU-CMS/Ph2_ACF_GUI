@@ -135,6 +135,7 @@ class QtRunWindow(QWidget):
         self.createApp()
         self.createMain()
         self.occupied()
+        QApplication.processEvents()
 
         self.resized.connect(self.rescaleImage)
 
@@ -385,7 +386,7 @@ class QtRunWindow(QWidget):
         self.UploadButton.setDisabled(True)
 
         self.CommentBox = QLineEdit()
-        self.CommentBox.setPlaceholderText("Enter comment for upload")
+        self.CommentBox.setPlaceholderText("Upload comment")
         self.CommentBox.setMinimumWidth(300)
         self.CommentBox.setMaximumWidth(500)
         self.CommentBox.textChanged.connect(self.updateComment)
