@@ -102,6 +102,15 @@ class TestHandler(QObject):
         self.VINAdown = {channel:{} for channel in self.instruments._module_dict}
         self.VINAup = {channel:{} for channel in self.instruments._module_dict}
 
+        self.VDDDupError = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDDdownError = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDAdownError = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDAupError = {channel:{} for channel in self.instruments._module_dict}
+        self.VINDupError = {channel:{} for channel in self.instruments._module_dict}
+        self.VINDdownError = {channel:{} for channel in self.instruments._module_dict}
+        self.VINAdownError = {channel:{} for channel in self.instruments._module_dict}
+        self.VINAupError = {channel:{} for channel in self.instruments._module_dict}
+
         self.SLDOfilelist = []
 
         self.BBanalysis_root_files = []
@@ -158,6 +167,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
+        self.comment = ""
         self.txt_files = txt_files if txt_files != {} else {}
 
         self.autoSave = False
@@ -845,6 +855,7 @@ class TestHandler(QObject):
                             self.info,
                             self.registerKey,
                             self.communicationTestResults,
+                            self.comment,
                             self.iref_match_status  # Pass iref_match_status for IREF validation
                         )
 
@@ -1296,10 +1307,19 @@ created by Ph2_ACF is empty."
                 if match:
                     if self.GADC_meas_chip is not None:
                         if match.group(1) in ("VDDD","VDDA","VINA","VIND"):
+                            multiplier = site_settings.SLDOScan_GADC["multipliers"][match.group(1)[:3]]
+                            
                             if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown)[channel]:
                                 getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip] = {}
-                            getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip][current] = match.group(2) #This line enforces that it only logs one VDDD or VDDA value per sweep step
+                            getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip][current] = float(match.group(2))*multiplier #This line enforces that it only logs one VDDD or VDDA value per sweep step
+
+                            if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown+"Error")[channel]:
+                                getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip] = {}
+                            getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip][current] = float(match.group(3))*multiplier #This line enforces that it only logs one VDDD or VDDA value per sweep step
+
                     else:
+                        print(f'Error: Did not receive expected message, "Reading monitored data for \
+                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
                         logger.error(f'Did not receive expected message, "Reading monitored data for \
                         [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
         

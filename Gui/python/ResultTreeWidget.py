@@ -29,7 +29,6 @@ from InnerTrackerTests.TestSequences import CompositeTests_Modules
 
 class ResultTreeWidget(QWidget):
     def __init__(self, info, width, height, master, firmware, registerKey):
-    def __init__(self, info, width, height, master, firmware, registerKey):
         super(ResultTreeWidget, self).__init__()
         self.master = master
         self.firmware = firmware
@@ -39,7 +38,6 @@ class ResultTreeWidget(QWidget):
         self.IVFileList = []
         self.SLDOFileList = []
         self.info = info
-        self.registerKey = registerKey
         self.registerKey = registerKey
 
         self.ProgressBarLists = [[] for _ in firmware]
