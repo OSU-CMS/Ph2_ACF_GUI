@@ -457,7 +457,7 @@ class TestHandler(QObject):
 
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(
-                os.environ.get("PH2_ACF_BASE_DIR") + "/test/"
+                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
             )
             process.readyReadStandardOutput.connect(
                 lambda: self.on_readyReadStandardOutput_GADC(process, i, upOrDown, current, channel = tuple(self.instruments._module_dict.keys())[i])
