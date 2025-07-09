@@ -527,66 +527,72 @@ class TestHandler(QObject):
         else:
             self.outputfile = open(self.outputFile, "w")
 
+        if testName == "SLDOScan_GADC":
+            self.instruments.hv_off(
+                execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
+            )
+
+            if "1x2" in self.ModuleType.lower():
+                SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
+            elif "quad" in self.ModuleType.lower():
+                SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["quad"]
+            else:
+                SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
+                logger.error('Module type does not contain "1x2" or "quad". Running SLDOScan_GADC as 1x2.')
+
+            self.ProgressValue = 0
+            total_steps =2*(1+np.ceil(np.abs(SLDOScan_GADC_dict["target current"]-SLDOScan_GADC_dict["starting current"])/SLDOScan_GADC_dict["step size"]))
+            for i in range(len(self.firmware)):
+                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(0)
+
+            self.instruments.lv_on(voltage=SLDOScan_GADC_dict["voltage"],current=SLDOScan_GADC_dict["starting current"])
+
+            up_sweep = self.instruments.lv_sweep(target=SLDOScan_GADC_dict["target current"],
+                delay=.1, set_property="current", measure=True,
+                step_size=SLDOScan_GADC_dict["step size"], execute_each_step=lambda:self.GADC_execute_each_step("up", total_steps))
+
+            down_sweep = self.instruments.lv_sweep(target=SLDOScan_GADC_dict["starting current"],
+                delay=.1, set_property="current", measure=True,
+                step_size=SLDOScan_GADC_dict["step size"], execute_each_step=lambda:self.GADC_execute_each_step("down", total_steps))
+            
+            self.instruments.lv_off()
+        
+            for i in range(len(self.firmware)):
+                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
+
+            for datatype in ('VDDD', 'VDDA'):
+                for channel in self.instruments._module_dict:
+                    for chip in self.VDDDup[channel]:
+                        data = [
+                            [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
+                            [float(i) for i in getattr(self, f"VIN{datatype[-1]}up")[channel][chip].values()],
+                            [float(i) for i in getattr(self, f"{datatype}up")[channel][chip].values()],
+                            [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
+                            [float(i) for i in getattr(self, f"VIN{datatype[-1]}down")[channel][chip].values()],
+                            [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
+                        ]
+                        print(data)
+
+                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+            self.SLDOScanFinished()
+            return
+
         if self.instruments:
             lv_on = False
             for number in self.instruments.get_modules().keys():
+                print(self.instruments.status()[number]["lv"])
                 if self.instruments.status()[number]["lv"]:
                     lv_on = True
                     break
             if not lv_on:
-                if testName == "SLDOScan_GADC":
-                    if "1x2" in self.ModuleType.lower():
-                        SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
-                    elif "quad" in self.ModuleType.lower():
-                        SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["quad"]
-                    else:
-                        SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
-                        logger.error('Module type does not contain "1x2" or "quad". Running SLDOScan_GADC as 1x2.')
-
-                    self.ProgressValue = 0
-                    total_steps =2*(1+np.ceil(np.abs(SLDOScan_GADC_dict["target current"]-SLDOScan_GADC_dict["starting current"])/SLDOScan_GADC_dict["step size"]))
-                    for i in range(len(self.firmware)):
-                        self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(0)
-
-                    self.instruments.lv_on(voltage=SLDOScan_GADC_dict["voltage"],current=SLDOScan_GADC_dict["starting current"])
-
-                    up_sweep = self.instruments.lv_sweep(target=SLDOScan_GADC_dict["target current"],
-                        delay=.1, set_property="current", measure=True,
-                        step_size=SLDOScan_GADC_dict["step size"], execute_each_step=lambda:self.GADC_execute_each_step("up", total_steps))
-
-                    down_sweep = self.instruments.lv_sweep(target=SLDOScan_GADC_dict["starting current"],
-                        delay=.1, set_property="current", measure=True,
-                        step_size=SLDOScan_GADC_dict["step size"], execute_each_step=lambda:self.GADC_execute_each_step("down", total_steps))
-                    
-                    self.instruments.lv_off()
-                
-                    for i in range(len(self.firmware)):
-                        self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
-
-                    for datatype in ('VDDD', 'VDDA'):
-                        for channel in self.instruments._module_dict:
-                            for chip in self.VDDDup[channel]:
-                                data = [
-                                    [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
-                                    [float(i) for i in getattr(self, f"VIN{datatype[-1]}up")[channel][chip].values()],
-                                    [float(i) for i in getattr(self, f"{datatype}up")[channel][chip].values()],
-                                    [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
-                                    [float(i) for i in getattr(self, f"VIN{datatype[-1]}down")[channel][chip].values()],
-                                    [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
-                                ]
-
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
-                    self.SLDOScanFinished()
-                    return
-                else:
                     self.instruments.lv_on(
                         voltage=site_settings.ModuleVoltageMapSLDO[
                             self.master.module_in_use
                         ],
                         current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                     )
-
+        
         if "IVCurve" in testName:
             self.currentTest = testName
             self.configTest()
@@ -861,7 +867,6 @@ class TestHandler(QObject):
                             module.getModuleName()
                         )
 
-            print(results)
             self.updateValidation.emit(results)
             self.updateFinishedTests.emit(
                 self.finished_tests
