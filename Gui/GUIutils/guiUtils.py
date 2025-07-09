@@ -11,7 +11,6 @@ import sys
 import os
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
-from InnerTrackerTests.FESettings import FESettingsB_dict
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -36,6 +35,7 @@ from InnerTrackerTests.GlobalSettings import (
 from InnerTrackerTests.FESettings import (
     FESettings_DictA,
     FESettings_DictB,
+    FESettingsB_dict,
 )
 from InnerTrackerTests.HWSettings import (
     HWSettings_DictA,
@@ -456,7 +456,10 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                     txt_file,
                 )
 
-                FEChip.ConfigureFE(FESettings_Dict[testName][registerKey])
+                chip_settings = FESettings_Dict[testName][registerKey].copy()
+                chip_settings['VREF_ADC'] = chip.getVREF()
+                FEChip.ConfigureFE(chip_settings)
+            
                 if testName in FELaneConfig_Dict:
                         FEChip.ConfigureLaneConfig(
                             FELaneConfig_Dict[testName][int(chip.getLane())]
