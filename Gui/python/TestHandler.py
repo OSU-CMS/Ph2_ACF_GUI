@@ -575,8 +575,8 @@ class TestHandler(QObject):
                                     [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
                                 ]
 
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}")
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
                     self.SLDOScanFinished()
                     return
                 else:
