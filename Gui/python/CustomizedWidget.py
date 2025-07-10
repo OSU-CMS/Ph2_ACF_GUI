@@ -35,6 +35,9 @@ from Gui.GUIutils.settings import (
 
 from Gui.python.logging_config import logger
 
+# Global dictionary to store IREF values for each chip
+chip_iref_db = {}
+
 
 class ClickOnlyComboBox(QComboBox):
     def __init__(self, parent=None):
@@ -210,6 +213,7 @@ class ChipBox(QWidget):
                             modulechipdata[chipid]["VDDA"],
                             modulechipdata[chipid]["VDDD"],
                             modulechipdata[chipid]["EFUSE"],
+                            modulechipdata[chipid]["IREF"],
                         )
         else:
             self.ChipGroupBoxDict.clear()
@@ -229,7 +233,7 @@ class ChipBox(QWidget):
             self.ChipList.append(ModuleLaneMap[self.chipType][lane])
 
     # get trim values from DB
-    def makeChipBoxWithDB(self, pChipID, VDDA, VDDD, EfuseID="0"):
+    def makeChipBoxWithDB(self, pChipID, VDDA, VDDD, EfuseID="0", IREF="0"):
         self.ChipID = pChipID
         self.ChipLabel = QCheckBox("Chip ID: {0}".format(self.ChipID))
         self.ChipLabel.setChecked(True)
@@ -237,6 +241,11 @@ class ChipBox(QWidget):
         self.ChipVDDDLabel = QLabel("VDDD:")
         self.ChipVDDDEdit = QLineEdit()
         self.ChipVDDDEdit.setObjectName("VDDDEdit_{0}".format(pChipID))
+
+        self.IREF = IREF
+        chip_iref_db[str(pChipID)] = str(IREF)  # Store as string for easy comparison
+        print(f"chip dict: {chip_iref_db}")
+        print(f"Module Chip ID: {pChipID}, IREF: {self.IREF}")
 
         if not self.ChipVDDDEdit.text():
             logger.debug("no VDDD text")
@@ -337,7 +346,7 @@ class ChipBox(QWidget):
         return hdiversion
 
     ## This function returns a list of dictionaries.  Each element of the list is a chip dictinary.
-    ## For example, chipdata[0]['EFUSE'] is the efuse ID of the first chip
+    ## For example, chipdata[0]['EFUSE'] is the efuse ID of thehttps://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName} first chip
     def fetchChipDataFromDB(self, moduleName):
         try:
             URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"

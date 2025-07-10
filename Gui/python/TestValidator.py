@@ -19,7 +19,8 @@ def ResultGrader(
     sequence,
     registerKey,
     communicationTestResults,
-    comment
+    comment,
+    iref_match_status=None
 ):
     try:
 
@@ -35,13 +36,25 @@ def ResultGrader(
         module_name = module_data["module"].getModuleName()
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
+       
         if "CommunicationTest" in testName:
-            if communicationTestResults[module_name] is None:
-                return {module_name: (False, "Did not see CommunicationTest result in Ph2_ACF output.")}, BBanalysis_root_files
-            if communicationTestResults[module_name]:
-                return {module_name: (True, "CommunicationTest executed successfully.")}, BBanalysis_root_files
+            module_name = module_data["module"].getModuleName()
+            comm_result = communicationTestResults.get(module_name)
+            # Get IREF match status for this module
+            iref_status = iref_match_status.get(module_name) if iref_match_status else None
+            print(f"iref match status is: {iref_match_status}")
+            if comm_result is None:
+                return {module_name: (False, "CommunicationTest did not complete")}, BBanalysis_root_files
+            if comm_result is True:
+                if iref_status is True:
+                    return {module_name: (True, "CommunicationTest successful. IREF values match.")}, BBanalysis_root_files
+                elif iref_status is False:
+                    return {module_name: (False, "CommunicationTest successful but IREF values do not match")}, BBanalysis_root_files
+                else:
+                    return {module_name: (False, "CommunicationTest successful but IREF status unknown")}, BBanalysis_root_files
             else:
-                return {module_name: (False, "Some data lanes are enabled but inactive, reached maximum number of attempts.")}, BBanalysis_root_files
+                return {module_name: (False, "CommunicationTest failed")}, BBanalysis_root_files
+
 
         root_file_name = testName.split("_")[0]
         if "SCurveScan" in root_file_name:

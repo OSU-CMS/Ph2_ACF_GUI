@@ -54,6 +54,7 @@ from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
+from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 
 
@@ -241,6 +242,8 @@ class TestHandler(QObject):
         self.finished_tests = []
 
         self.initializeRD53Dict()
+        self.iref_match_status = {module.getModuleName(): True for module in self.modules}  # Initialize all to True
+
 
     def finished_run_process(self, _, exitStatus, i):
         if exitStatus == QProcess.NormalExit:
@@ -825,6 +828,9 @@ class TestHandler(QObject):
             results = []
             runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
 
+            print("IREF MATCH STATUS BEFORE VALIDATION:", self.iref_match_status)
+            print("MODULE NAMES:", [module.getModuleName() for module in self.modules])
+
             for beboard in self.firmware:
                 boardID = beboard.getBoardID()
                 for OG in beboard.getAllOpticalGroups().values():
@@ -849,7 +855,8 @@ class TestHandler(QObject):
                             self.info,
                             self.registerKey,
                             self.communicationTestResults,
-                            self.comment
+                            self.comment,
+                            self.iref_match_status  # Pass iref_match_status for IREF validation
                         )
 
                         results.append(result)
@@ -1001,7 +1008,30 @@ created by Ph2_ACF is empty."
                     clean_text = ansi_escape.sub("", textStr)
                     chip_number = clean_text.split("RD53: ")[-1].strip()
                     self.fused_dict_index[1] = chip_number
+                    #print(f"Clean_text: {clean_text}") 
+                    print(f"Chip Number: {chip_number}")
 
+                if "Wire bonded Iref" in textStr:
+                    ansi_escape = re.compile(r"\x1b\[.*?m")
+                    clean_text = ansi_escape.sub("", textStr)
+                    iref_value = clean_text.split("Iref = ")[-1].strip()
+                    self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]] = iref_value
+                    print(f"IREF Value: {iref_value}")
+                    chip_id = self.fused_dict_index[1]
+                    module_name = self.modules[0].getModuleName()
+                    db_iref = chip_iref_db.get(str(chip_id))
+                    # Initialize module status to True if not set
+                    if module_name not in self.iref_match_status:
+                        self.iref_match_status[module_name] = True
+                    # Compare with database value
+                    if db_iref is not None:
+                        if db_iref != iref_value:
+                            print(f"Mismatch: IREF for chip {chip_id} (database: {db_iref}, module: {iref_value})")
+                            self.iref_match_status[module_name] = False  # Mark module as failed
+                    else:
+                        print(f"No database IREF found for chip {chip_id}")
+                        self.iref_match_status[module_name] = False  # Mark as failed if no DB entry
+                   
                 if "Fused ID" in textStr:
                     ansi_escape = re.compile(r"\x1b\[.*?m")
                     clean_text = ansi_escape.sub("", textStr)
@@ -1316,8 +1346,6 @@ created by Ph2_ACF is empty."
         if "IVCurve" in self.currentTest:
             self.saveTest(processIndex, self.run_processes[processIndex])
             return
-
-        self.saveConfigs()
 
         # Save the output ROOT file to output_dir
 
@@ -1867,3 +1895,4 @@ created by Ph2_ACF is empty."
                             command_template.format(boardID, ogID, hybridID, chipID)
                         )
         executeCommandSequence(commands)
+
