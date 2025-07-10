@@ -4,7 +4,7 @@ Class to perform the SLDO curve scanning
 
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from Gui.python.logging_config import logger
-from icicle.icicle.adc_board import AdcBoard
+from icicle.icicle.adc_board import ADCBoard
 from icicle.icicle.relay_board import RelayBoard
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 import numpy as np
@@ -42,44 +42,44 @@ class SLDOCurveWorker(QThread):
         self.exiting = False
         self.moduleType = moduleType
         self.PIN_MAPPINGS = {
-            "DEFAULT": AdcBoard.DEFAULT_PIN_MAP,
+            "DEFAULT": ADCBoard.DEFAULT_PIN_MAP,
             "DOUBLE": {
-                # 0: 'VDDA_ROC1',
-                1: 'VDDA_ROC13', #ROC U1B
-                # 2: 'VDDD_ROC2',
-                # 3: 'VDDD_ROC3',
-                # 4: 'VDDD_ROC1',
-                5: 'VDDD_ROC13', #ROC U1B
-                # 6: None,
-                # 7: 'TP8', #VOFS IN
-                # 8: None,
-                9: 'TP10', #VIN
-                # 10: None,
-                11: "VDDA_ROC12", #ROC U1A
-                #12: "VDDA_ROC1",
-                13: "VDDD_ROC12", #ROC U1A
-                #14: "VDDD_ROC1",
-                # 15: 'TP7A', #VOFS OUT
-                # 16: 'TP7B', #VOFS OUT
+                # 1: 'VDDA_ROC1',
+                2: 'VDDA_ROC13', #ROC U1B
+                # 3: 'VDDD_ROC2',
+                # 4: 'VDDD_ROC3',
+                # 5: 'VDDD_ROC1',
+                6: 'VDDD_ROC13', #ROC U1B
+                # 7: None,
+                # 8: 'TP8', #VOFS IN
+                # 9: None,
+                10: 'TP10', #VIN
+                #  11: None,
+                12: "VDDA_ROC12", #ROC U1A
+                # 13: "VDDA_ROC1",
+                14: "VDDD_ROC12", #ROC U1A
+                # 15: "VDDD_ROC1",
+                # 16: 'TP7A', #VOFS OUT
+                # 17: 'TP7B', #VOFS OUT
             },
             "QUAD": {
-                0: "VDDA_ROC14", #ROC U1C
-                1: "VDDA_ROC15", #ROC U1D
-                2: "VDDD_ROC14", #ROC U1C
-                3: "VDDD_ROC15", #ROC U1D
-                # 4: 'TP7C', #VOFS OUT
-                # 5: 'TP7D', #VOFS OUT
-                # 6: None,
-                # 7: 'TP8', #VOFS IN
-                # 8: None,
-                9: 'TP10', #VIN
-                # 10: None,
-                11: "VDDA_ROC12", #ROC U1A
-                12: "VDDA_ROC13", #ROC U1B
-                13: "VDDD_ROC12", #ROC U1A
-                14: "VDDD_ROC13", #ROC U1B
-                # 15: 'TP7A', #VOFS OUT
-                # 16: 'TP7B', #VOFShv_off OUT
+                1: "VDDA_ROC14", #ROC U1C
+                2: "VDDA_ROC15", #ROC U1D
+                3: "VDDD_ROC14", #ROC U1C
+                4: "VDDD_ROC15", #ROC U1D
+                # 5: 'TP7C', #VOFS OUT
+                # 6: 'TP7D', #VOFS OUT
+                # 7: None,
+                # 8: 'TP8', #VOFS IN
+                # 9: None,
+                10: 'TP10', #VIN
+                # 11: None,
+                12: "VDDA_ROC12", #ROC U1A
+                13: "VDDA_ROC13", #ROC U1B
+                14: "VDDD_ROC12", #ROC U1A
+                15: "VDDD_ROC13", #ROC U1B
+                # 16: 'TP7A', #VOFS OUT
+                # 17: 'TP7B', #VOFShv_off OUT
             },
         }
         self.LV_index = -1
@@ -88,6 +88,10 @@ class SLDOCurveWorker(QThread):
     def run(self) -> None:
         if "adc_board" in self.instruments._instrument_dict.keys():
             self.adc_board = self.instruments._instrument_dict["adc_board"]
+            # Set the pin map based on the module type
+            self.adc_board._pin_map = self.PIN_MAPPINGS[
+                self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
+            ]
             logger.info("Running with ADC.")
             self.runWithADC()
         elif (
@@ -156,28 +160,35 @@ class SLDOCurveWorker(QThread):
         Currents_Up = [res[5] for res in data_up]
         Currents_Down = [res[5] for res in data_down]
 
-        # Use the results of pin 9 as LV_Voltage_Up and LV_Voltage_Down
-        pin_9_index = 9  # Pin index for "TP10"
-        LV_Voltage_Up = [res[6][pin_9_index] for res in data_up]
-        LV_Voltage_Down = [res[6][pin_9_index] for res in data_down]
+        #Indexing for pin voltages
+        index = 6
+        pin10index = index + list(self.adc_board._pin_map.keys()).index(10)
+        LV_Voltage_Up = [res[pin10index] for res in data_up]
+        LV_Voltage_Down = [res[pin10index] for res in data_down]
 
-        for index, pin in self.PIN_MAPPINGS[
-            self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
-        ].items():
-        
-            if index == 9:
+
+        print("LV Voltages Up: {0}\nLV Voltages Down: {1}".format(
+            LV_Voltage_Up, LV_Voltage_Down
+        ))
+        print("Pin map used: {0}".format(self.adc_board._pin_map))
+
+        for name in self.adc_board._pin_map.values():
+            if index != pin10index:
+                ADC_Voltage_Up = [res[index] for res in data_up]
+                result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
+                ADC_Voltage_Down = [res[index] for res in data_down]
+                result_down = np.array([Currents_Down, LV_Voltage_Down, ADC_Voltage_Down])
+                print("ADC Voltages Up: {0}\nADC Voltages Down: {1}".format(
+                    ADC_Voltage_Up, ADC_Voltage_Down))
+                index += 1
+            else:
+                index += 1
                 continue
-
-            ADC_Voltage_Up = [res[6][index] for res in data_up]
-            result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
-            ADC_Voltage_Down = [res[6][index] for res in data_down]
-            result_down = np.array([Currents_Down, LV_Voltage_Down, ADC_Voltage_Down])
 
             results = np.concatenate((result_up, result_down), axis=0)
             # 0:up current, 1:up lv voltage, 2: up adc voltage 3: down current, 4: down lv voltage, 5: down adc voltage
-            print("total result for pin {0}: {1}".format(pin, results))
 
-            self.measure.emit(results, pin)
+            self.measure.emit(results, name)
 
         # All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
@@ -277,7 +288,10 @@ class SLDOCurveWorker(QThread):
 
     def measureADC(self, no_lock=True, *args, **kwargs):
         self.updateProgress(1)
-        return [self.adc_board.query_adc(no_lock=no_lock)]
+        ls = []
+        for pin in self.adc_board._pin_map.keys():
+            ls.append(self.adc_board.query_channel(pin))
+        return ls
 
     def measureMM(self, no_lock=True, *args, **kwargs):
         self.updateProgress(len(self.pin_list))
