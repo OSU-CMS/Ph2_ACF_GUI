@@ -441,10 +441,10 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
-    def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_GADC["physics seconds"], fc7_index : int = 0) -> None:
+    def _execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_["physics seconds"], fc7_index : int = 0) -> None:
 
-        GADC_processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
-        for i, process in enumerate(GADC_processes):
+        _processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
+        for i, process in enumerate(_processes):
 
             voltage = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "voltage")
             current = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "current")
@@ -457,7 +457,7 @@ class TestHandler(QObject):
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/"
             )
             process.readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput_GADC(process, i, upOrDown, current, channel = tuple(self.instruments._module_dict.keys())[i])
+                lambda: self.on_readyReadStandardOutput_(process, i, upOrDown, current, channel = tuple(self.instruments._module_dict.keys())[i])
             )
             
             process.start(
@@ -465,7 +465,7 @@ class TestHandler(QObject):
                 ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml", "-c", "physics", "-t", str(physics_seconds)],
             )
             
-        for process, firmware in zip(GADC_processes, self.firmware):
+        for process, firmware in zip(_processes, self.firmware):
             if process.state() != QProcess.NotRunning:
                 result = process.waitForFinished(-1) #waits indefinitely
                 if not result:
@@ -575,8 +575,16 @@ class TestHandler(QObject):
                                     [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
                                 ]
 
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+                                error = [
+                                    [float(i) for i in getattr(self, f"VIN{datatype[-1]}upError")[channel][chip].values()],
+                                    [float(i) for i in getattr(self, f"{datatype}upError")[channel][chip].values()],
+                                    [float(i) for i in getattr(self, f"VIN{datatype[-1]}downError")[channel][chip].values()],
+                                    [float(i) for i in getattr(self, f"{datatype}downError")[channel][chip].values()]
+                                ]
+
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", error=error)
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", error=error)
+
                     self.SLDOScanFinished()
                     return
                 else:
@@ -1423,7 +1431,7 @@ created by Ph2_ACF is empty."
                     self.SLDOProgressValue
                 )
 
-    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str, error: np.ndarray = [[],[],[],[]]):
         for module in self.modules:
             moduleName = module.getModuleName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(
@@ -1439,29 +1447,33 @@ created by Ph2_ACF is empty."
 
             # Make the actual graph
             plt.figure()
-            plt.plot(
-                total_result_stacked[0],
-                total_result_stacked[1],
+            plt.errorbar(
+                tuple(total_result_stacked[0]),
+                tuple(total_result_stacked[1]),
                 "-x",
                 label="module input voltage (up)",
+                yerr = tuple(error[0])
             )
-            plt.plot(
-                total_result_stacked[0],
-                total_result_stacked[2],
+            plt.errorbar(
+                tuple(total_result_stacked[0]),
+                tuple(total_result_stacked[2]),
                 "-x",
                 label=f"{pin} (up)",
+                yerr = tuple(error[1])
             )
-            plt.plot(
-                total_result_stacked[3],
-                total_result_stacked[4],
+            plt.errorbar(
+                tuple(total_result_stacked[3]),
+                tuple(total_result_stacked[4]),
                 "-x",
                 label="module input voltage (down)",
+                yerr = tuple(error[2])
             )
-            plt.plot(
-                total_result_stacked[3],
-                total_result_stacked[5],
+            plt.errorbar(
+                tuple(total_result_stacked[3]),
+                tuple(total_result_stacked[5]),
                 "-x",
                 label=f"{pin} (down)",
+                yerr = tuple(error[3])
             )
             plt.grid(True)
             plt.xlabel("Current (A)")
