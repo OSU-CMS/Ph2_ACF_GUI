@@ -1120,17 +1120,17 @@ class QtApplication(QWidget):
         #    profile_name = temp_chamber.query("SELECT_PROFILE")
 
         message_box = QMessageBox()
-        message_box.setText(
-            f'Temperature chamberprofile "{profile_name}" has been chosen'
-        )
+        #message_box.setText(
+        #    f'Temperature chamberprofile "{profile_name}" has been chosen'
+        #)
         message_box.setInformativeText("Is this the correct profile?")
         message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         message_box.setDefaultButton(QMessageBox.Yes)
         response = message_box.exec()
 
-        if response == QMessageBox.Yes:
-            with temp_chamber:
-                temp_chamber.set("CONTROL_PROFILE", "START")
+        #if response == QMessageBox.Yes:
+        #    with temp_chamber:
+        #        temp_chamber.set("CONTROL_PROFILE", "START")
 
         if response == QMessageBox.No:
             return
