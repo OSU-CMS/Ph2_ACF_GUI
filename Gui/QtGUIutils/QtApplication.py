@@ -1088,9 +1088,9 @@ class QtApplication(QWidget):
 
     def abortThermalTest(self):
         """Stop the current profile running on thermal chamber"""
-#         temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
-#        with temp_chamber:
-#           temp_chamber.set("CONTROL_PROFILE", "STOP")
+         temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
+        with temp_chamber:
+           temp_chamber.set("CONTROL_PROFILE", "STOP")
         message_box = QMessageBox()
         message_box.setText("Profile Aborted")
         message_box.setStandardButtons(QMessageBox.Ok)
@@ -1113,11 +1113,11 @@ class QtApplication(QWidget):
             return
         # Import icicle module for temperature chamber
         print(site_settings.temp_chamber_resource)
-#        temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
+        temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
 
-#        with temp_chamber:
-#            temp_chamber.set("SELECT_PROFILE", profile_number)
-#            profile_name = temp_chamber.query("SELECT_PROFILE")
+        with temp_chamber:
+            temp_chamber.set("SELECT_PROFILE", profile_number)
+            profile_name = temp_chamber.query("SELECT_PROFILE")
 
         message_box = QMessageBox()
         message_box.setText(
