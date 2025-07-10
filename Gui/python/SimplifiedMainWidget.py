@@ -27,7 +27,7 @@ from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.Peltier import PeltierSignalGenerator
 from Gui.python.logging_config import logger
-import Gui.siteSettings as site_settings # type: ignore
+import Gui.siteSettings as site_settings  # type: ignore
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 
 
@@ -43,12 +43,12 @@ class SimplifiedMainWidget(QWidget):
         super().__init__()
         self.master = master
         self.dimension = dimension
-        self.max_temperature:float = 40
-        self.dew_point_tolerance:float = -5
+        self.max_temperature: float = 40
+        self.dew_point_tolerance: float = -5
         self.enabled_tecs = None
 
         self.timer = QTimer()
-        self.timer.start(1000) # 1s timer
+        self.timer.start(1000)  # 1s timer
 
         try:
             self.instruments = master.instruments
@@ -67,9 +67,9 @@ class SimplifiedMainWidget(QWidget):
             )
             self.close()
 
-        if self.instruments is None: 
+        if self.instruments is None:
             logger.error("No instruments setup, exiting Simplified GUI")
-            self.close() 
+            self.close()
             sys.exit(1)
 
         self.instrument_info = {}
@@ -92,9 +92,12 @@ class SimplifiedMainWidget(QWidget):
         self.createWindow()
 
     def createWindow(self):
-
         self.monitoring_values = [
-            "temperature", "database", "hv", "lv", "condensation"
+            "temperature",
+            "database",
+            "hv",
+            "lv",
+            "condensation",
         ] + [f"fc7_{firmwareName}" for firmwareName in site_settings.FC7List.keys()]
 
         self.create_monitoring_leds()
@@ -142,8 +145,7 @@ class SimplifiedMainWidget(QWidget):
                 messageBox = QMessageBox()
                 messageBox.setIcon(QMessageBox.Error)
                 logger.error("Could not create file due to error {}".format(e))
-                messageBox.setText(
-                    "Can not create log files: {}".format(LogFileName))
+                messageBox.setText("Can not create log files: {}".format(LogFileName))
                 messageBox.exec()
 
     def setupArduino(self):
@@ -166,8 +168,7 @@ class SimplifiedMainWidget(QWidget):
             # These should emit signals
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
-                    "Set Type Define Write", [
-                        "0", "0", "0", "0", "0", "0", "0", "0"]
+                    "Set Type Define Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
             )[1]:
                 raise Exception("Could not communicate with Peltier")
@@ -176,8 +177,7 @@ class SimplifiedMainWidget(QWidget):
             # Allows set point to be set by computer software
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
-                    "Control Type Write", [
-                        "0", "0", "0", "0", "0", "0", "0", "1"]
+                    "Control Type Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                 )
             )[1]:
                 raise Exception(
@@ -209,8 +209,7 @@ class SimplifiedMainWidget(QWidget):
 
             if not self.Peltier.sendCommand(
                 self.Peltier.createCommand(
-                    "Power On/Off Write", ["0", "0",
-                                           "0", "0", "0", "0", "0", "1"]
+                    "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                 )
             )[1]:
                 # Turn on Peltier
@@ -223,7 +222,6 @@ class SimplifiedMainWidget(QWidget):
             print("Error while attempting to set Peltier", e)
             self.Peltier = None
 
-
     def setupUI(self):
         self.simplifiedStatusBox = QGroupBox(
             "Hello, {}!".format(self.master.operator_name_first)
@@ -235,25 +233,19 @@ class SimplifiedMainWidget(QWidget):
         self.StatusLayout.addWidget(
             self.instrument_info["database"]["Value"], 0, 2, 1, 1
         )
-        self.StatusLayout.addWidget(
-            self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
-        self.StatusLayout.addWidget(
-            self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
 
-        self.StatusLayout.addWidget(
-            self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
-        self.StatusLayout.addWidget(
-            self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
+        self.StatusLayout.addWidget(self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
 
         offset = -1
         for index, firmwareName in enumerate(site_settings.FC7List.keys()):
             self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1 +
-                index, 3, 1, 1
+                self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1 + index, 3, 1, 1
             )
             self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1 +
-                index, 4, 1, 1
+                self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1 + index, 4, 1, 1
             )
             offset += 1
 
@@ -269,7 +261,7 @@ class SimplifiedMainWidget(QWidget):
         self.StatusLayout.addWidget(
             self.instrument_info["temperature"]["Value"], 2 + offset, 4, 1, 1
         )
-        
+
         # self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
         logger.debug("Setup StatusLayout")
         ModuleEntryLayout = QGridLayout()
@@ -369,20 +361,17 @@ class SimplifiedMainWidget(QWidget):
             self.instrument_info[monitor_led]["Label"].setText(
                 monitor_led.replace("_", " ").capitalize()
             )
-            self.instrument_info[monitor_led]["Value"].setPixmap(
-                self.redledpixmap
-            )
+            self.instrument_info[monitor_led]["Value"].setPixmap(self.redledpixmap)
 
     def start_coldbox_cooling(self) -> None:
-
         first_key = list(self.instruments._module_dict.keys())[0]
         temperature = self.instruments._module_dict[first_key]["cb"].default_temperature
-        logging.debug(f"Coldbox is being set to temperature {temperature}")
+        logger.debug(f"Coldbox is being set to temperature {temperature}")
 
         for tec in self.enabled_tecs:
             self.coldbox.set_temperature_channel_and_validate(tec, temperature)
-          
-    def updateMonitoringLED(self, monitor_leds:list[str], status:bool)->None:
+
+    def updateMonitoringLED(self, monitor_leds: list[str], status: bool) -> None:
         """
         Modify the status of the LED on the simplified widget.
 
@@ -399,19 +388,26 @@ class SimplifiedMainWidget(QWidget):
         logger.debug(f"Updating status of {monitor_leds} to {status}")
         if status:
             for monitor_led in monitor_leds:
-                self.instrument_info[monitor_led]["Value"].setPixmap(self.greenledpixmap)
+                self.instrument_info[monitor_led]["Value"].setPixmap(
+                    self.greenledpixmap
+                )
                 self.instrument_status[monitor_led] = True
         else:
             for monitor_led in monitor_leds:
                 self.instrument_info[monitor_led]["Value"].setPixmap(self.redledpixmap)
                 self.instrument_status[monitor_led] = False
 
-        
-    def updateTemperatureMonitoring(self, temperature: Union[float, list[float]]) -> None:
+    def updateTemperatureMonitoring(
+        self, temperature: Union[float, list[float]]
+    ) -> None:
         """
-        Validate temperature of cooling method and update environment 
+        Validate temperature of cooling method and update environment
         """
-        set_temp =  site_settings.defaultPeltierSetTemp if site_settings.cooler == "Peltier" else cb.default_temp
+        set_temp = (
+            site_settings.defaultPeltierSetTemp
+            if site_settings.cooler == "Peltier"
+            else cb.default_temp
+        )
         if isinstance(temperature, list):
             status = all(abs(x - cb.default_temperature) < 5 for x in temperature)
         else:
@@ -419,54 +415,54 @@ class SimplifiedMainWidget(QWidget):
 
         self.updateMonitoringLED("temperature", status)
 
-        
     def updateArduinoIndicator(self) -> bool:
         if site_settings.cooler == "Tessie":
             try:
-                soup = BeautifulSoup(requests.get(
-                    'http://coldboxx:3000/').text, 'html.parser')
+                soup = BeautifulSoup(
+                    requests.get("http://coldboxx:3000/").text, "html.parser"
+                )
             except requests.exceptions.ConnectionError as e:
                 logger.error(e)
                 self.instrument_info["arduino"]["Value"].setText(
-                    "<span style='color:red;'>Can't connect to coldbox</span>")
+                    "<span style='color:red;'>Can't connect to coldbox</span>"
+                )
                 return None
             except Exception as e:
                 print(type(e))
                 logger.error(e)
                 self.instrument_info["arduino"]["Value"].setText(
-                    "<span style='color:red;'>Error: No data</span>")
+                    "<span style='color:red;'>Error: No data</span>"
+                )
                 return None
 
-            circle = soup.find('circle', id='circleG')
-            style = circle.get('style')
+            circle = soup.find("circle", id="circleG")
+            style = circle.get("style")
             style.split
-            for part in style.split(';'):
-                if 'fill:' in part:
-                    fill_value = part.split(':')[1].strip()
+            for part in style.split(";"):
+                if "fill:" in part:
+                    fill_value = part.split(":")[1].strip()
                     if fill_value == "green":
                         self.instrument_info["arduino"]["Value"].setPixmap(
-                            self.greenledpixmap)
+                            self.greenledpixmap
+                        )
                         return True
                     else:
                         self.instrument_info["arduino"]["Value"].setPixmap(
-                            self.redledpixmap)
+                            self.redledpixmap
+                        )
                         return False
         else:
             if self.ArduinoGroup.condensationRisk:
-                self.instrument_info["arduino"]["Value"].setPixmap(
-                    self.redledpixmap)
+                self.instrument_info["arduino"]["Value"].setPixmap(self.redledpixmap)
             else:
-                self.instrument_info["arduino"]["Value"].setPixmap(
-                    self.greenledpixmap)
+                self.instrument_info["arduino"]["Value"].setPixmap(self.greenledpixmap)
 
     def updatePeltierTemp(self, temp: float):
         self.peltier_temperature_label.setText("{}C".format(temp))
         if abs(temp - site_settings.defaultPeltierSetTemp) < 15:
-            self.instrument_info["peltier"]["Value"].setPixmap(
-                self.greenledpixmap)
+            self.instrument_info["peltier"]["Value"].setPixmap(self.greenledpixmap)
         else:
-            self.instrument_info["peltier"]["Value"].setPixmap(
-                self.redledpixmap)
+            self.instrument_info["peltier"]["Value"].setPixmap(self.redledpixmap)
 
     def runNewTest(self):
         for module in self.BeBoardWidget.getModules():
@@ -476,8 +472,7 @@ class SimplifiedMainWidget(QWidget):
                 )
                 return
             if module.getID() == "":
-                QMessageBox.information(
-                    None, "Error", "No valid ID!", QMessageBox.Ok)
+                QMessageBox.information(None, "Error", "No valid ID!", QMessageBox.Ok)
                 return
 
         self.firmwareDescription, message = self.BeBoardWidget.getFirmwareDescription()
@@ -516,13 +511,11 @@ class SimplifiedMainWidget(QWidget):
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
-
         if site_settings.cooler == "Tessie":
-            self.enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()+1)))
+            self.enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules() + 1)))
             self.start_coldbox_cooling()
 
-        self.master.openRunWindowSignal.emit(
-            self.info, self.firmwareDescription, {})
+        self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
 
     def abortTest(self):
@@ -535,7 +528,7 @@ class SimplifiedMainWidget(QWidget):
         Monitor the Peltier temperature and emit signals for each module.
         This function is intended to be run in a separate thread.
 
-        If we call monitor_peltier(), self.Peltier should be set 
+        If we call monitor_peltier(), self.Peltier should be set
         """
         peltier_temp_message, temp_message_pass = self.Peltier.sendCommand(
             self.Peltier.createCommand(
@@ -546,12 +539,14 @@ class SimplifiedMainWidget(QWidget):
             peltier_temp_message = None
         logger.debug("Formatting peltier output")
         if peltier_temp_message:
-            # Convert the hex string to an integer and divide by 100 to get the temperature 
-            peltier_temp = int(
-                "".join(peltier_temp_message[1:9]), 16) / 100
+            # Convert the hex string to an integer and divide by 100 to get the temperature
+            peltier_temp = int("".join(peltier_temp_message[1:9]), 16) / 100
         else:
             peltier_temp = None
-        status = peltier_temp is not None and abs(peltier_temp - site_settings.defaultPeltierSetTemp) < 5
+        status = (
+            peltier_temp is not None
+            and abs(peltier_temp - site_settings.defaultPeltierSetTemp) < 5
+        )
         self.temperature_status.emit(status)
 
     def monitor_arduino_humidity(self) -> None:
@@ -560,25 +555,35 @@ class SimplifiedMainWidget(QWidget):
         """
         self.condensation_status.emit(self.ArduinoGroup.condensationRisk)
 
-
     def setupMonitoring(self) -> None:
-        """ 
-        Setup variables that will be constantly polled.  
         """
-        self.temperature_status.connect(lambda status: self.updateMonitoringLED(monitor_leds=["temperature"], status=status))
-        self.condensation_status.connect(lambda status: self.updateMonitoringLED(monitor_leds=["condensation"], status=status))
+        Setup variables that will be constantly polled.
+        """
+        self.temperature_status.connect(
+            lambda status: self.updateMonitoringLED(
+                monitor_leds=["temperature"], status=status
+            )
+        )
+        self.condensation_status.connect(
+            lambda status: self.updateMonitoringLED(
+                monitor_leds=["condensation"], status=status
+            )
+        )
 
         if site_settings.cooler == "Peltier":
             peltier = PeltierSignalGenerator()
             self.timer.timeout.connect(lambda: self.monitor_peltier(peltier))
-            
+
         if site_settings.cooler == "Tessie":
-            self.coldbox_alarms = 0  # Needed to keep track of both good humidity and temperature status
+            self.coldbox_alarms = (
+                0  # Needed to keep track of both good humidity and temperature status
+            )
             logger.debug("Inside Tessie Monitoring")
-            self.coldbox = self.instruments.get_cb()[0] # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
+            self.coldbox = self.instruments.get_cb()[
+                0
+            ]  # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
             logger.debug("Got coldbox")
             self.timer.timeout.connect(lambda: self.monitor_coldbox())
-
 
     def setDeviceStatus(self) -> None:
         """
@@ -619,8 +624,7 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("instrument_status: {}".format(self.instrument_status))
 
         if self.instruments:
-            logger.debug(
-                f"{__name__} Setup instrument status {self.instrument_status}")
+            logger.debug(f"{__name__} Setup instrument status {self.instrument_status}")
             for key, value in self.instrument_info.items():
                 if self.instrument_status[key]:
                     value["Value"].setPixmap(self.greenledpixmap)
@@ -638,7 +642,7 @@ class SimplifiedMainWidget(QWidget):
 
         # If using coldbox, turn on here and set LED based on presence of errors
         if site_settings.cooler == "Tessie":
-            try: 
+            try:
                 # We don't know what TECs to turn on until the user starts to place
                 # in modules, so automatically set to True and set to false later if
                 # needed
@@ -651,21 +655,24 @@ class SimplifiedMainWidget(QWidget):
                 logger.error(f"Error setting up coldbox: {e}")
                 self.instrument_status["temperature"] = False
                 self.instrument_info["temperature"]["Value"].setPixmap(
-                    self.redledpixmap)
+                    self.redledpixmap
+                )
                 self.instrument_status["condensation"] = False
                 self.instrument_info["condensation"]["Value"].setPixmap(
-                    self.redledpixmap)
+                    self.redledpixmap
+                )
 
         elif site_settings.cooler == "Peltier":
             try:
                 self.setupPeltier()
                 self.setupArduino()
-                
+
             except Exception as e:
                 logger.error(f"Error setting up Peltier: {e}")
                 self.instrument_status["temperature"] = False
                 self.instrument_info["temperature"]["Value"].setPixmap(
-                    self.redledpixmap)
+                    self.redledpixmap
+                )
 
     def RunButtonState(self):
         """
@@ -675,8 +682,7 @@ class SimplifiedMainWidget(QWidget):
         try:
             if not (all(self.instrument_status.values())):
                 self.RunButton.setDisabled(True)
-                logger.debug(
-                    "RunButton disabled due to one or more failing statuses.")
+                logger.debug("RunButton disabled due to one or more failing statuses.")
             else:
                 self.RunButton.setDisabled(False)
                 logger.debug("RunButton enabled. All statuses are good.")
@@ -734,7 +740,6 @@ class SimplifiedMainWidget(QWidget):
             if child.widget():
                 child.widget().deleteLater()
 
-
     def monitor_coldbox(self) -> None:
         """
         Monitor the number of alarms triggered by tessie. This is used
@@ -746,18 +751,20 @@ class SimplifiedMainWidget(QWidget):
         Returns:
         List of ints describing if the number of tessie alarms has increased
         """
-        try: 
-            dew_point:float = self.coldbox.query("DEW_POINT", no_lock=True)
+        try:
+            dew_point: float = self.coldbox.query("DEW_POINT", no_lock=True)
 
             logger.debug(f"Dew Point: {dew_point}")
             temp_status = True
             condensation_status = True
 
             # enabled_tecs won't be defined until you are about to run a test so set to true until then
-            if self.enabled_tecs: 
-                for tec_channel in self.enabled_tecs: 
-                    temp:float = self.coldbox.query_channel("TEMPERATURE_MEASURED", tec_channel, no_lock=True)
-                    logger.debug(f"TEC Temp: {temp}") 
+            if self.enabled_tecs:
+                for tec_channel in self.enabled_tecs:
+                    temp: float = self.coldbox.query_channel(
+                        "TEMPERATURE_MEASURED", tec_channel, no_lock=True
+                    )
+                    logger.debug(f"TEC Temp: {temp}")
                     # Ensure for each TEC that the temperature is not near the dew point
                     # and that the temperature is not above the max temp.
                     # This ensures the temp is always "dew_point_tolerance" degrees ABOVE the
@@ -779,19 +786,22 @@ class SimplifiedMainWidget(QWidget):
             self.condensation_status.emit(False)
 
 
-
-
 class FunctionRunner(QObject):
     """
-    A worker class to monitor the environment, specifically the Peltier temperature and 
+    A worker class to monitor the environment, specifically the Peltier temperature and
     coldbox temperature.
     """
-    status = pyqtSignal(object)
-    finished = pyqtSignal() # Can be float or list of floats or None
 
-    def __init__(self, func:Callable[[], Optional[bool]],
-                 status_callback:Callable[[object], None] = None, 
-                 interval:float=1.0, label:Optional[str]=None):
+    status = pyqtSignal(object)
+    finished = pyqtSignal()  # Can be float or list of floats or None
+
+    def __init__(
+        self,
+        func: Callable[[], Optional[bool]],
+        status_callback: Callable[[object], None] = None,
+        interval: float = 1.0,
+        label: Optional[str] = None,
+    ):
         super().__init__()
         # Delay in seconds between polling
 
@@ -807,7 +817,7 @@ class FunctionRunner(QObject):
 
     def run(self):
         logger.debug("Iniside FunctionRunner run")
-        while self._running: 
+        while self._running:
             try:
                 result = self.func()
                 self.status.emit(result)
