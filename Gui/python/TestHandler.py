@@ -531,6 +531,10 @@ class TestHandler(QObject):
             self.outputfile = open(self.outputFile, "w")
 
         if testName == "SLDOScan_GADC":
+            starting_voltages = [
+                            np.abs(getattr(module["hv"], "voltage"))
+                            for module in self.instruments._module_dict.values()
+                        ]
             self.instruments.hv_off(
                 execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
             )
