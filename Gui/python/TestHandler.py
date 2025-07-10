@@ -441,10 +441,10 @@ class TestHandler(QObject):
 
             self.updateProgressBar.emit(bar, value, text)
 
-    def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_GADC["physics seconds"], fc7_index : int = 0) -> None:
+    def _execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_["physics seconds"], fc7_index : int = 0) -> None:
 
-        GADC_processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
-        for i, process in enumerate(GADC_processes):
+        _processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
+        for i, process in enumerate(_processes):
 
             voltage = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "voltage")
             current = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "current")
@@ -457,7 +457,7 @@ class TestHandler(QObject):
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/"
             )
             process.readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput_GADC(process, i, upOrDown, current, channel = tuple(self.instruments._module_dict.keys())[i])
+                lambda: self.on_readyReadStandardOutput_(process, i, upOrDown, current, channel = tuple(self.instruments._module_dict.keys())[i])
             )
             
             process.start(
@@ -465,7 +465,7 @@ class TestHandler(QObject):
                 ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml", "-c", "physics", "-t", str(physics_seconds)],
             )
             
-        for process, firmware in zip(GADC_processes, self.firmware):
+        for process, firmware in zip(_processes, self.firmware):
             if process.state() != QProcess.NotRunning:
                 result = process.waitForFinished(-1) #waits indefinitely
                 if not result:
@@ -582,8 +582,8 @@ class TestHandler(QObject):
                                     [float(i) for i in getattr(self, f"{datatype}downError")[channel][chip].values()]
                                 ]
 
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", error=error)
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", error=error)
 
                     self.SLDOScanFinished()
                     return
