@@ -54,7 +54,7 @@ from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
-from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
+from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 
 
 class TestHandler(QObject):
@@ -90,8 +90,6 @@ class TestHandler(QObject):
 
         self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
 
-        test_list = CompositeTests[self.info] if isCompositeTest(self.info) else (self.info,)
-        self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in test_list} for module in self.modules}
         
         self.GADC_meas_chip = None
         self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
@@ -114,7 +112,6 @@ class TestHandler(QObject):
 
         self.SLDOfilelist = []
 
-        self.finished_tests = []
         self.BBanalysis_root_files = []
 
         self.numChips = len(
@@ -135,6 +132,18 @@ class TestHandler(QObject):
         else:
             self.boardType = "RD53A"
             self.moduleVersion = ""
+
+        self.registerKey = "{0}_HDIv{1}".format(self.ModuleType.replace(" ", "_"), self.hdiVersion)
+
+        #If the module is not one of the module types in CompositeTests_Modules, use the default test list
+        try:
+            self.test_list = CompositeTests_Modules[self.registerKey][self.info] if isCompositeTest(self.info) else (self.info,)                      
+        except KeyError:
+            logger.error(f"Test {self.info} not found in CompositeTests_Modules for ModuleType {self.registerKey}.")
+            self.test_list = CompositeTests_Modules["Default"][self.info]
+
+        self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in self.test_list} for module in self.modules}
+        self.finished_tests = []
         self.Ph2_ACF_ver = os.environ.get("Ph2_ACF_VERSION")
         print("Using version {0} of Ph2_ACF".format(self.Ph2_ACF_ver))
         self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
@@ -157,6 +166,7 @@ class TestHandler(QObject):
         self.currentTest = ""
         self.outputFile = ""
         self.errorFile = ""
+        self.comment = ""
         self.txt_files = txt_files if txt_files != {} else {}
 
         self.autoSave = False
@@ -199,6 +209,9 @@ class TestHandler(QObject):
         self.SLDOProgressValue = 0
         self.runtimeList = []
         self.starttime = None
+
+        self.communicationTestResults = {module.getModuleName():None for module in self.modules}
+        self.communicationTestModule = None
 
         self.info_processes = [QProcess() for _ in self.firmware]
         for i, process in enumerate(self.info_processes):
@@ -279,7 +292,7 @@ class TestHandler(QObject):
 
         # If currentTest is not set check if it's a compositeTest and if so set testname accordingly, otherwise set it based off the test set in info[1]
         if self.currentTest == "" and isCompositeTest(self.info):
-            testName = CompositeTests[self.info][0]
+            testName = self.test_list[0]
         elif self.currentTest is None:
             testName = self.info
         else:
@@ -403,9 +416,9 @@ class TestHandler(QObject):
     def runCompositeTest(self, testName):
         if self.halt:
             return
-        runTestList = CompositeTests[self.info]
+        runTestList = self.test_list
 
-        if self.testIndexTracker == len(CompositeTests[self.info]):
+        if self.testIndexTracker == len(self.test_list):
             self.testIndexTracker = 0
             self.testsAttempted = 0
             return
@@ -483,6 +496,8 @@ class TestHandler(QObject):
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
             return
+
+
 
         print("Executing Single Step test...")
         for console in self.runwindow.ConsoleViews:
@@ -567,8 +582,9 @@ class TestHandler(QObject):
                                     [float(i) for i in getattr(self, f"{datatype}downError")[channel][chip].values()]
                                 ]
 
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}up')[channel])}", error=error)
-                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)-min(int(chip) for chip in getattr(self,f'{datatype}down')[channel])}", error=error)
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+                                self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+
                     self.SLDOScanFinished()
                     return
                 else:
@@ -822,6 +838,7 @@ class TestHandler(QObject):
                 for OG in beboard.getAllOpticalGroups().values():
                     ogID = OG.getOpticalGroupID()
                     for module in OG.getAllModules().values():
+                        print(f'curr test {self.currentTest}')
                         hybridID = module.getFMCPort()
                         module_data = {
                             "boardID": boardID,
@@ -837,7 +854,10 @@ class TestHandler(QObject):
                             runNumber,
                             module_data,
                             self.BBanalysis_root_files,
-                            self.info
+                            self.info,
+                            self.registerKey,
+                            self.communicationTestResults,
+                            self.comment
                         )
 
                         results.append(result)
@@ -849,6 +869,7 @@ class TestHandler(QObject):
                             module.getModuleName()
                         )
 
+            print(results)
             self.updateValidation.emit(results)
             self.updateFinishedTests.emit(
                 self.finished_tests
@@ -954,7 +975,8 @@ created by Ph2_ACF is empty."
 
         except Exception as e:
             logger.error(e)
-            self.forceContinue(self.firmware[processIndex])
+            if self.currentTest != "CommunicationTest":
+                self.forceContinue(self.firmware[processIndex])
 
     #######################################################################
     ##  For real-time terminal display
@@ -974,8 +996,6 @@ created by Ph2_ACF is empty."
         textline = alltext.split("\n")
 
         for textStr in textline:
-            import re
-
             try:
                 if "Configuring chips of hybrid" in textStr:
                     ansi_escape = re.compile(r"\x1b\[.*?m")
@@ -1134,6 +1154,29 @@ created by Ph2_ACF is empty."
                 text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
             )
 
+        match = re.search(r"CMSIT_RD53_([^_]+)", alltext)
+        if match:
+            if self.communicationTestModule is not None:
+                self.communicationTestResults[self.communicationTestModule] = True
+            self.communicationTestModule = match.group(1)
+
+        if self.currentTest == "CommunicationTest":
+            if "Error, some data lanes are enabled but inactive, reached maximum number of attempts" in alltext:
+                if self.communicationTestModule is None:
+                    print("ERROR: Module name not found before CommunicationTest result in test output.")
+                    logger.error("Module name not found before CommunicationTest result in test output.")
+                else:
+                    self.communicationTestResults[self.communicationTestModule] = False
+                    self.communicationTestModule = None
+                self.forceContinue(self.firmware[processIndex])
+            elif "All enabled data lanes are active" in alltext:
+                if self.communicationTestModule is None:
+                    print("ERROR: Module name not found before CommunicationTest result in test output.")
+                    logger.error("Module name not found before CommunicationTest result in test output.")
+                else:
+                    self.communicationTestResults[self.communicationTestModule] = True
+                    self.communicationTestModule = None
+
         self.readingOutput = False
 
     def updateOptimizedXMLValues(self):
@@ -1242,10 +1285,19 @@ created by Ph2_ACF is empty."
                 if match:
                     if self.GADC_meas_chip is not None:
                         if match.group(1) in ("VDDD","VDDA","VINA","VIND"):
+                            multiplier = site_settings.SLDOScan_GADC["multipliers"][match.group(1)[:3]]
+                            
                             if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown)[channel]:
                                 getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip] = {}
-                            getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip][current] = match.group(2) #This line enforces that it only logs one VDDD or VDDA value per sweep step
+                            getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip][current] = float(match.group(2))*multiplier #This line enforces that it only logs one VDDD or VDDA value per sweep step
+
+                            if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown+"Error")[channel]:
+                                getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip] = {}
+                            getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip][current] = float(match.group(3))*multiplier #This line enforces that it only logs one VDDD or VDDA value per sweep step
+
                     else:
+                        print(f'Error: Did not receive expected message, "Reading monitored data for \
+                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
                         logger.error(f'Did not receive expected message, "Reading monitored data for \
                         [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
         
@@ -1315,7 +1367,7 @@ created by Ph2_ACF is empty."
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
             if index == len(
-                CompositeTests[self.info]
+                self.test_list
             ):  # Checks that this was the last test in the sequence.
                 self.powerSignal.emit()
                 EnableReRun = True
@@ -1464,8 +1516,25 @@ created by Ph2_ACF is empty."
             csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(
                 self.output_dir, moduleName, timestamp
             )
+
+            # Some power supplies give outputs as a two dimensional array
+            # This breaks np.savetxt. The second element of the array should be empty
+            # either way, therefore, we will just flatten the array getting rid of the
+            # second dimension. NOTE: If we do want measurements from multiple HV
+            # channels this will need to reevaluated. 
+
+            # Convert to numpy array to give us access to flatten() and ndim
+            voltages = np.array(measure["voltage"])
+            current = np.array(measure["current"])
+
+            # If the voltages are 2D+, then flatten. 
+            if voltages.ndim > 1:
+                voltages = voltages.flatten()
+                current = current.flatten()
+            
+            
             np.savetxt(
-                csvfilename, (measure["voltage"], measure["current"]), delimiter=","
+                csvfilename, (voltages, current), delimiter=","
             )
             module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
                 boardID=beboardId, ogID=ogId, hybridID=hybridId
@@ -1495,7 +1564,7 @@ created by Ph2_ACF is empty."
 
         # Will send signal to turn off power supply after composite or single tests are run
         if isCompositeTest(self.info):
-            if self.testIndexTracker == len(CompositeTests[self.info]):
+            if self.testIndexTracker == len(self.test_list):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:
@@ -1560,7 +1629,7 @@ created by Ph2_ACF is empty."
                 ),
             )
 
-            if self.testIndexTracker == len(CompositeTests[self.info]):
+            if self.testIndexTracker == len(self.test_list):
                 self.powerSignal.emit()
                 EnableReRun = True
                 if self.autoSave:

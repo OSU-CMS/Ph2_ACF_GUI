@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import (
     QSplitter,
     QProgressBar,
     QApplication,
+    QLineEdit,
 )
 
 import os
@@ -33,7 +34,7 @@ from Gui.QtGUIutils.QtCustomizeWindow import QtCustomizeWindow
 from Gui.python.ResultTreeWidget import ResultTreeWidget
 from Gui.python.TestHandler import TestHandler
 from Gui.python.logging_config import logger
-from InnerTrackerTests.TestSequences import CompositeTests
+from InnerTrackerTests.TestSequences import CompositeTests_Modules
 
 
 class QtRunWindow(QWidget):
@@ -263,7 +264,7 @@ class QtRunWindow(QWidget):
 
         OutputLayout = QGridLayout()
         self.ResultWidget = ResultTreeWidget(
-            self.info, self.DisplayW, self.DisplayH, self.master, self.firmware
+            self.info, self.DisplayW, self.DisplayH, self.master, self.firmware, self.testHandler.registerKey
         )
         OutputLayout.addWidget(self.ResultWidget, 0, 0, 1, 1)
         OutputBox.setLayout(OutputLayout)
@@ -383,6 +384,12 @@ class QtRunWindow(QWidget):
         self.UploadButton.clicked.connect(self.upload_to_Panthera_starter)
         self.UploadButton.setDisabled(True)
 
+        self.CommentBox = QLineEdit()
+        self.CommentBox.setPlaceholderText("Enter comment for upload")
+        self.CommentBox.setMinimumWidth(300)
+        self.CommentBox.setMaximumWidth(500)
+        self.CommentBox.textChanged.connect(self.updateComment)
+
         self.BackButton = QPushButton("&Back")
         self.BackButton.clicked.connect(self.sendBackSignal)
         self.BackButton.clicked.connect(self.closeWindow)
@@ -393,7 +400,7 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
-
+        self.StartLayout.addWidget(self.CommentBox) 
         self.StartLayout.addWidget(self.UploadButton)
 
         self.StartLayout.addWidget(self.BackButton)
@@ -526,8 +533,13 @@ class QtRunWindow(QWidget):
             isReRun = True
             self.grades = []
             if isCompositeTest(self.info):
+                try:            
+                    test_list = CompositeTests_Modules[self.testHandler.registerKey][self.info]
+                except KeyError:
+                    test_list = CompositeTests_Modules["Default"][self.info]
+
                 for fw_index in range(len(self.firmware)):
-                    for index in range(len(CompositeTests[self.info])):
+                    for index in range(len(test_list)):
                         self.ResultWidget.ProgressBars[fw_index][index].setValue(0)
                         self.ResultWidget.runtimes[fw_index][index].setText("")
             else:
@@ -606,6 +618,9 @@ class QtRunWindow(QWidget):
         else:
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
+
+    def updateComment(self, text):
+        self.testHandler.comment = text
 
     def updateIVResult(self, newResult):
         if self.master.expertMode:
