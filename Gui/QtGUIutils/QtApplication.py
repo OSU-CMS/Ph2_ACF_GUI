@@ -1088,7 +1088,7 @@ class QtApplication(QWidget):
 
     def abortThermalTest(self):
         """Stop the current profile running on thermal chamber"""
-         temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
+        temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
         with temp_chamber:
            temp_chamber.set("CONTROL_PROFILE", "STOP")
         message_box = QMessageBox()
