@@ -321,6 +321,14 @@ class ChipBox(QWidget):
     def getEfuseID(self, pChipID):
         efuseID = self.findChild(QLineEdit, "EfuseIDEdit_{0}".format(pChipID))
         return efuseID.text()
+    
+    def getIREF(self, pChipID):
+        IREFthing = self.chipData[pChipID]["IREF"]
+        return IREFthing
+    
+    def getVREF(self, pChipID):
+        VREFthing = self.chipData[pChipID]["VREF"]
+        return VREFthing
 
     def getChipData(self):
         return self.chipData
@@ -755,6 +763,17 @@ class BeBoardBox(QWidget):
                 )
                 Module.getChips()[chipID].setEfuseID(
                     self.ChipWidgetDict[module].getEfuseID(chipID)
+                )
+                Module.getChips()[chipID].setIREF(
+                    self.ChipWidgetDict[module].getIREF(chipID)
+                )
+                try:
+                    vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
+                except Exception:
+                    vref_value = 0.8
+            
+                Module.getChips()[chipID].setVREF(
+                    int(round(1000 * vref_value))
                 )
 
             # Add the QtModule object to the currently selected Optical Group
