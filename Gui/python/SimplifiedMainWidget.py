@@ -602,8 +602,8 @@ class SimplifiedMainWidget(QWidget):
 
         # If we weren't able to communicate with the devices the simplifiedGUI wouldn't
         # launch, so just set these to True
-        self.instrument_status["HV"] = True
-        self.instrument_status["LV"] = True
+        self.instrument_status["hv"] = True
+        self.instrument_status["lv"] = True
 
         logger.debug("Getting FC7 Comment")
         self.firmware = []
