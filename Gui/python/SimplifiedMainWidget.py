@@ -682,16 +682,28 @@ class SimplifiedMainWidget(QWidget):
 
     def RunButtonState(self):
         """
-        Check status of all instruments in self.instrument_status
-        and enable/disable the Run button accordingly.
+        Check status of all instruments in self.instrument_status,
+        excluding the 'database' key, and enable/disable the Run button accordingly.
         """
         try:
-            if not (all(self.instrument_status.values())):
+            # Exclude 'database' key from the values to check
+            # We should allow a user to run the GUI without needing to upload
+            statuses_to_check = [
+                status
+                for key, status in self.instrument_status.items()
+                if key != "database"
+            ]
+
+            if not all(statuses_to_check):
                 self.RunButton.setDisabled(True)
-                logger.debug("RunButton disabled due to one or more failing statuses.")
+                logger.debug(
+                    "RunButton disabled due to one or more failing statuses (excluding database)."
+                )
             else:
                 self.RunButton.setDisabled(False)
-                logger.debug("RunButton enabled. All statuses are good.")
+                logger.debug(
+                    "RunButton enabled. All statuses are good (excluding database)."
+                )
 
         except Exception as e:
             logger.error(f"Error while checking instrument statuses: {e}")
