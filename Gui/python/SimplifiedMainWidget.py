@@ -591,14 +591,19 @@ class SimplifiedMainWidget(QWidget):
         Set initial status for all monitored values
 
         The qualifications for a passing status are
-        HV  -> HV is on and connected as stated by InstrumentCluster.status()
-        LV  -> LV is on and connected as stated by InstrumentCluster.status()
+        HV  -> HV connected
+        LV  -> LV connected
         Arduino -> Can read correctly from the Arduino sensor as defined in ArduinoWidget.py
         Database -> Check if you can connect to database as defined in checkDBConnection()
         Peltier -> check if the Peltier is at the right temperature and is reachable
         """
 
         self.instrument_status = {key: False for key in self.monitoring_values}
+
+        # If we weren't able to communicate with the devices the simplifiedGUI wouldn't
+        # launch, so just set these to True
+        self.instrument_status["HV"] = True
+        self.instrument_status["LV"] = True
 
         logger.debug("Getting FC7 Comment")
         self.firmware = []
