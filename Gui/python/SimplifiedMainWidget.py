@@ -368,6 +368,27 @@ class SimplifiedMainWidget(QWidget):
         temperature = self.instruments._module_dict[first_key]["cb"].default_temperature
         logger.debug(f"Coldbox is being set to temperature {temperature}")
 
+        self.thread = QThread()
+        self.worker = ColdboxMonitorWorker(
+            self.coldbox,
+            enabled_tecs=self.enabled_tecs,
+            dew_point_tolerance=self.dew_point_tolerance,
+            max_temperature=self.max_temperature,
+        )
+
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finihed.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.condensation_status.connect(
+            lambda status: self.updateMonitoringLED(["condensation"], status=status)
+        )
+        self.worker.temperature_status.connect(
+            lambda status: self.updateMonitoringLED(["temperature"], status=status)
+        )
+        logger.debug("Finished setting up coldbox monitoring")
+
         for tec in self.enabled_tecs:
             self.coldbox.set_temperature_channel_and_validate(tec, temperature)
 
@@ -560,31 +581,28 @@ class SimplifiedMainWidget(QWidget):
         """
         Setup variables that will be constantly polled.
         """
-        self.temperature_status.connect(
-            lambda status: self.updateMonitoringLED(
-                monitor_leds=["temperature"], status=status
-            )
-        )
-        self.condensation_status.connect(
-            lambda status: self.updateMonitoringLED(
-                monitor_leds=["condensation"], status=status
-            )
-        )
+
+        # self.temperature_status.connect(
+        #     lambda status: self.updateMonitoringLED(
+        #         monitor_leds=["temperature"], status=status
+        #     )
+        # )
+        # self.condensation_status.connect(
+        #     lambda status: self.updateMonitoringLED(
+        #         monitor_leds=["condensation"], status=status
+        #     )
+        # )
 
         if site_settings.cooler == "Peltier":
             peltier = PeltierSignalGenerator()
             self.timer.timeout.connect(lambda: self.monitor_peltier(peltier))
 
         if site_settings.cooler == "Tessie":
-            self.coldbox_alarms = (
-                0  # Needed to keep track of both good humidity and temperature status
-            )
             logger.debug("Inside Tessie Monitoring")
             self.coldbox = self.instruments.get_cb()[
                 0
             ]  # NOTE: This assumes that the coldbox is the first instrument in the list and that we don't have to worry about other indices
             logger.debug("Got coldbox")
-            self.timer.timeout.connect(lambda: self.monitor_coldbox())
 
     def setDeviceStatus(self) -> None:
         """
@@ -758,50 +776,59 @@ class SimplifiedMainWidget(QWidget):
             if child.widget():
                 child.widget().deleteLater()
 
-    def monitor_coldbox(self) -> None:
-        """
-        Monitor the number of alarms triggered by tessie. This is used
-        as a proxy for temperature and humidity monitoring since alarms will be emitted by
-        Tessie if bad temperatures or humidity values are measured. Should emit signal
 
-        Parameters:
-        coldbox: The coldbox object to monitor.
-        Returns:
-        List of ints describing if the number of tessie alarms has increased
-        """
-        try:
-            dew_point: float = self.coldbox.query("DEW_POINT", no_lock=True)
+class ColdboxMonitorWorker(QObject):
+    condensation_status = pyqtSignal(bool)
+    temperature_status = pyqtSignal(bool)
+    finished = pyqtSignal()
 
-            logger.debug(f"Dew Point: {dew_point}")
-            temp_status = True
-            condensation_status = True
+    def __init__(self, coldbox, enabled_tecs, dew_point_tolerance, max_temperature):
+        super().__init__()
+        self.coldbox = coldbox
+        self.enabled_tecs = enabled_tecs
+        self.dew_point_tolerance = dew_point_tolerance
+        self.max_temperature = max_temperature
+        self.interval = 1
+        self._running = True
 
-            # enabled_tecs won't be defined until you are about to run a test so set to true until then
-            if self.enabled_tecs:
-                for tec_channel in self.enabled_tecs:
-                    temp: float = self.coldbox.query_channel(
-                        "TEMPERATURE_MEASURED", tec_channel, no_lock=True
-                    )
-                    logger.debug(f"TEC Temp: {temp}")
-                    # Ensure for each TEC that the temperature is not near the dew point
-                    # and that the temperature is not above the max temp.
-                    # This ensures the temp is always "dew_point_tolerance" degrees ABOVE the
-                    # dew point
-                    if (dew_point - temp) > self.dew_point_tolerance:
-                        condensation_status = False
-                    if temp > self.max_temperature:
-                        temp_status = False
+    def run(self):
+        """Worker function that will run in a separate thread."""
+        while self._running:
+            try:
+                dew_point = self.coldbox.query("DEW_POINT", no_lock=True)
+                logger.debug(f"Dew Point: {dew_point}")
 
-                self.condensation_status.emit(condensation_status)
-                self.temperature_status.emit(temp_status)
-            else:
-                self.condensation_status.emit(True)
-                self.temperature_status.emit(True)
+                temp_status = True
+                condensation_status = True
 
-        except Exception as e:
-            logger.error(f"Error monitoring coldbox: {e}")
-            self.temperature_status.emit(False)
-            self.condensation_status.emit(False)
+                if self.enabled_tecs:
+                    for tec_channel in self.enabled_tecs:
+                        temp = self.coldbox.query_channel(
+                            "TEMPERATURE_MEASURED", tec_channel, no_lock=True
+                        )
+                        logger.debug(f"TEC Temp: {temp}")
+
+                        if (dew_point - temp) > self.dew_point_tolerance:
+                            condensation_status = False
+                        if temp > self.max_temperature:
+                            temp_status = False
+
+                    self.condensation_status.emit(condensation_status)
+                    self.temperature_status.emit(temp_status)
+                else:
+                    self.condensation_status.emit(True)
+                    self.temperature_status.emit(True)
+
+            except Exception as e:
+                logger.error(f"Error monitoring coldbox: {e}")
+                self.condensation_status.emit(False)
+                self.temperature_status.emit(False)
+            time.sleep(self.interval)
+
+        self.finished.emit()
+
+    def stop(self):
+        self._running = False
 
 
 class FunctionRunner(QObject):
@@ -816,22 +843,16 @@ class FunctionRunner(QObject):
     def __init__(
         self,
         func: Callable[[], Optional[bool]],
-        status_callback: Callable[[object], None] = None,
         interval: float = 1.0,
         label: Optional[str] = None,
     ):
         super().__init__()
-        # Delay in seconds between polling
 
         logger.debug("Inside FunctionRunner")
         self.func = func
         self.interval = interval
         self._running = True
-        self.status_callback = status_callback
         self.label = label
-
-        if self.status_callback:
-            self.status.connect(self.status_callback)
 
     def run(self):
         logger.debug("Iniside FunctionRunner run")
