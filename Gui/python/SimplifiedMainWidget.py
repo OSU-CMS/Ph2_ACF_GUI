@@ -390,6 +390,7 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Finished setting up coldbox monitoring")
 
         for tec in self.enabled_tecs:
+            self.coldbox.on(channel=tec)
             self.coldbox.set_temperature_channel_and_validate(tec, temperature)
 
     def updateMonitoringLED(self, monitor_leds: list[str], status: bool) -> None:
