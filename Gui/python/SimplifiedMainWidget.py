@@ -533,7 +533,7 @@ class SimplifiedMainWidget(QWidget):
             )
 
         if site_settings.cooler == "Tessie":
-            self.enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules() + 1)))
+            self.enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()) + 1))
             logger.info(f"Enabled TECs: {self.enabled_tecs}")
             self.start_coldbox_cooling()
 
