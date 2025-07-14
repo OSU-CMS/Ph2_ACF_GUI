@@ -686,7 +686,8 @@ class SimplifiedMainWidget(QWidget):
                 self.instrument_info["condensation"]["Value"].setPixmap(
                     self.redledpixmap
                 )
-
+            self.instrument_info["temperature"]["Value"].setPixmap(self.greenledpixmap)
+            self.instrument_info["condensation"]["Value"].setPixmap(self.greenledpixmap)
         elif site_settings.cooler == "Peltier":
             try:
                 self.setupPeltier()
