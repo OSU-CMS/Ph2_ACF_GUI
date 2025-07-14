@@ -379,7 +379,7 @@ class SimplifiedMainWidget(QWidget):
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.worker.finished.connect(self.thread.quit)
-        self.worker.finihed.connect(self.worker.deleteLater)
+        self.worker.finished.connect(self.worker.deleteLater)
         self.thread.finished.connect(self.thread.deleteLater)
         self.worker.condensation_status.connect(
             lambda status: self.updateMonitoringLED(["condensation"], status=status)
