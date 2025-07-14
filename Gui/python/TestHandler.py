@@ -57,6 +57,7 @@ from Gui.python.logging_config import logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 
+from icicle.icicle.adc_board import AdcBoard
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
@@ -82,6 +83,49 @@ class TestHandler(QObject):
         self.fused_dict_index = [-1, -1]
         self.FWisPresent = False
         self.FWisLoaded = False
+
+        #These should be stored somewhere else.  This is just a temporary solution.
+        self.PIN_MAPPINGS = {
+            "DEFAULT": AdcBoard.DEFAULT_PIN_MAP,
+            "DOUBLE": {
+                # 0: 'VDDA_ROC1',
+                1: 'VDDA_ROC13', #ROC U1B
+                # 2: 'VDDD_ROC2',
+                # 3: 'VDDD_ROC3',
+                # 4: 'VDDD_ROC1',
+                5: 'VDDD_ROC13', #ROC U1B
+                # 6: None,
+                # 7: 'TP8', #VOFS IN
+                # 8: None,
+                9: 'TP10', #VIN
+                # 10: None,
+                11: "VDDA_ROC12", #ROC U1A
+                #12: "VDDA_ROC1",
+                13: "VDDD_ROC12", #ROC U1A
+                #14: "VDDD_ROC1",
+                # 15: 'TP7A', #VOFS OUT
+                # 16: 'TP7B', #VOFS OUT
+            },
+            "QUAD": {
+                0: "VDDA_ROC14", #ROC U1C
+                1: "VDDA_ROC15", #ROC U1D
+                2: "VDDD_ROC14", #ROC U1C
+                3: "VDDD_ROC15", #ROC U1D
+                # 4: 'TP7C', #VOFS OUT
+                # 5: 'TP7D', #VOFS OUT
+                # 6: None,
+                # 7: 'TP8', #VOFS IN
+                # 8: None,
+                9: 'TP10', #VIN
+                # 10: None,
+                11: "VDDA_ROC12", #ROC U1A
+                12: "VDDA_ROC13", #ROC U1B
+                13: "VDDD_ROC12", #ROC U1A
+                14: "VDDD_ROC13", #ROC U1B
+                # 15: 'TP7A', #VOFS OUT
+                # 16: 'TP7B', #VOFShv_off OUT
+            },
+        }
 
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
@@ -279,7 +323,7 @@ class TestHandler(QObject):
             self.input_dir,
         )
 
-    def configTest(self):
+    def configTest(self, **kwargs):
         # Gets the run number by reading from the RunNumber.txt file.
         try:
             RunNumberFileName = (
@@ -333,7 +377,7 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files)
+                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files, **kwargs)
 
                     if config_file:
                         SetupXMLConfigfromFile(
@@ -443,6 +487,47 @@ class TestHandler(QObject):
             value = 100 * np.abs(voltages[i] / max[i]) if max[i] != 0 else 0
 
             self.updateProgressBar.emit(bar, value, text)
+    def runADC(self):
+        if "adc_board" in self.instruments._instrument_dict.keys():
+            self.adc_board = self.instruments._instrument_dict["adc_board"]
+            logger.info("Running with ADC.")
+            self.adc_board.__enter__()
+
+        else:
+            logger.error(
+                "You do not have instruments required to run a Trimbit scan connected.\nYou must have an Adc Board."
+            )
+    def readADC(self):
+        adcData = self.adc_board.query_adc(no_lock=True)
+        return adcData
+
+    def run_VDDsweep(self, trimbit:int = 8,total_steps:int = 16, fc7_index : int = 0) -> None:
+        VDDsweep_process = QProcess()
+        self.outputString.emit("Running VDD sweep test", self.runwindow.ConsoleViews[fc7_index])
+
+        VDDsweep_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+        VDDsweep_process.setWorkingDirectory(
+            os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+            )
+
+        VDDsweep_process.readyReadStandardOutput.connect(
+                lambda: self.on_readyReadStandardOutput_VDDsweep(VDDsweep_process, fc7_index)
+            )
+            
+        VDDsweep_process.start(
+            "CMSITminiDAQ",
+            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"],
+            )
+
+        if VDDsweep_process.state() != QProcess.NotRunning:
+                result = VDDsweep_process.waitForFinished(-1) #waits indefinitely
+                if not result:
+                    logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
+                    VDDsweep_process.kill()
+        self.ADCmeasurements[trimbit][self.readADC()]
+        self.ProgressValue+=1
+        for i in range(len(self.firmware)):
+            self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
 
     def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_GADC["physics seconds"], fc7_index : int = 0) -> None:
 
@@ -600,6 +685,7 @@ class TestHandler(QObject):
                         current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                     )
         
+        
         if "IVCurve" in testName:
             self.currentTest = testName
             self.configTest()
@@ -698,8 +784,33 @@ class TestHandler(QObject):
 
         self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
+        if "TrimbitScan" in testName:
+            self.currentTest = testName
+            self.ADCmeasurements = []
+            self.runADC()
+            for trim in range(4):
+                self.configTest(trimbit = trim)
+                self.run_VDDsweep(trimbit=trim, total_steps=4)
+            print('ADCmeasurements: ',self.ADCmeasurements)
+            
+            #looping over all of the pins in the mapping that are activated
+            for index, pin in self.PIN_MAPPINGS[
+                self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
+            ].items():
+                for trimval, measurementList in enumerate(self.ADCmeasurements):
+                    print(trimval, self.ADCmeasurements[trimval][index], pin)
+                    ### trimval gives the value of the trim bit
+                    ### pin gives the name of the pin
+                    ### measurementList gives the list of measurements where the index is the pin number.
+                    ### self.ADCmeasurements[trimval][index] gives the measured voltage for a specific trim bit setting on pin number = index
+                    ### Need to store these in a sensible way so that we can plot them.
 
-        self.setupQProcess()
+
+
+
+
+        else:
+            self.setupQProcess()
 
     def setupQProcess(self):
         self.tempHistory = [0.0] * self.numChips
@@ -786,7 +897,16 @@ class TestHandler(QObject):
                         "-f",
                         f"CMSIT_{firmware.getBoardName()}.xml",
                         "-c",
-                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),"-t","5"
+                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                    ],
+                )
+        elif self.currentTest == "TrimbitScan":
+            for process, firmware in zip(self.run_processes, self.firmware):
+                process.start(
+                    "CMSITminiDAQ",
+                    [
+                        "-f",
+                        f"CMSIT_{firmware.getBoardName()}.xml",
                     ],
                 )
         else:
@@ -1284,6 +1404,30 @@ created by Ph2_ACF is empty."
 
         for textStr in textline:
             self.outputString.emit(textStr, self.runwindow.ConsoleViews[processIndex])
+
+
+    @QtCore.pyqtSlot()
+    def on_readyReadStandardOutput_VDDsweep(self, process:QProcess, fc7_index:int): 
+        if self.readingOutput:
+            print("Thread competition detected")
+            return
+        self.readingOutput = True
+
+        alltext = (
+            process.readAllStandardOutput().data().decode()
+        )
+        self.outputfile.write(alltext)
+        textline = alltext.split("\n")
+        
+        for textStr in textline:
+            text = textStr.encode("ascii")
+            _, text = parseANSI(text)
+            self.outputString.emit(
+                text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
+            )
+            self.runwindow.ConsoleViews[fc7_index].repaint()
+        
+        self.readingOutput = False
 
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_GADC(self, process:QProcess, fc7_index:int, upOrDown:str, current, channel): 

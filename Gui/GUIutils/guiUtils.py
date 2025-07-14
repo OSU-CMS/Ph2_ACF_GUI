@@ -466,9 +466,15 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                         )
                 else:
                     logger.warning(f"Test name {testName} not found in FELaneConfig_Dict.")
-        
-                FEChip.VDDAtrim = chip.getVDDA()
-                FEChip.VDDDtrim = chip.getVDDD()
+
+                if 'trimbit' in arg:
+                    print('Setting VDDA to {0}'.format(arg['trimbit']))
+                    FEChip.VDDAtrim = arg['trimbit']
+                    print('Setting VDDD to {0}'.format(arg['trimbit']))
+                    FEChip.VDDDtrim = arg['trimbit']
+                else:
+                    FEChip.VDDAtrim = chip.getVDDA()
+                    FEChip.VDDDtrim = chip.getVDDD()
                 FEChip.EfuseID = chip.getEfuseID()
                 HyBridModule0.AddFE(FEChip)
             HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
