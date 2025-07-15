@@ -40,6 +40,8 @@ class SimplifiedMainWidget(QWidget):
         super().__init__()
         self.master = master
         self.dimension = dimension
+        self.maxTemp = 40
+        self.dew_point_tolerance = -5
 
         try:
             self.instruments = master.instruments
@@ -119,8 +121,6 @@ class SimplifiedMainWidget(QWidget):
 
     def setupPeltier(self):
         try:
-            self.instrument_info["temperature"] = {"Label": QLabel(), "Value": QLabel()}
-            self.instrument_info["temperature"]["Label"].setText("Temperature")
             logger.debug("Setting up Peltier")
             self.Peltier = PeltierSignalGenerator()
             assert self.Peltier is not None, "Peltier object was not created"
@@ -364,6 +364,9 @@ class SimplifiedMainWidget(QWidget):
         self.instrument_info["lv"] = {"Label": QLabel(), "Value": QLabel()}
         self.instrument_info["lv"]["Label"].setText("LV status")
 
+        self.instrument_info["temperature"] = {"Label": QLabel(), "Value": QLabel()}
+        self.instrument_info["temperature"]["Label"].setText("Temperature")
+
         for firmwareName in site_settings.FC7List.keys():
             self.instrument_info[f"fc7_{firmwareName}"] = {
                 "Label": QLabel(),
@@ -372,8 +375,9 @@ class SimplifiedMainWidget(QWidget):
             self.instrument_info[f"fc7_{firmwareName}"]["Label"].setText(firmwareName)
 
         self.setupLogFile()
+
+        self.setupCondensationLabel()
         if site_settings.cooler == "Peltier":
-            self.setupCondensationLabel()
             self.setupPeltier()
 
         self.setDeviceStatus()
@@ -382,55 +386,35 @@ class SimplifiedMainWidget(QWidget):
         self.setupUI()
         self.RunButtonState()
 
-    def updateArduinoIndicator(self) -> bool:
-        if site_settings.cooler == "Tessie":
-            try:
-                soup = BeautifulSoup(
-                    requests.get("http://coldboxx:3000/").text, "html.parser"
-                )
-            except requests.exceptions.ConnectionError as e:
-                logger.error(e)
-                self.instrument_info["condensation_risk"]["Value"].setText(
-                    "<span style='color:red;'>Can't connect to coldbox</span>"
-                )
-                return None
-            except Exception as e:
-                print(type(e))
-                logger.error(e)
-                self.instrument_info["condensation_risk"]["Value"].setText(
-                    "<span style='color:red;'>Error: No data</span>"
-                )
-                return None
-
-            circle = soup.find("circle", id="circleG")
-            style = circle.get("style")
-            style.split
-            for part in style.split(";"):
-                if "fill:" in part:
-                    fill_value = part.split(":")[1].strip()
-                    if fill_value == "green":
-                        self.instrument_info["condensation_risk"]["Value"].setPixmap(
-                            self.greenledpixmap
-                        )
-                        return True
-                    else:
-                        self.instrument_info["condensation_risk"]["Value"].setPixmap(
-                            self.redledpixmap
-                        )
-                        return False
+    def updateArduinoCondensationRiskIndicator(self):
+        if self.ArduinoGroup.condensationRisk:
+            self.instrument_info["condensation_risk"]["Value"].setPixmap(
+                self.redledpixmap
+            )
         else:
-            if self.ArduinoGroup.condensationRisk:
-                self.instrument_info["condensation_risk"]["Value"].setPixmap(
-                    self.redledpixmap
-                )
-            else:
-                self.instrument_info["condensation_risk"]["Value"].setPixmap(
-                    self.greenledpixmap
-                )
+            self.instrument_info["condensation_risk"]["Value"].setPixmap(
+                self.greenledpixmap
+            )
 
-    def updatePeltierTemp(self, temp: float):
+    def updateColboxCondensationRisk(self, status: bool):
+        if status:
+            self.instrument_info["condensation_risk"]["Value"].setPixmap(
+                self.redledpixmap
+            )
+        else:
+            self.instrument_info["condensation_risk"]["Value"].setPixmap(
+                self.greenledpixmap
+            )
+
+    def updatePeltierTemperatureIndicator(self, temp: float):
         self.peltier_temperature_label.setText("{}C".format(temp))
         if abs(temp - site_settings.defaultPeltierSetTemp) < 15:
+            self.instrument_info["temperature"]["Value"].setPixmap(self.greenledpixmap)
+        else:
+            self.instrument_info["temperature"]["Value"].setPixmap(self.redledpixmap)
+
+    def updateColdboxTemperatureIndicator(self, status: bool):
+        if status:
             self.instrument_info["temperature"]["Value"].setPixmap(self.greenledpixmap)
         else:
             self.instrument_info["temperature"]["Value"].setPixmap(self.redledpixmap)
@@ -539,11 +523,16 @@ class SimplifiedMainWidget(QWidget):
         self.thread = QThread()
         if site_settings.cooler == "Peltier":
             self.worker = Peltier_and_Arduino_Polling()
-            self.worker.temp.connect(self.updatePeltierTemp)
-            self.worker.temp.connect(self.updateArduinoIndicator)
+            self.worker.temp.connect(self.updatePeltierTemperatureIndicator)
+            self.worker.temp.connect(self.updateCondensationRiskIndicator)
         elif site_settings.cooler == "Tessie":
-            self.worker = Tessie_Polling()
-
+            self.coldbox = self.instruments.get_cb()[0]
+            # TODO: Move this ColdboxMonitorWorker setup to when you hit RUN.
+            self.worker = ColdboxMonitorWorker(
+                self.coldbox, enabled_tecs, self.dew_point_tolerance, self.maxTemp
+            )
+            self.worker.temp.connect(self.updateColdboxTemperatureIndicator)
+            self.worker.condensation.connect(self.updateCondensationRiskIndicator)
         self.worker.moveToThread(self.thread)
         self.thread.started.connect(self.worker.run)
         self.thread.start()
@@ -554,7 +543,7 @@ class SimplifiedMainWidget(QWidget):
 
         # 5/7/25: instrument_status["arduino"] is never referenced again, so this block is redundant.
         if site_settings.cooler == "Tessie":
-            self.instrument_status["arduino"] = self.updateArduinoIndicator()
+            self.instrument_status["arduino"] = self.updateCondensationRiskIndicator()
         else:
             self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
 
