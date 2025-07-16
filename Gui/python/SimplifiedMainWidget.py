@@ -396,7 +396,7 @@ class SimplifiedMainWidget(QWidget):
                 self.greenledpixmap
             )
 
-    def updateColboxCondensationRisk(self, status: bool):
+    def updateColdboxCondensationRisk(self, status: bool):
         if status:
             self.instrument_info["condensation_risk"]["Value"].setPixmap(
                 self.redledpixmap
@@ -466,8 +466,32 @@ class SimplifiedMainWidget(QWidget):
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
             )
 
+        # Need to setup coldbox cooling here so that we know what modules are enabled
+        if site_settings.cooler == "Tessie":
+            enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()) + 1))
+
+            # Start temperature and humidity monitoring
+            self.worker = ColdboxMonitorWorker(
+                self.coldbox, enabled_tecs, self.dew_point_tolerance, self.maxTemp
+            )
+            self.worker.temperature_status.connect(self.updateColdboxTemperatureIndicator)
+            self.worker.condensation_status.connect(self.updateColdboxCondensationRisk)
+            self.worker.moveToThread(self.thread)
+            self.thread.started.connect(self.worker.run)
+            self.thread.start()
+
+            # Cool TECs, this may take some time
+            first_key = list(self.instruments._module_dict.keys())[0]
+            temperature = self.instruments._module_dict[first_key]["cb"].default_temperature
+            for tec in self.enabled_tecs:
+                self.coldbox.on(channel=tec)
+                self.coldbox.set_temperature_channel_and_validate(tec, temperature)
+
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
+
+
+
 
     def abortTest(self):
         self.master.RunNewTest.abortTest()
@@ -525,17 +549,16 @@ class SimplifiedMainWidget(QWidget):
             self.worker = Peltier_and_Arduino_Polling()
             self.worker.temp.connect(self.updatePeltierTemperatureIndicator)
             self.worker.temp.connect(self.updateCondensationRiskIndicator)
+            self.worker.moveToThread(self.thread)
+            self.thread.started.connect(self.worker.run)
+            self.thread.start()
         elif site_settings.cooler == "Tessie":
             self.coldbox = self.instruments.get_cb()[0]
-            # TODO: Move this ColdboxMonitorWorker setup to when you hit RUN.
-            self.worker = ColdboxMonitorWorker(
-                self.coldbox, enabled_tecs, self.dew_point_tolerance, self.maxTemp
-            )
-            self.worker.temp.connect(self.updateColdboxTemperatureIndicator)
-            self.worker.condensation.connect(self.updateCondensationRiskIndicator)
-        self.worker.moveToThread(self.thread)
-        self.thread.started.connect(self.worker.run)
-        self.thread.start()
+
+            # Automatically set condensation and status risk to true,
+            # these will be set and validated right before testing
+            self.instrument_status["condensation_risk"] = True
+            self.instrument_status["temperature"] = True
 
         logger.debug("Setting up instrument_status")
         logger.debug("instrument_status: {}".format(self.instrument_status))
@@ -719,23 +742,19 @@ class ColdboxMonitorWorker(QObject):
                 temp_status = True
                 condensation_status = True
 
-                if self.enabled_tecs:
-                    for tec_channel in self.enabled_tecs:
-                        temp = self.coldbox.query_channel(
-                            "TEMPERATURE_MEASURED", tec_channel, no_lock=True
-                        )
-                        logger.debug(f"TEC Temp: {temp}")
+                for tec_channel in self.enabled_tecs:
+                    temp = self.coldbox.query_channel(
+                        "TEMPERATURE_MEASURED", tec_channel, no_lock=True
+                    )
+                    logger.debug(f"TEC Temp: {temp}")
 
-                        if (dew_point - temp) > self.dew_point_tolerance:
-                            condensation_status = False
-                        if temp > self.max_temperature:
-                            temp_status = False
+                    if (dew_point - temp) > self.dew_point_tolerance:
+                        condensation_status = False
+                    if temp > self.max_temperature:
+                        temp_status = False
 
-                    self.condensation_status.emit(condensation_status)
-                    self.temperature_status.emit(temp_status)
-                else:
-                    self.condensation_status.emit(True)
-                    self.temperature_status.emit(True)
+                self.condensation_status.emit(condensation_status)
+                self.temperature_status.emit(temp_status)
 
             except Exception as e:
                 logger.error(f"Error monitoring coldbox: {e}")
