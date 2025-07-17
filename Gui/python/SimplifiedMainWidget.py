@@ -443,6 +443,7 @@ class SimplifiedMainWidget(QWidget):
             temperature = self.instruments._module_dict[first_key][
                 "cb"
             ].default_temperature
+
             self.coldbox.set_temperature_and_validate(
                 temperature, channel_list=enabled_tecs
             )
@@ -680,7 +681,7 @@ class ColdboxMonitorWorker(QObject):
         self.enabled_tecs = enabled_tecs
         self.dew_point_tolerance = dew_point_tolerance
         self.max_temperature = max_temperature
-        self.interval = 1
+        self.interval = 10000
         self._running = True
 
     def run(self):
