@@ -1667,17 +1667,14 @@ created by Ph2_ACF is empty."
         """
         Plots measurement vs trimbit for each pin from a nested dictionary:
         trimbit_dict: {trimbit: {pin: value, ...}, ...}
-        output_dir: directory to save plots and CSVs (defaults to self.output_dir)
+        Returns a list of CSV filenames created.
         """
-        # Get all trimbits and pins
         trimbits = sorted(trimbit_dict.keys())
-        # Assume all pins are present in all trimbits
+        csvfiles = []
         for module in self.modules:
             moduleName = module.getModuleName()
-
             for pin, name in self.pin_mapping.items():
                 y = [trimbit_dict[t][pin] for t in trimbits]
-                # Save CSV
                 svgfilename = "{0}/TrimbitCurve_Module_{1}_{2}.svg".format(
                     self.output_dir, moduleName, name
                 )
@@ -1685,7 +1682,7 @@ created by Ph2_ACF is empty."
                     self.output_dir, moduleName, name
                 )
                 np.savetxt(csvfilename, np.column_stack([trimbits, y]), delimiter=",", header="Trimbit,Measurement", comments="")
-                # Make plot
+                csvfiles.append(csvfilename)
                 plt.figure()
                 plt.plot(trimbits, y, "-o", label=pin)
                 plt.xlabel("Trimbit")
@@ -1695,8 +1692,8 @@ created by Ph2_ACF is empty."
                 plt.legend()
                 plt.savefig(svgfilename)
                 plt.close()
-
                 self.figurelist.setdefault(pin, []).append(svgfilename)
+        return csvfiles
 
     def IVCurveFinished(self, test: str, measure: dict):
         # Get the current timestamp
@@ -1880,8 +1877,10 @@ created by Ph2_ACF is empty."
                 )
             )
 
+            # Generate CSVs and get the list
+            csvfiles = self.makeTrimbitScanPlots(self.ADCmeasurements)
             Trimbit_CSV_to_ROOT(
-                moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir
+                moduleName, module_canvas_path, csvfiles, self.output_dir
             )
 
         self.validateTest()
@@ -1904,9 +1903,9 @@ created by Ph2_ACF is empty."
 
         self.historyRefresh.emit()
         if self.master.expertMode:
-            self.updateSLDOResult.emit(self.output_dir)
+            self.updateResult.emit(self.output_dir)
         else:
-            self.updateSLDOResult.emit(
+            self.updateResult.emit(
                 ("SLDOScan", self.figurelist)
             )  ##Add else statement to add signal in simple mode
 
