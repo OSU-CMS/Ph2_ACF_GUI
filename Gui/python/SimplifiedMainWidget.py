@@ -479,7 +479,9 @@ class SimplifiedMainWidget(QWidget):
             self.worker = ColdboxMonitorWorker(
                 self.coldbox, enabled_tecs, self.dew_point_tolerance, self.maxTemp
             )
-            self.worker.temperature_status.connect(self.updateColdboxTemperatureIndicator)
+            self.worker.temperature_status.connect(
+                self.updateColdboxTemperatureIndicator
+            )
             self.worker.condensation_status.connect(self.updateColdboxCondensationRisk)
             self.worker.moveToThread(self.thread)
             self.thread.started.connect(self.worker.run)
@@ -487,16 +489,15 @@ class SimplifiedMainWidget(QWidget):
 
             # Cool TECs, this may take some time
             first_key = list(self.instruments._module_dict.keys())[0]
-            temperature = self.instruments._module_dict[first_key]["cb"].default_temperature
+            temperature = self.instruments._module_dict[first_key][
+                "cb"
+            ].default_temperature
             for tec in self.enabled_tecs:
                 self.coldbox.on(channel=tec)
                 self.coldbox.set_temperature_channel_and_validate(tec, temperature)
 
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
-
-
-
 
     def abortTest(self):
         self.master.RunNewTest.abortTest()
@@ -568,12 +569,6 @@ class SimplifiedMainWidget(QWidget):
         logger.debug("Setting up instrument_status")
         logger.debug("instrument_status: {}".format(self.instrument_status))
         logger.debug("instruments: ")
-
-        # 5/7/25: instrument_status["arduino"] is never referenced again, so this block is redundant.
-        if site_settings.cooler == "Tessie":
-            self.instrument_status["arduino"] = self.updateCondensationRiskIndicator()
-        else:
-            self.instrument_status["arduino"] = self.ArduinoGroup.ArduinoGoodStatus
 
         for beboard in self.firmware:
             self.instrument_status[f"fc7_{beboard.getBoardName()}"] = True
