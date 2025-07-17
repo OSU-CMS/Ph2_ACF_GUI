@@ -2,8 +2,6 @@ import os
 import time
 from serial import SerialException
 from typing import Optional
-import requests
-from bs4 import BeautifulSoup
 
 from Gui.QtGUIutils.QtStartWindow import SummaryBox
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread
