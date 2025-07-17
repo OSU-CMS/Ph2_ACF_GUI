@@ -443,8 +443,6 @@ class SimplifiedMainWidget(QWidget):
             temperature = self.instruments._module_dict[first_key][
                 "cb"
             ].default_temperature
-            for tec in enabled_tecs:
-                self.coldbox.on(channel=tec)
             self.coldbox.set_temperature_and_validate(
                 temperature, channel_list=enabled_tecs
             )
