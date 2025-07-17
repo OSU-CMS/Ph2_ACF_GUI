@@ -445,7 +445,9 @@ class SimplifiedMainWidget(QWidget):
             ].default_temperature
             for tec in enabled_tecs:
                 self.coldbox.on(channel=tec)
-                self.coldbox.set_temperature_channel_and_validate(tec, temperature)
+            self.coldbox.set_temperature_and_validate(
+                temperature, channel_list=enabled_tecs
+            )
 
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
