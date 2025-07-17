@@ -36,6 +36,7 @@ from Gui.GUIutils.guiUtils import (
     GenerateXMLConfig,
     isCompositeTest,
     isSingleTest,
+    UpdateXMLValue,
 )
 
 from Gui.python.ROOTInterface import executeCommandSequence
@@ -43,7 +44,7 @@ from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
 
 from InnerTrackerTests.RootFilesDict import root_files
-from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT
+from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT, Trimbit_CSV_to_ROOT
 
 
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
@@ -57,7 +58,7 @@ from Gui.python.logging_config import logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 
-from icicle.icicle.adc_board import AdcBoard
+from icicle.icicle.adc_board import ADCBoard
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
@@ -86,44 +87,44 @@ class TestHandler(QObject):
 
         #These should be stored somewhere else.  This is just a temporary solution.
         self.PIN_MAPPINGS = {
-            "DEFAULT": AdcBoard.DEFAULT_PIN_MAP,
+            "DEFAULT": ADCBoard.DEFAULT_PIN_MAP,
             "DOUBLE": {
-                # 0: 'VDDA_ROC1',
-                1: 'VDDA_ROC13', #ROC U1B
-                # 2: 'VDDD_ROC2',
-                # 3: 'VDDD_ROC3',
-                # 4: 'VDDD_ROC1',
-                5: 'VDDD_ROC13', #ROC U1B
-                # 6: None,
-                # 7: 'TP8', #VOFS IN
-                # 8: None,
-                9: 'TP10', #VIN
-                # 10: None,
-                11: "VDDA_ROC12", #ROC U1A
-                #12: "VDDA_ROC1",
-                13: "VDDD_ROC12", #ROC U1A
-                #14: "VDDD_ROC1",
-                # 15: 'TP7A', #VOFS OUT
-                # 16: 'TP7B', #VOFS OUT
+                1: 'VDDA_ROC1',
+                2: 'VDDA_ROC13', #ROC U1B
+                3: 'VDDD_ROC2',
+                4: 'VDDD_ROC3',
+                5: 'VDDD_ROC1',
+                6: 'VDDD_ROC13', #ROC U1B
+                7: 'Pin 7',
+                8: 'TP8', #VOFS IN
+                9: 'Pin 9',
+                10: 'TP10', #VIN
+                11: 'Pin 11',
+                12: "VDDA_ROC12", #ROC U1A
+                13: "VDDA_ROC1",
+                14: "VDDD_ROC12", #ROC U1A
+                15: "VDDD_ROC1",
+                16: 'TP7A', #VOFS OUT
+                17: 'TP7B', #VOFS OUT
             },
             "QUAD": {
-                0: "VDDA_ROC14", #ROC U1C
-                1: "VDDA_ROC15", #ROC U1D
-                2: "VDDD_ROC14", #ROC U1C
-                3: "VDDD_ROC15", #ROC U1D
-                # 4: 'TP7C', #VOFS OUT
-                # 5: 'TP7D', #VOFS OUT
-                # 6: None,
-                # 7: 'TP8', #VOFS IN
-                # 8: None,
-                9: 'TP10', #VIN
-                # 10: None,
-                11: "VDDA_ROC12", #ROC U1A
-                12: "VDDA_ROC13", #ROC U1B
-                13: "VDDD_ROC12", #ROC U1A
-                14: "VDDD_ROC13", #ROC U1B
-                # 15: 'TP7A', #VOFS OUT
-                # 16: 'TP7B', #VOFShv_off OUT
+                1: "VDDA_ROC14", #ROC U1C
+                2: "VDDA_ROC15", #ROC U1D
+                3: "VDDD_ROC14", #ROC U1C
+                4: "VDDD_ROC15", #ROC U1D
+                # 5: 'TP7C', #VOFS OUT
+                # 6: 'TP7D', #VOFS OUT
+                # 7: None,
+                # 8: 'TP8', #VOFS IN
+                # 9: None,
+                10: 'TP10', #VIN
+                # 11: None,
+                12: "VDDA_ROC12", #ROC U1A
+                13: "VDDA_ROC13", #ROC U1B
+                14: "VDDD_ROC12", #ROC U1A
+                15: "VDDD_ROC13", #ROC U1B
+                # 16: 'TP7A', #VOFS OUT
+                # 17: 'TP7B', #VOFShv_off OUT
             },
         }
 
@@ -497,9 +498,12 @@ class TestHandler(QObject):
             logger.error(
                 "You do not have instruments required to run a Trimbit scan connected.\nYou must have an Adc Board."
             )
-    def readADC(self):
-        adcData = self.adc_board.query_adc(no_lock=True)
-        return adcData
+    def measureADC(self):
+        ls = []
+        for pin in self.adc_board._pin_map.keys():
+            ls.append(self.adc_board.query_channel(pin))
+        return ls
+
 
     def run_VDDsweep(self, trimbit:int = 8,total_steps:int = 16, fc7_index : int = 0) -> None:
         VDDsweep_process = QProcess()
@@ -520,14 +524,17 @@ class TestHandler(QObject):
             )
 
         if VDDsweep_process.state() != QProcess.NotRunning:
-                result = VDDsweep_process.waitForFinished(-1) #waits indefinitely
-                if not result:
-                    logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
-                    VDDsweep_process.kill()
-        self.ADCmeasurements[trimbit][self.readADC()]
-        self.ProgressValue+=1
+            result = VDDsweep_process.waitForFinished(-1) #waits indefinitely
+            if not result:
+                logger.error(f"Ph2_ACF physics test on {self.firmware[fc7_index].getBoardName()} didn't excute correctly.")
+                VDDsweep_process.kill()
+        # Store ADC readings as a list for this trimbit
+        print("ADC measurements for trimbit {}: {}".format(trimbit, self.ADCmeasurements))
+        self.ADCmeasurements[trimbit] = self.measureADC()
+  
+        self.ProgressValue += 1
         for i in range(len(self.firmware)):
-            self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
+            self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100 * self.ProgressValue / total_steps)
 
     def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_GADC["physics seconds"], fc7_index : int = 0) -> None:
 
@@ -786,17 +793,18 @@ class TestHandler(QObject):
         self.tempindex = 0
         if "TrimbitScan" in testName:
             self.currentTest = testName
-            self.ADCmeasurements = []
+            self.ADCmeasurements = {}
+            self.pin_mapping = self.PIN_MAPPINGS[
+                self.ModuleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
+            ]
             self.runADC()
-            for trim in range(4):
+            for trim in range(16):
                 self.configTest(trimbit = trim)
-                self.run_VDDsweep(trimbit=trim, total_steps=4)
+                self.run_VDDsweep(trimbit=trim, total_steps=16)
             print('ADCmeasurements: ',self.ADCmeasurements)
             
             #looping over all of the pins in the mapping that are activated
-            for index, pin in self.PIN_MAPPINGS[
-                self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
-            ].items():
+            for index, pin in self.pin_mapping.items():
                 for trimval, measurementList in enumerate(self.ADCmeasurements):
                     print(trimval, self.ADCmeasurements[trimval][index], pin)
                     ### trimval gives the value of the trim bit
@@ -804,6 +812,9 @@ class TestHandler(QObject):
                     ### measurementList gives the list of measurements where the index is the pin number.
                     ### self.ADCmeasurements[trimval][index] gives the measured voltage for a specific trim bit setting on pin number = index
                     ### Need to store these in a sensible way so that we can plot them.
+            self.makeTrimbitScanPlots(self.ADCmeasurements)
+            self.TrimbitScanFinished()
+            return
 
 
 
@@ -1652,6 +1663,41 @@ created by Ph2_ACF is empty."
 
             self.figurelist[moduleName] = [filename]
 
+    def makeTrimbitScanPlots(self, trimbit_dict):
+        """
+        Plots measurement vs trimbit for each pin from a nested dictionary:
+        trimbit_dict: {trimbit: {pin: value, ...}, ...}
+        output_dir: directory to save plots and CSVs (defaults to self.output_dir)
+        """
+        # Get all trimbits and pins
+        trimbits = sorted(trimbit_dict.keys())
+        # Assume all pins are present in all trimbits
+        for module in self.modules:
+            moduleName = module.getModuleName()
+
+            for pin, name in self.pin_mapping.items():
+                y = [trimbit_dict[t][pin] for t in trimbits]
+                # Save CSV
+                svgfilename = "{0}/TrimbitCurve_Module_{1}_{2}.svg".format(
+                    self.output_dir, moduleName, name
+                )
+                csvfilename = "{0}/TrimbitCurve_Module_{1}_{2}.csv".format(
+                    self.output_dir, moduleName, name
+                )
+                np.savetxt(csvfilename, np.column_stack([trimbits, y]), delimiter=",", header="Trimbit,Measurement", comments="")
+                # Make plot
+                plt.figure()
+                plt.plot(trimbits, y, "-o", label=pin)
+                plt.xlabel("Trimbit")
+                plt.ylabel("Measurement (V)")
+                plt.title(f"Trimbit Scan for {pin}")
+                plt.grid(True)
+                plt.legend()
+                plt.savefig(svgfilename)
+                plt.close()
+
+                self.figurelist.setdefault(pin, []).append(svgfilename)
+
     def IVCurveFinished(self, test: str, measure: dict):
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -1798,6 +1844,51 @@ created by Ph2_ACF is empty."
                 ),
             )
 
+            if self.testIndexTracker == len(self.test_list):
+                self.powerSignal.emit()
+                EnableReRun = True
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
+        elif isSingleTest(self.info):
+            EnableReRun = True
+            self.powerSignal.emit()
+            if self.autoSave:
+                self.runwindow.upload_to_Panthera_starter()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit()
+        if self.master.expertMode:
+            self.updateSLDOResult.emit(self.output_dir)
+        else:
+            self.updateSLDOResult.emit(
+                ("SLDOScan", self.figurelist)
+            )  ##Add else statement to add signal in simple mode
+
+        if isCompositeTest(self.info):
+            self.runTest()
+    
+    def TrimbitScanFinished(self):
+        for module in self.modules:
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+            module_canvas_path = (
+                "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
+                    boardID=beboardId, ogID=ogId, hybridID=hybridId
+                )
+            )
+
+            Trimbit_CSV_to_ROOT(
+                moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir
+            )
+
+        self.validateTest()
+        self.testIndexTracker += 1
+        self.testsAttempted += 1
+
+        if isCompositeTest(self.info):                
             if self.testIndexTracker == len(self.test_list):
                 self.powerSignal.emit()
                 EnableReRun = True
