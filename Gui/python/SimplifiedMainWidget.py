@@ -177,55 +177,6 @@ class SimplifiedMainWidget(QWidget):
             print("Error while attempting to set Peltier", e)
             self.Peltier = None
 
-    def setupStatusWidgets(self):
-        logger.debug("Set device status")
-        self.StatusLayout = QGridLayout()
-        self.StatusLayout.addWidget(
-            self.instrument_info["database"]["Label"], 0, 1, 1, 1
-        )
-        self.StatusLayout.addWidget(
-            self.instrument_info["database"]["Value"], 0, 2, 1, 1
-        )
-        self.StatusLayout.addWidget(self.instrument_info["hv"]["Label"], 0, 3, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["hv"]["Value"], 0, 4, 1, 1)
-
-        self.StatusLayout.addWidget(self.instrument_info["lv"]["Label"], 1, 1, 1, 1)
-        self.StatusLayout.addWidget(self.instrument_info["lv"]["Value"], 1, 2, 1, 1)
-        offset = -1
-        for index, firmwareName in enumerate(site_settings.FC7List.keys()):
-            self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Label"], 1 + index, 3, 1, 1
-            )
-            self.StatusLayout.addWidget(
-                self.instrument_info[f"fc7_{firmwareName}"]["Value"], 1 + index, 4, 1, 1
-            )
-            offset += 1
-
-        self.StatusLayout.addWidget(
-            self.instrument_info["condensation_risk"]["Label"], 2, 1, 1, 1
-        )
-        self.StatusLayout.addWidget(
-            self.instrument_info["condensation_risk"]["Value"], 2, 2, 1, 1
-        )
-
-        if site_settings.cooler in {"Peltier", "Tessie"}:
-            self.StatusLayout.addWidget(
-                self.instrument_info["temperature"]["Label"], 2 + offset, 3, 1, 1
-            )
-            self.StatusLayout.addWidget(
-                self.instrument_info["temperature"]["Value"], 2 + offset, 4, 1, 1
-            )
-
-            if site_settings.cooler == "Peltier":
-                self.StatusLayout.addWidget(
-                    self.peltier_temperature_label, 3 + offset, 3, 1, 1
-                )
-
-        self.RefreshButton = QPushButton("&Refresh")
-        self.RefreshButton.clicked.connect(self.setDeviceStatus)
-        self.StatusLayout.addWidget(self.RefreshButton, 3 + offset, 3, 1, 1)
-        logger.debug("Setup StatusLayout")
-
     def setupUI(self):
         self.StatusLayout = QGridLayout()
         self.StatusLayout.addWidget(
@@ -257,16 +208,19 @@ class SimplifiedMainWidget(QWidget):
             self.instrument_info["condensation_risk"]["Value"], 2, 2, 1, 1
         )
 
-        if self.Peltier:
-            self.StatusLayout.addWidget(
-                self.peltier_temperature_label, 3 + offset, 3, 1, 1
-            )
+        if site_settings.cooler in {"Peltier", "Tessie"}:
             self.StatusLayout.addWidget(
                 self.instrument_info["temperature"]["Label"], 2 + offset, 3, 1, 1
             )
             self.StatusLayout.addWidget(
                 self.instrument_info["temperature"]["Value"], 2 + offset, 4, 1, 1
             )
+
+            if site_settings.cooler == "Peltier":
+                self.StatusLayout.addWidget(
+                    self.peltier_temperature_label, 3 + offset, 3, 1, 1
+                )
+
         # self.StatusLayout.addWidget(self.RefreshButton, 3, 3, 1, 1)
         logger.debug("Setup StatusLayout")
         ModuleEntryLayout = QGridLayout()
@@ -385,7 +339,6 @@ class SimplifiedMainWidget(QWidget):
 
         self.setDeviceStatus()
         self.setupBeBoard()
-        # self.setupStatusWidgets()
         self.setupUI()
         self.RunButtonState()
 
