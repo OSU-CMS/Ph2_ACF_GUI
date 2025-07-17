@@ -427,16 +427,16 @@ class SimplifiedMainWidget(QWidget):
             enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()) + 1))
 
             # Start temperature and humidity monitoring
-            self.worker = ColdboxMonitorWorker(
-                self.coldbox, enabled_tecs, self.dew_point_tolerance, self.maxTemp
-            )
-            self.worker.temperature_status.connect(
-                self.updateColdboxTemperatureIndicator
-            )
-            self.worker.condensation_status.connect(self.updateColdboxCondensationRisk)
-            self.worker.moveToThread(self.thread)
-            self.thread.started.connect(self.worker.run)
-            self.thread.start()
+            # self.worker = ColdboxMonitorWorker(
+            #     self.coldbox, enabled_tecs, self.dew_point_tolerance, self.maxTemp
+            # )
+            # self.worker.temperature_status.connect(
+            #     self.updateColdboxTemperatureIndicator
+            # )
+            # self.worker.condensation_status.connect(self.updateColdboxCondensationRisk)
+            # self.worker.moveToThread(self.thread)
+            # self.thread.started.connect(self.worker.run)
+            # self.thread.start()
 
             # Cool TECs, this may take some time
             first_key = list(self.instruments._module_dict.keys())[0]
