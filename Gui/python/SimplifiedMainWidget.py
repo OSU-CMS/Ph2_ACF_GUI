@@ -444,6 +444,9 @@ class SimplifiedMainWidget(QWidget):
                 "cb"
             ].default_temperature
 
+            for tec in enabled_tecs:
+                self.coldbox.on(channel=tec)
+
             self.coldbox.set_temperature_and_validate(
                 temperature, channel_list=enabled_tecs
             )
