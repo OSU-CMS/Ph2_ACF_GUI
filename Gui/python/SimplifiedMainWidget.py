@@ -455,20 +455,34 @@ class SimplifiedMainWidget(QWidget):
         self.RunButton.setDisabled(False)
 
     def check_coldbox_status(self):
-        temperatures = self.coldbox.query_channel("TEMPERATURE_MEASURED", 0)
-        logger.debug(f"{temperatures=}")
-
-        if any(temp > self.maxTemp for temp in temperatures):
-            self.abortTest()
-            self.updateColdboxTemperatureIndicator(False)
-
         condensation_value = self.coldbox.query_channel("DEW_POINT", 0)
-        if any(
-            temp <= condensation_value + self.condensation_width
-            for temp in temperatures
-        ):
-            self.abortTest()
-            self.updateColdboxCondensationRisk(False)
+
+        for chan in self.enaled_channels:
+            temperature = self.coldbox.query_channel("TEMPERATURE_MEASURED")
+            if temperature > self.maxTemp:
+                self.abortTest()
+                self.updateColdboxTemperatureIndicator(False)
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Temperature Warning")
+                msg.setText(
+                    f"There was a temperature issue with a TEC.\nMeasured: {temperature:.1f} °C\nLimit: {self.maxTemp} °C"
+                )
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec_()
+                break
+            if temperature <= condensation_value + self.condensation_width:
+                self.abortTest()
+                self.updateColdboxCondensationRisk(False)
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Condensation Warning")
+                msg.setText(
+                    "There was a condensation issue with a please check nitrogen."
+                )
+                msg.setStandardButtons(QMessageBox.Ok)
+                msg.exec_()
+                break
 
     def setDeviceStatus(self) -> None:
         """
