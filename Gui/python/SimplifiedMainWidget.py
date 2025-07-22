@@ -455,9 +455,9 @@ class SimplifiedMainWidget(QWidget):
         self.RunButton.setDisabled(False)
 
     def check_coldbox_status(self):
-        condensation_value = self.coldbox.query_channel("DEW_POINT", 0)
+        condensation_value = self.coldbox.query("DEW_POINT", no_lock=True)
 
-        for chan in self.enaled_channels:
+        for chan in self.enabled_tecs:
             temperature = self.coldbox.query_channel("TEMPERATURE_MEASURED")
             if temperature > self.maxTemp:
                 self.abortTest()
