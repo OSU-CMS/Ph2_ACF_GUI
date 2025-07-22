@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
+    QTimer,
     QMessageBox,
 )
 
@@ -40,6 +41,9 @@ class SimplifiedMainWidget(QWidget):
         self.dimension = dimension
         self.maxTemp = 40
         self.dew_point_tolerance = -5
+        self.coldbox_timer_delay = 5
+        self.condensation_width = 5
+        self.timer = QTimer()
 
         try:
             self.instruments = master.instruments
@@ -74,6 +78,8 @@ class SimplifiedMainWidget(QWidget):
         self.config_and_test_Signal.connect(self.config_and_test)
 
         self.createWindow()
+
+        # TODO Hook into self.master.GlobalStop, I can just use abort_signal
 
     def config_and_test(self):
         self.master.RunNewTest.resetConfigTest()
@@ -424,7 +430,7 @@ class SimplifiedMainWidget(QWidget):
 
         # Need to setup coldbox cooling here so that we know what modules are enabled
         if site_settings.cooler == "Tessie":
-            enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()) + 1))
+            self.enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()) + 1))
 
             # Cool TECs, this may take some time
             first_key = list(self.instruments._module_dict.keys())[0]
@@ -432,12 +438,14 @@ class SimplifiedMainWidget(QWidget):
                 "cb"
             ].default_temperature
 
-            for tec in enabled_tecs:
+            for tec in self.enabled_tecs:
                 self.coldbox.on(channel=tec)
 
             self.coldbox.set_temperature_and_validate(
-                temperature, channel_list=enabled_tecs
+                temperature, channel_list=self.enabled_tecs
             )
+            self.timer.timeout.connect(self.check_coldbox_status)
+            self.timer.start(self.coldbox_timer_delay)
 
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
@@ -446,6 +454,22 @@ class SimplifiedMainWidget(QWidget):
         self.master.RunNewTest.abortTest()
         self.StopButton.setDisabled(True)
         self.RunButton.setDisabled(False)
+
+    def check_coldbox_status(self):
+        temperatures = self.coldbox.query_channel("TEMPERATURE_MEASURED", 0)
+        logger.debug(f"{temperatures=}")
+
+        if any(temp > self.maxTemp for temp in temperatures):
+            self.abortTest()
+            self.updateColdboxTemperatureIndicator(False)
+
+        condensation_value = self.coldbox.query_channel("DEW_POINT", 0)
+        if any(
+            temp <= condensation_value + self.condensation_width
+            for temp in temperatures
+        ):
+            self.abortTest()
+            self.updateColdboxCondensationRisk(False)
 
     def setDeviceStatus(self) -> None:
         """
