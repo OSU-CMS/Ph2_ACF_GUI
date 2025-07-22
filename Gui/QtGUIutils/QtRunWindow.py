@@ -40,7 +40,7 @@ from InnerTrackerTests.TestSequences import CompositeTests_Modules
 class QtRunWindow(QWidget):
     resized = pyqtSignal()
 
-    def __init__(self, master, info, firmware, txt_files = {}):
+    def __init__(self, master, info, firmware, txt_files={}):
         super(QtRunWindow, self).__init__()
         self.master = master
         self.master.globalStop.connect(self.urgentStop)
@@ -265,7 +265,12 @@ class QtRunWindow(QWidget):
 
         OutputLayout = QGridLayout()
         self.ResultWidget = ResultTreeWidget(
-            self.info, self.DisplayW, self.DisplayH, self.master, self.firmware, self.testHandler.registerKey
+            self.info,
+            self.DisplayW,
+            self.DisplayH,
+            self.master,
+            self.firmware,
+            self.testHandler.registerKey,
         )
         OutputLayout.addWidget(self.ResultWidget, 0, 0, 1, 1)
         OutputBox.setLayout(OutputLayout)
@@ -351,19 +356,18 @@ class QtRunWindow(QWidget):
     def updateTempIndicator(self, color: str):
         self.tempIndicator.setPixmap(self.ledMap[color])
         if color == "red":
-            self.abortTest()
+            self.urgentStop()
 
     def destroyMain(self):
         self.MainBodyBox.deleteLater()
         self.mainLayout.removeWidget(self.MainBodyBox)
 
     def upload_to_Panthera_starter(self):
-
-        #Prevent duplicate upload progress bars
+        # Prevent duplicate upload progress bars
         if hasattr(self, "UploadProgressBar") and self.UploadProgressBar is not None:
             if self.UploadProgressBar.isVisible():
                 return
-            
+
         self.UploadProgressBar = QProgressBar()
         self.UploadWheel = LoadingWheel()
         self.UploadProgressBar.setFormat(f"0/{len(self.testHandler.modules)} uploaded")
@@ -401,7 +405,7 @@ class QtRunWindow(QWidget):
         self.FinishButton.clicked.connect(self.closeWindow)
 
         self.StartLayout.addStretch(1)
-        self.StartLayout.addWidget(self.CommentBox) 
+        self.StartLayout.addWidget(self.CommentBox)
         self.StartLayout.addWidget(self.UploadButton)
 
         self.StartLayout.addWidget(self.BackButton)
@@ -534,8 +538,10 @@ class QtRunWindow(QWidget):
             isReRun = True
             self.grades = []
             if isCompositeTest(self.info):
-                try:            
-                    test_list = CompositeTests_Modules[self.testHandler.registerKey][self.info]
+                try:
+                    test_list = CompositeTests_Modules[self.testHandler.registerKey][
+                        self.info
+                    ]
                 except KeyError:
                     test_list = CompositeTests_Modules["Default"][self.info]
 
