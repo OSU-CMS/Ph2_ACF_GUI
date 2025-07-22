@@ -458,7 +458,7 @@ class SimplifiedMainWidget(QWidget):
         condensation_value = self.coldbox.query("DEW_POINT", no_lock=True)
 
         for chan in self.enabled_tecs:
-            temperature = self.coldbox.query_channel("TEMPERATURE_MEASURED")
+            temperature = self.coldbox.query_channel("TEMPERATURE_MEASURED", chan)
             if temperature > self.maxTemp:
                 self.abortTest()
                 self.updateColdboxTemperatureIndicator(False)
