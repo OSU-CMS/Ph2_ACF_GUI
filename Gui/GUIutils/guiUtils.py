@@ -457,8 +457,8 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 )
 
                 chip_settings = FESettings_Dict[testName][registerKey].copy()
-                chip_settings['VREF_ADC'] = chip.getVREF()
-                #chip_settings['INJ_CAP'] = chip.getCINJ()          #Can uncomment once INJ_CAP is implemented into the dictionary for the XML
+                chip_settings['VREF_ADC'] = round(chip.getVREF())
+                chip_settings['INJ_CAP'] = round(chip.getCINJ())
                 FEChip.ConfigureFE(chip_settings)
             
                 if testName in FELaneConfig_Dict:
