@@ -14,6 +14,7 @@ class QtChip:
         chipEfuseID=0,
         chipVREF=800,
         chipIREF="",
+        chipCINJ=80,
         chipStatus=True,
     ):
         self.__chipID = chipID
@@ -23,6 +24,7 @@ class QtChip:
         self.__chipEfuseID = chipEfuseID
         self.__chipVREF = chipVREF
         self.__chipIREF = chipIREF
+        self.__chipCINJ = chipCINJ
         self.__chipStatus = chipStatus
 
     def setID(self, id: str):
@@ -66,6 +68,12 @@ class QtChip:
 
     def getIREF(self):
         return self.__chipIREF
+    
+    def setCINJ(self, pCINJ: int):
+        self.__chipCINJ = pCINJ
+    
+    def getCINJ(self):
+        return self.__chipCINJ
 
     def setStatus(self, pStatus: bool):
         self.__chipStatus = pStatus
