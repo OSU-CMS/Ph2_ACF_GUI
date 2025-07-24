@@ -467,11 +467,11 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 else:
                     logger.warning(f"Test name {testName} not found in FELaneConfig_Dict.")
 
-                if 'trimbit' in arg:
-                    print('Setting VDDA to {0}'.format(arg['trimbit']))
-                    FEChip.VDDAtrim = arg['trimbit']
-                    print('Setting VDDD to {0}'.format(arg['trimbit']))
-                    FEChip.VDDDtrim = arg['trimbit']
+                if 'trimbit_dict' in arg:
+                    print('Setting VDDA to {0}'.format(arg['trimbit_dict'][int(chip.getID())][0]))
+                    FEChip.VDDAtrim = arg['trimbit_dict'][int(chip.getID())][0]
+                    print('Setting VDDD to {0}'.format(arg['trimbit_dict'][int(chip.getID())][1]))
+                    FEChip.VDDDtrim = arg['trimbit_dict'][int(chip.getID())][1]
                 else:
                     FEChip.VDDAtrim = chip.getVDDA()
                     FEChip.VDDDtrim = chip.getVDDD()

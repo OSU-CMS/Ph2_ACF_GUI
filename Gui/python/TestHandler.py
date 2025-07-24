@@ -53,6 +53,7 @@ from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
 from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
+from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 from Gui.python.CustomizedWidget import chip_iref_db
@@ -84,50 +85,6 @@ class TestHandler(QObject):
         self.fused_dict_index = [-1, -1]
         self.FWisPresent = False
         self.FWisLoaded = False
-
-        #These should be stored somewhere else.  This is just a temporary solution.
-        self.PIN_MAPPINGS = {
-            "DEFAULT": ADCBoard.DEFAULT_PIN_MAP,
-            "DOUBLE": {
-                1: 'VDDA_ROC1',
-                2: 'VDDA_ROC13', #ROC U1B
-                3: 'VDDD_ROC2',
-                4: 'VDDD_ROC3',
-                5: 'VDDD_ROC1',
-                6: 'VDDD_ROC13', #ROC U1B
-                7: 'Pin 7',
-                8: 'TP8', #VOFS IN
-                9: 'Pin 9',
-                10: 'TP10', #VIN
-                11: 'Pin 11',
-                12: "VDDA_ROC12", #ROC U1A
-                13: "VDDA_ROC1",
-                14: "VDDD_ROC12", #ROC U1A
-                15: "VDDD_ROC1",
-                16: 'TP7A', #VOFS OUT
-                17: 'TP7B', #VOFS OUT
-            },
-            "QUAD": {
-                1: "VDDA_ROC14", #ROC U1C
-                2: "VDDA_ROC15", #ROC U1D
-                3: "VDDD_ROC14", #ROC U1C
-                4: "VDDD_ROC15", #ROC U1D
-                # 5: 'TP7C', #VOFS OUT
-                # 6: 'TP7D', #VOFS OUT
-                # 7: None,
-                # 8: 'TP8', #VOFS IN
-                # 9: None,
-                10: 'TP10', #VIN
-                # 11: None,
-                12: "VDDA_ROC12", #ROC U1A
-                13: "VDDA_ROC13", #ROC U1B
-                14: "VDDD_ROC12", #ROC U1A
-                15: "VDDD_ROC13", #ROC U1B
-                # 16: 'TP7A', #VOFS OUT
-                # 17: 'TP7B', #VOFShv_off OUT
-            },
-        }
-
         self.master.globalStop.connect(self.urgentStop)
         self.runwindow = runwindow
         self.firmware = firmware
@@ -199,6 +156,7 @@ class TestHandler(QObject):
 
         self.IVCurveHandler = None
         self.SLDOScanHandler = None
+        self.trimbitHandler = None
 
         self.processingFlag = False
         self.ProgresBarList = []
@@ -498,43 +456,36 @@ class TestHandler(QObject):
             logger.error(
                 "You do not have instruments required to run a Trimbit scan connected.\nYou must have an Adc Board."
             )
-    def measureADC(self):
-        ls = []
-        for pin in self.adc_board._pin_map.keys():
-            ls.append(self.adc_board.query_channel(pin))
-        return ls
 
 
-    def run_VDDsweep(self, trimbit:int = 8,total_steps:int = 16, fc7_index : int = 0) -> None:
-        VDDsweep_process = QProcess()
-        self.outputString.emit("Running VDD sweep test", self.runwindow.ConsoleViews[fc7_index])
+    # def run_VDDsweep(self,total_steps:int = 16, chip = 12, fc7_index : int = 0) -> None:
+    #     VDDsweep_process = QProcess()
+    #     self.outputString.emit("Running VDD sweep test", self.runwindow.ConsoleViews[fc7_index])
 
-        VDDsweep_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-        VDDsweep_process.setWorkingDirectory(
-            os.environ.get("PH2ACF_BASE_DIR") + "/test/"
-            )
+    #     VDDsweep_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
+    #     VDDsweep_process.setWorkingDirectory(
+    #         os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+    #         )
 
-        VDDsweep_process.readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput_VDDsweep(VDDsweep_process, fc7_index)
-            )
+    #     VDDsweep_process.readyReadStandardOutput.connect(
+    #             lambda: self.on_readyReadStandardOutput_VDDsweep(VDDsweep_process, fc7_index)
+    #         )
             
-        VDDsweep_process.start(
-            "CMSITminiDAQ",
-            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"],
-            )
+    #     VDDsweep_process.start(
+    #         "CMSITminiDAQ",
+    #         ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"],
+    #         )
 
-        if VDDsweep_process.state() != QProcess.NotRunning:
-            result = VDDsweep_process.waitForFinished(-1) #waits indefinitely
-            if not result:
-                logger.error(f"Ph2_ACF physics test on {self.firmware[fc7_index].getBoardName()} didn't excute correctly.")
-                VDDsweep_process.kill()
-        # Store ADC readings as a list for this trimbit
-        print("ADC measurements for trimbit {}: {}".format(trimbit, self.ADCmeasurements))
-        self.ADCmeasurements[trimbit] = self.measureADC()
-  
-        self.ProgressValue += 1
-        for i in range(len(self.firmware)):
-            self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100 * self.ProgressValue / total_steps)
+    #     if VDDsweep_process.state() != QProcess.NotRunning:
+    #         result = VDDsweep_process.waitForFinished(-1) #waits indefinitely
+    #         if not result:
+    #             logger.error(f"Ph2_ACF physics test on {self.firmware[fc7_index].getBoardName()} didn't excute correctly.")
+    #             VDDsweep_process.kill()
+    #     add_trim = self.measureADC(chip)
+    #     self.ProgressValue += 1
+    #     for i in range(len(self.firmware)):
+    #         self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100 * self.ProgressValue / total_steps)
+    #     return add_trim
 
     def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_GADC["physics seconds"], fc7_index : int = 0) -> None:
 
@@ -793,35 +744,26 @@ class TestHandler(QObject):
         self.tempindex = 0
         if "TrimbitScan" in testName:
             self.currentTest = testName
-            self.ADCmeasurements = {}
-            self.pin_mapping = self.PIN_MAPPINGS[
-                self.ModuleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
-            ]
-            self.runADC()
-            for trim in range(16):
-                self.configTest(trimbit = trim)
-                self.run_VDDsweep(trimbit=trim, total_steps=16)
-            print('ADCmeasurements: ',self.ADCmeasurements)
-            
-            #looping over all of the pins in the mapping that are activated
-            for index, pin in self.pin_mapping.items():
-                for trimval, measurementList in enumerate(self.ADCmeasurements):
-                    print(trimval, self.ADCmeasurements[trimval][index], pin)
-                    ### trimval gives the value of the trim bit
-                    ### pin gives the name of the pin
-                    ### measurementList gives the list of measurements where the index is the pin number.
-                    ### self.ADCmeasurements[trimval][index] gives the measured voltage for a specific trim bit setting on pin number = index
-                    ### Need to store these in a sensible way so that we can plot them.
-            self.makeTrimbitScanPlots(self.ADCmeasurements)
-            self.TrimbitScanFinished()
+            total_steps = 16
+            self.trimbitHandler = TrimbitCurveHandler(
+                instrument_cluster=self.instruments,
+                moduleType=self.ModuleType,
+                total_steps=total_steps,
+                runwindow=self.runwindow,
+                firmware=self.firmware,
+                testhandler=self,
+            )
+            self.trimbitHandler.makeplotSignal.connect(self.storeTrimbitResults)
+            self.trimbitHandler.progressSignal.connect(self.updateProgress)
+            self.trimbitHandler.finishedSignal.connect(self.TrimbitScanFinished)
+            self.trimbitHandler.abortSignal.connect(self.urgentStop)
+            self.trimbitHandler.TrimbitScan()
             return
-
-
-
-
-
         else:
             self.setupQProcess()
+    def storeTrimbitResults(self, adcmeasurements, pin_mapping):
+        self.ADCmeasurements = adcmeasurements
+        self.pin_mapping = pin_mapping
 
     def setupQProcess(self):
         self.tempHistory = [0.0] * self.numChips
@@ -950,6 +892,10 @@ class TestHandler(QObject):
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting SLDOScan", console)
             self.SLDOScanHandler.stop()
+        if self.trimbitHandler:
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit("Aborting TrimbitScan", console)
+            self.trimbitHandler.stop()
 
     def urgentStop(self):
         for process in self.run_processes:
@@ -1416,29 +1362,53 @@ created by Ph2_ACF is empty."
         for textStr in textline:
             self.outputString.emit(textStr, self.runwindow.ConsoleViews[processIndex])
 
-
     @QtCore.pyqtSlot()
-    def on_readyReadStandardOutput_VDDsweep(self, process:QProcess, fc7_index:int): 
-        if self.readingOutput:
+    def on_readyReadStandardOutput_VDDsweep(self, process, fc7_index):
+        """
+        Slot to handle VDDsweep process output, parse ANSI, and emit to console.
+        Safe to use in TestHandler as long as updateConsoleInfo does not emit outputString.
+        """
+        if getattr(self, "readingOutput", False):
             print("Thread competition detected")
             return
         self.readingOutput = True
 
-        alltext = (
-            process.readAllStandardOutput().data().decode()
-        )
-        self.outputfile.write(alltext)
+        alltext = process.readAllStandardOutput().data().decode()
+        if hasattr(self, "outputfile") and self.outputfile:
+            self.outputfile.write(alltext)
         textline = alltext.split("\n")
-        
         for textStr in textline:
-            text = textStr.encode("ascii")
-            _, text = parseANSI(text)
-            self.outputString.emit(
-                text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
-            )
-            self.runwindow.ConsoleViews[fc7_index].repaint()
-        
+            try:
+                text = textStr.encode("ascii")
+                _, text = parseANSI(text)
+                self.outputString.emit(text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index])
+            except Exception as e:
+                print(f"Error emitting console output: {e}")
         self.readingOutput = False
+
+
+    # @QtCore.pyqtSlot()
+    # def on_readyReadStandardOutput_VDDsweep(self, process:QProcess, fc7_index:int): 
+    #     if self.readingOutput:
+    #         print("Thread competition detected")
+    #         return
+    #     self.readingOutput = True
+
+    #     alltext = (
+    #         process.readAllStandardOutput().data().decode()
+    #     )
+    #     self.outputfile.write(alltext)
+    #     textline = alltext.split("\n")
+        
+    #     for textStr in textline:
+    #         text = textStr.encode("ascii")
+    #         _, text = parseANSI(text)
+    #         self.outputString.emit(
+    #             text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
+    #         )
+    #         self.runwindow.ConsoleViews[fc7_index].repaint()
+        
+    #     self.readingOutput = False
 
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_GADC(self, process:QProcess, fc7_index:int, upOrDown:str, current, channel): 
@@ -1608,12 +1578,15 @@ created by Ph2_ACF is empty."
                 ]
                 * len(self.instruments._module_dict.values())
             )
-        if "SLDO" in measurementType:
+        elif "SLDO" in measurementType:
             self.SLDOProgressValue += stepSize
             for i, firmware in enumerate(self.firmware):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(
                     self.SLDOProgressValue
                 )
+        elif measurementType == "TrimbitScan":
+            for i in range(len(self.firmware)):
+                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(stepSize)
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for module in self.modules:
@@ -1663,36 +1636,38 @@ created by Ph2_ACF is empty."
 
             self.figurelist[moduleName] = [filename]
 
-    def makeTrimbitScanPlots(self, trimbit_dict):
+    def makeTrimbitScanPlots(self, trimbit_dict, pin_mapping):
         """
-        Plots measurement vs trimbit for each pin from a nested dictionary:
-        trimbit_dict: {trimbit: {pin: value, ...}, ...}
+        Plots measurement vs trimbit for each pin from a dictionary:
+        trimbit_dict: {pin: [(trimbit, value), ...], ...}
         Returns a list of CSV filenames created.
         """
-        trimbits = sorted(trimbit_dict.keys())
         csvfiles = []
         for module in self.modules:
             moduleName = module.getModuleName()
-            for pin, name in self.pin_mapping.items():
-                y = [trimbit_dict[t][pin] for t in trimbits]
+            for pin, name in pin_mapping.items():
+                data = trimbit_dict.get(pin, [])
+                if not data:
+                    continue  # Skip pins with no data
+                trimbits, values = zip(*data)
                 svgfilename = "{0}/TrimbitCurve_Module_{1}_{2}.svg".format(
                     self.output_dir, moduleName, name
                 )
                 csvfilename = "{0}/TrimbitCurve_Module_{1}_{2}.csv".format(
                     self.output_dir, moduleName, name
                 )
-                np.savetxt(csvfilename, np.column_stack([trimbits, y]), delimiter=",", header="Trimbit,Measurement", comments="")
+                np.savetxt(csvfilename, np.column_stack([trimbits, values]), delimiter=",", header="Trimbit,Measurement", comments="")
                 csvfiles.append(csvfilename)
                 plt.figure()
-                plt.plot(trimbits, y, "-o", label=pin)
+                plt.plot(trimbits, values, "-o", label=name)
                 plt.xlabel("Trimbit")
                 plt.ylabel("Measurement (V)")
-                plt.title(f"Trimbit Scan for {pin}")
+                plt.title(f"Trimbit Scan for {name}")
                 plt.grid(True)
                 plt.legend()
                 plt.savefig(svgfilename)
                 plt.close()
-                self.figurelist.setdefault(pin, []).append(svgfilename)
+                self.figurelist.setdefault(name, []).append(svgfilename)
         return csvfiles
 
     def IVCurveFinished(self, test: str, measure: dict):
@@ -1878,7 +1853,7 @@ created by Ph2_ACF is empty."
             )
 
             # Generate CSVs and get the list
-            csvfiles = self.makeTrimbitScanPlots(self.ADCmeasurements)
+            csvfiles = self.makeTrimbitScanPlots(self.ADCmeasurements, self.pin_mapping)
             Trimbit_CSV_to_ROOT(
                 moduleName, module_canvas_path, csvfiles, self.output_dir
             )
