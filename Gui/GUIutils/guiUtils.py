@@ -440,7 +440,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
             # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
             for chip in module.getChips().values():
-                print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
+                logger.info("chip %s status is %s", chip.getID(), chip.getStatus())
                 FEChip = FE()
                 if (module.getModuleName(), module.getFMCPort(), chip.getID()) in txt_files.keys():
                     txt_file = txt_files[module.getModuleName(), module.getFMCPort(), chip.getID()]
@@ -469,9 +469,9 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                     logger.warning(f"Test name {testName} not found in FELaneConfig_Dict.")
 
                 if 'trimbit_dict' in arg:
-                    print('Setting VDDA to {0}'.format(arg['trimbit_dict'][int(chip.getID())][0]))
+                    logger.info('Setting VDDA to %s', arg['trimbit_dict'][int(chip.getID())][0])
                     FEChip.VDDAtrim = arg['trimbit_dict'][int(chip.getID())][0]
-                    print('Setting VDDD to {0}'.format(arg['trimbit_dict'][int(chip.getID())][1]))
+                    logger.info('Setting VDDD to %s', arg['trimbit_dict'][int(chip.getID())][1])
                     FEChip.VDDDtrim = arg['trimbit_dict'][int(chip.getID())][1]
                 else:
                     FEChip.VDDAtrim = chip.getVDDA()

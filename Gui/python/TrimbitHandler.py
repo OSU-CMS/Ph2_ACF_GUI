@@ -1,6 +1,6 @@
 
 """
-Threaded handler for TrimbitScan, replicating the logic from TestHandler but using QThread for responsiveness and abort support.
+Class to perform the Trimbit curve scanning
 """
 from PyQt5.QtCore import QThread, pyqtSignal, QObject, QProcess
 from Gui.python.logging_config import logger
@@ -113,7 +113,7 @@ class TrimbitCurveWorker(QThread):
         Add_VDDD = 0
         for pin, name in self.pin_mapping.items():
             # Check pin is in measured chip
-            print("Pin: {0}, Name: {1}, Chip: {2}".format(pin, name, chip))
+            logger.info("Pin: {0}, Name: {1}, Chip: {2}".format(pin, name, chip))
             if name.endswith(str(chip)):
                 measurement = self.adc_board.query_channel(pin)
                 if name.startswith("VDDA"):
