@@ -329,6 +329,10 @@ class ChipBox(QWidget):
     def getVREF(self, pChipID):
         VREFthing = self.chipData[pChipID]["VREF"]
         return VREFthing
+    
+    def getCINJ(self, pChipID):
+        CINJthing = self.chipData[pChipID]["CINJ"]
+        return CINJthing
 
     def getChipData(self):
         return self.chipData
@@ -771,9 +775,15 @@ class BeBoardBox(QWidget):
                     vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
                 except Exception:
                     vref_value = 0.8
-            
                 Module.getChips()[chipID].setVREF(
-                    int(round(1000 * vref_value))
+                    (1000 * vref_value)
+                )
+                try:
+                    cinj_value = float(self.ChipWidgetDict[module].getCINJ(chipID))
+                except Exception:
+                    cinj_value = 8
+                Module.getChips()[chipID].setCINJ(
+                    (10 * cinj_value)
                 )
 
             # Add the QtModule object to the currently selected Optical Group
