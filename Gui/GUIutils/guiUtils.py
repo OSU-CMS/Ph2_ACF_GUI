@@ -67,7 +67,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files: dict, **arg):
 
             # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
             for chip in module.getChips().values():
-                print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
+                logger.info("chip %s status is %s", chip.getID(), chip.getStatus())
                 FEChip = FE()
                 if (
                     module.getModuleName(),
@@ -105,8 +105,18 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files: dict, **arg):
                         f"Test name {testName} not found in FELaneConfig_Dict."
                     )
 
-                FEChip.VDDAtrim = chip.getVDDA()
-                FEChip.VDDDtrim = chip.getVDDD()
+                if "trimbit_dict" in arg:
+                    logger.info(
+                        "Setting VDDA to %s", arg["trimbit_dict"][int(chip.getID())][0]
+                    )
+                    FEChip.VDDAtrim = arg["trimbit_dict"][int(chip.getID())][0]
+                    logger.info(
+                        "Setting VDDD to %s", arg["trimbit_dict"][int(chip.getID())][1]
+                    )
+                    FEChip.VDDDtrim = arg["trimbit_dict"][int(chip.getID())][1]
+                else:
+                    FEChip.VDDAtrim = chip.getVDDA()
+                    FEChip.VDDDtrim = chip.getVDDD()
                 FEChip.EfuseID = chip.getEfuseID()
                 HyBridModule0.AddFE(FEChip)
             HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
