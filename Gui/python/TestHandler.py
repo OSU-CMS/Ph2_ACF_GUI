@@ -383,6 +383,9 @@ class TestHandler(QObject):
                     self.boardType, self.moduleVersion
                 )
                 print("Getting config file {0}".format(self.rd53_file[key]))
+        logger.debug("Setting up RD53Config")
+        logger.debug(f"{self.input_dir=}")
+        logger.debug(f"{self.output_dir=}")
 
         # At first there should be no input_dir and we should be grabbing the default txt files.
         # After the first test, we should see values or input_dir and output_dir signifiying that the txt files are being updated.
@@ -649,6 +652,12 @@ class TestHandler(QObject):
 
         self.updateOptimizedXMLValues()
         self.configTest()
+
+        logger.debug(f"{self.output_dir=}")
+        logger.debug(f"{self.input_dir=}")
+
+        self.outputFile = self.output_dir + "/output.txt"
+        self.errorFile = self.output_dir + "/error.txt"
 
         # Make sure that the GUI is not trying to write to the root directory
         try:
@@ -922,9 +931,16 @@ class TestHandler(QObject):
         # else:
         #     self.outputfile = open(self.outputFile, "w")
 
-        for process in self.info_processes:
+        working_directory = (
+            os.environ.get("PH2ACF_BASE_DIR") + f"/test/{fc7.getBoardName()}"
+        )
+        if not os.path.isdir(working_directory):
+            os.mkdir(working_directory)
+
+        # TODO: Can probably change where each process is running from right here
+        for process, fc7 in zip(self.info_processes, self.firmware):
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+            process.setWorkingDirectory(working_directory)
 
         """
         if self.currentTest == ["exampletest"]:               #for tests needing -c
@@ -964,11 +980,11 @@ class TestHandler(QObject):
 
         for process in self.run_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+            process.setWorkingDirectory(working_directory)
 
         for process in self.fw_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+            process.setWorkingDirectory(working_directory)
 
         if self.currentTest == "CommunicationTest":
             for process, firmware in zip(self.run_processes, self.firmware):
@@ -985,6 +1001,8 @@ class TestHandler(QObject):
                         f"CMSIT_{firmware.getBoardName()}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                        "-t",
+                        "5",
                     ],
                 )
         elif self.currentTest == "TrimbitScan":
@@ -1212,8 +1230,9 @@ created by Ph2_ACF is empty."
             elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
                 os.system(
-                    "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                    "cp {0}/{1}/test/Results/Run{2}_MonitorDQM.root {3}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
+                        self.firmware[processIndex].getBoardName(),
                         self.RunNumber,
                         os.path.join(self.output_dir, self.firmware[processIndex].getBoardName()),
                     )
@@ -1618,8 +1637,11 @@ created by Ph2_ACF is empty."
         
     #     self.readingOutput = False
 
+
     @QtCore.pyqtSlot()
-    def on_readyReadStandardOutput_GADC(self, process:QProcess, fc7_index:int, upOrDown:str, current, channel): 
+    def on_readyReadStandardOutput_GADC(
+        self, process: QProcess, fc7_index: int, upOrDown: str, current, channel
+    ):
         if self.readingOutput:
             print("Thread competition detected")
             return
@@ -1842,6 +1864,9 @@ created by Ph2_ACF is empty."
         elif measurementType == "TrimbitScan":
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(stepSize)
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.SLDOProgressValue)
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
         for module in self.modules:
