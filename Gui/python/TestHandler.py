@@ -306,11 +306,9 @@ class TestHandler(QObject):
     def configTest(self, **kwargs):
         # Gets the run number by reading from the RunNumber.txt file.
         try:
-            for fc7 in self.firmware:
-                RunNumberFileName = (
-                    os.environ.get("PH2ACF_BASE_DIR")
-                    + f"/test/{fc7.getBoardName()}/RunNumber.txt"
-                )
+            RunNumberFileName = (
+                os.environ.get("PH2ACF_BASE_DIR") + "/test/RunNumber.txt"
+            )
             if os.path.isfile(RunNumberFileName):
                 runNumberFile = open(RunNumberFileName, "r")
                 runNumberText = runNumberFile.readlines()
@@ -339,9 +337,6 @@ class TestHandler(QObject):
                     self.boardType, self.moduleVersion
                 )
                 print("Getting config file {0}".format(self.rd53_file[key]))
-        logger.debug("Setting up RD53Config")
-        logger.debug(f"{self.input_dir=}")
-        logger.debug(f"{self.output_dir=}")
 
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
@@ -581,11 +576,6 @@ class TestHandler(QObject):
             )
 
     def runSingleTest(self, testName, nextTest=None):
-        # config_output_dir is setup really weird where it only creates a directory if self.output_dir and self.input_dir
-        # aren't already set. So I will set them here to ensure that they are set correctly
-        self.output_dir = ...
-        self.input_dir = ...
-
         if "analyze" in testName.lower():
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
@@ -616,9 +606,6 @@ class TestHandler(QObject):
         self.updateOptimizedXMLValues()
         self.configTest()
 
-        logger.debug(f"{self.output_dir=}")
-        logger.debug(f"{self.input_dir=}")
-
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
 
@@ -631,10 +618,10 @@ class TestHandler(QObject):
             )
             raise
 
-        if os.path.exists(self.outputFile):
-            self.outputfile = open(self.outputFile, "a")
-        else:
-            self.outputfile = open(self.outputFile, "w")
+        # if os.path.exists(self.outputFile):
+        #     self.outputfile = open(self.outputFile, "a")
+        # else:
+        #     self.outputfile = open(self.outputFile, "w")
 
         if testName == "SLDOScan_GADC":
             starting_voltages = [
@@ -889,21 +876,14 @@ class TestHandler(QObject):
         self.tempindex = 0
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
-        if os.path.exists(self.outputFile):
-            self.outputfile = open(self.outputFile, "a")
-        else:
-            self.outputfile = open(self.outputFile, "w")
+        # if os.path.exists(self.outputFile):
+        #     self.outputfile = open(self.outputFile, "a")
+        # else:
+        #     self.outputfile = open(self.outputFile, "w")
 
-        working_directory = (
-            os.environ.get("PH2ACF_BASE_DIR") + f"/test/{fc7.getBoardName()}"
-        )
-        if not os.path.isdir(working_directory):
-            os.mkdir(working_directory)
-
-        # TODO: Can probably change where each process is running from right here
-        for process, fc7 in zip(self.info_processes, self.firmware):
+        for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(working_directory)
+            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
         """
         if self.currentTest == ["exampletest"]:               #for tests needing -c
@@ -943,11 +923,11 @@ class TestHandler(QObject):
 
         for process in self.run_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(working_directory)
+            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
         for process in self.fw_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(working_directory)
+            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
         if self.currentTest == "CommunicationTest":
             for process, firmware in zip(self.run_processes, self.firmware):
@@ -1160,34 +1140,31 @@ created by Ph2_ACF is empty."
             return
 
         try:
-            # TODO: Probably hav to change directory here
             if self.RunNumber == "-1":
                 os.system(
-                    "cp {0}/{1}/test/Results/Run000000*.root {2}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.firmware[processIndex].getBoardName(),
-                        self.output_dir,
+                    "cp {0}/test/Results/Run000000*.root {1}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
                     )
                 )
 
             elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
                 os.system(
-                    "cp {0}/{1}/test/Results/Run{2}_MonitorDQM.root {3}/".format(
+                    "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
-                        self.firmware[processIndex].getBoardName(),
                         self.RunNumber,
                         self.output_dir,
                     )
                 )
             else:
-                self.copyMostRecentRootFile(
-                    self.RunNumber,
-                    os.environ.get("PH2ACF_BASE_DIR")
-                    + f"/{self.firmware[processIndex].getBoardName()}/test/Results",
-                    self.output_dir,
-                    self.currentTest,
-                )
+                for fc7 in self.firmware:
+                    self.copyMostRecentRootFile(
+                        self.RunNumber,
+                        os.environ.get("PH2ACF_BASE_DIR")
+                        + f"/test/{fc7.getBoardName()}",
+                        self.output_dir,
+                        self.currentTest,
+                    )
 
         except Exception as e:
             logger.error(e)
@@ -1208,7 +1185,10 @@ created by Ph2_ACF is empty."
         alltext = (
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
-        self.outputfile.write(alltext)
+
+        mode = "a" if os.path.exists(self.outputFile) else "w"
+        with open(self.outputFile, mode) as outputfile:
+            outputfile.write(alltext)
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1503,16 +1483,13 @@ created by Ph2_ACF is empty."
     # Reads data that is normally printed to the terminal and saves it to the output file
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_info(self, processIndex: int):
-        if os.path.exists(self.outputFile):
-            outputfile = open(self.outputFile, "a")
-        else:
-            outputfile = open(self.outputFile, "w")
-
         alltext = (
             self.info_processes[processIndex].readAllStandardOutput().data().decode()
         )
-        outputfile.write(alltext)
-        outputfile.close()
+
+        mode = "a" if os.path.exists(self.outputFile) else "w"
+        with open(self.outputFile, mode) as outputfile:
+            outputfile.write(alltext)
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1574,7 +1551,9 @@ created by Ph2_ACF is empty."
         self.readingOutput = True
 
         alltext = process.readAllStandardOutput().data().decode()
-        self.outputfile.write(alltext)
+
+        with open(self.outputFile, mode) as outputfile:
+            outputfile.write(alltext)
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1644,8 +1623,6 @@ created by Ph2_ACF is empty."
 
     @QtCore.pyqtSlot()
     def on_finish(self, processIndex: int):
-        # TODO Gather outputfile some other way without using self like this
-        # self.outputfile.close()
         # While the process is killed:
 
         if self.halt:
