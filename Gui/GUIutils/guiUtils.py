@@ -377,7 +377,7 @@ def CheckXMLValue(pFilename, pAttribute):
 ##########################################################################
 
 
-def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
+def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files: dict, **arg):
     outputFile = f"{outputDir}/CMSIT_{BeBoard.getBoardName()}_{testName}.xml"
     print(outputFile)
 
@@ -403,10 +403,10 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
             moduleType = module.getModuleType()
             hdiVersion = module.getHDIVersion()
             registerKey = "{0}_HDIv{1}".format(moduleType.replace(" ", "_"), hdiVersion)
-            print('register key is {0}'.format(registerKey))
+            print("register key is {0}".format(registerKey))
             RegisterSettingsList = RegisterSettings_dict[registerKey]
             print("I see that the hdi version is {0}".format(hdiVersion))
-            
+
             RxPolarities = (
                 "1"
                 if "CROC" in moduleType
@@ -416,13 +416,16 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 if "CROC" in moduleType
                 else None
             )
-            #revPolarity = bool(int(RxPolarities))
-
+            # revPolarity = bool(int(RxPolarities))
 
             FESettings_Dict = (
-                {test_key: FESettings_DictB.get(registerKey, FESettingsB_dict) for test_key in HWSettings_DictB}
-                if "CROC" in moduleType else FESettings_DictA
-            ) 
+                {
+                    test_key: FESettings_DictB.get(registerKey, FESettingsB_dict)
+                    for test_key in HWSettings_DictB
+                }
+                if "CROC" in moduleType
+                else FESettings_DictA
+            )
             globalSettings_Dict = (
                 globalSettings_DictB if "CROC" in moduleType else globalSettings_DictA
             )
@@ -430,11 +433,13 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 HWSettings_DictB if "CROC" in moduleType else HWSettings_DictA
             )
             FELaneConfig_Dict = FELaneConfig_DictB[registerKey]
-               
-            if FELaneConfig_Dict is None:
-                logger.error(f"No FELaneConfig found for module type {module.getModuleType()}.")
 
-#####
+            if FELaneConfig_Dict is None:
+                logger.error(
+                    f"No FELaneConfig found for module type {module.getModuleType()}."
+                )
+
+            #####
             boardtype = (
                 "RD53B" + module.getModuleVersion() if "CROC" in moduleType else "RD53A"
             )
@@ -443,8 +448,14 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
             for chip in module.getChips().values():
                 print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
                 FEChip = FE()
-                if (module.getModuleName(), module.getFMCPort(), chip.getID()) in txt_files.keys():
-                    txt_file = txt_files[module.getModuleName(), module.getFMCPort(), chip.getID()]
+                if (
+                    module.getModuleName(),
+                    module.getFMCPort(),
+                    chip.getID(),
+                ) in txt_files.keys():
+                    txt_file = txt_files[
+                        module.getModuleName(), module.getFMCPort(), chip.getID()
+                    ]
                 else:
                     txt_file = "CMSIT_RD53_{0}_{1}_{2}.txt".format(
                         module.getModuleName(), module.getFMCPort(), chip.getID()
@@ -462,13 +473,16 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 )
 
                 chip_settings = FESettings_Dict[testName][registerKey].copy()
-                chip_settings['VREF_ADC'] = chip.getVREF()
+                chip_settings["VREF_ADC"] = chip.getVREF()
+                chip_settings["INJ_CAP"] = (
+                    chip.getCINJ()
+                )  # Can uncomment once INJ_CAP is implemented into the dictionary for the XML
                 FEChip.ConfigureFE(chip_settings)
-            
+
                 if testName in FELaneConfig_Dict:
-                        FEChip.ConfigureLaneConfig(
-                            FELaneConfig_Dict[testName][int(chip.getLane())]
-                        )
+                    FEChip.ConfigureLaneConfig(
+                        FELaneConfig_Dict[testName][int(chip.getLane())]
+                    )
                 else:
                     logger.warning(
                         f"Test name {testName} not found in FELaneConfig_Dict."
@@ -509,153 +523,3 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
     GenerateHWDescriptionXML(HWDescription0, outputFile, boardtype)
 
     return outputFile
-
-
-##########################################################################
-##  Functions for setting up XML and RD53 configuration (END)
-##########################################################################
-
-# FIXME: automate this in runTest
-# def retrieve_result_plot(result_dir, result_file, plot_file, output_file):
-# 	os.system("root -l -b -q 'extractPlots.cpp(\"{0}\", \"{1}\", \"{2}\")'".format(result_dir+result_file, plot_file, output_file))
-# 	result_image = tk.Image('photo', file=output_file) #FIXME: update to using pillow
-# 	return result_image
-
-##########################################################################
-##########################################################################
-
-
-class LogParser:
-    def __init__(self):
-        self.error_message = ""
-        self.results_location = ""
-
-    def getGrade(self, file):
-        pass
-
-
-##########################################################################
-##  Functions for ROOT TBrowser
-##########################################################################
-
-
-def GetTBrowser(DQMFile):
-    Popen(
-        "{0}/Gui/GUIUtils/runBrowser.sh {1} {2}".format(
-            os.environ.get("GUI_dir"),
-            os.environ.get("GUI_dir") + "/Gui/GUIUtils",
-            str(DQMFile),
-        ),
-        shell=True,
-        stdout=PIPE,
-        stderr=PIPE,
-    )
-
-
-##########################################################################
-##  Functions for ROOT TBrowser (END)
-##########################################################################
-
-
-def isCompositeTest(TestName):
-    if TestName in CompositeTests.keys():
-        return True
-    else:
-        return False
-
-
-def isSingleTest(TestName):
-    if TestName in Test_to_Ph2ACF_Map.keys():
-        return True
-    else:
-        return False
-
-
-def formatter(DirName, columns, **kwargs):
-    dirName = DirName.split("/")[-1]
-    ReturnList = []
-    ReturnDict = {}
-    Module_ID = None
-    recheckFlag = False
-    for column in columns:
-        if column == "id":
-            ReturnList.append("")
-        if column == "part_id":
-            if "part_id" in kwargs.keys():
-                Module_ID = kwargs["part_id"]
-                ReturnList.append(Module_ID)
-                ReturnDict.update({"part_id": Module_ID})
-            else:
-                Module = dirName.split("_")[1]
-                if "Module" in Module:
-                    Module_ID = Module.lstrip("Module")
-                    ReturnList.append(Module_ID)
-                    ReturnDict.update({"part_id": Module_ID})
-                else:
-                    Module_ID = "-1"
-                    ReturnList.append(Module_ID)
-                    ReturnDict.update({"part_id": Module_ID})
-        if column == "user":
-            ReturnList.append("local")
-            ReturnDict.update({"user": "local"})
-        if column == "test_id":
-            pass
-        if column == "test_name":
-            ReturnList.append(dirName.split("_")[-3])
-            ReturnDict.update({"test_name": dirName.split("_")[-3]})
-        if column == "test_grade":
-            if Module_ID is not None:
-                gradeFileName = "{}/Grade_Module{}.txt".format(DirName, Module_ID)
-                if os.path.isfile(gradeFileName):
-                    gradeFile = open(gradeFileName, "r")
-                    content = gradeFile.readlines()
-                    Grade = float(content[-1].split(" ")[-1])
-                else:
-                    Grade = -1
-            else:
-                Grade = -1
-                recheckFlag = True
-            ReturnList.append(Grade)
-            ReturnDict.update({"test_grade": Grade})
-        if column == "date":
-            if str(sys.version).split(" ")[0].startswith(("3.7", "3.8", "3.9")):
-                TimeStamp = datetime.fromisoformat(dirName.split("_")[-2])
-            elif str(sys.version).split(" ")[0].startswith(("3.6")):
-                TimeStamp = datetime.strptime(
-                    dirName.split("_")[-2].split(".")[0], "%Y-%m-%dT%H:%M:%S"
-                )
-            ReturnList.append(TimeStamp)
-            ReturnDict.update({"date": TimeStamp})
-        if column == "test_id":
-            data_id = ""
-            ReturnList.append(data_id)
-            ReturnDict.update({"test_id": data_id})
-
-        # if column == "description":
-        # 	ReturnList.append("")
-        # if column == "type":
-        # 	ReturnList.append("")
-
-    if recheckFlag:
-        if "part_id" in columns:
-            try:
-                indexModule = columns.index("part_id")
-                indexGrade = columns.index("test_grade")
-                Module_ID = ReturnList[indexModule]
-                gradeFileName = "{}/Grade_Module{}.txt".format(DirName, Module_ID)
-                if os.path.isfile(gradeFileName):
-                    gradeFile = open(gradeFileName, "r")
-                    content = gradeFile.readlines()
-                    Grade = float(content[-1].split(" ")[-1])
-                    ReturnList[indexGrade] = Grade
-                else:
-                    ReturnList[indexGrade] = -1
-            except Exception:
-                print("recheck failed")
-        else:
-            pass
-
-    ReturnList.append(DirName)
-    # ReturnDict.update({"localFile":DirName})
-    return ReturnList
-    # return ReturnDict
