@@ -1,0 +1,2699 @@
+|06:25:06|I|       ____  _     ____         _    ____ _____
+|06:25:06|I|      |  _ \| |__ |___ \       / \  / ___|  ___|
+|06:25:06|I|      | |_) | '_ \  __) |____ / _ \| |   | |_
+|06:25:06|I|      |  __/| | | |/ __/_____/ ___ \ |___|  _|
+|06:25:06|I|      |_|   |_| |_|_____|   /_/   \_\____|_|
+
+|06:25:06|I|  ____ __  __ ____ ___ _____          _       _ ____    _    ___
+|06:25:06|I| / ___|  \/  / ___|_ _|_   _| __ ___ (_)_ __ (_)  _ \  / \  / _ \
+|06:25:06|I|| |   | |\/| \___ \| |  | || '_ ` _ \| | '_ \| | | | |/ _ \| | | |
+|06:25:06|I|| |___| |  | |___) | |  | || | | | | | | | | | | |_| / ___ \ |_| |
+|06:25:06|I| \____|_|  |_|____/___| |_||_| |_| |_|_|_| |_|_|____/_/   \_\__\_\
+
+|06:25:06|I|@@@ Initializing the Hardware @@@
+|06:25:06|I|Bootstrapping TCP Server...
+|06:25:06|I|Trying to connect to the Power Supply Server...
+|06:25:06|I|	--> Operation completed
+|06:25:06|I|@@@ Configuring HW parsed from XML file @@@
+|06:25:06|I|Found an Inner Tracker Readout-board
+|06:25:06|I|	--> SW commit number : f990796e474d8024b1d3b24fe7d7f3c28aaa7079 -- SW tag : v6-12
+|06:25:06|I|	--> FW version : 5.0 -- Date (yy/mm/dd) : 25/1/20 -- Time (hour:minute:sec) : 19:25:43
+|06:25:06|I|	--> Link type : electrical -- Optical speed : 10 Gbit/s -- Frontend type : RD53B
+|06:25:06|I|	--> L12 FMC type : 1 -- L08 FMC type : 1 (1=KSU, 2=CERN, 3=DIO5, 4=OPTO, 5=FERMI, 7=NONE, 0=Unspecified)
+|06:25:06|I|Initializing DIO5
+|06:25:06|I|	--> Done
+|06:25:06|I|Reading clock generator (CDCE62005) configuration
+|06:25:06|I|	--> SPI register content: 0xEB840320
+|06:25:06|I|	--> SPI register content: 0xEB020321
+|06:25:06|I|	--> SPI register content: 0xEB840302
+|06:25:06|I|	--> SPI register content: 0xEB840303
+|06:25:06|I|	--> SPI register content: 0xEB140334
+|06:25:06|I|	--> SPI register content: 0x113C0CF5
+|06:25:06|I|	--> SPI register content: 0x33041BE6
+|06:25:06|I|	--> SPI register content: 0xBD800DF7
+|06:25:06|I|	--> SPI register content: 0x40009D78
+|06:25:06|I|Aurora speed set to: 1.28 Gbit/s
+|06:25:06|I|Input clock frequency (could be either internal or external, should be ~40 MHz): 40.079 MHz
+|06:25:06|I|GTX receiver clock frequency (~160 MHz (~320 MHz) for electrical - ELE (optical - OPT) readout): 160.314 MHz
+|06:25:06|I|@@@ Configuring frontend for Board Id: 0 @@@
+|06:25:06|I|Internal trigger frequency (if enabled): 7461 Hz
+|06:25:06|I|=== Configuring FSM fast command block ===
+|06:25:06|I|Checking firmware status:
+|06:25:06|I|	--> Clock generator is locked
+|06:25:06|I|Fast command block trigger source: 2 (1=IPBus, 2=Test-FSM, 3=TTC, 4=TLU, 5=External, 6=Hit-Or, 7=User-defined frequency)
+|06:25:06|I|Fast command block trigger state: 0 (0=Idle, 2=Running)
+|06:25:06|I|Fast command block check if configuraiton registers have been set: configured
+|06:25:06|I|Fast command block error code (0=No error): 0
+|06:25:06|I|Trigger counter: 0
+|06:25:06|I|Hybrid type: 4 (1=Single chip, 2=Dual chip, 4=Quad chip)
+|06:25:06|I|Number of hybrids which can be potentially readout: 5
+|06:25:06|I|================== Done ==================
+|06:25:06|I|Initializing board's registers
+|06:25:06|I|	--> user.ctrl_regs.Aurora_block.self_trigger_en: 0x0 (0)
+|06:25:06|I|	--> user.ctrl_regs.cnf_cmd_ctrl.nb_slow_cmd_before_pll: 0x0 (0)
+|06:25:06|I|	--> user.ctrl_regs.cnf_cmd_ctrl.nb_slow_cmd_before_sync: 0x0 (0)
+|06:25:06|I|	--> user.ctrl_regs.ext_tlu_reg1.dio5_ch1_thr: 0x80 (128)
+|06:25:06|I|	--> user.ctrl_regs.ext_tlu_reg1.dio5_ch2_thr: 0x28 (40)
+|06:25:06|I|	--> user.ctrl_regs.ext_tlu_reg2.dio5_ch3_thr: 0x80 (128)
+|06:25:06|I|	--> user.ctrl_regs.ext_tlu_reg2.dio5_ch4_thr: 0x80 (128)
+|06:25:06|I|	--> user.ctrl_regs.ext_tlu_reg2.dio5_ch5_thr: 0x80 (128)
+|06:25:06|I|	--> user.ctrl_regs.ext_tlu_reg2.tlu_delay: 0x0 (0)
+|06:25:06|I|	--> user.ctrl_regs.fast_cmd_reg_2.HitOr_enable_l12: 0x0 (0)
+|06:25:06|I|	--> user.ctrl_regs.fast_cmd_reg_2.trigger_source: 0x2 (2)
+|06:25:06|I|	--> user.ctrl_regs.fast_cmd_reg_3.triggers_to_accept: 0xA (10)
+|06:25:06|I|	--> user.ctrl_regs.fast_cmd_reg_7.autozero_freq: 0x3E8 (1000)
+|06:25:06|I|	--> user.ctrl_regs.gtx_rx_polarity.fmc_l12: 0x3E9 (1001)
+|06:25:06|I|	--> user.ctrl_regs.gtx_rx_polarity.fmc_l8: 0x22 (34)
+|06:25:06|I|	--> user.ctrl_regs.reset_reg.ext_clk_en: 0x0 (0)
+|06:25:06|I|	--> user.ctrl_regs.reset_reg.nb_of_pll_words: 0x2 (2)
+|06:25:06|I|	--> user.ctrl_regs.reset_reg.nb_of_sync_words: 0x2 (2)
+|06:25:06|I|	--> Done
+|06:25:06|I|Checking status of the optical links:
+|06:25:06|I|	--> Optical link n. active LpGBT chip tx:    0, i.e.: 00000000
+|06:25:06|I|	--> Optical link n. active LpGBT chip rx:    0, i.e.: 00000000
+|06:25:06|I|	--> Optical link n. active LpGBT chip mgt:   0, i.e.: 00000000
+|06:25:06|I|=== Configuring frontend chip communication ===
+|06:25:06|I|Down-link phase initialization...
+|06:25:06|I|	--> Done
+|06:25:06|I|Initializing chip communication of hybrid: 0
+|06:25:06|I|Initializing communication to/from RD53: 12
+|06:25:06|I|Configuring up-link lanes and monitoring...
+|06:25:06|I|	--> Done
+|06:25:06|I|Initializing communication to/from RD53: 13
+|06:25:06|I|Configuring up-link lanes and monitoring...
+|06:25:07|I|	--> Done
+|06:25:07|I|==================== Done =====================
+|06:25:07|I|Checking status communication RD53 --> FW
+|06:25:07|I|	--> Total number of required data lanes: 2, i.e. 00000000000000000000000000001010
+|06:25:07|I|	--> Total number of active data lanes:   2, i.e. 00000000000000000000000000001010
+|06:25:07|I|	--> All enabled data lanes are active
+|06:25:07|I|===== Configuring frontend chip registers =====
+|06:25:07|I|Configuring chips of hybrid: 0
+|06:25:07|I|Configuring RD53: 12
+|06:25:07|D|	--> Succesfully configured chip register DataConcentratorConf
+|06:25:07|D|	--> Succesfully configured chip register CoreColEncoderConf
+|06:25:07|D|	--> Succesfully configured chip register RingOscConfig
+|06:25:07|D|	--> Succesfully configured chip register RingOscConfig
+|06:25:07|D|	--> Succesfully configured chip register SelfTriggerMultiplier
+|06:25:07|D|	--> Succesfully configured chip register CLK_DATA_DELAY
+|06:25:07|D|	--> Succesfully configured chip register ToTDualEdgeCount
+|06:25:07|D|	--> Succesfully configured chip register SEL_CAL_RANGE
+|06:25:07|D|	--> Succesfully configured chip register HIT_SAMPLE_MODE
+|06:25:07|D|	--> Succesfully configured chip register CDR_CONFIG_SEL_PD
+|06:25:07|D|	--> Succesfully configured chip register EnOutputDataChipId
+|06:25:07|D|	--> Succesfully configured chip register VOLTAGE_TRIM_ANA
+|06:25:07|D|	--> Succesfully configured chip register GP_LVDS_ROUTE_1
+|06:25:07|D|	--> Succesfully configured chip register ToT6to4Mapping
+|06:25:07|D|	--> Succesfully configured chip register EnIsolatedHitRemoval_0
+|06:25:07|D|	--> Succesfully configured chip register EnIsolatedHitRemoval_1
+|06:25:07|D|	--> Succesfully configured chip register DAC_GDAC_M_LIN
+|06:25:07|D|	--> Succesfully configured chip register EN_CORE_COL_CAL_0
+|06:25:07|D|	--> Succesfully configured chip register EN_CORE_COL_CAL_1
+|06:25:07|D|	--> Succesfully configured chip register SelfTriggerEn
+|06:25:07|D|	--> Succesfully configured chip register EN_CORE_COL_CAL_3
+|06:25:07|D|	--> Succesfully configured chip register HITOR_2_CNT
+|06:25:07|D|	--> Succesfully configured chip register PrecisionToTEnable_0
+|06:25:07|D|	--> Succesfully configured chip register PrecisionToTEnable_1
+|06:25:07|D|	--> Succesfully configured chip register DAC_FC_LIN
+|06:25:07|D|	--> Succesfully configured chip register HITOR_MASK_2
+|06:25:07|D|	--> Succesfully configured chip register PrecisionToTEnable_2
+|06:25:07|D|	--> Succesfully configured chip register EN_CORE_COL_1
+|06:25:07|D|	--> Succesfully configured chip register HITOR_MASK_0
+|06:25:07|D|	--> Succesfully configured chip register DAC_COMP_TA_LIN
+|06:25:07|D|	--> Succesfully configured chip register EnHitsRemoval_1
+|06:25:07|D|	--> Succesfully configured chip register DAC_PREAMP_TR_LIN
+|06:25:07|D|	--> Succesfully configured chip register EN_CORE_COL_0
+|06:25:07|D|	--> Succesfully configured chip register SelfTriggerDelay
+|06:25:08|D|	--> Succesfully configured chip register EnHitsRemoval_3
+|06:25:08|D|	--> Succesfully configured chip register EN_CORE_COL_3
+|06:25:08|D|	--> Succesfully configured chip register EnHitsRemoval_0
+|06:25:08|D|	--> Succesfully configured chip register PrecisionToTEnable_3
+|06:25:08|D|	--> Succesfully configured chip register PIXELSEU_CNT
+|06:25:08|D|	--> Succesfully configured chip register ANALOG_INJ_MODE
+|06:25:08|D|	--> Succesfully configured chip register EnIsolatedHitRemoval_3
+|06:25:08|D|	--> Succesfully configured chip register TriggerConfig
+|06:25:08|D|	--> Succesfully configured chip register EnIsolatedHitRemoval_2
+|06:25:08|D|	--> Succesfully configured chip register DAC_GDAC_R_LIN
+|06:25:08|D|	--> Succesfully configured chip register VCAL_HIGH
+|06:25:08|D|	--> Succesfully configured chip register RDWRFIFOERROR_CNT
+|06:25:08|D|	--> Succesfully configured chip register DAC_PREAMP_T_LIN
+|06:25:08|D|	--> Succesfully configured chip register DAC_LDAC_LIN
+|06:25:08|D|	--> Succesfully configured chip register DAC_PREAMP_R_LIN
+|06:25:08|D|	--> Succesfully configured chip register DAC_REF_KRUM_LIN
+|06:25:08|D|	--> Succesfully configured chip register CAL_EDGE_FINE_DELAY
+|06:25:08|D|	--> Succesfully configured chip register HITOR_MASK_1
+|06:25:08|D|	--> Succesfully configured chip register HitOrPatternLUT
+|06:25:08|D|	--> Succesfully configured chip register EnHitsRemoval_2
+|06:25:08|D|	--> Succesfully configured chip register DAC_PREAMP_TL_LIN
+|06:25:08|D|	--> Succesfully configured chip register SKIPPED_TRIGGER_CNT
+|06:25:08|D|	--> Succesfully configured chip register READTRIG_CNT
+|06:25:08|D|	--> Succesfully configured chip register HITOR_MASK_3
+|06:25:08|D|	--> Succesfully configured chip register LOCKLOSS_CNT
+|06:25:08|D|	--> Succesfully configured chip register BITFLIP_WNG_CNT
+|06:25:08|D|	--> Succesfully configured chip register BITFLIP_ERR_CNT
+|06:25:08|D|	--> Succesfully configured chip register CMDERR_CNT
+|06:25:08|D|	--> Succesfully configured chip register GP_LVDS_ROUTE_0
+|06:25:08|D|	--> Succesfully configured chip register DAC_PREAMP_M_LIN
+|06:25:08|D|	--> Succesfully configured chip register HITOR_3_CNT
+|06:25:08|D|	--> Succesfully configured chip register HITOR_1_CNT
+|06:25:08|D|	--> Succesfully configured chip register HITOR_0_CNT
+|06:25:08|D|	--> Succesfully configured chip register GLOBALCONFIGSEU_CNT
+|06:25:08|D|	--> Succesfully configured chip register EN_CORE_COL_2
+|06:25:08|D|	--> Succesfully configured chip register VCAL_MED
+|06:25:08|D|	--> Succesfully configured chip register EN_SEU_COUNT
+|06:25:08|D|	--> Succesfully configured chip register VOLTAGE_TRIM_DIG
+|06:25:08|D|	--> Succesfully configured chip register DAC_GDAC_L_LIN
+|06:25:08|D|	--> Succesfully configured chip register DAC_PREAMP_L_LIN
+|06:25:08|D|	--> Succesfully configured chip register DAC_COMP_LIN
+|06:25:08|D|	--> Succesfully configured chip register EN_CORE_COL_CAL_2
+|06:25:08|D|	--> Succesfully configured chip register MON_ADC_TRIM
+|06:25:08|D|	--> Succesfully configured chip register DAC_KRUM_CURR_LIN
+|06:25:08|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:08|I|Parameters that the user should check from the database:
+|06:25:08|I|	--> VOLTAGE_TRIM_DIG = 7
+|06:25:08|I|	--> VOLTAGE_TRIM_ANA = 8
+|06:25:08|I|	--> Wire bonded chip ID = 12
+|06:25:08|I|	--> Wire bonded Iref = 11
+|06:25:08|D|	--> Succesfully configured chip register EfusesConfig
+|06:25:08|I|	--> Done
+|06:25:08|I|e-fuse code: 56369
+|06:25:08|I|Number of masked pixels: 99
+|06:25:08|I|Configuring RD53: 13
+|06:25:08|D|	--> Succesfully configured chip register DataConcentratorConf
+|06:25:08|D|	--> Succesfully configured chip register CoreColEncoderConf
+|06:25:08|D|	--> Succesfully configured chip register RingOscConfig
+|06:25:08|D|	--> Succesfully configured chip register RingOscConfig
+|06:25:08|D|	--> Succesfully configured chip register SelfTriggerMultiplier
+|06:25:09|D|	--> Succesfully configured chip register CLK_DATA_DELAY
+|06:25:09|D|	--> Succesfully configured chip register ToTDualEdgeCount
+|06:25:09|D|	--> Succesfully configured chip register SEL_CAL_RANGE
+|06:25:09|D|	--> Succesfully configured chip register HIT_SAMPLE_MODE
+|06:25:09|D|	--> Succesfully configured chip register CDR_CONFIG_SEL_PD
+|06:25:09|D|	--> Succesfully configured chip register EnOutputDataChipId
+|06:25:09|D|	--> Succesfully configured chip register VOLTAGE_TRIM_ANA
+|06:25:09|D|	--> Succesfully configured chip register GP_LVDS_ROUTE_1
+|06:25:09|D|	--> Succesfully configured chip register ToT6to4Mapping
+|06:25:09|D|	--> Succesfully configured chip register EnIsolatedHitRemoval_0
+|06:25:09|D|	--> Succesfully configured chip register EnIsolatedHitRemoval_1
+|06:25:09|D|	--> Succesfully configured chip register DAC_GDAC_M_LIN
+|06:25:09|D|	--> Succesfully configured chip register EN_CORE_COL_CAL_0
+|06:25:09|D|	--> Succesfully configured chip register EN_CORE_COL_CAL_1
+|06:25:09|D|	--> Succesfully configured chip register SelfTriggerEn
+|06:25:09|D|	--> Succesfully configured chip register EN_CORE_COL_CAL_3
+|06:25:09|D|	--> Succesfully configured chip register HITOR_2_CNT
+|06:25:09|D|	--> Succesfully configured chip register PrecisionToTEnable_0
+|06:25:09|D|	--> Succesfully configured chip register PrecisionToTEnable_1
+|06:25:09|D|	--> Succesfully configured chip register DAC_FC_LIN
+|06:25:09|D|	--> Succesfully configured chip register HITOR_MASK_2
+|06:25:09|D|	--> Succesfully configured chip register PrecisionToTEnable_2
+|06:25:09|D|	--> Succesfully configured chip register EN_CORE_COL_1
+|06:25:09|D|	--> Succesfully configured chip register HITOR_MASK_0
+|06:25:09|D|	--> Succesfully configured chip register DAC_COMP_TA_LIN
+|06:25:09|D|	--> Succesfully configured chip register EnHitsRemoval_1
+|06:25:09|D|	--> Succesfully configured chip register DAC_PREAMP_TR_LIN
+|06:25:09|D|	--> Succesfully configured chip register EN_CORE_COL_0
+|06:25:09|D|	--> Succesfully configured chip register SelfTriggerDelay
+|06:25:09|D|	--> Succesfully configured chip register EnHitsRemoval_3
+|06:25:09|D|	--> Succesfully configured chip register EN_CORE_COL_3
+|06:25:09|D|	--> Succesfully configured chip register EnHitsRemoval_0
+|06:25:09|D|	--> Succesfully configured chip register PrecisionToTEnable_3
+|06:25:09|D|	--> Succesfully configured chip register PIXELSEU_CNT
+|06:25:09|D|	--> Succesfully configured chip register ANALOG_INJ_MODE
+|06:25:09|D|	--> Succesfully configured chip register EnIsolatedHitRemoval_3
+|06:25:09|D|	--> Succesfully configured chip register TriggerConfig
+|06:25:09|D|	--> Succesfully configured chip register EnIsolatedHitRemoval_2
+|06:25:09|D|	--> Succesfully configured chip register DAC_GDAC_R_LIN
+|06:25:09|D|	--> Succesfully configured chip register VCAL_HIGH
+|06:25:09|D|	--> Succesfully configured chip register RDWRFIFOERROR_CNT
+|06:25:09|D|	--> Succesfully configured chip register DAC_PREAMP_T_LIN
+|06:25:09|D|	--> Succesfully configured chip register DAC_LDAC_LIN
+|06:25:09|D|	--> Succesfully configured chip register DAC_PREAMP_R_LIN
+|06:25:09|D|	--> Succesfully configured chip register DAC_REF_KRUM_LIN
+|06:25:09|D|	--> Succesfully configured chip register CAL_EDGE_FINE_DELAY
+|06:25:09|D|	--> Succesfully configured chip register HITOR_MASK_1
+|06:25:09|D|	--> Succesfully configured chip register HitOrPatternLUT
+|06:25:09|D|	--> Succesfully configured chip register EnHitsRemoval_2
+|06:25:09|D|	--> Succesfully configured chip register DAC_PREAMP_TL_LIN
+|06:25:09|D|	--> Succesfully configured chip register SKIPPED_TRIGGER_CNT
+|06:25:09|D|	--> Succesfully configured chip register READTRIG_CNT
+|06:25:09|D|	--> Succesfully configured chip register HITOR_MASK_3
+|06:25:09|D|	--> Succesfully configured chip register LOCKLOSS_CNT
+|06:25:09|D|	--> Succesfully configured chip register BITFLIP_WNG_CNT
+|06:25:09|D|	--> Succesfully configured chip register BITFLIP_ERR_CNT
+|06:25:09|D|	--> Succesfully configured chip register CMDERR_CNT
+|06:25:09|D|	--> Succesfully configured chip register GP_LVDS_ROUTE_0
+|06:25:09|D|	--> Succesfully configured chip register DAC_PREAMP_M_LIN
+|06:25:09|D|	--> Succesfully configured chip register HITOR_3_CNT
+|06:25:09|D|	--> Succesfully configured chip register HITOR_1_CNT
+|06:25:09|D|	--> Succesfully configured chip register HITOR_0_CNT
+|06:25:09|D|	--> Succesfully configured chip register GLOBALCONFIGSEU_CNT
+|06:25:09|D|	--> Succesfully configured chip register EN_CORE_COL_2
+|06:25:09|D|	--> Succesfully configured chip register VCAL_MED
+|06:25:09|D|	--> Succesfully configured chip register EN_SEU_COUNT
+|06:25:09|D|	--> Succesfully configured chip register VOLTAGE_TRIM_DIG
+|06:25:09|D|	--> Succesfully configured chip register DAC_GDAC_L_LIN
+|06:25:09|D|	--> Succesfully configured chip register DAC_PREAMP_L_LIN
+|06:25:09|D|	--> Succesfully configured chip register DAC_COMP_LIN
+|06:25:09|D|	--> Succesfully configured chip register EN_CORE_COL_CAL_2
+|06:25:09|D|	--> Succesfully configured chip register MON_ADC_TRIM
+|06:25:09|D|	--> Succesfully configured chip register DAC_KRUM_CURR_LIN
+|06:25:09|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:09|I|Parameters that the user should check from the database:
+|06:25:09|I|	--> VOLTAGE_TRIM_DIG = 10
+|06:25:09|I|	--> VOLTAGE_TRIM_ANA = 10
+|06:25:09|I|	--> Wire bonded chip ID = 13
+|06:25:09|I|	--> Wire bonded Iref = 6
+|06:25:09|D|	--> Succesfully configured chip register EfusesConfig
+|06:25:09|I|	--> Done
+|06:25:09|I|e-fuse code: 56625
+|06:25:09|I|Number of masked pixels: 1464
+|06:25:09|I|Optimizing up-link slave-chip phases (if any and if needed) for hybrid: 0
+|06:25:09|I|	--> Done
+|06:25:09|I|==================== Done =====================
+|06:25:09|I|Using 4 threads for data decoding at runtime
+|06:25:09|I|@@@ Hardware initialization done @@@
+|06:25:09|I|
+|06:25:09|I|@@@ Performing PixelAlive scan @@@
+|06:25:09|I|[PixelAlive::localConfigure] Starting run: 67
+|06:25:09|I|	--> Calibration initializing root file...
+|06:25:09|I|[PixelAlive::run] Running detection of Core-Column data corruption
+|06:25:09|I|Results for [board/opticalGroup/hybrid/chip = 0/0/0/12]
+|06:25:11|I|	--> EN_CORE_COL_0 = 0b1111111111111111 (0 = disabled)
+|06:25:11|I|	--> EN_CORE_COL_1 = 0b1111111111111111 (0 = disabled)
+|06:25:11|I|	--> EN_CORE_COL_2 = 0b1111111111111111 (0 = disabled)
+|06:25:11|I|	--> EN_CORE_COL_3 = 0b111111 (0 = disabled)
+|06:25:11|I|	--> Done
+|06:25:11|I|Results for [board/opticalGroup/hybrid/chip = 0/0/0/13]
+|06:25:13|I|	--> EN_CORE_COL_0 = 0b1111111111111111 (0 = disabled)
+|06:25:13|I|	--> EN_CORE_COL_1 = 0b1111111111111111 (0 = disabled)
+|06:25:13|I|	--> EN_CORE_COL_2 = 0b1111111111111111 (0 = disabled)
+|06:25:13|I|	--> EN_CORE_COL_3 = 0b111111 (0 = disabled)
+|06:25:13|I|	--> Done
+|06:25:13|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:13|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:13|I|******* Reading data *******
+|06:25:13|I|n. 32-bit words:       76000
+|06:25:13|I|>>> Progress:       0.3% <<<
+|06:25:13|I|[--------------------------]
+|06:25:13|I|****************************
+|06:25:13|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:13|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:13|I|******* Reading data *******
+|06:25:13|I|n. 32-bit words:       72800
+|06:25:13|I|>>> Progress:       0.6% <<<
+|06:25:13|I|[=-------------------------]
+|06:25:13|I|****************************
+|06:25:13|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:13|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:13|I|******* Reading data *******
+|06:25:13|I|n. 32-bit words:       76000
+|06:25:13|I|>>> Progress:       0.9% <<<
+|06:25:13|I|[-=------------------------]
+|06:25:13|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       72800
+|06:25:14|I|>>> Progress:       1.2% <<<
+|06:25:14|I|[--=-----------------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       76000
+|06:25:14|I|>>> Progress:       1.5% <<<
+|06:25:14|I|[---=----------------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       72800
+|06:25:14|I|>>> Progress:       1.8% <<<
+|06:25:14|I|[----=---------------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       76000
+|06:25:14|I|>>> Progress:       2.1% <<<
+|06:25:14|I|[-----=--------------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       72800
+|06:25:14|I|>>> Progress:       2.4% <<<
+|06:25:14|I|[------=-------------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       76000
+|06:25:14|I|>>> Progress:       2.7% <<<
+|06:25:14|I|[-------=------------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       72800
+|06:25:14|I|>>> Progress:       3.0% <<<
+|06:25:14|I|[--------=-----------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       76000
+|06:25:14|I|>>> Progress:       3.3% <<<
+|06:25:14|I|[---------=----------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       72800
+|06:25:14|I|>>> Progress:       3.6% <<<
+|06:25:14|I|[----------=---------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       76000
+|06:25:14|I|>>> Progress:       3.9% <<<
+|06:25:14|I|[-----------=--------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       72800
+|06:25:14|I|>>> Progress:       4.2% <<<
+|06:25:14|I|[------------=-------------]
+|06:25:14|I|****************************
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:14|I|******* Reading data *******
+|06:25:14|I|n. 32-bit words:       76000
+|06:25:14|I|>>> Progress:       4.5% <<<
+|06:25:14|I|[-------------=------------]
+|06:25:14|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       72800
+|06:25:15|I|>>> Progress:       4.8% <<<
+|06:25:15|I|[--------------=-----------]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       76000
+|06:25:15|I|>>> Progress:       5.1% <<<
+|06:25:15|I|[---------------=----------]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       72800
+|06:25:15|I|>>> Progress:       5.4% <<<
+|06:25:15|I|[----------------=---------]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       75200
+|06:25:15|I|>>> Progress:       5.7% <<<
+|06:25:15|I|[-----------------=--------]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       73600
+|06:25:15|I|>>> Progress:       6.0% <<<
+|06:25:15|I|[------------------=-------]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       76000
+|06:25:15|I|>>> Progress:       6.2% <<<
+|06:25:15|I|[-------------------=------]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       72800
+|06:25:15|I|>>> Progress:       6.5% <<<
+|06:25:15|I|[--------------------=-----]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       76000
+|06:25:15|I|>>> Progress:       6.8% <<<
+|06:25:15|I|[---------------------=----]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       72800
+|06:25:15|I|>>> Progress:       7.1% <<<
+|06:25:15|I|[----------------------=---]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       75200
+|06:25:15|I|>>> Progress:       7.4% <<<
+|06:25:15|I|[-----------------------=--]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|I|******* Reading data *******
+|06:25:15|I|n. 32-bit words:       72800
+|06:25:15|I|>>> Progress:       7.7% <<<
+|06:25:15|I|[------------------------=-]
+|06:25:15|I|****************************
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:15|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       76000
+|06:25:16|I|>>> Progress:       8.0% <<<
+|06:25:16|I|[-------------------------=]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       72800
+|06:25:16|I|>>> Progress:       8.3% <<<
+|06:25:16|I|[-------------------------=]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       76000
+|06:25:16|I|>>> Progress:       8.6% <<<
+|06:25:16|I|[------------------------=-]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       72800
+|06:25:16|I|>>> Progress:       8.9% <<<
+|06:25:16|I|[-----------------------=--]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       75200
+|06:25:16|I|>>> Progress:       9.2% <<<
+|06:25:16|I|[----------------------=---]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       72800
+|06:25:16|I|>>> Progress:       9.5% <<<
+|06:25:16|I|[---------------------=----]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       76000
+|06:25:16|I|>>> Progress:       9.8% <<<
+|06:25:16|I|[--------------------=-----]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       72800
+|06:25:16|I|>>> Progress:      10.1% <<<
+|06:25:16|I|[-------------------=------]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       76000
+|06:25:16|I|>>> Progress:      10.4% <<<
+|06:25:16|I|[------------------=-------]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       72800
+|06:25:16|I|>>> Progress:      10.7% <<<
+|06:25:16|I|[-----------------=--------]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       75200
+|06:25:16|I|>>> Progress:      11.0% <<<
+|06:25:16|I|[----------------=---------]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       72800
+|06:25:16|I|>>> Progress:      11.3% <<<
+|06:25:16|I|[---------------=----------]
+|06:25:16|I|****************************
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:16|I|******* Reading data *******
+|06:25:16|I|n. 32-bit words:       76000
+|06:25:16|I|>>> Progress:      11.6% <<<
+|06:25:16|I|[--------------=-----------]
+|06:25:16|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       72800
+|06:25:17|I|>>> Progress:      11.9% <<<
+|06:25:17|I|[-------------=------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       76000
+|06:25:17|I|>>> Progress:      12.2% <<<
+|06:25:17|I|[------------=-------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       72800
+|06:25:17|I|>>> Progress:      12.5% <<<
+|06:25:17|I|[-----------=--------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       76000
+|06:25:17|I|>>> Progress:      12.8% <<<
+|06:25:17|I|[----------=---------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       72000
+|06:25:17|I|>>> Progress:      13.1% <<<
+|06:25:17|I|[---------=----------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       76000
+|06:25:17|I|>>> Progress:      13.4% <<<
+|06:25:17|I|[--------=-----------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       72800
+|06:25:17|I|>>> Progress:      13.7% <<<
+|06:25:17|I|[-------=------------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       76000
+|06:25:17|I|>>> Progress:      14.0% <<<
+|06:25:17|I|[------=-------------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       72800
+|06:25:17|I|>>> Progress:      14.3% <<<
+|06:25:17|I|[-----=--------------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       75200
+|06:25:17|I|>>> Progress:      14.6% <<<
+|06:25:17|I|[----=---------------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       72000
+|06:25:17|I|>>> Progress:      14.9% <<<
+|06:25:17|I|[---=----------------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:17|I|******* Reading data *******
+|06:25:17|I|n. 32-bit words:       76000
+|06:25:17|I|>>> Progress:      15.2% <<<
+|06:25:17|I|[--=-----------------------]
+|06:25:17|I|****************************
+|06:25:17|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       72800
+|06:25:18|I|>>> Progress:      15.5% <<<
+|06:25:18|I|[-=------------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       76000
+|06:25:18|I|>>> Progress:      15.8% <<<
+|06:25:18|I|[=-------------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       72800
+|06:25:18|I|>>> Progress:      16.1% <<<
+|06:25:18|I|[=-------------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       76000
+|06:25:18|I|>>> Progress:      16.4% <<<
+|06:25:18|I|[-=------------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       72800
+|06:25:18|I|>>> Progress:      16.7% <<<
+|06:25:18|I|[--=-----------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       76000
+|06:25:18|I|>>> Progress:      17.0% <<<
+|06:25:18|I|[---=----------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       72800
+|06:25:18|I|>>> Progress:      17.3% <<<
+|06:25:18|I|[----=---------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       76000
+|06:25:18|I|>>> Progress:      17.6% <<<
+|06:25:18|I|[-----=--------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       72800
+|06:25:18|I|>>> Progress:      17.9% <<<
+|06:25:18|I|[------=-------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       76000
+|06:25:18|I|>>> Progress:      18.2% <<<
+|06:25:18|I|[-------=------------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       72800
+|06:25:18|I|>>> Progress:      18.5% <<<
+|06:25:18|I|[--------=-----------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|I|******* Reading data *******
+|06:25:18|I|n. 32-bit words:       75200
+|06:25:18|I|>>> Progress:      18.8% <<<
+|06:25:18|I|[---------=----------------]
+|06:25:18|I|****************************
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:18|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       72800
+|06:25:19|I|>>> Progress:      19.0% <<<
+|06:25:19|I|[----------=---------------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       76000
+|06:25:19|I|>>> Progress:      19.3% <<<
+|06:25:19|I|[-----------=--------------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       72800
+|06:25:19|I|>>> Progress:      19.6% <<<
+|06:25:19|I|[------------=-------------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       76000
+|06:25:19|I|>>> Progress:      19.9% <<<
+|06:25:19|I|[-------------=------------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       72800
+|06:25:19|I|>>> Progress:      20.2% <<<
+|06:25:19|I|[--------------=-----------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       76000
+|06:25:19|I|>>> Progress:      20.5% <<<
+|06:25:19|I|[---------------=----------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       72800
+|06:25:19|I|>>> Progress:      20.8% <<<
+|06:25:19|I|[----------------=---------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       76000
+|06:25:19|I|>>> Progress:      21.1% <<<
+|06:25:19|I|[-----------------=--------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       72800
+|06:25:19|I|>>> Progress:      21.4% <<<
+|06:25:19|I|[------------------=-------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       76000
+|06:25:19|I|>>> Progress:      21.7% <<<
+|06:25:19|I|[-------------------=------]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       72000
+|06:25:19|I|>>> Progress:      22.0% <<<
+|06:25:19|I|[--------------------=-----]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|I|******* Reading data *******
+|06:25:19|I|n. 32-bit words:       76000
+|06:25:19|I|>>> Progress:      22.3% <<<
+|06:25:19|I|[---------------------=----]
+|06:25:19|I|****************************
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:19|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       72800
+|06:25:20|I|>>> Progress:      22.6% <<<
+|06:25:20|I|[----------------------=---]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       76000
+|06:25:20|I|>>> Progress:      22.9% <<<
+|06:25:20|I|[-----------------------=--]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       72800
+|06:25:20|I|>>> Progress:      23.2% <<<
+|06:25:20|I|[------------------------=-]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       76000
+|06:25:20|I|>>> Progress:      23.5% <<<
+|06:25:20|I|[-------------------------=]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       72800
+|06:25:20|I|>>> Progress:      23.8% <<<
+|06:25:20|I|[-------------------------=]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       76000
+|06:25:20|I|>>> Progress:      24.1% <<<
+|06:25:20|I|[------------------------=-]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       72800
+|06:25:20|I|>>> Progress:      24.4% <<<
+|06:25:20|I|[-----------------------=--]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       76000
+|06:25:20|I|>>> Progress:      24.7% <<<
+|06:25:20|I|[----------------------=---]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       72800
+|06:25:20|I|>>> Progress:      25.0% <<<
+|06:25:20|I|[---------------------=----]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       75200
+|06:25:20|I|>>> Progress:      25.3% <<<
+|06:25:20|I|[--------------------=-----]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       72800
+|06:25:20|I|>>> Progress:      25.6% <<<
+|06:25:20|I|[-------------------=------]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|I|******* Reading data *******
+|06:25:20|I|n. 32-bit words:       76000
+|06:25:20|I|>>> Progress:      25.9% <<<
+|06:25:20|I|[------------------=-------]
+|06:25:20|I|****************************
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:20|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       72800
+|06:25:21|I|>>> Progress:      26.2% <<<
+|06:25:21|I|[-----------------=--------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       76000
+|06:25:21|I|>>> Progress:      26.5% <<<
+|06:25:21|I|[----------------=---------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       72800
+|06:25:21|I|>>> Progress:      26.8% <<<
+|06:25:21|I|[---------------=----------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       76000
+|06:25:21|I|>>> Progress:      27.1% <<<
+|06:25:21|I|[--------------=-----------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       72800
+|06:25:21|I|>>> Progress:      27.4% <<<
+|06:25:21|I|[-------------=------------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       76000
+|06:25:21|I|>>> Progress:      27.7% <<<
+|06:25:21|I|[------------=-------------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       72800
+|06:25:21|I|>>> Progress:      28.0% <<<
+|06:25:21|I|[-----------=--------------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       76000
+|06:25:21|I|>>> Progress:      28.3% <<<
+|06:25:21|I|[----------=---------------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       73600
+|06:25:21|I|>>> Progress:      28.6% <<<
+|06:25:21|I|[---------=----------------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       76000
+|06:25:21|I|>>> Progress:      28.9% <<<
+|06:25:21|I|[--------=-----------------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       72800
+|06:25:21|I|>>> Progress:      29.2% <<<
+|06:25:21|I|[-------=------------------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       76000
+|06:25:21|I|>>> Progress:      29.5% <<<
+|06:25:21|I|[------=-------------------]
+|06:25:21|I|****************************
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:21|I|******* Reading data *******
+|06:25:21|I|n. 32-bit words:       72800
+|06:25:21|I|>>> Progress:      29.8% <<<
+|06:25:21|I|[-----=--------------------]
+|06:25:21|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       75200
+|06:25:22|I|>>> Progress:      30.1% <<<
+|06:25:22|I|[----=---------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       72800
+|06:25:22|I|>>> Progress:      30.4% <<<
+|06:25:22|I|[---=----------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       76000
+|06:25:22|I|>>> Progress:      30.7% <<<
+|06:25:22|I|[--=-----------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       72800
+|06:25:22|I|>>> Progress:      31.0% <<<
+|06:25:22|I|[-=------------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       75200
+|06:25:22|I|>>> Progress:      31.2% <<<
+|06:25:22|I|[=-------------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       72800
+|06:25:22|I|>>> Progress:      31.5% <<<
+|06:25:22|I|[=-------------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       76000
+|06:25:22|I|>>> Progress:      31.8% <<<
+|06:25:22|I|[-=------------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       72800
+|06:25:22|I|>>> Progress:      32.1% <<<
+|06:25:22|I|[--=-----------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       76000
+|06:25:22|I|>>> Progress:      32.4% <<<
+|06:25:22|I|[---=----------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       72800
+|06:25:22|I|>>> Progress:      32.7% <<<
+|06:25:22|I|[----=---------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       76000
+|06:25:22|I|>>> Progress:      33.0% <<<
+|06:25:22|I|[-----=--------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|I|******* Reading data *******
+|06:25:22|I|n. 32-bit words:       72800
+|06:25:22|I|>>> Progress:      33.3% <<<
+|06:25:22|I|[------=-------------------]
+|06:25:22|I|****************************
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:22|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       76000
+|06:25:23|I|>>> Progress:      33.6% <<<
+|06:25:23|I|[-------=------------------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       72800
+|06:25:23|I|>>> Progress:      33.9% <<<
+|06:25:23|I|[--------=-----------------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       76000
+|06:25:23|I|>>> Progress:      34.2% <<<
+|06:25:23|I|[---------=----------------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       72800
+|06:25:23|I|>>> Progress:      34.5% <<<
+|06:25:23|I|[----------=---------------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       76000
+|06:25:23|I|>>> Progress:      34.8% <<<
+|06:25:23|I|[-----------=--------------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       72800
+|06:25:23|I|>>> Progress:      35.1% <<<
+|06:25:23|I|[------------=-------------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       76000
+|06:25:23|I|>>> Progress:      35.4% <<<
+|06:25:23|I|[-------------=------------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       72800
+|06:25:23|I|>>> Progress:      35.7% <<<
+|06:25:23|I|[--------------=-----------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       76000
+|06:25:23|I|>>> Progress:      36.0% <<<
+|06:25:23|I|[---------------=----------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       72800
+|06:25:23|I|>>> Progress:      36.3% <<<
+|06:25:23|I|[----------------=---------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       76000
+|06:25:23|I|>>> Progress:      36.6% <<<
+|06:25:23|I|[-----------------=--------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       72800
+|06:25:23|I|>>> Progress:      36.9% <<<
+|06:25:23|I|[------------------=-------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:23|I|******* Reading data *******
+|06:25:23|I|n. 32-bit words:       76000
+|06:25:23|I|>>> Progress:      37.2% <<<
+|06:25:23|I|[-------------------=------]
+|06:25:23|I|****************************
+|06:25:23|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       72800
+|06:25:24|I|>>> Progress:      37.5% <<<
+|06:25:24|I|[--------------------=-----]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       75200
+|06:25:24|I|>>> Progress:      37.8% <<<
+|06:25:24|I|[---------------------=----]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       72800
+|06:25:24|I|>>> Progress:      38.1% <<<
+|06:25:24|I|[----------------------=---]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       76000
+|06:25:24|I|>>> Progress:      38.4% <<<
+|06:25:24|I|[-----------------------=--]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       72800
+|06:25:24|I|>>> Progress:      38.7% <<<
+|06:25:24|I|[------------------------=-]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       76000
+|06:25:24|I|>>> Progress:      39.0% <<<
+|06:25:24|I|[-------------------------=]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       72800
+|06:25:24|I|>>> Progress:      39.3% <<<
+|06:25:24|I|[-------------------------=]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       76000
+|06:25:24|I|>>> Progress:      39.6% <<<
+|06:25:24|I|[------------------------=-]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       72800
+|06:25:24|I|>>> Progress:      39.9% <<<
+|06:25:24|I|[-----------------------=--]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       76000
+|06:25:24|I|>>> Progress:      40.2% <<<
+|06:25:24|I|[----------------------=---]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       72800
+|06:25:24|I|>>> Progress:      40.5% <<<
+|06:25:24|I|[---------------------=----]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|I|******* Reading data *******
+|06:25:24|I|n. 32-bit words:       76000
+|06:25:24|I|>>> Progress:      40.8% <<<
+|06:25:24|I|[--------------------=-----]
+|06:25:24|I|****************************
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:24|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       72800
+|06:25:25|I|>>> Progress:      41.1% <<<
+|06:25:25|I|[-------------------=------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       76000
+|06:25:25|I|>>> Progress:      41.4% <<<
+|06:25:25|I|[------------------=-------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       72800
+|06:25:25|I|>>> Progress:      41.7% <<<
+|06:25:25|I|[-----------------=--------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       76000
+|06:25:25|I|>>> Progress:      42.0% <<<
+|06:25:25|I|[----------------=---------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       72800
+|06:25:25|I|>>> Progress:      42.3% <<<
+|06:25:25|I|[---------------=----------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       76000
+|06:25:25|I|>>> Progress:      42.6% <<<
+|06:25:25|I|[--------------=-----------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       72800
+|06:25:25|I|>>> Progress:      42.9% <<<
+|06:25:25|I|[-------------=------------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       76000
+|06:25:25|I|>>> Progress:      43.2% <<<
+|06:25:25|I|[------------=-------------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       72800
+|06:25:25|I|>>> Progress:      43.5% <<<
+|06:25:25|I|[-----------=--------------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       76000
+|06:25:25|I|>>> Progress:      43.8% <<<
+|06:25:25|I|[----------=---------------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       72800
+|06:25:25|I|>>> Progress:      44.0% <<<
+|06:25:25|I|[---------=----------------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|I|******* Reading data *******
+|06:25:25|I|n. 32-bit words:       76000
+|06:25:25|I|>>> Progress:      44.3% <<<
+|06:25:25|I|[--------=-----------------]
+|06:25:25|I|****************************
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:25|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       72800
+|06:25:26|I|>>> Progress:      44.6% <<<
+|06:25:26|I|[-------=------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       76000
+|06:25:26|I|>>> Progress:      44.9% <<<
+|06:25:26|I|[------=-------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       72800
+|06:25:26|I|>>> Progress:      45.2% <<<
+|06:25:26|I|[-----=--------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       76000
+|06:25:26|I|>>> Progress:      45.5% <<<
+|06:25:26|I|[----=---------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       72800
+|06:25:26|I|>>> Progress:      45.8% <<<
+|06:25:26|I|[---=----------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       75200
+|06:25:26|I|>>> Progress:      46.1% <<<
+|06:25:26|I|[--=-----------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       72800
+|06:25:26|I|>>> Progress:      46.4% <<<
+|06:25:26|I|[-=------------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       75200
+|06:25:26|I|>>> Progress:      46.7% <<<
+|06:25:26|I|[=-------------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       72800
+|06:25:26|I|>>> Progress:      47.0% <<<
+|06:25:26|I|[=-------------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       75200
+|06:25:26|I|>>> Progress:      47.3% <<<
+|06:25:26|I|[-=------------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       73600
+|06:25:26|I|>>> Progress:      47.6% <<<
+|06:25:26|I|[--=-----------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       75200
+|06:25:26|I|>>> Progress:      47.9% <<<
+|06:25:26|I|[---=----------------------]
+|06:25:26|I|****************************
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:26|I|******* Reading data *******
+|06:25:26|I|n. 32-bit words:       72800
+|06:25:26|I|>>> Progress:      48.2% <<<
+|06:25:26|I|[----=---------------------]
+|06:25:26|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       76000
+|06:25:27|I|>>> Progress:      48.5% <<<
+|06:25:27|I|[-----=--------------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       72800
+|06:25:27|I|>>> Progress:      48.8% <<<
+|06:25:27|I|[------=-------------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       75200
+|06:25:27|I|>>> Progress:      49.1% <<<
+|06:25:27|I|[-------=------------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       72800
+|06:25:27|I|>>> Progress:      49.4% <<<
+|06:25:27|I|[--------=-----------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       76000
+|06:25:27|I|>>> Progress:      49.7% <<<
+|06:25:27|I|[---------=----------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       72800
+|06:25:27|I|>>> Progress:      50.0% <<<
+|06:25:27|I|[----------=---------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       76000
+|06:25:27|I|>>> Progress:      50.3% <<<
+|06:25:27|I|[-----------=--------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       72800
+|06:25:27|I|>>> Progress:      50.6% <<<
+|06:25:27|I|[------------=-------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       75200
+|06:25:27|I|>>> Progress:      50.9% <<<
+|06:25:27|I|[-------------=------------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       72800
+|06:25:27|I|>>> Progress:      51.2% <<<
+|06:25:27|I|[--------------=-----------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       76000
+|06:25:27|I|>>> Progress:      51.5% <<<
+|06:25:27|I|[---------------=----------]
+|06:25:27|I|****************************
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:27|I|******* Reading data *******
+|06:25:27|I|n. 32-bit words:       72800
+|06:25:27|I|>>> Progress:      51.8% <<<
+|06:25:27|I|[----------------=---------]
+|06:25:27|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       76000
+|06:25:28|I|>>> Progress:      52.1% <<<
+|06:25:28|I|[-----------------=--------]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       72800
+|06:25:28|I|>>> Progress:      52.4% <<<
+|06:25:28|I|[------------------=-------]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       75200
+|06:25:28|I|>>> Progress:      52.7% <<<
+|06:25:28|I|[-------------------=------]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       72800
+|06:25:28|I|>>> Progress:      53.0% <<<
+|06:25:28|I|[--------------------=-----]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       76000
+|06:25:28|I|>>> Progress:      53.3% <<<
+|06:25:28|I|[---------------------=----]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       72800
+|06:25:28|I|>>> Progress:      53.6% <<<
+|06:25:28|I|[----------------------=---]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       76000
+|06:25:28|I|>>> Progress:      53.9% <<<
+|06:25:28|I|[-----------------------=--]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       72800
+|06:25:28|I|>>> Progress:      54.2% <<<
+|06:25:28|I|[------------------------=-]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       76000
+|06:25:28|I|>>> Progress:      54.5% <<<
+|06:25:28|I|[-------------------------=]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       72800
+|06:25:28|I|>>> Progress:      54.8% <<<
+|06:25:28|I|[-------------------------=]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       76000
+|06:25:28|I|>>> Progress:      55.1% <<<
+|06:25:28|I|[------------------------=-]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|I|******* Reading data *******
+|06:25:28|I|n. 32-bit words:       72800
+|06:25:28|I|>>> Progress:      55.4% <<<
+|06:25:28|I|[-----------------------=--]
+|06:25:28|I|****************************
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:28|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       76000
+|06:25:29|I|>>> Progress:      55.7% <<<
+|06:25:29|I|[----------------------=---]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       72800
+|06:25:29|I|>>> Progress:      56.0% <<<
+|06:25:29|I|[---------------------=----]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       76000
+|06:25:29|I|>>> Progress:      56.2% <<<
+|06:25:29|I|[--------------------=-----]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       72800
+|06:25:29|I|>>> Progress:      56.5% <<<
+|06:25:29|I|[-------------------=------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       76000
+|06:25:29|I|>>> Progress:      56.8% <<<
+|06:25:29|I|[------------------=-------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       72800
+|06:25:29|I|>>> Progress:      57.1% <<<
+|06:25:29|I|[-----------------=--------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       76000
+|06:25:29|I|>>> Progress:      57.4% <<<
+|06:25:29|I|[----------------=---------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       72800
+|06:25:29|I|>>> Progress:      57.7% <<<
+|06:25:29|I|[---------------=----------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       76000
+|06:25:29|I|>>> Progress:      58.0% <<<
+|06:25:29|I|[--------------=-----------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       72800
+|06:25:29|I|>>> Progress:      58.3% <<<
+|06:25:29|I|[-------------=------------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       75200
+|06:25:29|I|>>> Progress:      58.6% <<<
+|06:25:29|I|[------------=-------------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|I|******* Reading data *******
+|06:25:29|I|n. 32-bit words:       72800
+|06:25:29|I|>>> Progress:      58.9% <<<
+|06:25:29|I|[-----------=--------------]
+|06:25:29|I|****************************
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:29|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       76000
+|06:25:30|I|>>> Progress:      59.2% <<<
+|06:25:30|I|[----------=---------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       72800
+|06:25:30|I|>>> Progress:      59.5% <<<
+|06:25:30|I|[---------=----------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       76000
+|06:25:30|I|>>> Progress:      59.8% <<<
+|06:25:30|I|[--------=-----------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       72800
+|06:25:30|I|>>> Progress:      60.1% <<<
+|06:25:30|I|[-------=------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       76000
+|06:25:30|I|>>> Progress:      60.4% <<<
+|06:25:30|I|[------=-------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       72800
+|06:25:30|I|>>> Progress:      60.7% <<<
+|06:25:30|I|[-----=--------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       76000
+|06:25:30|I|>>> Progress:      61.0% <<<
+|06:25:30|I|[----=---------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       72800
+|06:25:30|I|>>> Progress:      61.3% <<<
+|06:25:30|I|[---=----------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       76000
+|06:25:30|I|>>> Progress:      61.6% <<<
+|06:25:30|I|[--=-----------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       72800
+|06:25:30|I|>>> Progress:      61.9% <<<
+|06:25:30|I|[-=------------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       75200
+|06:25:30|I|>>> Progress:      62.2% <<<
+|06:25:30|I|[=-------------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|I|******* Reading data *******
+|06:25:30|I|n. 32-bit words:       72800
+|06:25:30|I|>>> Progress:      62.5% <<<
+|06:25:30|I|[=-------------------------]
+|06:25:30|I|****************************
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:30|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       76000
+|06:25:31|I|>>> Progress:      62.8% <<<
+|06:25:31|I|[-=------------------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       72800
+|06:25:31|I|>>> Progress:      63.1% <<<
+|06:25:31|I|[--=-----------------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       76000
+|06:25:31|I|>>> Progress:      63.4% <<<
+|06:25:31|I|[---=----------------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       72800
+|06:25:31|I|>>> Progress:      63.7% <<<
+|06:25:31|I|[----=---------------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       75200
+|06:25:31|I|>>> Progress:      64.0% <<<
+|06:25:31|I|[-----=--------------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       72800
+|06:25:31|I|>>> Progress:      64.3% <<<
+|06:25:31|I|[------=-------------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       76000
+|06:25:31|I|>>> Progress:      64.6% <<<
+|06:25:31|I|[-------=------------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       72800
+|06:25:31|I|>>> Progress:      64.9% <<<
+|06:25:31|I|[--------=-----------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       76000
+|06:25:31|I|>>> Progress:      65.2% <<<
+|06:25:31|I|[---------=----------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       72800
+|06:25:31|I|>>> Progress:      65.5% <<<
+|06:25:31|I|[----------=---------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       76000
+|06:25:31|I|>>> Progress:      65.8% <<<
+|06:25:31|I|[-----------=--------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|I|******* Reading data *******
+|06:25:31|I|n. 32-bit words:       72800
+|06:25:31|I|>>> Progress:      66.1% <<<
+|06:25:31|I|[------------=-------------]
+|06:25:31|I|****************************
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:31|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       76000
+|06:25:32|I|>>> Progress:      66.4% <<<
+|06:25:32|I|[-------------=------------]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       72800
+|06:25:32|I|>>> Progress:      66.7% <<<
+|06:25:32|I|[--------------=-----------]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       75200
+|06:25:32|I|>>> Progress:      67.0% <<<
+|06:25:32|I|[---------------=----------]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       72800
+|06:25:32|I|>>> Progress:      67.3% <<<
+|06:25:32|I|[----------------=---------]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       76000
+|06:25:32|I|>>> Progress:      67.6% <<<
+|06:25:32|I|[-----------------=--------]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       72800
+|06:25:32|I|>>> Progress:      67.9% <<<
+|06:25:32|I|[------------------=-------]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       76000
+|06:25:32|I|>>> Progress:      68.2% <<<
+|06:25:32|I|[-------------------=------]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       72800
+|06:25:32|I|>>> Progress:      68.5% <<<
+|06:25:32|I|[--------------------=-----]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       76000
+|06:25:32|I|>>> Progress:      68.8% <<<
+|06:25:32|I|[---------------------=----]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       72800
+|06:25:32|I|>>> Progress:      69.0% <<<
+|06:25:32|I|[----------------------=---]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       76000
+|06:25:32|I|>>> Progress:      69.3% <<<
+|06:25:32|I|[-----------------------=--]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|I|******* Reading data *******
+|06:25:32|I|n. 32-bit words:       72800
+|06:25:32|I|>>> Progress:      69.6% <<<
+|06:25:32|I|[------------------------=-]
+|06:25:32|I|****************************
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:32|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       76000
+|06:25:33|I|>>> Progress:      69.9% <<<
+|06:25:33|I|[-------------------------=]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       72800
+|06:25:33|I|>>> Progress:      70.2% <<<
+|06:25:33|I|[-------------------------=]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       76000
+|06:25:33|I|>>> Progress:      70.5% <<<
+|06:25:33|I|[------------------------=-]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       72800
+|06:25:33|I|>>> Progress:      70.8% <<<
+|06:25:33|I|[-----------------------=--]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       75200
+|06:25:33|I|>>> Progress:      71.1% <<<
+|06:25:33|I|[----------------------=---]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       72800
+|06:25:33|I|>>> Progress:      71.4% <<<
+|06:25:33|I|[---------------------=----]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       76000
+|06:25:33|I|>>> Progress:      71.7% <<<
+|06:25:33|I|[--------------------=-----]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       72800
+|06:25:33|I|>>> Progress:      72.0% <<<
+|06:25:33|I|[-------------------=------]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       76000
+|06:25:33|I|>>> Progress:      72.3% <<<
+|06:25:33|I|[------------------=-------]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       72800
+|06:25:33|I|>>> Progress:      72.6% <<<
+|06:25:33|I|[-----------------=--------]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|I|******* Reading data *******
+|06:25:33|I|n. 32-bit words:       76000
+|06:25:33|I|>>> Progress:      72.9% <<<
+|06:25:33|I|[----------------=---------]
+|06:25:33|I|****************************
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:33|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       72800
+|06:25:34|I|>>> Progress:      73.2% <<<
+|06:25:34|I|[---------------=----------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       75200
+|06:25:34|I|>>> Progress:      73.5% <<<
+|06:25:34|I|[--------------=-----------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       72800
+|06:25:34|I|>>> Progress:      73.8% <<<
+|06:25:34|I|[-------------=------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       76000
+|06:25:34|I|>>> Progress:      74.1% <<<
+|06:25:34|I|[------------=-------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       72800
+|06:25:34|I|>>> Progress:      74.4% <<<
+|06:25:34|I|[-----------=--------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       76000
+|06:25:34|I|>>> Progress:      74.7% <<<
+|06:25:34|I|[----------=---------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       72800
+|06:25:34|I|>>> Progress:      75.0% <<<
+|06:25:34|I|[---------=----------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       76000
+|06:25:34|I|>>> Progress:      75.3% <<<
+|06:25:34|I|[--------=-----------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       72800
+|06:25:34|I|>>> Progress:      75.6% <<<
+|06:25:34|I|[-------=------------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       76000
+|06:25:34|I|>>> Progress:      75.9% <<<
+|06:25:34|I|[------=-------------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       72800
+|06:25:34|I|>>> Progress:      76.2% <<<
+|06:25:34|I|[-----=--------------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       76000
+|06:25:34|I|>>> Progress:      76.5% <<<
+|06:25:34|I|[----=---------------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:34|I|******* Reading data *******
+|06:25:34|I|n. 32-bit words:       72800
+|06:25:34|I|>>> Progress:      76.8% <<<
+|06:25:34|I|[---=----------------------]
+|06:25:34|I|****************************
+|06:25:34|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       76000
+|06:25:35|I|>>> Progress:      77.1% <<<
+|06:25:35|I|[--=-----------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       72800
+|06:25:35|I|>>> Progress:      77.4% <<<
+|06:25:35|I|[-=------------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       76000
+|06:25:35|I|>>> Progress:      77.7% <<<
+|06:25:35|I|[=-------------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       72800
+|06:25:35|I|>>> Progress:      78.0% <<<
+|06:25:35|I|[=-------------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       76000
+|06:25:35|I|>>> Progress:      78.3% <<<
+|06:25:35|I|[-=------------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       72800
+|06:25:35|I|>>> Progress:      78.6% <<<
+|06:25:35|I|[--=-----------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       76000
+|06:25:35|I|>>> Progress:      78.9% <<<
+|06:25:35|I|[---=----------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       72800
+|06:25:35|I|>>> Progress:      79.2% <<<
+|06:25:35|I|[----=---------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       76000
+|06:25:35|I|>>> Progress:      79.5% <<<
+|06:25:35|I|[-----=--------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       72800
+|06:25:35|I|>>> Progress:      79.8% <<<
+|06:25:35|I|[------=-------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       76000
+|06:25:35|I|>>> Progress:      80.1% <<<
+|06:25:35|I|[-------=------------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|I|******* Reading data *******
+|06:25:35|I|n. 32-bit words:       72800
+|06:25:35|I|>>> Progress:      80.4% <<<
+|06:25:35|I|[--------=-----------------]
+|06:25:35|I|****************************
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:35|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       75200
+|06:25:36|I|>>> Progress:      80.7% <<<
+|06:25:36|I|[---------=----------------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       72800
+|06:25:36|I|>>> Progress:      81.0% <<<
+|06:25:36|I|[----------=---------------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       76000
+|06:25:36|I|>>> Progress:      81.2% <<<
+|06:25:36|I|[-----------=--------------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       72800
+|06:25:36|I|>>> Progress:      81.5% <<<
+|06:25:36|I|[------------=-------------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       76000
+|06:25:36|I|>>> Progress:      81.8% <<<
+|06:25:36|I|[-------------=------------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       72800
+|06:25:36|I|>>> Progress:      82.1% <<<
+|06:25:36|I|[--------------=-----------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       76000
+|06:25:36|I|>>> Progress:      82.4% <<<
+|06:25:36|I|[---------------=----------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       72800
+|06:25:36|I|>>> Progress:      82.7% <<<
+|06:25:36|I|[----------------=---------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       76000
+|06:25:36|I|>>> Progress:      83.0% <<<
+|06:25:36|I|[-----------------=--------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       72800
+|06:25:36|I|>>> Progress:      83.3% <<<
+|06:25:36|I|[------------------=-------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       76000
+|06:25:36|I|>>> Progress:      83.6% <<<
+|06:25:36|I|[-------------------=------]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|I|******* Reading data *******
+|06:25:36|I|n. 32-bit words:       72800
+|06:25:36|I|>>> Progress:      83.9% <<<
+|06:25:36|I|[--------------------=-----]
+|06:25:36|I|****************************
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:36|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       76000
+|06:25:37|I|>>> Progress:      84.2% <<<
+|06:25:37|I|[---------------------=----]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       72800
+|06:25:37|I|>>> Progress:      84.5% <<<
+|06:25:37|I|[----------------------=---]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       76000
+|06:25:37|I|>>> Progress:      84.8% <<<
+|06:25:37|I|[-----------------------=--]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       72800
+|06:25:37|I|>>> Progress:      85.1% <<<
+|06:25:37|I|[------------------------=-]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       76000
+|06:25:37|I|>>> Progress:      85.4% <<<
+|06:25:37|I|[-------------------------=]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       72800
+|06:25:37|I|>>> Progress:      85.7% <<<
+|06:25:37|I|[-------------------------=]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       76000
+|06:25:37|I|>>> Progress:      86.0% <<<
+|06:25:37|I|[------------------------=-]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       72800
+|06:25:37|I|>>> Progress:      86.3% <<<
+|06:25:37|I|[-----------------------=--]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       76000
+|06:25:37|I|>>> Progress:      86.6% <<<
+|06:25:37|I|[----------------------=---]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       72800
+|06:25:37|I|>>> Progress:      86.9% <<<
+|06:25:37|I|[---------------------=----]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       76000
+|06:25:37|I|>>> Progress:      87.2% <<<
+|06:25:37|I|[--------------------=-----]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       72800
+|06:25:37|I|>>> Progress:      87.5% <<<
+|06:25:37|I|[-------------------=------]
+|06:25:37|I|****************************
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:37|I|******* Reading data *******
+|06:25:37|I|n. 32-bit words:       76000
+|06:25:37|I|>>> Progress:      87.8% <<<
+|06:25:37|I|[------------------=-------]
+|06:25:37|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       72800
+|06:25:38|I|>>> Progress:      88.1% <<<
+|06:25:38|I|[-----------------=--------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       76000
+|06:25:38|I|>>> Progress:      88.4% <<<
+|06:25:38|I|[----------------=---------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       72800
+|06:25:38|I|>>> Progress:      88.7% <<<
+|06:25:38|I|[---------------=----------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       76000
+|06:25:38|I|>>> Progress:      89.0% <<<
+|06:25:38|I|[--------------=-----------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       72800
+|06:25:38|I|>>> Progress:      89.3% <<<
+|06:25:38|I|[-------------=------------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       76000
+|06:25:38|I|>>> Progress:      89.6% <<<
+|06:25:38|I|[------------=-------------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       72800
+|06:25:38|I|>>> Progress:      89.9% <<<
+|06:25:38|I|[-----------=--------------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       76000
+|06:25:38|I|>>> Progress:      90.2% <<<
+|06:25:38|I|[----------=---------------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       72800
+|06:25:38|I|>>> Progress:      90.5% <<<
+|06:25:38|I|[---------=----------------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       76000
+|06:25:38|I|>>> Progress:      90.8% <<<
+|06:25:38|I|[--------=-----------------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       72800
+|06:25:38|I|>>> Progress:      91.1% <<<
+|06:25:38|I|[-------=------------------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:38|I|******* Reading data *******
+|06:25:38|I|n. 32-bit words:       75200
+|06:25:38|I|>>> Progress:      91.4% <<<
+|06:25:38|I|[------=-------------------]
+|06:25:38|I|****************************
+|06:25:38|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       72800
+|06:25:39|I|>>> Progress:      91.7% <<<
+|06:25:39|I|[-----=--------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       75200
+|06:25:39|I|>>> Progress:      92.0% <<<
+|06:25:39|I|[----=---------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       72800
+|06:25:39|I|>>> Progress:      92.3% <<<
+|06:25:39|I|[---=----------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       76000
+|06:25:39|I|>>> Progress:      92.6% <<<
+|06:25:39|I|[--=-----------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       72800
+|06:25:39|I|>>> Progress:      92.9% <<<
+|06:25:39|I|[-=------------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       76000
+|06:25:39|I|>>> Progress:      93.2% <<<
+|06:25:39|I|[=-------------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       72800
+|06:25:39|I|>>> Progress:      93.5% <<<
+|06:25:39|I|[=-------------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       76000
+|06:25:39|I|>>> Progress:      93.8% <<<
+|06:25:39|I|[-=------------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       72800
+|06:25:39|I|>>> Progress:      94.0% <<<
+|06:25:39|I|[--=-----------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       76000
+|06:25:39|I|>>> Progress:      94.3% <<<
+|06:25:39|I|[---=----------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       72800
+|06:25:39|I|>>> Progress:      94.6% <<<
+|06:25:39|I|[----=---------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|I|******* Reading data *******
+|06:25:39|I|n. 32-bit words:       76000
+|06:25:39|I|>>> Progress:      94.9% <<<
+|06:25:39|I|[-----=--------------------]
+|06:25:39|I|****************************
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:39|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       72800
+|06:25:40|I|>>> Progress:      95.2% <<<
+|06:25:40|I|[------=-------------------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       76000
+|06:25:40|I|>>> Progress:      95.5% <<<
+|06:25:40|I|[-------=------------------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       72800
+|06:25:40|I|>>> Progress:      95.8% <<<
+|06:25:40|I|[--------=-----------------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       76000
+|06:25:40|I|>>> Progress:      96.1% <<<
+|06:25:40|I|[---------=----------------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       72800
+|06:25:40|I|>>> Progress:      96.4% <<<
+|06:25:40|I|[----------=---------------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       76000
+|06:25:40|I|>>> Progress:      96.7% <<<
+|06:25:40|I|[-----------=--------------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       72800
+|06:25:40|I|>>> Progress:      97.0% <<<
+|06:25:40|I|[------------=-------------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       76000
+|06:25:40|I|>>> Progress:      97.3% <<<
+|06:25:40|I|[-------------=------------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       72800
+|06:25:40|I|>>> Progress:      97.6% <<<
+|06:25:40|I|[--------------=-----------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       75200
+|06:25:40|I|>>> Progress:      97.9% <<<
+|06:25:40|I|[---------------=----------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       72800
+|06:25:40|I|>>> Progress:      98.2% <<<
+|06:25:40|I|[----------------=---------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       76000
+|06:25:40|I|>>> Progress:      98.5% <<<
+|06:25:40|I|[-----------------=--------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:40|I|******* Reading data *******
+|06:25:40|I|n. 32-bit words:       72800
+|06:25:40|I|>>> Progress:      98.8% <<<
+|06:25:40|I|[------------------=-------]
+|06:25:40|I|****************************
+|06:25:40|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|I|******* Reading data *******
+|06:25:41|I|n. 32-bit words:       76000
+|06:25:41|I|>>> Progress:      99.1% <<<
+|06:25:41|I|[-------------------=------]
+|06:25:41|I|****************************
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|I|******* Reading data *******
+|06:25:41|I|n. 32-bit words:       72800
+|06:25:41|I|>>> Progress:      99.4% <<<
+|06:25:41|I|[--------------------=-----]
+|06:25:41|I|****************************
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|I|******* Reading data *******
+|06:25:41|I|n. 32-bit words:       76000
+|06:25:41|I|>>> Progress:      99.7% <<<
+|06:25:41|I|[---------------------=----]
+|06:25:41|I|****************************
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|I|******* Reading data *******
+|06:25:41|I|n. 32-bit words:       72800
+|06:25:41|I|>>> Progress:     100.0% <<<
+|06:25:41|I|[----------------------=---]
+|06:25:41|I|****************************
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|D|	--> Succesfully configured chip register PIX_MODE
+|06:25:41|I|Readout chip error report for [board/opticalGroup/hybrid/chip = 0/0/0/12]
+|06:25:41|I|BCID_CNT            =  23601
+|06:25:41|I|TRIG_CNT            =   1000
+|06:25:41|I|READTRIG_CNT        =   1000
+|06:25:41|I|LOCKLOSS_CNT        =      0
+|06:25:41|I|BITFLIP_WNG_CNT     =      0
+|06:25:41|I|BITFLIP_ERR_CNT     =      0
+|06:25:41|I|CMDERR_CNT          =      0
+|06:25:41|I|RDWRFIFOERROR_CNT   =      0
+|06:25:41|I|HITOR_0_CNT         =      0
+|06:25:41|I|HITOR_1_CNT         =      0
+|06:25:41|I|HITOR_2_CNT         =      0
+|06:25:41|I|HITOR_3_CNT         =      0
+|06:25:41|I|GatedHITOR_0_CNT    =      0
+|06:25:41|I|GatedHITOR_1_CNT    =      0
+|06:25:41|I|PIXELSEU_CNT        =      0
+|06:25:41|I|GLOBALCONFIGSEU_CNT =      0
+|06:25:41|I|SKIPPED_TRIGGER_CNT =      0
+|06:25:41|I|Readout chip error report for [board/opticalGroup/hybrid/chip = 0/0/0/13]
+|06:25:41|I|BCID_CNT            =  38637
+|06:25:41|I|TRIG_CNT            =   1000
+|06:25:41|I|READTRIG_CNT        =   1000
+|06:25:41|I|LOCKLOSS_CNT        =      0
+|06:25:41|I|BITFLIP_WNG_CNT     =      0
+|06:25:41|I|BITFLIP_ERR_CNT     =      0
+|06:25:41|I|CMDERR_CNT          =      0
+|06:25:41|I|RDWRFIFOERROR_CNT   =      0
+|06:25:41|I|HITOR_0_CNT         =      0
+|06:25:41|I|HITOR_1_CNT         =      0
+|06:25:41|I|HITOR_2_CNT         =      0
+|06:25:41|I|HITOR_3_CNT         =      0
+|06:25:41|I|GatedHITOR_0_CNT    =      0
+|06:25:41|I|GatedHITOR_1_CNT    =      0
+|06:25:41|I|PIXELSEU_CNT        =      0
+|06:25:41|I|GLOBALCONFIGSEU_CNT =      0
+|06:25:41|I|SKIPPED_TRIGGER_CNT =      0
+|06:25:41|I|Average occupancy for [board/opticalGroup/hybrid/chip = 0/0/0/12] is 0.999993
+|06:25:41|I|	--> Number of potentially masked pixels in this iteration: 2
+|06:25:41|I|	--> Total number of potentially masked pixels: 101
+|06:25:41|I|Average occupancy for [board/opticalGroup/hybrid/chip = 0/0/0/13] is 1.000000
+|06:25:41|I|	--> Number of potentially masked pixels in this iteration: 0
+|06:25:41|I|	--> Total number of potentially masked pixels: 1464
+|06:25:41|I|	--> Current calibration saved the configuration file for [board/opticalGroup/hybrid/chip = 0/0/0/12] Run000067_CMSIT_RD53_RH0107_0_12.txt
+|06:25:41|I|	--> Current calibration saved the configuration file for [board/opticalGroup/hybrid/chip = 0/0/0/13] Run000067_CMSIT_RD53_RH0107_0_13.txt
+|06:25:41|I|	--> Saving and/or shipping metadata...
+|06:25:41|I|Splitting ROOT file Results/Run000067_PixelAlive.root by Board & Hybrid
+|06:25:42|I|Closing result file: Results/Run000067_PixelAlive.root
+|06:25:42|I|>>> Destroying interfaces <<<
+|06:25:42|I|Trying to shutdown Calibration DQM Server...
+|06:25:42|I|	--> Operation completed
+|06:25:42|I|Trying to shutdown Monitor DQM Server...
+|06:25:42|I|	--> Operation completed
+|06:25:42|I|>>> Interfaces  destroyed <<<
+|06:25:42|I|@@@ End of CMSIT miniDAQ @@@
