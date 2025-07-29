@@ -18,6 +18,8 @@ import subprocess
 import threading
 import time
 import re
+import traceback
+from typing import Optional
 from datetime import datetime
 import numpy as np
 import matplotlib.pyplot as plt
@@ -104,6 +106,15 @@ class TestHandler(QObject):
         self.communicationTestResults = {
             module.getModuleName(): None for module in self.modules
         }
+        self.communicationTestModule = None
+        self.figurelist = {}
+        self.SLDOfilelist = []
+
+        # Variables used when parsing Ph2_ACF output
+        self.mod_dict = {}
+        self.fused_dict_index = [-1, -1]
+        self.GADC_meas_chip = None
+
         # Define variables to store "Handlers" to help with shutdown process
         self.IVCurveHandler = None
         self.SLDOScanHandler = None
@@ -206,6 +217,12 @@ class TestHandler(QObject):
         self.testsAttempted = 0
         self.listWidgetIndex = 0
         self.outputDirQueue = []
+        self.readingOutput = False
+        self.starttime = None
+        self.ProgressingMode = "None"
+        self.ProgressValue = 0
+        self.IVProgressValue = 0
+        self.SLDOProgressValue = 0
 
     def setup_process_connections(self):
         self.run_processes = [self.create_process(i) for i in range(len(self.firmware))]
@@ -474,8 +491,6 @@ class TestHandler(QObject):
         for console in self.runwindow.ConsoleViews:
             self.outputString.emit("Executing Single Step test...", console)
 
-        self.starttime = None
-        self.ProgressingMode = "None"
         self.currentTest = testName
 
         self.updateOptimizedXMLValues()
@@ -624,6 +639,71 @@ class TestHandler(QObject):
 
         self.SLDOScanFinished()
 
+    def SLDOScanFinished(self):
+        for module in self.modules:
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+            module_canvas_path = (
+                "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
+                    boardID=beboardId, ogID=ogId, hybridID=hybridId
+                )
+            )
+
+            SLDO_CSV_to_ROOT(
+                moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir
+            )
+
+        self.validateTest()
+        self.testIndexTracker += 1
+        self.testsAttempted += 1
+
+        EnableReRun = False
+        # Will send signal to turn off power supply after composite or single tests are run
+        if isCompositeTest(self.info):
+            self.instruments.lv_on(
+                voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+            )
+            default_hv_voltage = site_settings.icicle_instrument_setup[
+                "instrument_dict"
+            ]["hv"]["default_voltage"]
+            # assumes only 1 HV titled 'hv' in instruments.json
+            self.master.instruments.hv_on(
+                voltage=default_hv_voltage,
+                delay=0.3,
+                step_size=5,
+                measure=False,
+                execute_each_step=lambda: self.ramp_progress_bar(
+                    [default_hv_voltage] * len(self.instruments._module_dict.values())
+                ),
+            )
+
+            if self.testIndexTracker == len(self.test_list):
+                self.powerSignal.emit()
+                EnableReRun = True
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
+        elif isSingleTest(self.info):
+            EnableReRun = True
+            self.powerSignal.emit()
+            if self.autoSave:
+                self.runwindow.upload_to_Panthera_starter()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit()
+        if self.master.expertMode:
+            self.updateSLDOResult.emit(self.output_dir)
+        else:
+            self.updateSLDOResult.emit(
+                ("SLDOScan", self.figurelist)
+            )  ##Add else statement to add signal in simple mode
+
+        if isCompositeTest(self.info):
+            self.runTest()
+
     def process_sldo_data(self, datatype, up_sweep, down_sweep):
         for channel in self.instruments._module_dict:
             for chip in self.VDDDup[channel]:
@@ -655,6 +735,54 @@ class TestHandler(QObject):
                 ]
                 print(data)
                 self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
+        for module in self.modules:
+            moduleName = module.getModuleName()
+            filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(
+                self.output_dir, moduleName, pin
+            )
+            csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(
+                self.output_dir, moduleName, pin
+            )
+            self.SLDOfilelist.append(csvfilename)
+            # The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
+            total_result_stacked = np.vstack(total_result)
+            np.savetxt(csvfilename, total_result_stacked, delimiter=",")
+
+            # Make the actual graph
+            plt.figure()
+            plt.plot(
+                total_result_stacked[0],
+                total_result_stacked[1],
+                "-x",
+                label="module input voltage (up)",
+            )
+            plt.plot(
+                total_result_stacked[0],
+                total_result_stacked[2],
+                "-x",
+                label=f"{pin} (up)",
+            )
+            plt.plot(
+                total_result_stacked[3],
+                total_result_stacked[4],
+                "-x",
+                label="module input voltage (down)",
+            )
+            plt.plot(
+                total_result_stacked[3],
+                total_result_stacked[5],
+                "-x",
+                label=f"{pin} (down)",
+            )
+            plt.grid(True)
+            plt.xlabel("Current (A)")
+            plt.ylabel("Voltage (V)")
+            plt.legend()
+            plt.savefig(filename)
+
+            self.figurelist[moduleName] = [filename]
 
     def turn_on_lv_power_supply(self):
         lv_on = False
@@ -1102,212 +1230,196 @@ class TestHandler(QObject):
 
             text = textStr.encode("ascii")
             _, text = parseANSI(text)
-            # parse_output(alltext)
+            self.parse_output(text)
+            self.readingOutput = False
             self.outputString.emit(
                 text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
             )
 
     def parse_output(self, text: str):
-        self.parse_iref(text)
-        self.parse_fused_id(text)
+        self.parse_iref_fused_id(text)
         self.parse_progress(text)
         self.parse_sensor_temperature(text)
         self.parse_NTC_temperature(text)
         self.parse_communication_status(text)
 
-    def parse_iref(self, text):
-        re.findall()
-        ...
+    def parse_iref_fused_id(self, text: str) -> dict[str, object]:
+        output = {
+            "fused_id": None,
+            "iref_value": None,
+            "chip_number": None,
+            "hybrid_id": None,
+        }
 
-    def parse_output(self, alltext) -> dict[str, object]:
-        """
-        Parse outupt of Ph2_ACF output to grab things like communication test results,
-        test progress, and NTC temperature
-        """
-        with open(self.outputFile) as outputfile:
-            outputfile.write(alltext)
+        # Find iref value if there
+        # hybrid refers to the FMC port which there can be multiple if testing
+        # multiple modules
 
-        textline = alltext.split("\n")
-        ansi_escape = re.compile(r"\x1b\[.*?m")
+        # If in statement is faster than regex so only run regex to capture value if necessary
+        if "Configuring chips of hybrid" in text:
+            hybrid_id: Optional[re.Match[str]] = re.search(
+                r"Configuring chips of hybrid: (\d+)$", text
+            )
+            if hybrid_id:
+                self.mod_dict[hybrid_id] = {}
+                self.fused_dict_index[0] = hybrid_id
+                logger.info("Hyrid ID: %s", hybrid_id)
+            else:
+                logger.warning("Unable to gather hybrid ID")
 
-        for textStr in textline:
-            try:
-                clean_text = ansi_escape.sub("", textStr)
+        if "Configuring RD53:" in text:
+            chip_number: Optional[re.Match[str]] = re.search(
+                r"Configuring RD53: (\d+)$", text
+            )
+            if chip_number:
+                self.fused_dict_index[1] = chip_number
+                logger.info("Chip Number: %s", chip_number)
+            else:
+                logger.warning("Unable to gather chip_number")
+        if "Wire bonded Iref =" in text:
+            iref_value: Optional[re.Match[str]] = re.search(
+                r"Wire bonded Iref = (\d+)$", text
+            )
 
-                if "Configuring chips of hybrid" in textStr:
-                    hybrid_id = clean_text.split("hybrid: ")[-1].strip()
-                    self.mod_dict[hybrid_id] = {}
-                    self.fused_dict_index[0] = hybrid_id
+            # The values for hybrid_id and iref won't be in the same block of text
+            # so we need to reference mod_dict and not just use hybrid_id
+            self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]] = (
+                iref_value
+            )
+            hybrid_id = self.fused_dict_index[0]
+            chip_number = self.fused_dict_index[1]
+            module_name = self.modules[0].getModuleName()
+            db_iref = chip_iref_db.get(str(chip_number))
+            logger.info(
+                "IREF value for chip %s on FMC Port %s : %s",
+                chip_number,
+                hybrid_id,
+                iref_value,
+            )
 
-                elif "Configuring RD53" in textStr:
-                    chip_number = clean_text.split("RD53: ")[-1].strip()
-                    self.fused_dict_index[1] = chip_number
-                    print(f"Chip Number: {chip_number}")
+            if module_name not in self.iref_match_status:
+                self.iref_match_status[module_name] = True
 
-                elif "Wire bonded Iref" in textStr:
-                    iref_value = clean_text.split("Iref = ")[-1].strip()
-                    self.mod_dict[self.fused_dict_index[0]][
-                        self.fused_dict_index[1]
-                    ] = iref_value
-                    print(f"IREF Value: {iref_value}")
-                    chip_id = self.fused_dict_index[1]
-                    module_name = self.modules[0].getModuleName()
-                    db_iref = chip_iref_db.get(str(chip_id))
-
-                    if module_name not in self.iref_match_status:
-                        self.iref_match_status[module_name] = True
-
-                    if db_iref is not None:
-                        if db_iref != iref_value:
-                            print(
-                                f"Mismatch: IREF for chip {chip_id} (database: {db_iref}, module: {iref_value})"
-                            )
-                            self.iref_match_status[module_name] = False
-                    else:
-                        print(f"No database IREF found for chip {chip_id}")
-                        self.iref_match_status[module_name] = False
-
-                elif "Fused ID" in textStr:
-                    fuse_id = clean_text.split("Fused ID: ")[-1].strip()
-                    self.mod_dict[self.fused_dict_index[0]][
-                        self.fused_dict_index[1]
-                    ] = fuse_id
-
-                # Handle running time statistics
-                if self.starttime is not None:
-                    self.currentTime = time.time()
-                    runningTime = self.currentTime - self.starttime
-                    self.runwindow.ResultWidget.runtimes[processIndex][
-                        self.testIndexTracker
-                    ].setText("{0} s".format(round(runningTime, 1)))
-                else:
-                    self.starttime = time.time()
-                    self.currentTime = self.starttime
-
-            except Exception as err:
-                logger.info(
-                    "Error occurred while parsing running time: {0}".format(err)
-                )
-
-            if "@@@ End of CMSIT miniDAQ @@@" in textStr:
-                self.ProgressingMode = "Summary"
-
-            if self.ProgressingMode == "Perform":
-                if "Progress:" in textStr:
-                    try:
-                        index = textStr.split().index("Progress:") + 2
-                        self.ProgressValue = float(
-                            re.sub(r"\x1b\[\d+m", "", textStr.split()[index].strip("%"))
-                        )
-                        if self.ProgressValue == 100:
-                            self.ProgressingMode = "Summary"
-                        self.runwindow.ResultWidget.ProgressBars[processIndex][
-                            self.testIndexTracker
-                        ].setValue(self.ProgressValue)
-
-                    except Exception as e:
-                        print(f"Error while updating progress bar: {e}")
-
-                if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBars[processIndex][
-                        self.testIndexTracker
-                    ].setValue(100)
-
-                elif "TEMPSENS_" in textStr:
-                    try:
-                        output = textStr.split("[")
-                        sensor = output[8]
-                        sensorMeasure = sensor[3:]
-
-                        if sensorMeasure and sensorMeasure != "44.086 +/- 1.763 °C":
-                            temp = float(sensorMeasure.split("+")[0].strip())
-                            self.tempHistory[self.tempindex] = temp
-                            if any(
-                                num > site_settings.Warning_Threshold
-                                for num in self.tempHistory
-                            ):
-                                self.runwindow.updateTempIndicator("orange")
-                            elif any(
-                                num > site_settings.Emergency_Threshold
-                                for num in self.tempHistory
-                            ):
-                                self.runwindow.updateTempIndicator("red")
-                            else:
-                                self.runwindow.updateTempIndicator("green")
-                        else:
-                            self.tempHistory[self.tempindex] = 0.0
-                            if not all(self.tempHistory):
-                                self.runwindow.updateTempIndicator("off")
-
-                        self.tempindex = (self.tempindex + 1) % self.numChips
-
-                    except Exception as e:
-                        print("Failed due to: {0}".format(e))
-
-                elif "INTERNAL_NTC" in textStr:
-                    try:
-                        clean_text = re.sub(r"\x1B[@-_][0-?]*[ -/]*[@-~]", "", textStr)
-                        if "INTERNAL_NTC" in clean_text:
-                            sensor = (
-                                clean_text.split("INTERNAL_NTC:")[1]
-                                .strip()
-                                .split("C")[0]
-                                .strip()
-                            )
-                            sensorMeasure = (
-                                re.sub(r"[^\d\.\+\- ]", "", sensor).replace("+-", "+/-")
-                                + " °C"
-                            )
-
-                            if sensorMeasure and sensorMeasure != "44.086 +/- 1.763 °C":
-                                temp = float(sensorMeasure.split("+")[0].strip())
-                                self.tempHistory[self.tempindex] = temp
-                                if any(
-                                    num > site_settings.Warning_Threshold
-                                    for num in self.tempHistory
-                                ):
-                                    self.runwindow.updateTempIndicator("orange")
-                                elif any(
-                                    num > site_settings.Emergency_Threshold
-                                    for num in self.tempHistory
-                                ):
-                                    self.runwindow.updateTempIndicator("red")
-                                else:
-                                    self.runwindow.updateTempIndicator("green")
-                            else:
-                                self.tempHistory[self.tempindex] = 0.0
-                                if not all(self.tempHistory):
-                                    self.runwindow.updateTempIndicator("off")
-
-                        self.tempindex = (self.tempindex + 1) % self.numChips
-
-                    except Exception as e:
-                        print("Failed due to: {0}".format(e))
-
-                text = textStr.encode("ascii")
-                _, text = parseANSI(text)
-                self.outputString.emit(
-                    text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
-                )
-            # Handle other cases:
-            elif self.ProgressingMode == "Summary":
-                if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBars[processIndex][
-                        self.testIndexTracker
-                    ].setValue(100)
-                elif "@@@ Initializing the Hardware @@@" in textStr:
-                    self.ProgressingMode = "Configure"
-                elif "@@@ Performing" in textStr:
-                    self.ProgressingMode = "Perform"
-                    self.outputString.emit(
-                        '<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(
-                            self.currentTest
-                        ),
-                        self.runwindow.ConsoleViews[processIndex],
+            if db_iref:
+                if db_iref != iref_value:
+                    logger.error(
+                        "Mismatch in IREF for chip %s on FMC port %s (database: %s, module: %s)",
+                        chip_number,
+                        hybrid_id,
+                        db_iref,
+                        iref_value,
                     )
+                    self.iref_match_status[module_name] = False
+            else:
+                logger.warning(
+                    "No database IREF for chip %s on FMC port %s",
+                    chip_number,
+                    hybrid_id,
+                )
+                self.iref_match_status[module_name] = False
 
-        # Communication Test results handling
-        match = re.search(r"CMSIT_RD53_([^_]+)", alltext)
+        if "Fused ID:" in text:
+            fuse_id: Optional[re.Match[str]] = re.search(r"Fused ID: (\d+)$", text)
+
+            if fuse_id:
+                self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]] = (
+                    fuse_id
+                )
+            else:
+                logger.error("Unable to gather fuse ID")
+
+    def parse_progress(self, text: str, process_index: int):
+        """
+        Parse Ph2_ACF output for progress of current test. Used to update progress bars
+
+        text: output from Ph2_ACF process. This expects ANSI symbols to have already been removed
+        process_index: Index that refers to which Ph2_ACF instance we are looking at
+        """
+        if "@@@ End of CMSIT miniDAQ @@@" in text:
+            self.ProgressingMode = "Summary"
+        if self.ProgressingMode == "Perform":
+            if "Progress" in text:
+                try:
+                    progress: Optional[re.Match[str]] = re.search(
+                        r"Progress:\s+([0-9]*\.?[0-9]+)%", text
+                    )
+                    if progress:
+                        self.ProgressValue = float(progress)
+                    self.runwindow.ResultWidget.ProgressBars[process_index][
+                        self.testIndexTracker
+                    ].setValue(self.ProgressValue)
+                except Exception as e:
+                    logger.error("Error while updating progress bar")
+                    traceback.print_exc()
+
+    def parse_sensor_temperature(self, text: str):
+        if "TEMPSENS_" not in text:
+            return
+        try:
+            output = text.split("[")
+            sensor = output[8]
+            sensorMeasure = sensor[3:]
+
+            if sensorMeasure != "" or sensorMeasure != "44.086 +/- 1.763 °C":
+                temp = float(sensorMeasure.split("+")[0].strip())
+                self.tempHistory[self.tempindex] = temp
+                if any(
+                    num > site_settings.Warning_Threshold for num in self.tempHistory
+                ):
+                    self.runwindow.updateTempIndicator("orange")
+                elif any(
+                    num > site_settings.Emergency_Threshold for num in self.tempHistory
+                ):
+                    self.runwindow.updateTempIndicator("red")
+                else:
+                    self.runwindow.updateTempIndicator("green")
+            else:
+                # bad reading
+                self.tempHistory[self.tempindex] = 0.0
+                if not all(self.tempHistory):
+                    self.runwindow.updateTempIndicator("off")
+                self.tempindex = self.tempindex + 1 % self.numChips
+
+        except Exception:
+            logger.error("Could not update sensor temperature")
+            traceback.print_exc()
+
+    def parse_NTC_temperature(self, text: str):
+        if "INTERNAL_NTC" not in text:
+            return
+        try:
+            sensor_temperature = (
+                text.split("INTERNAL_NTC:")[1].strip().split("C")[0].strip()
+            )
+            sensor_temperature += " °C"
+            sensor_temperature = sensor_temperature.replace("+-", "+/-")
+
+            if sensor_temperature != "" or sensor_temperature != "44.086 +/- 1.763 °C":
+                temp = float(sensor_temperature.split("+")[0].strip())
+                self.tempHistory[self.tempindex] = temp
+                if any(
+                    num > site_settings.Warning_Threshold for num in self.tempHistory
+                ):
+                    self.runwindow.updateTempIndicator("orange")
+                elif any(
+                    num > site_settings.Emergency_Threshold for num in self.tempHistory
+                ):
+                    self.runwindow.updateTempIndicator("red")
+                else:
+                    self.runwindow.updateTempIndicator("green")
+            else:
+                # bad reading
+                self.tempHistory[self.tempindex] = 0.0
+                if not all(self.tempHistory):
+                    self.runwindow.updateTempIndicator("off")
+            self.tempindex = (self.tempindex + 1) % self.numChips
+
+        except:
+            logger.error("Failed to read NTC temperature")
+            traceback.print_exc()
+
+    def parse_communication_status(self, text):
+        match = re.search(r"CMSIT_RD53_([^_]+)", text)
         if match:
             if self.communicationTestModule is not None:
                 self.communicationTestResults[self.communicationTestModule] = True
@@ -1329,7 +1441,6 @@ class TestHandler(QObject):
                     self.communicationTestResults[self.communicationTestModule] = False
                     self.communicationTestModule = None
                 self.forceContinue(self.firmware[processIndex])
-
             elif "All enabled data lanes are active" in alltext:
                 if self.communicationTestModule is None:
                     print(
@@ -1341,8 +1452,6 @@ class TestHandler(QObject):
                 else:
                     self.communicationTestResults[self.communicationTestModule] = True
                     self.communicationTestModule = None
-
-        self.readingOutput = False
 
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_info(self, processIndex: int):
