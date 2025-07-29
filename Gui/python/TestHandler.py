@@ -537,6 +537,10 @@ class TestHandler(QObject):
             print("Right before setupQProcess")
             self.setup_run_processes()
 
+    def storeTrimbitResults(self, adcmeasurements, pin_mapping):
+        self.ADCmeasurements = adcmeasurements
+        self.pin_mapping = pin_mapping
+
     def updateOptimizedXMLValues(self):
         print("trying to update the xml value")
         try:
@@ -784,6 +788,93 @@ class TestHandler(QObject):
 
             self.figurelist[moduleName] = [filename]
 
+    def TrimbitScanFinished(self):
+        for module in self.modules:
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+            module_canvas_path = (
+                "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
+                    boardID=beboardId, ogID=ogId, hybridID=hybridId
+                )
+            )
+
+            # Generate CSVs and get the list
+            csvfiles = self.makeTrimbitScanPlots(self.ADCmeasurements, self.pin_mapping)
+            Trimbit_CSV_to_ROOT(
+                moduleName, module_canvas_path, csvfiles, self.output_dir
+            )
+
+        self.validateTest()
+        self.testIndexTracker += 1
+        self.testsAttempted += 1
+
+        if isCompositeTest(self.info):
+            if self.testIndexTracker == len(self.test_list):
+                self.powerSignal.emit()
+                EnableReRun = True
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
+        elif isSingleTest(self.info):
+            EnableReRun = True
+            self.powerSignal.emit()
+            if self.autoSave:
+                self.runwindow.upload_to_Panthera_starter()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit()
+        if self.master.expertMode:
+            self.updateResult.emit(self.output_dir)
+        else:
+            self.updateResult.emit(
+                ("SLDOScan", self.figurelist)
+            )  ##Add else statement to add signal in simple mode
+
+        if isCompositeTest(self.info):
+            self.runTest()
+
+    def makeTrimbitScanPlots(self, trimbit_dict, pin_mapping):
+        """
+        Plots measurement vs trimbit for each pin from a dictionary:
+        trimbit_dict: {pin: [(trimbit, value), ...], ...}
+        Returns a list of CSV filenames created.
+        """
+        csvfiles = []
+        for module in self.modules:
+            moduleName = module.getModuleName()
+            for pin, name in pin_mapping.items():
+                data = trimbit_dict.get(pin, [])
+                if not data:
+                    continue  # Skip pins with no data
+                trimbits, values = zip(*data)
+                svgfilename = "{0}/TrimbitCurve_Module_{1}_{2}.svg".format(
+                    self.output_dir, moduleName, name
+                )
+                csvfilename = "{0}/TrimbitCurve_Module_{1}_{2}.csv".format(
+                    self.output_dir, moduleName, name
+                )
+                np.savetxt(
+                    csvfilename,
+                    np.column_stack([trimbits, values]),
+                    delimiter=",",
+                    header="Trimbit,Measurement",
+                    comments="",
+                )
+                csvfiles.append(csvfilename)
+                plt.figure()
+                plt.plot(trimbits, values, "-o", label=name)
+                plt.xlabel("Trimbit")
+                plt.ylabel("Measurement (V)")
+                plt.title(f"Trimbit Scan for {name}")
+                plt.grid(True)
+                plt.legend()
+                plt.savefig(svgfilename)
+                plt.close()
+                self.figurelist.setdefault(name, []).append(svgfilename)
+        return csvfiles
+
     def turn_on_lv_power_supply(self):
         lv_on = False
         for number in self.instruments.get_modules().keys():
@@ -834,6 +925,36 @@ class TestHandler(QObject):
         for console in self.runwindow.ConsoleViews:
             self.outputString.emit("Beginning SLDOScan", console)
         self.SLDOScanHandler.SLDOScan()
+
+    def updateProgress(self, measurementType, stepSize):
+        """
+        Update progress of various "Handlers" ie. IVCurve, TrimBit, SLDO
+        """
+        if measurementType == "IVCurve":
+            self.IVProgressValue += stepSize / 2.0
+            for i, firmware in enumerate(self.firmware):
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.IVProgressValue)
+            self.ramp_progress_bar(
+                [
+                    site_settings.IVcurve_range[self.currentTest]
+                    if site_settings.IVcurve_range[self.currentTest] < 0
+                    else 80
+                ]
+                * len(self.instruments._module_dict.values())
+            )
+        elif "SLDO" in measurementType:
+            self.SLDOProgressValue += stepSize
+            for i, firmware in enumerate(self.firmware):
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.SLDOProgressValue)
+        elif measurementType == "TrimbitScan":
+            for i in range(len(self.firmware)):
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(stepSize)
 
     def setup_run_processes(self):
         self.tempHistory = [0.0] * self.numChips
@@ -1464,3 +1585,312 @@ class TestHandler(QObject):
 
         for textStr in alltext.split("\n"):
             self.outputString.emit(textStr, self.runwindow.ConsoleViews[processIndex])
+
+    @QtCore.pyqtSlot()
+    def on_readyReadStandardOutput_VDDsweep(self, process, fc7_index):
+        """
+        Slot to handle VDDsweep process output, parse ANSI, and emit to console.
+        Safe to use in TestHandler as long as updateConsoleInfo does not emit outputString.
+        """
+        if getattr(self, "readingOutput", False):
+            print("Thread competition detected")
+            return
+        self.readingOutput = True
+
+        alltext = process.readAllStandardOutput().data().decode()
+        if hasattr(self, "outputfile") and self.outputfile:
+            self.outputfile.write(alltext)
+        textline = alltext.split("\n")
+        for textStr in textline:
+            try:
+                text = textStr.encode("ascii")
+                _, text = parseANSI(text)
+                self.outputString.emit(
+                    text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
+                )
+            except Exception as e:
+                print(f"Error emitting console output: {e}")
+        self.readingOutput = False
+
+    @QtCore.pyqtSlot()
+    def on_readyReadStandardOutput_GADC(
+        self, process: QProcess, fc7_index: int, upOrDown: str, current, channel
+    ):
+        if self.readingOutput:
+            print("Thread competition detected")
+            return
+        self.readingOutput = True
+
+        alltext = process.readAllStandardOutput().data().decode()
+        self.outputfile.write(alltext)
+        textline = alltext.split("\n")
+
+        for textStr in textline:
+            text = textStr.encode("ascii")
+            _, text = parseANSI(text)
+            self.outputString.emit(
+                text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
+            )
+            self.runwindow.ConsoleViews[fc7_index].repaint()
+            # .repaint() should not be necessary - indicates a larger problem in the PyQt workflow.
+
+            textStr = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]").sub("", textStr)
+            match = re.search(
+                r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]",
+                textStr,
+            )
+            if match:
+                self.GADC_meas_chip = match.group(4)
+            else:
+                match = re.search(r"(\w+):\s*([\d.]+)\s*\+/-\s*([\d.]+)\s*V", textStr)
+                if match:
+                    if self.GADC_meas_chip is not None:
+                        if match.group(1) in ("VDDD", "VDDA", "VINA", "VIND"):
+                            multiplier = site_settings.SLDOScan_GADC["multipliers"][
+                                match.group(1)[:3]
+                            ]
+
+                            if (
+                                self.GADC_meas_chip
+                                not in getattr(self, match.group(1) + upOrDown)[channel]
+                            ):
+                                getattr(self, match.group(1) + upOrDown)[channel][
+                                    self.GADC_meas_chip
+                                ] = {}
+                            getattr(self, match.group(1) + upOrDown)[channel][
+                                self.GADC_meas_chip
+                            ][current] = (
+                                float(match.group(2)) * multiplier
+                            )  # This line enforces that it only logs one VDDD or VDDA value per sweep step
+
+                            if (
+                                self.GADC_meas_chip
+                                not in getattr(
+                                    self, match.group(1) + upOrDown + "Error"
+                                )[channel]
+                            ):
+                                getattr(self, match.group(1) + upOrDown + "Error")[
+                                    channel
+                                ][self.GADC_meas_chip] = {}
+                            getattr(self, match.group(1) + upOrDown + "Error")[channel][
+                                self.GADC_meas_chip
+                            ][current] = (
+                                float(match.group(3)) * multiplier
+                            )  # This line enforces that it only logs one VDDD or VDDA value per sweep step
+
+                    else:
+                        print(
+                            f'Error: Did not receive expected message, "Reading monitored data for \
+                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"'
+                        )
+                        logger.error(
+                            f'Did not receive expected message, "Reading monitored data for \
+                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"'
+                        )
+
+        self.readingOutput = False
+
+    def IVCurveFinished(self, test: str, measure: dict):
+        # Get the current timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        for process in self.run_processes:
+            process.write(b"\n")
+            process.waitForBytesWritten()
+            process.waitForFinished()
+
+        # 3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
+        # IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
+        # to output the results only to the console of the fc7 that each module is connnected to.
+        for console in self.runwindow.ConsoleViews:
+            self.outputString.emit(f"Voltages: {measure['voltage']}", console)
+            self.outputString.emit(f"Currents: {measure['current']}", console)
+
+        for module in self.modules:
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+
+            self.IVCurveResult = ScanCanvas(
+                self,
+                xlabel="Voltage (V)",
+                ylabel="I (A)",
+                X=measure["voltage"],
+                Y=measure["current"],
+                invert=True,
+            )
+
+            csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(
+                self.output_dir, moduleName, timestamp
+            )
+
+            # Some power supplies give outputs as a two dimensional array
+            # This breaks np.savetxt. The second element of the array should be empty
+            # either way, therefore, we will just flatten the array getting rid of the
+            # second dimension. NOTE: If we do want measurements from multiple HV
+            # channels this will need to reevaluated.
+
+            # Convert to numpy array to give us access to flatten() and ndim
+            voltages = np.array(measure["voltage"])
+            current = np.array(measure["current"])
+
+            # If the voltages are 2D+, then flatten.
+            if voltages.ndim > 1:
+                voltages = voltages.flatten()
+                current = current.flatten()
+
+            np.savetxt(csvfilename, (voltages, current), delimiter=",")
+            module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
+                boardID=beboardId, ogID=ogId, hybridID=hybridId
+            )
+
+            IVCurve_CSV_to_ROOT(
+                moduleName, module_canvas_path, csvfilename, self.output_dir
+            )
+
+            filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(
+                self.output_dir, moduleName, timestamp
+            )
+            # filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
+            self.IVCurveResult.saveToSVG(filename)
+            # self.IVCurveResult.saveToSVG(filename2)
+
+            self.figurelist[moduleName] = [filename]
+
+        self.validateTest()
+
+        step = "IVCurve"
+
+        self.testIndexTracker += 1
+        self.testsAttempted += 1
+
+        EnableReRun = False
+
+        # Will send signal to turn off power supply after composite or single tests are run
+        if isCompositeTest(self.info):
+            if self.testIndexTracker == len(self.test_list):
+                self.powerSignal.emit()
+                EnableReRun = True
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
+        elif isSingleTest(self.info):
+            EnableReRun = True
+            self.powerSignal.emit()
+            if self.autoSave:
+                self.runwindow.upload_to_Panthera_starter()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit()
+        if self.master.expertMode:
+            self.updateIVResult.emit(self.output_dir)
+        else:
+            self.updateIVResult.emit(
+                (step, self.figurelist)
+            )  ##Add else statement to add signal in simple mode
+
+        if isCompositeTest(self.info):
+            self.runTest()
+
+    def upload_to_Panthera(self):
+        self.updateProgressBar.emit(
+            self.runwindow.UploadProgressBar, 0, f"{0}/{len(self.modules)} uploaded"
+        )
+        try:
+            self.runwindow.UploadButton.setDisabled(True)
+            counter = 0
+
+            for module in self.modules:
+                status, message = self.felis.upload_results(
+                    module.getModuleName(),
+                    self.master.username,
+                    self.master.password,
+                    type_sequence=self.info,
+                    version_ph2acf=os.environ.get("PH2ACF_VERSION"),
+                    version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
+                )
+                if not status:
+                    raise ConnectionError(message)
+
+                counter += 1
+                self.updateProgressBar.emit(
+                    self.runwindow.UploadProgressBar,
+                    100 * counter / len(self.modules),
+                    f"{counter}/{len(self.modules)} uploaded",
+                )
+
+        except ConnectionError as e:
+            error_message = repr(e)
+            logger.error(error_message)
+            self.master.errorMessageBoxSignal.emit(error_message)
+
+        except Exception:
+            if not self.master.panthera_connected:
+                error_message = (
+                    "Cannot upload test results, you are not signed in to Panthera."
+                )
+            else:
+                error_message = "Failed to upload to Panthera."
+                self.runwindow.UploadButton.setDisabled(False)
+                if self.autoSave:
+                    self.runwindow.UploadButton.setDisabled(
+                        False
+                    )  # if autosave fails, allow manual
+
+            logger.error(error_message)
+            self.master.errorMessageBoxSignal.emit(error_message)
+
+    def bumpbond_analysis(self):
+        runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
+        commands = [
+            ".L /home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests/Analysis/bumpbond_analysis.cpp"
+        ]
+        command_template = ""
+
+        if self.info == "FWD-RVS Bias":
+            process = subprocess.run(
+                'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*SCurve.root"',
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            all_root_files = sorted(
+                process.stdout.decode("utf-8").rstrip("\n").split("\n")
+            )
+            relevant_root_files = all_root_files[-2:]
+
+            save_file = f"Run{runNumber}_FWDRVS-Bias.root"
+            commands.append(f'createROOTFile("{self.output_dir}/{save_file}")')
+            command_template = (
+                f'bias("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{self.output_dir}/{save_file}", '
+                + "const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))"
+            )
+
+        elif self.info == "Crosstalk":
+            process = subprocess.run(
+                'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*PixelAlive.root"',
+                shell=True,
+                stdout=subprocess.PIPE,
+            )
+            all_root_files = sorted(
+                process.stdout.decode("utf-8").rstrip("\n").split("\n")
+            )
+            relevant_root_files = all_root_files[-3:]
+
+            save_file = f"Run{runNumber}_Crosstalk.root"
+            commands.append(f'createROOTFile("{self.output_dir}/{save_file}")')
+            command_template = (
+                f'xtalk("{relevant_root_files[0]}", "{relevant_root_files[1]}", "{relevant_root_files[2]}", "{self.output_dir}/{save_file}",'
+                + "const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))"
+            )
+
+        for beboard in self.firmware:
+            boardID = beboard.getBoardID()
+            for OG in beboard.getAllOpticalGroups().values():
+                ogID = OG.getOpticalGroupID()
+                for module in OG.getAllModules().values():
+                    hybridID = module.getFMCPort()
+                    for chipID in module.getEnabledChips().keys():
+                        commands.append(
+                            command_template.format(boardID, ogID, hybridID, chipID)
+                        )
+        executeCommandSequence(commands)
