@@ -48,6 +48,7 @@ from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
 from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
+from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 from Gui.python.CustomizedWidget import chip_iref_db
@@ -137,13 +138,12 @@ class TestHandler(QObject):
                 if isCompositeTest(self.info)
                 else (self.info,)
             )
-
-        self.module_test_history = {
-            module.getModuleName(): {
-                test: {"Passed": 0, "Failed": 0} for test in self.test_list
+            self.module_test_history = {
+                module.getModuleName(): {
+                    test: {"Passed": 0, "Failed": 0} for test in self.test_list
+                }
+                for module in self.modules
             }
-            for module in self.modules
-        }
 
         except KeyError:
             logger.error(
@@ -451,9 +451,6 @@ class TestHandler(QObject):
             if process.state() != QProcess.NotRunning:
                 result = process.waitForFinished(-1)  # waits indefinitely
                 if not result:
-                    logger.error(
-                        f"Ph2_ACF physics test on {firmware.getBoardName()} didn't execute correctly."
-                    )
                     process.kill()
 
     def runSingleTest(self, testName, nextTest=None):
@@ -691,7 +688,6 @@ class TestHandler(QObject):
         self.IVCurveHandler.IVCurve()
 
     def run_SLDOScan(self, nextTest):
-        self.currentTest = testName
         self.configTest()
         self.SLDOScanData = []
         self.SLDOProgressValue = 0
@@ -1111,12 +1107,24 @@ class TestHandler(QObject):
                 text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
             )
 
+    def parse_output(self, text: str):
+        self.parse_iref(text)
+        self.parse_fused_id(text)
+        self.parse_progress(text)
+        self.parse_sensor_temperature(text)
+        self.parse_NTC_temperature(text)
+        self.parse_communication_status(text)
+
+    def parse_iref(self, text):
+        re.findall()
+        ...
+
     def parse_output(self, alltext) -> dict[str, object]:
         """
         Parse outupt of Ph2_ACF output to grab things like communication test results,
         test progress, and NTC temperature
         """
-        with open(self.outputFile, mode) as outputfile:
+        with open(self.outputFile) as outputfile:
             outputfile.write(alltext)
 
         textline = alltext.split("\n")
@@ -1138,7 +1146,9 @@ class TestHandler(QObject):
 
                 elif "Wire bonded Iref" in textStr:
                     iref_value = clean_text.split("Iref = ")[-1].strip()
-                    self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]] = iref_value
+                    self.mod_dict[self.fused_dict_index[0]][
+                        self.fused_dict_index[1]
+                    ] = iref_value
                     print(f"IREF Value: {iref_value}")
                     chip_id = self.fused_dict_index[1]
                     module_name = self.modules[0].getModuleName()
@@ -1149,7 +1159,9 @@ class TestHandler(QObject):
 
                     if db_iref is not None:
                         if db_iref != iref_value:
-                            print(f"Mismatch: IREF for chip {chip_id} (database: {db_iref}, module: {iref_value})")
+                            print(
+                                f"Mismatch: IREF for chip {chip_id} (database: {db_iref}, module: {iref_value})"
+                            )
                             self.iref_match_status[module_name] = False
                     else:
                         print(f"No database IREF found for chip {chip_id}")
@@ -1157,21 +1169,25 @@ class TestHandler(QObject):
 
                 elif "Fused ID" in textStr:
                     fuse_id = clean_text.split("Fused ID: ")[-1].strip()
-                    self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]] = fuse_id
+                    self.mod_dict[self.fused_dict_index[0]][
+                        self.fused_dict_index[1]
+                    ] = fuse_id
 
                 # Handle running time statistics
                 if self.starttime is not None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
-                    self.runwindow.ResultWidget.runtimes[processIndex][self.testIndexTracker].setText(
-                        "{0} s".format(round(runningTime, 1))
-                    )
+                    self.runwindow.ResultWidget.runtimes[processIndex][
+                        self.testIndexTracker
+                    ].setText("{0} s".format(round(runningTime, 1)))
                 else:
                     self.starttime = time.time()
                     self.currentTime = self.starttime
 
             except Exception as err:
-                logger.info("Error occurred while parsing running time: {0}".format(err))
+                logger.info(
+                    "Error occurred while parsing running time: {0}".format(err)
+                )
 
             if "@@@ End of CMSIT miniDAQ @@@" in textStr:
                 self.ProgressingMode = "Summary"
@@ -1180,16 +1196,22 @@ class TestHandler(QObject):
                 if "Progress:" in textStr:
                     try:
                         index = textStr.split().index("Progress:") + 2
-                        self.ProgressValue = float(re.sub(r"\x1b\[\d+m", "", textStr.split()[index].strip("%")))
+                        self.ProgressValue = float(
+                            re.sub(r"\x1b\[\d+m", "", textStr.split()[index].strip("%"))
+                        )
                         if self.ProgressValue == 100:
                             self.ProgressingMode = "Summary"
-                        self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(self.ProgressValue)
+                        self.runwindow.ResultWidget.ProgressBars[processIndex][
+                            self.testIndexTracker
+                        ].setValue(self.ProgressValue)
 
                     except Exception as e:
                         print(f"Error while updating progress bar: {e}")
 
                 if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(100)
+                    self.runwindow.ResultWidget.ProgressBars[processIndex][
+                        self.testIndexTracker
+                    ].setValue(100)
 
                 elif "TEMPSENS_" in textStr:
                     try:
@@ -1200,9 +1222,15 @@ class TestHandler(QObject):
                         if sensorMeasure and sensorMeasure != "44.086 +/- 1.763 °C":
                             temp = float(sensorMeasure.split("+")[0].strip())
                             self.tempHistory[self.tempindex] = temp
-                            if any(num > site_settings.Warning_Threshold for num in self.tempHistory):
+                            if any(
+                                num > site_settings.Warning_Threshold
+                                for num in self.tempHistory
+                            ):
                                 self.runwindow.updateTempIndicator("orange")
-                            elif any(num > site_settings.Emergency_Threshold for num in self.tempHistory):
+                            elif any(
+                                num > site_settings.Emergency_Threshold
+                                for num in self.tempHistory
+                            ):
                                 self.runwindow.updateTempIndicator("red")
                             else:
                                 self.runwindow.updateTempIndicator("green")
@@ -1220,15 +1248,29 @@ class TestHandler(QObject):
                     try:
                         clean_text = re.sub(r"\x1B[@-_][0-?]*[ -/]*[@-~]", "", textStr)
                         if "INTERNAL_NTC" in clean_text:
-                            sensor = clean_text.split("INTERNAL_NTC:")[1].strip().split("C")[0].strip()
-                            sensorMeasure = re.sub(r"[^\d\.\+\- ]", "", sensor).replace("+-", "+/-") + " °C"
+                            sensor = (
+                                clean_text.split("INTERNAL_NTC:")[1]
+                                .strip()
+                                .split("C")[0]
+                                .strip()
+                            )
+                            sensorMeasure = (
+                                re.sub(r"[^\d\.\+\- ]", "", sensor).replace("+-", "+/-")
+                                + " °C"
+                            )
 
                             if sensorMeasure and sensorMeasure != "44.086 +/- 1.763 °C":
                                 temp = float(sensorMeasure.split("+")[0].strip())
                                 self.tempHistory[self.tempindex] = temp
-                                if any(num > site_settings.Warning_Threshold for num in self.tempHistory):
+                                if any(
+                                    num > site_settings.Warning_Threshold
+                                    for num in self.tempHistory
+                                ):
                                     self.runwindow.updateTempIndicator("orange")
-                                elif any(num > site_settings.Emergency_Threshold for num in self.tempHistory):
+                                elif any(
+                                    num > site_settings.Emergency_Threshold
+                                    for num in self.tempHistory
+                                ):
                                     self.runwindow.updateTempIndicator("red")
                                 else:
                                     self.runwindow.updateTempIndicator("green")
@@ -1244,17 +1286,23 @@ class TestHandler(QObject):
 
                 text = textStr.encode("ascii")
                 _, text = parseANSI(text)
-                self.outputString.emit(text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex])
+                self.outputString.emit(
+                    text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
+                )
             # Handle other cases:
             elif self.ProgressingMode == "Summary":
                 if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(100)
+                    self.runwindow.ResultWidget.ProgressBars[processIndex][
+                        self.testIndexTracker
+                    ].setValue(100)
                 elif "@@@ Initializing the Hardware @@@" in textStr:
                     self.ProgressingMode = "Configure"
                 elif "@@@ Performing" in textStr:
                     self.ProgressingMode = "Perform"
                     self.outputString.emit(
-                        '<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(self.currentTest),
+                        '<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(
+                            self.currentTest
+                        ),
                         self.runwindow.ConsoleViews[processIndex],
                     )
 
@@ -1266,10 +1314,17 @@ class TestHandler(QObject):
             self.communicationTestModule = match.group(1)
 
         if self.currentTest == "CommunicationTest":
-            if "Error, some data lanes are enabled but inactive, reached maximum number of attempts" in alltext:
+            if (
+                "Error, some data lanes are enabled but inactive, reached maximum number of attempts"
+                in alltext
+            ):
                 if self.communicationTestModule is None:
-                    print("ERROR: Module name not found before CommunicationTest result in test output.")
-                    logger.error("Module name not found before CommunicationTest result in test output.")
+                    print(
+                        "ERROR: Module name not found before CommunicationTest result in test output."
+                    )
+                    logger.error(
+                        "Module name not found before CommunicationTest result in test output."
+                    )
                 else:
                     self.communicationTestResults[self.communicationTestModule] = False
                     self.communicationTestModule = None
@@ -1277,15 +1332,17 @@ class TestHandler(QObject):
 
             elif "All enabled data lanes are active" in alltext:
                 if self.communicationTestModule is None:
-                    print("ERROR: Module name not found before CommunicationTest result in test output.")
-                    logger.error("Module name not found before CommunicationTest result in test output.")
+                    print(
+                        "ERROR: Module name not found before CommunicationTest result in test output."
+                    )
+                    logger.error(
+                        "Module name not found before CommunicationTest result in test output."
+                    )
                 else:
                     self.communicationTestResults[self.communicationTestModule] = True
                     self.communicationTestModule = None
 
         self.readingOutput = False
-
-
 
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_info(self, processIndex: int):
