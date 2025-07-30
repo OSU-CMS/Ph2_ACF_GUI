@@ -16,6 +16,7 @@ import os
 import glob
 import subprocess
 import threading
+import traceback
 import time
 import re
 import traceback
@@ -1321,6 +1322,48 @@ class TestHandler(QObject):
 
             os.system(f"cp {latest_file} {output_dir}/")
 
+    def saveTest(self, processIndex: int, process: QProcess):
+        if process.state() == QProcess.Running:
+            QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
+            return
+
+        try:
+            if self.RunNumber == "-1":
+                os.system(
+                    "cp {0}/test/Results/Run000000*.root {1}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
+                    )
+                )
+
+            elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
+                print("copying MonitorDQM.root file to output directory")
+                os.system(
+                    "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.output_dir,
+                    )
+                )
+            else:
+                for fc7 in self.firmware:
+                    self.copyMostRecentRootFile(
+                        self.RunNumber,
+                        os.environ.get("PH2ACF_BASE_DIR")
+                        + f"/test/{fc7.getBoardName()}",
+                        self.output_dir,
+                        self.currentTest,
+                    )
+
+        except Exception as e:
+            logger.error(e)
+            traceback.print_exc() 
+            if self.currentTest != "CommunicationTest":
+                self.forceContinue(self.firmware[processIndex])
+
+    #######################################################################
+    ##  For real-time terminal display
+    #######################################################################
+
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput(self, processIndex: int):
         if getattr(self, "readingOutput", False):
@@ -1791,6 +1834,245 @@ class TestHandler(QObject):
 
         if isCompositeTest(self.info):
             self.runTest()
+
+    def SLDOScanFinished(self):
+        for module in self.modules:
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+            module_canvas_path = (
+                "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
+                    boardID=beboardId, ogID=ogId, hybridID=hybridId
+                )
+            )
+
+            SLDO_CSV_to_ROOT(
+                moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir
+            )
+
+        self.validateTest()
+        self.testIndexTracker += 1
+        self.testsAttempted += 1
+
+        EnableReRun = False
+        # Will send signal to turn off power supply after composite or single tests are run
+        if isCompositeTest(self.info):
+            self.instruments.lv_on(
+                voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+            )
+            default_hv_voltage = site_settings.icicle_instrument_setup[
+                "instrument_dict"
+            ]["hv"]["default_voltage"]
+            # assumes only 1 HV titled 'hv' in instruments.json
+            self.master.instruments.hv_on(
+                voltage=default_hv_voltage,
+                delay=0.3,
+                step_size=5,
+                measure=False,
+                execute_each_step=lambda: self.ramp_progress_bar(
+                    [default_hv_voltage] * len(self.instruments._module_dict.values())
+                ),
+            )
+
+            if self.testIndexTracker == len(self.test_list):
+                self.powerSignal.emit()
+                EnableReRun = True
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
+        elif isSingleTest(self.info):
+            EnableReRun = True
+            self.powerSignal.emit()
+            if self.autoSave:
+                self.runwindow.upload_to_Panthera_starter()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit()
+        if self.master.expertMode:
+            self.updateSLDOResult.emit(self.output_dir)
+        else:
+            self.updateSLDOResult.emit(
+                ("SLDOScan", self.figurelist)
+            )  ##Add else statement to add signal in simple mode
+
+        if isCompositeTest(self.info):
+            self.runTest()
+
+    def TrimbitScanFinished(self):
+        for module in self.modules:
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+            module_canvas_path = (
+                "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}".format(
+                    boardID=beboardId, ogID=ogId, hybridID=hybridId
+                )
+            )
+
+            # Generate CSVs and get the list
+            csvfiles = self.makeTrimbitScanPlots(self.ADCmeasurements, self.pin_mapping)
+            Trimbit_CSV_to_ROOT(
+                moduleName, module_canvas_path, csvfiles, self.output_dir
+            )
+
+        self.validateTest()
+        self.testIndexTracker += 1
+        self.testsAttempted += 1
+
+        if isCompositeTest(self.info):
+            if self.testIndexTracker == len(self.test_list):
+                self.powerSignal.emit()
+                EnableReRun = True
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
+        elif isSingleTest(self.info):
+            EnableReRun = True
+            self.powerSignal.emit()
+            if self.autoSave:
+                self.runwindow.upload_to_Panthera_starter()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit()
+        if self.master.expertMode:
+            self.updateResult.emit(self.output_dir)
+        else:
+            self.updateResult.emit(
+                ("SLDOScan", self.figurelist)
+            )  ##Add else statement to add signal in simple mode
+
+        if isCompositeTest(self.info):
+            self.runTest()
+
+    def interactiveCheck(self, plot):
+        pass
+
+    def forceContinue(
+        self, board
+    ):  # board:QtBeBoard. Runs when module disconnection is suspected.
+        fc7modules = board.getModules()
+
+        # Create the main widget
+        self.force_continue_window = QDialog()
+        self.force_continue_window.setMaximumWidth(375)
+        self.force_continue_window.setWindowTitle(
+            f"{board.getBoardName()}: Failed Component Detected"
+        )
+
+        # Create layout
+        self.force_continue_window.layout = QVBoxLayout(self.force_continue_window)
+
+        # Add custom buttons
+        exit_button = QPushButton("Exit")
+        retry_button = QPushButton("Retry")
+        continue_button = QPushButton("Continue")
+
+        self.force_continue_window.layout.addWidget(exit_button)
+        self.force_continue_window.layout.addWidget(retry_button)
+        self.force_continue_window.layout.addWidget(continue_button)
+
+        # Create table for modules with checkboxes
+        self.force_continue_window.table = QTableWidget(len(fc7modules), 2)
+        self.force_continue_window.table.setHorizontalHeaderLabels(
+            ["Module", "Enabled"]
+        )
+
+        for row, module in enumerate(fc7modules):
+            # Set the module name in the first column
+            module_name = module.getModuleName()
+            self.force_continue_window.table.setItem(
+                row, 0, QTableWidgetItem(module_name)
+            )
+
+            # Create a QTableWidgetItem for the checkbox in the second column
+            checkbox_item = QTableWidgetItem()
+            checkbox_item.setCheckState(
+                Qt.Checked
+            ) if module.getEnabled() == "1" else checkbox_item.setCheckState(
+                Qt.Unchecked
+            )
+            self.force_continue_window.table.setItem(row, 1, checkbox_item)
+
+        self.force_continue_window.layout.addWidget(self.force_continue_window.table)
+        self.force_continue_window.setLayout(self.force_continue_window.layout)
+
+        self.force_continue_window.abort = True
+
+        def check_enabledModules():  # Not sure if this is maximally efficient
+            for row in range(len(fc7modules)):
+                if (
+                    self.force_continue_window.table.item(row, 1).checkState()
+                    == Qt.Checked
+                ):
+                    for i, module in enumerate(fc7modules):
+                        if (
+                            self.force_continue_window.table.item(i, 1).checkState()
+                            == Qt.Checked
+                        ):
+                            module.setEnabled("1")
+                        else:
+                            module.setEnabled("0")
+
+                    self.force_continue_window.abort = False
+                    return True
+
+            if not hasattr(self.force_continue_window, "label"):
+                self.force_continue_window.label = QLabel(
+                    "At least one module must be enabled."
+                )
+                self.force_continue_window.label.setStyleSheet("color: red;")
+                self.force_continue_window.layout.insertWidget(
+                    3, self.force_continue_window.label
+                )
+            return False
+
+        # Define button handlers
+        def handle_close(event):
+            if self.force_continue_window.abort:
+                for process in self.run_processes:
+                    process.kill()
+                self.halt = True
+                self.haltSignal.emit(self.halt)
+                self.starttime = None
+
+            for row in range(self.force_continue_window.table.rowCount()):
+                if not self.force_continue_window.table.item(row, 1).checkState():
+                    self.statuses[
+                        self.force_continue_window.table.item(row, 0).text()
+                    ] = "0"
+
+            event.accept()
+
+        def handle_retry():
+            if check_enabledModules():
+                self.outputString.emit(f"Retrying {self.currentTest}...")
+                for i in range(len(self.firmware)):
+                    self.runwindow.ResultWidget.runtimes[i][
+                        self.testIndexTracker
+                    ].setText("")  # may need to .update()
+                    self.runwindow.ResultWidget.ProgressBars[i][
+                        self.testIndexTracker
+                    ].setValue(
+                        0
+                    )  # may need to .update(). Automatically adds "0%" text on Progress bar.
+                # NOTE: This changes the test index globally and so will affect both instances of Ph2_ACF.
+                self.testIndexTracker -= 1
+                self.force_continue_window.close()
+
+        def handle_continue():
+            if check_enabledModules():
+                self.force_continue_window.close()
+
+        # Connect buttons to handlers
+        exit_button.clicked.connect(lambda: self.force_continue_window.close())
+        retry_button.clicked.connect(handle_retry)
+        continue_button.clicked.connect(handle_continue)
+
+        self.force_continue_window.closeEvent = handle_close
+        self.force_continue_window.exec_()  # This will block until the window is closed
 
     def upload_to_Panthera(self):
         self.updateProgressBar.emit(
