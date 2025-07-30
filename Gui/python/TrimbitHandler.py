@@ -1,11 +1,13 @@
-
 """
 Class to perform the Trimbit curve scanning
 """
 from PyQt5.QtCore import QThread, pyqtSignal, QObject, QProcess
 from Gui.python.logging_config import logger
-from Gui.python.ANSIColoringParser import parseANSI
 from icicle.icicle.adc_board import ADCBoard
+import Gui.siteSettings as site_settings
+import ROOT
+import os
+from ctypes import c_double
 
 import numpy as np
 import os
@@ -65,12 +67,15 @@ class TrimbitCurveWorker(QThread):
                 break
             self.trimbit_dict = {c: (0, 0) for c in chip_list}
             newTrim = np.array([0, 0])
-            for step in range(self.total_steps):
+            for _ in range(self.total_steps):
                 if self.exiting:
                     break
                 self.trimbit_dict[chip] = tuple(newTrim)
                 self.testhandler.configTest(trimbit_dict=self.trimbit_dict)
-                addTrim = self.run_VDDsweep(chip)
+                if self.testhandler.currentTest == "TrimbitScan_GADC":
+                    addTrim = self.run_VDDsweep_GADC(chip)
+                else:
+                    addTrim = self.run_VDDsweep_normal(chip)
                 newTrim += addTrim
                 self.ProgressValue += 1
                 percent = 100 * self.ProgressValue / (self.total_steps * len(chip_list))
@@ -78,7 +83,8 @@ class TrimbitCurveWorker(QThread):
         if not self.exiting:
             self.measure.emit(self.ADCmeasurements, self.pin_mapping)
             self.finishedSignal.emit()
-    def run_VDDsweep(self, chip, fc7_index=0):
+            
+    def run_VDDsweep_normal(self, chip, fc7_index=0):
         VDDsweep_process = QProcess()
         VDDsweep_process.setProcessChannelMode(QProcess.MergedChannels)
         VDDsweep_process.setWorkingDirectory(
@@ -91,7 +97,34 @@ class TrimbitCurveWorker(QThread):
             "CMSITminiDAQ",
             ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"],
         )
-        # Wait for process to finish, but check for abort every 100ms
+        while VDDsweep_process.state() != QProcess.NotRunning:
+            if self.exiting:
+                VDDsweep_process.kill()
+                VDDsweep_process.waitForFinished(500)
+                logger.info(f"TrimbitScan aborted: killed VDDsweep_process for chip {chip}")
+                break
+            VDDsweep_process.waitForFinished(100)
+        if VDDsweep_process.state() != QProcess.NotRunning:
+            logger.error(f"Ph2_ACF physics test on {self.firmware[fc7_index].getBoardName()} didn't execute correctly.")
+            VDDsweep_process.kill()
+            VDDsweep_process.waitForFinished(500)
+        self.measureADC(chip)
+        add_trim = self.add_trim(chip)
+        return add_trim
+    
+    def run_VDDsweep_GADC(self, chip, fc7_index=0):
+        VDDsweep_process = QProcess()
+        VDDsweep_process.setProcessChannelMode(QProcess.MergedChannels)
+        VDDsweep_process.setWorkingDirectory(
+            os.environ.get("PH2ACF_BASE_DIR") + "/test/"
+        )
+        VDDsweep_process.readyReadStandardOutput.connect(
+            lambda: self.testhandler.on_readyReadStandardOutput_VDDsweep(VDDsweep_process, chip, fc7_index)
+        )
+        VDDsweep_process.start(
+                "CMSITminiDAQ",
+                ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml", "-c", "physics", "-t", str(site_settings.Trimbit_GADC['physics seconds'])],
+            )
         while VDDsweep_process.state() != QProcess.NotRunning:
             if self.exiting:
                 VDDsweep_process.kill()
@@ -104,13 +137,30 @@ class TrimbitCurveWorker(QThread):
             VDDsweep_process.kill()
             VDDsweep_process.waitForFinished(500)
 
-        add_trim = self.measureADC(chip)
-        # ProgressValue increment and progress bar update now handled in run()
+        self.measureGADC(chip)
+        add_trim = self.add_trim(chip)
         return add_trim
     
-    def measureADC(self, chip):
+    def add_trim(self,chip):
         Add_VDDA = 0
         Add_VDDD = 0
+        for pin, name in self.pin_mapping.items():
+            # Get the last measurement for the pin
+            measurement = self.ADCmeasurements[pin][-1][1] if self.ADCmeasurements[pin] else None
+            if name.endswith(str(chip)):
+                if name.startswith("VDDA"):
+                    if measurement > 1.29:
+                        Add_VDDA = 0
+                    else:
+                        Add_VDDA = 1
+                else:
+                    if measurement > 1.29:
+                        Add_VDDD = 0
+                    else:
+                        Add_VDDD = 1
+        # Adds a tuple (trimbit, ADC reading) for each pin in the measured chip
+        return np.array([Add_VDDA, Add_VDDD])
+    def measureADC(self, chip):
         for pin, name in self.pin_mapping.items():
             # Check pin is in measured chip
             logger.info("Pin: {0}, Name: {1}, Chip: {2}".format(pin, name, chip))
@@ -118,18 +168,88 @@ class TrimbitCurveWorker(QThread):
                 measurement = self.adc_board.query_channel(pin)
                 if name.startswith("VDDA"):
                     self.ADCmeasurements[pin].append((self.trimbit_dict[chip][0], measurement))
-                    if measurement > 1.29:
-                        Add_VDDA = 0
-                    else:
-                        Add_VDDA = 1
                 else:
                     self.ADCmeasurements[pin].append((self.trimbit_dict[chip][1], measurement))
-                    if measurement > 1.29:
-                        Add_VDDD = 0
+
+
+
+    def measureGADC(self, chip):
+        try:
+            VDDD = self.getRootMeasurement(chip, "VDDD")
+            VDDA = self.getRootMeasurement(chip, "VDDA")
+            for pin, name in self.pin_mapping.items():
+                # Check pin is in measured chip
+                logger.info("Pin: {0}, Name: {1}, Chip: {2}".format(pin, name, chip))
+                if name.endswith(str(chip)):
+                    if name.startswith("VDDA"):
+                        self.ADCmeasurements[pin].append((self.trimbit_dict[chip][0], VDDA))
                     else:
-                        Add_VDDD = 1
-        # Adds a tuple (trimbit, ADC reading) for each pin in the measured chip
-        return np.array([Add_VDDA, Add_VDDD])
+                        self.ADCmeasurements[pin].append((self.trimbit_dict[chip][1], VDDD))
+        except Exception as e:
+            logger.error(f"Error in measureGADC: {e}")
+
+    def getRootMeasurement(self, chip, measurement_type):
+        """
+        Extracts data from a ROOT file for a specific chip and measurement type.
+
+        Args:
+            root_file_path (str): Path to the ROOT file.
+            chip (int): Chip number to extract data for.
+            measurement_type (str): Measurement type (e.g., 'VDDD', 'VDDA').
+
+        Returns:
+            float: The maximum measurement value for the specified chip.
+        """
+        root_file_path = os.path.join(
+        os.environ.get("PH2ACF_BASE_DIR", ""),
+        "test/Results",
+        f"Run{self.testhandler.RunNumber}_MonitorDQM.root"
+        )
+        
+        if not os.path.exists(root_file_path):
+            logger.error(f"ROOT file not found: {root_file_path}")
+            return None
+
+        try:
+
+            # Open the ROOT file
+            root_file = ROOT.TFile(root_file_path, "READ")
+            if root_file.IsZombie():
+                logger.error(f"Failed to open ROOT file: {root_file_path}")
+                return None
+
+            # Construct the path to the desired data
+            detector_path = f"Detector/Board_0/OpticalGroup_0/Hybrid_0/Chip_{chip}/D_B(0)_O(0)_H(0)_DQM_{measurement_type}_Chip({chip});3"
+
+            # Retrieve the TGraph object
+            tgraph = root_file.Get(detector_path)
+            if not tgraph:
+                logger.error(f"TGraph not found at path: {detector_path}")
+                root_file.Close()
+                return None
+
+            # Extract data points from the TGraph
+            data = []
+            for i in range(tgraph.GetN()):
+                x, y = c_double(), c_double() 
+                tgraph.GetPoint(i, x, y)
+
+                # Using multiplier to account for voltage splitting
+                data.append(float(y.value)*int(site_settings.Trimbit_GADC['multipliers']['VDD']))
+
+            if not data:  # Check if data is empty
+                logger.error(f"No data points found in TGraph at path: {detector_path}")
+                root_file.Close()
+                return None
+
+            measurement = max(data)  # Get max measurement
+            root_file.Close()
+            return measurement
+
+        except Exception as e:
+            logger.error(f"Error extracting data from ROOT file: {e}")
+            return None
+
     measure = pyqtSignal(dict, dict)
     progressSignal = pyqtSignal(str, float)
     finishedSignal = pyqtSignal()

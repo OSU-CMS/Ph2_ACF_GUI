@@ -92,12 +92,18 @@ SLDOScan_GADC = {
     "multipliers":{"VDD":2, "VIN":4}
 }
 
+Trimbit_GADC = {
+    "physics seconds": 5*int(Monitor_SleepTime['TrimbitScan_GADC'])/1000,
+	"multipliers":{"VDD":2}
+}
+
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
 	'fc7.board.1'	:	'192.168.1.80',
 	'fc7.board.2'	:	'192.168.1.81',
+    'fc7.board.3'	:	'192.168.1.82',
 }
 
 ## Update this dictionary for your simple mode cable mappings ##
