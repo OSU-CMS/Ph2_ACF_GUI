@@ -284,6 +284,8 @@ class TestHandler(QObject):
         }  # Initialize all to True
 
     def finished_run_process(self, _, exitStatus, i):
+        logger.info("Inside finsihed_run_process")
+        logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
             self.on_finish(i) 
 
@@ -1199,6 +1201,7 @@ created by Ph2_ACF is empty."
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
 
+        logger.info("ABout to copy inside saveTest")
         try:
             logger.debug("f{self.output_dir=}")
             if not os.path.exists(os.path.join(self.output_dir, self.firmware[processIndex].getBoardName())):
