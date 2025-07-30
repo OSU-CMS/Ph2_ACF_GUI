@@ -47,43 +47,72 @@ class TrimbitCurveWorker(QThread):
         }
 
     def run(self):
+        if not self.initialize_scan():
+            return
+
+        for chip in self.chip_list:
+            if self.exiting:
+                break
+            self.process_chip(chip)
+
+        if not self.exiting:
+            self.measure.emit(self.ADCmeasurements, self.pin_mapping)
+            self.finishedSignal.emit()
+
+    def initialize_scan(self):
+        """
+        Initializes the scan by setting up the ADC board, pin mapping, and chip/pin lists.
+        Returns True if initialization is successful, False otherwise.
+        """
         if "adc_board" not in self.instruments._instrument_dict:
             logger.error("No ADC board found for TrimbitScan.")
-            return
+            return False
+
         self.adc_board = self.instruments._instrument_dict["adc_board"]
         self.pin_mapping = self.PIN_MAPPINGS[
             self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
         ]
         self.adc_board._pin_map = self.pin_mapping
+
         if self.moduleType.split(" ")[-1] == "1x2":
-            chip_list = [12, 13]
-            pin_list = [2, 6, 12, 14]
+            self.chip_list = [12, 13]
+            self.pin_list = [2, 6, 12, 14]
         else:
-            chip_list = [12, 13, 14, 15]
-            pin_list = [1, 2, 3, 4, 12, 13, 14, 15]
-        self.ADCmeasurements = {pin: [] for pin in pin_list}
-        for chip in chip_list:
+            self.chip_list = [12, 13, 14, 15]
+            self.pin_list = [1, 2, 3, 4, 12, 13, 14, 15]
+
+        self.ADCmeasurements = {pin: [] for pin in self.pin_list}
+        return True
+
+    def process_chip(self, chip):
+        """
+        Processes a single chip by iterating through the steps and performing the scan.
+        """
+        self.trimbit_dict = {c: (0, 0) for c in self.chip_list}
+        newTrim = np.array([0, 0])
+
+        for _ in range(self.total_steps):
             if self.exiting:
                 break
-            self.trimbit_dict = {c: (0, 0) for c in chip_list}
-            newTrim = np.array([0, 0])
-            for _ in range(self.total_steps):
-                if self.exiting:
-                    break
-                self.trimbit_dict[chip] = tuple(newTrim)
-                self.testhandler.configTest(trimbit_dict=self.trimbit_dict)
-                if self.testhandler.currentTest == "TrimbitScan_GADC":
-                    addTrim = self.run_VDDsweep_GADC(chip)
-                else:
-                    addTrim = self.run_VDDsweep_normal(chip)
-                newTrim += addTrim
-                self.ProgressValue += 1
-                percent = 100 * self.ProgressValue / (self.total_steps * len(chip_list))
-                self.progressSignal.emit("TrimbitScan", percent)
-        if not self.exiting:
-            self.measure.emit(self.ADCmeasurements, self.pin_mapping)
-            self.finishedSignal.emit()
-            
+            self.process_step(chip, newTrim)
+
+    def process_step(self, chip, newTrim):
+        """
+        Processes a single step for the given chip.
+        """
+        self.trimbit_dict[chip] = tuple(newTrim)
+        self.testhandler.configTest(trimbit_dict=self.trimbit_dict)
+
+        if self.testhandler.currentTest == "TrimbitScan_GADC":
+            addTrim = self.run_VDDsweep_GADC(chip)
+        else:
+            addTrim = self.run_VDDsweep_normal(chip)
+
+        newTrim += addTrim
+        self.ProgressValue += 1
+        percent = 100 * self.ProgressValue / (self.total_steps * len(self.chip_list))
+        self.progressSignal.emit("TrimbitScan", percent)
+    
     def run_VDDsweep_normal(self, chip, fc7_index=0):
         VDDsweep_process = QProcess()
         VDDsweep_process.setProcessChannelMode(QProcess.MergedChannels)
