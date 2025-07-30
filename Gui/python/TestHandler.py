@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 import os
 import glob
 import subprocess
+import traceback
 import threading
 import time
 import re
@@ -274,6 +275,8 @@ class TestHandler(QObject):
         }  # Initialize all to True
 
     def finished_run_process(self, _, exitStatus, i):
+        logger.info("Inside finsihed_run_process")
+        logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
             self.on_finish(i)
 
@@ -407,21 +410,6 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
         self.config_file = ""
         return
-
-    def saveConfigs(self):
-        for key in self.rd53_file.keys():
-            try:
-                os.system(
-                    "cp {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
-                    )
-                )
-            except OSError:
-                print(
-                    "Failed to copy {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
-                    )
-                )
 
     def resetConfigTest(self):
         self.input_dir = ""
@@ -1139,6 +1127,7 @@ created by Ph2_ACF is empty."
                 )
 
             # Copy the most recent file to the output directory
+            logger.info("About to copy inside copyMostRecentROOTFile")
             os.system(f"cp {latest_file} {output_dir}/")
 
     def saveTest(self, processIndex: int, process: QProcess):
@@ -1146,6 +1135,7 @@ created by Ph2_ACF is empty."
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
 
+        logger.info("ABout to copy inside saveTest")
         try:
             if self.RunNumber == "-1":
                 os.system(
@@ -1175,6 +1165,7 @@ created by Ph2_ACF is empty."
 
         except Exception as e:
             logger.error(e)
+            traceback.print_exc()
             if self.currentTest != "CommunicationTest":
                 self.forceContinue(self.firmware[processIndex])
 
@@ -1634,18 +1625,24 @@ created by Ph2_ACF is empty."
     @QtCore.pyqtSlot()
     def on_finish(self, processIndex: int):
         # While the process is killed:
+        # Wait for all processes to finish so FC7s don't get out of sync
+        # May be a source of stalling with the -1 which waits indefinitely
+        logger.info("Inside on_finish")
+        for process in self.run_processes:
+            process.waitForFinished(-1)
+        logger.info("All processes finished")
 
         if self.halt:
             self.haltSignal.emit(True)
             return
 
         if self.run_processes[processIndex].state() == QProcess.Running:
-            print(
+            logger.info(
                 "process is still running...  Attempting to terminate before next test."
             )
             self.run_processes[processIndex].terminate()
             if not self.run_processes[processIndex].waitForFinished(3000):
-                print("process would not terminate, so killing it now...")
+                logger.warning("Process would not terminate, so killing it now...")
                 self.run_processes[processIndex].kill()
 
         if "IVCurve" in self.currentTest:
@@ -1653,12 +1650,15 @@ created by Ph2_ACF is empty."
             return
 
         # Save the output ROOT file to output_dir
-
+        logger.info("About to run saveTest()")
+        time.sleep(30)
         self.saveTest(processIndex, self.run_processes[processIndex])
 
         # validate the results
+        logger.info("About to run validateTest()")
         self.validateTest()
 
+        logger.info("testIndexTracker before increment: %i", self.testIndexTracker)
         self.testIndexTracker += 1
         self.testsAttempted += 1
 
@@ -1679,6 +1679,7 @@ created by Ph2_ACF is empty."
             self.runTest()
 
     def onFinalTest(self, index):
+        logger.debug("Inside onFinalTest")
         for process in self.run_processes:
             if process.state() == QProcess.Running:
                 return
