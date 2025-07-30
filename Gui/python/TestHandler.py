@@ -494,7 +494,8 @@ class TestHandler(QObject):
 
             voltage = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "voltage")
             current = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "current")
-
+            if current < site_settings.SLDOScan_GADC[self.master.module_in_use.split(" ")[-1].lower()]['starting current']:
+                continue
             print(f"Beginning physics test at {voltage}V and {current}A")
             self.outputString.emit(f"Beginning physics test at {voltage}V and {current}A", self.runwindow.ConsoleViews[fc7_index])
 
@@ -517,10 +518,10 @@ class TestHandler(QObject):
                 if not result:
                     logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
                     process.kill()
-        
-        self.ProgressValue+=1
-        for i in range(len(self.firmware)):
-            self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
+        #commented for testing
+        #self.ProgressValue+=1
+        #for i in range(len(self.firmware)):
+        #    self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
 
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
@@ -668,11 +669,15 @@ class TestHandler(QObject):
             self.SLDOScanHandler = SLDOCurveHandler(
                 self.instruments,
                 moduleType=self.ModuleType[5:],
-                end_current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                step_size=site_settings.SLDOScan_probecard[self.master.module_in_use.split(" ")[-1].lower()]["step size"],
+                end_current=site_settings.SLDOScan_probecard[self.master.module_in_use.split(" ")[-1].lower()]["target current"],
+                starting_current=site_settings.SLDOScan_probecard[self.master.module_in_use.split(" ")[-1].lower()]["starting current"],
                 voltage_limit=site_settings.ModuleVoltageMapSLDO[
                     self.master.module_in_use
                 ],
                 execute_each_step=self.ramp_progress_bar,
+                testhandler = self
+
             )
             self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
@@ -1426,8 +1431,7 @@ created by Ph2_ACF is empty."
             self.outputString.emit(
                 text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
             )
-            self.runwindow.ConsoleViews[fc7_index].repaint()
-            #.repaint() should not be necessary - indicates a larger problem in the PyQt workflow.
+            self.runwindow.ConsoleViews[fc7_index].update()
 
             textStr = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]').sub('', textStr)
             match = re.search(r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]", textStr)

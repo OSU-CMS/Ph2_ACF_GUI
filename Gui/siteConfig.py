@@ -75,18 +75,34 @@ IVcurve_range = {
 Monitor_RD53A = "1"
 Monitor_CROC = "1"
 
-SLDOScan_GADC = {
+SLDOScan_probecard = {
     "1x2":{
 		"voltage":2.98,
-		"starting current":3.4,
-		"target current":4.3,
-		"step size":.1
+		"starting current":1.0,
+		"target current":5.6,
+		"step size":.2
 	},
 	"quad":{
 		"voltage":2.98,
 		"starting current":6.6,
-		"target current":7.5,
-		"step size":.1
+		"target current":7.6,
+		"step size":.2
+	},
+    "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
+}
+
+SLDOScan_GADC = {
+    "1x2":{
+		"voltage":2.98,
+		"starting current":3.6,
+		"target current":5.6,
+		"step size":.2
+	},
+	"quad":{
+		"voltage":2.98,
+		"starting current":7.2,
+		"target current":7.6,
+		"step size":.2
 	},
     "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
     "multipliers":{"VDD":2, "VIN":4}
@@ -98,12 +114,13 @@ forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias 
 FC7List =  {
 	'fc7.board.1'	:	'192.168.1.80',
 	'fc7.board.2'	:	'192.168.1.81',
+	'fc7.board.3'	:	'192.168.1.82',
 }
 
 ## Update this dictionary for your simple mode cable mappings ##
 CableMapping = {
     "0" : {"FC7": "fc7.board.1", "FMCID": "L12", "FMCPort": "0"},
-    "1" : {"FC7": "fc7.board.2", "FMCID": "L12", "FMCPort": "0"}
+    "1" : {"FC7": "fc7.board.2", "FMCID": "L12", "FMCPort": "0"},
 }
 
 ## Establish thresholds for chip temperature readings. A chip reading above the

@@ -29,6 +29,8 @@ class SLDOCurveWorker(QThread):
         max_voltage=1.8,
         pin_list=[],
         execute_each_step=lambda: None,
+        testhandler=None,
+
     ):
         super().__init__()
         self.instruments = instrument_cluster
@@ -41,6 +43,8 @@ class SLDOCurveWorker(QThread):
         self.pin_list = pin_list
         self.exiting = False
         self.moduleType = moduleType
+        self.testhandler = testhandler
+        self.Nsteps = int((self.target_current - self.starting_current) / self.step_size)
         self.PIN_MAPPINGS = {
             "DEFAULT": ADCBoard.DEFAULT_PIN_MAP,
             "DOUBLE": {
@@ -136,7 +140,7 @@ class SLDOCurveWorker(QThread):
             delay=self.delay,
             step_size=self.step_size,
             measure=True,
-            measure_function=self.measureADC,
+            measure_function=self.measureADCup,
             measure_args={},
             set_property="current",
         )
@@ -150,7 +154,7 @@ class SLDOCurveWorker(QThread):
             delay=self.delay,
             step_size=self.step_size,
             measure=True,
-            measure_function=self.measureADC,
+            measure_function=self.measureADCdown,
             measure_args={},
             set_property="current",
         )[self.LV_index][1]
@@ -165,7 +169,23 @@ class SLDOCurveWorker(QThread):
         pin10index = index + list(self.adc_board._pin_map.keys()).index(10)
         LV_Voltage_Up = [res[pin10index] for res in data_up]
         LV_Voltage_Down = [res[pin10index] for res in data_down]
+        print('VDDA Voltage Up: {0}\nVDDA Voltage Down: {1}'.format(
+            self.testhandler.VDDAup, self.testhandler.VDDAdown))
+        ### The structure of self.testhandler.VDDDup[channel][chip] os that it is a list of dictionaries
+        ### where the keys are the current and the values are the voltage read from the GADC.
+        for channel in self.instruments._module_dict:
+            for chip in self.testhandler.VDDDup[channel]:
+                VDDDupData = np.array([list(self.testhandler.VDDDup[channel][chip].keys()) ,list(self.testhandler.VINDup[channel][chip].values()), list(self.testhandler.VDDDup[channel][chip].values())])
+                VDDDdownData = np.array([list(self.testhandler.VDDDdown[channel][chip].keys()),list(self.testhandler.VINDdown[channel][chip].values()) ,list(self.testhandler.VDDDdown[channel][chip].values())])
+                VDDAupData = np.array([list(self.testhandler.VDDAup[channel][chip].keys()),list(self.testhandler.VINAup[channel][chip].values()) ,list(self.testhandler.VDDAup[channel][chip].values())])
+                VDDAdownData = np.array([list(self.testhandler.VDDAdown[channel][chip].keys()),list(self.testhandler.VINAdown[channel][chip].values()) ,list(self.testhandler.VDDAdown[channel][chip].values())])
+                print('VDDA Voltage Up: {0}\nVDDA Voltage Down: {1}'.format(VDDAupData, VDDAdownData))
+                print('VDDD Voltage Up: {0}\nVDDD Voltage Down: {1}'.format(VDDDupData, VDDDdownData))
+                VDDDresults = np.concatenate((VDDDupData, VDDDdownData), axis=0)
+                VDDAresults = np.concatenate((VDDAupData, VDDAdownData), axis=0)
 
+                self.measure.emit(VDDDresults, "VDDD_ROC{0}".format(chip))
+                self.measure.emit(VDDAresults, "VDDA_ROC{0}".format(chip))
 
         print("LV Voltages Up: {0}\nLV Voltages Down: {1}".format(
             LV_Voltage_Up, LV_Voltage_Down
@@ -174,6 +194,7 @@ class SLDOCurveWorker(QThread):
 
         for name in self.adc_board._pin_map.values():
             if index != pin10index:
+                print('the name of the pin is {0}'.format(name))
                 ADC_Voltage_Up = [res[index] for res in data_up]
                 result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
                 ADC_Voltage_Down = [res[index] for res in data_down]
@@ -187,8 +208,24 @@ class SLDOCurveWorker(QThread):
 
             results = np.concatenate((result_up, result_down), axis=0)
             # 0:up current, 1:up lv voltage, 2: up adc voltage 3: down current, 4: down lv voltage, 5: down adc voltage
+            # name needs to be a string with the format VDDA_ROC12
+            #self.measure.emit(results, name)
 
-            self.measure.emit(results, name)
+#        for datatype in ('VDDD', 'VDDA'):
+#                for channel in self.instruments._module_dict:
+#                    for chip in self.VDDDup[channel]:
+#                        data = [
+#                            [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
+#                            [float(i) for i in getattr(self, f"VIN{datatype[-1]}up")[channel][chip].values()],
+#                            [float(i) for i in getattr(self, f"{datatype}up")[channel][chip].values()],
+#                            [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
+#                            [float(i) for i in getattr(self, f"VIN{datatype[-1]}down")[channel][chip].values()],
+#                            [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
+#                        ]
+#                        print(data)
+
+#                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+#                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
 
         # All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
@@ -286,9 +323,18 @@ class SLDOCurveWorker(QThread):
         # All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
 
-    def measureADC(self, no_lock=True, *args, **kwargs):
+    def measureADCup(self, no_lock=True, *args, **kwargs):
         self.updateProgress(1)
         ls = []
+        self.testhandler.GADC_execute_each_step(upOrDown='up',total_steps=self.Nsteps)
+        for pin in self.adc_board._pin_map.keys():
+            ls.append(self.adc_board.query_channel(pin))
+        return ls
+
+    def measureADCdown(self, no_lock=True, *args, **kwargs):
+        self.updateProgress(1)
+        ls = []
+        self.testhandler.GADC_execute_each_step(upOrDown='down',total_steps=self.Nsteps)
         for pin in self.adc_board._pin_map.keys():
             ls.append(self.adc_board.query_channel(pin))
         return ls
@@ -372,20 +418,29 @@ class SLDOCurveHandler(QObject):
         instrument_cluster,
         moduleType,
         end_current,
+        starting_current,
+        step_size,
         voltage_limit,
         execute_each_step,
+        testhandler,
     ):
         super(SLDOCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.end_current = end_current
+        self.starting_current = starting_current
+        self.step_size = step_size
         self.voltage_limit = voltage_limit
         self.execute_each_step = execute_each_step
+        self.testhandler = testhandler
         self.test = SLDOCurveWorker(
             self.instruments,
             moduleType=moduleType,
             target_current=self.end_current,
+            step_size=self.step_size,
+            starting_current=self.starting_current,
             max_voltage=self.voltage_limit,
             execute_each_step=self.execute_each_step,
+            testhandler=self.testhandler,
         )
         self.test.measure.connect(self.makePlots)
         self.test.progressSignal.connect(self.transmitProgress)

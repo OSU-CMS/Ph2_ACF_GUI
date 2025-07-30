@@ -448,6 +448,10 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                     txt_file = "CMSIT_RD53_{0}_{1}_{2}.txt".format(
                         module.getModuleName(), module.getFMCPort(), chip.getID()
                     )
+                    
+                if testName == "SingleLaneTest" and chip.getID() == '12':
+                    chip.setLane('0')
+
                 FEChip.SetFE(
                     chip.getID(),
                     "1" if chip.getStatus() else "0",
