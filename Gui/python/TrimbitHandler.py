@@ -47,6 +47,10 @@ class TrimbitCurveWorker(QThread):
         }
 
     def run(self):
+        """
+        Main execution method for the Trimbit scan.
+        Initializes the scan, processes each chip, and emits results upon completion.
+        """
         if not self.initialize_scan():
             return
 
@@ -62,7 +66,9 @@ class TrimbitCurveWorker(QThread):
     def initialize_scan(self):
         """
         Initializes the scan by setting up the ADC board, pin mapping, and chip/pin lists.
-        Returns True if initialization is successful, False otherwise.
+
+        Returns:
+            bool: True if initialization is successful, False otherwise.
         """
         if "adc_board" not in self.instruments._instrument_dict:
             logger.error("No ADC board found for TrimbitScan.")
@@ -87,6 +93,9 @@ class TrimbitCurveWorker(QThread):
     def process_chip(self, chip):
         """
         Processes a single chip by iterating through the steps and performing the scan.
+
+        Args:
+            chip (int): The chip number to process.
         """
         self.trimbit_dict = {c: (0, 0) for c in self.chip_list}
         newTrim = np.array([0, 0])
@@ -99,6 +108,10 @@ class TrimbitCurveWorker(QThread):
     def process_step(self, chip, newTrim):
         """
         Processes a single step for the given chip.
+
+        Args:
+            chip (int): The chip number to process.
+            newTrim (np.array): The current trim values for VDDA and VDDD.
         """
         self.trimbit_dict[chip] = tuple(newTrim)
         self.testhandler.configTest(trimbit_dict=self.trimbit_dict)
@@ -112,8 +125,17 @@ class TrimbitCurveWorker(QThread):
         self.ProgressValue += 1
         percent = 100 * self.ProgressValue / (self.total_steps * len(self.chip_list))
         self.progressSignal.emit("TrimbitScan", percent)
-    
-    def run_VDDsweep_normal(self, chip, fc7_index=0):
+
+    def run_VDDsweep(self, chip, fc7_index, command, args):
+        """
+        Helper method to run a VDD sweep process.
+
+        Args:
+            chip (int): The chip number to process.
+            fc7_index (int): The index of the FC7 board.
+            command (str): The command to execute.
+            args (list): The arguments for the command.
+        """
         VDDsweep_process = QProcess()
         VDDsweep_process.setProcessChannelMode(QProcess.MergedChannels)
         VDDsweep_process.setWorkingDirectory(
@@ -122,10 +144,8 @@ class TrimbitCurveWorker(QThread):
         VDDsweep_process.readyReadStandardOutput.connect(
             lambda: self.testhandler.on_readyReadStandardOutput_VDDsweep(VDDsweep_process, fc7_index)
         )
-        VDDsweep_process.start(
-            "CMSITminiDAQ",
-            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"],
-        )
+        VDDsweep_process.start(command, args)
+
         while VDDsweep_process.state() != QProcess.NotRunning:
             if self.exiting:
                 VDDsweep_process.kill()
@@ -133,89 +153,125 @@ class TrimbitCurveWorker(QThread):
                 logger.info(f"TrimbitScan aborted: killed VDDsweep_process for chip {chip}")
                 break
             VDDsweep_process.waitForFinished(100)
-        if VDDsweep_process.state() != QProcess.NotRunning:
-            logger.error(f"Ph2_ACF physics test on {self.firmware[fc7_index].getBoardName()} didn't execute correctly.")
-            VDDsweep_process.kill()
-            VDDsweep_process.waitForFinished(500)
-        self.measureADC(chip)
-        add_trim = self.add_trim(chip)
-        return add_trim
-    
-    def run_VDDsweep_GADC(self, chip, fc7_index=0):
-        VDDsweep_process = QProcess()
-        VDDsweep_process.setProcessChannelMode(QProcess.MergedChannels)
-        VDDsweep_process.setWorkingDirectory(
-            os.environ.get("PH2ACF_BASE_DIR") + "/test/"
-        )
-        VDDsweep_process.readyReadStandardOutput.connect(
-            lambda: self.testhandler.on_readyReadStandardOutput_VDDsweep(VDDsweep_process, chip, fc7_index)
-        )
-        VDDsweep_process.start(
-                "CMSITminiDAQ",
-                ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml", "-c", "physics", "-t", str(site_settings.Trimbit_GADC['physics seconds'])],
-            )
-        while VDDsweep_process.state() != QProcess.NotRunning:
-            if self.exiting:
-                VDDsweep_process.kill()
-                VDDsweep_process.waitForFinished(500)
-                logger.info(f"TrimbitScan aborted: killed VDDsweep_process for chip {chip}")
-                break
-            VDDsweep_process.waitForFinished(100)
+
         if VDDsweep_process.state() != QProcess.NotRunning:
             logger.error(f"Ph2_ACF physics test on {self.firmware[fc7_index].getBoardName()} didn't execute correctly.")
             VDDsweep_process.kill()
             VDDsweep_process.waitForFinished(500)
 
+    def run_VDDsweep_normal(self, chip, fc7_index=0):
+        """
+        Runs a normal VDD sweep for the given chip.
+
+        Args:
+            chip (int): The chip number to process.
+            fc7_index (int): The index of the FC7 board (default is 0).
+
+        Returns:
+            np.array: The trim adjustments for VDDA and VDDD.
+        """
+        self.run_VDDsweep(
+            chip,
+            fc7_index,
+            "CMSITminiDAQ",
+            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"]
+        )
+        self.measureADC(chip)
+        return self.add_trim(chip)
+
+    def run_VDDsweep_GADC(self, chip, fc7_index=0):
+        """
+        Runs a GADC VDD sweep for the given chip.
+
+        Args:
+            chip (int): The chip number to process.
+            fc7_index (int): The index of the FC7 board (default is 0).
+
+        Returns:
+            np.array: The trim adjustments for VDDA and VDDD.
+        """
+        self.run_VDDsweep(
+            chip,
+            fc7_index,
+            "CMSITminiDAQ",
+            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml", "-c", "physics", "-t", str(site_settings.Trimbit_GADC['physics seconds'])]
+        )
         self.measureGADC(chip)
-        add_trim = self.add_trim(chip)
-        return add_trim
-    
-    def add_trim(self,chip):
-        Add_VDDA = 0
-        Add_VDDD = 0
-        for pin, name in self.pin_mapping.items():
-            # Get the last measurement for the pin
-            measurement = self.ADCmeasurements[pin][-1][1] if self.ADCmeasurements[pin] else None
-            if name.endswith(str(chip)):
-                if name.startswith("VDDA"):
-                    if measurement > 1.29:
-                        Add_VDDA = 0
-                    else:
-                        Add_VDDA = 1
-                else:
-                    if measurement > 1.29:
-                        Add_VDDD = 0
-                    else:
-                        Add_VDDD = 1
-        # Adds a tuple (trimbit, ADC reading) for each pin in the measured chip
+        return self.add_trim(chip)
+
+    def add_trim(self, chip):
+        """
+        Determines the trim adjustments for VDDA and VDDD for the given chip.
+
+        Args:
+            chip (int): The chip number to process.
+
+        Returns:
+            np.array: The trim adjustments for VDDA and VDDD.
+        """
+        Add_VDDA = self.calculate_trim(chip, "VDDA")
+        Add_VDDD = self.calculate_trim(chip, "VDDD")
         return np.array([Add_VDDA, Add_VDDD])
-    def measureADC(self, chip):
+
+    def calculate_trim(self, chip, measurement_type):
+        """
+        Calculates the trim adjustment for a specific measurement type (VDDA or VDDD).
+
+        Args:
+            chip (int): The chip number to process.
+            measurement_type (str): The measurement type ("VDDA" or "VDDD").
+
+        Returns:
+            int: The trim adjustment (0 or 1).
+        """
         for pin, name in self.pin_mapping.items():
-            # Check pin is in measured chip
-            logger.info("Pin: {0}, Name: {1}, Chip: {2}".format(pin, name, chip))
+            if name.endswith(str(chip)) and name.startswith(measurement_type):
+                measurement = self.ADCmeasurements[pin][-1][1] if self.ADCmeasurements[pin] else None
+                if measurement is not None:
+                    return 0 if measurement > 1.29 else 1
+        return 0
+    
+    def measureADC(self, chip):
+        """
+        Measures ADC values for the given chip and updates ADCmeasurements.
+        """
+        for pin, name in self.pin_mapping.items():
             if name.endswith(str(chip)):
                 measurement = self.adc_board.query_channel(pin)
-                if name.startswith("VDDA"):
-                    self.ADCmeasurements[pin].append((self.trimbit_dict[chip][0], measurement))
-                else:
-                    self.ADCmeasurements[pin].append((self.trimbit_dict[chip][1], measurement))
+                self.append_measurement(pin, chip, name, measurement)
+
+    def append_measurement(self, pin, chip, name, measurement):
+        """
+        Appends a measurement to ADCmeasurements for the given pin.
+        """
+        if name.startswith("VDDA"):
+            self.ADCmeasurements[pin].append((self.trimbit_dict[chip][0], measurement))
+        else:
+            self.ADCmeasurements[pin].append((self.trimbit_dict[chip][1], measurement))
 
 
 
     def measureGADC(self, chip):
+        """
+        Measures GADC values for the given chip and updates ADCmeasurements.
+        """
         try:
             VDDD = self.getRootMeasurement(chip, "VDDD")
             VDDA = self.getRootMeasurement(chip, "VDDA")
             for pin, name in self.pin_mapping.items():
-                # Check pin is in measured chip
-                logger.info("Pin: {0}, Name: {1}, Chip: {2}".format(pin, name, chip))
                 if name.endswith(str(chip)):
-                    if name.startswith("VDDA"):
-                        self.ADCmeasurements[pin].append((self.trimbit_dict[chip][0], VDDA))
-                    else:
-                        self.ADCmeasurements[pin].append((self.trimbit_dict[chip][1], VDDD))
+                    self.append_gadc_measurement(pin, chip, name, VDDA, VDDD)
         except Exception as e:
             logger.error(f"Error in measureGADC: {e}")
+
+    def append_gadc_measurement(self, pin, chip, name, VDDA, VDDD):
+        """
+        Appends a GADC measurement to ADCmeasurements for the given pin.
+        """
+        if name.startswith("VDDA"):
+            self.ADCmeasurements[pin].append((self.trimbit_dict[chip][0], VDDA))
+        else:
+            self.ADCmeasurements[pin].append((self.trimbit_dict[chip][1], VDDD))
 
     def getRootMeasurement(self, chip, measurement_type):
         """
