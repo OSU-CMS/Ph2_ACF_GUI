@@ -68,7 +68,7 @@ from icicle.icicle.adc_board import ADCBoard
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
-    haltSignal = pyqtSignal(object)
+    haltSignal = pyqtSignal(object)  # Used to initiate runwindow.finish()
     finishSignal = pyqtSignal(object)
     proceedSignal = pyqtSignal(object)
     outputString = pyqtSignal(str, QPlainTextEdit)
@@ -313,6 +313,7 @@ class TestHandler(QObject):
     def configTest(self, **kwargs):
         # Gets the run number by reading from the RunNumber.txt file.
         try:
+            # NOTE: All processes are going to have the same run number as written, there is no race condition though.
             RunNumberFileName = (
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/RunNumber.txt"
             )
@@ -345,12 +346,21 @@ class TestHandler(QObject):
                 )
                 print("Getting config file {0}".format(self.rd53_file[key]))
 
+        # At first there should be no input_dir and we should be grabbing the default txt files.
+        # After the first test, we should see values or input_dir and output_dir signifiying that the txt files are being updated.
+        logger.info(f"{self.input_dir=}")
+        logger.info(f"{self.output_dir=}")
+
+        # NOTE:  This code is to update the mapping of Ph2_ACF txt files
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
             SetupRD53ConfigfromFile(self.rd53_file, self.output_dir)
         else:
             SetupRD53Config(self.input_dir, self.output_dir, self.rd53_file)
 
+        logger.info(f"{self.config_file=}")
+
+        # NOTE: This code block is used to generate the XML configuration files
         if self.input_dir == "":
             # If no config file(xml file) is given create the XML file and place it into a .tmp directory
             # Create the directory to store the xml file
@@ -437,13 +447,15 @@ class TestHandler(QObject):
 
     # This loops over all the tests by using the on_finish pyqt decorator defined below
     def runCompositeTest(self, testName):
+        logger.info("Inside runCompositeTest")
         if self.halt:
             return
         runTestList = self.test_list
 
         if self.testIndexTracker == len(self.test_list):
-            self.testIndexTracker = 0
-            self.testsAttempted = 0
+            logger.info("Reset testIndexTracker")
+            # self.testIndexTracker = 0
+            # self.testsAttempted = 0
             return
         testName = runTestList[self.testIndexTracker]
         if self.testIndexTracker + 1 < len(
@@ -570,6 +582,7 @@ class TestHandler(QObject):
             )
 
     def runSingleTest(self, testName, nextTest=None):
+        logger.info(f"Text files used for xml generation: {self.txt_files}")
         if "analyze" in testName.lower():
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
@@ -600,6 +613,8 @@ class TestHandler(QObject):
         self.updateOptimizedXMLValues()
         self.configTest()
 
+        # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
+        logger.info(f"{self.output_dir=}")
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
 
@@ -840,8 +855,6 @@ class TestHandler(QObject):
                         ),
                     )
 
-        self.tempHistory = [0.0] * self.numChips
-        self.tempindex = 0
         if "TrimbitScan" in testName:
             self.currentTest = testName
             total_steps = 16
@@ -1436,19 +1449,19 @@ created by Ph2_ACF is empty."
                     ]
 
                     hybridID = module.getFMCPort()
-                    print("HybridID {0}".format(hybridID))
-                    print("chipIDs {0}".format(chipIDs))
-                    CROC = "CROC" in module.getModuleType()
+                    logger.info("HybridID {0}".format(hybridID))
+                    logger.info("chipIDs {0}".format(chipIDs))
+                    isCROC = "CROC" in module.getModuleType()
                     for chipID in chipIDs:
                         updatedXMLValues[f"{hybridID}/{chipID}"] = {}
                         for updatedFEKey in updatedFEKeys:
-                            if CROC:
+                            if isCROC:
                                 if updatedFEKey in [
                                     "LATENCY_CONFIG",
                                     "Vthreshold_LIN",
                                 ]:  # registers not on CROC modules
                                     continue
-                            elif not CROC:
+                            elif not isCROC:
                                 if updatedFEKey in [
                                     "TriggerConfig",
                                     "DAC_GDAC_",
@@ -1651,7 +1664,7 @@ created by Ph2_ACF is empty."
 
         # Save the output ROOT file to output_dir
         logger.info("About to run saveTest()")
-        time.sleep(30)
+        time.sleep(1)
         self.saveTest(processIndex, self.run_processes[processIndex])
 
         # validate the results
@@ -1679,7 +1692,7 @@ created by Ph2_ACF is empty."
             self.runTest()
 
     def onFinalTest(self, index):
-        logger.debug("Inside onFinalTest")
+        logger.info("Inside onFinalTest")
         for process in self.run_processes:
             if process.state() == QProcess.Running:
                 return
@@ -1690,6 +1703,7 @@ created by Ph2_ACF is empty."
             if index == len(
                 self.test_list
             ):  # Checks that this was the last test in the sequence.
+                logger.info("index == len.self.test_list")
                 self.powerSignal.emit()
                 EnableReRun = True
 
