@@ -274,7 +274,10 @@ class TestHandler(QObject):
         logger.info("Inside finsihed_run_process")
         logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
-            self.on_finish(i)
+            self.finished_run_processes += 1
+            if self.finished_processes == len(self.run_processes):
+                self.finished_processes = 0
+                self.on_finish(i)
 
     def initializeRD53Dict(self):
         self.rd53_file = {}
@@ -352,6 +355,8 @@ class TestHandler(QObject):
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
             SetupRD53ConfigfromFile(self.rd53_file, self.output_dir)
         else:
+            logger.info(f"{self.testIndexTracker=}")
+            print(os.listdir(self.input_dir))
             SetupRD53Config(self.input_dir, self.output_dir, self.rd53_file)
 
         logger.info(f"{self.config_file=}")
@@ -606,11 +611,6 @@ class TestHandler(QObject):
 
         self.updateOptimizedXMLValues()
         self.configTest()
-
-        # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
-        logger.info(f"{self.output_dir=}")
-        self.outputFile = self.output_dir + "/output.txt"
-        self.errorFile = self.output_dir + "/error.txt"
 
         # Make sure that the GUI is not trying to write to the root directory
         try:
@@ -875,6 +875,9 @@ class TestHandler(QObject):
     def setupQProcess(self):
         self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
+
+        # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
+        logger.info(f"{self.output_dir=}")
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
         # if os.path.exists(self.outputFile):
@@ -936,17 +939,6 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
                 )
-        # if self.currentTest == ["exampletest"]:               #for tests needing -c
-        #    for process, firmware in zip(self.run_processes, self.firmware):
-        #        process.start(
-        #            "CMSITminiDAQ",
-        #            [
-        #                "-f",
-        #                f"CMSIT_{firmware.getBoardName()}.xml",
-        #                "-c",
-        #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
-        #            ],
-        #        )
         if self.currentTest == "IREF_GADC":
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
@@ -968,6 +960,7 @@ class TestHandler(QObject):
                     ],
                 )
         else:
+            i = 0
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
@@ -979,6 +972,16 @@ class TestHandler(QObject):
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
                 )
+                # Check if the process is running
+                if process.state() == QProcess.NotRunning:
+                    logger.error(
+                        f"Process for firmware {self.firmware[i].getBoardName()} failed to start."
+                    )
+                else:
+                    logger.info(
+                        f"Process for firmware {self.firmware[i].getBoardName()} started successfully."
+                    )
+                i += 1
 
     def abortTest(self):
         self.halt = True
@@ -1111,6 +1114,7 @@ class TestHandler(QObject):
             search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
             logger.debug(f"Looking for {search_pattern}")
             print(f"Looking for {search_pattern}")
+            print("Search pattern exists?:", os.path.exists(search_pattern))
 
             # Find all matching files
             matching_files = glob.glob(search_pattern)
@@ -1190,6 +1194,8 @@ created by Ph2_ACF is empty."
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
 
+        logger.info("Inside on_readyReadStandardOutput")
+        logger.info("Looking at the output of process: %s", processIndex)
         mode = "a" if os.path.exists(self.outputFile) else "w"
         with open(self.outputFile, mode) as outputfile:
             outputfile.write(alltext)
@@ -1630,9 +1636,8 @@ created by Ph2_ACF is empty."
         # While the process is killed:
         # Wait for all processes to finish so FC7s don't get out of sync
         # May be a source of stalling with the -1 which waits indefinitely
+
         logger.info("Inside on_finish")
-        for process in self.run_processes:
-            process.waitForFinished(-1)
         logger.info("All processes finished")
 
         if self.halt:
