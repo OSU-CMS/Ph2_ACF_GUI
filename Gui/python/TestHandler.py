@@ -654,11 +654,6 @@ class TestHandler(QObject):
         self.updateOptimizedXMLValues()
         self.configTest()
 
-        # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
-        logger.info(f"{self.output_dir=}")
-        self.outputFile = self.output_dir + "/output.txt"
-        self.errorFile = self.output_dir + "/error.txt"
-
         # Make sure that the GUI is not trying to write to the root directory
         try:
             assert self.output_dir != ""
@@ -924,6 +919,7 @@ class TestHandler(QObject):
         self.tempindex = 0
 
         # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
+        logger.info(f"{self.output_dir=}")
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
         # if os.path.exists(self.outputFile):
@@ -1265,6 +1261,8 @@ created by Ph2_ACF is empty."
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
 
+        logger.info("Inside on_readyReadStandardOutput")
+        logger.info("Looking at the output of process: %s", processIndex)
         mode = "a" if os.path.exists(self.outputFile) else "w"
         with open(self.outputFile, mode) as outputfile:
             outputfile.write(alltext)
