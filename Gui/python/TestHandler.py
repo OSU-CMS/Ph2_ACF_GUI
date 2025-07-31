@@ -353,6 +353,7 @@ class TestHandler(QObject):
     def configTest(self, **kwargs):
         # Gets the run number by reading from the RunNumber.txt file.
         try:
+            # NOTE: All processes are going to have the same run number as written, there is no race condition though.
             RunNumberFileName = (
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/RunNumber.txt"
             )
@@ -485,11 +486,13 @@ class TestHandler(QObject):
 
     # This loops over all the tests by using the on_finish pyqt decorator defined below
     def runCompositeTest(self, testName):
+        logger.info("Inside runCompositeTest")
         if self.halt:
             return
         runTestList = self.test_list
 
         if self.testIndexTracker == len(self.test_list):
+            logger.debug("Reset testIndexTracker")
             # self.testIndexTracker = 0
             # self.testsAttempted = 0
             return
@@ -620,6 +623,7 @@ class TestHandler(QObject):
             )
 
     def runSingleTest(self, testName, nextTest=None):
+        logger.info(f"Text files used for xml generation: {self.txt_files}")
         if "analyze" in testName.lower():
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
@@ -650,6 +654,8 @@ class TestHandler(QObject):
         self.updateOptimizedXMLValues()
         self.configTest()
 
+        # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
+        logger.info(f"{self.output_dir=}")
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
 
@@ -1773,7 +1779,7 @@ created by Ph2_ACF is empty."
             self.runTest()
 
     def onFinalTest(self, index):
-        logger.debug("Inside onFinalTest")
+        logger.info("Inside onFinalTest")
         for process in self.run_processes:
             if process.state() == QProcess.Running:
                 return
@@ -1784,6 +1790,7 @@ created by Ph2_ACF is empty."
             if index == len(
                 self.test_list
             ):  # Checks that this was the last test in the sequence.
+                logger.info("index == len.self.test_list")
                 self.powerSignal.emit()
                 EnableReRun = True
 
