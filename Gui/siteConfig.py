@@ -79,13 +79,13 @@ SLDOScan_probecard = {
     "1x2":{
 		"voltage":2.98,
 		"starting current":1.0,
-		"target current":5.6,
+		"target current":4.6,
 		"step size":.2
 	},
 	"quad":{
 		"voltage":2.98,
 		"starting current":6.6,
-		"target current":7.6,
+		"target current":7.8,
 		"step size":.2
 	},
     "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
@@ -94,14 +94,14 @@ SLDOScan_probecard = {
 SLDOScan_GADC = {
     "1x2":{
 		"voltage":2.98,
-		"starting current":3.6,
-		"target current":5.6,
+		"starting current":3.2,
+		"target current":4.6,
 		"step size":.2
 	},
 	"quad":{
 		"voltage":2.98,
 		"starting current":7.2,
-		"target current":7.6,
+		"target current":7.8,
 		"step size":.2
 	},
     "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
@@ -149,7 +149,7 @@ ModuleVoltageMapSLDO = {
 	"TFPX RD53A Quad" : 2.98,
 	"TEPX RD53A Quad" : 2.0,
 	"TBPX RD53A Quad" : 2.98,
-	"TFPX CROC 1x2"  : 2.3,
+	"TFPX CROC 1x2"  : 2.98,
 	"TEPX CROC 1x2"  : 2.3,
 	"TBPX CROC 1x2"  : 2.3,
 	"TFPX CROC Quad" : 2.98,

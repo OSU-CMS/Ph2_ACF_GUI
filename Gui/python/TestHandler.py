@@ -518,10 +518,11 @@ class TestHandler(QObject):
                 if not result:
                     logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
                     process.kill()
-        #commented for testing
-        #self.ProgressValue+=1
-        #for i in range(len(self.firmware)):
-        #    self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
+
+        if self.currentTest == "SLDOScan_GADC":
+            self.ProgressValue+=1
+            for i in range(len(self.firmware)):
+                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
 
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
@@ -621,8 +622,8 @@ class TestHandler(QObject):
                         ]
                         print(data)
 
-                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
-                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", "GADC")
+                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", "GADC")
             self.SLDOScanFinished()
             return
 
@@ -677,9 +678,8 @@ class TestHandler(QObject):
                 ],
                 execute_each_step=self.ramp_progress_bar,
                 testhandler = self
-
             )
-            self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
+            self.SLDOScanHandler.makeSLDOplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
             self.SLDOScanHandler.abortSignal.connect(self.urgentStop)
@@ -1584,14 +1584,14 @@ created by Ph2_ACF is empty."
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(stepSize)
 
-    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
         for module in self.modules:
             moduleName = module.getModuleName()
-            filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(
-                self.output_dir, moduleName, pin
+            filename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.svg".format(
+                self.output_dir, moduleName, pin, method
             )
-            csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(
-                self.output_dir, moduleName, pin
+            csvfilename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.csv".format(
+                self.output_dir, moduleName, pin, method
             )
             self.SLDOfilelist.append(csvfilename)
             # The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
