@@ -706,7 +706,8 @@ class TestHandler(QObject):
                         step_size=10,
                         execute_each_step=lambda: self.ramp_progress_bar(
                             [default_hv_voltage] * len(self.instruments._module_dict.values())
-                            )
+                            ),
+                        break_loop=lambda: self.halt,
                     )
 
         self.tempHistory = [0.0] * self.numChips
@@ -743,7 +744,11 @@ class TestHandler(QObject):
             self.outputfile = open(self.outputFile, "a")
         else:
             self.outputfile = open(self.outputFile, "w")
-
+            
+                # Check if the test was aborted
+        if self.halt:
+            print("Test aborted. Skipping QProcess setup.")
+            return
         for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
