@@ -228,7 +228,7 @@ class TestHandler(QObject):
                     exitCode, exitStatus, j
                 )
             )
-
+        self.finished_processes = 0
         self.readingOutput = False
         self.ProgressingMode = "None"
         self.ProgressValue = 0
@@ -278,7 +278,8 @@ class TestHandler(QObject):
         logger.info("Inside finsihed_run_process")
         logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
-            self.finished_run_processes += 1
+            # Ensure that all processes have finished before continuing
+            self.finished_processes += 1
             if self.finished_processes == len(self.run_processes):
                 self.finished_processes = 0
                 self.on_finish(i)
