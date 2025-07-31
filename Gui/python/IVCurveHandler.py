@@ -75,10 +75,15 @@ class IVCurveThread(QThread):
                 delay=0.2,
                 measure=True,
                 execute_each_step=self.getProgress,
+                break_loop= lambda: self.exiting,
             )[0]
 
-            # The physics test can be stopped by pressing enter
 
+            if self.exiting:
+                print("IV Curve scan was aborted by user.")
+                return
+                        
+            # The physics test can be stopped by pressing enter
             measurementStr = {
                 "voltage": [value[4] for value in measurements],
                 "current": [value[5] for value in measurements],
