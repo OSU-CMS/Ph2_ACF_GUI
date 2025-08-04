@@ -142,7 +142,7 @@ class ModuleBox(QWidget):
                 self.VersionCombo.setCurrentText(1)
 
     def getSerialNumber(self):
-        return self.SerialEdit.text()
+        return self.SerialEdit.text().upper()
 
     def getFMCID(self):
         return self.FMCEdit.text()

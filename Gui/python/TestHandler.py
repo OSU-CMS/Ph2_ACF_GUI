@@ -458,34 +458,6 @@ class TestHandler(QObject):
             )
 
 
-    # def run_VDDsweep(self,total_steps:int = 16, chip = 12, fc7_index : int = 0) -> None:
-    #     VDDsweep_process = QProcess()
-    #     self.outputString.emit("Running VDD sweep test", self.runwindow.ConsoleViews[fc7_index])
-
-    #     VDDsweep_process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-    #     VDDsweep_process.setWorkingDirectory(
-    #         os.environ.get("PH2ACF_BASE_DIR") + "/test/"
-    #         )
-
-    #     VDDsweep_process.readyReadStandardOutput.connect(
-    #             lambda: self.on_readyReadStandardOutput_VDDsweep(VDDsweep_process, fc7_index)
-    #         )
-            
-    #     VDDsweep_process.start(
-    #         "CMSITminiDAQ",
-    #         ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"],
-    #         )
-
-    #     if VDDsweep_process.state() != QProcess.NotRunning:
-    #         result = VDDsweep_process.waitForFinished(-1) #waits indefinitely
-    #         if not result:
-    #             logger.error(f"Ph2_ACF physics test on {self.firmware[fc7_index].getBoardName()} didn't excute correctly.")
-    #             VDDsweep_process.kill()
-    #     add_trim = self.measureADC(chip)
-    #     self.ProgressValue += 1
-    #     for i in range(len(self.firmware)):
-    #         self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100 * self.ProgressValue / total_steps)
-    #     return add_trim
 
     def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_GADC["physics seconds"], fc7_index : int = 0) -> None:
 
@@ -739,7 +711,8 @@ class TestHandler(QObject):
                         step_size=10,
                         execute_each_step=lambda: self.ramp_progress_bar(
                             [default_hv_voltage] * len(self.instruments._module_dict.values())
-                            )
+                            ),
+                        break_loop=lambda: self.halt,
                     )
 
         self.tempHistory = [0.0] * self.numChips
@@ -776,7 +749,11 @@ class TestHandler(QObject):
             self.outputfile = open(self.outputFile, "a")
         else:
             self.outputfile = open(self.outputFile, "w")
-
+            
+                # Check if the test was aborted
+        if self.halt:
+            print("Test aborted. Skipping QProcess setup.")
+            return
         for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
@@ -1644,28 +1621,25 @@ created by Ph2_ACF is empty."
         for module in self.modules:
             moduleName = module.getModuleName()
             for pin, name in pin_mapping.items():
-                data = trimbit_dict.get(pin, [])
-                if not data:
-                    continue  # Skip pins with no data
-                trimbits, values = zip(*data)
-                svgfilename = "{0}/TrimbitCurve_Module_{1}_{2}.svg".format(
-                    self.output_dir, moduleName, name
-                )
-                csvfilename = "{0}/TrimbitCurve_Module_{1}_{2}.csv".format(
-                    self.output_dir, moduleName, name
-                )
-                np.savetxt(csvfilename, np.column_stack([trimbits, values]), delimiter=",", header="Trimbit,Measurement", comments="")
-                csvfiles.append(csvfilename)
-                plt.figure()
-                plt.plot(trimbits, values, "-o", label=name)
-                plt.xlabel("Trimbit")
-                plt.ylabel("Measurement (V)")
-                plt.title(f"Trimbit Scan for {name}")
-                plt.grid(True)
-                plt.legend()
-                plt.savefig(svgfilename)
-                plt.close()
-                self.figurelist.setdefault(name, []).append(svgfilename)
+                if pin in trimbit_dict:
+                    data = np.array(trimbit_dict[pin], dtype=object)
+                    if data.size == 0:
+                        continue
+                    trimbits, values = data[:, 0], data[:, 1]
+
+                    # Filter out invalid data
+                    trimbits = np.array(trimbits, dtype=float)
+                    values = np.array(values, dtype=float)
+                    print(f"Trimbits: {trimbits}")
+                    print(f"Values: {values}")
+                    valid_indices = ~np.isnan(values)
+                    trimbits = trimbits[valid_indices]
+                    values = values[valid_indices]
+
+                    # Save to CSV
+                    csvfilename = f"{self.output_dir}/TrimbitCurve_Module_{moduleName}_{name}.csv"
+                    np.savetxt(csvfilename, np.column_stack([trimbits, values]), delimiter=",", header="Trimbit,Measurement", comments="")
+                    csvfiles.append(csvfilename)
         return csvfiles
 
     def IVCurveFinished(self, test: str, measure: dict):
