@@ -466,7 +466,8 @@ class TestHandler(QObject):
 
             voltage = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "voltage")
             current = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "current")
-
+            if current < site_settings.SLDOScan_GADC[self.master.module_in_use.split(" ")[-1].lower()]['starting current']:
+                continue
             print(f"Beginning physics test at {voltage}V and {current}A")
             self.outputString.emit(f"Beginning physics test at {voltage}V and {current}A", self.runwindow.ConsoleViews[fc7_index])
 
@@ -489,10 +490,11 @@ class TestHandler(QObject):
                 if not result:
                     logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
                     process.kill()
-        
-        self.ProgressValue+=1
-        for i in range(len(self.firmware)):
-            self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
+
+        if self.currentTest == "SLDOScan_GADC":
+            self.ProgressValue+=1
+            for i in range(len(self.firmware)):
+                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
 
     def runSingleTest(self, testName, nextTest = None):
         if "analyze" in testName.lower():
@@ -592,8 +594,8 @@ class TestHandler(QObject):
                         ]
                         print(data)
 
-                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
-                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}")
+                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", "GADC")
+                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", "GADC")
             self.SLDOScanFinished()
             return
 
@@ -640,13 +642,16 @@ class TestHandler(QObject):
             self.SLDOScanHandler = SLDOCurveHandler(
                 self.instruments,
                 moduleType=self.ModuleType[5:],
-                end_current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                step_size=site_settings.SLDOScan_probecard[self.master.module_in_use.split(" ")[-1].lower()]["step size"],
+                end_current=site_settings.SLDOScan_probecard[self.master.module_in_use.split(" ")[-1].lower()]["target current"],
+                starting_current=site_settings.SLDOScan_probecard[self.master.module_in_use.split(" ")[-1].lower()]["starting current"],
                 voltage_limit=site_settings.ModuleVoltageMapSLDO[
                     self.master.module_in_use
                 ],
                 execute_each_step=self.ramp_progress_bar,
+                testhandler = self
             )
-            self.SLDOScanHandler.makeplotSignal.connect(self.makeSLDOPlot)
+            self.SLDOScanHandler.makeSLDOplotSignal.connect(self.makeSLDOPlot)
             self.SLDOScanHandler.finishedSignal.connect(self.SLDOScanFinished)
             self.SLDOScanHandler.progressSignal.connect(self.updateProgress)
             self.SLDOScanHandler.abortSignal.connect(self.urgentStop)
@@ -816,7 +821,7 @@ class TestHandler(QObject):
         #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
         #            ],
         #        )
-        if self.currentTest == "IREF_GADC":
+        if self.currentTest == "IREF_GADC":  #FIXME need to add -t so the scan will stop at the end
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
@@ -825,6 +830,8 @@ class TestHandler(QObject):
                         f"CMSIT_{firmware.getBoardName()}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                        "-t",
+                        "5",
                     ],
                 )
         elif self.currentTest == "TrimbitScan":
@@ -1403,8 +1410,7 @@ created by Ph2_ACF is empty."
             self.outputString.emit(
                 text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
             )
-            self.runwindow.ConsoleViews[fc7_index].repaint()
-            #.repaint() should not be necessary - indicates a larger problem in the PyQt workflow.
+            self.runwindow.ConsoleViews[fc7_index].update()
 
             textStr = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]').sub('', textStr)
             match = re.search(r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]", textStr)
@@ -1557,14 +1563,14 @@ created by Ph2_ACF is empty."
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(stepSize)
 
-    def makeSLDOPlot(self, total_result: np.ndarray, pin: str):
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
         for module in self.modules:
             moduleName = module.getModuleName()
-            filename = "{0}/SLDOCurve_Module_{1}_{2}.svg".format(
-                self.output_dir, moduleName, pin
+            filename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.svg".format(
+                self.output_dir, moduleName, pin, method
             )
-            csvfilename = "{0}/SLDOCurve_Module_{1}_{2}.csv".format(
-                self.output_dir, moduleName, pin
+            csvfilename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.csv".format(
+                self.output_dir, moduleName, pin, method
             )
             self.SLDOfilelist.append(csvfilename)
             # The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
@@ -1828,6 +1834,7 @@ created by Ph2_ACF is empty."
         self.testIndexTracker += 1
         self.testsAttempted += 1
 
+        EnableReRun = False
         if isCompositeTest(self.info):                
             if self.testIndexTracker == len(self.test_list):
                 self.powerSignal.emit()
