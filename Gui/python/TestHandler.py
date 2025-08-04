@@ -844,7 +844,7 @@ class TestHandler(QObject):
         #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
         #            ],
         #        )
-        if self.currentTest == "IREF_GADC":
+        if self.currentTest == "IREF_GADC":  #FIXME need to add -t so the scan will stop at the end
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
@@ -853,6 +853,8 @@ class TestHandler(QObject):
                         f"CMSIT_{firmware.getBoardName()}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                        "-t",
+                        "5",
                     ],
                 )
         elif self.currentTest == "TrimbitScan":
@@ -1858,6 +1860,7 @@ created by Ph2_ACF is empty."
         self.testIndexTracker += 1
         self.testsAttempted += 1
 
+        EnableReRun = False
         if isCompositeTest(self.info):                
             if self.testIndexTracker == len(self.test_list):
                 self.powerSignal.emit()
