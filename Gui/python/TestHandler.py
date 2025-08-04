@@ -1095,7 +1095,7 @@ class TestHandler(QObject):
         if felis_instance is not None:
             try:
                 plot_paths = []
-                scratch = os.path.join(self.felis.path_scratch, moduleName)
+                scratch = os.path.join(felis_instance.path_scratch, moduleName)
                 test = "{0:02d}_{1}".format(self.testIndexTracker, self.currentTest)
                 directory = os.path.join(scratch, test)
 
