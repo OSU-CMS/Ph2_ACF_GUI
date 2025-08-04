@@ -1724,7 +1724,7 @@ created by Ph2_ACF is empty."
                     len(self.BBanalysis_root_files) > 0
                     and "analyze" in self.currentTest
                 ):
-                    for beboard in self.firmware:
+                    for fc7_index, beboard in enumerate(self.firmware):
                         boardID = beboard.getBoardID()
                         for OG in beboard.getAllOpticalGroups().values():
                             ogID = OG.getOpticalGroupID()
@@ -1737,7 +1737,7 @@ created by Ph2_ACF is empty."
                                     "module": module,
                                 }
                                 index -= 1
-                                self.felis.set_result(
+                                self.felis_instances[fc7_index].set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
                                     f"{index:02d}_CrossTalk",
