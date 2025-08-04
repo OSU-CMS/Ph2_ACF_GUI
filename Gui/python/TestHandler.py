@@ -205,15 +205,26 @@ class TestHandler(QObject):
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
 
-        felisScratchDir = "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch"
-        if not os.path.isdir(felisScratchDir):
-            try:
-                os.makedirs(felisScratchDir)
+        # Need multiple felis instances to have two separate scratch directories
+        # to handle multiple FC7s 
+        self.felis_instances = [] 
+        felisScratchDirBase = "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch"
+        felis_directories = [os.path.join(felisScratchDirBase, fc7.getBoardName()) for fc7 in self.firmware]
+        try:
+            # Create a unique scratch directory for each FC7
+            for directory in felis_directories:
+                os.makedirs(directory)
                 logger.info("New Felis scratch directory created.")
-            except OSError as e:
-                logger.error(f"Error making Felis scratch directory: {e.strerror}")
 
-        self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
+        except FileExistsError:
+            # If directory already exists, fantastic.
+            logger.debug("The scratch directory already exists. Continuing")
+            pass
+
+        except OSError as e:
+            logger.error(f"Error making Felis scratch directory: {e.strerror}")
+            
+        self.felis_instances = [Felis(felis_directory, False) for felis_directory in felis_directories] 
         self.grades = []
 
         self.figurelist = {}
@@ -1034,7 +1045,7 @@ class TestHandler(QObject):
             print("IREF MATCH STATUS BEFORE VALIDATION:", self.iref_match_status)
             print("MODULE NAMES:", [module.getModuleName() for module in self.modules])
 
-            for beboard in self.firmware:
+            for i, beboard in enumerate(self.firmware):
                 boardID = beboard.getBoardID()
                 for OG in beboard.getAllOpticalGroups().values():
                     ogID = OG.getOpticalGroupID()
@@ -1048,7 +1059,7 @@ class TestHandler(QObject):
                             "module": module,
                         }
                         result, self.BBanalysis_root_files = ResultGrader(
-                            self.felis,
+                            self.felis_instances[i],
                             self.output_dir,
                             self.currentTest,
                             self.testIndexTracker,
@@ -1108,6 +1119,7 @@ class TestHandler(QObject):
     # self.output_dir the .root file modified most recently. This will copy over the wrong file if somebody
     # manually edits the .root file in the PH2ACF directory, so there may be a better way to do this
     def copyMostRecentRootFile(self, RunNumber, base_dir, output_dir, test):
+        logger.debug("Inside copyMostRecentRootFile()")
         files = root_files[test] if test in root_files.keys() else (test,)
         for name in files:
             name = name.split("_")[0]
@@ -1145,15 +1157,20 @@ created by Ph2_ACF is empty."
                 )
 
             # Copy the most recent file to the output directory
-            logger.info("About to copy inside copyMostRecentROOTFile")
-            os.system(f"cp {latest_file} {output_dir}/")
+            logger.debug("About to copy inside copyMostRecentROOTFile")
+
+            # When using multiple FC7s root files will get overwritten so need to attach
+            # what fc7 the test was run on to file name
+            fc7_in_use: str = base_dir.split("/")[-1].replace(".", "_")
+            file_name: str = latest_file.split("/")[-1]
+            os.system(f"cp {latest_file} {output_dir}/{fc7_in_use}_{file_name}")
 
     def saveTest(self, processIndex: int, process: QProcess):
+        logger.debug("Inside saveTest")
         if process.state() == QProcess.Running:
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
 
-        logger.info("ABout to copy inside saveTest")
         try:
             if self.RunNumber == "-1":
                 os.system(
@@ -1202,8 +1219,6 @@ created by Ph2_ACF is empty."
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
 
-        logger.info("Inside on_readyReadStandardOutput")
-        logger.info("Looking at the output of process: %s", processIndex)
         mode = "a" if os.path.exists(self.outputFile) else "w"
         with open(self.outputFile, mode) as outputfile:
             outputfile.write(alltext)
@@ -1648,8 +1663,7 @@ created by Ph2_ACF is empty."
         # Wait for all processes to finish so FC7s don't get out of sync
         # May be a source of stalling with the -1 which waits indefinitely
 
-        logger.info("Inside on_finish")
-        logger.info("All processes finished")
+        logger.debug("All processes finished")
 
         if self.halt:
             self.haltSignal.emit(True)
@@ -1669,15 +1683,15 @@ created by Ph2_ACF is empty."
             return
 
         # Save the output ROOT file to output_dir
-        logger.info("About to run saveTest()")
+        logger.debug("About to run saveTest()")
         time.sleep(1)
         self.saveTest(processIndex, self.run_processes[processIndex])
 
         # validate the results
-        logger.info("About to run validateTest()")
+        logger.debug("About to run validateTest()")
         self.validateTest()
 
-        logger.info("testIndexTracker before increment: %i", self.testIndexTracker)
+        logger.debug("testIndexTracker before increment: %i", self.testIndexTracker)
         self.testIndexTracker += 1
         self.testsAttempted += 1
 
@@ -1740,7 +1754,7 @@ created by Ph2_ACF is empty."
                                     "crosstalk",
                                 )
                                 self.figurelist[module.getModuleName()] = (
-                                    self.collect_plots(module.getModuleName())
+                                    self.collect_plots(module.getModuleName(), beboard.getName())
                                 )
                 if self.autoSave:
                     self.runwindow.upload_to_Panthera_starter()
