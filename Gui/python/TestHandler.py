@@ -2235,9 +2235,6 @@ created by Ph2_ACF is empty."
         try:
             self.runwindow.UploadButton.setDisabled(True)
             counter = 0
-self.modules = [
-            module for beboard in self.firmware for module in beboard.getModules()
-        ]
             for i, fc7 in enumerate(self.firmware):
                 for module in fc7.getModules():
                     status, message = self.felis_instances[i].upload_results(
