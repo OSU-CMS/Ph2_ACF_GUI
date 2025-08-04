@@ -1074,7 +1074,7 @@ class TestHandler(QObject):
                         ] += 1
 
                         self.figurelist[module.getModuleName()] = self.collect_plots(
-                            module.getModuleName()
+                            module.getModuleName(), felis_instance=self.felis_instances[i]
                         )
 
             self.updateValidation.emit(results)
@@ -1084,29 +1084,35 @@ class TestHandler(QObject):
         except Exception as err:
             logger.error(err)
 
-    def collect_plots(self, moduleName):
-        try:
-            plot_paths = []
-            scratch = os.path.join(self.felis.path_scratch, moduleName)
-            test = "{0:02d}_{1}".format(self.testIndexTracker, self.currentTest)
-            directory = os.path.join(scratch, test)
+    def collect_plots(self, moduleName, felis_instance=None):
+        if felis_instance is not None:
+            try:
+                plot_paths = []
+                scratch = os.path.join(self.felis.path_scratch, moduleName)
+                test = "{0:02d}_{1}".format(self.testIndexTracker, self.currentTest)
+                directory = os.path.join(scratch, test)
 
-            for filename in os.listdir(directory):
-                if filename.lower().endswith(".svg") or filename.lower().endswith(
-                    ".png"
-                ):
-                    plot_paths.append(os.path.join(directory, filename))
+                for filename in os.listdir(directory):
+                    if filename.lower().endswith(".svg") or filename.lower().endswith(
+                        ".png"
+                    ):
+                        plot_paths.append(os.path.join(directory, filename))
 
-            return plot_paths
-        except Exception as e:
-            if "IVCurve" in self.currentTest or "SLDOScan" in self.currentTest:
-                if moduleName in self.figurelist.keys():
-                    return self.figurelist[moduleName]
+                return plot_paths
+            except Exception as e:
+                if "IVCurve" in self.currentTest or "SLDOScan" in self.currentTest:
+                    if moduleName in self.figurelist.keys():
+                        return self.figurelist[moduleName]
+                    else:
+                        return []
                 else:
+                    print("testHandler.collect_plots Exception:", repr(e))
                     return []
-            else:
-                print("testHandler.collect_plots Exception:", repr(e))
-                return []
+        else:
+            logger.error(
+                "Felis instance is None. Cannot collect plots without a valid Felis instance."
+            )
+            return []
 
     # For root files with the same RunNumber in the PH2ACF directory, this function only copies over to
     # self.output_dir the .root file modified most recently. This will copy over the wrong file if somebody
@@ -1744,7 +1750,7 @@ created by Ph2_ACF is empty."
                                     "crosstalk",
                                 )
                                 self.figurelist[module.getModuleName()] = (
-                                    self.collect_plots(module.getModuleName(), beboard.getName())
+                                    self.collect_plots(module.getModuleName(), felis_instance=self.felis_instances[fc7_index])
                                 )
                 if self.autoSave:
                     self.runwindow.upload_to_Panthera_starter()
@@ -2211,25 +2217,28 @@ created by Ph2_ACF is empty."
         try:
             self.runwindow.UploadButton.setDisabled(True)
             counter = 0
+self.modules = [
+            module for beboard in self.firmware for module in beboard.getModules()
+        ]
+            for i, fc7 in enumerate(self.firmware):
+                for module in fc7.getModules():
+                    status, message = self.felis_instances[i].upload_results(
+                        module.getModuleName(),
+                        self.master.username,
+                        self.master.password,
+                        type_sequence=self.info,
+                        version_ph2acf=os.environ.get("PH2ACF_VERSION"),
+                        version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
+                    )
+                    if not status:
+                        raise ConnectionError(message)
 
-            for module in self.modules:
-                status, message = self.felis.upload_results(
-                    module.getModuleName(),
-                    self.master.username,
-                    self.master.password,
-                    type_sequence=self.info,
-                    version_ph2acf=os.environ.get("PH2ACF_VERSION"),
-                    version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
-                )
-                if not status:
-                    raise ConnectionError(message)
-
-                counter += 1
-                self.updateProgressBar.emit(
-                    self.runwindow.UploadProgressBar,
-                    100 * counter / len(self.modules),
-                    f"{counter}/{len(self.modules)} uploaded",
-                )
+                    counter += 1
+                    self.updateProgressBar.emit(
+                        self.runwindow.UploadProgressBar,
+                        100 * counter / len(self.modules),
+                        f"{counter}/{len(self.modules)} uploaded",
+                    )
 
         except ConnectionError as e:
             error_message = repr(e)
