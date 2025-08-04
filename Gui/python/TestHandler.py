@@ -1051,9 +1051,12 @@ class TestHandler(QObject):
                             "hybridID": hybridID,
                             "module": module,
                         }
+                        output_dir = os.path.join(
+                            self.output_dir, beboard.getBoardName()
+                        )
                         result, self.BBanalysis_root_files = ResultGrader(
                             self.felis_instances[i],
-                            self.output_dir,
+                            output_dir,
                             self.currentTest,
                             self.testIndexTracker,
                             runNumber,
@@ -1171,10 +1174,13 @@ created by Ph2_ACF is empty."
             return
 
         try:
+            if not os.path.exists(os.path.join(self.output_dir, self.firmware[processIndex].getBoardName())):
+                os.makedirs(os.path.join(self.output_dir, self.firmware[processIndex].getBoardName()))
+
             if self.RunNumber == "-1":
                 os.system(
                     "cp {0}/test/Results/Run000000*.root {1}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
+                        os.environ.get("PH2ACF_BASE_DIR"), os.path.join(self.output_dir, self.firmware[processIndex].getBoardName())
                     )
                 )
 
@@ -1184,7 +1190,7 @@ created by Ph2_ACF is empty."
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
-                        self.output_dir,
+                        os.path.join(self.output_dir, self.firmware[processIndex].getBoardName()),
                     )
                 )
             else:
@@ -1193,7 +1199,7 @@ created by Ph2_ACF is empty."
                         self.RunNumber,
                         os.environ.get("PH2ACF_BASE_DIR")
                         + f"/test/{fc7.getBoardName()}",
-                        self.output_dir,
+                        os.path.join(self.output_dir, self.firmware[processIndex].getBoardName()),
                         self.currentTest,
                     )
 
