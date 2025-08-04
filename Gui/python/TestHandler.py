@@ -1189,6 +1189,8 @@ Module disconnection detected because {latest_file} \
 created by Ph2_ACF is empty."
                 )
 
+            # Copy the most recent file to the output directory
+            logger.debug("About to copy inside copyMostRecentROOTFile")
 
             # When using multiple FC7s root files will get overwritten so need to attach
             # what fc7 the test was run on to file name
@@ -1203,7 +1205,6 @@ created by Ph2_ACF is empty."
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
 
-        logger.info("ABout to copy inside saveTest")
         try:
             logger.debug("f{self.output_dir=}")
             if not os.path.exists(os.path.join(self.output_dir, self.firmware[processIndex].getBoardName())):
@@ -1261,8 +1262,6 @@ created by Ph2_ACF is empty."
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
 
-        logger.info("Inside on_readyReadStandardOutput")
-        logger.info("Looking at the output of process: %s", processIndex)
         mode = "a" if os.path.exists(self.outputFile) else "w"
         with open(self.outputFile, mode) as outputfile:
             outputfile.write(alltext)
