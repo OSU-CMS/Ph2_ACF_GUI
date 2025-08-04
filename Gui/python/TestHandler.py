@@ -1086,7 +1086,6 @@ class TestHandler(QObject):
                         output_dir = os.path.join(
                             self.output_dir, beboard.getBoardName()
                         )
-                        logger.debug(f"{output_dir=}")
                         result, self.BBanalysis_root_files = ResultGrader(
                             self.felis_instances[i],
                             output_dir,
