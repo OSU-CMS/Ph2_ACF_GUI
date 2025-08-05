@@ -1,25 +1,32 @@
-#!/usr/bin/env python3
+# logger_config.py
 import logging
+from datetime import datetime
 
-# Create a logger
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+LOG_FILE = f"../../data/PH2_ACF_GUI_{datetime.now().strftime("%Y_%m_%d-%H:%M")}.log"
 
-# Create a handler for writing logs to the console
-console_handler = logging.StreamHandler()
-console_handler.setLevel(
-    logging.INFO
-)  # Set the minimum log level for the console handler
+def get_logger(name=None):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.DEBUG)
 
-# Create a formatter to customize the log message format (optional)
-formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-console_handler.setFormatter(formatter)
+    if not logger.handlers:
+        # File handler (DEBUG and up)
+        file_handler = logging.FileHandler(LOG_FILE)
+        file_handler.setLevel(logging.DEBUG)
+        file_format = logging.Formatter(
+            '%(asctime)s - %(name)s - %(filename)s:%(lineno)d - %(funcName)s - %(levelname)s - %(message)s'
+        )
+        file_handler.setFormatter(file_format)
 
-file_handler = logging.FileHandler("../data/Ph2_ACF_GUI.log")
+        # Console handler (INFO and up)
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.INFO)
+        console_format = logging.Formatter('%(levelname)s - %(message)s')
+        console_handler.setFormatter(console_format)
 
-file_handler.setLevel(logging.INFO)
+        logger.addHandler(file_handler)
+        logger.addHandler(console_handler)
 
-file_handler.setFormatter(formatter)
-# Add the console handler to the logger
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
+        # Prevent logging from being propagated to the root logger again
+        logger.propagate = False
+
+    return logger
