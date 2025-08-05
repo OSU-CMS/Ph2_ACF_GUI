@@ -33,8 +33,9 @@ from Gui.GUIutils.settings import (
 # from Gui.GUIutils.FirmwareUtil import *
 # from Gui.QtGUIutils.QtFwCheckDetails import *
 
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 
+logger = get_logger(__name__)
 # Global dictionary to store IREF values for each chip
 chip_iref_db = {}
 

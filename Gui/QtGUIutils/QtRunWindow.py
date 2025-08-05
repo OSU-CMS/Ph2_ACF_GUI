@@ -33,7 +33,8 @@ from Gui.QtGUIutils.QtCustomizeWindow import QtCustomizeWindow
 # from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.python.ResultTreeWidget import ResultTreeWidget
 from Gui.python.TestHandler import TestHandler
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 from InnerTrackerTests.TestSequences import CompositeTests_Modules
 
 
