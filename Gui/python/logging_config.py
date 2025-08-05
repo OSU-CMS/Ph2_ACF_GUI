@@ -2,7 +2,8 @@
 import logging
 from datetime import datetime
 
-LOG_FILE = f"../../data/PH2_ACF_GUI_{datetime.now().strftime("%Y_%m_%d-%H:%M")}.log"
+current_time = datetime.now().strftime("%Y_%m_%d-%H:%M")
+LOG_FILE = f"../../data/PH2_ACF_GUI_{current_time}.log"
 
 def get_logger(name=None):
     logger = logging.getLogger(name)
