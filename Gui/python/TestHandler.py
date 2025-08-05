@@ -1191,14 +1191,18 @@ created by Ph2_ACF is empty."
                     )
                 )
             else:
-                for fc7 in self.firmware:
-                    self.copyMostRecentRootFile(
-                        self.RunNumber,
-                        os.environ.get("PH2ACF_BASE_DIR")
-                        + f"/test/{fc7.getBoardName()}",
-                        os.path.join(self.output_dir, self.firmware[processIndex].getBoardName()),
-                        self.currentTest,
-                    )
+                ph2_acf_base_dir: str|None = os.environ.get("PH2ACF_BASE_DIR")
+                if ph2_acf_base_dir is None:
+                    raise OSError("PH2ACF_BASE_DIR environment"
+                                           "variable is not set.")
+                current_fc7:str = self.firmware[processIndex].getBoardName()
+                self.copyMostRecentRootFile(
+                    self.RunNumber,
+                    ph2_acf_base_dir 
+                    + f"/test/{current_fc7}",
+                    os.path.join(self.output_dir, current_fc7),
+                    self.currentTest,
+                )
 
         except Exception as e:
             logger.error(e)
