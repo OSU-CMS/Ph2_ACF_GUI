@@ -1733,6 +1733,8 @@ created by Ph2_ACF is empty."
             return
 
 
+        current_fc7:str = self.firmware[processIndex].getBoardName()
+        self.saveConfigs(current_fc7=current_fc7)
         # Save the output ROOT file to output_dir
         logger.debug("About to run saveTest()")
         time.sleep(1)
