@@ -1164,12 +1164,15 @@ class TestHandler(QObject):
             elif "Threshold" in name:
                 name = name.replace("Threshold", "Thr")
 
+            fc7_in_use: str = base_dir.split("/")[-1].replace(".", "_")
+
             # Construct the search pattern for files
             search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
             logger.debug(f"Looking for {search_pattern}")
 
             # Find all matching files
             matching_files = glob.glob(search_pattern)
+            logger.debug("Matching files found: %s", matching_files)
 
             if len(matching_files) == 0:
                 raise Exception(
@@ -1193,7 +1196,6 @@ created by Ph2_ACF is empty."
 
             # When using multiple FC7s root files will get overwritten so need to attach
             # what fc7 the test was run on to file name
-            fc7_in_use: str = base_dir.split("/")[-1].replace(".", "_")
             file_name: str = latest_file.split("/")[-1]
             logger.debug(f"Copying {latest_file} to {output_dir}/{fc7_in_use}_{file_name}")
             os.system(f"cp {latest_file} {output_dir}/{fc7_in_use}_{file_name}")
