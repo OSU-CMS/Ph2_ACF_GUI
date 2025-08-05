@@ -59,12 +59,13 @@ from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
 from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 
 from icicle.icicle.adc_board import ADCBoard
 
+logger = get_logger(__name__)
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
@@ -324,6 +325,23 @@ class TestHandler(QObject):
             self.output_dir,
             self.input_dir,
         )
+
+    def saveConfigs(self, current_fc7:str):
+        logger.debgug(
+        for key in self.rd53_file.keys():
+            #TODO Add process index to this function and use to format input directory
+            try:
+                os.system(
+                    f"cp {os.environ.get("PH2ACF_BASE_DIR")}/test/{current_fc7}/CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt".format(
+                        os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
+                    )
+                )
+            except OSError:
+                print(
+                    "Failed to copy {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(
+                        os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
+                    )
+                )
 
     def configTest(self, **kwargs):
         # Gets the run number by reading from the RunNumber.txt file.
@@ -1695,6 +1713,9 @@ created by Ph2_ACF is empty."
             self.saveTest(processIndex, self.run_processes[processIndex])
             return
 
+
+        current_fc7:str = self.firmware[processIndex].getBoardName()
+        self.saveConfigs(current_fc7=current_fc7)
         # Save the output ROOT file to output_dir
         logger.debug("About to run saveTest()")
         time.sleep(1)
