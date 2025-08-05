@@ -327,7 +327,7 @@ class TestHandler(QObject):
         )
 
     def saveConfigs(self, current_fc7:str):
-        logger.debgug(
+        logger.debug("f{current_fc7=}")
         for key in self.rd53_file.keys():
             #TODO Add process index to this function and use to format input directory
             try:
