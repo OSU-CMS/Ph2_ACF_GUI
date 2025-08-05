@@ -1,6 +1,7 @@
 import os
 import subprocess
-import logging
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 import requests
 import re
 
@@ -33,15 +34,6 @@ from InnerTrackerTests.TestSequences import TestList
 from siteSettings import icicle_instrument_setup
 
 
-# Customize the logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    filename="my_project.log",  # Specify a log file
-    filemode="w",  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
 
 
 # from Gui.QtGUIutils.QtApplication import *

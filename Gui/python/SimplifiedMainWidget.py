@@ -23,7 +23,8 @@ from Gui.python.CustomizedWidget import SimpleBeBoardBox
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.Peltier import PeltierSignalGenerator
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 import Gui.siteSettings as site_settings
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 

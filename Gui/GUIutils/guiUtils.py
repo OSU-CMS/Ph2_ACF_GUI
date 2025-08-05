@@ -48,7 +48,8 @@ from InnerTrackerTests.MonitoringSettings import (
 )
 from InnerTrackerTests.RegisterSettings import RegisterSettings, RegisterSettings_dict
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
 ##########################################################################
 ##########################################################################

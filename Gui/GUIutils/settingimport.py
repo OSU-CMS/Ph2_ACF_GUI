@@ -1,11 +1,8 @@
 from Ph2_ACF_GUI.parseVariables import variableParser
 import csv
-import logging
 
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger(__name__)
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 
 
 class csvImport:

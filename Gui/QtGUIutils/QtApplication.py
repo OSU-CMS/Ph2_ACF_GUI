@@ -45,7 +45,8 @@ from icicle.icicle.instrument_cluster import InstrumentCluster
 # from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
 
 
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 
 
 class QtApplication(QWidget):

@@ -14,9 +14,10 @@ from PyQt5.QtWidgets import (
 import pyvisa as visa
 import subprocess
 import numpy as np
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 import Gui.siteSettings as site_settings
 
+logger = get_logger(__name__)
 
 class ArduinoWidget(QWidget):
     stop = pyqtSignal()
