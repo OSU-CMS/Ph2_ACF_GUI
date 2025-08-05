@@ -1128,7 +1128,7 @@ class TestHandler(QObject):
     # self.output_dir the .root file modified most recently. This will copy over the wrong file if somebody
     # manually edits the .root file in the PH2ACF directory, so there may be a better way to do this
     def copyMostRecentRootFile(self, RunNumber, base_dir, output_dir, test):
-        logger.debug("Inside copyMostRecentRootFile()")
+        logger.debug(f"{RunNumber=}, {base_dir=}, {output_dir=}, {test=}")
         files = root_files[test] if test in root_files.keys() else (test,)
         for name in files:
             name = name.split("_")[0]
