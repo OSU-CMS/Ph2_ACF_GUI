@@ -63,7 +63,7 @@ from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 
-from icicle.icicle.adc_board import ADCBoard
+from icicle.icicle.adc_board import AdcBoard
 
 logger = get_logger(__name__)
 
