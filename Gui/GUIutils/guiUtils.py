@@ -494,7 +494,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
         BeBoardModule0.SetRegisterValue(RegisterSettingsList)
         HWDescription0.AddBeBoard(BeBoardModule0)
-
+    HWSettings_Dict[testName]["DataOutputDir"] = BeBoard.getBoardName()
     HWDescription0.AddSettings(HWSettings_Dict[testName])
     MonitoringModule0 = MonitoringModule(boardtype)
     if "RD53A" in boardtype:
