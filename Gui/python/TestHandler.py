@@ -324,16 +324,17 @@ class TestHandler(QObject):
         )
 
     def saveConfigs(self, current_fc7:str):
-        logger.debug("f{current_fc7=}")
+        logger.debug(f"{current_fc7=}")
         ph2_acf_base_dir = os.environ.get("PH2ACF_BASE_DIR") 
+        logger.debug(f"{self.rd53_file.keys()=}")
         for key in self.rd53_file.keys():
             #TODO Add process index to this function and use to format input directory
             try:
                 os.system(
-                    f"cp {ph2_acf_base_dir}/test/{current_fc7}/CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt")
+                    f"cp {ph2_acf_base_dir}/test/{current_fc7}/Run{self.runNumber}_CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt")
             except OSError:
                 logger.error(
-                    "Failed to copy {0}/test/{current_fc7}/CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt"
+                    f"Failed to copy {ph2_acf_base_dir}/test/{current_fc7}/Run{self.runNumber}_CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt"
                 )
 
     def configTest(self, **kwargs):
