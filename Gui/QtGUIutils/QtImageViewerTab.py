@@ -21,8 +21,10 @@ from Gui.GUIutils.DBConnection import (
 
 # from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
+from Gui.python.logging_config import logger
 # from Gui.QtGUIutils.QtImageViewer import *
 
+import traceback
 
 class QtImageViewerTab(QWidget):
     def __init__(self, master):
@@ -100,8 +102,7 @@ class QtImageViewerTab(QWidget):
             self.ViewLayout.addWidget(label, 0, 0, 1, 1)
 
         except Exception as error:
-            print(error)
-            print("Error: failed to create viewBox")
+            logger.error(traceback.format_exc())
 
         self.ViewBox.setLayout(self.ViewLayout)
         self.mainlayout.addWidget(self.ViewBox, 1, 0, 3, 5)
@@ -129,6 +130,7 @@ class QtImageViewerTab(QWidget):
             self.FeedBackLabel.setText(
                 "Failed retrieving MySQL table: {}".format(error)
             )
+            logger.error(traceback.format_exc())
             return
 
         if len(dataList) <= 1:
@@ -153,6 +155,7 @@ class QtImageViewerTab(QWidget):
                 f"Database connection broken due to error {e}",
                 QMessageBox.Ok,
             )
+            logger.error(traceback.format_exc())
 
         try:
             # viewer = QtImageViewer(self,data[0])
@@ -162,5 +165,5 @@ class QtImageViewerTab(QWidget):
                 QSize(350, 450), Qt.KeepAspectRatio, Qt.SmoothTransformation
             )
             self.PlotLabel.setPixmap(self.PlotMap)
-        except Exception as error:
-            print(error)
+        except Exception:
+            logger.error(traceback.format_exc())

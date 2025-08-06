@@ -37,7 +37,9 @@ from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
 from Gui.QtGUIutils.QtViewTableTab import QtViewTableTab
 from Gui.QtGUIutils.QtImageInsertionTab import QtImageInsertionTab
 from Gui.QtGUIutils.QtImageViewerTab import QtImageViewerTab
+from Gui.python.logging_config import logger
 
+import traceback
 
 class QtDBConsoleWindow(QMainWindow):
     def __init__(self, master):
@@ -308,7 +310,8 @@ class QtDBConsoleWindow(QMainWindow):
         try:
             insertGenericTable(self.connection, "shipment", SubmitArgs, Data)
         except Exception as e:
-            print(f"Failed to submit the shipment record due to error: {e}")
+            logger.error(f"Failed to submit the shipment record due to error: {e}")
+            logger.error(traceback.format_exc())
             return
 
         self.SPSenderLabel.deleteLater()
@@ -488,7 +491,8 @@ class QtDBConsoleWindow(QMainWindow):
                 self.connection, "shipment", id=self.RPIDEdit.text()
             )
         except Exception as e:
-            print(f"Failed to Retrieve Shipment Information Due to Error: {e}")
+            logger.error(f"Failed to Retrieve Shipment Information Due to Error: {e}")
+            logger.error(traceback.format_exc())
             return
         if len(shipmentInfo) > 0 and len(header) == len(shipmentInfo[0]):
             self.RPFeedBackLabel.setText("Delivery Record found")
@@ -566,7 +570,8 @@ class QtDBConsoleWindow(QMainWindow):
                 id=int(self.RPIDEdit.text()),
             )
         except Exception as e:
-            print(f"Failed to submit the shipment record due to error: {e}")
+            logger.error(f"Failed to submit the shipment record due to error: {e}")
+            logger.error(traceback.format_exc())
             return
 
         self.RPIDLabel.deleteLater()
@@ -801,6 +806,7 @@ class QtDBConsoleWindow(QMainWindow):
             self.AUFeedBackLabel.setText(
                 f"Failed to extract institute info, try to reconnect to DB due to error: {e}"
             )
+            logger.error(traceback.format_exc())
         Args = describeTable(self.connection, "people")
         Data = []
         Data.append(self.AUNewUsernameEdit.text())
@@ -817,7 +823,8 @@ class QtDBConsoleWindow(QMainWindow):
             self.AUFeedBackLabel.setStyleSheet("color:green")
             return
         except Exception as e:
-            print(f"submitFailed due to error: {e}")
+            logger.error(f"submitFailed due to error: {e}")
+            logger.error(traceback.format_exc())
             return
 
     def updateProfile(self):
@@ -940,7 +947,8 @@ class QtDBConsoleWindow(QMainWindow):
         try:
             insertGenericTable(self.connection, "complaint", Args, Data)
         except Exception as e:
-            print(f"Failed to submit the text due to error: {e}")
+            logger.error(f"Failed to submit the text due to error: {e}")
+            logger.error(traceback.format_exc())
             return
         self.FCNameLabel.deleteLater()
         self.FCNameEdit.deleteLater()
@@ -1144,7 +1152,8 @@ class QtDBConsoleWindow(QMainWindow):
             if isActive(self.connection):
                 self.connectedHeadLine()
         except Exception as err:
-            print("Error in connecting to database, {}".format(repr(err)))
+            logger.error(f"Error in connecting to database, {repr(err)}")
+            logger.error(traceback.format_exc())
 
     def syncDB(self):
         pass

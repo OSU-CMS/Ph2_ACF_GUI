@@ -1,5 +1,6 @@
 import ROOT
 import time
+import traceback
 from Gui.python.logging_config import logger
 
 ROOT.gROOT.SetBatch(ROOT.kTRUE)

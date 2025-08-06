@@ -35,6 +35,7 @@ from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
 
 # from Gui.python.ROOTInterface import *
 from Gui.python.logging_config import logger
+import traceback
 
 
 class QtModuleReviewWindow(QWidget):
@@ -392,9 +393,9 @@ class QtModuleReviewWindow(QWidget):
                             )
                             print("trying to insert table")
                         except Exception as e:
-                            print(f"Failed to insert due to error {e}")
+                            logger.error(traceback.format_exc())
             except Exception as err:
-                print("Error: {}".format(repr(err)))
+                logger.error(traceback.format_exc())
 
         self.destroyMain()
         self.createMain()

@@ -11,6 +11,7 @@ import mysql.connector
 import subprocess
 import os
 from itertools import compress
+import traceback
 
 from PyQt5.QtWidgets import QMessageBox
 
@@ -48,7 +49,9 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
             ssl_disabled=True,
             connection_timeout=5000,
         )
-    except (ValueError, RuntimeError, TypeError, NameError, mysql.connector.Error):
+    except (ValueError, RuntimeError, TypeError, NameError, mysql.connector.Error) as err:
+        print("Error establishing connection:", err)
+        print(traceback.format_exc())
         msg = QMessageBox()
         msg.information(
             None,
@@ -180,6 +183,7 @@ def getLocalTests(module_id, columns=[]):
                             repr(err)
                         )
                     )
+                    print(traceback.format_exc())
     else:
         for dirName in dirList:
             # getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(dirName), shell=True, stdout=subprocess.PIPE)
@@ -202,6 +206,7 @@ def getLocalTests(module_id, columns=[]):
                                 repr(err)
                             )
                         )
+                        print(traceback.format_exc()) 
     return localTests
 
 
@@ -305,7 +310,8 @@ def describeTable(dbconnection, table, KeepAutoIncre=False):
         header = list(map(lambda x: alltuple[x][0], range(0, len(alltuple))))
         return list(compress(header, auto_incre_filter))
     except mysql.connector.Error as error:
-        print("Failed describing MySQL table: {}".format(error))
+        print("Failed describing MySQL table:", error)
+        print(traceback.format_exc())
         return []
 
 
@@ -339,7 +345,8 @@ def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
         allList = [list(i) for i in alltuple]
         return allList
     except mysql.connector.Error as error:
-        print("Failed retrieving MySQL table:{}".format(error))
+        print("Failed retrieving MySQL table:", error)
+        print(traceback.format_exc())
         return []
 
 
@@ -368,6 +375,7 @@ def retrieveWithConstraintSyntax(dbconnection, table, syntax, **kwargs):
         return allList
     except mysql.connector.Error as error:
         print("Failed retrieving MySQL table:{}".format(error))
+        print(traceback.format_exc())
         return []
 
 
@@ -393,6 +401,7 @@ def retrieveGenericTable(dbconnection, table, **kwargs):
         return allList
     except Exception as error:
         print("Failed retrieving MySQL table:{}".format(error))
+        print(traceback.format_exc())
         return []
 
 
@@ -417,6 +426,7 @@ def insertGenericTable(dbconnection, table, args, data):
         return True
     except Exception as error:
         print("Failed inserting MySQL table {}:  {}".format(table, error))
+        print(traceback.format_exc())
         return False
 
 
@@ -436,7 +446,8 @@ def createNewUser(dbconnection, args, data):
         dbconnection.commit()
         return True
     except Exception as err:
-        print(err)
+        print("Failed to create new user:", err)
+        print(traceback.format_exc())
         return False
 
 
@@ -481,7 +492,8 @@ def updateGenericTable(dbconnection, table, column, data, **kwargs):
         dbconnection.commit()
         return True
     except mysql.connector.Error as error:
-        print("Failed inserting MySQL table {}:  {}".format(table, error))
+        print("Failed updating MySQL table {}:  {}".format(table, error))
+        print(traceback.format_exc())
         return False
 
 

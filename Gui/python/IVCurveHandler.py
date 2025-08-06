@@ -3,6 +3,7 @@ from PyQt5.QtCore import QThread, QObject, pyqtSignal
 import numpy as np
 from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings
+import traceback
 
 
 class IVCurveThread(QThread):
@@ -93,8 +94,8 @@ class IVCurveThread(QThread):
             print("Currents: ", measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementStr)
         except Exception as e:
-            print("IV Curve scan failed with {}".format(e))
-
+            print(f"IV Curve scan failed with error: {e}")
+            print(traceback.format_exc())
 
 class IVCurveHandler(QObject):
     measureSignal = pyqtSignal(str, object)
@@ -168,4 +169,5 @@ class IVCurveHandler(QObject):
             )
             self.test.terminate()
         except Exception as err:
-            print(f"Failed to stop the IV test due to error {err}")
+            print(f"Failed to stop the IV test due to error: {err}")
+            print(traceback.format_exc())

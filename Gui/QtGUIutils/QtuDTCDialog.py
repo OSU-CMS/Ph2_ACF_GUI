@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
 
 import os
 import subprocess
+import traceback
 from subprocess import PIPE
 
 from Gui.python.logging_config import logger
@@ -92,7 +93,8 @@ class QtuDTCDialog(QDialog):
             InputFile = ModifiedFile
 
         except Exception as error:
-            print("Failed to modify the XML:  {}".format(error))
+            logger.error("Failed to modify the XML:  {}".format(error))
+            logger.error(traceback.format_exc())
 
         try:
             pipes = subprocess.run(
@@ -119,6 +121,7 @@ class QtuDTCDialog(QDialog):
 
         except Exception as error:
             logger.error("Failed to fetch the firmware image list: {}".format(error))
+            logger.error(traceback.format_exc())
             return []
 
     def getFPGAConfigs(self):

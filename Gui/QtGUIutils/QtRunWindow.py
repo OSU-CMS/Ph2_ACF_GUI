@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import (
 import os
 import numpy as np
 import threading
+import traceback
 import Gui.siteSettings as site_settings
 
 from Gui.GUIutils.guiUtils import isCompositeTest
@@ -511,6 +512,7 @@ class QtRunWindow(QWidget):
             msg_box.setText(message)
             msg_box.exec_()
         except KeyError as e:
+            logger.error(traceback.format_exc())
             if e.args[0] != "TestName":
                 raise e
 
@@ -543,6 +545,7 @@ class QtRunWindow(QWidget):
                         self.info
                     ]
                 except KeyError:
+                    logger.error(traceback.format_exc())
                     test_list = CompositeTests_Modules["Default"][self.info]
 
                 for fw_index in range(len(self.firmware)):
@@ -647,13 +650,13 @@ class QtRunWindow(QWidget):
         try:
             self.modulestatus.append(results)
         except Exception as err:
-            logger.error(err)
+            logger.error(traceback.format_exc())
 
     def updateFinishedTests(self, tests: list):
         try:
             self.finished_tests = tests
         except Exception as err:
-            logger.error(err)
+            logger.error(traceback.format_exc())
 
     def updateProgressBar(self, bar: QProgressBar, value: int, text: str):
         bar.setFormat(text)

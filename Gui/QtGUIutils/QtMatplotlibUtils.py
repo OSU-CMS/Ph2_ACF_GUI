@@ -12,6 +12,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 import numpy
+import traceback
 
 # from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import (
@@ -19,6 +20,7 @@ from Gui.GUIutils.guiUtils import (
     isSingleTest,
 )
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
+from Gui.python.logging_config import logger
 
 
 class ScanCanvas(FigureCanvas):
@@ -137,6 +139,7 @@ class RunStatusCanvas(FigureCanvas):
                 self.test_list = CompositeTests_Modules[self.parent.testHandler.registerKey][self.info[1]]
             except KeyError:
                 self.test_list = CompositeTests_Modules["Default"][self.info[1]]
+                logger.error(traceback.format_exc())
 
             for i in range(len(self.test_list)):
                 self.xticks.append(
