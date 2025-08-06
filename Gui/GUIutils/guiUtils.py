@@ -452,6 +452,9 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 if testName == "SingleLaneTest" and chip.getID() == '12':
                     chip.setLane('0')
 
+                elif chip.getID() == '12' and '1x2' in moduleType:
+                    chip.setLane('3')
+
                 FEChip.SetFE(
                     chip.getID(),
                     "1" if chip.getStatus() else "0",
