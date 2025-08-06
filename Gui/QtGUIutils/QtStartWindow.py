@@ -197,7 +197,7 @@ class SummaryBox(QWidget):
                 print(fwreset.stderr.decode("UTF-8"))
 
                 print("Firmware image is now loaded")
-            logging.debug("Made it to turn on LV")
+            logger.debug("Made it to turn on LV")
             return True
         except Exception as err:
             print(err)
