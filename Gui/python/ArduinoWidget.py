@@ -16,6 +16,7 @@ import subprocess
 import numpy as np
 from Gui.python.logging_config import logger
 import Gui.siteSettings as site_settings
+import traceback
 
 
 class ArduinoWidget(QWidget):
@@ -82,6 +83,7 @@ class ArduinoWidget(QWidget):
             return list(self.deviceMap.keys())
         except Exception as err:
             logger.error("Failed to list all resources: {}".format(err))
+            logger.error(traceback.format_exc())
             self.ResourcesList = ()
             return self.ResourcesList
 
@@ -149,6 +151,7 @@ class ArduinoWidget(QWidget):
                     pass
             except Exception as err:
                 logger.error("Error found:{}".format(err))
+                logger.error(traceback.format_exc())
                 # self.deviceMap[device] = device
 
     def frozeArduinoPanel(self):
@@ -165,6 +168,7 @@ class ArduinoWidget(QWidget):
             self.InstallFirmware.setDisabled(True)
         except Exception as err:
             logger.error(f"Unable to use Arduino: {err}")
+            logger.error(traceback.format_exc())
             self.ArduinoGoodStatus = False
 
     def setArduinoPanel(self):
@@ -217,6 +221,7 @@ class ArduinoWidget(QWidget):
             self.ArduinoMeasureValue.setText("The Arduino firmware has been installed.")
         except Exception as err:
             logger.error("{0}".format(err))
+            logger.error(traceback.format_exc())
             self.ArduinoMeasureValue.setStyleSheet("QLabel {color : white}")
             self.ArduinoMeasureValue.setText(
                 "The Arduino firmware could not be installed."
@@ -302,6 +307,7 @@ class ArduinoWidget(QWidget):
             except Exception as err:
                 self.readAttempts += 1
                 logger.error("{0}".format(err))
+                logger.error(traceback.format_exc())
 
         if self.readAttempts > 10:
             self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")

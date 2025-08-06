@@ -1,4 +1,6 @@
 from PyQt5.QtCore import Qt, QDateTime
+from Gui.python.logging_config import logger
+
 
 # from PyQt5.QtGui import QFont, QPixmap
 from PyQt5.QtWidgets import (
@@ -14,6 +16,7 @@ from PyQt5.QtWidgets import (
 )
 
 import os
+import traceback
 
 from Gui.GUIutils.DBConnection import (
     describeTable,
@@ -128,8 +131,8 @@ class QtImageInsertionTab(QWidget):
             self.Inserted = insertGenericTable(
                 self.connection, "images", SubmitArgs, Data
             )
-        except Exception as err:
-            print(err)
+        except Exception:
+            logger.error(traceback.format_exc())
             self.FeedBackLabel.setStyleSheet("color:red")
             self.FeedBackLabel.setText("Failed: Submission is unsuccessful")
             self.InsertButton().setDisabled(False)
@@ -192,8 +195,8 @@ class QtImageInsertionTab(QWidget):
                     None, "Warning", "Not a valid image file", QMessageBox.Ok
                 )
             self.ImageEdit.setText(self.SelectedFile)
-        except Exception as err:
-            print(err)
+        except Exception:
+            logger.error(traceback.format_exc())
             QMessageBox.information(
                 None, "Warning", "File did not selected", QMessageBox.Ok
             )

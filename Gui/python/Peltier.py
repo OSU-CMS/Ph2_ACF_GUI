@@ -3,6 +3,7 @@ import serial
 from Gui.siteSettings import defaultPeltierPort, defaultPeltierBaud
 import time
 from Gui.python.logging_config import logger
+import traceback
 
 
 class PeltierSignalGenerator:
@@ -117,6 +118,7 @@ class PeltierSignalGenerator:
             return message, passed
         except Exception as e:
             print(f"Failed to send command to Peltier due to error: {e}")
+            print(traceback.format_exc())
             return None, False
 
     # Will recieve message but will only check if the command gave an error, will not decode the message

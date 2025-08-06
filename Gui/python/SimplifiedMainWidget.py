@@ -1,5 +1,6 @@
 import os
 import time
+import traceback
 from serial import SerialException
 from typing import Optional
 
@@ -47,6 +48,7 @@ class SimplifiedMainWidget(QWidget):
         try:
             self.instruments = master.instruments
         except SerialException:
+            logger.warning(traceback.format_exc())
             instrument_warning_message = QMessageBox()
             instrument_warning_message.setIcon(QMessageBox.Critical)
             instrument_warning_message.setInformativeText(
@@ -116,6 +118,7 @@ class SimplifiedMainWidget(QWidget):
                 logFile = open(LogFileName, "w")
                 logFile.close()
             except Exception as e:
+                logger.warning(traceback.format_exc())
                 messageBox = QMessageBox()
                 messageBox.setIcon(QMessageBox.Error)
                 logger.error("Could not create file due to error {}".format(e))
@@ -180,6 +183,7 @@ class SimplifiedMainWidget(QWidget):
             self.peltier_temperature_label = QLabel(self)
         except Exception as e:
             print("Error while attempting to set Peltier", e)
+            logger.error(traceback.format_exc())
             self.Peltier = None
 
     def setupUI(self):
@@ -597,6 +601,7 @@ class SimplifiedMainWidget(QWidget):
 
         except Exception as e:
             logger.error(f"Error while checking instrument statuses: {e}")
+            logger.error(traceback.format_exc())
             self.RunButton.setDisabled(True)
 
     def check_icicle_devices(self) -> Optional[dict[str, int]]:
@@ -612,6 +617,7 @@ class SimplifiedMainWidget(QWidget):
         try:
             status = self.instruments.status(lv_channel=1)
         except RuntimeError:
+            logger.warning(traceback.format_exc())
             error_box = QMessageBox()
             error_box.setInformativeText(
                 """
@@ -738,6 +744,7 @@ class ColdboxMonitorWorker(QObject):
 
             except Exception as e:
                 logger.error(f"Error monitoring coldbox: {e}")
+                logger.error(traceback.format_exc())
                 self.condensation_status.emit(False)
                 self.temperature_status.emit(False)
             time.sleep(self.interval)

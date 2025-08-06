@@ -2,6 +2,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from Gui.python.Peltier import PeltierSignalGenerator
+from Gui.python.logging_config import logger
+import traceback
 import time
 import os
 
@@ -158,7 +160,8 @@ class Peltier(QWidget):
             self.timer.start(500)  # Perform monitoring functions every 500ms
 
         except Exception as e:
-            print("Error while attempting to setup Peltier Controller: ", e)
+            logger.error("Error while attempting to setup Peltier Controller: ")
+            logger.error(traceback.format_exc())
 
     def enableButtons(self):
         self.powerButton.setEnabled(True)
@@ -184,8 +187,9 @@ class Peltier(QWidget):
                         "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "1"]
                     )
                 )
-            except Exception as e:
-                print("Could not turn on controller due to error: ", e)
+            except Exception:
+                logger.error("Could not turn on controller due to error: ")
+                logger.error(traceback.format_exc())
         elif self.powerStatusValue == 1:
             try:
                 self.pelt.sendCommand(
@@ -193,8 +197,9 @@ class Peltier(QWidget):
                         "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                     )
                 )
-            except Exception as e:
-                print("Could not turn off controller due to error: ", e)
+            except Exception:
+                logger.error("Could not turn off controller due to error: ")
+                logger.error(traceback.format_exc())
 
     def setPolarityStatus(self, polarity):
         if polarity[8] == "0":
@@ -245,8 +250,9 @@ class Peltier(QWidget):
 
             self.setTempSignal.emit(message)
 
-        except Exception as e:
-            print("Could not set Temperature: ", e)
+        except Exception:
+            logger.error("Could not set Temperature: ")
+            logger.error(traceback.format_exc())
             self.currentSetTemp.setText("N/a")
 
     # Shutdown the peltier if it is on and stop threads that are running
@@ -258,8 +264,9 @@ class Peltier(QWidget):
                     "Power On/Off Write", ["0", "0", "0", "0", "0", "0", "0", "0"]
                 )
             )
-        except Exception as e:
-            print("Could not turn off controller due to error: ", e)
+        except Exception:
+            logger.error("Could not turn off controller")
+            logger.error(traceback.format_exc())
 
         try:
             self.tempPower.readTemp = False
@@ -269,9 +276,10 @@ class Peltier(QWidget):
     def getPower(self):
         try:
             self.power = self.pelt.checkPower()
-        except Exception as e:
+        except Exception:
             self.powerTimer.stop()
-            print("Could not check power due to error: ", e)
+            logger.error("Could not check power")
+            logger.error(traceback.format_exc())
 
     def controllerMonitoring(self):
         try:
@@ -292,8 +300,9 @@ class Peltier(QWidget):
             )
             self.powerReading.emit(int(power[8]))
             return
-        except Exception as e:
-            print(f"Could not read power/temperature due to error: {e}")
+        except Exception:
+            logger.error(f"Could not read power/temperature")
+            logger.error(traceback.format_exc())
             return
 
     def controllerMonitoring2(self):
@@ -309,8 +318,9 @@ class Peltier(QWidget):
             self.tempLimit(temp)
 
             return
-        except Exception as e:
-            print(f"Could not read temperature2 due to error: {e}")
+        except Exception:
+            logger.error("Could not read temperature2")
+            logger.error(traceback.format_exc())
             return
 
     def tempLimit(self, temp):

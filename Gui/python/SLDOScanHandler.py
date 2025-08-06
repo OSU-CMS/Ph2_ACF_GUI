@@ -9,6 +9,7 @@ from icicle.icicle.relay_board import RelayBoard
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 import numpy as np
 import math
+import traceback
 
 
 class SLDOCurveWorker(QThread):
@@ -367,6 +368,7 @@ class SLDOCurveHandler(QObject):
                 self.abortSignal.emit()
             except Exception as err:
                 logger.error(f"Failed to stop the SLDO test due to error {err}")
+                logger.error(traceback.format_exc())
         else:
             try:
                 starting_voltages = [
@@ -380,3 +382,4 @@ class SLDOCurveHandler(QObject):
                 self.test.terminate()
             except Exception as err:
                 logger.error(f"Failed to stop the SLDO test due to error {err}")
+                logger.error(traceback.format_exc())

@@ -7,10 +7,10 @@ from icicle.icicle.adc_board import ADCBoard
 import Gui.siteSettings as site_settings
 import ROOT
 import os
+import traceback
+import numpy as np
 from ctypes import c_double
 
-import numpy as np
-import os
 
 class TrimbitCurveWorker(QThread):
     def __init__(self, instrument_cluster, moduleType, total_steps, runwindow, firmware, testhandler):
@@ -261,8 +261,8 @@ class TrimbitCurveWorker(QThread):
             for pin, name in self.pin_mapping.items():
                 if name.endswith(str(chip)):
                     self.append_gadc_measurement(pin, chip, name, VDDA, VDDD)
-        except Exception as e:
-            logger.error(f"Error in measureGADC: {e}")
+        except Exception:
+            logger.error(traceback.format_exc())
 
     def append_gadc_measurement(self, pin, chip, name, VDDA, VDDD):
         """
@@ -300,7 +300,7 @@ class TrimbitCurveWorker(QThread):
             # Open the ROOT file
             root_file = ROOT.TFile(root_file_path, "READ")
             if root_file.IsZombie():
-                logger.error(f"Failed to open ROOT file: {root_file_path}")
+                logger.error(traceback.format_exc())
                 return None
 
             # Construct the path to the desired data
@@ -385,4 +385,4 @@ class TrimbitCurveHandler(QObject):
             self.test.exiting = True
             self.abortSignal.emit()
         except Exception as err:
-            logger.error(f"Failed to stop the TrimbitScan due to error {err}")
+            logger.error(traceback.format_exc())

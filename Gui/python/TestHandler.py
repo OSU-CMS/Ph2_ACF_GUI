@@ -17,6 +17,7 @@ import glob
 import subprocess
 import threading
 import time
+import traceback
 import re
 from datetime import datetime
 import numpy as np
@@ -58,8 +59,6 @@ import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
-
-from icicle.icicle.adc_board import ADCBoard
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
@@ -143,6 +142,7 @@ class TestHandler(QObject):
             self.test_list = CompositeTests_Modules[self.registerKey][self.info] if isCompositeTest(self.info) else (self.info,)                      
         except KeyError:
             logger.error(f"Test {self.info} not found in CompositeTests_Modules for ModuleType {self.registerKey}.")
+            logger.error(traceback.format_exc())
             self.test_list = CompositeTests_Modules["Default"][self.info]
 
         self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in self.test_list} for module in self.modules}
@@ -193,6 +193,7 @@ class TestHandler(QObject):
                 logger.info("New Felis scratch directory created.")
             except OSError as e:
                 logger.error(f"Error making Felis scratch directory: {e.strerror}")
+                logger.error(traceback.format_exc())
 
         self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
         self.grades = []
@@ -295,6 +296,7 @@ class TestHandler(QObject):
                 logger.info("RunNumber: {}".format(self.RunNumber))
         except OSError:
             logger.warning("Failed to retrieve RunNumber due to OSError")
+            logger.warning(traceback.format_exc())
 
         # If currentTest is not set check if it's a compositeTest and if so set testname accordingly, otherwise set it based off the test set in info[1]
         if self.currentTest == "" and isCompositeTest(self.info):
@@ -344,6 +346,7 @@ class TestHandler(QObject):
                         )
                     else:
                         logger.warning("No Valid XML configuration file")
+                        logger.warning(traceback.format_exc())
                     # QMessageBox.information(None,"Noitce", "Using default XML configuration",QMessageBox.Ok)
             else:
                 for firmware in self.firmware:
@@ -364,6 +367,7 @@ class TestHandler(QObject):
                         logger.info("Creating " + tmpDir)
                     except OSError:
                         logger.warning("Failed to create " + tmpDir)
+                        logger.warning(traceback.format_exc())
                 # Create the xml file from the text file
                 for firmware in self.firmware:
                     config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files, **kwargs)
@@ -393,6 +397,7 @@ class TestHandler(QObject):
                         os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
                     )
                 )
+                logger.warning(traceback.format_exc())
 
     def resetConfigTest(self):
         self.input_dir = ""
@@ -537,6 +542,7 @@ class TestHandler(QObject):
             logger.exception(
                 "Output directory was not formatted correctly, closing GUI to not write to root directory."
             )
+            logger.error(traceback.format_exc())
             raise
 
         if os.path.exists(self.outputFile):
@@ -940,8 +946,8 @@ class TestHandler(QObject):
             self.updateFinishedTests.emit(
                 self.finished_tests
             )  # Obsolete at time of commit: "return all(passed)"
-        except Exception as err:
-            logger.error(err)
+        except Exception:
+            logger.error(traceback.format_exc())
 
     def collect_plots(self, moduleName):
         try:
@@ -964,7 +970,7 @@ class TestHandler(QObject):
                 else:
                     return []
             else:
-                print("testHandler.collect_plots Exception:", repr(e))
+                logger.error((traceback.format_exc()))
                 return []
 
     # For root files with the same RunNumber in the PH2ACF directory, this function only copies over to
@@ -1039,8 +1045,8 @@ created by Ph2_ACF is empty."
                     self.currentTest,
                 )
 
-        except Exception as e:
-            logger.error(e)
+        except Exception:
+            logger.error(traceback.format_exc())
             if self.currentTest != "CommunicationTest":
                 self.forceContinue(self.firmware[processIndex])
 
@@ -1119,6 +1125,7 @@ created by Ph2_ACF is empty."
 
             except Exception as err:
                 logger.info("Error occures while parsing running time, {0}".format(err))
+                logger.warning(traceback.format_exc())
             if "@@@ End of CMSIT miniDAQ @@@" in textStr:
                 self.ProgressingMode = "Summary"
             if self.ProgressingMode == "Perform":
@@ -1136,6 +1143,7 @@ created by Ph2_ACF is empty."
 
                     except Exception as e:
                         print(f"Error while updating progress bar {e}")
+                        logger.error(traceback.format_exc())
                         pass
 
                 if self.check_for_end_of_test(textStr):
@@ -1172,7 +1180,8 @@ created by Ph2_ACF is empty."
                         self.tempindex = self.tempindex + 1 % self.numChips
 
                     except Exception as e:
-                        print("Failed due to {0}".format(e))
+                        logger.error("Failed due to {0}".format(e))
+                        logger.error(traceback.format_exc())
                 elif "INTERNAL_NTC" in textStr:
                     try:
                         ansi_pattern = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]")
@@ -1214,7 +1223,8 @@ created by Ph2_ACF is empty."
                             self.tempindex = (self.tempindex + 1) % self.numChips
 
                     except Exception as e:
-                        print("Failed due to {0}".format(e))
+                        logger.error("Failed due to {0}".format(e))
+                        logger.error(traceback.format_exc())
                 text = textStr.encode("ascii")
                 _, text = parseANSI(text)
                 self.outputString.emit(
@@ -1303,8 +1313,8 @@ created by Ph2_ACF is empty."
                                 ]:  # registers only on CROC modules
                                     continue
                             updatedXMLValues[f"{hybridID}/{chipID}"][updatedFEKey] = ""
-        except Exception as err:
-            logger.error(f"Failed to update, {err}")
+        except Exception:
+            logger.error(traceback.format_exc())
 
     def check_for_end_of_test(self, textStr):
         # function to support the quick fix in on_readyReadStandardOutput() where
@@ -1363,8 +1373,9 @@ created by Ph2_ACF is empty."
                 text = textStr.encode("ascii")
                 _, text = parseANSI(text)
                 self.outputString.emit(text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index])
-            except Exception as e:
-                print(f"Error emitting console output: {e}")
+            except Exception:
+                logger.error(f"Error emitting console output")
+                logger.error(traceback.format_exc())
         self.readingOutput = False
 
 
@@ -2011,9 +2022,8 @@ created by Ph2_ACF is empty."
                     f"{counter}/{len(self.modules)} uploaded",
                 )
 
-        except ConnectionError as e:
-            error_message = repr(e)
-            logger.error(error_message)
+        except ConnectionError:
+            logger.error(traceback.format_exc())
             self.master.errorMessageBoxSignal.emit(error_message)
 
         except Exception:

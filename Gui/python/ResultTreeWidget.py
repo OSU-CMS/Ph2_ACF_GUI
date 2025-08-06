@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
 
 import os
 import subprocess
+import traceback
 
 # from Gui.GUIutils.settings import *
 from Gui.GUIutils.guiUtils import isCompositeTest
@@ -332,6 +333,7 @@ class ResultTreeWidget(QWidget):
                 logger.info("Creating " + tmpDir)
             except OSError:
                 logger.warning("Failed to create " + tmpDir)
+                logger.warning(traceback.format_exc())
 
         if "svg" in str(canvas):
             svgFile = str(canvas)
@@ -347,4 +349,5 @@ class ResultTreeWidget(QWidget):
             logger.info("Displaying " + svgFile)
         except Exception as e:
             logger.error("Failed to display " + svgFile + f"due to error {e}")
+            logger.error(traceback.format_exc())
         pass
