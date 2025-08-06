@@ -286,11 +286,7 @@ class TestHandler(QObject):
         logger.info("Inside finsihed_run_process")
         logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
-            # Ensure that all processes have finished before continuing
-            self.finished_processes += 1
-            if self.finished_processes == len(self.run_processes):
-                self.finished_processes = 0
-                self.on_finish(i)
+            self.on_finish(i) 
 
     def initializeRD53Dict(self):
         self.rd53_file = {}
@@ -326,14 +322,15 @@ class TestHandler(QObject):
         logger.debug(f"{current_fc7=}")
         ph2_acf_base_dir = os.environ.get("PH2ACF_BASE_DIR") 
         logger.debug(f"{self.rd53_file.keys()=}")
+        logger.debug(f"{self.output_dir}")
         for key in self.rd53_file.keys():
             #TODO Add process index to this function and use to format input directory
             try:
                 os.system(
-                    f"cp {ph2_acf_base_dir}/test/{current_fc7}/Run{self.runNumber}_CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt")
+                    f"cp {ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt")
             except OSError:
                 logger.error(
-                    f"Failed to copy {ph2_acf_base_dir}/test/{current_fc7}/Run{self.runNumber}_CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt"
+                    f"Failed to copy {ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt"
                 )
 
     def configTest(self, **kwargs):
@@ -1186,7 +1183,9 @@ created by Ph2_ACF is empty."
             return
 
         try:
+            logger.debug("f{self.output_dir=}")
             if not os.path.exists(os.path.join(self.output_dir, self.firmware[processIndex].getBoardName())):
+                logger.debug(f"Created directory for process: {processIndex}")
                 os.makedirs(os.path.join(self.output_dir, self.firmware[processIndex].getBoardName()))
 
             if self.RunNumber == "-1":
@@ -1679,7 +1678,6 @@ created by Ph2_ACF is empty."
     def on_finish(self, processIndex: int):
         # While the process is killed:
         # Wait for all processes to finish so FC7s don't get out of sync
-        # May be a source of stalling with the -1 which waits indefinitely
 
         logger.debug("All processes finished")
 
@@ -1708,6 +1706,15 @@ created by Ph2_ACF is empty."
         time.sleep(1)
         self.saveTest(processIndex, self.run_processes[processIndex])
 
+        # Don't continue on sequence until all processes have finished the current test
+        
+        # Ensure that all processes have finished before continuing
+        self.finished_processes += 1
+        if not self.finished_processes == len(self.run_processes):
+            return 
+
+        self.finished_processes = 0
+        
         # validate the results
         logger.debug("About to run validateTest()")
         self.validateTest()
