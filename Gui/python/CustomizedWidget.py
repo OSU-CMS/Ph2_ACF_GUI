@@ -802,6 +802,9 @@ class BeBoardBox(QWidget):
                 OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
             except KeyError as e:
                 logger.error(traceback.format_exc())
+                if module.getFMCPort() in OpticalGroup.getAllModules():
+                    OpticalGroup.removeModuleByIndex(module.getFMCPort())
+
                 return None, f"Error while adding Module to Optical Group: {repr(e)}"
 
             module_types.append(
@@ -1233,6 +1236,8 @@ class SimpleBeBoardBox(QWidget):
                     )
                 except KeyError as e:
                     logger.error(traceback.format_exc())   
+                    if module.getFMCID() in BeBoard.getAllOpticalGroups():
+                        BeBoard.removeOpticalGroup(module.getFMCID())
                     return (
                         None,
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",

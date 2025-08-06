@@ -370,7 +370,7 @@ class TestHandler(QObject):
                         logger.warning(traceback.format_exc())
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files)
+                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files, **kwargs)
 
                     if config_file:
                         SetupXMLConfigfromFile(
