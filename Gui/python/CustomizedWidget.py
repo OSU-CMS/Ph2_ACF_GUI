@@ -790,6 +790,8 @@ class BeBoardBox(QWidget):
             try:
                 OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
             except KeyError as e:
+                if module.getFMCPort() in OpticalGroup.getAllModules():
+                    OpticalGroup.removeModuleByIndex(module.getFMCPort())
                 return None, f"Error while adding Module to Optical Group: {repr(e)}"
 
             module_types.append(
@@ -1218,6 +1220,8 @@ class SimpleBeBoardBox(QWidget):
                         FMCID=cable_properties["FMCID"], OpticalGroup=OpticalGroup
                     )
                 except KeyError as e:
+                    if module.getFMCID() in BeBoard.getAllOpticalGroups():
+                        BeBoard.removeOpticalGroup(module.getFMCID())
                     return (
                         None,
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",
