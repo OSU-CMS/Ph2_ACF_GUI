@@ -7,7 +7,7 @@ import traceback
 
 
 class IVCurveThread(QThread):
-    measureSignal = pyqtSignal(str, object)
+    measureSignal = pyqtSignal(str, object, bool)
     progressSignal = pyqtSignal(str, float)
 
     def __init__(
@@ -82,6 +82,7 @@ class IVCurveThread(QThread):
 
             if self.exiting:
                 print("IV Curve scan was aborted by user.")
+                self.measureSignal.emit("IVCurve", {"voltage": [], "current": []}, False)#emit signal to prevent on_finish index incrementing
                 return
                         
             # The physics test can be stopped by pressing enter
@@ -92,15 +93,16 @@ class IVCurveThread(QThread):
 
             print("Voltages: ", measurementStr["voltage"])
             print("Currents: ", measurementStr["current"])
-            self.measureSignal.emit("IVCurve", measurementStr)
+            self.measureSignal.emit("IVCurve", measurementStr, True)
         except Exception as e:
             print(f"IV Curve scan failed with error: {e}")
             print(traceback.format_exc())
+            self.measureSignal.emit("IVCurve", {"voltage": [], "current": []}, False)
 
 class IVCurveHandler(QObject):
-    measureSignal = pyqtSignal(str, object)
+    measureSignal = pyqtSignal(str, object, bool)
     stopSignal = pyqtSignal(object)
-    finished = pyqtSignal(str, dict)
+    finished = pyqtSignal(str, dict, bool)
     progressSignal = pyqtSignal(str, float)
     startSignal = pyqtSignal()
 
@@ -109,6 +111,7 @@ class IVCurveHandler(QObject):
         self.instruments = instrument_cluster
         self.execute_each_step = execute_each_step
         self.nextTest = nextTest
+        self.test.measureSignal.connect(self.finish)
 
         assert self.instruments is not None, logger.debug(
             "Error instantiating instrument cluster"
@@ -138,7 +141,7 @@ class IVCurveHandler(QObject):
     def transmitProgress(self, measurementType, percentStep):
         self.progressSignal.emit(measurementType, percentStep)
 
-    def finish(self, test: str, measure: dict):
+    def finish(self, test: str, measure: dict, success: bool):
         starting_voltages = [
             np.abs(getattr(module["hv"], "voltage"))
             for module in self.instruments._module_dict.values()
@@ -154,7 +157,7 @@ class IVCurveHandler(QObject):
             self.instruments.hv_off(
                 execute_each_step=lambda: self.execute_each_step(starting_voltages)
             )    
-        self.finished.emit(test, measure)
+        self.finished.emit(test, measure, success)
 
     def stop(self):
         try:

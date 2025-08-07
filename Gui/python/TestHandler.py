@@ -1456,6 +1456,8 @@ created by Ph2_ACF is empty."
         self.outputfile.close()
         # While the process is killed:
 
+        print("PROCESS on_finish called and running")#debug
+
         if self.halt:
             self.haltSignal.emit(True)
             return
@@ -1663,13 +1665,15 @@ created by Ph2_ACF is empty."
                     csvfiles.append(csvfilename)
         return csvfiles
 
-    def IVCurveFinished(self, test: str, measure: dict):
+    def IVCurveFinished(self, test: str, measure: dict, success: bool):
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         for process in self.run_processes:
             process.write(b"\n")
             process.waitForBytesWritten()
             process.waitForFinished()
+
+        print("PROCESS IVCurveFinished called and running")#debug
 
         # 3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
         # IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
@@ -1737,8 +1741,9 @@ created by Ph2_ACF is empty."
 
         step = "IVCurve"
 
-        self.testIndexTracker += 1
-        self.testsAttempted += 1
+        if success:
+            self.testIndexTracker += 1
+            self.testsAttempted += 1
 
         EnableReRun = False
 
