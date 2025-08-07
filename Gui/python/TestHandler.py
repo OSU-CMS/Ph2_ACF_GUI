@@ -157,6 +157,7 @@ class TestHandler(QObject):
         self.IVCurveHandler = None
         self.SLDOScanHandler = None
         self.trimbitHandler = None
+        self.starttime = None
 
         self.processingFlag = False
         self.ProgresBarList = []
@@ -502,6 +503,7 @@ class TestHandler(QObject):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100*self.ProgressValue/total_steps)
 
     def runSingleTest(self, testName, nextTest = None):
+        self.starttime = time.time()
         if "analyze" in testName.lower():
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
@@ -525,7 +527,6 @@ class TestHandler(QObject):
         for console in self.runwindow.ConsoleViews:
             self.outputString.emit("Executing Single Step test...", console)
 
-        self.starttime = None
         self.ProgressingMode = "None"
         self.currentTest = testName
 
@@ -1550,6 +1551,15 @@ created by Ph2_ACF is empty."
         return EnableReRun
 
     def updateProgress(self, measurementType, stepSize):
+        if self.starttime is not None:
+            self.currentTime = time.time()
+            runningTime = self.currentTime - self.starttime
+            for i, firmware in enumerate(self.firmware):
+                self.runwindow.ResultWidget.runtimes[i][self.testIndexTracker].setText(
+                    "{0} s".format(round(runningTime, 1))
+                )
+
+
         if measurementType == "IVCurve":
             self.IVProgressValue += stepSize / 2.0
             for i, firmware in enumerate(self.firmware):
