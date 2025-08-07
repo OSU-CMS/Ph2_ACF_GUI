@@ -817,17 +817,6 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
                 )
-        #if self.currentTest == ["exampletest"]:               #for tests needing -c
-        #    for process, firmware in zip(self.run_processes, self.firmware):
-        #        process.start(
-        #            "CMSITminiDAQ",
-        #            [
-        #                "-f",
-        #                f"CMSIT_{firmware.getBoardName()}.xml",
-        #                "-c",
-        #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
-        #            ],
-        #        )
         if self.currentTest == "IREF_GADC":  #FIXME need to add -t so the scan will stop at the end
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
