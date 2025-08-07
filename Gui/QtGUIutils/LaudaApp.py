@@ -2,6 +2,8 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget
 import Gui.siteSettings as site_settings
 from icicle.icicle.lauda import Lauda
+from Gui.python.logging_config import logger
+import traceback
 import os
 
 
@@ -82,6 +84,7 @@ class LaudaWidget(QWidget):
             self.myLauda.set("TEMPERATURE_TARGET", float(self.setTempEdit.text()))
         except ValueError:
             print("Temperature target must be a float.")
+            logger.error(traceback.format_exc())
 
 
 if __name__ == "__main__":

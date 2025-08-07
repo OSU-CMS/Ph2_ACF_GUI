@@ -4,18 +4,19 @@ Class to perform the SLDO curve scanning
 
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from Gui.python.logging_config import logger
-from icicle.icicle.adc_board import AdcBoard
+from icicle.icicle.adc_board import ADCBoard
 from icicle.icicle.relay_board import RelayBoard
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 import numpy as np
 import math
+import traceback
 
 
 class SLDOCurveWorker(QThread):
     finishedSignal = pyqtSignal()
     progressSignal = pyqtSignal(str, float)
     stopSignal = pyqtSignal(str)
-    measure = pyqtSignal(np.ndarray, str)
+    measure = pyqtSignal(np.ndarray, str, str)
 
     def __init__(
         self,
@@ -29,6 +30,8 @@ class SLDOCurveWorker(QThread):
         max_voltage=1.8,
         pin_list=[],
         execute_each_step=lambda: None,
+        testhandler=None,
+
     ):
         super().__init__()
         self.instruments = instrument_cluster
@@ -41,45 +44,47 @@ class SLDOCurveWorker(QThread):
         self.pin_list = pin_list
         self.exiting = False
         self.moduleType = moduleType
+        self.testhandler = testhandler
+        self.Nsteps = int((self.target_current - self.starting_current) / self.step_size)
         self.PIN_MAPPINGS = {
-            "DEFAULT": AdcBoard.DEFAULT_PIN_MAP,
+            "DEFAULT": ADCBoard.DEFAULT_PIN_MAP,
             "DOUBLE": {
-                # 0: 'VDDA_ROC1',
-                1: 'VDDA_ROC13', #ROC U1B
-                # 2: 'VDDD_ROC2',
-                # 3: 'VDDD_ROC3',
-                # 4: 'VDDD_ROC1',
-                5: 'VDDD_ROC13', #ROC U1B
-                # 6: None,
-                # 7: 'TP8', #VOFS IN
-                # 8: None,
-                9: 'TP10', #VIN
-                # 10: None,
-                11: "VDDA_ROC12", #ROC U1A
-                #12: "VDDA_ROC1",
-                13: "VDDD_ROC12", #ROC U1A
-                #14: "VDDD_ROC1",
-                # 15: 'TP7A', #VOFS OUT
-                # 16: 'TP7B', #VOFS OUT
+                # 1: 'VDDA_ROC1',
+                2: 'VDDA_ROC13', #ROC U1B
+                # 3: 'VDDD_ROC2',
+                # 4: 'VDDD_ROC3',
+                # 5: 'VDDD_ROC1',
+                6: 'VDDD_ROC13', #ROC U1B
+                # 7: None,
+                # 8: 'TP8', #VOFS IN
+                # 9: None,
+                10: 'TP10', #VIN
+                #  11: None,
+                12: "VDDA_ROC12", #ROC U1A
+                # 13: "VDDA_ROC1",
+                14: "VDDD_ROC12", #ROC U1A
+                # 15: "VDDD_ROC1",
+                # 16: 'TP7A', #VOFS OUT
+                # 17: 'TP7B', #VOFS OUT
             },
             "QUAD": {
-                0: "VDDA_ROC14", #ROC U1C
-                1: "VDDA_ROC15", #ROC U1D
-                2: "VDDD_ROC14", #ROC U1C
-                3: "VDDD_ROC15", #ROC U1D
-                # 4: 'TP7C', #VOFS OUT
-                # 5: 'TP7D', #VOFS OUT
-                # 6: None,
-                # 7: 'TP8', #VOFS IN
-                # 8: None,
-                9: 'TP10', #VIN
-                # 10: None,
-                11: "VDDA_ROC12", #ROC U1A
-                12: "VDDA_ROC13", #ROC U1B
-                13: "VDDD_ROC12", #ROC U1A
-                14: "VDDD_ROC13", #ROC U1B
-                # 15: 'TP7A', #VOFS OUT
-                # 16: 'TP7B', #VOFShv_off OUT
+                1: "VDDA_ROC14", #ROC U1C
+                2: "VDDA_ROC15", #ROC U1D
+                3: "VDDD_ROC14", #ROC U1C
+                4: "VDDD_ROC15", #ROC U1D
+                # 5: 'TP7C', #VOFS OUT
+                # 6: 'TP7D', #VOFS OUT
+                # 7: None,
+                # 8: 'TP8', #VOFS IN
+                # 9: None,
+                10: 'TP10', #VIN
+                # 11: None,
+                12: "VDDA_ROC12", #ROC U1A
+                13: "VDDA_ROC13", #ROC U1B
+                14: "VDDD_ROC12", #ROC U1A
+                15: "VDDD_ROC13", #ROC U1B
+                # 16: 'TP7A', #VOFS OUT
+                # 17: 'TP7B', #VOFShv_off OUT
             },
         }
         self.LV_index = -1
@@ -88,16 +93,12 @@ class SLDOCurveWorker(QThread):
     def run(self) -> None:
         if "adc_board" in self.instruments._instrument_dict.keys():
             self.adc_board = self.instruments._instrument_dict["adc_board"]
+            # Set the pin map based on the module type
+            self.adc_board._pin_map = self.PIN_MAPPINGS[
+                self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
+            ]
             logger.info("Running with ADC.")
             self.runWithADC()
-        elif (
-            "multimeter" in self.instruments._instrument_dict.keys()
-            and "relay_board" in self.instruments._instrument_dict.keys()
-        ):
-            self.multimeter = self.instruments._instrument_dict["multimeter"]
-            self.relayboard = self.instruments._instrument_dict["relay_board"]
-            logger.info("Running with Relay+DMM.")
-            self.runWithRelayDMM()
         else:
             logger.error(
                 "You do not have instruments required to run an SLDOScan connected.\nYou must have an Adc Board or (Relay Board and Multimeter)."
@@ -132,7 +133,7 @@ class SLDOCurveWorker(QThread):
             delay=self.delay,
             step_size=self.step_size,
             measure=True,
-            measure_function=self.measureADC,
+            measure_function=self.measureADCup,
             measure_args={},
             set_property="current",
         )
@@ -146,7 +147,7 @@ class SLDOCurveWorker(QThread):
             delay=self.delay,
             step_size=self.step_size,
             measure=True,
-            measure_function=self.measureADC,
+            measure_function=self.measureADCdown,
             measure_args={},
             set_property="current",
         )[self.LV_index][1]
@@ -156,128 +157,67 @@ class SLDOCurveWorker(QThread):
         Currents_Up = [res[5] for res in data_up]
         Currents_Down = [res[5] for res in data_down]
 
-        # Use the results of pin 9 as LV_Voltage_Up and LV_Voltage_Down
-        pin_9_index = 9  # Pin index for "TP10"
-        LV_Voltage_Up = [res[6][pin_9_index] for res in data_up]
-        LV_Voltage_Down = [res[6][pin_9_index] for res in data_down]
-
-        for index, pin in self.PIN_MAPPINGS[
-            self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
-        ].items():
+        #Indexing for pin voltages
+        index = 6
+        pin10index = index + list(self.adc_board._pin_map.keys()).index(10)
+        LV_Voltage_Up = [res[pin10index] for res in data_up]
+        LV_Voltage_Down = [res[pin10index] for res in data_down]
         
-            if index == 9:
-                continue
+        ### The structure of self.testhandler.VDDDup[channel][chip] os that it is a list of dictionaries
+        ### where the keys are the current and the values are the voltage read from the GADC.
+        for channel in self.instruments._module_dict:
+            for chip in self.testhandler.VDDDup[channel]:
+                VDDDupData = np.array([list(self.testhandler.VDDDup[channel][chip].keys()), list(self.testhandler.VINDup[channel][chip].values()), list(self.testhandler.VDDDup[channel][chip].values())])
+                VDDDdownData = np.array([list(self.testhandler.VDDDdown[channel][chip].keys()), list(self.testhandler.VINDdown[channel][chip].values()), list(self.testhandler.VDDDdown[channel][chip].values())])
+                VDDAupData = np.array([list(self.testhandler.VDDAup[channel][chip].keys()), list(self.testhandler.VINAup[channel][chip].values()), list(self.testhandler.VDDAup[channel][chip].values())])
+                VDDAdownData = np.array([list(self.testhandler.VDDAdown[channel][chip].keys()), list(self.testhandler.VINAdown[channel][chip].values()), list(self.testhandler.VDDAdown[channel][chip].values())])
+                VDDDresults = np.concatenate((VDDDupData, VDDDdownData), axis=0)
+                VDDAresults = np.concatenate((VDDAupData, VDDAdownData), axis=0)
 
-            ADC_Voltage_Up = [res[6][index] for res in data_up]
-            result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
-            ADC_Voltage_Down = [res[6][index] for res in data_down]
-            result_down = np.array([Currents_Down, LV_Voltage_Down, ADC_Voltage_Down])
+                self.measure.emit(VDDDresults, "VDDD_ROC{0}".format(chip), "GADC")
+                self.measure.emit(VDDAresults, "VDDA_ROC{0}".format(chip), "GADC")
+
+        print("LV Voltages Up: {0}\nLV Voltages Down: {1}".format(
+            LV_Voltage_Up, LV_Voltage_Down
+        ))
+        print("Pin map used: {0}".format(self.adc_board._pin_map))
+
+        for name in self.adc_board._pin_map.values():
+            if index != pin10index:
+                print('the name of the pin is {0}'.format(name))
+                ADC_Voltage_Up = [res[index] for res in data_up]
+                result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
+                ADC_Voltage_Down = [res[index] for res in data_down]
+                result_down = np.array([Currents_Down, LV_Voltage_Down, ADC_Voltage_Down])
+                print("ADC Voltages Up: {0}\nADC Voltages Down: {1}".format(
+                    ADC_Voltage_Up, ADC_Voltage_Down))
+                index += 1
+            else:
+                index += 1
+                continue
 
             results = np.concatenate((result_up, result_down), axis=0)
             # 0:up current, 1:up lv voltage, 2: up adc voltage 3: down current, 4: down lv voltage, 5: down adc voltage
-            print("total result for pin {0}: {1}".format(pin, results))
+            # name needs to be a string with the format VDDA_ROC12
+            self.measure.emit(results, name, "PROBE")
 
-            self.measure.emit(results, pin)
-
-        # All pins have been scanned so we emit the finished signal
         self.finishedSignal.emit()
 
-    def runWithRelayDMM(self) -> None:
-        """
-        Run thread that will ramp up the LV while measuring from the multimeter, then ramp down doing the same thing.
-        Combine the two list of measurments and return that from the function.
-
-        measure: emitted after VI curve of each pin contains array of MM measurements
-        progress: emitted after each cycle of the LV sweep
-        """
-        # Initialize a list to store the results
-        self.result_list = []
-        self.labels = []
-        # Turn off instruments
-        starting_voltages = [
-            np.abs(getattr(module["hv"], "voltage"))
-            for module in self.instruments._module_dict.values()
-        ]
-        self.instruments.hv_off(
-            execute_each_step=lambda: self.execute_each_step(starting_voltages)
-        )
-        self.instruments.lv_off()
-        self.multimeter.set("SYSTEM_MODE", "REM")
-        logger.info("turned off the lv and hv")
-        for key in self.relayboard.PIN_MAP[
-            self.moduleType.split(" ")[-1].replace("1x2", "DOUBLE").upper()
-        ].keys():
-            if "VDD" in key:
-                self.pin_list.append(key)
-                print("adding {0} to pin_list".format(key))
-        for pin in self.pin_list:
-            logger.info("made it inside the pin loop")
-
-            # Make label for plot
-            self.labels.append(pin)
-            # Connect to relay pin
-            self.setRelayPin(pin)
-            # turn on LV
-            self.instruments.lv_on(
-                current=self.starting_current, voltage=self.max_voltage
-            )
-
-            # sweep from the starting current to the target current, preliminary data processing
-            results = self.instruments.lv_sweep(
-                target=self.target_current,
-                delay=self.delay,
-                step_size=self.step_size,
-                measure=True,
-                measure_function=self.measureMM,
-                measure_args={},
-                set_property="current",
-            )
-            self.determineLVIndex(results)
-            results = results[self.LV_index][1]
-
-            # separate measurements into different lists
-            lvVoltageList = [res[4] for res in results]
-            currentList = [res[5] for res in results]
-            adcVoltageList = [res[6][0] for res in results]
-
-            result_up = np.array([currentList, lvVoltageList, adcVoltageList])
-            print(
-                f"Currents: {currentList}\nPower Supply Voltages: {lvVoltageList}\nBoard Voltages: {adcVoltageList}"
-            )
-
-            # sweep from the target current to the starting current, preliminary data processing
-            results = self.instruments.lv_sweep(
-                target=self.starting_current,
-                delay=self.delay,
-                step_size=self.step_size,
-                measure=True,
-                measure_function=self.measureMM,
-                measure_args={},
-                set_property="current",
-            )[self.LV_index][1]
-
-            # separate measurements into different lists
-            lvVoltageList = [res[4] for res in results]
-            currentList = [res[5] for res in results]
-            adcVoltageList = [res[6][0] for res in results]
-
-            result_down = np.array([currentList, lvVoltageList, adcVoltageList])
-            print(
-                f"Currents: {currentList}\nPower Supply Voltages: {lvVoltageList}\nBoard Voltages: {adcVoltageList}"
-            )
-
-            total_result = np.concatenate((result_up, result_down), axis=0)
-            print("total result is {0}".format(total_result))
-            self.instruments.lv_off()
-
-            # Emit a signal that passes the list of results to the SLDOCurveHandler.
-            self.measure.emit(total_result, pin)
-        # All pins have been scanned so we emit the finished signal
-        self.finishedSignal.emit()
-
-    def measureADC(self, no_lock=True, *args, **kwargs):
+    def measureADCup(self, no_lock=True, *args, **kwargs):
         self.updateProgress(1)
-        return [self.adc_board.query_adc(no_lock=no_lock)]
+        ls = []
+        self.testhandler.GADC_execute_each_step(upOrDown='up',total_steps=self.Nsteps)
+        for pin in self.adc_board._pin_map.keys():
+            ls.append(self.adc_board.query_channel(pin))
+        return ls
+
+    def measureADCdown(self, no_lock=True, *args, **kwargs):
+        self.updateProgress(1)
+        ls = []
+        self.testhandler.GADC_execute_each_step(upOrDown='down',total_steps=self.Nsteps)
+        for pin in self.adc_board._pin_map.keys():
+            ls.append(self.adc_board.query_channel(pin))
+        return ls
 
     def measureMM(self, no_lock=True, *args, **kwargs):
         self.updateProgress(len(self.pin_list))
@@ -348,7 +288,7 @@ class SLDOCurveWorker(QThread):
 
 class SLDOCurveHandler(QObject):
     finishedSignal = pyqtSignal()
-    makeplotSignal = pyqtSignal(np.ndarray, str)
+    makeSLDOplotSignal = pyqtSignal(np.ndarray, str, str)
     progressSignal = pyqtSignal(str, float)
     abortSignal = pyqtSignal()
     # measureSignal = pyqtSignal(str, object)
@@ -358,20 +298,29 @@ class SLDOCurveHandler(QObject):
         instrument_cluster,
         moduleType,
         end_current,
+        starting_current,
+        step_size,
         voltage_limit,
         execute_each_step,
+        testhandler,
     ):
         super(SLDOCurveHandler, self).__init__()
         self.instruments = instrument_cluster
         self.end_current = end_current
+        self.starting_current = starting_current
+        self.step_size = step_size
         self.voltage_limit = voltage_limit
         self.execute_each_step = execute_each_step
+        self.testhandler = testhandler
         self.test = SLDOCurveWorker(
             self.instruments,
             moduleType=moduleType,
             target_current=self.end_current,
+            step_size=self.step_size,
+            starting_current=self.starting_current,
             max_voltage=self.voltage_limit,
             execute_each_step=self.execute_each_step,
+            testhandler=self.testhandler,
         )
         self.test.measure.connect(self.makePlots)
         self.test.progressSignal.connect(self.transmitProgress)
@@ -379,8 +328,8 @@ class SLDOCurveHandler(QObject):
         self.test.stopSignal.connect(self.stop)
 
     # This should take the list of results and make plots.  I think we should maybe move this to the TestHandler.
-    def makePlots(self, total_result, pin):
-        self.makeplotSignal.emit(total_result, pin)
+    def makePlots(self, total_result, pin, method):
+        self.makeSLDOplotSignal.emit(total_result, pin, method)
 
     def SLDOScan(self):
         if not self.instruments:
@@ -419,6 +368,7 @@ class SLDOCurveHandler(QObject):
                 self.abortSignal.emit()
             except Exception as err:
                 logger.error(f"Failed to stop the SLDO test due to error {err}")
+                logger.error(traceback.format_exc())
         else:
             try:
                 starting_voltages = [
@@ -432,3 +382,4 @@ class SLDOCurveHandler(QObject):
                 self.test.terminate()
             except Exception as err:
                 logger.error(f"Failed to stop the SLDO test due to error {err}")
+                logger.error(traceback.format_exc())

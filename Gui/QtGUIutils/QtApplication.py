@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (
 
 import sys
 import os
+import traceback
 import pyvisa
 import requests
 from felis.felis_helpers import get_accountInfo
@@ -42,7 +43,7 @@ from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 
 from icicle.icicle.instrument_cluster import InstrumentCluster
-from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
+# from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
 
 
 from Gui.python.logging_config import logger
@@ -224,6 +225,7 @@ class QtApplication(QWidget):
                 QMessageBox(
                     None, "Error", "Can not create log files: {}".format(LogFileName)
                 )
+                logger.error(traceback.format_exc())
 
     ###############################################################
     ##  Login page and related functions
@@ -427,7 +429,7 @@ class QtApplication(QWidget):
             if not status:
                 message = f"Server responded with status code {response.status_code}"
         except requests.RequestException as e:
-            logger.error(f"An error occurred: {e}")
+            logger.error(traceback.format_exc())
             message = f"An error occurred: {e}"
             status = False
 
@@ -488,6 +490,7 @@ class QtApplication(QWidget):
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))
+            logger.error(traceback.format_exc())
         logger.debug(f"Setup FC7s with the following FC7:\n{self.FwDict}")
 
         self.UseButtons = []
@@ -759,7 +762,8 @@ class QtApplication(QWidget):
             try:
                 self.ArduinoControl.toggled.connect(self.switchArduinoPanel)
             except AttributeError:
-                self.logger.error("Failed to connect arduino control")
+                logger.error("Failed to connect arduino control")
+                logger.error(traceback.format_exc())
 
         self.MainOption = QGroupBox("Main")
 
@@ -996,7 +1000,7 @@ class QtApplication(QWidget):
                     self.disable_instrument_widgets()
 
             except Exception as e:
-                print("Error:", e)
+                logger.error(traceback.format_exc())
                 self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
 
@@ -1088,9 +1092,9 @@ class QtApplication(QWidget):
 
     def abortThermalTest(self):
         """Stop the current profile running on thermal chamber"""
-        temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
-        with temp_chamber:
-            temp_chamber.set("CONTROL_PROFILE", "STOP")
+        #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
+        #with temp_chamber:
+        #   temp_chamber.set("CONTROL_PROFILE", "STOP")
         message_box = QMessageBox()
         message_box.setText("Profile Aborted")
         message_box.setStandardButtons(QMessageBox.Ok)
@@ -1104,6 +1108,7 @@ class QtApplication(QWidget):
         try:
             profile_number = int(profile_number)
         except ValueError:
+            logger.error(traceback.format_exc())
             QMessageBox.information(
                 None,
                 "Error",
@@ -1113,24 +1118,24 @@ class QtApplication(QWidget):
             return
         # Import icicle module for temperature chamber
         print(site_settings.temp_chamber_resource)
-        temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
+        #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
 
-        with temp_chamber:
-            temp_chamber.set("SELECT_PROFILE", profile_number)
-            profile_name = temp_chamber.query("SELECT_PROFILE")
+        #with temp_chamber:
+        #    temp_chamber.set("SELECT_PROFILE", profile_number)
+        #    profile_name = temp_chamber.query("SELECT_PROFILE")
 
         message_box = QMessageBox()
-        message_box.setText(
-            f'Temperature chamberprofile "{profile_name}" has been chosen'
-        )
+        #message_box.setText(
+        #    f'Temperature chamberprofile "{profile_name}" has been chosen'
+        #)
         message_box.setInformativeText("Is this the correct profile?")
         message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         message_box.setDefaultButton(QMessageBox.Yes)
         response = message_box.exec()
 
-        if response == QMessageBox.Yes:
-            with temp_chamber:
-                temp_chamber.set("CONTROL_PROFILE", "START")
+        #if response == QMessageBox.Yes:
+        #    with temp_chamber:
+        #        temp_chamber.set("CONTROL_PROFILE", "START")
 
         if response == QMessageBox.No:
             return
@@ -1161,7 +1166,8 @@ class QtApplication(QWidget):
                 self.UseHVPowerSupply.setDisabled(False)
 
             except Exception:
-                print("HV PowerPanel not released properly")
+                logger.error("HV PowerPanel not released properly")
+                logger.error(traceback.format_exc())
         else:
             logger.info("You must manually turn off the HV")
 
@@ -1343,12 +1349,14 @@ class QtApplication(QWidget):
 
             except Exception as e:
                 logger.error(f"Could not shutdown Peltier: {e}")
+                logger.error(traceback.format_exc())
                 pass
 
             try:
                 os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
             except Exception as e:
-                print("Error {0}".format(e))
+                logger.error(f"Error {0}".format(e))
+                logger.error(traceback.format_exc())
 
             event.accept()
         else:

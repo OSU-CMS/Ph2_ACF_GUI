@@ -11,6 +11,7 @@ import sys
 import os
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
+import traceback
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -74,6 +75,7 @@ def iter_except(function, exception):
             yield function()
     except Exception as e:
         logger.error(e)
+        logger.error(traceback.format_exc())
         return
 
 
@@ -89,6 +91,7 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
                 os.makedirs(test_dir)
             except OSError:
                 print("Can not create directory: {0}".format(test_dir))
+                print(traceback.format_exc())
         time = datetime.utcnow()
         timeRound = time - timedelta(microseconds=time.microsecond)
         time_stamp = timeRound.isoformat() + "_UTC"
@@ -107,6 +110,7 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
             os.makedirs(Output_Dir)
         except OSError as e:
             print(f"OutputDir not created: {e}")
+            print(traceback.format_exc())
             return "", ""
 
         # FIXME:
@@ -137,6 +141,7 @@ def isActive(dbconnection):
             return False
     except Exception as err:
         print("Unexpected form, {}".format(repr(err)))
+        print(traceback.format_exc())
         return False
 
 
@@ -152,20 +157,19 @@ def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
                 Input_Dir, Output_Dir, BeBoardName
             )
         )
-    except OSError:
-        print("Can not copy the XML files to {0}".format(Output_Dir))
+    except OSError as e:
+        logger.error(f"Failed to copy XML file: {e}")
+        logger.error(traceback.format_exc())
     try:
         os.system(
             "cp {0}/CMSIT_{2}.xml  {1}/test/CMSIT_{2}.xml".format(
                 Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
             )
         )
-    except OSError:
-        print(
-            "Can not copy {0}/CMSIT_{2}.xml to {1}/test/CMSIT_{2}.xml".format(
-                Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
-            )
-        )
+        logger.info(f"Copied XML file to test directory")
+    except OSError as e:
+        logger.error(f"Failed to copy XML file to test directory: {e}")
+        logger.error(traceback.format_exc())
 
 
 ##########################################################################
@@ -215,7 +219,8 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
 			counter += 1"""
     ###--------------------------------------------------------#####
     except Exception as error:
-        print("Failed to set up the XML file, {}".format(error))
+        logger.error(f"Failed to load XML file: {error}")
+        logger.error(traceback.format_exc())
 
     try:
         # print('lenth of XML dict is {0}'.format(len(updatedXMLValues)))
@@ -225,7 +230,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
 
             for Node in root.findall(".//Settings"):
                 # print("Found Settings Node!")
-                if "VCAL_HIGH" in Node.attrib:
+                if "VCAL_HIGH" in Node.attrib: # Selecting settings associated with chip
                     RD53Node = Node.getparent()
                     HyBridNode = RD53Node.getparent()
                     ## Potential Change: please check if it is [HyBrid ID/RD53 ID] or [HyBrid ID/RD53 Lane]
@@ -239,6 +244,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
 
     except Exception as error:
         print("Failed to set up the XML file, {}".format(error))
+        print(traceback.format_exc())
 
     try:
         logger.info(updatedGlobalValue)
@@ -260,20 +266,22 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
                 updatedGlobalValue[1]["TargetThr"]
             )
         )
+        print(traceback.format_exc())
 
     try:
         if changeMade:
             ModifiedFile = InputFile + ".changed"
             tree.write(ModifiedFile)
             InputFile = ModifiedFile
-
     except Exception as error:
-        print("Failed to set up the XML file, {}".format(error))
+        logger.error(f"Failed to save modified XML file: {error}")
+        logger.error(traceback.format_exc())
 
     try:
         os.system("cp {0} {1}/CMSIT_{2}.xml".format(InputFile, Output_Dir, BeBoardName))
     except OSError:
         print("Can not copy the XML files {0} to {1}".format(InputFile, Output_Dir))
+        print(traceback.format_exc())
     try:
         os.system(
             "cp {0}/CMSIT_{1}.xml  {2}/test/CMSIT_{1}.xml".format(
@@ -286,6 +294,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
                 Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
             )
         )
+        print(traceback.format_exc())
 
 
 ##########################################################################
@@ -306,6 +315,7 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
                     Output_Dir, key
                 )
             )
+            print(traceback.format_exc())
         try:
             os.system(
                 "cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(
@@ -318,6 +328,7 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
                     Output_Dir, key, os.environ.get("PH2ACF_BASE_DIR")
                 )
             )
+            print(traceback.format_exc())
 
 
 ##########################################################################
@@ -338,6 +349,7 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
                     InputFileDict[key], Output_Dir
                 )
             )
+            print(traceback.format_exc())
         try:
             os.system(
                 "cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(
@@ -350,6 +362,7 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
                     Output_Dir, key, os.environ.get("PH2ACF_BASE_DIR")
                 )
             )
+            print(traceback.format_exc())
 
 
 ##########################################################################
@@ -378,11 +391,10 @@ def CheckXMLValue(pFilename, pAttribute):
 
 def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
     outputFile = f"{outputDir}/CMSIT_{BeBoard.getBoardName()}_{testName}.xml"
-    print(outputFile)
+    logger.debug(f"Starting GenerateXMLConfig with BeBoard={BeBoard}, testName={testName}, outputDir={outputDir}, txt_files={txt_files}, additional_args={arg}")
 
     boardtype = "RD53A"
     RegisterSettingsList = RegisterSettings  # TODO: Investigate whether this actually matters (ie deep vs shallow copy)
-
     # Get Hardware discription and a list of the modules
     HWDescription0 = HWDescription()
 
@@ -440,7 +452,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
             # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
             for chip in module.getChips().values():
-                print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
+                logger.info("chip %s status is %s", chip.getID(), chip.getStatus())
                 FEChip = FE()
                 if (module.getModuleName(), module.getFMCPort(), chip.getID()) in txt_files.keys():
                     txt_file = txt_files[module.getModuleName(), module.getFMCPort(), chip.getID()]
@@ -448,6 +460,13 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                     txt_file = "CMSIT_RD53_{0}_{1}_{2}.txt".format(
                         module.getModuleName(), module.getFMCPort(), chip.getID()
                     )
+                    
+                if testName == "SingleLaneTest" and chip.getID() == '12':
+                    chip.setLane('0')
+
+                elif chip.getID() == '12' and '1x2' in moduleType:
+                    chip.setLane('3')
+
                 FEChip.SetFE(
                     chip.getID(),
                     "1" if chip.getStatus() else "0",
@@ -457,7 +476,8 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 )
 
                 chip_settings = FESettings_Dict[testName][registerKey].copy()
-                chip_settings['VREF_ADC'] = chip.getVREF()
+                chip_settings['VREF_ADC'] = round(chip.getVREF())
+                chip_settings['INJ_CAP'] = round(chip.getCINJ())
                 FEChip.ConfigureFE(chip_settings)
             
                 if testName in FELaneConfig_Dict:
@@ -466,9 +486,15 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                         )
                 else:
                     logger.warning(f"Test name {testName} not found in FELaneConfig_Dict.")
-        
-                FEChip.VDDAtrim = chip.getVDDA()
-                FEChip.VDDDtrim = chip.getVDDD()
+
+                if 'trimbit_dict' in arg:
+                    logger.info('Setting VDDA to %s', arg['trimbit_dict'][int(chip.getID())][0])
+                    FEChip.VDDAtrim = arg['trimbit_dict'][int(chip.getID())][0]
+                    logger.info('Setting VDDD to %s', arg['trimbit_dict'][int(chip.getID())][1])
+                    FEChip.VDDDtrim = arg['trimbit_dict'][int(chip.getID())][1]
+                else:
+                    FEChip.VDDAtrim = chip.getVDDA()
+                    FEChip.VDDDtrim = chip.getVDDD()
                 FEChip.EfuseID = chip.getEfuseID()
                 HyBridModule0.AddFE(FEChip)
             HyBridModule0.ConfigureGlobal(globalSettings_Dict[testName])
@@ -638,7 +664,7 @@ def formatter(DirName, columns, **kwargs):
                 else:
                     ReturnList[indexGrade] = -1
             except Exception:
-                print("recheck failed")
+                print(traceback.format_exc())
         else:
             pass
 

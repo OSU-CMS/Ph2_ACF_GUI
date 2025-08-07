@@ -15,7 +15,7 @@
             "default_current": 3
         },
         "adc_board": {
-            "class": "AdcBoard",
+            "class": "ADCBoard",
             "resource": "ASRL/dev/ttyUSBadc::INSTR",
             "sim": false,
             "default_voltage": 0,

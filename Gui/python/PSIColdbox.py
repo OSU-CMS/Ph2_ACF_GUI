@@ -1,6 +1,7 @@
 from paho.mqtt import client as mqtt_client
 from time import sleep, time
 import threading
+import traceback
 
 # Define monitoring payload types
 payload_types = {
@@ -186,6 +187,7 @@ class ColdboxMonitor:
                 break
             except Exception as e:
                 print(f"Reconnection failed: {e}. Retrying in 60 seconds...")
+                print(traceback.format_exc())
                 time.sleep(60)
 
     def on_message(self, client, userdata, msg):
@@ -213,6 +215,7 @@ class ColdboxMonitor:
         except Exception as e:
             print(f"Failed to process message: {e}")
             print(f"payload = '{payload}'")
+            print(traceback.format_exc())
 
     def start(self):
         """Start the MQTT client."""
@@ -223,6 +226,7 @@ class ColdboxMonitor:
             print(
                 f"Failed to connect to {self.host}: {e}. Retrying in the background..."
             )
+            print(traceback.format_exc())
             threading.Thread(target=self.reconnect, daemon=True).start()
 
     def stop(self):
