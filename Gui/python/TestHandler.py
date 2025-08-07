@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
 )
 
 import os
+import shutil
 import glob
 import subprocess
 import traceback
@@ -318,19 +319,35 @@ class TestHandler(QObject):
             self.input_dir,
         )
 
-    def saveConfigs(self, current_fc7:str):
-        logger.debug(f"{current_fc7=}")
+    def saveConfigs(self, process_index:int):
         ph2_acf_base_dir = os.environ.get("PH2ACF_BASE_DIR") 
         logger.debug(f"{self.rd53_file.keys()=}")
-        logger.debug(f"{self.output_dir}")
-        for key in self.rd53_file.keys():
-            #TODO Add process index to this function and use to format input directory
+        logger.debug(f"{self.ModuleMap=}")
+
+        current_fc7 = self.firmware[process_index].getBoardName()
+        # NOTE: ModuleMap key is of the form "{0}_{1}_{2}".format(beboardId, ogId, moduleId)
+        # key used to be the module name and chip ie. SH0101_0_13
+
+        # Modules that are associated with the finished QProcess that called saveConfigs
+        finished_modules = {
+            name for key, name in self.ModuleMap.items()
+            if key.split("_")[0] == str(process_index)
+            }
+
+        # Module and enabled chip mapping
+        module_chips_to_save = [
+            chip for chip in list(self.rd53_file.keys())
+            if chip.split("_")[0] in finished_modules
+            ]
+
+        #TODO Add process index to this function and use to format input directory
+        for module in module_chips_to_save:
             try:
-                os.system(
-                    f"cp {ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt")
-            except OSError:
+                shutil.copyfile(f"{ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{module}.txt", f"{self.output_dir}/{current_fc7}/CMSIT_RD53_{module}_OUT.txt")
+            except Exception as e:
+                traceback.print_exc()
                 logger.error(
-                    f"Failed to copy {ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{key}.txt {self.output_dir}/CMSIT_RD53_{key}_OUT.txt"
+                    f"Failed to copy {ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{module}.txt {self.output_dir}/{current_fc7}/CMSIT_RD53_{module}_OUT.txt"
                 )
 
     def configTest(self, **kwargs):
@@ -1066,6 +1083,7 @@ class TestHandler(QObject):
                         output_dir = os.path.join(
                             self.output_dir, beboard.getBoardName()
                         )
+                        logger.debug(f"{output_dir=}")
                         result, self.BBanalysis_root_files = ResultGrader(
                             self.felis_instances[i],
                             output_dir,
@@ -1699,13 +1717,12 @@ created by Ph2_ACF is empty."
             return
 
 
-        current_fc7:str = self.firmware[processIndex].getBoardName()
-        self.saveConfigs(current_fc7=current_fc7)
         # Save the output ROOT file to output_dir
         logger.debug("About to run saveTest()")
         time.sleep(1)
         self.saveTest(processIndex, self.run_processes[processIndex])
 
+        self.saveConfigs(process_index=processIndex)
         # Don't continue on sequence until all processes have finished the current test
         
         # Ensure that all processes have finished before continuing
