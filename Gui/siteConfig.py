@@ -2,7 +2,7 @@ import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
 
-CONFIG_VER = 4
+CONFIG_VER = 5
 
 # Customize the logging configuration
 logging.basicConfig(
@@ -109,7 +109,7 @@ SLDOScan_GADC = {
 }
 
 Trimbit_GADC = {
-    "physics seconds": 5*int(Monitor_SleepTime['TrimbitScan_GADC'])/1000,
+    "physics seconds": 1.5*int(Monitor_SleepTime['TrimbitScan_GADC'])/1000,
 	"multipliers":{"VDD":2}
 }
 
