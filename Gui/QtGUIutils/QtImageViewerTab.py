@@ -101,7 +101,7 @@ class QtImageViewerTab(QWidget):
             self.ViewLayout.addWidget(comboBox, 0, 2, 1, 1)
             self.ViewLayout.addWidget(label, 0, 0, 1, 1)
 
-        except Exception as error:
+        except Exception:
             logger.error(traceback.format_exc())
 
         self.ViewBox.setLayout(self.ViewLayout)

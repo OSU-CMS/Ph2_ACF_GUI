@@ -1,6 +1,5 @@
 import ROOT
 import time
-import traceback
 
 from Gui.python.logging_config import get_logger
 

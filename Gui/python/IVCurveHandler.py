@@ -5,7 +5,6 @@ import numpy as np
 import traceback
 
 from Gui.python.logging_config import get_logger
-import Gui.siteSettings as site_settings
 logger = get_logger(__name__)
 
 

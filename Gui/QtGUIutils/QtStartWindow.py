@@ -24,7 +24,6 @@ from PyQt5.QtWidgets import (
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 from Gui.python.CustomizedWidget import BeBoardBox
-from Gui.python.logging_config import logger
 from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
     FC7List,
@@ -377,7 +376,7 @@ class QtStartWindow(QWidget):
                                     if not erroredFlag:
                                         self.master.errorMessageBoxSignal.emit("One or more of the chip txt pages don't exist!")
                                         erroredFlag=True
-                            except requests.exceptions.RequestException as e:
+                            except requests.exceptions.RequestException:
                                 logger.error(traceback.format_exc())
                                 if not erroredFlag:
                                     self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")
@@ -457,7 +456,7 @@ class QtStartWindow(QWidget):
                             if not erroredFlag:
                                 self.master.errorMessageBoxSignal.emit("One or more of the chip txt pages don't exist!")
                                 erroredFlag=True
-                    except requests.exceptions.RequestException as e:
+                    except requests.exceptions.RequestException:
                         logger.error(traceback.format_exc())
                         if not erroredFlag:
                             self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")

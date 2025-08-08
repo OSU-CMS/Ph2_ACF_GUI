@@ -99,7 +99,7 @@ def createModesTable():
     try:
         c = conn.cursor()
         c.execute(sql)
-    except Exception as e:
+    except Exception:
         logger.error(traceback.format_exc())
         pass
 

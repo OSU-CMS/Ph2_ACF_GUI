@@ -159,7 +159,7 @@ def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
                 Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
             )
         )
-        logger.info(f"Copied XML file to test directory")
+        logger.info("Copied XML file to test directory")
     except OSError as e:
         logger.error(f"Failed to copy XML file to test directory: {e}")
         logger.error(traceback.format_exc())

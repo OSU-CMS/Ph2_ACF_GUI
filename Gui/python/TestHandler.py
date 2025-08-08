@@ -19,7 +19,6 @@ import subprocess
 import traceback
 import threading
 import time
-import traceback
 import re
 from datetime import datetime
 import numpy as np
@@ -218,11 +217,6 @@ class TestHandler(QObject):
                 os.makedirs(directory)
                 logger.info("New Felis scratch directory created.")
 
-            except OSError as e:
-                logger.error(f"Error making Felis scratch directory: {e.strerror}")
-                logger.error(traceback.format_exc())
-
-
         except FileExistsError:
             # If directory already exists, fantastic.
             logger.debug("The scratch directory already exists. Continuing")
@@ -230,6 +224,8 @@ class TestHandler(QObject):
 
         except OSError as e:
             logger.error(f"Error making Felis scratch directory: {e.strerror}")
+            logger.error(traceback.format_exc())
+
             
         self.felis_instances = [Felis(felis_directory, False) for felis_directory in felis_directories] 
         self.grades = []
@@ -476,22 +472,6 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
         self.config_file = ""
         return
-
-    def saveConfigs(self):
-        for key in self.rd53_file.keys():
-            try:
-                os.system(
-                    "cp {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
-                    )
-                )
-            except OSError:
-                print(
-                    "Failed to copy {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
-                    )
-                )
-                logger.warning(traceback.format_exc())
 
     def resetConfigTest(self):
         self.input_dir = ""
@@ -1614,7 +1594,7 @@ created by Ph2_ACF is empty."
 
                 self.outputString.emit(text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index])
             except Exception:
-                logger.error(f"Error emitting console output")
+                logger.error("Error emitting console output")
                 logger.error(traceback.format_exc())
         self.readingOutput = False
 
@@ -2333,14 +2313,13 @@ created by Ph2_ACF is empty."
 
         except ConnectionError:
             logger.error(traceback.format_exc())
-            self.master.errorMessageBoxSignal.emit(error_message)
+            self.master.errorMessageBoxSignal.emit(traceback.format_exc())
 
         except Exception:
-            if not self.master.panthera_connected:
-                error_message = (
+            error_message = (
                     "Cannot upload test results, you are not signed in to Panthera."
                 )
-            else:
+            if self.master.panthera_connected:
                 error_message = "Failed to upload to Panthera."
                 self.runwindow.UploadButton.setDisabled(False)
                 if self.autoSave:

@@ -1000,7 +1000,7 @@ class QtApplication(QWidget):
                 if self.expertMode:
                     self.disable_instrument_widgets()
 
-            except Exception as e:
+            except Exception:
                 logger.error(traceback.format_exc())
                 self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None

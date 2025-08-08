@@ -388,5 +388,5 @@ class TrimbitCurveHandler(QObject):
         try:
             self.test.exiting = True
             self.abortSignal.emit()
-        except Exception as err:
+        except Exception:
             logger.error(traceback.format_exc())

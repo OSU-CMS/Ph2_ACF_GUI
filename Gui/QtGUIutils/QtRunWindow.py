@@ -648,13 +648,13 @@ class QtRunWindow(QWidget):
     def updateValidation(self, results: list):
         try:
             self.modulestatus.append(results)
-        except Exception as err:
+        except Exception:
             logger.error(traceback.format_exc())
 
     def updateFinishedTests(self, tests: list):
         try:
             self.finished_tests = tests
-        except Exception as err:
+        except Exception:
             logger.error(traceback.format_exc())
 
     def updateProgressBar(self, bar: QProgressBar, value: int, text: str):

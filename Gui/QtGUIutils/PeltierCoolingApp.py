@@ -159,7 +159,7 @@ class Peltier(QWidget):
             self.powerReading.connect(lambda power: self.setPowerStatus(power))
             self.timer.start(500)  # Perform monitoring functions every 500ms
 
-        except Exception as e:
+        except Exception:
             logger.error("Error while attempting to setup Peltier Controller: ")
             logger.error(traceback.format_exc())
 
@@ -301,7 +301,7 @@ class Peltier(QWidget):
             self.powerReading.emit(int(power[8]))
             return
         except Exception:
-            logger.error(f"Could not read power/temperature")
+            logger.error("Could not read power/temperature")
             logger.error(traceback.format_exc())
             return
 
