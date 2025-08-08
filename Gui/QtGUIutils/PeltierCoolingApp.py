@@ -2,11 +2,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from Gui.python.Peltier import PeltierSignalGenerator
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 import traceback
 import time
 import os
 
+logger = get_logger(__name__)
 
 class Peltier(QWidget):
     # Defining Signals that will be used
