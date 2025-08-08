@@ -85,7 +85,7 @@ class TestHandler(QObject):
         self.master = master
         self.instruments = self.master.instruments
         self.mod_dict = {}
-        self.fused_dict_index = [-1, -1]
+        self.fused_dict_index = [-1, -1] #hybrid_id and chip_number gathered from Ph2_ACF output
         self.FWisPresent = False
         self.FWisLoaded = False
         self.master.globalStop.connect(self.urgentStop)
@@ -284,8 +284,6 @@ class TestHandler(QObject):
         }  # Initialize all to True
 
     def finished_run_process(self, _, exitStatus, i):
-        logger.info("Inside finsihed_run_process")
-        logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
             self.on_finish(i) 
 
@@ -388,19 +386,18 @@ class TestHandler(QObject):
 
         # At first there should be no input_dir and we should be grabbing the default txt files.
         # After the first test, we should see values or input_dir and output_dir signifiying that the txt files are being updated.
-        logger.info(f"{self.input_dir=}")
-        logger.info(f"{self.output_dir=}")
+        logger.debug(f"{self.input_dir=}")
+        logger.debug(f"{self.output_dir=}")
 
         # NOTE:  This code is to update the mapping of Ph2_ACF txt files
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
             SetupRD53ConfigfromFile(self.rd53_file, self.output_dir)
         else:
-            logger.info(f"{self.testIndexTracker=}")
+            logger.debug(f"{self.testIndexTracker=}")
             print(os.listdir(self.input_dir))
             SetupRD53Config(self.input_dir, self.output_dir, self.rd53_file)
 
-        logger.info(f"{self.config_file=}")
 
         # NOTE: This code block is used to generate the XML configuration files
         if self.input_dir == "":
@@ -487,13 +484,11 @@ class TestHandler(QObject):
 
     # This loops over all the tests by using the on_finish pyqt decorator defined below
     def runCompositeTest(self, testName):
-        logger.info("Inside runCompositeTest")
         if self.halt:
             return
         runTestList = self.test_list
 
         if self.testIndexTracker == len(self.test_list):
-            logger.info("Reset testIndexTracker")
             # self.testIndexTracker = 0
             # self.testsAttempted = 0
             return
@@ -584,6 +579,8 @@ class TestHandler(QObject):
 
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+
+            self.outputFile = self.output_dir + "/output.txt"
             process.readyReadStandardOutput.connect(
                 lambda: self.on_readyReadStandardOutput_GADC(
                     process,
@@ -918,7 +915,6 @@ class TestHandler(QObject):
         self.tempindex = 0
 
         # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
-        logger.info(f"{self.output_dir=}")
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
         # if os.path.exists(self.outputFile):
@@ -1287,9 +1283,15 @@ created by Ph2_ACF is empty."
                         self.fused_dict_index[1]
                     ] = iref_value
                     print(f"IREF Value: {iref_value}")
+                    print(f"{self.fused_dict_index=}")
                     chip_id = self.fused_dict_index[1]
+
+                    # TODO: Fix this. It shouldn't only ever look at the first module. 
                     module_name = self.modules[0].getModuleName()
+                    print(f"{self.modules=}")
+                    print(f"{module_name=}")
                     db_iref = chip_iref_db.get(str(chip_id))
+                    print(f"{db_iref=}")
                     # Initialize module status to True if not set
                     if module_name not in self.iref_match_status:
                         self.iref_match_status[module_name] = True
@@ -1302,6 +1304,8 @@ created by Ph2_ACF is empty."
                             self.iref_match_status[module_name] = (
                                 False  # Mark module as failed
                             )
+                        else:
+                            print(f"db_iref matches iref_value: {db_iref=}, {iref_value=}")
                     else:
                         print(f"No database IREF found for chip {chip_id}")
                         self.iref_match_status[module_name] = (
@@ -1509,8 +1513,8 @@ created by Ph2_ACF is empty."
                     ]
 
                     hybridID = module.getFMCPort()
-                    logger.info("HybridID {0}".format(hybridID))
-                    logger.info("chipIDs {0}".format(chipIDs))
+                    logger.debug("HybridID {0}".format(hybridID))
+                    logger.debug("chipIDs {0}".format(chipIDs))
                     isCROC = "CROC" in module.getModuleType()
                     for chipID in chipIDs:
                         updatedXMLValues[f"{hybridID}/{chipID}"] = {}
@@ -1623,6 +1627,9 @@ created by Ph2_ACF is empty."
 
         alltext = process.readAllStandardOutput().data().decode()
 
+        mode = "a" if os.path.exists(self.outputFile) else "w"
+        logger.debug(f"{mode=}")
+        print(self.outputFile)
         with open(self.outputFile, mode) as outputfile:
             outputfile.write(alltext)
         textline = alltext.split("\n")
@@ -1757,7 +1764,7 @@ created by Ph2_ACF is empty."
             self.runTest()
 
     def onFinalTest(self, index):
-        logger.info("Inside onFinalTest")
+        logger.debug("Inside onFinalTest")
         for process in self.run_processes:
             if process.state() == QProcess.Running:
                 return
@@ -1768,7 +1775,6 @@ created by Ph2_ACF is empty."
             if index == len(
                 self.test_list
             ):  # Checks that this was the last test in the sequence.
-                logger.info("index == len.self.test_list")
                 self.powerSignal.emit()
                 EnableReRun = True
 

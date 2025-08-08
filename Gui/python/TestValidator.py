@@ -44,7 +44,7 @@ def ResultGrader(
             comm_result = communicationTestResults.get(module_name)
             # Get IREF match status for this module
             iref_status = iref_match_status.get(module_name) if iref_match_status else None
-            print(f"iref match status is: {iref_match_status}")
+            logger.info(f"iref match status is: {iref_match_status}")
             if comm_result is None:
                 return {module_name: (False, "CommunicationTest did not complete")}, BBanalysis_root_files
             if comm_result is True:
@@ -73,6 +73,7 @@ def ResultGrader(
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
+
             _1, _2 = felis.set_module(
                 module_name,
                 module_type.split(" ")[0],
@@ -88,7 +89,6 @@ def ResultGrader(
             )
         
         elif "SLDOScan" in testName:
-            print('this is validating sldo')
             root_file_name = testName.split("_")[0] + "_" + module_name
 
             ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
@@ -96,7 +96,6 @@ def ResultGrader(
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
-            print('the relevant files are {0}'.format(relevant_files))
             _1, _2 = felis.set_module(
                 module_name,
                 module_type.split(" ")[0],
@@ -104,7 +103,6 @@ def ResultGrader(
                 module_version.strip("v"),
                 True,
             )
-            print(f"{testIndexInSequence:02d}_{testName}")
             status, message, sanity, explanation = felis.set_result(
                 relevant_files,
                 module_name,
@@ -134,6 +132,8 @@ def ResultGrader(
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
+
+            logger.debug(f"{relevant_files=}")
             _1, _2 = felis.set_module(
                 module_name,
                 module_type.split(" ")[0],
