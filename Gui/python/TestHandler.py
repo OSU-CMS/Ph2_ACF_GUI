@@ -46,7 +46,10 @@ from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
 
 from InnerTrackerTests.RootFilesDict import root_files
-from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT, Trimbit_CSV_to_ROOT
+from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import (
+    SLDO_CSV_to_ROOT,
+    Trimbit_CSV_to_ROOT,
+)
 
 
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
@@ -287,7 +290,11 @@ class TestHandler(QObject):
         logger.info("Inside finsihed_run_process")
         logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
-            self.on_finish(i) 
+            # Ensure that all processes have finished before continuing
+            self.finished_processes += 1
+            if self.finished_processes == len(self.run_processes):
+                self.finished_processes = 0
+                self.on_finish(i)
 
     def initializeRD53Dict(self):
         self.rd53_file = {}
@@ -415,7 +422,9 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files, **kwargs)
+                    config_file = GenerateXMLConfig(
+                        firmware, self.currentTest, tmpDir, self.txt_files, **kwargs
+                    )
 
                     if config_file:
                         SetupXMLConfigfromFile(
@@ -516,6 +525,7 @@ class TestHandler(QObject):
             value = 100 * np.abs(voltages[i] / max[i]) if max[i] != 0 else 0
 
             self.updateProgressBar.emit(bar, value, text)
+
     def runADC(self):
         if "adc_board" in self.instruments._instrument_dict.keys():
             self.adc_board = self.instruments._instrument_dict["adc_board"]
@@ -526,7 +536,6 @@ class TestHandler(QObject):
             logger.error(
                 "You do not have instruments required to run a Trimbit scan connected.\nYou must have an Adc Board."
             )
-
 
     # def run_VDDsweep(self,total_steps:int = 16, chip = 12, fc7_index : int = 0) -> None:
     #     VDDsweep_process = QProcess()
@@ -540,7 +549,7 @@ class TestHandler(QObject):
     #     VDDsweep_process.readyReadStandardOutput.connect(
     #             lambda: self.on_readyReadStandardOutput_VDDsweep(VDDsweep_process, fc7_index)
     #         )
-            
+
     #     VDDsweep_process.start(
     #         "CMSITminiDAQ",
     #         ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"],
@@ -910,6 +919,7 @@ class TestHandler(QObject):
             return
         else:
             self.setupQProcess()
+
     def storeTrimbitResults(self, adcmeasurements, pin_mapping):
         self.ADCmeasurements = adcmeasurements
         self.pin_mapping = pin_mapping
@@ -1310,8 +1320,6 @@ created by Ph2_ACF is empty."
                             self.iref_match_status[module_name] = (
                                 False  # Mark module as failed
                             )
-                        else:
-                            print(f"db_iref matches iref_value: {db_iref=}, {iref_value=}")
                     else:
                         print(f"No database IREF found for chip {chip_id}")
                         self.iref_match_status[module_name] = (
@@ -1595,14 +1603,15 @@ created by Ph2_ACF is empty."
             try:
                 text = textStr.encode("ascii")
                 _, text = parseANSI(text)
-                self.outputString.emit(text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index])
+                self.outputString.emit(
+                    text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
+                )
             except Exception as e:
                 print(f"Error emitting console output: {e}")
         self.readingOutput = False
 
-
     # @QtCore.pyqtSlot()
-    # def on_readyReadStandardOutput_VDDsweep(self, process:QProcess, fc7_index:int): 
+    # def on_readyReadStandardOutput_VDDsweep(self, process:QProcess, fc7_index:int):
     #     if self.readingOutput:
     #         print("Thread competition detected")
     #         return
@@ -1613,7 +1622,7 @@ created by Ph2_ACF is empty."
     #     )
     #     self.outputfile.write(alltext)
     #     textline = alltext.split("\n")
-        
+
     #     for textStr in textline:
     #         text = textStr.encode("ascii")
     #         _, text = parseANSI(text)
@@ -1621,7 +1630,7 @@ created by Ph2_ACF is empty."
     #             text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
     #         )
     #         self.runwindow.ConsoleViews[fc7_index].repaint()
-        
+
     #     self.readingOutput = False
 
 
@@ -1638,7 +1647,6 @@ created by Ph2_ACF is empty."
 
         mode = "a" if os.path.exists(self.outputFile) else "w"
         logger.debug(f"{mode=}")
-        print(self.outputFile)
         with open(self.outputFile, mode) as outputfile:
             outputfile.write(alltext)
         textline = alltext.split("\n")
@@ -1775,7 +1783,6 @@ created by Ph2_ACF is empty."
             self.runTest()
 
     def onFinalTest(self, index):
-        logger.info("Inside onFinalTest")
         for process in self.run_processes:
             if process.state() == QProcess.Running:
                 return
@@ -1848,9 +1855,9 @@ created by Ph2_ACF is empty."
         elif "SLDO" in measurementType:
             self.SLDOProgressValue += stepSize
             for i, firmware in enumerate(self.firmware):
-                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(
-                    self.SLDOProgressValue
-                )
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.SLDOProgressValue)
         elif measurementType == "TrimbitScan":
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(stepSize)
@@ -1926,7 +1933,13 @@ created by Ph2_ACF is empty."
                 csvfilename = "{0}/TrimbitCurve_Module_{1}_{2}.csv".format(
                     self.output_dir, moduleName, name
                 )
-                np.savetxt(csvfilename, np.column_stack([trimbits, values]), delimiter=",", header="Trimbit,Measurement", comments="")
+                np.savetxt(
+                    csvfilename,
+                    np.column_stack([trimbits, values]),
+                    delimiter=",",
+                    header="Trimbit,Measurement",
+                    comments="",
+                )
                 csvfiles.append(csvfilename)
                 plt.figure()
                 plt.plot(trimbits, values, "-o", label=name)
@@ -2106,7 +2119,7 @@ created by Ph2_ACF is empty."
 
         if isCompositeTest(self.info):
             self.runTest()
-    
+
     def TrimbitScanFinished(self):
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
@@ -2129,7 +2142,7 @@ created by Ph2_ACF is empty."
         self.testIndexTracker += 1
         self.testsAttempted += 1
 
-        if isCompositeTest(self.info):                
+        if isCompositeTest(self.info):
             if self.testIndexTracker == len(self.test_list):
                 self.powerSignal.emit()
                 EnableReRun = True
