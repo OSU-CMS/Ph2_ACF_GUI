@@ -293,11 +293,8 @@ class TestHandler(QObject):
         logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
             # Ensure that all processes have finished before continuing
-            self.finished_processes += 1
-            if self.finished_processes == len(self.run_processes):
-                self.finished_processes = 0
-                self.on_finish(i)
-
+            self.on_finish(i)
+            
     def initializeRD53Dict(self):
         self.rd53_file = {}
         for module in self.modules:
@@ -1729,8 +1726,6 @@ created by Ph2_ACF is empty."
             return
 
 
-        current_fc7:str = self.firmware[processIndex].getBoardName()
-        self.saveConfigs(current_fc7=current_fc7)
         # Save the output ROOT file to output_dir
         logger.debug("About to run saveTest()")
         time.sleep(1)
