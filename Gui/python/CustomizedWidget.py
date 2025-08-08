@@ -633,6 +633,26 @@ class BeBoardBox(QWidget):
         self.ListLayout.addWidget(newButton, len(self.ModuleList), 1, 1, 1)
         self.update()
 
+        # After updating the module list, perform a check and update InstrumentCluster
+        if hasattr(self.master, 'instruments'):
+            channels_dict = {}
+            for index, module in enumerate(self.ModuleList):
+                channels_dict[index] = {
+                    "lv": {
+                        "instrument": f"lv_1",
+                        "channel": index + 1
+                    },
+                #    "cb": {
+                #        "instrument": "coldbox",
+                #        "channel": index + 1
+                #    },
+                    "hv": {
+                        "instrument": "hv",
+                        "channel": 1
+                    }
+                }
+            self.master.instruments.update_channels_dict(channels_dict)
+
     def createSerialUpdateCallback(self, module):
         return lambda: self.onSerialNumberUpdate(module)
 
@@ -1089,6 +1109,26 @@ class SimpleBeBoardBox(QWidget):
         self.ListLayout.addWidget(ClearButton, len(self.ModuleList), 0, 1, 1)
         self.update()
         logger.debug(f"{__name__} : Finished setting up module list")
+
+        # After updating the module list, perform a check and update InstrumentCluster
+        if hasattr(self.master, 'instruments'):
+            channels_dict = {}
+            for index, module in enumerate(self.ModuleList):
+                channels_dict[index] = {
+                    "lv": {
+                        "instrument": f"lv_1",
+                        "channel": index + 1
+                    },
+                    # "cb": {
+                    #     "instrument": "coldbox",
+                    #     "channel": index + 1
+                    # },
+                    "hv": {
+                        "instrument": "hv",
+                        "channel": 1
+                    }
+                }
+            self.master.instruments.update_channels_dict(channels_dict)
 
     def removeModule(self, index):
         # For Manual change
