@@ -668,7 +668,7 @@ class TestHandler(QObject):
             return
 
         # If the HV is not already on, turn it on.
-        if self.instruments and self.currentTest != "SLDOScan_GADC":
+        if self.instruments and self.currentTest != "SLDOScan_GADC" and self.currentTest != "CommunicationTest":
             default_hv_voltage = site_settings.icicle_instrument_setup[
                 "instrument_dict"
             ]["hv"]["default_voltage"]
@@ -1263,7 +1263,6 @@ created by Ph2_ACF is empty."
         if self.currentTest == "CommunicationTest":
             if "Error, some data lanes are enabled but inactive, reached maximum number of attempts" in alltext:
                 if self.communicationTestModule is None:
-                    print("ERROR: Module name not found before CommunicationTest result in test output.")
                     logger.error("Module name not found before CommunicationTest result in test output.")
                 else:
                     self.communicationTestResults[self.communicationTestModule] = False
@@ -1271,7 +1270,6 @@ created by Ph2_ACF is empty."
                 self.forceContinue(self.firmware[processIndex])
             elif "All enabled data lanes are active" in alltext:
                 if self.communicationTestModule is None:
-                    print("ERROR: Module name not found before CommunicationTest result in test output.")
                     logger.error("Module name not found before CommunicationTest result in test output.")
                 else:
                     self.communicationTestResults[self.communicationTestModule] = True
