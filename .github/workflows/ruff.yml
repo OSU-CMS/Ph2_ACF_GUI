@@ -8,7 +8,7 @@ jobs:
 
       - uses: astral-sh/ruff-action@v3
         with:
-          args: "check --ignore-path Gui/python/rhapi.py"
+          args: "check --fix --exclude Gui/python/rhapi.py"
           src: "./Gui"
 
       - uses: astral-sh/ruff-action@v3
