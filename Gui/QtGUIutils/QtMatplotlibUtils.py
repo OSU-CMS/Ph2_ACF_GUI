@@ -20,7 +20,9 @@ from Gui.GUIutils.guiUtils import (
     isSingleTest,
 )
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 
 class ScanCanvas(FigureCanvas):
