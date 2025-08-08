@@ -1,16 +1,15 @@
-"""
-Class to perform the SLDO curve scanning
-"""
-
+import numpy as np
+import math
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from Gui.python.logging_config import get_logger
-logger = get_logger(__name__)
 from icicle.icicle.adc_board import ADCBoard
 from icicle.icicle.relay_board import RelayBoard
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
-import numpy as np
-import math
 
+logger = get_logger(__name__)
+"""
+Class to perform the SLDO curve scanning
+"""
 
 class SLDOCurveWorker(QThread):
     finishedSignal = pyqtSignal()

@@ -1,6 +1,5 @@
 # logger_config.py
 import logging
-import os
 from datetime import datetime
 
 current_time = datetime.now().strftime("%Y_%m_%d-%H:%M")

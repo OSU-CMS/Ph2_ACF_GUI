@@ -3,9 +3,9 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl
 from Gui.python.logging_config import get_logger
+from Gui.siteSettings import tessie_url, alternative_tessie_url
 logger = get_logger(__name__)
 
-from Gui.siteSettings import tessie_url, alternative_tessie_url
 
 
 

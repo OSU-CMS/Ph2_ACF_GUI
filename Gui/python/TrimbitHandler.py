@@ -1,15 +1,14 @@
-
-"""
-Class to perform the Trimbit curve scanning
-"""
-from PyQt5.QtCore import QThread, pyqtSignal, QObject, QProcess
-from Gui.python.logging_config import get_logger
-logger = get_logger(__name__)
-from Gui.python.ANSIColoringParser import parseANSI
 from icicle.icicle.adc_board import ADCBoard
 
 import numpy as np
 import os
+from PyQt5.QtCore import QThread, pyqtSignal, QObject, QProcess
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
+"""
+Class to perform the Trimbit curve scanning
+"""
 
 class TrimbitCurveWorker(QThread):
     def __init__(self, instrument_cluster, moduleType, total_steps, runwindow, firmware, testhandler):

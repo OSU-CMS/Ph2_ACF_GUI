@@ -1,12 +1,3 @@
-"""
-gui.py
-brief                 Interface classes for pixel grading gui
-author                Kai Wei
-version               1.0
-date                  04/27/21
-Support:              email to wei.856@osu.edu
-"""
-
 import sys
 import os
 from datetime import datetime, timedelta
@@ -49,8 +40,9 @@ from InnerTrackerTests.MonitoringSettings import (
 from InnerTrackerTests.RegisterSettings import RegisterSettings, RegisterSettings_dict
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
 from Gui.python.logging_config import get_logger
-logger = get_logger(__name__)
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
+
+logger = get_logger(__name__)
 ##########################################################################
 ##########################################################################
 

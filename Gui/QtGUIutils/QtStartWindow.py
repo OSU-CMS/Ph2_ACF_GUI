@@ -1,7 +1,6 @@
 import os
 import subprocess
 from Gui.python.logging_config import get_logger
-logger = get_logger(__name__)
 import requests
 import re
 
@@ -34,6 +33,7 @@ from InnerTrackerTests.TestSequences import TestList
 from siteSettings import icicle_instrument_setup
 
 
+logger = get_logger(__name__)
 
 
 # from Gui.QtGUIutils.QtApplication import *

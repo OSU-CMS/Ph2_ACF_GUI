@@ -38,7 +38,6 @@ from Gui.GUIutils.guiUtils import (
     GenerateXMLConfig,
     isCompositeTest,
     isSingleTest,
-    UpdateXMLValue,
 )
 
 from Gui.python.ROOTInterface import executeCommandSequence
@@ -351,7 +350,7 @@ class TestHandler(QObject):
         for module in module_chips_to_save:
             try:
                 shutil.copyfile(f"{ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{module}.txt", f"{self.output_dir}/{current_fc7}/CMSIT_RD53_{module}_OUT.txt")
-            except Exception as e:
+            except Exception:
                 traceback.print_exc()
                 logger.error(
                     f"Failed to copy {ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{module}.txt {self.output_dir}/{current_fc7}/CMSIT_RD53_{module}_OUT.txt"
