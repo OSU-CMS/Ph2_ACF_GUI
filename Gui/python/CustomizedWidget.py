@@ -19,6 +19,7 @@ import sys
 import requests
 from lxml import etree
 import re
+import traceback
 
 import Gui.siteSettings as site_settings
 from Gui.python.Firmware import (
@@ -143,7 +144,7 @@ class ModuleBox(QWidget):
                 self.VersionCombo.setCurrentText(1)
 
     def getSerialNumber(self):
-        return self.SerialEdit.text()
+        return self.SerialEdit.text().upper()
 
     def getFMCID(self):
         return self.FMCEdit.text()
@@ -402,6 +403,7 @@ class ChipBox(QWidget):
                 f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
                 QMessageBox.Ok,
             )
+            logger.error(traceback.format_exc())
 
             self.master.purdue_connected = False
             self.ChipGroupBoxDict.clear()
@@ -417,6 +419,7 @@ class ChipBox(QWidget):
                 f"Could not find {moduleName} in the database, using default values.",
                 QMessageBox.Ok,
             )
+            logger.error(traceback.format_exc())
             for chipid in self.ChipList:
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
             return None
@@ -425,6 +428,7 @@ class ChipBox(QWidget):
             logger.error(
                 f"Some error occurred while querying the Purdue DB for VDDD/VDDA trim values. \nError: {repr(e)}"
             )
+            logger.error(traceback.format_exc())
             self.master.purdue_connected = False
             self.ChipGroupBoxDict.clear()
             for chipid in self.ChipList:
@@ -467,6 +471,7 @@ class ChipBox(QWidget):
                 f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
                 QMessageBox.Ok,
             )
+            logger.error(traceback.format_exc())
 
             self.master.purdue_connected = False
             self.ChipGroupBoxDict.clear()
@@ -481,7 +486,8 @@ class ChipBox(QWidget):
                 "Error",
                 f"Could not find {moduleName} in the database, using default values.",
                 QMessageBox.Ok,
-            )
+            )         
+            logger.error(traceback.format_exc())
             for chipid in self.ChipList:
                 self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
             return None
@@ -490,6 +496,7 @@ class ChipBox(QWidget):
             logger.error(
                 f"Some error occurred while querying the Purdue DB for VDDD/VDDA trim values. \nError: {repr(e)}"
             )
+            logger.error(traceback.format_exc())
             self.master.purdue_connected = False
             self.ChipGroupBoxDict.clear()
             for chipid in self.ChipList:
@@ -683,6 +690,7 @@ class BeBoardBox(QWidget):
                 f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
                 QMessageBox.Ok,
             )
+            logger.error(traceback.format_exc())
 
             self.master.purdue_connected = False
             return None
@@ -691,6 +699,7 @@ class BeBoardBox(QWidget):
             logger.error(
                 f"Some error occurred while querying the Purdue DB for module type. \nError: {repr(e)}"
             )
+            logger.error(traceback.format_exc())
             self.master.purdue_connected = False
             return None
 
@@ -738,6 +747,7 @@ class BeBoardBox(QWidget):
                         FMCID=module.getFMCID(), OpticalGroup=OpticalGroup
                     )
                 except KeyError as e:
+                    logger.error(traceback.format_exc())
                     return (
                         None,
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",
@@ -776,6 +786,7 @@ class BeBoardBox(QWidget):
                     vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
                 except Exception:
                     vref_value = 0.8
+                    
                 Module.getChips()[chipID].setVREF(
                     (1000 * vref_value)
                 )
@@ -791,6 +802,10 @@ class BeBoardBox(QWidget):
             try:
                 OpticalGroup.addModule(FMCPort=module.getFMCPort(), module=Module)
             except KeyError as e:
+                logger.error(traceback.format_exc())
+                if module.getFMCPort() in OpticalGroup.getAllModules():
+                    OpticalGroup.removeModuleByIndex(module.getFMCPort())
+
                 return None, f"Error while adding Module to Optical Group: {repr(e)}"
 
             module_types.append(
@@ -1169,6 +1184,7 @@ class SimpleBeBoardBox(QWidget):
                 f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
                 QMessageBox.Ok,
             )
+            logger.error(traceback.format_exc())
 
             self.master.purdue_connected = False
             return None
@@ -1177,6 +1193,7 @@ class SimpleBeBoardBox(QWidget):
             logger.error(
                 f"Some error occurred while querying the Purdue DB for module type. \nError: {repr(e)}"
             )
+            logger.error(traceback.format_exc())
             self.master.purdue_connected = False
             return None
 
@@ -1219,6 +1236,9 @@ class SimpleBeBoardBox(QWidget):
                         FMCID=cable_properties["FMCID"], OpticalGroup=OpticalGroup
                     )
                 except KeyError as e:
+                    logger.error(traceback.format_exc())   
+                    if module.getFMCID() in BeBoard.getAllOpticalGroups():
+                        BeBoard.removeOpticalGroup(module.getFMCID())
                     return (
                         None,
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",
@@ -1269,6 +1289,7 @@ class SimpleBeBoardBox(QWidget):
                     FMCPort=cable_properties["FMCPort"], module=Module
                 )
             except KeyError as e:
+                logger.error(traceback.format_exc())
                 return None, f"Error while adding Module to Optical Group: {repr(e)}"
 
             module_types.append(

@@ -1,6 +1,7 @@
 import logging
 import config
 import sqlite3
+import traceback
 
 # Customize the logging configuration
 logging.basicConfig(
@@ -26,8 +27,8 @@ def createDatabaseConnection(db_file):
     conn = None
     try:
         conn = sqlite3.connect(db_file)
-    except Exception as e:
-        print(f"Failed to connect to database due to error: {e}")
+    except Exception:
+        logger.error(traceback.format_exc())
         pass
     return conn
 
@@ -45,8 +46,8 @@ def createTestsTable():
     try:
         c = conn.cursor()
         c.execute(sql)
-    except Exception as e:
-        print(f"Failed to create test table due to error: {e}")
+    except Exception:
+        logger.error(traceback.format_exc())
         pass
 
 
@@ -99,7 +100,7 @@ def createModesTable():
         c = conn.cursor()
         c.execute(sql)
     except Exception as e:
-        print(f"Failed to create modes table due to error {e}")
+        logger.error(traceback.format_exc())
         pass
 
 

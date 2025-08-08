@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import (
 
 import sys
 import os
+import traceback
 import pyvisa
 import requests
 from felis.felis_helpers import get_accountInfo
@@ -225,6 +226,7 @@ class QtApplication(QWidget):
                 QMessageBox(
                     None, "Error", "Can not create log files: {}".format(LogFileName)
                 )
+                logger.error(traceback.format_exc())
 
     ###############################################################
     ##  Login page and related functions
@@ -428,7 +430,7 @@ class QtApplication(QWidget):
             if not status:
                 message = f"Server responded with status code {response.status_code}"
         except requests.RequestException as e:
-            logger.error(f"An error occurred: {e}")
+            logger.error(traceback.format_exc())
             message = f"An error occurred: {e}"
             status = False
 
@@ -489,6 +491,7 @@ class QtApplication(QWidget):
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
             print("Failed to list the firmware: {}".format(repr(err)))
+            logger.error(traceback.format_exc())
         logger.debug(f"Setup FC7s with the following FC7:\n{self.FwDict}")
 
         self.UseButtons = []
@@ -760,7 +763,8 @@ class QtApplication(QWidget):
             try:
                 self.ArduinoControl.toggled.connect(self.switchArduinoPanel)
             except AttributeError:
-                self.logger.error("Failed to connect arduino control")
+                logger.error("Failed to connect arduino control")
+                logger.error(traceback.format_exc())
 
         self.MainOption = QGroupBox("Main")
 
@@ -997,7 +1001,7 @@ class QtApplication(QWidget):
                     self.disable_instrument_widgets()
 
             except Exception as e:
-                print("Error:", e)
+                logger.error(traceback.format_exc())
                 self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
 
@@ -1105,6 +1109,7 @@ class QtApplication(QWidget):
         try:
             profile_number = int(profile_number)
         except ValueError:
+            logger.error(traceback.format_exc())
             QMessageBox.information(
                 None,
                 "Error",
@@ -1162,7 +1167,8 @@ class QtApplication(QWidget):
                 self.UseHVPowerSupply.setDisabled(False)
 
             except Exception:
-                print("HV PowerPanel not released properly")
+                logger.error("HV PowerPanel not released properly")
+                logger.error(traceback.format_exc())
         else:
             logger.info("You must manually turn off the HV")
 
@@ -1344,12 +1350,14 @@ class QtApplication(QWidget):
 
             except Exception as e:
                 logger.error(f"Could not shutdown Peltier: {e}")
+                logger.error(traceback.format_exc())
                 pass
 
             try:
                 os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
             except Exception as e:
-                print("Error {0}".format(e))
+                logger.error(f"Error {0}".format(e))
+                logger.error(traceback.format_exc())
 
             event.accept()
         else:

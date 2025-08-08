@@ -3,6 +3,7 @@ import subprocess
 from Gui.python.logging_config import get_logger
 import requests
 import re
+import traceback
 
 from PyQt5.QtCore import QSize, Qt, pyqtSignal
 from PyQt5.QtGui import QPixmap, QImage
@@ -23,6 +24,7 @@ from PyQt5.QtWidgets import (
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 from Gui.python.CustomizedWidget import BeBoardBox
+from Gui.python.logging_config import logger
 from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
     FC7List,
@@ -155,13 +157,14 @@ class SummaryBox(QWidget):
                     print(fwsave.stdout.decode("UTF-8"))
                     FWisPresent = True
                 except OSError:
-                    print(
+                    logger.error(
                         "unable to save {0} to FC7 SD card".format(
                             os.environ.get("GUI_dir")
                             + "/FirmwareImages/"
                             + firmwareImage
                         )
                     )
+                    logger.error(traceback.format_exc())
 
             if FWisPresent:
                 print("Loading FW image")
@@ -199,8 +202,8 @@ class SummaryBox(QWidget):
                 print("Firmware image is now loaded")
             logger.debug("Made it to turn on LV")
             return True
-        except Exception as err:
-            print(err)
+        except Exception:
+            logger.error(traceback.format_exc())
             return False
 
     def getDetails(self):
@@ -375,7 +378,7 @@ class QtStartWindow(QWidget):
                                         self.master.errorMessageBoxSignal.emit("One or more of the chip txt pages don't exist!")
                                         erroredFlag=True
                             except requests.exceptions.RequestException as e:
-                                logger.error("Error checking the page: ", e)
+                                logger.error(traceback.format_exc())
                                 if not erroredFlag:
                                     self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")
                                     erroredFlag=True
@@ -455,7 +458,7 @@ class QtStartWindow(QWidget):
                                 self.master.errorMessageBoxSignal.emit("One or more of the chip txt pages don't exist!")
                                 erroredFlag=True
                     except requests.exceptions.RequestException as e:
-                        logger.error("Error checking the page: ", e)
+                        logger.error(traceback.format_exc())
                         if not erroredFlag:
                             self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")
                             erroredFlag=True
@@ -591,8 +594,8 @@ class QtStartWindow(QWidget):
                                 destination = os.environ.get("PH2ACF_BASE_DIR") + "/test/" + text[text.rfind("/", 0, txt_index)+1:txt_index]
                                 os.system(f"wget -O {destination} {text}")
                                 self.BeBoardWidget.ChipWidgetDict[moduleBox].ChipGroupBoxDict[chipid].itemAtPosition(1,0).widget().setText(destination)
-                            except Exception as e:
-                                logger.error(e)
+                            except Exception:
+                                logger.error(traceback.format_exc())
                                 self.master.errorMessageBoxSignal.emit(f"Could not Chip{chipid} file from Panthera!")
                                 return
                         elif not os.path.exists(text):
@@ -673,10 +676,10 @@ class QtStartWindow(QWidget):
                             " You are running in manual mode."
                             " You must turn off powers supplies yourself."
                         )
-                except Exception as e:
+                except Exception:
                     print(
                         "Waring: Incident detected while trying to turn of power supply, please check power status"
                     )
-                    logger.error(e)
+                    logger.error(traceback.format_exc())
             else:
                 event.ignore()

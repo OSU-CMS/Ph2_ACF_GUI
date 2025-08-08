@@ -1,6 +1,8 @@
 from Ph2_ACF_GUI.parseVariables import variableParser
 import csv
 
+import traceback
+
 from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
 
@@ -73,6 +75,7 @@ class csvImport:
 
         except Exception as e:
             logger.error(f"Error reading CSV file: {str(e)}")
+            logger.error(traceback.format_exc())
 
     def _update_settings(self, updated_settings_dict):
         try:
@@ -85,6 +88,7 @@ class csvImport:
 
         except Exception as e:
             logger.error(f"Error updating/creating siteSettings.py file: {str(e)}")
+            logger.error(traceback.format_exc())
 
     def create_csv(self, writepath):
         try:
@@ -102,6 +106,7 @@ class csvImport:
 
         except Exception as e:
             logger.error(f"Error creating CSV file: {str(e)}")
+            logger.error(traceback.format_exc())
 
 
 if __name__ == "__main__":

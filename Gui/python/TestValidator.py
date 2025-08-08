@@ -1,5 +1,6 @@
 import os
 import ROOT
+import traceback
 
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests_Modules
 from Gui.GUIutils.guiUtils import isCompositeTest
@@ -156,4 +157,5 @@ def ResultGrader(
         return {module_name: (status and sanity, explanation)}, BBanalysis_root_files
     except Exception as err:
         logger.error("An error was thrown while grading: {}".format(repr(err)))
+        logger.error(traceback.format_exc())
         return {module_name: (False, repr(err))}, BBanalysis_root_files

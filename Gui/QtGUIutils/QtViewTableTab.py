@@ -23,7 +23,8 @@ import mysql.connector
 
 # from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
-
+from Gui.python.logging_config import logger
+import traceback
 
 class QtViewTableTab(QWidget):
     def __init__(self, master):
@@ -107,8 +108,8 @@ class QtViewTableTab(QWidget):
             self.ViewLayout.addWidget(comboBox, 0, 2, 1, 1)
             self.ViewLayout.addWidget(label, 0, 0, 1, 1)
 
-        except Exception as e:
-            print(f"Error: failed to create viewBox due to error: {e}")
+        except Exception:
+            logger.error(traceback.format_exc())
 
         self.ViewBox.setLayout(self.ViewLayout)
         self.mainlayout.addWidget(self.ViewBox, 1, 0, 2, 1)
@@ -136,6 +137,7 @@ class QtViewTableTab(QWidget):
             self.FeedBackLabel.setText(
                 "Failed retrieving MySQL table: {}".format(error)
             )
+            logger.error(traceback.format_exc())
             return
 
         if len(dataList) <= 1:
