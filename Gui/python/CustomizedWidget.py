@@ -142,6 +142,9 @@ class ModuleBox(QWidget):
                 return "L12"
             elif port in range (3,4):
                 return "L8"
+            else:
+                logger.warning(f"Unknown port: {port}")
+                return "L12"
         except:
             logger.error(traceback.format_exc())
             return "L12"
@@ -150,7 +153,7 @@ class ModuleBox(QWidget):
         return self.SerialEdit.text().upper()
 
     def getFMCID(self):
-        return self.checkPort(self.getFMCPort())
+        return self.checkPort(int(self.getFMCPort()))
 
     def getFC7(self):
         return self.FC7Combo.currentText()
