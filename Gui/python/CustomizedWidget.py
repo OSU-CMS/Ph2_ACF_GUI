@@ -637,20 +637,28 @@ class BeBoardBox(QWidget):
         if hasattr(self.master, 'instruments'):
             channels_dict = {}
             for index, module in enumerate(self.ModuleList):
-                channels_dict[index] = {
-                    "lv": {
-                        "instrument": f"lv_1",
-                        "channel": index + 1
-                    },
-                #    "cb": {
-                #        "instrument": "coldbox",
-                #        "channel": index + 1
-                #    },
-                    "hv": {
-                        "instrument": "hv",
-                        "channel": 1
+                if index < 4:
+                    channels_dict[index] = {
+                        "lv": {
+                            "instrument": "lv_1",
+                            "channel": index + 1
+                        },
+                        "hv": {
+                            "instrument": "hv",
+                            "channel": 1
+                        }
                     }
-                }
+                else:
+                    channels_dict[index] = {
+                        "lv": {
+                            "instrument": "lv_2",
+                            "channel": index - 3
+                        },
+                        "hv": {
+                            "instrument": "hv",
+                            "channel": 1
+                        }
+                    }
             self.master.instruments.update_channels_dict(channels_dict)
 
     def createSerialUpdateCallback(self, module):
@@ -1114,20 +1122,28 @@ class SimpleBeBoardBox(QWidget):
         if hasattr(self.master, 'instruments'):
             channels_dict = {}
             for index, module in enumerate(self.ModuleList):
-                channels_dict[index] = {
-                    "lv": {
-                        "instrument": f"lv_1",
-                        "channel": index + 1
-                    },
-                    # "cb": {
-                    #     "instrument": "coldbox",
-                    #     "channel": index + 1
-                    # },
-                    "hv": {
-                        "instrument": "hv",
-                        "channel": 1
+                if index < 4:
+                    channels_dict[index] = {
+                        "lv": {
+                            "instrument": "lv_1",
+                            "channel": index + 1
+                        },
+                        "hv": {
+                            "instrument": "hv",
+                            "channel": 1
+                        }
                     }
-                }
+                else:
+                    channels_dict[index] = {
+                        "lv": {
+                            "instrument": "lv_2",
+                            "channel": index - 3
+                        },
+                        "hv": {
+                            "instrument": "hv",
+                            "channel": 1
+                        }
+                    }
             self.master.instruments.update_channels_dict(channels_dict)
 
     def removeModule(self, index):
