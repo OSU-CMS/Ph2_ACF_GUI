@@ -1456,8 +1456,6 @@ created by Ph2_ACF is empty."
         self.outputfile.close()
         # While the process is killed:
 
-        print("PROCESS on_finish called and running")#debug
-
         if self.halt:
             self.haltSignal.emit(True)
             return
@@ -1672,8 +1670,6 @@ created by Ph2_ACF is empty."
             process.write(b"\n")
             process.waitForBytesWritten()
             process.waitForFinished()
-
-        print("PROCESS IVCurveFinished called and running")#debug
 
         # 3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
         # IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
