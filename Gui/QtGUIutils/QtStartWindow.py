@@ -1,6 +1,6 @@
 import os
 import subprocess
-import logging
+from Gui.python.logging_config import get_logger
 import requests
 import re
 import traceback
@@ -24,7 +24,6 @@ from PyQt5.QtWidgets import (
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
 from Gui.python.CustomizedWidget import BeBoardBox
-from Gui.python.logging_config import logger
 from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
     FC7List,
@@ -35,15 +34,7 @@ from InnerTrackerTests.TestSequences import TestList
 from siteSettings import icicle_instrument_setup
 
 
-# Customize the logging configuration
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    filename="my_project.log",  # Specify a log file
-    filemode="w",  # 'w' for write, 'a' for append
-)
-
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 # from Gui.QtGUIutils.QtApplication import *
@@ -208,7 +199,7 @@ class SummaryBox(QWidget):
                 print(fwreset.stderr.decode("UTF-8"))
 
                 print("Firmware image is now loaded")
-            logging.debug("Made it to turn on LV")
+            logger.debug("Made it to turn on LV")
             return True
         except Exception:
             logger.error(traceback.format_exc())
@@ -385,7 +376,7 @@ class QtStartWindow(QWidget):
                                     if not erroredFlag:
                                         self.master.errorMessageBoxSignal.emit("One or more of the chip txt pages don't exist!")
                                         erroredFlag=True
-                            except requests.exceptions.RequestException as e:
+                            except requests.exceptions.RequestException:
                                 logger.error(traceback.format_exc())
                                 if not erroredFlag:
                                     self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")
@@ -465,7 +456,7 @@ class QtStartWindow(QWidget):
                             if not erroredFlag:
                                 self.master.errorMessageBoxSignal.emit("One or more of the chip txt pages don't exist!")
                                 erroredFlag=True
-                    except requests.exceptions.RequestException as e:
+                    except requests.exceptions.RequestException:
                         logger.error(traceback.format_exc())
                         if not erroredFlag:
                             self.master.errorMessageBoxSignal.emit("Could not access one or more of the chip txt pages!")

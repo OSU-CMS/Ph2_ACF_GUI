@@ -1,9 +1,11 @@
+import Gui.siteSettings as site_settings
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
 import numpy as np
-from Gui.python.logging_config import logger
-import Gui.siteSettings as site_settings
 import traceback
+
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 
 
 class IVCurveThread(QThread):

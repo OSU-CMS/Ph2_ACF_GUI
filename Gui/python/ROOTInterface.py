@@ -1,7 +1,9 @@
 import ROOT
 import time
-import traceback
-from Gui.python.logging_config import logger
+
+from Gui.python.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 ROOT.gStyle.SetPalette(57)

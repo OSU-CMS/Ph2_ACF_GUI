@@ -15,10 +15,11 @@ import subprocess
 import traceback
 from subprocess import PIPE
 
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
+from Configuration.XMLUtil import LoadXML
+logger = get_logger(__name__)
 
 # from Gui.GUIutils.settings import *
-from Configuration.XMLUtil import LoadXML
 # from Gui.python.Firmware import *
 
 

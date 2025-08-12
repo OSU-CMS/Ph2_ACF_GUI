@@ -2,10 +2,11 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QWidget
 import Gui.siteSettings as site_settings
 from icicle.icicle.lauda import Lauda
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 import traceback
 import os
 
+logger = get_logger(__name__)
 
 class LaudaWidget(QWidget):
     def __init__(self, dimension):

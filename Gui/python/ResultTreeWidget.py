@@ -1,6 +1,7 @@
+from InnerTrackerTests.TestSequences import CompositeTests_Modules
+
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QTimer, QSize
-
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import (
     QGridLayout,
@@ -24,8 +25,8 @@ from Gui.python.ROOTInterface import (
     TCanvas2SVG,
 )
 from Gui.QtGUIutils.QtTCanvasWidget import QtTCanvasWidget
-from Gui.python.logging_config import logger
-from InnerTrackerTests.TestSequences import CompositeTests_Modules
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 
 
 class ResultTreeWidget(QWidget):

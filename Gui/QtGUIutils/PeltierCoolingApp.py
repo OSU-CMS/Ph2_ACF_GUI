@@ -2,11 +2,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import pyqtSignal, Qt, QTimer
 from Gui.python.Peltier import PeltierSignalGenerator
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 import traceback
 import time
 import os
 
+logger = get_logger(__name__)
 
 class Peltier(QWidget):
     # Defining Signals that will be used
@@ -159,7 +160,7 @@ class Peltier(QWidget):
             self.powerReading.connect(lambda power: self.setPowerStatus(power))
             self.timer.start(500)  # Perform monitoring functions every 500ms
 
-        except Exception as e:
+        except Exception:
             logger.error("Error while attempting to setup Peltier Controller: ")
             logger.error(traceback.format_exc())
 
@@ -301,7 +302,7 @@ class Peltier(QWidget):
             self.powerReading.emit(int(power[8]))
             return
         except Exception:
-            logger.error(f"Could not read power/temperature")
+            logger.error("Could not read power/temperature")
             logger.error(traceback.format_exc())
             return
 
