@@ -182,7 +182,6 @@ class TestHandler(QObject):
 
         self.runNext = threading.Event()
         self.testIndexTracker = 0
-        self.testsAttempted = 0
         self.listWidgetIndex = 0
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
@@ -410,7 +409,6 @@ class TestHandler(QObject):
         if reRun:
             self.halt = False
             self.testIndexTracker = 0
-            self.testsAttempted = 0
         testName = self.info
 
         self.input_dir = self.output_dir
@@ -432,7 +430,6 @@ class TestHandler(QObject):
 
         if self.testIndexTracker == len(self.test_list):
             self.testIndexTracker = 0
-            self.testsAttempted = 0
             return
         testName = runTestList[self.testIndexTracker]
         if self.testIndexTracker + 1 < len(runTestList):  # Check if there is a next test
@@ -817,17 +814,6 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
                 )
-        #if self.currentTest == ["exampletest"]:               #for tests needing -c
-        #    for process, firmware in zip(self.run_processes, self.firmware):
-        #        process.start(
-        #            "CMSITminiDAQ",
-        #            [
-        #                "-f",
-        #                f"CMSIT_{firmware.getBoardName()}.xml",
-        #                "-c",
-        #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
-        #            ],
-        #        )
         if self.currentTest == "IREF_GADC":  #FIXME need to add -t so the scan will stop at the end
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
@@ -871,7 +857,6 @@ class TestHandler(QObject):
         self.haltSignal.emit(self.halt)
 
         self.starttime = None
-        self.testsAttempted = 0 #reset when aborted for fresh restart
         if self.IVCurveHandler:
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting IVCurve", console)
@@ -1481,7 +1466,6 @@ created by Ph2_ACF is empty."
         self.validateTest()
         
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
 
 
@@ -1738,7 +1722,6 @@ created by Ph2_ACF is empty."
         step = "IVCurve"
 
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
         EnableReRun = False
 
@@ -1786,7 +1769,6 @@ created by Ph2_ACF is empty."
 
         self.validateTest()
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
@@ -1853,7 +1835,6 @@ created by Ph2_ACF is empty."
 
         self.validateTest()
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
         EnableReRun = False
         if isCompositeTest(self.info):                
