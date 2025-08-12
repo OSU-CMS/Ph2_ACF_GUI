@@ -201,7 +201,6 @@ class TestHandler(QObject):
 
         self.runNext = threading.Event()
         self.testIndexTracker = 0
-        self.testsAttempted = 0
         self.listWidgetIndex = 0
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
@@ -480,7 +479,6 @@ class TestHandler(QObject):
         if reRun:
             self.halt = False
             self.testIndexTracker = 0
-            self.testsAttempted = 0
         testName = self.info
 
         self.input_dir = self.output_dir
@@ -818,7 +816,7 @@ class TestHandler(QObject):
             return
 
         # If the HV is not already on, turn it on.
-        if self.instruments and self.currentTest != "SLDOScan_GADC":
+        if self.instruments and self.currentTest != "SLDOScan_GADC" and self.currentTest != "CommunicationTest":
             default_hv_voltage = site_settings.icicle_instrument_setup[
                 "instrument_dict"
             ]["hv"]["default_voltage"]
@@ -1028,6 +1026,7 @@ class TestHandler(QObject):
 
         self.starttime = None
         self.testsAttempted = 0  # reset when aborted for fresh restart
+
         if self.IVCurveHandler:
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting IVCurve", console)
@@ -1473,24 +1472,24 @@ created by Ph2_ACF is empty."
                 in alltext
             ):
                 if self.communicationTestModule is None:
-                    print(
-                        "ERROR: Module name not found before CommunicationTest result in test output."
-                    )
+
                     logger.error(
                         "Module name not found before CommunicationTest result in test output."
                     )
+
+                    logger.error("Module name not found before CommunicationTest result in test output.")
+
                 else:
                     self.communicationTestResults[self.communicationTestModule] = False
                     self.communicationTestModule = None
                 self.forceContinue(self.firmware[processIndex])
             elif "All enabled data lanes are active" in alltext:
                 if self.communicationTestModule is None:
-                    print(
-                        "ERROR: Module name not found before CommunicationTest result in test output."
-                    )
+
                     logger.error(
                         "Module name not found before CommunicationTest result in test output."
                     )
+
                 else:
                     self.communicationTestResults[self.communicationTestModule] = True
                     self.communicationTestModule = None
@@ -1747,7 +1746,6 @@ created by Ph2_ACF is empty."
 
         logger.debug("testIndexTracker before increment: %i", self.testIndexTracker)
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
         EnableReRun = self.onFinalTest(
             self.testIndexTracker
@@ -2009,7 +2007,6 @@ created by Ph2_ACF is empty."
         step = "IVCurve"
 
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
         EnableReRun = False
 
@@ -2057,7 +2054,6 @@ created by Ph2_ACF is empty."
 
         self.validateTest()
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
@@ -2124,7 +2120,6 @@ created by Ph2_ACF is empty."
 
         self.validateTest()
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
 
         EnableReRun = False
