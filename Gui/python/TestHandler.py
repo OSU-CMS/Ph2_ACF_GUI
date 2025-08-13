@@ -60,7 +60,7 @@ from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
-from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
+from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map, OpenBumpTest
 
 
 logger = get_logger(__name__)
@@ -493,7 +493,7 @@ class TestHandler(QObject):
             return
 
     # This loops over all the tests by using the on_finish pyqt decorator defined below
-    def runCompositeTest(self, testName):
+    def runCompositeTest(self, testName, index):
         logger.info("Inside runCompositeTest")
         if self.halt:
             return
@@ -502,9 +502,39 @@ class TestHandler(QObject):
         if self.testIndexTracker == len(self.test_list):
             logger.debug("Reset testIndexTracker")
             # self.testIndexTracker = 0
-            # self.testsAttempted = 0
             return
         testName = runTestList[self.testIndexTracker]
+
+        if testName == "OpenBumpTest":
+            for subtest in OpenBumpTest:
+                self.runSingleTest(subtest)
+            for fc7_index, beboard in enumerate(self.firmware):
+                boardID = beboard.getBoardID()
+                for OG in beboard.getAllOpticalGroups().values():
+                    ogID = OG.getOpticalGroupID()
+                    for module in OG.getAllModules().values():
+                        hybridID = module.getFMCPort()
+                        module_data = {
+                            "boardID": boardID,
+                            "ogID": ogID,
+                            "hybridID": hybridID,
+                            "module": module,
+                        }
+                        #index = self.testIndexTracker
+                        self.felis_instances[fc7_index].set_result(
+                            self.BBanalysis_root_files,
+                            module_data["module"].getModuleName(),
+                            f"{index:02d}_OpenBumpTest",
+                            "crosstalk",
+                        )
+                        self.figurelist[module.getModuleName()] = (
+                            self.collect_plots(module.getModuleName(), felis_instance=self.felis_instances[fc7_index])
+                        )
+            self.testIndexTracker += 1
+            if self.testIndexTracker < len(runTestList):
+                self.runCompositeTest(runTestList[self.testIndexTracker])
+            return
+
         if self.testIndexTracker + 1 < len(
             runTestList
         ):  # Check if there is a next test
