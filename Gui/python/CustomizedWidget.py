@@ -634,75 +634,7 @@ class BeBoardBox(QWidget):
         self.ListLayout.addWidget(newButton, len(self.ModuleList), 1, 1, 1)
         self.update()
 
-        # After updating the module list, perform a check and update InstrumentCluster
-        if hasattr(self.master, 'instruments'):
-            channels_dict = {}
-            for index, module in enumerate(self.ModuleList):
-                if index < 4:
-                    channels_dict[index] = {
-                        "lv": {
-                            "instrument": "lv_1",
-                            "channel": index + 1
-                        },
-                        "hv": {
-                            "instrument": "hv",
-                            "channel": 1
-                        }
-                    }
-                    logger.info(f"Added channel {index} with lv_1 and hv.")
-                else:
-                    channels_dict[index] = {
-                        "lv": {
-                            "instrument": "lv_2",
-                            "channel": index - 3
-                        },
-                        "hv": {
-                            "instrument": "hv",
-                            "channel": 1
-                        }
-                    }
-                    logger.info(f"Added channel {index} with lv_2 and hv.")
-            logger.info(f"Final module_dict: {channels_dict}")
-            self.update_module_dict(channels_dict)
-
-    def update_module_dict(self, channels_dict):
-        """Update self._module_dict with DummyInstrument and PowerChannel objects using InstrumentCluster's instrument dictionary."""
-        if not hasattr(self.master, 'instruments'):
-            raise AttributeError("Master does not have an 'instruments' attribute.")
-
-        instrument_dict = self.master.instruments.get_instruments()
-        self._module_dict = {}
-        for number, channel in channels_dict.items():
-            temp_dict = {}
-            if "lv" in channel.keys():
-                instr_object = instrument_dict[channel["lv"]["instrument"]]
-                instr_object.role = "lv"
-                temp_dict["lv"] = instr_object.channel(
-                    "PowerChannel", channel["lv"]["channel"]
-                )
-                temp_dict["lv"].instr_name = channel["lv"]["instrument"]
-            else:
-                temp_dict["lv"] = DummyInstrument("lv")
-
-            if "hv" in channel.keys():
-                instr_object = instrument_dict[channel["hv"]["instrument"]]
-                instr_object.role = "hv"
-                temp_dict["hv"] = instr_object.channel(
-                    "PowerChannel", channel["hv"]["channel"]
-                )
-                temp_dict["hv"].instr_name = channel["hv"]["instrument"]
-            else:
-                temp_dict["hv"] = DummyInstrument("hv")
-
-            temp_dict["ab"] = DummyInstrument("ab")
-            temp_dict["cb"] = DummyInstrument("cb")
-
-            self._module_dict[number] = temp_dict
-            self.master.instruments._module_dict[number] = temp_dict
-
-        print("Updated module dictionary:", self._module_dict)
-        print(f"Module Dict:",self.master.instruments.get_modules())
-        print(f"Instruments:",self.master.instruments.get_instruments())
+        
 
 
     def createSerialUpdateCallback(self, module):
@@ -1162,36 +1094,7 @@ class SimpleBeBoardBox(QWidget):
         self.update()
         logger.debug(f"{__name__} : Finished setting up module list")
 
-        # After updating the module list, perform a check and update InstrumentCluster
-        if hasattr(self.master, 'instruments'):
-            channels_dict = {}
-            for index, module in enumerate(self.ModuleList):
-                if index < 4:
-                    channels_dict[index] = {
-                        "lv": {
-                            "instrument": "lv_1",
-                            "channel": index + 1
-                        },
-                        "hv": {
-                            "instrument": "hv",
-                            "channel": 1
-                        }
-                    }
-                    logger.info(f"Added channel {index} with lv_1 and hv.")
-                else:
-                    channels_dict[index] = {
-                        "lv": {
-                            "instrument": "lv_2",
-                            "channel": index - 3
-                        },
-                        "hv": {
-                            "instrument": "hv",
-                            "channel": 1
-                        }
-                    }
-                    logger.info(f"Added channel {index} with lv_2 and hv.")
-            logger.info(f"Final channels_dict: {channels_dict}")
-            self.update_module_dict(channels_dict)
+
 
 
     def removeModule(self, index):
@@ -1432,38 +1335,3 @@ class SimpleBeBoardBox(QWidget):
         self.FilledModuleList.append(self.ModuleList[-1])
         self.addModule()
 
-    def update_module_dict(self, instrument_dict, channels_dict):
-        """Update self._module_dict with DummyInstrument and PowerChannel objects using InstrumentCluster's instrument dictionary."""
-        if not hasattr(self.master, 'instruments'):
-            raise AttributeError("Master does not have an 'instruments' attribute.")
-
-        instrument_dict = self.master.instruments.get_instruments()
-        self._module_dict = {}
-        for number, channel in channels_dict.items():
-            temp_dict = {}
-            if "lv" in channel.keys():
-                instr_object = instrument_dict[channel["lv"]["instrument"]]
-                instr_object.role = "lv"
-                temp_dict["lv"] = instr_object.channel(
-                    "PowerChannel", channel["lv"]["channel"]
-                )
-                temp_dict["lv"].instr_name = channel["lv"]["instrument"]
-            else:
-                temp_dict["lv"] = DummyInstrument("lv")
-
-            if "hv" in channel.keys():
-                instr_object = instrument_dict[channel["hv"]["instrument"]]
-                instr_object.role = "hv"
-                temp_dict["hv"] = instr_object.channel(
-                    "PowerChannel", channel["hv"]["channel"]
-                )
-                temp_dict["hv"].instr_name = channel["hv"]["instrument"]
-            else:
-                temp_dict["hv"] = DummyInstrument("hv")
-
-            temp_dict["ab"] = DummyInstrument("ab")
-            temp_dict["cb"] = DummyInstrument("cb")
-
-            self._module_dict[number] = temp_dict
-
-        print("Updated module dictionary:", self._module_dict)

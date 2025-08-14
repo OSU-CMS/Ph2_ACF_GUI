@@ -30,7 +30,7 @@ from Gui.siteSettings import (
     FC7List,
     ModuleCurrentMap,
 )
-
+from icicle.icicle.instrument_cluster import DummyInstrument
 from InnerTrackerTests.TestSequences import TestList
 from siteSettings import icicle_instrument_setup
 
@@ -615,6 +615,47 @@ class QtStartWindow(QWidget):
         # the module type but ModuleBox is not publically accessible so we have to go through BeBoardWidget
         self.master.module_in_use = self.BeBoardWidget.getModules()[0].getType()
 
+
+        # After updating the module list, perform a check and update InstrumentCluster
+        if hasattr(self.master, 'instruments'):
+            channels_dict = {}
+            for index, module in enumerate(self.BeBoardWidget.getModules()):
+                if index < 4:
+                    channels_dict[index] = {
+                        "lv": {
+                            "instrument": "lv_1",
+                            "channel": index + 1
+                        },
+                        "hv": {
+                            "instrument": "hv",
+                            "channel": 1
+                        },
+                        "cb": {
+                            "instrument": "coldbox",
+                            "channel": index + 1
+                        }
+                    }
+                    logger.info(f"Added channel {index} with lv_1 and hv.")
+                else:
+                    channels_dict[index] = {
+                        "lv": {
+                            "instrument": "lv_2",
+                            "channel": index - 3
+                        },
+                        "hv": {
+                            "instrument": "hv",
+                            "channel": 1
+                        },
+                        "cb": {
+                            "instrument": "coldbox",
+                            "channel": index + 1
+                        }
+                    }
+                    logger.info(f"Added channel {index} with lv_2 and hv.")
+            logger.info(f"Final module_dict: {channels_dict}")
+            self.update_module_dict(channels_dict)
+
+
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
                 self.master.errorMessageBoxSignal.emit(
@@ -656,6 +697,54 @@ class QtStartWindow(QWidget):
 
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, files)
         self.closeFlag = True
+
+    def update_module_dict(self, channels_dict):
+        """Update self._module_dict with DummyInstrument and PowerChannel objects using InstrumentCluster's instrument dictionary."""
+        if not hasattr(self.master, 'instruments'):
+            raise AttributeError("Master does not have an 'instruments' attribute.")
+
+        instrument_dict = self.master.instruments.get_instruments()
+        self._module_dict = {}
+        for number, channel in channels_dict.items():
+            temp_dict = {}
+            if "lv" in channel.keys():
+                instr_object = instrument_dict[channel["lv"]["instrument"]]
+                instr_object.role = "lv"
+                temp_dict["lv"] = instr_object.channel(
+                    "PowerChannel", channel["lv"]["channel"]
+                )
+                temp_dict["lv"].instr_name = channel["lv"]["instrument"]
+            else:
+                temp_dict["lv"] = DummyInstrument("lv")
+
+            if "hv" in channel.keys():
+                instr_object = instrument_dict[channel["hv"]["instrument"]]
+                instr_object.role = "hv"
+                temp_dict["hv"] = instr_object.channel(
+                    "PowerChannel", channel["hv"]["channel"]
+                )
+                temp_dict["hv"].instr_name = channel["hv"]["instrument"]
+            else:
+                temp_dict["hv"] = DummyInstrument("hv")
+
+            temp_dict["ab"] = DummyInstrument("ab")
+            if "cb" in channel.keys():
+                instr_object = instrument_dict[channel["cb"]["instrument"]]
+                instr_object.role = "cb"
+                temp_dict["cb"] = instr_object.channel(
+                    "TemperatureChannel", channel["cb"]["channel"]
+                )
+                temp_dict["cb"].instr_name = channel["cb"]["instrument"]
+            else:
+                temp_dict["cb"] = DummyInstrument("cb")
+
+            self._module_dict[number] = temp_dict
+            self.master.instruments._module_dict[number] = temp_dict
+
+        print("Updated module dictionary:", self._module_dict)
+        print(f"Module Dict:",self.master.instruments.get_modules())
+        print(f"Instruments:",self.master.instruments.get_instruments())
+
 
     def closeEvent(self, event):
         if self.runFlag:
