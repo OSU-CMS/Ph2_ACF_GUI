@@ -1,15 +1,19 @@
 """
 Class to perform the Trimbit curve scanning
 """
-from PyQt5.QtCore import QThread, pyqtSignal, QObject, QProcess
-from Gui.python.logging_config import logger
 from icicle.icicle.adc_board import ADCBoard
 import Gui.siteSettings as site_settings
 import ROOT
 import os
+from PyQt5.QtCore import QThread, pyqtSignal, QObject, QProcess
+from Gui.python.logging_config import get_logger
 import traceback
 import numpy as np
 from ctypes import c_double
+
+logger = get_logger(__name__)
+
+
 
 
 class TrimbitCurveWorker(QThread):
@@ -384,5 +388,5 @@ class TrimbitCurveHandler(QObject):
         try:
             self.test.exiting = True
             self.abortSignal.emit()
-        except Exception as err:
+        except Exception:
             logger.error(traceback.format_exc())

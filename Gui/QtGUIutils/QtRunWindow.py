@@ -30,13 +30,12 @@ from Gui.QtGUIutils.Loading import LoadingThread, LoadingWheel
 
 from Gui.QtGUIutils.QtCustomizeWindow import QtCustomizeWindow
 
-# from Gui.QtGUIutils.QtTableWidget import *
-# from Gui.QtGUIutils.QtMatplotlibUtils import *
 from Gui.python.ResultTreeWidget import ResultTreeWidget
 from Gui.python.TestHandler import TestHandler
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 from InnerTrackerTests.TestSequences import CompositeTests_Modules
 
+logger = get_logger(__name__)
 
 class QtRunWindow(QWidget):
     resized = pyqtSignal()
@@ -649,13 +648,13 @@ class QtRunWindow(QWidget):
     def updateValidation(self, results: list):
         try:
             self.modulestatus.append(results)
-        except Exception as err:
+        except Exception:
             logger.error(traceback.format_exc())
 
     def updateFinishedTests(self, tests: list):
         try:
             self.finished_tests = tests
-        except Exception as err:
+        except Exception:
             logger.error(traceback.format_exc())
 
     def updateProgressBar(self, bar: QProgressBar, value: int, text: str):

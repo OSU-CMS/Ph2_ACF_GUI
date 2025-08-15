@@ -392,9 +392,9 @@ class QtModuleReviewWindow(QWidget):
                                 self.connection, "module_tests", SubmitArgs, Value
                             )
                             print("trying to insert table")
-                        except Exception as e:
+                        except Exception:
                             logger.error(traceback.format_exc())
-            except Exception as err:
+            except Exception:
                 logger.error(traceback.format_exc())
 
         self.destroyMain()

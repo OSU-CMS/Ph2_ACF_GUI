@@ -5,11 +5,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: astral-sh/ruff-action@v3
         with:
-          args: "check"
+          args: "check --fix --exclude Gui/python/rhapi.py"
           src: "./Gui"
+
       - uses: astral-sh/ruff-action@v3
         with:
-          args: "format"
+          args: "format --exclude Gui/python/rhapi.py"
           src: "./Gui"
+

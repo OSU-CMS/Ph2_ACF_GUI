@@ -1,12 +1,3 @@
-"""
-gui.py
-brief                 Interface classes for pixel grading gui
-author                Kai Wei
-version               1.0
-date                  04/27/21
-Support:              email to wei.856@osu.edu
-"""
-
 import sys
 import os
 from datetime import datetime, timedelta
@@ -49,8 +40,10 @@ from InnerTrackerTests.MonitoringSettings import (
 )
 from InnerTrackerTests.RegisterSettings import RegisterSettings, RegisterSettings_dict
 from InnerTrackerTests.FELaneConfig import FELaneConfig_DictB
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 from InnerTrackerTests.TestSequences import CompositeTests, Test_to_Ph2ACF_Map
+
+logger = get_logger(__name__)
 ##########################################################################
 ##########################################################################
 
@@ -105,7 +98,6 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
             + "_"
             + str(time_stamp)
         )
-        print(f"OUTPUT_DIR: {Output_Dir}")
         try:
             os.makedirs(Output_Dir)
         except OSError as e:
@@ -166,7 +158,7 @@ def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
                 Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
             )
         )
-        logger.info(f"Copied XML file to test directory")
+        logger.info("Copied XML file to test directory")
     except OSError as e:
         logger.error(f"Failed to copy XML file to test directory: {e}")
         logger.error(traceback.format_exc())
@@ -452,7 +444,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
             # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
             for chip in module.getChips().values():
-                logger.info("chip %s status is %s", chip.getID(), chip.getStatus())
+                print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
                 FEChip = FE()
                 if (module.getModuleName(), module.getFMCPort(), chip.getID()) in txt_files.keys():
                     txt_file = txt_files[module.getModuleName(), module.getFMCPort(), chip.getID()]
@@ -476,8 +468,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 )
 
                 chip_settings = FESettings_Dict[testName][registerKey].copy()
-                chip_settings['VREF_ADC'] = round(chip.getVREF())
-                chip_settings['INJ_CAP'] = round(chip.getCINJ())
+                chip_settings['VREF_ADC'] = chip.getVREF()
                 FEChip.ConfigureFE(chip_settings)
             
                 if testName in FELaneConfig_Dict:
@@ -485,7 +476,9 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                             FELaneConfig_Dict[testName][int(chip.getLane())]
                         )
                 else:
-                    logger.warning(f"Test name {testName} not found in FELaneConfig_Dict.")
+                    logger.warning(
+                        f"Test name {testName} not found in FELaneConfig_Dict."
+                    )
 
                 if 'trimbit_dict' in arg:
                     logger.info('Setting VDDA to %s', arg['trimbit_dict'][int(chip.getID())][0])
@@ -502,12 +495,11 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
         BeBoardModule0.AddOGModule(OpticalGroupModule0)
 
-        BeBoardModule0.SetURI(BeBoard.getIPAddress())
-        BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")
-
-        BeBoardModule0.SetRegisterValue(RegisterSettingsList)
-        HWDescription0.AddBeBoard(BeBoardModule0)
-
+    BeBoardModule0.SetURI(BeBoard.getIPAddress())
+    BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")
+    BeBoardModule0.SetRegisterValue(RegisterSettingsList)
+    HWDescription0.AddBeBoard(BeBoardModule0)
+    HWSettings_Dict[testName]["DataOutputDir"] = BeBoard.getBoardName()
     HWDescription0.AddSettings(HWSettings_Dict[testName])
     MonitoringModule0 = MonitoringModule(boardtype)
     if "RD53A" in boardtype:

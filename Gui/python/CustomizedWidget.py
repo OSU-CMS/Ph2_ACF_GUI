@@ -35,8 +35,9 @@ from Gui.GUIutils.settings import (
 # from Gui.GUIutils.FirmwareUtil import *
 # from Gui.QtGUIutils.QtFwCheckDetails import *
 
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 
+logger = get_logger(__name__)
 # Global dictionary to store IREF values for each chip
 chip_iref_db = {}
 
@@ -84,10 +85,6 @@ class ModuleBox(QWidget):
         self.SerialEdit = QLineEdit()
         self.SerialEdit.setMinimumWidth(55)
 
-        FMCLabel = QLabel("FMC:")
-        self.FMCEdit = QLineEdit()
-        self.FMCEdit.setText("L12")
-
         PortLabel = QLabel("FMC port:")
         self.PortEdit = QLineEdit()
 
@@ -114,8 +111,6 @@ class ModuleBox(QWidget):
 
         self.mainLayout.addWidget(SerialLabel, 0, 0, 1, 1)
         self.mainLayout.addWidget(self.SerialEdit, 0, 1, 1, 1)
-        self.mainLayout.addWidget(FMCLabel, 0, 2, 1, 1)
-        self.mainLayout.addWidget(self.FMCEdit, 0, 3, 1, 1)
         self.mainLayout.addWidget(FC7Label, 0, 4, 1, 1)
         self.mainLayout.addWidget(self.FC7Combo, 0, 5, 1, 1)
         self.mainLayout.addWidget(PortLabel, 0, 6, 1, 1)
@@ -143,11 +138,24 @@ class ModuleBox(QWidget):
             else:
                 self.VersionCombo.setCurrentText(1)
 
+    def checkPort(self, port):
+        try:
+            if port in range(0,2):
+                return "L12"
+            elif port in range (3,4):
+                return "L8"
+            else:
+                logger.warning(f"Unknown port: {port}")
+                return "L12"
+        except:
+            logger.error(traceback.format_exc())
+            return "L12"
+
     def getSerialNumber(self):
         return self.SerialEdit.text().upper()
 
     def getFMCID(self):
-        return self.FMCEdit.text()
+        return self.checkPort(int(self.getFMCPort()))
 
     def getFC7(self):
         return self.FC7Combo.currentText()

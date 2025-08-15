@@ -13,11 +13,12 @@ from PyQt5.QtWidgets import (
 )
 
 import os
+import shutil
 import glob
 import subprocess
+import traceback
 import threading
 import time
-import traceback
 import re
 from datetime import datetime
 import numpy as np
@@ -37,7 +38,6 @@ from Gui.GUIutils.guiUtils import (
     GenerateXMLConfig,
     isCompositeTest,
     isSingleTest,
-    UpdateXMLValue,
 )
 
 from Gui.python.ROOTInterface import executeCommandSequence
@@ -45,7 +45,9 @@ from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
 
 from InnerTrackerTests.RootFilesDict import root_files
+
 from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT2, Trimbit_CSV_to_ROOT
+
 
 
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
@@ -56,14 +58,18 @@ from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
 from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
 from Gui.siteSettings import icicle_instrument_setup
 
+
+logger = get_logger(__name__)
+
+
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
-    haltSignal = pyqtSignal(object)
+    haltSignal = pyqtSignal(object)  # Used to initiate runwindow.finish()
     finishSignal = pyqtSignal(object)
     proceedSignal = pyqtSignal(object)
     outputString = pyqtSignal(str, QPlainTextEdit)
@@ -77,12 +83,12 @@ class TestHandler(QObject):
     powerSignal = pyqtSignal()
     updateProgressBar = pyqtSignal(QProgressBar, int, str)
 
-    def __init__(self, runwindow, master, info, firmware, txt_files = {}):
+    def __init__(self, runwindow, master, info, firmware, txt_files={}):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
         self.mod_dict = {}
-        self.fused_dict_index = [-1, -1]
+        self.fused_dict_index = [-1, -1] #hybrid_id and chip_number gathered from Ph2_ACF output
         self.FWisPresent = False
         self.FWisLoaded = False
         self.master.globalStop.connect(self.urgentStop)
@@ -91,27 +97,28 @@ class TestHandler(QObject):
         self.info = info  # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
 
-        self.modules = [module for beboard in self.firmware for module in beboard.getModules()]
+        self.modules = [
+            module for beboard in self.firmware for module in beboard.getModules()
+        ]
 
-        
         self.GADC_meas_chip = None
-        self.VDDDup = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDDdown = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDAdown = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDAup = {channel:{} for channel in self.instruments._module_dict}
-        self.VINDup = {channel:{} for channel in self.instruments._module_dict}
-        self.VINDdown = {channel:{} for channel in self.instruments._module_dict}
-        self.VINAdown = {channel:{} for channel in self.instruments._module_dict}
-        self.VINAup = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDDup = {channel: {} for channel in self.instruments._module_dict}
+        self.VDDDdown = {channel: {} for channel in self.instruments._module_dict}
+        self.VDDAdown = {channel: {} for channel in self.instruments._module_dict}
+        self.VDDAup = {channel: {} for channel in self.instruments._module_dict}
+        self.VINDup = {channel: {} for channel in self.instruments._module_dict}
+        self.VINDdown = {channel: {} for channel in self.instruments._module_dict}
+        self.VINAdown = {channel: {} for channel in self.instruments._module_dict}
+        self.VINAup = {channel: {} for channel in self.instruments._module_dict}
 
-        self.VDDDupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDDdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDAdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VDDAupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINDupError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINDdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINAdownError = {channel:{} for channel in self.instruments._module_dict}
-        self.VINAupError = {channel:{} for channel in self.instruments._module_dict}
+        self.VDDDupError = {channel: {} for channel in self.instruments._module_dict}
+        self.VDDDdownError = {channel: {} for channel in self.instruments._module_dict}
+        self.VDDAdownError = {channel: {} for channel in self.instruments._module_dict}
+        self.VDDAupError = {channel: {} for channel in self.instruments._module_dict}
+        self.VINDupError = {channel: {} for channel in self.instruments._module_dict}
+        self.VINDdownError = {channel: {} for channel in self.instruments._module_dict}
+        self.VINAdownError = {channel: {} for channel in self.instruments._module_dict}
+        self.VINAupError = {channel: {} for channel in self.instruments._module_dict}
 
         self.SLDOfilelist = []
 
@@ -136,17 +143,29 @@ class TestHandler(QObject):
             self.boardType = "RD53A"
             self.moduleVersion = ""
 
-        self.registerKey = "{0}_HDIv{1}".format(self.ModuleType.replace(" ", "_"), self.hdiVersion)
+        self.registerKey = "{0}_HDIv{1}".format(
+            self.ModuleType.replace(" ", "_"), self.hdiVersion
+        )
 
-        #If the module is not one of the module types in CompositeTests_Modules, use the default test list
+        # If the module is not one of the module types in CompositeTests_Modules, use the default test list
         try:
-            self.test_list = CompositeTests_Modules[self.registerKey][self.info] if isCompositeTest(self.info) else (self.info,)                      
+            self.test_list = (
+                CompositeTests_Modules[self.registerKey][self.info]
+                if isCompositeTest(self.info)
+                else (self.info,)
+            )
         except KeyError:
+
             logger.error(f"Test {self.info} not found in CompositeTests_Modules for ModuleType {self.registerKey}.")
             logger.error(traceback.format_exc())
             self.test_list = CompositeTests_Modules["Default"][self.info]
 
-        self.module_test_history = {module.getModuleName():{test:{"Passed":0,"Failed":0} for test in self.test_list} for module in self.modules}
+        self.module_test_history = {
+            module.getModuleName(): {
+                test: {"Passed": 0, "Failed": 0} for test in self.test_list
+            }
+            for module in self.modules
+        }
         self.finished_tests = []
         self.Ph2_ACF_ver = os.environ.get("Ph2_ACF_VERSION")
         print("Using version {0} of Ph2_ACF".format(self.Ph2_ACF_ver))
@@ -183,21 +202,32 @@ class TestHandler(QObject):
 
         self.runNext = threading.Event()
         self.testIndexTracker = 0
-        self.testsAttempted = 0
         self.listWidgetIndex = 0
         self.outputDirQueue = []
         # Fixme: QTimer to be added to update the page automatically
 
-        felisScratchDir = "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch"
-        if not os.path.isdir(felisScratchDir):
-            try:
-                os.makedirs(felisScratchDir)
+        # Need multiple felis instances to have two separate scratch directories
+        # to handle multiple FC7s 
+        self.felis_instances = [] 
+        felisScratchDirBase = "/home/cmsTkUser/Ph2_ACF_GUI/data/scratch"
+        felis_directories = [os.path.join(felisScratchDirBase, fc7.getBoardName()) for fc7 in self.firmware]
+        try:
+            # Create a unique scratch directory for each FC7
+            for directory in felis_directories:
+                os.makedirs(directory)
                 logger.info("New Felis scratch directory created.")
-            except OSError as e:
-                logger.error(f"Error making Felis scratch directory: {e.strerror}")
-                logger.error(traceback.format_exc())
 
-        self.felis = Felis("/home/cmsTkUser/Ph2_ACF_GUI/data/scratch", False)
+        except FileExistsError:
+            # If directory already exists, fantastic.
+            logger.debug("The scratch directory already exists. Continuing")
+            pass
+
+        except OSError as e:
+            logger.error(f"Error making Felis scratch directory: {e.strerror}")
+            logger.error(traceback.format_exc())
+
+            
+        self.felis_instances = [Felis(felis_directory, False) for felis_directory in felis_directories] 
         self.grades = []
 
         self.figurelist = {}
@@ -207,8 +237,12 @@ class TestHandler(QObject):
             process.readyReadStandardOutput.connect(
                 lambda j=i: self.on_readyReadStandardOutput(j)
             )
-            process.finished.connect(lambda exitCode, exitStatus, j=i: self.finished_run_process(exitCode, exitStatus, j))
-
+            process.finished.connect(
+                lambda exitCode, exitStatus, j=i: self.finished_run_process(
+                    exitCode, exitStatus, j
+                )
+            )
+        self.finished_processes = 0
         self.readingOutput = False
         self.ProgressingMode = "None"
         self.ProgressValue = 0
@@ -217,7 +251,9 @@ class TestHandler(QObject):
         self.runtimeList = []
         self.starttime = None
 
-        self.communicationTestResults = {module.getModuleName():None for module in self.modules}
+        self.communicationTestResults = {
+            module.getModuleName(): None for module in self.modules
+        }
         self.communicationTestModule = None
 
         self.info_processes = [QProcess() for _ in self.firmware]
@@ -227,7 +263,7 @@ class TestHandler(QObject):
             )
 
         ##---Adding firmware setting-----
-        self.fw_processes =[QProcess() for _ in self.firmware]
+        self.fw_processes = [QProcess() for _ in self.firmware]
         for i, process in enumerate(self.fw_processes):
             process.readyReadStandardOutput.connect(
                 lambda j=i: self.on_readyReadStandardOutput_info(j)
@@ -248,14 +284,18 @@ class TestHandler(QObject):
         self.finished_tests = []
 
         self.initializeRD53Dict()
-        self.iref_match_status = {module.getModuleName(): True for module in self.modules}  # Initialize all to True
-
+        self.iref_match_status = {
+            module.getModuleName(): True for module in self.modules
+        }  # Initialize all to True
         self.set_default_temperature()
 
     def finished_run_process(self, _, exitStatus, i):
+        logger.info("Inside finsihed_run_process")
+        logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
         if exitStatus == QProcess.NormalExit:
+            # Ensure that all processes have finished before continuing
             self.on_finish(i)
-
+            
     def initializeRD53Dict(self):
         self.rd53_file = {}
         for module in self.modules:
@@ -286,9 +326,41 @@ class TestHandler(QObject):
             self.input_dir,
         )
 
+    def saveConfigs(self, process_index:int):
+        ph2_acf_base_dir = os.environ.get("PH2ACF_BASE_DIR") 
+        logger.debug(f"{self.rd53_file.keys()=}")
+        logger.debug(f"{self.ModuleMap=}")
+
+        current_fc7 = self.firmware[process_index].getBoardName()
+        # NOTE: ModuleMap key is of the form "{0}_{1}_{2}".format(beboardId, ogId, moduleId)
+        # key used to be the module name and chip ie. SH0101_0_13
+
+        # Modules that are associated with the finished QProcess that called saveConfigs
+        finished_modules = {
+            name for key, name in self.ModuleMap.items()
+            if key.split("_")[0] == str(process_index)
+            }
+
+        # Module and enabled chip mapping
+        module_chips_to_save = [
+            chip for chip in list(self.rd53_file.keys())
+            if chip.split("_")[0] in finished_modules
+            ]
+
+        #TODO Add process index to this function and use to format input directory
+        for module in module_chips_to_save:
+            try:
+                shutil.copyfile(f"{ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{module}.txt", f"{self.output_dir}/{current_fc7}/CMSIT_RD53_{module}_OUT.txt")
+            except Exception:
+                traceback.print_exc()
+                logger.error(
+                    f"Failed to copy {ph2_acf_base_dir}/test/{current_fc7}/Run{self.RunNumber}_CMSIT_RD53_{module}.txt {self.output_dir}/{current_fc7}/CMSIT_RD53_{module}_OUT.txt"
+                )
+
     def configTest(self, **kwargs):
         # Gets the run number by reading from the RunNumber.txt file.
         try:
+            # NOTE: All processes are going to have the same run number as written, there is no race condition though.
             RunNumberFileName = (
                 os.environ.get("PH2ACF_BASE_DIR") + "/test/RunNumber.txt"
             )
@@ -322,12 +394,22 @@ class TestHandler(QObject):
                 )
                 print("Getting config file {0}".format(self.rd53_file[key]))
 
+        # At first there should be no input_dir and we should be grabbing the default txt files.
+        # After the first test, we should see values or input_dir and output_dir signifiying that the txt files are being updated.
+        logger.debug(f"{self.input_dir=}")
+        logger.debug(f"{self.output_dir=}")
+
+        # NOTE:  This code is to update the mapping of Ph2_ACF txt files
         if self.input_dir == "":
             # Copies file given in rd53[key] to test directory in Ph2_ACF test area as CMSIT_RD53.txt and the output dir.
             SetupRD53ConfigfromFile(self.rd53_file, self.output_dir)
         else:
+            logger.debug(f"{self.testIndexTracker=}")
+            print(os.listdir(self.input_dir))
             SetupRD53Config(self.input_dir, self.output_dir, self.rd53_file)
 
+
+        # NOTE: This code block is used to generate the XML configuration files
         if self.input_dir == "":
             # If no config file(xml file) is given create the XML file and place it into a .tmp directory
             # Create the directory to store the xml file
@@ -341,7 +423,9 @@ class TestHandler(QObject):
                         logger.warning("Failed to create " + tmpDir)
                 # Create the xml file from the text file
                 for firmware in self.firmware:
-                    config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files, **kwargs)
+                    config_file = GenerateXMLConfig(
+                        firmware, self.currentTest, tmpDir, self.txt_files, **kwargs
+                    )
 
                     if config_file:
                         SetupXMLConfigfromFile(
@@ -373,6 +457,7 @@ class TestHandler(QObject):
                         logger.warning(traceback.format_exc())
                 # Create the xml file from the text file
                 for firmware in self.firmware:
+
                     config_file = GenerateXMLConfig(firmware, self.currentTest, tmpDir, self.txt_files, **kwargs)
 
                     if config_file:
@@ -386,22 +471,6 @@ class TestHandler(QObject):
         self.config_file = ""
         return
 
-    def saveConfigs(self):
-        for key in self.rd53_file.keys():
-            try:
-                os.system(
-                    "cp {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
-                    )
-                )
-            except OSError:
-                print(
-                    "Failed to copy {0}/test/CMSIT_RD53_{1}.txt {2}/CMSIT_RD53_{1}_OUT.txt".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), key, self.output_dir
-                    )
-                )
-                logger.warning(traceback.format_exc())
-
     def resetConfigTest(self):
         self.input_dir = ""
         self.output_dir = ""
@@ -412,7 +481,6 @@ class TestHandler(QObject):
         if reRun:
             self.halt = False
             self.testIndexTracker = 0
-            self.testsAttempted = 0
         testName = self.info
 
         self.input_dir = self.output_dir
@@ -428,19 +496,23 @@ class TestHandler(QObject):
 
     # This loops over all the tests by using the on_finish pyqt decorator defined below
     def runCompositeTest(self, testName):
+        logger.info("Inside runCompositeTest")
         if self.halt:
             return
         runTestList = self.test_list
 
         if self.testIndexTracker == len(self.test_list):
-            self.testIndexTracker = 0
-            self.testsAttempted = 0
+            logger.debug("Reset testIndexTracker")
+            # self.testIndexTracker = 0
+            # self.testsAttempted = 0
             return
         testName = runTestList[self.testIndexTracker]
-        if self.testIndexTracker + 1 < len(runTestList):  # Check if there is a next test
+        if self.testIndexTracker + 1 < len(
+            runTestList
+        ):  # Check if there is a next test
             nextTest = runTestList[self.testIndexTracker + 1]
         else:
-            nextTest = None  
+            nextTest = None
         self.runSingleTest(testName, nextTest)
 
     def ramp_progress_bar(self, max):
@@ -454,6 +526,7 @@ class TestHandler(QObject):
             value = 100 * np.abs(voltages[i] / max[i]) if max[i] != 0 else 0
 
             self.updateProgressBar.emit(bar, value, text)
+
     def runADC(self):
         if "adc_board" in self.instruments._instrument_dict.keys():
             self.adc_board = self.instruments._instrument_dict["adc_board"]
@@ -467,37 +540,64 @@ class TestHandler(QObject):
 
 
 
-    def GADC_execute_each_step(self, upOrDown:str, total_steps:int, physics_seconds : int = site_settings.SLDOScan_GADC["physics seconds"], fc7_index : int = 0) -> None:
-
-        GADC_processes = [QProcess() for _ in self.instruments._module_dict] #loops through channels
+    def GADC_execute_each_step(
+        self,
+        upOrDown: str,
+        total_steps: int,
+        physics_seconds: int = site_settings.SLDOScan_GADC["physics seconds"],
+        fc7_index: int = 0,
+    ) -> None:
+        GADC_processes = [
+            QProcess() for _ in self.instruments._module_dict
+        ]  # loops through channels
         for i, process in enumerate(GADC_processes):
+
 
             voltage = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "voltage")
             current = getattr(tuple(self.instruments._module_dict.values())[i]["lv"], "current")
             if current < site_settings.SLDOScan_GADC[self.master.module_in_use.split(" ")[-1].lower()]['starting current']:
                 continue
             print(f"Beginning physics test at {voltage}V and {current}A")
-            self.outputString.emit(f"Beginning physics test at {voltage}V and {current}A", self.runwindow.ConsoleViews[fc7_index])
+            self.outputString.emit(
+                f"Beginning physics test at {voltage}V and {current}A",
+                self.runwindow.ConsoleViews[fc7_index],
+            )
 
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(
-                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
-            )
+            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
+
+            self.outputFile = self.output_dir + "/output.txt"
             process.readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput_GADC(process, i, upOrDown, current, channel = tuple(self.instruments._module_dict.keys())[i])
+                lambda: self.on_readyReadStandardOutput_GADC(
+                    process,
+                    i,
+                    upOrDown,
+                    current,
+                    channel=tuple(self.instruments._module_dict.keys())[i],
+                )
             )
-            
+
             process.start(
                 "CMSITminiDAQ",
-                ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml", "-c", "physics", "-t", str(physics_seconds)],
+                [
+                    "-f",
+                    f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml",
+                    "-c",
+                    "physics",
+                    "-t",
+                    str(physics_seconds),
+                ],
             )
-            
+
         for process, firmware in zip(GADC_processes, self.firmware):
             if process.state() != QProcess.NotRunning:
-                result = process.waitForFinished(-1) #waits indefinitely
+                result = process.waitForFinished(-1)  # waits indefinitely
                 if not result:
-                    logger.error(f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly.")
+                    logger.error(
+                        f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly."
+                    )
                     process.kill()
+
 
         if self.currentTest == "SLDOScan_GADC":
             self.ProgressValue+=1
@@ -520,10 +620,10 @@ class TestHandler(QObject):
                 self.updateResult.emit((step, self.figurelist))
 
             for i in range(len(self.firmware)):
-                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(100)
             return
-
-
 
         print("Executing Single Step test...")
         for console in self.runwindow.ConsoleViews:
@@ -535,9 +635,6 @@ class TestHandler(QObject):
         self.updateOptimizedXMLValues()
         self.configTest()
 
-        self.outputFile = self.output_dir + "/output.txt"
-        self.errorFile = self.output_dir + "/error.txt"
-
         # Make sure that the GUI is not trying to write to the root directory
         try:
             assert self.output_dir != ""
@@ -548,16 +645,16 @@ class TestHandler(QObject):
             logger.error(traceback.format_exc())
             raise
 
-        if os.path.exists(self.outputFile):
-            self.outputfile = open(self.outputFile, "a")
-        else:
-            self.outputfile = open(self.outputFile, "w")
+        # if os.path.exists(self.outputFile):
+        #     self.outputfile = open(self.outputFile, "a")
+        # else:
+        #     self.outputfile = open(self.outputFile, "w")
 
         if testName == "SLDOScan_GADC":
             starting_voltages = [
-                            np.abs(getattr(module["hv"], "voltage"))
-                            for module in self.instruments._module_dict.values()
-                        ]
+                np.abs(getattr(module["hv"], "voltage"))
+                for module in self.instruments._module_dict.values()
+            ]
             self.instruments.hv_off(
                 execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
             )
@@ -568,38 +665,90 @@ class TestHandler(QObject):
                 SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["quad"]
             else:
                 SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
-                logger.error('Module type does not contain "1x2" or "quad". Running SLDOScan_GADC as 1x2.')
+                logger.error(
+                    'Module type does not contain "1x2" or "quad". Running SLDOScan_GADC as 1x2.'
+                )
 
             self.ProgressValue = 0
-            total_steps =2*(1+np.ceil(np.abs(SLDOScan_GADC_dict["target current"]-SLDOScan_GADC_dict["starting current"])/SLDOScan_GADC_dict["step size"]))
+            total_steps = 2 * (
+                1
+                + np.ceil(
+                    np.abs(
+                        SLDOScan_GADC_dict["target current"]
+                        - SLDOScan_GADC_dict["starting current"]
+                    )
+                    / SLDOScan_GADC_dict["step size"]
+                )
+            )
             for i in range(len(self.firmware)):
-                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(0)
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(0)
 
-            self.instruments.lv_on(voltage=SLDOScan_GADC_dict["voltage"],current=SLDOScan_GADC_dict["starting current"])
+            self.instruments.lv_on(
+                voltage=SLDOScan_GADC_dict["voltage"],
+                current=SLDOScan_GADC_dict["starting current"],
+            )
 
-            up_sweep = self.instruments.lv_sweep(target=SLDOScan_GADC_dict["target current"],
-                delay=.1, set_property="current", measure=True,
-                step_size=SLDOScan_GADC_dict["step size"], execute_each_step=lambda:self.GADC_execute_each_step("up", total_steps))
+            up_sweep = self.instruments.lv_sweep(
+                target=SLDOScan_GADC_dict["target current"],
+                delay=0.1,
+                set_property="current",
+                measure=True,
+                step_size=SLDOScan_GADC_dict["step size"],
+                execute_each_step=lambda: self.GADC_execute_each_step(
+                    "up", total_steps
+                ),
+            )
 
-            down_sweep = self.instruments.lv_sweep(target=SLDOScan_GADC_dict["starting current"],
-                delay=.1, set_property="current", measure=True,
-                step_size=SLDOScan_GADC_dict["step size"], execute_each_step=lambda:self.GADC_execute_each_step("down", total_steps))
-            
+            down_sweep = self.instruments.lv_sweep(
+                target=SLDOScan_GADC_dict["starting current"],
+                delay=0.1,
+                set_property="current",
+                measure=True,
+                step_size=SLDOScan_GADC_dict["step size"],
+                execute_each_step=lambda: self.GADC_execute_each_step(
+                    "down", total_steps
+                ),
+            )
+
             self.instruments.lv_off()
-        
-            for i in range(len(self.firmware)):
-                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
 
-            for datatype in ('VDDD', 'VDDA'):
+            for i in range(len(self.firmware)):
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(100)
+
+            for datatype in ("VDDD", "VDDA"):
                 for channel in self.instruments._module_dict:
                     for chip in self.VDDDup[channel]:
                         data = [
-                            [sweep_step[-1] for sweep_step in up_sweep[0][1]], 
-                            [float(i) for i in getattr(self, f"VIN{datatype[-1]}up")[channel][chip].values()],
-                            [float(i) for i in getattr(self, f"{datatype}up")[channel][chip].values()],
-                            [sweep_step[-1] for sweep_step in down_sweep[0][1]], 
-                            [float(i) for i in getattr(self, f"VIN{datatype[-1]}down")[channel][chip].values()],
-                            [float(i) for i in getattr(self, f"{datatype}down")[channel][chip].values()]
+                            [sweep_step[-1] for sweep_step in up_sweep[0][1]],
+                            [
+                                float(i)
+                                for i in getattr(self, f"VIN{datatype[-1]}up")[channel][
+                                    chip
+                                ].values()
+                            ],
+                            [
+                                float(i)
+                                for i in getattr(self, f"{datatype}up")[channel][
+                                    chip
+                                ].values()
+                            ],
+                            [sweep_step[-1] for sweep_step in down_sweep[0][1]],
+                            [
+                                float(i)
+                                for i in getattr(self, f"VIN{datatype[-1]}down")[
+                                    channel
+                                ][chip].values()
+                            ],
+                            [
+                                float(i)
+                                for i in getattr(self, f"{datatype}down")[channel][
+                                    chip
+                                ].values()
+                            ],
                         ]
                         print(data)
 
@@ -616,14 +765,13 @@ class TestHandler(QObject):
                     lv_on = True
                     break
             if not lv_on:
-                    self.instruments.lv_on(
-                        voltage=site_settings.ModuleVoltageMapSLDO[
-                            self.master.module_in_use
-                        ],
-                        current=site_settings.ModuleCurrentMap[self.master.module_in_use],
-                    )
-        
-        
+                self.instruments.lv_on(
+                    voltage=site_settings.ModuleVoltageMapSLDO[
+                        self.master.module_in_use
+                    ],
+                    current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                )
+
         if "IVCurve" in testName:
             self.currentTest = testName
             self.configTest()
@@ -670,7 +818,7 @@ class TestHandler(QObject):
             return
 
         # If the HV is not already on, turn it on.
-        if self.instruments and self.currentTest != "SLDOScan_GADC":
+        if self.instruments and self.currentTest != "SLDOScan_GADC" and self.currentTest != "CommunicationTest":
             default_hv_voltage = site_settings.icicle_instrument_setup[
                 "instrument_dict"
             ]["hv"]["default_voltage"]
@@ -689,7 +837,9 @@ class TestHandler(QObject):
                             for module in self.instruments._module_dict.values()
                         ]
                         self.instruments.hv_off(
-                            execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
+                            execute_each_step=lambda: self.ramp_progress_bar(
+                                starting_voltages
+                            )
                         )
                         self.instruments.hv_on_module(
                             module=mod_dict[number],
@@ -697,8 +847,9 @@ class TestHandler(QObject):
                             delay=0.3,
                             step_size=10,
                             execute_each_step=lambda: self.ramp_progress_bar(
-                            [site_settings.forward_bias_voltage] * len(self.instruments._module_dict.values())
-                            )
+                                [site_settings.forward_bias_voltage]
+                                * len(self.instruments._module_dict.values())
+                            ),
                         )
                     else:
                         self.instruments.hv_on_module(
@@ -707,8 +858,9 @@ class TestHandler(QObject):
                             delay=0.3,
                             step_size=10,
                             execute_each_step=lambda: self.ramp_progress_bar(
-                            [site_settings.forward_bias_voltage] * len(self.instruments._module_dict.values())
-                            )
+                                [site_settings.forward_bias_voltage]
+                                * len(self.instruments._module_dict.values())
+                            ),
                         )
                     testName = "SCurveScan_2100"
                     hv_on_module = True
@@ -724,8 +876,6 @@ class TestHandler(QObject):
                         break_loop=lambda: self.halt,
                     )
 
-        self.tempHistory = [0.0] * self.numChips
-        self.tempindex = 0
         if "TrimbitScan" in testName:
             self.currentTest = testName
             total_steps = 16
@@ -745,6 +895,7 @@ class TestHandler(QObject):
             return
         else:
             self.setupQProcess()
+
     def storeTrimbitResults(self, adcmeasurements, pin_mapping):
         self.ADCmeasurements = adcmeasurements
         self.pin_mapping = pin_mapping
@@ -752,8 +903,12 @@ class TestHandler(QObject):
     def setupQProcess(self):
         self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
+
+        # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
+        logger.info(f"{self.output_dir=}")
         self.outputFile = self.output_dir + "/output.txt"
         self.errorFile = self.output_dir + "/error.txt"
+
         if os.path.exists(self.outputFile):
             self.outputfile = open(self.outputFile, "a")
         else:
@@ -766,8 +921,8 @@ class TestHandler(QObject):
         for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
-   
-        '''
+
+        """
         if self.currentTest == ["exampletest"]:               #for tests needing -c
             for process, firmware in zip(self.info_processes, self.firmware):
                 process.start(
@@ -779,7 +934,7 @@ class TestHandler(QObject):
                         )
                     ],
                 )        
-                    '''  
+                    """
         if self.currentTest == "CommunicationTest":
             for process, firmware in zip(self.info_processes, self.firmware):
                 process.start(
@@ -809,9 +964,7 @@ class TestHandler(QObject):
 
         for process in self.fw_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
-            process.setWorkingDirectory(
-                os.environ.get("PH2ACF_BASE_DIR") + "/test/"
-            )
+            process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
         if self.currentTest == "CommunicationTest":
             for process, firmware in zip(self.run_processes, self.firmware):
@@ -819,17 +972,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
                 )
-        #if self.currentTest == ["exampletest"]:               #for tests needing -c
-        #    for process, firmware in zip(self.run_processes, self.firmware):
-        #        process.start(
-        #            "CMSITminiDAQ",
-        #            [
-        #                "-f",
-        #                f"CMSIT_{firmware.getBoardName()}.xml",
-        #                "-c",
-        #                "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
-        #            ],
-        #        )
+
         if self.currentTest == "IREF_GADC":  #FIXME need to add -t so the scan will stop at the end
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
@@ -853,17 +996,28 @@ class TestHandler(QObject):
                     ],
                 )
         else:
+            i = 0
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
                     [
                         "-f",
                         f"CMSIT_{firmware.getBoardName()}.xml",
-                        #"-k",
+                        # "-k",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
                 )
+                # Check if the process is running
+                if process.state() == QProcess.NotRunning:
+                    logger.error(
+                        f"Process for firmware {self.firmware[i].getBoardName()} failed to start."
+                    )
+                else:
+                    logger.info(
+                        f"Process for firmware {self.firmware[i].getBoardName()} started successfully."
+                    )
+                i += 1
 
     def abortTest(self):
         self.halt = True
@@ -873,7 +1027,8 @@ class TestHandler(QObject):
         self.haltSignal.emit(self.halt)
 
         self.starttime = None
-        self.testsAttempted = 0 #reset when aborted for fresh restart
+        self.testsAttempted = 0  # reset when aborted for fresh restart
+
         if self.IVCurveHandler:
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting IVCurve", console)
@@ -908,12 +1063,12 @@ class TestHandler(QObject):
             print("IREF MATCH STATUS BEFORE VALIDATION:", self.iref_match_status)
             print("MODULE NAMES:", [module.getModuleName() for module in self.modules])
 
-            for beboard in self.firmware:
+            for i, beboard in enumerate(self.firmware):
                 boardID = beboard.getBoardID()
                 for OG in beboard.getAllOpticalGroups().values():
                     ogID = OG.getOpticalGroupID()
                     for module in OG.getAllModules().values():
-                        print(f'curr test {self.currentTest}')
+                        print(f"curr test {self.currentTest}")
                         hybridID = module.getFMCPort()
                         module_data = {
                             "boardID": boardID,
@@ -921,9 +1076,12 @@ class TestHandler(QObject):
                             "hybridID": hybridID,
                             "module": module,
                         }
+                        output_dir = os.path.join(
+                            self.output_dir, beboard.getBoardName()
+                        )
                         result, self.BBanalysis_root_files = ResultGrader(
-                            self.felis,
-                            self.output_dir,
+                            self.felis_instances[i],
+                            output_dir,
                             self.currentTest,
                             self.testIndexTracker,
                             runNumber,
@@ -933,16 +1091,18 @@ class TestHandler(QObject):
                             self.registerKey,
                             self.communicationTestResults,
                             self.comment,
-                            self.iref_match_status  # Pass iref_match_status for IREF validation
+                            self.iref_match_status,  # Pass iref_match_status for IREF validation
                         )
 
                         results.append(result)
                         passed.append(list(result.values())[0][0])
-                        
-                        self.module_test_history[next(iter(result))][self.currentTest]["Passed" if next(iter(result.values()))[0] else "Failed"] += 1 
+
+                        self.module_test_history[next(iter(result))][self.currentTest][
+                            "Passed" if next(iter(result.values()))[0] else "Failed"
+                        ] += 1
 
                         self.figurelist[module.getModuleName()] = self.collect_plots(
-                            module.getModuleName()
+                            module.getModuleName(), felis_instance=self.felis_instances[i]
                         )
 
             self.updateValidation.emit(results)
@@ -952,26 +1112,31 @@ class TestHandler(QObject):
         except Exception:
             logger.error(traceback.format_exc())
 
-    def collect_plots(self, moduleName):
-        try:
-            plot_paths = []
-            scratch = os.path.join(self.felis.path_scratch, moduleName)
-            test = "{0:02d}_{1}".format(self.testIndexTracker, self.currentTest)
-            directory = os.path.join(scratch, test)
+    def collect_plots(self, moduleName, felis_instance=None):
+        if felis_instance is not None:
+            try:
+                plot_paths = []
+                scratch = os.path.join(felis_instance.path_scratch, moduleName)
+                test = "{0:02d}_{1}".format(self.testIndexTracker, self.currentTest)
+                directory = os.path.join(scratch, test)
 
-            for filename in os.listdir(directory):
-                if filename.lower().endswith(".svg") or filename.lower().endswith(
-                    ".png"
-                ):
-                    plot_paths.append(os.path.join(directory, filename))
+                for filename in os.listdir(directory):
+                    if filename.lower().endswith(".svg") or filename.lower().endswith(
+                        ".png"
+                    ):
+                        plot_paths.append(os.path.join(directory, filename))
 
-            return plot_paths
-        except Exception as e:
-            if "IVCurve" in self.currentTest or "SLDOScan" in self.currentTest:
-                if moduleName in self.figurelist.keys():
-                    return self.figurelist[moduleName]
+                return plot_paths
+            except Exception as e:
+                if "IVCurve" in self.currentTest or "SLDOScan" in self.currentTest:
+                    if moduleName in self.figurelist.keys():
+                        return self.figurelist[moduleName]
+                    else:
+                        return []
                 else:
+                    print("testHandler.collect_plots Exception:", repr(e))
                     return []
+
             else:
                 logger.error((traceback.format_exc()))
                 return []
@@ -980,6 +1145,7 @@ class TestHandler(QObject):
     # self.output_dir the .root file modified most recently. This will copy over the wrong file if somebody
     # manually edits the .root file in the PH2ACF directory, so there may be a better way to do this
     def copyMostRecentRootFile(self, RunNumber, base_dir, output_dir, test):
+        logger.debug(f"{RunNumber=}, {base_dir=}, {output_dir=}, {test=}")
         files = root_files[test] if test in root_files.keys() else (test,)
         for name in files:
             name = name.split("_")[0]
@@ -989,11 +1155,10 @@ class TestHandler(QObject):
                 name = "Gain"
             elif "Threshold" in name:
                 name = name.replace("Threshold", "Thr")
-            
+
             # Construct the search pattern for files
             search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
             logger.debug(f"Looking for {search_pattern}")
-            print(f"Looking for {search_pattern}")
 
             # Find all matching files
             matching_files = glob.glob(search_pattern)
@@ -1015,19 +1180,30 @@ Module disconnection detected because {latest_file} \
 created by Ph2_ACF is empty."
                 )
 
-            # Copy the most recent file to the output directory
-            os.system(f"cp {latest_file} {output_dir}/")
+
+            # When using multiple FC7s root files will get overwritten so need to attach
+            # what fc7 the test was run on to file name
+            fc7_in_use: str = base_dir.split("/")[-1].replace(".", "_")
+            file_name: str = latest_file.split("/")[-1]
+            logger.debug(f"Copying {latest_file} to {output_dir}/{fc7_in_use}_{file_name}")
+            os.system(f"cp {latest_file} {output_dir}/{fc7_in_use}_{file_name}")
 
     def saveTest(self, processIndex: int, process: QProcess):
+        logger.debug("Inside saveTest")
         if process.state() == QProcess.Running:
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
             return
 
         try:
+            logger.debug("f{self.output_dir=}")
+            if not os.path.exists(os.path.join(self.output_dir, self.firmware[processIndex].getBoardName())):
+                logger.debug(f"Created directory for process: {processIndex}")
+                os.makedirs(os.path.join(self.output_dir, self.firmware[processIndex].getBoardName()))
+
             if self.RunNumber == "-1":
                 os.system(
                     "cp {0}/test/Results/Run000000*.root {1}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"), self.output_dir
+                        os.environ.get("PH2ACF_BASE_DIR"), os.path.join(self.output_dir, self.firmware[processIndex].getBoardName())
                     )
                 )
 
@@ -1037,16 +1213,23 @@ created by Ph2_ACF is empty."
                     "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
-                        self.output_dir,
+                        os.path.join(self.output_dir, self.firmware[processIndex].getBoardName()),
                     )
                 )
             else:
+                ph2_acf_base_dir: str|None = os.environ.get("PH2ACF_BASE_DIR")
+                if ph2_acf_base_dir is None:
+                    raise OSError("PH2ACF_BASE_DIR environment"
+                                           "variable is not set.")
+                current_fc7:str = self.firmware[processIndex].getBoardName()
                 self.copyMostRecentRootFile(
                     self.RunNumber,
-                    os.environ.get("PH2ACF_BASE_DIR") + "/test/Results",
-                    self.output_dir,
+                    ph2_acf_base_dir 
+                    + f"/test/{current_fc7}",
+                    os.path.join(self.output_dir, current_fc7),
                     self.currentTest,
                 )
+
 
         except Exception:
             logger.error(traceback.format_exc())
@@ -1067,7 +1250,10 @@ created by Ph2_ACF is empty."
         alltext = (
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
-        self.outputfile.write(alltext)
+
+        mode = "a" if os.path.exists(self.outputFile) else "w"
+        with open(self.outputFile, mode) as outputfile:
+            outputfile.write(alltext)
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1084,30 +1270,44 @@ created by Ph2_ACF is empty."
                     clean_text = ansi_escape.sub("", textStr)
                     chip_number = clean_text.split("RD53: ")[-1].strip()
                     self.fused_dict_index[1] = chip_number
-                    #print(f"Clean_text: {clean_text}") 
+                    # print(f"Clean_text: {clean_text}")
                     print(f"Chip Number: {chip_number}")
 
                 if "Wire bonded Iref" in textStr:
                     ansi_escape = re.compile(r"\x1b\[.*?m")
                     clean_text = ansi_escape.sub("", textStr)
                     iref_value = clean_text.split("Iref = ")[-1].strip()
-                    self.mod_dict[self.fused_dict_index[0]][self.fused_dict_index[1]] = iref_value
+                    self.mod_dict[self.fused_dict_index[0]][
+                        self.fused_dict_index[1]
+                    ] = iref_value
                     print(f"IREF Value: {iref_value}")
+                    print(f"{self.fused_dict_index=}")
                     chip_id = self.fused_dict_index[1]
+
+                    # TODO: Fix this. It shouldn't only ever look at the first module. 
                     module_name = self.modules[0].getModuleName()
+                    print(f"{self.modules=}")
+                    print(f"{module_name=}")
                     db_iref = chip_iref_db.get(str(chip_id))
+                    print(f"{db_iref=}")
                     # Initialize module status to True if not set
                     if module_name not in self.iref_match_status:
                         self.iref_match_status[module_name] = True
                     # Compare with database value
                     if db_iref is not None:
                         if db_iref != iref_value:
-                            print(f"Mismatch: IREF for chip {chip_id} (database: {db_iref}, module: {iref_value})")
-                            self.iref_match_status[module_name] = False  # Mark module as failed
+                            print(
+                                f"Mismatch: IREF for chip {chip_id} (database: {db_iref}, module: {iref_value})"
+                            )
+                            self.iref_match_status[module_name] = (
+                                False  # Mark module as failed
+                            )
                     else:
                         print(f"No database IREF found for chip {chip_id}")
-                        self.iref_match_status[module_name] = False  # Mark as failed if no DB entry
-                   
+                        self.iref_match_status[module_name] = (
+                            False  # Mark as failed if no DB entry
+                        )
+
                 if "Fused ID" in textStr:
                     ansi_escape = re.compile(r"\x1b\[.*?m")
                     clean_text = ansi_escape.sub("", textStr)
@@ -1119,9 +1319,9 @@ created by Ph2_ACF is empty."
                 if self.starttime is not None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
-                    self.runwindow.ResultWidget.runtimes[processIndex][self.testIndexTracker].setText(
-                        "{0} s".format(round(runningTime, 1))
-                    )
+                    self.runwindow.ResultWidget.runtimes[processIndex][
+                        self.testIndexTracker
+                    ].setText("{0} s".format(round(runningTime, 1)))
                 else:
                     self.starttime = time.time()
                     self.currentTime = self.starttime
@@ -1141,7 +1341,9 @@ created by Ph2_ACF is empty."
                         )
                         if self.ProgressValue == 100:
                             self.ProgressingMode = "Summary"
-                        self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(self.ProgressValue)
+                        self.runwindow.ResultWidget.ProgressBars[processIndex][
+                            self.testIndexTracker
+                        ].setValue(self.ProgressValue)
                         ##Added because of Ph2_ACF bug:
 
                     except Exception as e:
@@ -1150,7 +1352,9 @@ created by Ph2_ACF is empty."
                         pass
 
                 if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(100)
+                    self.runwindow.ResultWidget.ProgressBars[processIndex][
+                        self.testIndexTracker
+                    ].setValue(100)
                 elif "TEMPSENS_" in textStr:
                     try:
                         output = textStr.split("[")
@@ -1238,7 +1442,9 @@ created by Ph2_ACF is empty."
 
             elif self.ProgressingMode == "Summary":
                 if self.check_for_end_of_test(textStr):
-                    self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(100)
+                    self.runwindow.ResultWidget.ProgressBars[processIndex][
+                        self.testIndexTracker
+                    ].setValue(100)
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode = "Configure"
             elif "@@@ Performing" in textStr:
@@ -1263,18 +1469,29 @@ created by Ph2_ACF is empty."
             self.communicationTestModule = match.group(1)
 
         if self.currentTest == "CommunicationTest":
-            if "Error, some data lanes are enabled but inactive, reached maximum number of attempts" in alltext:
+            if (
+                "Error, some data lanes are enabled but inactive, reached maximum number of attempts"
+                in alltext
+            ):
                 if self.communicationTestModule is None:
-                    print("ERROR: Module name not found before CommunicationTest result in test output.")
+
+                    logger.error(
+                        "Module name not found before CommunicationTest result in test output."
+                    )
+
                     logger.error("Module name not found before CommunicationTest result in test output.")
+
                 else:
                     self.communicationTestResults[self.communicationTestModule] = False
                     self.communicationTestModule = None
                 self.forceContinue(self.firmware[processIndex])
             elif "All enabled data lanes are active" in alltext:
                 if self.communicationTestModule is None:
-                    print("ERROR: Module name not found before CommunicationTest result in test output.")
-                    logger.error("Module name not found before CommunicationTest result in test output.")
+
+                    logger.error(
+                        "Module name not found before CommunicationTest result in test output."
+                    )
+
                 else:
                     self.communicationTestResults[self.communicationTestModule] = True
                     self.communicationTestModule = None
@@ -1296,19 +1513,19 @@ created by Ph2_ACF is empty."
                     ]
 
                     hybridID = module.getFMCPort()
-                    print("HybridID {0}".format(hybridID))
-                    print("chipIDs {0}".format(chipIDs))
-                    CROC = "CROC" in module.getModuleType()
+                    logger.debug("HybridID {0}".format(hybridID))
+                    logger.debug("chipIDs {0}".format(chipIDs))
+                    isCROC = "CROC" in module.getModuleType()
                     for chipID in chipIDs:
                         updatedXMLValues[f"{hybridID}/{chipID}"] = {}
                         for updatedFEKey in updatedFEKeys:
-                            if CROC:
+                            if isCROC:
                                 if updatedFEKey in [
                                     "LATENCY_CONFIG",
                                     "Vthreshold_LIN",
                                 ]:  # registers not on CROC modules
                                     continue
-                            elif not CROC:
+                            elif not isCROC:
                                 if updatedFEKey in [
                                     "TriggerConfig",
                                     "DAC_GDAC_",
@@ -1341,16 +1558,13 @@ created by Ph2_ACF is empty."
     # Reads data that is normally printed to the terminal and saves it to the output file
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_info(self, processIndex: int):
-        if os.path.exists(self.outputFile):
-            outputfile = open(self.outputFile, "a")
-        else:
-            outputfile = open(self.outputFile, "w")
-
         alltext = (
             self.info_processes[processIndex].readAllStandardOutput().data().decode()
         )
-        outputfile.write(alltext)
-        outputfile.close()
+
+        mode = "a" if os.path.exists(self.outputFile) else "w"
+        with open(self.outputFile, mode) as outputfile:
+            outputfile.write(alltext)
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1375,15 +1589,15 @@ created by Ph2_ACF is empty."
             try:
                 text = textStr.encode("ascii")
                 _, text = parseANSI(text)
+
                 self.outputString.emit(text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index])
             except Exception:
-                logger.error(f"Error emitting console output")
+                logger.error("Error emitting console output")
                 logger.error(traceback.format_exc())
         self.readingOutput = False
 
-
     # @QtCore.pyqtSlot()
-    # def on_readyReadStandardOutput_VDDsweep(self, process:QProcess, fc7_index:int): 
+    # def on_readyReadStandardOutput_VDDsweep(self, process:QProcess, fc7_index:int):
     #     if self.readingOutput:
     #         print("Thread competition detected")
     #         return
@@ -1394,7 +1608,7 @@ created by Ph2_ACF is empty."
     #     )
     #     self.outputfile.write(alltext)
     #     textline = alltext.split("\n")
-        
+
     #     for textStr in textline:
     #         text = textStr.encode("ascii")
     #         _, text = parseANSI(text)
@@ -1402,92 +1616,142 @@ created by Ph2_ACF is empty."
     #             text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
     #         )
     #         self.runwindow.ConsoleViews[fc7_index].repaint()
-        
+
     #     self.readingOutput = False
 
+
     @QtCore.pyqtSlot()
-    def on_readyReadStandardOutput_GADC(self, process:QProcess, fc7_index:int, upOrDown:str, current, channel): 
+    def on_readyReadStandardOutput_GADC(
+        self, process: QProcess, fc7_index: int, upOrDown: str, current, channel
+    ):
         if self.readingOutput:
             print("Thread competition detected")
             return
         self.readingOutput = True
 
-        alltext = (
-            process.readAllStandardOutput().data().decode()
-        )
-        self.outputfile.write(alltext)
+        alltext = process.readAllStandardOutput().data().decode()
+
+        mode = "a" if os.path.exists(self.outputFile) else "w"
+        logger.debug(f"{mode=}")
+        with open(self.outputFile, mode) as outputfile:
+            outputfile.write(alltext)
         textline = alltext.split("\n")
-        
+
         for textStr in textline:
             text = textStr.encode("ascii")
             _, text = parseANSI(text)
             self.outputString.emit(
                 text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
             )
+
             self.runwindow.ConsoleViews[fc7_index].update()
 
-            textStr = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]').sub('', textStr)
-            match = re.search(r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]", textStr)
+            textStr = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]").sub("", textStr)
+            match = re.search(
+                r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]",
+                textStr,
+            )
             if match:
                 self.GADC_meas_chip = match.group(4)
             else:
                 match = re.search(r"(\w+):\s*([\d.]+)\s*\+/-\s*([\d.]+)\s*V", textStr)
                 if match:
                     if self.GADC_meas_chip is not None:
-                        if match.group(1) in ("VDDD","VDDA","VINA","VIND"):
-                            multiplier = site_settings.SLDOScan_GADC["multipliers"][match.group(1)[:3]]
-                            
-                            if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown)[channel]:
-                                getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip] = {}
-                            getattr(self, match.group(1)+upOrDown)[channel][self.GADC_meas_chip][current] = float(match.group(2))*multiplier #This line enforces that it only logs one VDDD or VDDA value per sweep step
+                        if match.group(1) in ("VDDD", "VDDA", "VINA", "VIND"):
+                            multiplier = site_settings.SLDOScan_GADC["multipliers"][
+                                match.group(1)[:3]
+                            ]
 
-                            if self.GADC_meas_chip not in getattr(self, match.group(1)+upOrDown+"Error")[channel]:
-                                getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip] = {}
-                            getattr(self, match.group(1)+upOrDown+"Error")[channel][self.GADC_meas_chip][current] = float(match.group(3))*multiplier #This line enforces that it only logs one VDDD or VDDA value per sweep step
+                            if (
+                                self.GADC_meas_chip
+                                not in getattr(self, match.group(1) + upOrDown)[channel]
+                            ):
+                                getattr(self, match.group(1) + upOrDown)[channel][
+                                    self.GADC_meas_chip
+                                ] = {}
+                            getattr(self, match.group(1) + upOrDown)[channel][
+                                self.GADC_meas_chip
+                            ][current] = (
+                                float(match.group(2)) * multiplier
+                            )  # This line enforces that it only logs one VDDD or VDDA value per sweep step
+
+                            if (
+                                self.GADC_meas_chip
+                                not in getattr(
+                                    self, match.group(1) + upOrDown + "Error"
+                                )[channel]
+                            ):
+                                getattr(self, match.group(1) + upOrDown + "Error")[
+                                    channel
+                                ][self.GADC_meas_chip] = {}
+                            getattr(self, match.group(1) + upOrDown + "Error")[channel][
+                                self.GADC_meas_chip
+                            ][current] = (
+                                float(match.group(3)) * multiplier
+                            )  # This line enforces that it only logs one VDDD or VDDA value per sweep step
 
                     else:
-                        print(f'Error: Did not receive expected message, "Reading monitored data for \
-                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
-                        logger.error(f'Did not receive expected message, "Reading monitored data for \
-                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"')
-        
+                        print(
+                            f'Error: Did not receive expected message, "Reading monitored data for \
+                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"'
+                        )
+                        logger.error(
+                            f'Did not receive expected message, "Reading monitored data for \
+                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"'
+                        )
+
         self.readingOutput = False
 
     @QtCore.pyqtSlot()
     def on_finish(self, processIndex: int):
-        self.outputfile.close()
         # While the process is killed:
+        # Wait for all processes to finish so FC7s don't get out of sync
+
+        logger.debug("All processes finished")
 
         if self.halt:
             self.haltSignal.emit(True)
             return
 
         if self.run_processes[processIndex].state() == QProcess.Running:
-            print(
+            logger.info(
                 "process is still running...  Attempting to terminate before next test."
             )
             self.run_processes[processIndex].terminate()
             if not self.run_processes[processIndex].waitForFinished(3000):
-                print("process would not terminate, so killing it now...")
+                logger.warning("Process would not terminate, so killing it now...")
                 self.run_processes[processIndex].kill()
 
         if "IVCurve" in self.currentTest:
             self.saveTest(processIndex, self.run_processes[processIndex])
             return
 
-        # Save the output ROOT file to output_dir
 
+        # Save the output ROOT file to output_dir
+        logger.debug("About to run saveTest()")
+        time.sleep(1)
         self.saveTest(processIndex, self.run_processes[processIndex])
 
-        # validate the results
-        self.validateTest()
+        self.saveConfigs(process_index=processIndex)
+        # Don't continue on sequence until all processes have finished the current test
         
+        # Ensure that all processes have finished before continuing
+        self.finished_processes += 1
+        if not self.finished_processes == len(self.run_processes):
+            return 
+
+        self.finished_processes = 0
+        
+        # validate the results
+        logger.debug("About to run validateTest()")
+        self.validateTest()
+
+        logger.debug("testIndexTracker before increment: %i", self.testIndexTracker)
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
-
-
-        EnableReRun = self.onFinalTest(self.testIndexTracker) # This function uses BBanalysis_root_files when all composite tests will not make use of it
+        EnableReRun = self.onFinalTest(
+            self.testIndexTracker
+        )  # This function uses BBanalysis_root_files when all composite tests will not make use of it
         self.stepFinished.emit(EnableReRun)
 
         # show the score of test
@@ -1512,14 +1776,18 @@ created by Ph2_ACF is empty."
             if index == len(
                 self.test_list
             ):  # Checks that this was the last test in the sequence.
+                logger.info("index == len.self.test_list")
                 self.powerSignal.emit()
                 EnableReRun = True
-                
+
                 if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
                     self.bumpbond_analysis()
-            
-                if len(self.BBanalysis_root_files) > 0 and 'analyze' in self.currentTest:
-                    for beboard in self.firmware:
+
+                if (
+                    len(self.BBanalysis_root_files) > 0
+                    and "analyze" in self.currentTest
+                ):
+                    for fc7_index, beboard in enumerate(self.firmware):
                         boardID = beboard.getBoardID()
                         for OG in beboard.getAllOpticalGroups().values():
                             ogID = OG.getOpticalGroupID()
@@ -1532,14 +1800,14 @@ created by Ph2_ACF is empty."
                                     "module": module,
                                 }
                                 index -= 1
-                                self.felis.set_result(
+                                self.felis_instances[fc7_index].set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
                                     f"{index:02d}_CrossTalk",
                                     "crosstalk",
                                 )
                                 self.figurelist[module.getModuleName()] = (
-                                    self.collect_plots(module.getModuleName())
+                                    self.collect_plots(module.getModuleName(), felis_instance=self.felis_instances[fc7_index])
                                 )
                 if self.autoSave:
                     self.runwindow.upload_to_Panthera_starter()
@@ -1565,9 +1833,9 @@ created by Ph2_ACF is empty."
         if measurementType == "IVCurve":
             self.IVProgressValue += stepSize / 2.0
             for i, firmware in enumerate(self.firmware):
-                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(
-                    self.IVProgressValue
-                )
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.IVProgressValue)
             self.ramp_progress_bar(
                 [
                     site_settings.IVcurve_range[self.currentTest]
@@ -1579,12 +1847,15 @@ created by Ph2_ACF is empty."
         elif "SLDO" in measurementType:
             self.SLDOProgressValue += stepSize
             for i, firmware in enumerate(self.firmware):
-                self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(
-                    self.SLDOProgressValue
-                )
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.SLDOProgressValue)
         elif measurementType == "TrimbitScan":
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(stepSize)
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.SLDOProgressValue)
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
         for module in self.modules:
@@ -1644,6 +1915,7 @@ created by Ph2_ACF is empty."
         for module in self.modules:
             moduleName = module.getModuleName()
             for pin, name in pin_mapping.items():
+
                 if pin in trimbit_dict:
                     data = np.array(trimbit_dict[pin], dtype=object)
                     if data.size == 0:
@@ -1703,21 +1975,18 @@ created by Ph2_ACF is empty."
             # This breaks np.savetxt. The second element of the array should be empty
             # either way, therefore, we will just flatten the array getting rid of the
             # second dimension. NOTE: If we do want measurements from multiple HV
-            # channels this will need to reevaluated. 
+            # channels this will need to reevaluated.
 
             # Convert to numpy array to give us access to flatten() and ndim
             voltages = np.array(measure["voltage"])
             current = np.array(measure["current"])
 
-            # If the voltages are 2D+, then flatten. 
+            # If the voltages are 2D+, then flatten.
             if voltages.ndim > 1:
                 voltages = voltages.flatten()
                 current = current.flatten()
-            
-            
-            np.savetxt(
-                csvfilename, (voltages, current), delimiter=","
-            )
+
+            np.savetxt(csvfilename, (voltages, current), delimiter=",")
             module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
                 boardID=beboardId, ogID=ogId, hybridID=hybridId
             )
@@ -1740,7 +2009,6 @@ created by Ph2_ACF is empty."
         step = "IVCurve"
 
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
         EnableReRun = False
 
@@ -1788,7 +2056,6 @@ created by Ph2_ACF is empty."
 
         self.validateTest()
         self.testIndexTracker += 1
-        self.testsAttempted += 1
 
         EnableReRun = False
         # Will send signal to turn off power supply after composite or single tests are run
@@ -1834,7 +2101,7 @@ created by Ph2_ACF is empty."
 
         if isCompositeTest(self.info):
             self.runTest()
-    
+
     def TrimbitScanFinished(self):
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
@@ -1855,7 +2122,7 @@ created by Ph2_ACF is empty."
 
         self.validateTest()
         self.testIndexTracker += 1
-        self.testsAttempted += 1
+
 
         EnableReRun = False
         if isCompositeTest(self.info):                
@@ -1986,10 +2253,12 @@ created by Ph2_ACF is empty."
             if check_enabledModules():
                 self.outputString.emit(f"Retrying {self.currentTest}...")
                 for i in range(len(self.firmware)):
-                    self.runwindow.ResultWidget.runtimes[i][self.testIndexTracker].setText(
-                        ""
-                    )  # may need to .update()
-                    self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(
+                    self.runwindow.ResultWidget.runtimes[i][
+                        self.testIndexTracker
+                    ].setText("")  # may need to .update()
+                    self.runwindow.ResultWidget.ProgressBars[i][
+                        self.testIndexTracker
+                    ].setValue(
                         0
                     )  # may need to .update(). Automatically adds "0%" text on Progress bar.
                 self.testIndexTracker -= 1
@@ -2014,36 +2283,35 @@ created by Ph2_ACF is empty."
         try:
             self.runwindow.UploadButton.setDisabled(True)
             counter = 0
+            for i, fc7 in enumerate(self.firmware):
+                for module in fc7.getModules():
+                    status, message = self.felis_instances[i].upload_results(
+                        module.getModuleName(),
+                        self.master.username,
+                        self.master.password,
+                        type_sequence=self.info,
+                        version_ph2acf=os.environ.get("PH2ACF_VERSION"),
+                        version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
+                    )
+                    if not status:
+                        raise ConnectionError(message)
 
-            for module in self.modules:
-                status, message = self.felis.upload_results(
-                    module.getModuleName(),
-                    self.master.username,
-                    self.master.password,
-                    type_sequence=self.info,
-                    version_ph2acf=os.environ.get("PH2ACF_VERSION"),
-                    version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
-                )
-                if not status:
-                    raise ConnectionError(message)
-
-                counter += 1
-                self.updateProgressBar.emit(
-                    self.runwindow.UploadProgressBar,
-                    100 * counter / len(self.modules),
-                    f"{counter}/{len(self.modules)} uploaded",
-                )
+                    counter += 1
+                    self.updateProgressBar.emit(
+                        self.runwindow.UploadProgressBar,
+                        100 * counter / len(self.modules),
+                        f"{counter}/{len(self.modules)} uploaded",
+                    )
 
         except ConnectionError:
             logger.error(traceback.format_exc())
-            self.master.errorMessageBoxSignal.emit(error_message)
+            self.master.errorMessageBoxSignal.emit(traceback.format_exc())
 
         except Exception:
-            if not self.master.panthera_connected:
-                error_message = (
+            error_message = (
                     "Cannot upload test results, you are not signed in to Panthera."
                 )
-            else:
+            if self.master.panthera_connected:
                 error_message = "Failed to upload to Panthera."
                 self.runwindow.UploadButton.setDisabled(False)
                 if self.autoSave:
@@ -2114,4 +2382,3 @@ created by Ph2_ACF is empty."
         if site_settings.cooler == "Tessie":
             default_temperature = icicle_instrument_setup["instrument_dict"]["coldbox"]["default_temperature"]
             self.instruments.cb_on(temperature = default_temperature)
-
