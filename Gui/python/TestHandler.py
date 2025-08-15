@@ -59,6 +59,7 @@ import Gui.siteSettings as site_settings
 from Gui.python.logging_config import logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
+from Gui.siteSettings import icicle_instrument_setup
 
 class TestHandler(QObject):
     backSignal = pyqtSignal(object)
@@ -249,6 +250,7 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
         self.iref_match_status = {module.getModuleName(): True for module in self.modules}  # Initialize all to True
 
+        self.set_default_temperature()
 
     def finished_run_process(self, _, exitStatus, i):
         if exitStatus == QProcess.NormalExit:
@@ -2106,4 +2108,10 @@ created by Ph2_ACF is empty."
                             command_template.format(boardID, ogID, hybridID, chipID)
                         )
         executeCommandSequence(commands)
+    
+    def set_default_temperature(self):
+        """Set the temperature of every active TEC to the default temperature if 'Tessie' is chosen as the cooler."""
+        if site_settings.cooler == "Tessie":
+            default_temperature = icicle_instrument_setup["instrument_dict"]["coldbox"]["default_temperature"]
+            self.instruments.cb_on(temperature = default_temperature)
 

@@ -29,10 +29,11 @@ from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
     FC7List,
     ModuleCurrentMap,
+    icicle_instrument_setup
 )
 from icicle.icicle.instrument_cluster import DummyInstrument
 from InnerTrackerTests.TestSequences import TestList
-from siteSettings import icicle_instrument_setup
+
 
 
 # Customize the logging configuration
@@ -615,45 +616,7 @@ class QtStartWindow(QWidget):
         # the module type but ModuleBox is not publically accessible so we have to go through BeBoardWidget
         self.master.module_in_use = self.BeBoardWidget.getModules()[0].getType()
 
-
-        # After updating the module list, perform a check and update InstrumentCluster
-        if hasattr(self.master, 'instruments'):
-            channels_dict = {}
-            for index, module in enumerate(self.BeBoardWidget.getModules()):
-                if index < 4:
-                    channels_dict[index] = {
-                        "lv": {
-                            "instrument": "lv_1",
-                            "channel": index + 1
-                        },
-                        "hv": {
-                            "instrument": "hv",
-                            "channel": 1
-                        },
-                        "cb": {
-                            "instrument": "coldbox",
-                            "channel": index + 1
-                        }
-                    }
-                    logger.info(f"Added channel {index} with lv_1 and hv.")
-                else:
-                    channels_dict[index] = {
-                        "lv": {
-                            "instrument": "lv_2",
-                            "channel": index - 3
-                        },
-                        "hv": {
-                            "instrument": "hv",
-                            "channel": 1
-                        },
-                        "cb": {
-                            "instrument": "coldbox",
-                            "channel": index + 1
-                        }
-                    }
-                    logger.info(f"Added channel {index} with lv_2 and hv.")
-            logger.info(f"Final module_dict: {channels_dict}")
-            self.update_module_dict(channels_dict)
+        self.update_instrument_cluster()
 
 
         for module in self.BeBoardWidget.getModules():
@@ -698,7 +661,46 @@ class QtStartWindow(QWidget):
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, files)
         self.closeFlag = True
 
-    def update_module_dict(self, channels_dict):
+    def update_instrument_cluster(self):
+        if hasattr(self.master, 'instruments'):
+            channels_dict = {}
+            for index, module in enumerate(self.BeBoardWidget.getModules()):
+                if index < 4:
+                    channels_dict[index] = {
+                        "lv": {
+                            "instrument": "lv_1",
+                            "channel": index + 1
+                        },
+                        "hv": {
+                            "instrument": "hv",
+                            "channel": 1
+                        },
+                        "cb": {
+                            "instrument": "coldbox",
+                            "channel": index + 1
+                        }
+                    }
+                    logger.info(f"Added channel {index} with lv_1 and hv.")
+                else:
+                    channels_dict[index] = {
+                        "lv": {
+                            "instrument": "lv_2",
+                            "channel": index - 3
+                        },
+                        "hv": {
+                            "instrument": "hv",
+                            "channel": 1
+                        },
+                        "cb": {
+                            "instrument": "coldbox",
+                            "channel": index + 1
+                        }
+                    }
+                    logger.info(f"Added channel {index} with lv_2 and hv.")
+            logger.info(f"Final module_dict: {channels_dict}")
+            self._update_module_dict(channels_dict)
+
+    def _update_module_dict(self, channels_dict):
         """Update self._module_dict with DummyInstrument and PowerChannel objects using InstrumentCluster's instrument dictionary."""
         if not hasattr(self.master, 'instruments'):
             raise AttributeError("Master does not have an 'instruments' attribute.")
@@ -744,7 +746,8 @@ class QtStartWindow(QWidget):
         print("Updated module dictionary:", self._module_dict)
         print(f"Module Dict:",self.master.instruments.get_modules())
         print(f"Instruments:",self.master.instruments.get_instruments())
-
+        self.master.instruments._module_dict.pop("0")
+        print(f"Module Dict:",self.master.instruments.get_modules())
 
     def closeEvent(self, event):
         if self.runFlag:
