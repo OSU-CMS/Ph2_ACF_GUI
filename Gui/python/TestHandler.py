@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
 )
 
 import os
-import enum
+from enum import Enum
 import shutil
 import glob
 import subprocess
@@ -264,7 +264,7 @@ class TestHandler(QObject):
         self.finished_processes = 0
         self.readingOutput = False
 
-        self.ProgressingMode = [ProgressMode.None for _ in self.run_processes]
+        self.ProgressingMode = [ProgressMode.NONE for _ in self.run_processes]
 
         self.ProgressValue = 0
         self.IVProgressValue = 0
@@ -660,9 +660,7 @@ class TestHandler(QObject):
         for console in self.runwindow.ConsoleViews:
             self.outputString.emit("Executing Single Step test...", console)
 
-        self.ProgressingMode = [
-            ProgressMode.NONE for _ in self.ProgressingMode
-        ]
+        self.ProgressingMode = [ProgressMode.NONE for _ in self.ProgressingMode]
 
         self.currentTest = testName
 
@@ -1507,7 +1505,7 @@ created by Ph2_ACF is empty."
             elif "@@@ Initializing the Hardware @@@" in textStr:
                 self.ProgressingMode[processIndex] = ProgressMode.CONFIGURE
             elif "@@@ Performing" in textStr:
-                self.ProgressingMode[processIndex] = ProgressMode.PERFORM 
+                self.ProgressingMode[processIndex] = ProgressMode.PERFORM
                 self.outputString.emit(
                     '<b><span style="color:#ff0000;"> Performing the {} test </span></b>'.format(
                         self.currentTest
@@ -1610,7 +1608,10 @@ created by Ph2_ACF is empty."
                 return True
         elif "CommunicationTest" == self.currentTest:
             return True
-        elif "IREF_GADC" == self.currentTest and self.ProgressingMode[processIndex] == ProgressMode.SUMMARY:
+        elif (
+            "IREF_GADC" == self.currentTest
+            and self.ProgressingMode[processIndex] == ProgressMode.SUMMARY
+        ):
             return True
         return False
 
