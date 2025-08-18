@@ -95,6 +95,7 @@ class TestHandler(QObject):
         self.firmware = firmware
         self.info = info  # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
+        self.openBumpTest_subtest_index = None
 
         self.modules = [
             module for beboard in self.firmware for module in beboard.getModules()
@@ -493,7 +494,7 @@ class TestHandler(QObject):
             return
 
     # This loops over all the tests by using the on_finish pyqt decorator defined below
-    def runCompositeTest(self, testName, index):
+    def runCompositeTest(self, testName):
         logger.info("Inside runCompositeTest")
         if self.halt:
             return
@@ -506,35 +507,49 @@ class TestHandler(QObject):
         testName = runTestList[self.testIndexTracker]
 
         if testName == "OpenBumpTest":
-            for subtest in OpenBumpTest:
+            if self.openBumpTest_subtest_index is None:
+                self.openBumpTest_subtest_index = 0
+            if self.openBumpTest_subtest_index < len(OpenBumpTest):
+                subtest = OpenBumpTest[self.openBumpTest_subtest_index]
+                logger.info(f"Running OpenBumpTest subtest: {self.openBumpTest_subtest_index+1}/{len(OpenBumpTest)}: {subtest}")
                 self.runSingleTest(subtest)
-            for fc7_index, beboard in enumerate(self.firmware):
-                boardID = beboard.getBoardID()
-                for OG in beboard.getAllOpticalGroups().values():
-                    ogID = OG.getOpticalGroupID()
-                    for module in OG.getAllModules().values():
-                        hybridID = module.getFMCPort()
-                        module_data = {
-                            "boardID": boardID,
-                            "ogID": ogID,
-                            "hybridID": hybridID,
-                            "module": module,
-                        }
-                        #index = self.testIndexTracker
-                        self.felis_instances[fc7_index].set_result(
-                            self.BBanalysis_root_files,
-                            module_data["module"].getModuleName(),
-                            f"{index:02d}_OpenBumpTest",
-                            "crosstalk",
-                        )
-                        self.figurelist[module.getModuleName()] = (
-                            self.collect_plots(module.getModuleName(), felis_instance=self.felis_instances[fc7_index])
-                        )
-            self.testIndexTracker += 1
-            if self.testIndexTracker < len(runTestList):
-                self.runCompositeTest(runTestList[self.testIndexTracker])
+                self.openBumpTest_subtest_index += 1
+                self.runCompositeTest("OpenBumpTest")
+            else:
+                self.currentTest = "OpenBumpTest"
+                for fc7_index, beboard in enumerate(self.firmware):
+                    boardID = beboard.getBoardID()
+                    for OG in beboard.getAllOpticalGroups().values():
+                        ogID = OG.getOpticalGroupID()
+                        for module in OG.getAllModules().values():
+                            hybridID = module.getFMCPort()
+                            module_data = {
+                                "boardID": boardID,
+                                "ogID": ogID,
+                                "hybridID": hybridID,
+                                "module": module,
+                            }
+                            index = self.testIndexTracker
+                            self.felis_instances[fc7_index].set_result(
+                                self.BBanalysis_root_files,
+                                module_data["module"].getModuleName(),
+                                f"{index:02d}_OpenBumpTest",
+                                "crosstalk",
+                            )
+                            self.figurelist[module.getModuleName()] = (
+                                self.collect_plots(module.getModuleName(), felis_instance=self.felis_instances[fc7_index])
+                            )
+
+                self.validateTest()
+
+                self.openBumpTest_subtest_index = None
+                self.testIndexTracker += 1
+                if self.testIndexTracker < len(runTestList):
+                    self.runCompositeTest(runTestList[self.testIndexTracker])
+                return
             return
 
+        
         if self.testIndexTracker + 1 < len(
             runTestList
         ):  # Check if there is a next test
@@ -950,19 +965,6 @@ class TestHandler(QObject):
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
-        """
-        if self.currentTest == ["exampletest"]:               #for tests needing -c
-            for process, firmware in zip(self.info_processes, self.firmware):
-                process.start(
-                    "echo",
-                    [
-                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -c  {1}".format(
-                            firmware.getBoardName(),
-                            Test_to_Ph2ACF_Map[self.currentTest],
-                        )
-                    ],
-                )        
-                    """
         if self.currentTest == "CommunicationTest":
             for process, firmware in zip(self.info_processes, self.firmware):
                 process.start(
@@ -976,7 +978,7 @@ class TestHandler(QObject):
                 process.start(
                     "echo",
                     [
-                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -k -c  {1}".format(
+                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -c  {1}".format(
                             firmware.getBoardName(),
                             Test_to_Ph2ACF_Map[self.currentTest],
                         )
