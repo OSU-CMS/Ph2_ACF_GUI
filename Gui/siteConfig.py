@@ -46,6 +46,8 @@ defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 10
 defaultPeltierWarningTemp = 40
+
+coldboxRoomTemp = 10
 #################################
 
 # Temperature Chamber Variables
@@ -61,7 +63,7 @@ defaultPeltierWarningTemp = 40
 manual_powersupply_control = False
 
 # Load instrument setup from json file
-with open('jsonFiles/instruments_osu_adcboardsldo.json', 'r') as file:
+with open('jsonFiles/instruments_osu_twoLV.json', 'r') as file:
     icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.

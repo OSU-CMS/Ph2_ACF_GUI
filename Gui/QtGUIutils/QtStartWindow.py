@@ -734,11 +734,10 @@ class QtStartWindow(QWidget):
             self._module_dict[number] = temp_dict
             self.master.instruments._module_dict[number] = temp_dict
 
-        print("Updated module dictionary:", self._module_dict)
-        print(f"Module Dict:",self.master.instruments.get_modules())
-        print(f"Instruments:",self.master.instruments.get_instruments())
-        self.master.instruments._module_dict.pop("0")
-        print(f"Module Dict:",self.master.instruments.get_modules())
+        if '0' in self.master.instruments._module_dict.keys(): 
+            self.master.instruments._module_dict.pop("0")
+        logger.debug(f"Module Dict:",self.master.instruments.get_modules())
+        logger.debug(f"Instruments:",self.master.instruments.get_instruments())
 
     def closeEvent(self, event):
         if self.runFlag:
