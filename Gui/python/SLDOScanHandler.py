@@ -4,7 +4,7 @@ import traceback
 
 from PyQt5.QtCore import QThread, pyqtSignal, QObject
 from Gui.python.logging_config import get_logger
-from icicle.icicle.adc_board import ADCBoard
+from icicle.icicle.adc_board import AdcBoard
 from icicle.icicle.relay_board import RelayBoard
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 
@@ -48,7 +48,7 @@ class SLDOCurveWorker(QThread):
         self.testhandler = testhandler
         self.Nsteps = int((self.target_current - self.starting_current) / self.step_size)
         self.PIN_MAPPINGS = {
-            "DEFAULT": ADCBoard.DEFAULT_PIN_MAP,
+            "DEFAULT": Adcboard.DEFAULT_PIN_MAP,
             "DOUBLE": {
                 # 1: 'VDDA_ROC1',
                 2: 'VDDA_ROC13', #ROC U1B

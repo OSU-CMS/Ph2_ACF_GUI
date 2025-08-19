@@ -46,7 +46,7 @@ from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
 
 from InnerTrackerTests.RootFilesDict import root_files
 
-from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT2, Trimbit_CSV_to_ROOT
+from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import SLDO_CSV_to_ROOT, Trimbit_CSV_to_ROOT
 
 
 
@@ -2048,7 +2048,7 @@ created by Ph2_ACF is empty."
                 )
             )
 
-            SLDO_CSV_to_ROOT2(
+            SLDO_CSV_to_ROOT(
                 moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir
             )
 

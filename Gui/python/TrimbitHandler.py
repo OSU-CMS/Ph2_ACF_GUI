@@ -1,7 +1,7 @@
 """
 Class to perform the Trimbit curve scanning
 """
-from icicle.icicle.adc_board import ADCBoard
+from icicle.icicle.adc_board import AdcBoard
 import Gui.siteSettings as site_settings
 import ROOT
 import os
@@ -31,7 +31,7 @@ class TrimbitCurveWorker(QThread):
         self.ADCmeasurements = {}
         self.trimbit_dict = {}
         self.PIN_MAPPINGS = {
-            "DEFAULT": ADCBoard.DEFAULT_PIN_MAP,
+            "DEFAULT": AdcBoard.DEFAULT_PIN_MAP,
             "DOUBLE": {
                 2: 'VDDA_ROC13',
                 6: 'VDDD_ROC13',
