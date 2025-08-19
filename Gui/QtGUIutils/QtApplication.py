@@ -38,12 +38,13 @@ from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
 from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
 from Gui.QtGUIutils.QtStartWindow import QtStartWindow
 from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
+from Gui.QtGUIutils.F4tWidget import F4TModuleInputWidget
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
 
 from icicle.icicle.instrument_cluster import InstrumentCluster
-# from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
+from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
 
 
 from Gui.python.logging_config import get_logger
@@ -1091,17 +1092,57 @@ class QtApplication(QWidget):
         self.mainLayout.removeWidget(self.LogoGroupBox)
         QApplication.closeAllWindows()
 
+    def mark_module_as_thermal_cycled(self, module_ids:list[str]):
+        """
+        Make http request to panthera to mark a list of modules as thermal cycled
+        """
+        # Sanitize data
+        # Module could be an empty string if no id was put in
+        # We also capitalize everything for uniformity
+        module_ids = [id.upper() for id in module_ids if id != ""]
+        for id in module_ids:
+            # TODO Add in panthera integration
+            ...
+        ...
+
+        
     def abortThermalTest(self):
         """Stop the current profile running on thermal chamber"""
-        #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
-        #with temp_chamber:
-        #   temp_chamber.set("CONTROL_PROFILE", "STOP")
+        temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
+        with temp_chamber:
+            try:
+                temp_chamber.set("CONTROL_PROFILE", "STOP")
+            except OSError:
+                QMessageBox.error(
+                    None,
+                    "Thermal Chamber Connection Failed",
+                    ("Unable to communicate with thermal chamber, please check that you have input the correct IP address into siteConfig.py"),
+                    QMessageBox.Ok,
+                )
         message_box = QMessageBox()
         message_box.setText("Profile Aborted")
         message_box.setStandardButtons(QMessageBox.Ok)
         message_box.exec()
 
     def runThermalTest(self):
+        # If user is connected to Panthera account ask from
+        # module ID numbers to mark as thermal cycled.
+        if self.panthera_connected:
+            f4t_widget = F4TModuleInputWidget()
+            f4t_widget.input_modules_signal.connect(self.mark_module_as_thermal_cycled)
+            f4t_widget.show()
+
+            
+        else:
+            QMessageBox.warning(
+                None,
+                "Warning",
+                ("You are not connected to a Panthera account. If thermal cycling module, please remember to update their"
+                "status manually"),
+                QMessageBox.Ok,
+            )
+
+
         # Verify input of input data:
         profile_number = self.ThermalProfileEdit.text()
 
@@ -1118,25 +1159,40 @@ class QtApplication(QWidget):
             )
             return
         # Import icicle module for temperature chamber
-        print(site_settings.temp_chamber_resource)
-        #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
+        temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
 
-        #with temp_chamber:
-        #    temp_chamber.set("SELECT_PROFILE", profile_number)
-        #    profile_name = temp_chamber.query("SELECT_PROFILE")
+        with temp_chamber:
+            try: 
+                temp_chamber.set("SELECT_PROFILE", profile_number)
+                profile_name = temp_chamber.query("SELECT_PROFILE")
+            except OSError:
+                QMessageBox.error(
+                    None,
+                    "Thermal Chamber Connection Failed",
+                    ("Unable to communicate with thermal chamber, please check that you have input the correct IP address into siteConfig.py"),
+                    QMessageBox.Ok,
+                )
 
         message_box = QMessageBox()
-        #message_box.setText(
-        #    f'Temperature chamberprofile "{profile_name}" has been chosen'
-        #)
+        message_box.setText(
+            f'Temperature chamberprofile "{profile_name}" has been chosen'
+        )
         message_box.setInformativeText("Is this the correct profile?")
         message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         message_box.setDefaultButton(QMessageBox.Yes)
         response = message_box.exec()
 
-        #if response == QMessageBox.Yes:
-        #    with temp_chamber:
-        #        temp_chamber.set("CONTROL_PROFILE", "START")
+        if response == QMessageBox.Yes:
+            with temp_chamber:
+                try:
+                    temp_chamber.set("CONTROL_PROFILE", "START")
+                except OSError:
+                    QMessageBox.error(
+                        None,
+                        "Thermal Chamber Connection Failed",
+                        ("Unable to communicate with thermal chamber, please check that you have input the correct IP address into siteConfig.py"),
+                        QMessageBox.Ok,
+                    )
 
         if response == QMessageBox.No:
             return
