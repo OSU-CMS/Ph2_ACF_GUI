@@ -1099,6 +1099,8 @@ class QtApplication(QWidget):
         # Sanitize data
         # Module could be an empty string if no id was put in
         # We also capitalize everything for uniformity
+
+        print(f"{module_ids=}")
         module_ids = [id.upper() for id in module_ids if id != ""]
         for id in module_ids:
             # TODO Add in panthera integration
@@ -1113,7 +1115,7 @@ class QtApplication(QWidget):
             try:
                 temp_chamber.set("CONTROL_PROFILE", "STOP")
             except OSError:
-                QMessageBox.error(
+                QMessageBox.critical(
                     None,
                     "Thermal Chamber Connection Failed",
                     ("Unable to communicate with thermal chamber, please check that you have input the correct IP address into siteConfig.py"),
@@ -1129,8 +1131,9 @@ class QtApplication(QWidget):
         # module ID numbers to mark as thermal cycled.
         if self.panthera_connected:
             f4t_widget = F4TModuleInputWidget()
-            f4t_widget.input_modules_signal.connect(self.mark_module_as_thermal_cycled)
-            f4t_widget.show()
+            if f4t_widget.exec_() == QDialog.Accepted: 
+                module_ids = f4t_widget.get_all_inputs()
+                self.mark_module_as_thermal_cycled(module_ids)
 
             
         else:
@@ -1166,12 +1169,13 @@ class QtApplication(QWidget):
                 temp_chamber.set("SELECT_PROFILE", profile_number)
                 profile_name = temp_chamber.query("SELECT_PROFILE")
             except OSError:
-                QMessageBox.error(
+                QMessageBox.critical(
                     None,
                     "Thermal Chamber Connection Failed",
                     ("Unable to communicate with thermal chamber, please check that you have input the correct IP address into siteConfig.py"),
                     QMessageBox.Ok,
                 )
+                return
 
         message_box = QMessageBox()
         message_box.setText(
@@ -1187,7 +1191,7 @@ class QtApplication(QWidget):
                 try:
                     temp_chamber.set("CONTROL_PROFILE", "START")
                 except OSError:
-                    QMessageBox.error(
+                    QMessageBox.critical(
                         None,
                         "Thermal Chamber Connection Failed",
                         ("Unable to communicate with thermal chamber, please check that you have input the correct IP address into siteConfig.py"),
