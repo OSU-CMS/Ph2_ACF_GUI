@@ -2321,7 +2321,8 @@ created by Ph2_ACF is empty."
 
         def handle_retry():
             if check_enabledModules():
-                self.outputString.emit(f"Retrying {self.currentTest}...")
+                for console in self.runwindow.ConsoleViews:
+                    self.outputString.emit(f"Retrying {self.currentTest}...", console)
                 for i in range(len(self.firmware)):
                     self.runwindow.ResultWidget.runtimes[i][
                         self.testIndexTracker
