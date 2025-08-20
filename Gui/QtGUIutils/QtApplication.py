@@ -1336,22 +1336,23 @@ class QtApplication(QWidget):
                 self.instruments.off()
 
             # If you didn't start the Peltier controller, tempPower won't be defined
-            try:
-                if self.expertMode:
-                    self.PeltierCooling.shutdown()
-                else:
-                    self.SimpleMain.worker.abort_worker()
-                    self.SimpleMain.Peltier.sendCommand(
-                        self.SimpleMain.Peltier.createCommand(
-                            "Power On/Off Write",
-                            ["0", "0", "0", "0", "0", "0", "0", "0"],
+            if site_settings.cooler == "Peltier":
+                try:
+                    if self.expertMode:
+                        self.PeltierCooling.shutdown()
+                    else:
+                        self.SimpleMain.worker.abort_worker()
+                        self.SimpleMain.Peltier.sendCommand(
+                            self.SimpleMain.Peltier.createCommand(
+                                "Power On/Off Write",
+                                ["0", "0", "0", "0", "0", "0", "0", "0"],
+                            )
                         )
-                    )
-
-            except Exception as e:
-                logger.error(f"Could not shutdown Peltier: {e}")
-                logger.error(traceback.format_exc())
-                pass
+    
+                except Exception as e:
+                    logger.error(f"Could not shutdown Peltier: {e}")
+                    logger.error(traceback.format_exc())
+                    pass
 
             try:
                 os.system("rm -r {}/Gui/.tmp/*".format(os.environ.get("GUI_dir")))
