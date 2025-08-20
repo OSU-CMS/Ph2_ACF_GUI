@@ -61,7 +61,7 @@ defaultPeltierWarningTemp = 40
 manual_powersupply_control = False
 
 # Load instrument setup from json file
-with open('jsonFiles/instruments_osu_adcboardsldo.json', 'r') as file:
+with open('jsonFiles/instruments_osu_hvbox_dev.json', 'r') as file:
     icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
@@ -85,7 +85,7 @@ SLDOScan_probecard = {
 	"quad":{
 		"voltage":2.98,
 		"starting current":1.0,
-		"target current":10.0,
+		"target current":8.0,
 		"step size":.2
 	},
     "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
@@ -101,7 +101,7 @@ SLDOScan_GADC = {
 	"quad":{
 		"voltage":2.98,
 		"starting current":7.2,
-		"target current":10.0,
+		"target current":8.0,
 		"step size":.2
 	},
     "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,

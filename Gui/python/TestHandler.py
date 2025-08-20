@@ -1860,6 +1860,8 @@ created by Ph2_ACF is empty."
                                     "module": module,
                                 }
                                 index -= 1
+                                print(
+                                    f"self.BBanalysis_root_files: {self.BBanalysis_root_files}")
                                 self.felis_instances[fc7_index].set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),

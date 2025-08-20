@@ -17,6 +17,12 @@ class IVCurveThread(QThread):
     ):
         super(IVCurveThread, self).__init__()
         self.instruments = instrument_cluster
+        self.powergroup = None
+        for group_key, group in self.instruments.powering_groups.items():
+            self.powergroup = group
+        self.measurements = {}
+        for name in self.powergroup.modulenames:
+            self.measurements[name] = []
         self.parent = parent
         self.measureSignal.connect(self.parent.transitMeasurment)
         self.progressSignal.connect(
@@ -58,6 +64,13 @@ class IVCurveThread(QThread):
     def getProgress(self):
         self.percentStep = abs(100 * self.stepLength / self.stopVal)
         self.progressSignal.emit("IVCurve", self.percentStep)
+        for name, module in zip(self.powergroup.modulenames, self.powergroup.modules):
+             module_current = -1*module["hb"]._measure_current.value
+             module_channel = module["hb"]._hvbox_channel
+             source_voltage = self.powergroup.source_channel.measure_voltage.value
+             source_current = self.powergroup.source_channel.measure_current.value
+             result = [source_voltage, source_current, module_current, module_channel]
+             self.measurements[name].append(result)
 
     def abortTest(self):
         self.exiting = True
@@ -68,19 +81,29 @@ class IVCurveThread(QThread):
                 np.abs(getattr(module["hv"], "voltage"))
                 for module in self.instruments._module_dict.values()
             ]
-            self.instruments.hv_off(
+            self.instruments.hv_on(
                 execute_each_step=lambda: self.execute_each_step(starting_voltages)
             )
 
-            _, measurements = self.instruments.hv_on(
+            self.powergroup.ramp_hv(
                 voltage=self.stopVal,
-                step_size=self.stepLength,
                 delay=0.2,
-                measure=True,
+                step_size=self.stepLength,
                 execute_each_step=self.getProgress,
                 break_loop= lambda: self.exiting,
-            )[0]
+            )
 
+##### Replacing the following with the new hv_on function
+            #_, measurements = self.instruments.hv_on(
+            #    voltage=self.stopVal,
+            #    step_size=self.stepLength,
+            #    delay=0.2,
+            #    measure=True,
+            #    execute_each_step=self.getProgress,
+            #    break_loop= lambda: self.exiting,
+            #)[0]
+
+#####  End of replacement block
 
             if self.exiting:
                 print("IV Curve scan was aborted by user.")
@@ -88,8 +111,8 @@ class IVCurveThread(QThread):
                         
             # The physics test can be stopped by pressing enter
             measurementStr = {
-                "voltage": [value[4] for value in measurements],
-                "current": [value[5] for value in measurements],
+                "voltage": [value[0] for value in self.measurements['0']],
+                "current": [value[2] for value in self.measurements['0']],
             }
 
             print("Voltages: ", measurementStr["voltage"])
