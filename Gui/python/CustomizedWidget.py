@@ -147,7 +147,10 @@ class ModuleBox(QWidget):
             else:
                 logger.warning(f"Unknown port: {port}")
                 return "L12"
-        except:
+        except ValueError:
+            logger.error("Invalid port value. Port must be an integer.")
+            return "L12"
+        except Exception:
             logger.error(traceback.format_exc())
             return "L12"
 

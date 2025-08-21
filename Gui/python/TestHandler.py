@@ -2383,5 +2383,7 @@ created by Ph2_ACF is empty."
             try:
                 default_temperature = icicle_instrument_setup["instrument_dict"]["coldbox"]["default_temperature"]
                 self.instruments.cb_on(temperature = default_temperature)
-            except:
+            except KeyError:
+                logger.error("Default temperature or coldbox configuration is missing in the instrument setup.")
+            except Exception:
                 logger.error(traceback.format_exc())
