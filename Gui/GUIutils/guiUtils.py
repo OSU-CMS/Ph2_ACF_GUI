@@ -98,6 +98,7 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
             + "_"
             + str(time_stamp)
         )
+        print(f"OUTPUT_DIR: {Output_Dir}")
         try:
             os.makedirs(Output_Dir)
         except OSError as e:
@@ -495,10 +496,11 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
         BeBoardModule0.AddOGModule(OpticalGroupModule0)
 
-    BeBoardModule0.SetURI(BeBoard.getIPAddress())
-    BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")
-    BeBoardModule0.SetRegisterValue(RegisterSettingsList)
-    HWDescription0.AddBeBoard(BeBoardModule0)
+        BeBoardModule0.SetURI(BeBoard.getIPAddress())
+        BeBoardModule0.SetBeBoard(BeBoard.getBoardID(), "RD53")
+
+        BeBoardModule0.SetRegisterValue(RegisterSettingsList)
+        HWDescription0.AddBeBoard(BeBoardModule0)
     HWSettings_Dict[testName]["DataOutputDir"] = BeBoard.getBoardName()
     HWDescription0.AddSettings(HWSettings_Dict[testName])
     MonitoringModule0 = MonitoringModule(boardtype)

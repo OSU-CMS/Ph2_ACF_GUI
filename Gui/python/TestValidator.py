@@ -119,9 +119,7 @@ def ResultGrader(
                 "PixelAlive_coupled_xtalk",
                 "PixelAlive_uncoupled_xtalk",
             ):
-                BBanalysis_root_files.extend(
-                    outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if file.endswith(".root")
-                )
+                BBanalysis_root_files.append(ROOT_file_path)
 
             # Note: This may be useful
             # chip_canvas_path_template = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/Chip_{chipID:02d}"
