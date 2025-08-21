@@ -654,45 +654,56 @@ class QtStartWindow(QWidget):
 
     def update_instrument_cluster(self):
         if hasattr(self.master, 'instruments'):
-            channels_dict = {}
-            for index, module in enumerate(self.BeBoardWidget.getModules()):
-                if index < 4:
-                    channels_dict[index] = {
-                        "lv": {
-                            "instrument": "lv_1",
-                            "channel": index + 1
-                        },
-                        "hv": {
-                            "instrument": "hv",
-                            "channel": 1
-                        },
-                        "cb": {
-                            "instrument": "coldbox",
-                            "channel": index + 1
-                        }
-                    }
-                    logger.info(f"Added channel {index} with lv_1 and hv.")
-                else:
-                    channels_dict[index] = {
-                        "lv": {
-                            "instrument": "lv_2",
-                            "channel": index - 3
-                        },
-                        "hv": {
-                            "instrument": "hv",
-                            "channel": 1
-                        },
-                        "cb": {
-                            "instrument": "coldbox",
-                            "channel": index + 1
-                        }
-                    }
-                    logger.info(f"Added channel {index} with lv_2 and hv.")
-            logger.info(f"Final module_dict: {channels_dict}")
+            has_cb = self._check_instrument_presence("cb")
+            has_hb = False # self._check_instrument_presence("hb")
+            channels_dict = self._create_channels_dict(has_cb, has_hb)
             self._update_module_dict(channels_dict)
 
+    def _check_instrument_presence(self, instrument_key):
+        """Check if a specific instrument key exists in the instrument dictionary."""
+        instrument_dict = self.master.instruments.get_instruments()
+        logger.debug(f"Checking for instrument key '{instrument_key}' in instrument_dict: {instrument_dict.keys()}")
+        return instrument_key in instrument_dict
+
+    def _create_channels_dict(self, has_cb, has_hb):
+        """Create the channels dictionary based on the presence of coldbox and hb."""
+        channels_dict = {}
+        for index, module in enumerate(self.BeBoardWidget.getModules()):
+            if index < 4:
+                channels_dict[index] = self._create_channel_entry("lv_1", index + 1, index + 1, has_cb, has_hb)
+                logger.info(f"Added channel {index} with lv_1 and hv.")
+            else:
+                channels_dict[index] = self._create_channel_entry("lv_2", index - 3, index + 1, has_cb, has_hb)
+                logger.info(f"Added channel {index} with lv_2 and hv.")
+        logger.info(f"Final module_dict: {channels_dict}")
+        return channels_dict
+
+    def _create_channel_entry(self, lv_instrument, lv_channel, cb_channel, has_cb, has_hb):
+        """Create a single channel entry for the channels dictionary."""
+        channel_entry = {
+            "lv": {
+                "instrument": lv_instrument,
+                "channel": lv_channel
+            },
+            "hv": {
+                "instrument": "hv",
+                "channel": 1
+            }
+        }
+        if has_cb:
+            channel_entry["cb"] = {
+                "instrument": "coldbox",
+                "channel": cb_channel
+            }
+        if has_hb:
+            channel_entry["hb"] = {
+                "instrument": "hb",
+                "channel": lv_channel
+            }
+        return channel_entry
+
     def _update_module_dict(self, channels_dict):
-        """Update self._module_dict with DummyInstrument and PowerChannel objects using InstrumentCluster's instrument dictionary."""
+        """Update self._module_dict with DummyInstrument and Power/TempChannel objects using InstrumentCluster's instrument dictionary."""
         if not hasattr(self.master, 'instruments'):
             raise AttributeError("Master does not have an 'instruments' attribute.")
 
@@ -731,11 +742,22 @@ class QtStartWindow(QWidget):
             else:
                 temp_dict["cb"] = DummyInstrument("cb")
 
+            # if "hb" in channel.keys():
+            #     instr_object = instrument_dict[channel["hb"]["instrument"]]
+            #     instr_object.role = "hb"
+            #     temp_dict["hb"] = instr_object.channel(
+            #         "TemperatureChannel", channel["hb"]["channel"]
+            #     )
+            #     temp_dict["hb"].instr_name = channel["hb"]["instrument"]
+            # else:
+            #     temp_dict["hb"] = DummyInstrument("hb")
+
             self._module_dict[number] = temp_dict
             self.master.instruments._module_dict[number] = temp_dict
 
-        if '0' in self.master.instruments._module_dict.keys(): 
-            self.master.instruments._module_dict.pop("0")
+        keys_to_remove = [key for key in self.master.instruments._module_dict.keys() if isinstance(key, str)]
+        for key in keys_to_remove:
+            self.master.instruments._module_dict.pop(key)
         logger.debug(f"Module Dict:",self.master.instruments.get_modules())
         logger.debug(f"Instruments:",self.master.instruments.get_instruments())
 
