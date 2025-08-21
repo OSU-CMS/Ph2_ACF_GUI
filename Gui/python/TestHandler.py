@@ -513,10 +513,7 @@ class TestHandler(QObject):
                 subtest = OpenBumpTest[self.openBumpTest_subtest_index]
                 logger.info(f"Running OpenBumpTest subtest: {self.openBumpTest_subtest_index+1}/{len(OpenBumpTest)}: {subtest}")
                 self.runSingleTest(subtest)
-                self.openBumpTest_subtest_index += 1
-                self.runCompositeTest("OpenBumpTest")
-            else:
-                self.currentTest = "OpenBumpTest"
+
                 for fc7_index, beboard in enumerate(self.firmware):
                     boardID = beboard.getBoardID()
                     for OG in beboard.getAllOpticalGroups().values():
@@ -539,6 +536,9 @@ class TestHandler(QObject):
                             self.figurelist[module.getModuleName()] = (
                                 self.collect_plots(module.getModuleName(), felis_instance=self.felis_instances[fc7_index])
                             )
+
+                self.openBumpTest_subtest_index += 1
+                self.runCompositeTest("OpenBumpTest")
 
                 self.validateTest()
 
