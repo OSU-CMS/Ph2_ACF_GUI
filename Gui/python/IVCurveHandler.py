@@ -1,6 +1,8 @@
 import Gui.siteSettings as site_settings
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
+from icicle.icicle.instrument_cluster import DummyInstrument
+
 import numpy as np
 import traceback
 
@@ -64,13 +66,21 @@ class IVCurveThread(QThread):
     def getProgress(self):
         self.percentStep = abs(100 * self.stepLength / self.stopVal)
         self.progressSignal.emit("IVCurve", self.percentStep)
+        ### This loop should create a list of list of measurements for each "channel" in the json file.
+        ### The "channel" number is the key in the "measurements" dictionary. 
+        ### Each "channel" number is associated with a module.
         for name, module in zip(self.powergroup.modulenames, self.powergroup.modules):
-             module_current = -1*module["hb"]._measure_current.value
-             module_channel = module["hb"]._hvbox_channel
-             source_voltage = self.powergroup.source_channel.measure_voltage.value
-             source_current = self.powergroup.source_channel.measure_current.value
-             result = [source_voltage, source_current, module_current, module_channel]
-             self.measurements[name].append(result)
+            
+            source_voltage = self.powergroup.source_channel.measure_voltage.value
+            source_current = self.powergroup.source_channel.measure_current.value
+            if not isinstance(module["hb"], DummyInstrument):
+                module_current = -1*module["hb"]._measure_current.value
+                module_channel = module["hb"]._hvbox_channel
+            else:
+                module_current = source_current
+                module_channel = name
+            result = [source_voltage, source_current, module_current, module_channel]
+            self.measurements[name].append(result)
 
     def abortTest(self):
         self.exiting = True

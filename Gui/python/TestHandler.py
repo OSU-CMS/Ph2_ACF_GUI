@@ -907,8 +907,8 @@ class TestHandler(QObject):
                     testName = "SCurveScan_2100"
                     hv_on_module = True
                 if not hv_on_module:
-                    self.instruments.hv_on_module(
-                        module=mod_dict[number],
+                    self.instruments.hv_on( ###  changed from hv_on_module to hv_on for testing
+                        #module=mod_dict[number],  ## removed for testing
                         voltage=default_hv_voltage,
                         delay=0.3,
                         step_size=10,
@@ -1919,9 +1919,9 @@ created by Ph2_ACF is empty."
                 self.runwindow.ResultWidget.ProgressBars[i][
                     self.testIndexTracker
                 ].setValue(stepSize)
-                self.runwindow.ResultWidget.ProgressBars[i][
-                    self.testIndexTracker
-                ].setValue(self.SLDOProgressValue)
+                #self.runwindow.ResultWidget.ProgressBars[i][
+                #    self.testIndexTracker
+                #].setValue(self.SLDOProgressValue)
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
         for module in self.modules:
@@ -2043,7 +2043,6 @@ created by Ph2_ACF is empty."
             csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(
                 self.output_dir, moduleName, timestamp
             )
-
             # Some power supplies give outputs as a two dimensional array
             # This breaks np.savetxt. The second element of the array should be empty
             # either way, therefore, we will just flatten the array getting rid of the
