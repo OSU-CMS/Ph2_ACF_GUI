@@ -14,9 +14,9 @@
             "default_voltage": 1.8,
             "default_current": 3
         },
-        "coldbox": {
+        "cb": {
             "class": "PSIColdbox",
-            "resource": "TCPIP::coldbox::SOCKET",
+            "resource": "TCPIP::128.146.33.197::1883::SOCKET",
             "default_temperature": 5,
             "temperature_tolerance": 0.5,
             "validation_time": 20,
@@ -33,7 +33,7 @@
     "channels_dict":{
         "0":{
             "lv": {"instrument":"lv_1", "channel":1},
-            "cb": {"instrument":"coldbox", "channel":1},
+            "cb": {"instrument":"cb", "channel":1},
             "hv": {"instrument":"hv", "channel":1}
         }
     }

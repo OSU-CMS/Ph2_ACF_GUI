@@ -28,7 +28,9 @@ from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
     FC7List,
     ModuleCurrentMap,
-    icicle_instrument_setup
+    icicle_instrument_setup,
+    WorkingChannels,
+    json_setup
 )
 from icicle.icicle.instrument_cluster import DummyInstrument
 from InnerTrackerTests.TestSequences import TestList
@@ -653,7 +655,8 @@ class QtStartWindow(QWidget):
         self.closeFlag = True
 
     def update_instrument_cluster(self):
-        if hasattr(self.master, 'instruments'):
+        if hasattr(self.master, 'instruments') and 'auto' in json_setup:
+            logger.info("Automatically setting instrument cluster channels.")
             has_cb = self._check_instrument_presence("cb")
             has_hb = False # self._check_instrument_presence("hb")
             channels_dict = self._create_channels_dict(has_cb, has_hb)
@@ -667,14 +670,23 @@ class QtStartWindow(QWidget):
 
     def _create_channels_dict(self, has_cb, has_hb):
         """Create the channels dictionary based on the presence of coldbox and hb."""
+        if len(WorkingChannels) < len(self.BeBoardWidget.getModules()):
+            logger.error("Not enough working channels defined in siteConfig.WorkingChannels.")
+            raise ValueError("Insufficient working channels in siteConfig.WorkingChannels.")
+
         channels_dict = {}
         for index, module in enumerate(self.BeBoardWidget.getModules()):
-            if index < 4:
-                channels_dict[index] = self._create_channel_entry("lv_1", index + 1, index + 1, has_cb, has_hb)
-                logger.info(f"Added channel {index} with lv_1 and hv.")
-            else:
-                channels_dict[index] = self._create_channel_entry("lv_2", index - 3, index + 1, has_cb, has_hb)
-                logger.info(f"Added channel {index} with lv_2 and hv.")
+            try:
+                if WorkingChannels[index] < 5:
+                    channels_dict[index] = self._create_channel_entry("lv_1", WorkingChannels[index], WorkingChannels[index], has_cb, has_hb)
+                    logger.info(f"Added channel {index} with lv_1 and hv.")
+                else:
+                    channels_dict[index] = self._create_channel_entry("lv_2", WorkingChannels[index]-4, WorkingChannels[index], has_cb, has_hb)
+                    logger.info(f"Added channel {index} with lv_2 and hv.")
+            except IndexError:
+                logger.error(f"No working channel defined for module index {index}.")
+                raise ValueError(f"WorkingChannels does not have enough entries for module index {index}.")
+
         logger.info(f"Final module_dict: {channels_dict}")
         return channels_dict
 
@@ -692,7 +704,7 @@ class QtStartWindow(QWidget):
         }
         if has_cb:
             channel_entry["cb"] = {
-                "instrument": "coldbox",
+                "instrument": "cb",
                 "channel": cb_channel
             }
         if has_hb:
@@ -739,6 +751,40 @@ class QtStartWindow(QWidget):
                     "TemperatureChannel", channel["cb"]["channel"]
                 )
                 temp_dict["cb"].instr_name = channel["cb"]["instrument"]
+                assert hasattr(instr_object, "default_temperature")
+                temp_dict["cb"].default_temperature = float(
+                    instr_object.default_temperature
+                )
+                temp_dict["cb"].default_step_size = (
+                    instr_object.default_speed
+                    if hasattr(instr_object, "default_speed")
+                    else 0
+                )
+                temp_dict["cb"].temperature_tolerance = (
+                    instr_object.temperature_tolerance
+                    if hasattr(instr_object, "temperature_tolerance")
+                    else 0.5
+                )
+                temp_dict["cb"].validation_time = (
+                    instr_object.validation_time
+                    if hasattr(instr_object, "validation_time")
+                    else 20
+                )
+                temp_dict["cb"].validation_timeout = (
+                    instr_object.validation_timeout
+                    if hasattr(instr_object, "validation_timeout")
+                    else 600
+                )
+                temp_dict["cb"].humidity_control = (
+                    instr_object.humidity_control
+                    if hasattr(instr_object, "humidity_control")
+                    else True
+                )
+                temp_dict["cb"].dewpoint_delta = (
+                    instr_object.dewpoint_delta
+                    if hasattr(instr_object, "dewpoint_delta")
+                    else 1.0
+                )
             else:
                 temp_dict["cb"] = DummyInstrument("cb")
 

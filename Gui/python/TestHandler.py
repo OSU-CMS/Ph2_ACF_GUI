@@ -2381,7 +2381,7 @@ created by Ph2_ACF is empty."
         """Set the temperature of every active TEC to the default temperature if 'Tessie' is chosen as the cooler."""
         if site_settings.cooler == "Tessie":
             try:
-                default_temperature = icicle_instrument_setup["instrument_dict"]["coldbox"]["default_temperature"]
+                default_temperature = icicle_instrument_setup["instrument_dict"]["cb"]["default_temperature"]
                 self.instruments.cb_on(temperature = default_temperature)
             except KeyError:
                 logger.error("Default temperature or coldbox configuration is missing in the instrument setup.")
