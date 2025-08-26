@@ -991,7 +991,7 @@ class TestHandler(QObject):
                 process.start(
                     "echo",
                     [
-                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -k -c  {1}".format(
+                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml -c  {1}".format(
                             firmware.getBoardName(),
                             Test_to_Ph2ACF_Map[self.currentTest],
                         )
@@ -1048,7 +1048,6 @@ class TestHandler(QObject):
                     [
                         "-f",
                         f"CMSIT_{firmware.getBoardName()}.xml",
-                        # "-k",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
@@ -2028,6 +2027,7 @@ created by Ph2_ACF is empty."
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             moduleName = module.getModuleName()
             hybridId = module.getFMCPort()
 
@@ -2041,7 +2041,7 @@ created by Ph2_ACF is empty."
             )
 
             csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(
-                self.output_dir, moduleName, timestamp
+                os.path.join(self.output_dir, fc7name), moduleName, timestamp
             )
             # Some power supplies give outputs as a two dimensional array
             # This breaks np.savetxt. The second element of the array should be empty
@@ -2064,11 +2064,11 @@ created by Ph2_ACF is empty."
             )
 
             IVCurve_CSV_to_ROOT(
-                moduleName, module_canvas_path, csvfilename, self.output_dir
+                moduleName, module_canvas_path, csvfilename, os.path.join(self.output_dir,fc7name)
             )
 
             filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(
-                self.output_dir, moduleName, timestamp
+                os.path.join(self.output_dir,fc7name), moduleName, timestamp
             )
             # filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
             self.IVCurveResult.saveToSVG(filename)
@@ -2114,6 +2114,7 @@ created by Ph2_ACF is empty."
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             moduleName = module.getModuleName()
             hybridId = module.getFMCPort()
             module_canvas_path = (
@@ -2123,7 +2124,7 @@ created by Ph2_ACF is empty."
             )
 
             SLDO_CSV_to_ROOT2(
-                moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir
+                moduleName, module_canvas_path, self.SLDOfilelist, os.path.join(self.output_dir,fc7name)
             )
 
         self.validateTest()
@@ -2178,6 +2179,7 @@ created by Ph2_ACF is empty."
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             moduleName = module.getModuleName()
             hybridId = module.getFMCPort()
             module_canvas_path = (
@@ -2189,7 +2191,7 @@ created by Ph2_ACF is empty."
             # Generate CSVs and get the list
             csvfiles = self.makeTrimbitScanPlots(self.ADCmeasurements, self.pin_mapping)
             Trimbit_CSV_to_ROOT(
-                moduleName, module_canvas_path, csvfiles, self.output_dir
+                moduleName, module_canvas_path, csvfiles, os.path.join(self.output_dir, fc7name)
             )
 
         self.validateTest()

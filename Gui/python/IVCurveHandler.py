@@ -69,6 +69,8 @@ class IVCurveThread(QThread):
         ### This loop should create a list of list of measurements for each "channel" in the json file.
         ### The "channel" number is the key in the "measurements" dictionary. 
         ### Each "channel" number is associated with a module.
+        ### The result of this loop is a measurements dictionary that has the "channel" number as the key.
+        ### Each "channel" number is associated with a pixel module.
         for name, module in zip(self.powergroup.modulenames, self.powergroup.modules):
             
             source_voltage = self.powergroup.source_channel.measure_voltage.value
@@ -87,14 +89,16 @@ class IVCurveThread(QThread):
 
     def run(self):
         try:
+            print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
             starting_voltages = [
                 np.abs(getattr(module["hv"], "voltage"))
                 for module in self.instruments._module_dict.values()
             ]
-            self.instruments.hv_on(
-                execute_each_step=lambda: self.execute_each_step(starting_voltages)
-            )
-
+            #self.instruments.hv_on(voltage=0,
+            #    execute_each_step=lambda: self.execute_each_step(starting_voltages)
+            #)
+            self.powergroup.enable_all()
+            print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
             self.powergroup.ramp_hv(
                 voltage=self.stopVal,
                 delay=0.2,
