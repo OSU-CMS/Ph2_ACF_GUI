@@ -124,14 +124,23 @@ class IVCurveThread(QThread):
                 return
                         
             # The physics test can be stopped by pressing enter
-            measurementStr = {
-                "voltage": [value[0] for value in self.measurements['0']],
-                "current": [value[2] for value in self.measurements['0']],
-            }
+            measurementList = []
+            # This neads to loop over the measurements dictionary keys.  Each key is a module.
+            for channel in self.measurements.keys():
+                measurementStr = {
+                    "voltage": [value[0] for value in self.measurements[channel]],
+                    "current": [value[2] for value in self.measurements[channel]],
+                }
+                measurmentList[channel] = measurementStr
+            
+            #measurementStr = {
+            #    "voltage": [value[0] for value in self.measurements['0']],
+            #    "current": [value[2] for value in self.measurements['0']],
+            #}
 
-            print("Voltages: ", measurementStr["voltage"])
-            print("Currents: ", measurementStr["current"])
-            self.measureSignal.emit("IVCurve", measurementStr)
+                print("Voltages for channel {0}: ".format(channel), measurementStr["voltage"])
+                print("Currents for channel {0}: ".format(channel), measurementStr["current"])
+            self.measureSignal.emit("IVCurve", measurementList)
         except Exception as e:
             print(f"IV Curve scan failed with error: {e}")
             print(traceback.format_exc())

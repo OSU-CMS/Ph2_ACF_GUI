@@ -2020,9 +2020,13 @@ created by Ph2_ACF is empty."
         # 3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
         # IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
         # to output the results only to the console of the fc7 that each module is connnected to.
-        for console in self.runwindow.ConsoleViews:
-            self.outputString.emit(f"Voltages: {measure['voltage']}", console)
-            self.outputString.emit(f"Currents: {measure['current']}", console)
+        #for console in self.runwindow.ConsoleViews:
+        #    self.outputString.emit(f"Voltages: {measure['voltage']}", console)
+        #    self.outputString.emit(f"Currents: {measure['current']}", console)
+
+        # We should zip self.modules with the instrument cluster channels
+        # to match the modules ids with the correct channels.
+        module_chan_map = dict(zip(self.modules,self.instrument_cluster.channels))
 
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
@@ -2050,8 +2054,10 @@ created by Ph2_ACF is empty."
             # channels this will need to reevaluated.
 
             # Convert to numpy array to give us access to flatten() and ndim
-            voltages = np.array(measure["voltage"])
-            current = np.array(measure["current"])
+            # This should actually allow measure to be a nested dictionary where the 
+            # keys are the instrument cluster channel names.
+            voltages = np.array(measure[module_chan_map[module]]["voltage"])
+            current = np.array(measure[module_chan_map[module]]["current"])
 
             # If the voltages are 2D+, then flatten.
             if voltages.ndim > 1:
