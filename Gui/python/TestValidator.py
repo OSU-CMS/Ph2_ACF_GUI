@@ -74,7 +74,7 @@ def ResultGrader(
             ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
 
             relevant_files = [
-                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
             ]
             dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
             relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])

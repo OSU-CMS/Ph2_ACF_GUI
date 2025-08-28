@@ -1277,6 +1277,16 @@ created by Ph2_ACF is empty."
                         ),
                     )
                 )
+                os.system(
+                    "cp {0}/test/Results/Run{1}_CMSIT_{2}.xml {3}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        current_fc7,
+                        os.path.join(
+                            self.output_dir, current_fc7    
+                        ),
+                    )   
+                )
             else:
                 ph2_acf_base_dir: str | None = os.environ.get("PH2ACF_BASE_DIR")
                 if ph2_acf_base_dir is None:
