@@ -869,46 +869,7 @@ class TestHandler(QObject):
             # assumes only 1 HV titled 'hv' in instruments.json
             hv_on_module = False
             mod_dict = self.instruments.get_modules()
-            for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["hv"] == "1":
-                    hv_on_module = True
-                    break
-
-                if testName == "SCurveScan_2100_FWD":
-                    if hv_on_module:
-                        starting_voltages = [
-                            np.abs(getattr(module["hv"], "voltage"))
-                            for module in self.instruments._module_dict.values()
-                        ]
-                        self.instruments.hv_off(
-                            execute_each_step=lambda: self.ramp_progress_bar(
-                                starting_voltages
-                            )
-                        )
-                        self.instruments.hv_on_module(
-                            module=mod_dict[number],
-                            voltage=site_settings.forward_bias_voltage,
-                            delay=0.3,
-                            step_size=10,
-                            execute_each_step=lambda: self.ramp_progress_bar(
-                                [site_settings.forward_bias_voltage]
-                                * len(self.instruments._module_dict.values())
-                            ),
-                        )
-                    else:
-                        self.instruments.hv_on_module(
-                            module=mod_dict[number],
-                            voltage=site_settings.forward_bias_voltage,
-                            delay=0.3,
-                            step_size=10,
-                            execute_each_step=lambda: self.ramp_progress_bar(
-                                [site_settings.forward_bias_voltage]
-                                * len(self.instruments._module_dict.values())
-                            ),
-                        )
-                    testName = "SCurveScan_2100"
-                    hv_on_module = True
-                if not hv_on_module:
+            if not hv_on_module:
                     self.instruments.hv_on( ###  changed from hv_on_module to hv_on for testing
                         #module=mod_dict[number],  ## removed for testing
                         voltage=default_hv_voltage,
@@ -920,6 +881,7 @@ class TestHandler(QObject):
                         ),
                         break_loop=lambda: self.halt,
                     )
+            
 
         if "TrimbitScan" in testName:
             self.currentTest = testName
@@ -2477,6 +2439,7 @@ created by Ph2_ACF is empty."
     
     def set_default_temperature(self):
         """Set the temperature of every active TEC to the default temperature if 'Tessie' is chosen as the cooler."""
+        print("Get HB:", self.instruments.get_hb())
         if site_settings.cooler == "Tessie":
             try:
                 default_temperature = icicle_instrument_setup["instrument_dict"]["cb"]["default_temperature"]
