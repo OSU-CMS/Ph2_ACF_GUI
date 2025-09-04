@@ -658,7 +658,7 @@ class QtStartWindow(QWidget):
         if hasattr(self.master, 'instruments') and 'auto' in json_setup:
             logger.info("Automatically setting instrument cluster channels.")
             has_cb = self._check_instrument_presence("cb")
-            has_hb = False # self._check_instrument_presence("hb")
+            has_hb = self._check_instrument_presence("hb")
             channels_dict = self._create_channels_dict(has_cb, has_hb)
             self._update_module_dict(channels_dict)
 
@@ -710,7 +710,7 @@ class QtStartWindow(QWidget):
         if has_hb:
             channel_entry["hb"] = {
                 "instrument": "hb",
-                "channel": lv_channel
+                "channel": cb_channel
             }
         return channel_entry
 
@@ -789,11 +789,11 @@ class QtStartWindow(QWidget):
                 temp_dict["cb"] = DummyInstrument("cb")
 
             if "hb" in channel:
-                instr_object = self._instrument_dict[channel["hb"]["instrument"]]
+                instr_object = instrument_dict[channel["hb"]["instrument"]]
                 assert hasattr(instr_object, "channel_compliance")
                 hvbox_cfg = {
                     "instrument": instr_object,
-                    "source_instr": self._instrument_dict[channel["hv"]["instrument"]],
+                    "source_instr": instrument_dict[channel["hv"]["instrument"]],
                     "source_channel": channel["hv"]["channel"],
                     "hvbox_channel": channel["hb"]["channel"],
                     "channel_compliance": float(instr_object.channel_compliance),

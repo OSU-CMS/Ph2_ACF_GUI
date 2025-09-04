@@ -38,8 +38,7 @@
     "channels_dict":{
         "0":{
             "lv": {"instrument":"lv_1", "channel":1},
-            "cb": {"instrument":"cb", "channel":1},
-            "hb": {"instrument":"hb", "channel":1},            
+            "cb": {"instrument":"cb", "channel":1},          
             "hv": {"instrument":"hv", "channel":1}
         }
     }
