@@ -2,25 +2,30 @@
     "instrument_dict": {
         "lv_1": {
             "class": "HMP4040",
-            "resource": "ASRL/dev/ttyACM0::INSTR",
+            "resource": "ASRL/dev/ttyACM3::INSTR",
             "sim": false,
             "default_voltage": 1.8,
             "default_current": 3
         },
         "lv_2": {
             "class": "HMP4040",
-            "resource": "ASRL/dev/ttyACM1::INSTR",
+            "resource": "ASRL/dev/ttyACM0::INSTR",
             "sim": false,
             "default_voltage": 1.8,
             "default_current": 3
         },
         "cb": {
             "class": "PSIColdbox",
-            "resource": "TCPIP::128.146.33.197::1883::SOCKET",
+            "resource": "TCPIP::coldbox::1883::SOCKET",
             "default_temperature": 5,
             "temperature_tolerance": 0.5,
             "validation_time": 20,
             "validation_timeout": 600
+        },
+        "hb": {
+            "class": "PSIHVBox",
+            "resource": "ASRL/dev/ttyACM2::INSTR",
+            "channel_compliance": 5e-6
         },
         "hv": {
             "class": "Keithley2410",
@@ -34,6 +39,7 @@
         "0":{
             "lv": {"instrument":"lv_1", "channel":1},
             "cb": {"instrument":"cb", "channel":1},
+            "hb": {"instrument":"hb", "channel":1},            
             "hv": {"instrument":"hv", "channel":1}
         }
     }

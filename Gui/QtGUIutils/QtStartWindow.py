@@ -788,19 +788,25 @@ class QtStartWindow(QWidget):
             else:
                 temp_dict["cb"] = DummyInstrument("cb")
 
-            # if "hb" in channel.keys():
-            #     instr_object = instrument_dict[channel["hb"]["instrument"]]
-            #     instr_object.role = "hb"
-            #     temp_dict["hb"] = instr_object.channel(
-            #         "TemperatureChannel", channel["hb"]["channel"]
-            #     )
-            #     temp_dict["hb"].instr_name = channel["hb"]["instrument"]
-            # else:
-            #     temp_dict["hb"] = DummyInstrument("hb")
+            if "hb" in channel:
+                instr_object = self._instrument_dict[channel["hb"]["instrument"]]
+                assert hasattr(instr_object, "channel_compliance")
+                hvbox_cfg = {
+                    "instrument": instr_object,
+                    "source_instr": self._instrument_dict[channel["hv"]["instrument"]],
+                    "source_channel": channel["hv"]["channel"],
+                    "hvbox_channel": channel["hb"]["channel"],
+                    "channel_compliance": float(instr_object.channel_compliance),
+                }
+                self.master.instruments._hvbox_config[number] = hvbox_cfg
+            else:
+                temp_dict["hb"] = DummyInstrument("hb")
 
             self._module_dict[number] = temp_dict
             self.master.instruments._module_dict[number] = temp_dict
+            print("Get HB: ", self.master.instruments.get_hb())
 
+        self.master.instruments.open()
         keys_to_remove = [key for key in self.master.instruments._module_dict.keys() if isinstance(key, str)]
         for key in keys_to_remove:
             self.master.instruments._module_dict.pop(key)
