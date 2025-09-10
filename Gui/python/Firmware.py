@@ -14,7 +14,7 @@ class QtChip:
         chipEfuseID=0,
         chipVREF=800,
         chipIREF="",
-        chipCINJ=80,
+        chipCINJ=8,
         chipStatus=True,
     ):
         self.__chipID = chipID
