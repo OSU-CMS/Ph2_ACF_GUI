@@ -802,7 +802,7 @@ class BeBoardBox(QWidget):
                 except Exception:
                     cinj_value = 8
                 Module.getChips()[chipID].setCINJ(
-                    (cinj_value)
+                    (10 * cinj_value)
                 )
 
             # Add the QtModule object to the currently selected Optical Group
