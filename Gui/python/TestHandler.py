@@ -310,6 +310,9 @@ class TestHandler(QObject):
             module.getModuleName(): True for module in self.modules
         }  # Initialize all to True
         self.set_default_temperature()
+        self.powergroup = None
+        for group_key, group in self.instruments.powering_groups.items():
+            self.powergroup = group
 
     def finished_run_process(self, _, exitStatus, i):
         logger.info("Inside finsihed_run_process")
@@ -867,20 +870,20 @@ class TestHandler(QObject):
                 "instrument_dict"
             ]["hv"]["default_voltage"]
             # assumes only 1 HV titled 'hv' in instruments.json
-            hv_on_module = False
-            mod_dict = self.instruments.get_modules()
-            if not hv_on_module:
-                    self.instruments.hv_on( ###  changed from hv_on_module to hv_on for testing
+            self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
+            self.powergroup.enable_all()
+            print("trying to turn on HV")
+            self.powergroup.ramp_hv( ###  changed from hv_on_module to hv_on for testing
                         #module=mod_dict[number],  ## removed for testing
-                        voltage=default_hv_voltage,
-                        delay=0.3,
-                        step_size=10,
-                        execute_each_step=lambda: self.ramp_progress_bar(
-                            [default_hv_voltage]
-                            * len(self.instruments._module_dict.values())
-                        ),
-                        break_loop=lambda: self.halt,
-                    )
+                voltage=default_hv_voltage,
+                delay=0.3,
+                step_size=10,
+                execute_each_step=lambda: self.ramp_progress_bar(
+                    [default_hv_voltage]
+                    * len(self.instruments._module_dict.values())
+                    ),
+                break_loop=lambda: self.halt,
+            )
             
 
         if "TrimbitScan" in testName:
