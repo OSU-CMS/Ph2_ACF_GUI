@@ -147,7 +147,7 @@ def ResultGrader(
             )
 
             status, message, sanity, explanation = felis.set_result(
-                relevant_files,
+                [f for f in relevant_files if module_name in f],
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
                 Test_to_Ph2ACF_Map[testName],

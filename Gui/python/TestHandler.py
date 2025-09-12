@@ -1265,9 +1265,20 @@ created by Ph2_ACF is empty."
                 )
 
             elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
+                current_fc7: str = self.firmware[processIndex].getBoardName()
                 print("copying MonitorDQM.root file to output directory")
                 os.system(
-                    "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                    "cp {0}/test/{current_fc7}/Run{1}_MonitorDQM.root {2}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        os.path.join(
+                            self.output_dir, current_fc7
+                        ),
+                    )
+                )
+                print("copying xml file to output directory")
+                os.system(
+                    "cp {0}/test/{current_fc7}/Run{1}_MonitorDQM.xml {2}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
                         os.path.join(
@@ -2026,7 +2037,10 @@ created by Ph2_ACF is empty."
 
         # We should zip self.modules with the instrument cluster channels
         # to match the modules ids with the correct channels.
-        module_chan_map = dict(zip(self.modules,self.instrument_cluster.channels))
+        channelList = []
+        for channel in measure:
+            channelList.append(channel)
+        module_chan_map = dict(zip(self.modules, channelList))
 
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
@@ -2039,8 +2053,8 @@ created by Ph2_ACF is empty."
                 self,
                 xlabel="Voltage (V)",
                 ylabel="I (A)",
-                X=measure["voltage"],
-                Y=measure["current"],
+                X=measure[module_chan_map[module]]["voltage"], #doesn't seem to work.
+                Y=measure[module_chan_map[module]]["current"], #doesn't seem to work.
                 invert=True,
             )
 

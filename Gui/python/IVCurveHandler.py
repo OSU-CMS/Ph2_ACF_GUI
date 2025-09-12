@@ -124,14 +124,14 @@ class IVCurveThread(QThread):
                 return
                         
             # The physics test can be stopped by pressing enter
-            measurementList = []
+            measurementList = {}
             # This neads to loop over the measurements dictionary keys.  Each key is a module.
             for channel in self.measurements.keys():
                 measurementStr = {
                     "voltage": [value[0] for value in self.measurements[channel]],
                     "current": [value[2] for value in self.measurements[channel]],
                 }
-                measurmentList[channel] = measurementStr
+                measurementList[channel] = measurementStr
             
             #measurementStr = {
             #    "voltage": [value[0] for value in self.measurements['0']],
