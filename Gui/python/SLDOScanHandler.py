@@ -46,6 +46,8 @@ class SLDOCurveWorker(QThread):
         self.exiting = False
         self.moduleType = moduleType
         self.testhandler = testhandler
+        if "Fast" in self.testhandler.currentTest:
+            self.step_size = 4*self.step_size
         self.Nsteps = int((self.target_current - self.starting_current) / self.step_size)
         self.PIN_MAPPINGS = {
             "DEFAULT": ADCBoard.DEFAULT_PIN_MAP,
@@ -207,7 +209,8 @@ class SLDOCurveWorker(QThread):
     def measureADCup(self, no_lock=True, *args, **kwargs):
         self.updateProgress(1)
         ls = []
-        self.testhandler.GADC_execute_each_step(upOrDown='up',total_steps=self.Nsteps)
+        if "Fast" not in self.testhandler.currentTest:
+            self.testhandler.GADC_execute_each_step(upOrDown='up',total_steps=self.Nsteps)
         for pin in self.adc_board._pin_map.keys():
             ls.append(self.adc_board.query_channel(pin))
         return ls
@@ -215,7 +218,8 @@ class SLDOCurveWorker(QThread):
     def measureADCdown(self, no_lock=True, *args, **kwargs):
         self.updateProgress(1)
         ls = []
-        self.testhandler.GADC_execute_each_step(upOrDown='down',total_steps=self.Nsteps)
+        if "Fast" not in self.testhandler.currentTest:
+            self.testhandler.GADC_execute_each_step(upOrDown='down',total_steps=self.Nsteps)
         for pin in self.adc_board._pin_map.keys():
             ls.append(self.adc_board.query_channel(pin))
         return ls

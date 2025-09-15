@@ -823,7 +823,7 @@ class TestHandler(QObject):
             self.IVCurveHandler.IVCurve()
             return
 
-        if testName == "SLDOScan":
+        if "SLDOScan" in testName and "GADC" not in testName:
             self.currentTest = testName
             self.configTest()
             self.SLDOScanData = []
@@ -1924,15 +1924,17 @@ created by Ph2_ACF is empty."
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
         for module in self.modules:
             moduleName = module.getModuleName()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.svg".format(
-                self.output_dir, moduleName, pin, method
+                os.path.join(self.output_dir, fc7name), moduleName, pin, method
             )
             csvfilename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.csv".format(
-                self.output_dir, moduleName, pin, method
+                os.path.join(self.output_dir, fc7name), moduleName, pin, method
             )
             self.SLDOfilelist.append(csvfilename)
             # The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
             total_result_stacked = np.vstack(total_result)
+            os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
             np.savetxt(csvfilename, total_result_stacked, delimiter=",")
 
             # Make the actual graph
@@ -2026,6 +2028,7 @@ created by Ph2_ACF is empty."
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             moduleName = module.getModuleName()
             hybridId = module.getFMCPort()
 
@@ -2039,7 +2042,7 @@ created by Ph2_ACF is empty."
             )
 
             csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(
-                self.output_dir, moduleName, timestamp
+                os.path.join(self.output_dir, fc7name), moduleName, timestamp
             )
 
             # Some power supplies give outputs as a two dimensional array
@@ -2057,17 +2060,18 @@ created by Ph2_ACF is empty."
                 voltages = voltages.flatten()
                 current = current.flatten()
 
+            os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
             np.savetxt(csvfilename, (voltages, current), delimiter=",")
             module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
                 boardID=beboardId, ogID=ogId, hybridID=hybridId
             )
 
             IVCurve_CSV_to_ROOT(
-                moduleName, module_canvas_path, csvfilename, self.output_dir
+                moduleName, module_canvas_path, csvfilename, os.path.join(self.output_dir, fc7name)
             )
 
             filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(
-                self.output_dir, moduleName, timestamp
+                os.path.join(self.output_dir, fc7name), moduleName, timestamp
             )
             # filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
             self.IVCurveResult.saveToSVG(filename)
@@ -2113,6 +2117,7 @@ created by Ph2_ACF is empty."
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             moduleName = module.getModuleName()
             hybridId = module.getFMCPort()
             module_canvas_path = (
@@ -2122,7 +2127,7 @@ created by Ph2_ACF is empty."
             )
 
             SLDO_CSV_to_ROOT2(
-                moduleName, module_canvas_path, self.SLDOfilelist, self.output_dir
+                moduleName, module_canvas_path, self.SLDOfilelist, os.path.join(self.output_dir,fc7name)
             )
 
         self.validateTest()
