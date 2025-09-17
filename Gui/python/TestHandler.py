@@ -1408,7 +1408,7 @@ created by Ph2_ACF is empty."
                         logger.error(traceback.format_exc())
                         pass
 
-                if self.check_for_end_of_test(textStr):
+                if self.check_for_end_of_test(textStr, processIndex):
                     self.runwindow.ResultWidget.ProgressBars[processIndex][
                         self.testIndexTracker
                     ].setValue(100)
@@ -1498,7 +1498,7 @@ created by Ph2_ACF is empty."
             # This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
 
             elif self.ProgressingMode[processIndex] == ProgressMode.SUMMARY:
-                if self.check_for_end_of_test(textStr):
+                if self.check_for_end_of_test(textStr, processIndex):
                     self.runwindow.ResultWidget.ProgressBars[processIndex][
                         self.testIndexTracker
                     ].setValue(100)
@@ -1593,7 +1593,7 @@ created by Ph2_ACF is empty."
         except Exception:
             logger.error(traceback.format_exc())
 
-    def check_for_end_of_test(self, textStr):
+    def check_for_end_of_test(self, textStr, processIndex=0):
         # function to support the quick fix in on_readyReadStandardOutput() where
         # the progress bar doesn't always reach 100%.
         currentTest = Test_to_Ph2ACF_Map[self.currentTest]
