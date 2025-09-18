@@ -1135,7 +1135,6 @@ class TestHandler(QObject):
                             self.info,
                             self.registerKey,
                             self.communicationTestResults,
-                            self.comment,
                             self.iref_match_status,  # Pass iref_match_status for IREF validation
                         )
 
@@ -2361,6 +2360,7 @@ created by Ph2_ACF is empty."
             counter = 0
             for i, fc7 in enumerate(self.firmware):
                 for module in fc7.getModules():
+                    status, message = self.felis_instances[i].set_comment( module.getModuleName(),"sequence", self.comment)
                     status, message = self.felis_instances[i].upload_results(
                         module.getModuleName(),
                         self.master.username,

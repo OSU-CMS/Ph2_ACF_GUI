@@ -22,7 +22,6 @@ def ResultGrader(
     sequence,
     registerKey,
     communicationTestResults,
-    comment,
     iref_match_status=None
 ):
     try:
@@ -151,7 +150,6 @@ def ResultGrader(
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
                 Test_to_Ph2ACF_Map[testName],
-                comment,
             )
         if not status:
             raise RuntimeError(message)
