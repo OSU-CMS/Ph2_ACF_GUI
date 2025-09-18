@@ -69,8 +69,6 @@ def ResultGrader(
         if "IVCurve" in testName:
             root_file_name = testName.split("_")[0] + "_" + module_name
 
-            ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
-
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
@@ -92,8 +90,6 @@ def ResultGrader(
         elif "SLDOScan" in testName:
             root_file_name = testName.split("_")[0] + "_" + module_name
 
-            ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
-
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
@@ -111,9 +107,6 @@ def ResultGrader(
                 "sldo",
             )
         else:
-            ROOT_file_path = "{0}/Run{1}_{2}.root".format(
-                outputDir, runNumber, root_file_name
-            )
             if testName in (
                 "PixelAlive_highcharge_xtalk",
                 "PixelAlive_coupled_xtalk",

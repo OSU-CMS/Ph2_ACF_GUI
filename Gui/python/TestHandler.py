@@ -453,7 +453,7 @@ class TestHandler(QObject):
 
                     if config_file:
                         SetupXMLConfigfromFile(
-                            config_file, self.output_dir, firmware.getBoardName()
+                            config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                         )
                     else:
                         logger.warning("No Valid XML configuration file")
@@ -462,13 +462,13 @@ class TestHandler(QObject):
             else:
                 for firmware in self.firmware:
                     SetupXMLConfigfromFile(
-                        self.config_file, self.output_dir, firmware.getBoardName()
+                        self.config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                     )
         else:
             if self.config_file != "":
                 for firmware in self.firmware:
                     SetupXMLConfigfromFile(
-                        self.config_file, self.output_dir, firmware.getBoardName()
+                        self.config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                     )
             else:
                 tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
@@ -487,7 +487,7 @@ class TestHandler(QObject):
 
                     if config_file:
                         SetupXMLConfigfromFile(
-                            config_file, self.output_dir, firmware.getBoardName()
+                            config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                         )
                     else:
                         logger.warning("No Valid XML configuration file")
@@ -1242,7 +1242,7 @@ created by Ph2_ACF is empty."
             return
 
         try:
-            logger.debug("f{self.output_dir=}")
+            logger.debug(f"{self.output_dir=}")
             if not os.path.exists(
                 os.path.join(
                     self.output_dir, self.firmware[processIndex].getBoardName()
