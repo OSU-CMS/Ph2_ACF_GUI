@@ -458,7 +458,7 @@ class TestHandler(QObject):
 
                     if config_file:
                         SetupXMLConfigfromFile(
-                            config_file, self.output_dir, firmware.getBoardName()
+                            config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                         )
                     else:
                         logger.warning("No Valid XML configuration file")
@@ -467,13 +467,13 @@ class TestHandler(QObject):
             else:
                 for firmware in self.firmware:
                     SetupXMLConfigfromFile(
-                        self.config_file, self.output_dir, firmware.getBoardName()
+                        self.config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                     )
         else:
             if self.config_file != "":
                 for firmware in self.firmware:
                     SetupXMLConfigfromFile(
-                        self.config_file, self.output_dir, firmware.getBoardName()
+                        self.config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                     )
             else:
                 tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
@@ -492,7 +492,7 @@ class TestHandler(QObject):
 
                     if config_file:
                         SetupXMLConfigfromFile(
-                            config_file, self.output_dir, firmware.getBoardName()
+                            config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                         )
                     else:
                         logger.warning("No Valid XML configuration file")
@@ -828,7 +828,7 @@ class TestHandler(QObject):
             self.IVCurveHandler.IVCurve()
             return
 
-        if testName == "SLDOScan":
+        if "SLDOScan" in testName and "GADC" not in testName:
             self.currentTest = testName
             self.configTest()
             self.SLDOScanData = []
@@ -1101,7 +1101,6 @@ class TestHandler(QObject):
                             self.info,
                             self.registerKey,
                             self.communicationTestResults,
-                            self.comment,
                             self.iref_match_status,  # Pass iref_match_status for IREF validation
                         )
 
@@ -1208,7 +1207,7 @@ created by Ph2_ACF is empty."
             return
 
         try:
-            logger.debug("f{self.output_dir=}")
+            logger.debug(f"{self.output_dir=}")
             if not os.path.exists(
                 os.path.join(
                     self.output_dir, self.firmware[processIndex].getBoardName()
@@ -1386,7 +1385,7 @@ created by Ph2_ACF is empty."
                         logger.error(traceback.format_exc())
                         pass
 
-                if self.check_for_end_of_test(textStr):
+                if self.check_for_end_of_test(textStr, processIndex):
                     self.runwindow.ResultWidget.ProgressBars[processIndex][
                         self.testIndexTracker
                     ].setValue(100)
@@ -1476,7 +1475,7 @@ created by Ph2_ACF is empty."
             # This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
 
             elif self.ProgressingMode[processIndex] == ProgressMode.SUMMARY:
-                if self.check_for_end_of_test(textStr):
+                if self.check_for_end_of_test(textStr, processIndex):
                     self.runwindow.ResultWidget.ProgressBars[processIndex][
                         self.testIndexTracker
                     ].setValue(100)
@@ -1571,7 +1570,7 @@ created by Ph2_ACF is empty."
         except Exception:
             logger.error(traceback.format_exc())
 
-    def check_for_end_of_test(self, textStr):
+    def check_for_end_of_test(self, textStr, processIndex=0):
         # function to support the quick fix in on_readyReadStandardOutput() where
         # the progress bar doesn't always reach 100%.
         currentTest = Test_to_Ph2ACF_Map[self.currentTest]
@@ -1904,15 +1903,17 @@ created by Ph2_ACF is empty."
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
         for module in self.modules:
             moduleName = module.getModuleName()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.svg".format(
-                self.output_dir, moduleName, pin, method
+                os.path.join(self.output_dir, fc7name), moduleName, pin, method
             )
             csvfilename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.csv".format(
-                self.output_dir, moduleName, pin, method
+                os.path.join(self.output_dir, fc7name), moduleName, pin, method
             )
             self.SLDOfilelist.append(csvfilename)
             # The pin is passed here, so we can use that as the key in the chipmap dict from settings.py
             total_result_stacked = np.vstack(total_result)
+            os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
             np.savetxt(csvfilename, total_result_stacked, delimiter=",")
 
             # Make the actual graph
@@ -2046,6 +2047,7 @@ created by Ph2_ACF is empty."
                 voltages = voltages.flatten()
                 current = current.flatten()
 
+            os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
             np.savetxt(csvfilename, (voltages, current), delimiter=",")
             module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
                 boardID=beboardId, ogID=ogId, hybridID=hybridId
@@ -2057,6 +2059,7 @@ created by Ph2_ACF is empty."
 
             filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(
                 os.path.join(self.output_dir,fc7name), moduleName, timestamp
+
             )
             # filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
             self.IVCurveResult.saveToSVG(filename)
@@ -2312,7 +2315,8 @@ created by Ph2_ACF is empty."
 
         def handle_retry():
             if check_enabledModules():
-                self.outputString.emit(f"Retrying {self.currentTest}...")
+                for console in self.runwindow.ConsoleViews:
+                    self.outputString.emit(f"Retrying {self.currentTest}...",console)
                 for i in range(len(self.firmware)):
                     self.runwindow.ResultWidget.runtimes[i][
                         self.testIndexTracker
@@ -2346,6 +2350,7 @@ created by Ph2_ACF is empty."
             counter = 0
             for i, fc7 in enumerate(self.firmware):
                 for module in fc7.getModules():
+                    status, message = self.felis_instances[i].set_comment( module.getModuleName(),"sequence", self.comment)
                     status, message = self.felis_instances[i].upload_results(
                         module.getModuleName(),
                         self.master.username,
