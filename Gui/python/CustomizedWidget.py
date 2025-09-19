@@ -21,6 +21,7 @@ from lxml import etree
 import re
 import traceback
 
+from icicle.icicle.instrument_cluster import DummyInstrument
 import Gui.siteSettings as site_settings
 from Gui.python.Firmware import (
     QtModule,
@@ -146,7 +147,10 @@ class ModuleBox(QWidget):
             else:
                 logger.warning(f"Unknown port: {port}")
                 return "L12"
-        except:
+        except ValueError:
+            logger.error("Invalid port value. Port must be an integer.")
+            return "L12"
+        except Exception:
             logger.error(traceback.format_exc())
             return "L12"
 
@@ -641,6 +645,9 @@ class BeBoardBox(QWidget):
         self.ListLayout.addWidget(newButton, len(self.ModuleList), 1, 1, 1)
         self.update()
 
+        
+
+
     def createSerialUpdateCallback(self, module):
         return lambda: self.onSerialNumberUpdate(module)
 
@@ -1098,6 +1105,9 @@ class SimpleBeBoardBox(QWidget):
         self.update()
         logger.debug(f"{__name__} : Finished setting up module list")
 
+
+
+
     def removeModule(self, index):
         # For Manual change
         self.ModuleList.pop(index)
@@ -1335,3 +1345,4 @@ class SimpleBeBoardBox(QWidget):
     def on_ModuleFilled(self):
         self.FilledModuleList.append(self.ModuleList[-1])
         self.addModule()
+

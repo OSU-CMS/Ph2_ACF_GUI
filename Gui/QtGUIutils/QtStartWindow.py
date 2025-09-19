@@ -28,10 +28,13 @@ from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
     FC7List,
     ModuleCurrentMap,
+    icicle_instrument_setup,
+    WorkingChannels,
+    json_setup
 )
-
+from icicle.icicle.instrument_cluster import DummyInstrument
 from InnerTrackerTests.TestSequences import TestList
-from siteSettings import icicle_instrument_setup
+
 
 
 logger = get_logger(__name__)
@@ -606,6 +609,9 @@ class QtStartWindow(QWidget):
         # the module type but ModuleBox is not publically accessible so we have to go through BeBoardWidget
         self.master.module_in_use = self.BeBoardWidget.getModules()[0].getType()
 
+        self.update_instrument_cluster()
+
+
         for module in self.BeBoardWidget.getModules():
             if module.getSerialNumber() == "":
                 self.master.errorMessageBoxSignal.emit(
@@ -647,6 +653,165 @@ class QtStartWindow(QWidget):
 
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, files)
         self.closeFlag = True
+
+    def update_instrument_cluster(self):
+        if hasattr(self.master, 'instruments') and 'auto' in json_setup:
+            logger.info("Automatically setting instrument cluster channels.")
+            has_cb = self._check_instrument_presence("cb")
+            has_hb = self._check_instrument_presence("hb")
+            channels_dict = self._create_channels_dict(has_cb, has_hb)
+            self._update_module_dict(channels_dict)
+
+    def _check_instrument_presence(self, instrument_key):
+        """Check if a specific instrument key exists in the instrument dictionary."""
+        instrument_dict = self.master.instruments.get_instruments()
+        logger.debug(f"Checking for instrument key '{instrument_key}' in instrument_dict: {instrument_dict.keys()}")
+        return instrument_key in instrument_dict
+
+    def _create_channels_dict(self, has_cb, has_hb):
+        """Create the channels dictionary based on the presence of coldbox and hb."""
+        if len(WorkingChannels) < len(self.BeBoardWidget.getModules()):
+            logger.error("Not enough working channels defined in siteConfig.WorkingChannels.")
+            raise ValueError("Insufficient working channels in siteConfig.WorkingChannels.")
+
+        channels_dict = {}
+        for index, module in enumerate(self.BeBoardWidget.getModules()):
+            try:
+                if WorkingChannels[index] < 5:
+                    channels_dict[index] = self._create_channel_entry("lv_1", WorkingChannels[index], WorkingChannels[index], has_cb, has_hb)
+                    logger.info(f"Added channel {index} with lv_1 and hv.")
+                else:
+                    channels_dict[index] = self._create_channel_entry("lv_2", WorkingChannels[index]-4, WorkingChannels[index], has_cb, has_hb)
+                    logger.info(f"Added channel {index} with lv_2 and hv.")
+            except IndexError:
+                logger.error(f"No working channel defined for module index {index}.")
+                raise ValueError(f"WorkingChannels does not have enough entries for module index {index}.")
+
+        logger.info(f"Final module_dict: {channels_dict}")
+        return channels_dict
+
+    def _create_channel_entry(self, lv_instrument, lv_channel, cb_channel, has_cb, has_hb):
+        """Create a single channel entry for the channels dictionary."""
+        channel_entry = {
+            "lv": {
+                "instrument": lv_instrument,
+                "channel": lv_channel
+            },
+            "hv": {
+                "instrument": "hv",
+                "channel": 1
+            }
+        }
+        if has_cb:
+            channel_entry["cb"] = {
+                "instrument": "cb",
+                "channel": cb_channel
+            }
+        if has_hb:
+            channel_entry["hb"] = {
+                "instrument": "hb",
+                "channel": cb_channel
+            }
+        return channel_entry
+
+    def _update_module_dict(self, channels_dict):
+        """Update self._module_dict with DummyInstrument and Power/TempChannel objects using InstrumentCluster's instrument dictionary."""
+        if not hasattr(self.master, 'instruments'):
+            raise AttributeError("Master does not have an 'instruments' attribute.")
+
+        instrument_dict = self.master.instruments.get_instruments()
+        self._module_dict = {}
+        for number, channel in channels_dict.items():
+            temp_dict = {}
+            if "lv" in channel.keys():
+                instr_object = instrument_dict[channel["lv"]["instrument"]]
+                instr_object.role = "lv"
+                temp_dict["lv"] = instr_object.channel(
+                    "PowerChannel", channel["lv"]["channel"]
+                )
+                temp_dict["lv"].instr_name = channel["lv"]["instrument"]
+            else:
+                temp_dict["lv"] = DummyInstrument("lv")
+
+            if "hv" in channel.keys():
+                instr_object = instrument_dict[channel["hv"]["instrument"]]
+                instr_object.role = "hv"
+                temp_dict["hv"] = instr_object.channel(
+                    "PowerChannel", channel["hv"]["channel"]
+                )
+                temp_dict["hv"].instr_name = channel["hv"]["instrument"]
+            else:
+                temp_dict["hv"] = DummyInstrument("hv")
+
+            temp_dict["ab"] = DummyInstrument("ab")
+            if "cb" in channel.keys():
+                instr_object = instrument_dict[channel["cb"]["instrument"]]
+                instr_object.role = "cb"
+                temp_dict["cb"] = instr_object.channel(
+                    "TemperatureChannel", channel["cb"]["channel"]
+                )
+                temp_dict["cb"].instr_name = channel["cb"]["instrument"]
+                assert hasattr(instr_object, "default_temperature")
+                temp_dict["cb"].default_temperature = float(
+                    instr_object.default_temperature
+                )
+                temp_dict["cb"].default_step_size = (
+                    instr_object.default_speed
+                    if hasattr(instr_object, "default_speed")
+                    else 0
+                )
+                temp_dict["cb"].temperature_tolerance = (
+                    instr_object.temperature_tolerance
+                    if hasattr(instr_object, "temperature_tolerance")
+                    else 0.5
+                )
+                temp_dict["cb"].validation_time = (
+                    instr_object.validation_time
+                    if hasattr(instr_object, "validation_time")
+                    else 20
+                )
+                temp_dict["cb"].validation_timeout = (
+                    instr_object.validation_timeout
+                    if hasattr(instr_object, "validation_timeout")
+                    else 600
+                )
+                temp_dict["cb"].humidity_control = (
+                    instr_object.humidity_control
+                    if hasattr(instr_object, "humidity_control")
+                    else True
+                )
+                temp_dict["cb"].dewpoint_delta = (
+                    instr_object.dewpoint_delta
+                    if hasattr(instr_object, "dewpoint_delta")
+                    else 1.0
+                )
+            else:
+                temp_dict["cb"] = DummyInstrument("cb")
+
+            if "hb" in channel:
+                instr_object = instrument_dict[channel["hb"]["instrument"]]
+                assert hasattr(instr_object, "channel_compliance")
+                hvbox_cfg = {
+                    "instrument": instr_object,
+                    "source_instr": instrument_dict[channel["hv"]["instrument"]],
+                    "source_channel": channel["hv"]["channel"],
+                    "hvbox_channel": channel["hb"]["channel"],
+                    "channel_compliance": float(instr_object.channel_compliance),
+                }
+                self.master.instruments._hvbox_config[number] = hvbox_cfg
+            else:
+                temp_dict["hb"] = DummyInstrument("hb")
+
+            self._module_dict[number] = temp_dict
+            self.master.instruments._module_dict[number] = temp_dict
+            print("Get HB: ", self.master.instruments.get_hb())
+
+        self.master.instruments.open()
+        keys_to_remove = [key for key in self.master.instruments._module_dict.keys() if isinstance(key, str)]
+        for key in keys_to_remove:
+            self.master.instruments._module_dict.pop(key)
+        logger.debug(f"Module Dict:",self.master.instruments.get_modules())
+        logger.debug(f"Instruments:",self.master.instruments.get_instruments())
 
     def closeEvent(self, event):
         if self.runFlag:

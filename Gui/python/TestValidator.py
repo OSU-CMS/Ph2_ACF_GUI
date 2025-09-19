@@ -1,6 +1,7 @@
 import os
 import ROOT
 import traceback
+import re
 
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests_Modules
 from Gui.GUIutils.guiUtils import isCompositeTest
@@ -38,6 +39,7 @@ def ResultGrader(
         module_name = module_data["module"].getModuleName()
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
+        module_hybridID = module_data["module"].getFMCPort()
        
         if "CommunicationTest" in testName:
             module_name = module_data["module"].getModuleName()
@@ -69,9 +71,13 @@ def ResultGrader(
             root_file_name = testName.split("_")[0] + "_" + module_name
 
             relevant_files = [
-                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
             ]
+            dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
+            relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
 
+
+            print("relevant_files:", relevant_files)
             _1, _2 = felis.set_module(
                 module_name,
                 module_type.split(" ")[0],
