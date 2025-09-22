@@ -544,7 +544,7 @@ class TestHandler(QObject):
         else:
             nextTest = None
         self.runSingleTest(testName, nextTest)
-##################################################################################
+
     def runOpenBumpTest(self):
         self._openBumpTest_running = True
         self._openBumpTest_subtest_index = 0
@@ -552,8 +552,7 @@ class TestHandler(QObject):
         logger.info(f"Running OpenBumpTest subtest: {subtest}")
         self.currentTest = subtest
         self.runSingleTest(subtest)
-##################################################################################
-##################################################################################
+
     def ramp_progress_bar(self, max):
         voltages = [
             getattr(module["hv"], "voltage")
