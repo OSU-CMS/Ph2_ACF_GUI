@@ -63,7 +63,7 @@ from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
-from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
+from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map, OpenBumpTest
 
 
 logger = get_logger(__name__)
@@ -309,6 +309,9 @@ class TestHandler(QObject):
             module.getModuleName(): True for module in self.modules
         }  # Initialize all to True
 
+        self._openBumpTest_running = False
+        self._openBumpTest_subtest_index = 0
+
     def finished_run_process(self, _, exitStatus, i):
         logger.info("Inside finsihed_run_process")
         logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
@@ -532,14 +535,25 @@ class TestHandler(QObject):
             # self.testsAttempted = 0
             return
         testName = runTestList[self.testIndexTracker]
-        if self.testIndexTracker + 1 < len(
-            runTestList
-        ):  # Check if there is a next test
+
+        if testName == "OpenBumpTest":
+            self.runOpenBumpTest()
+            return
+        if self.testIndexTracker + 1 < len(runTestList):
             nextTest = runTestList[self.testIndexTracker + 1]
         else:
             nextTest = None
         self.runSingleTest(testName, nextTest)
-
+##################################################################################
+    def runOpenBumpTest(self):
+        self._openBumpTest_running = True
+        self._openBumpTest_subtest_index = 0
+        subtest = OpenBumpTest[self._openBumpTest_subtest_index]
+        logger.info(f"Running OpenBumpTest subtest: {subtest}")
+        self.currentTest = subtest
+        self.runSingleTest(subtest)
+##################################################################################
+##################################################################################
     def ramp_progress_bar(self, max):
         voltages = [
             getattr(module["hv"], "voltage")
@@ -1801,6 +1815,22 @@ created by Ph2_ACF is empty."
             return
 
         self.finished_processes = 0
+
+        if self._openBumpTest_running:
+            self._openBumpTest_subtest_index += 1
+            if self._openBumpTest_subtest_index < len(OpenBumpTest):
+                subtest = OpenBumpTest[self._openBumpTest_subtest_index]
+                logger.info(f"Running next OpenBumpTest subtest: {subtest}")
+                self.currentTest = subtest
+                self.input_dir = self.output_dir  # Chain the output of the last test as input for the next
+                self.output_dir = "" # Reset output directory to force creation of a new one
+                self.runSingleTest(subtest)
+                return  # Skip normal finish routine
+            else:
+                # Finished all subtests
+                self._openBumpTest_running = False
+                self.currentTest = "OpenBumpTest"
+                logger.info("All OpenBumpTest subtests finished. Validating...")
 
         # validate the results
         logger.debug("About to run validateTest()")
