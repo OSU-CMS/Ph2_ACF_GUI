@@ -22,6 +22,7 @@ from PyQt5.QtWidgets import (
 import os
 import numpy as np
 import threading
+import time
 import traceback
 import Gui.siteSettings as site_settings
 
@@ -34,6 +35,7 @@ from Gui.python.ResultTreeWidget import ResultTreeWidget
 from Gui.python.TestHandler import TestHandler
 from Gui.python.logging_config import get_logger
 from InnerTrackerTests.TestSequences import CompositeTests_Modules
+from icicle.icicle.psi_coldbox import PSIColdbox
 
 logger = get_logger(__name__)
 
@@ -706,18 +708,25 @@ class QtRunWindow(QWidget):
 
             if reply == QMessageBox.Yes:
                 self.release()
+                print(f"self.master.instruments: {self.master.instruments}")
                 if self.master.instruments:
                     starting_voltages = [
                         np.abs(getattr(module["hv"], "voltage"))
                         for module in self.master.instruments._module_dict.values()
                     ]
-                    self.master.instruments.off(
-                        hv_delay=0.3,
-                        hv_step_size=10,
+                    self.master.instruments.hv_off(
+                        delay=0.3,
+                        step_size=10,
                         execute_each_step=lambda: self.testHandler.ramp_progress_bar(
                             starting_voltages
                         ),
                     )
+                    self.master.instruments.cb_off(checkstatus=False)
+
+                    self.wait_for_temp()
+
+                    self.master.instruments.lv_off()
+
                 else:
                     QMessageBox.information(
                         self,
@@ -729,3 +738,16 @@ class QtRunWindow(QWidget):
             else:
                 self.backSignal = False
                 event.ignore()
+    
+    def wait_for_temp(self):
+        """
+        Waits for the temperature of all modules to reach a safe temperature.
+        """
+        for module_id, module in self.master.instruments.get_modules().items():
+            if "cb" in module and isinstance(module["cb"], PSIColdbox.TemperatureChannel):
+                logger.debug(f"Module temperature {module['cb'].measure_temperature} for module {module_id}")
+                while module["cb"].measure_temperature < site_settings.coldboxRoomTemp:
+                    logger.debug(f"Module temperature {module['cb'].measure_temperature} for module {module_id}")
+                    time.sleep(0.1)
+            logger.debug(f"Final module temperature before turning lv off {module['cb'].measure_temperature} for module {module_id}")
+
