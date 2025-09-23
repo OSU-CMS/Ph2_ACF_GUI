@@ -22,8 +22,7 @@ def ResultGrader(
     BBanalysis_root_files,
     sequence,
     registerKey,
-    communicationTestResults,
-    iref_match_status=None
+    communicationTestResults
 ):
     try:
 
@@ -100,8 +99,6 @@ def ResultGrader(
             module_name = module_data["module"].getModuleName()
             comm_result = communicationTestResults.get(module_name)
             # Get IREF match status for this module
-            iref_status = iref_match_status.get(module_name) if iref_match_status else None
-            logger.info(f"iref match status is: {iref_match_status}")
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
@@ -119,7 +116,6 @@ def ResultGrader(
                 f"{testIndexInSequence:02d}_{testName}",
                 "commtest",
                 comm_result=comm_result,
-                iref_status=iref_status
             )
 
         else:
