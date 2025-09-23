@@ -1135,7 +1135,6 @@ class TestHandler(QObject):
                             self.info,
                             self.registerKey,
                             self.communicationTestResults,
-                            self.iref_match_status,  # Pass iref_match_status for IREF validation
                         )
 
                         results.append(result)
