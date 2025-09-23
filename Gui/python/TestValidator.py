@@ -41,23 +41,8 @@ def ResultGrader(
         module_version = module_data["module"].getModuleVersion()
         module_hybridID = module_data["module"].getFMCPort()
        
-        if "CommunicationTest" in testName:
-            module_name = module_data["module"].getModuleName()
-            comm_result = communicationTestResults.get(module_name)
-            # Get IREF match status for this module
-            iref_status = iref_match_status.get(module_name) if iref_match_status else None
-            logger.info(f"iref match status is: {iref_match_status}")
-            if comm_result is None:
-                return {module_name: (False, "CommunicationTest did not complete")}, BBanalysis_root_files
-            if comm_result is True:
-                if iref_status is True:
-                    return {module_name: (True, "CommunicationTest successful. IREF values match.")}, BBanalysis_root_files
-                elif iref_status is False:
-                    return {module_name: (False, "CommunicationTest successful but IREF values do not match")}, BBanalysis_root_files
-                else:
-                    return {module_name: (False, "CommunicationTest successful but IREF status unknown")}, BBanalysis_root_files
-            else:
-                return {module_name: (False, "CommunicationTest failed")}, BBanalysis_root_files
+
+            
 
 
         root_file_name = testName.split("_")[0]
@@ -111,6 +96,32 @@ def ResultGrader(
                 f"{testIndexInSequence:02d}_{testName}",
                 "sldo",
             )
+        elif "CommunicationTest" in testName:
+            module_name = module_data["module"].getModuleName()
+            comm_result = communicationTestResults.get(module_name)
+            # Get IREF match status for this module
+            iref_status = iref_match_status.get(module_name) if iref_match_status else None
+            logger.info(f"iref match status is: {iref_match_status}")
+            relevant_files = [
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
+            ]
+
+            _1, _2 = felis.set_module(
+                module_name,
+                module_type.split(" ")[0],
+                module_type.split(" ")[2].replace("Quad", "2x2"),
+                module_version.strip("v"),
+                True,
+            )
+            status, message, sanity, explanation = felis.set_result(
+                relevant_files,
+                module_name,
+                f"{testIndexInSequence:02d}_{testName}",
+                "commtest",
+                comm_result=comm_result,
+                iref_status=iref_status
+            )
+
         else:
             if testName in (
                 "PixelAlive_highcharge_xtalk",
