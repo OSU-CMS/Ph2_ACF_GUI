@@ -63,7 +63,10 @@ from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
+
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map, OpenBumpTest
+from Gui.siteSettings import icicle_instrument_setup
+
 
 
 logger = get_logger(__name__)
@@ -308,6 +311,10 @@ class TestHandler(QObject):
         self.iref_match_status = {
             module.getModuleName(): True for module in self.modules
         }  # Initialize all to True
+        self.set_default_temperature()
+        self.powergroup = None
+        for group_key, group in self.instruments.powering_groups.items():
+            self.powergroup = group
 
         self._openBumpTest_running = False
         self._openBumpTest_subtest_index = 0
@@ -456,7 +463,7 @@ class TestHandler(QObject):
 
                     if config_file:
                         SetupXMLConfigfromFile(
-                            config_file, self.output_dir, firmware.getBoardName()
+                            config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                         )
                     else:
                         logger.warning("No Valid XML configuration file")
@@ -465,13 +472,13 @@ class TestHandler(QObject):
             else:
                 for firmware in self.firmware:
                     SetupXMLConfigfromFile(
-                        self.config_file, self.output_dir, firmware.getBoardName()
+                        self.config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                     )
         else:
             if self.config_file != "":
                 for firmware in self.firmware:
                     SetupXMLConfigfromFile(
-                        self.config_file, self.output_dir, firmware.getBoardName()
+                        self.config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                     )
             else:
                 tmpDir = os.environ.get("GUI_dir") + "/Gui/.tmp"
@@ -490,7 +497,7 @@ class TestHandler(QObject):
 
                     if config_file:
                         SetupXMLConfigfromFile(
-                            config_file, self.output_dir, firmware.getBoardName()
+                            config_file, os.path.join(self.output_dir, firmware.getBoardName()), firmware.getBoardName()
                         )
                     else:
                         logger.warning("No Valid XML configuration file")
@@ -878,59 +885,27 @@ class TestHandler(QObject):
                 "instrument_dict"
             ]["hv"]["default_voltage"]
             # assumes only 1 HV titled 'hv' in instruments.json
-            hv_on_module = False
-            mod_dict = self.instruments.get_modules()
+            hv_status = False
+            #Checking the status of the HV supply
             for number in self.instruments.get_modules().keys():
                 if self.instruments.status()[number]["hv"] == "1":
-                    hv_on_module = True
+                    hv_status = True
                     break
-
-                if testName == "SCurveScan_2100_FWD":
-                    if hv_on_module:
-                        starting_voltages = [
-                            np.abs(getattr(module["hv"], "voltage"))
-                            for module in self.instruments._module_dict.values()
-                        ]
-                        self.instruments.hv_off(
-                            execute_each_step=lambda: self.ramp_progress_bar(
-                                starting_voltages
-                            )
-                        )
-                        self.instruments.hv_on_module(
-                            module=mod_dict[number],
-                            voltage=site_settings.forward_bias_voltage,
-                            delay=0.3,
-                            step_size=10,
-                            execute_each_step=lambda: self.ramp_progress_bar(
-                                [site_settings.forward_bias_voltage]
-                                * len(self.instruments._module_dict.values())
-                            ),
-                        )
-                    else:
-                        self.instruments.hv_on_module(
-                            module=mod_dict[number],
-                            voltage=site_settings.forward_bias_voltage,
-                            delay=0.3,
-                            step_size=10,
-                            execute_each_step=lambda: self.ramp_progress_bar(
-                                [site_settings.forward_bias_voltage]
-                                * len(self.instruments._module_dict.values())
-                            ),
-                        )
-                    testName = "SCurveScan_2100"
-                    hv_on_module = True
-                if not hv_on_module:
-                    self.instruments.hv_on_module(
-                        module=mod_dict[number],
-                        voltage=default_hv_voltage,
-                        delay=0.3,
-                        step_size=10,
-                        execute_each_step=lambda: self.ramp_progress_bar(
-                            [default_hv_voltage]
-                            * len(self.instruments._module_dict.values())
+            if not hv_status:
+                self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
+                self.powergroup.enable_all()
+                print("trying to turn on HV")
+                self.powergroup.ramp_hv(
+                    voltage=default_hv_voltage,
+                    delay=0.3,
+                    step_size=10,
+                    execute_each_step=lambda: self.ramp_progress_bar(
+                        [default_hv_voltage]
+                        * len(self.instruments._module_dict.values())
                         ),
-                        break_loop=lambda: self.halt,
-                    )
+                    break_loop=lambda: self.halt,
+                )
+            
 
         if "TrimbitScan" in testName:
             self.currentTest = testName
@@ -1004,7 +979,7 @@ class TestHandler(QObject):
                 process.start(
                     "echo",
                     [
-                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml  -k -c  {1}".format(
+                        "Running COMMAND: CMSITminiDAQ  -f  CMSIT_{0}.xml -c  {1}".format(
                             firmware.getBoardName(),
                             Test_to_Ph2ACF_Map[self.currentTest],
                         )
@@ -1061,7 +1036,6 @@ class TestHandler(QObject):
                     [
                         "-f",
                         f"CMSIT_{firmware.getBoardName()}.xml",
-                        # "-k",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
@@ -1148,8 +1122,6 @@ class TestHandler(QObject):
                             self.info,
                             self.registerKey,
                             self.communicationTestResults,
-                            self.comment,
-                            self.iref_match_status,  # Pass iref_match_status for IREF validation
                         )
 
                         results.append(result)
@@ -1255,7 +1227,7 @@ created by Ph2_ACF is empty."
             return
 
         try:
-            logger.debug("f{self.output_dir=}")
+            logger.debug(f"{self.output_dir=}")
             if not os.path.exists(
                 os.path.join(
                     self.output_dir, self.firmware[processIndex].getBoardName()
@@ -1280,14 +1252,26 @@ created by Ph2_ACF is empty."
 
             elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
+                current_fc7: str = self.firmware[processIndex].getBoardName()
                 os.system(
-                    "cp {0}/test/Results/Run{1}_MonitorDQM.root {2}/".format(
+                    "cp {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}/".format(
                         os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
+                        self.firmware[processIndex].getBoardID(),
                         os.path.join(
-                            self.output_dir, self.firmware[processIndex].getBoardName()
+                            self.output_dir, current_fc7
                         ),
                     )
+                )
+                os.system(
+                    "cp {0}/test/Results/Run{1}_CMSIT_{2}.xml {3}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        current_fc7,
+                        os.path.join(
+                            self.output_dir, current_fc7    
+                        ),
+                    )   
                 )
             else:
                 ph2_acf_base_dir: str | None = os.environ.get("PH2ACF_BASE_DIR")
@@ -1421,7 +1405,7 @@ created by Ph2_ACF is empty."
                         logger.error(traceback.format_exc())
                         pass
 
-                if self.check_for_end_of_test(textStr):
+                if self.check_for_end_of_test(textStr, processIndex):
                     self.runwindow.ResultWidget.ProgressBars[processIndex][
                         self.testIndexTracker
                     ].setValue(100)
@@ -1511,7 +1495,7 @@ created by Ph2_ACF is empty."
             # This next block needs to be edited once Ph2ACF bug is fixed.  Remove the Fixme when ready.
 
             elif self.ProgressingMode[processIndex] == ProgressMode.SUMMARY:
-                if self.check_for_end_of_test(textStr):
+                if self.check_for_end_of_test(textStr, processIndex):
                     self.runwindow.ResultWidget.ProgressBars[processIndex][
                         self.testIndexTracker
                     ].setValue(100)
@@ -1606,7 +1590,7 @@ created by Ph2_ACF is empty."
         except Exception:
             logger.error(traceback.format_exc())
 
-    def check_for_end_of_test(self, textStr):
+    def check_for_end_of_test(self, textStr, processIndex=0):
         # function to support the quick fix in on_readyReadStandardOutput() where
         # the progress bar doesn't always reach 100%.
         currentTest = Test_to_Ph2ACF_Map[self.currentTest]
@@ -1889,6 +1873,8 @@ created by Ph2_ACF is empty."
                                     "module": module,
                                 }
                                 index -= 1
+                                print(
+                                    f"self.BBanalysis_root_files: {self.BBanalysis_root_files}")
                                 self.felis_instances[fc7_index].set_result(
                                     self.BBanalysis_root_files,
                                     module_data["module"].getModuleName(),
@@ -1946,9 +1932,9 @@ created by Ph2_ACF is empty."
                 self.runwindow.ResultWidget.ProgressBars[i][
                     self.testIndexTracker
                 ].setValue(stepSize)
-                self.runwindow.ResultWidget.ProgressBars[i][
-                    self.testIndexTracker
-                ].setValue(self.SLDOProgressValue)
+                #self.runwindow.ResultWidget.ProgressBars[i][
+                #    self.testIndexTracker
+                #].setValue(self.SLDOProgressValue)
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
         for module in self.modules:
@@ -2050,9 +2036,16 @@ created by Ph2_ACF is empty."
         # 3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
         # IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
         # to output the results only to the console of the fc7 that each module is connnected to.
-        for console in self.runwindow.ConsoleViews:
-            self.outputString.emit(f"Voltages: {measure['voltage']}", console)
-            self.outputString.emit(f"Currents: {measure['current']}", console)
+        #for console in self.runwindow.ConsoleViews:
+        #    self.outputString.emit(f"Voltages: {measure['voltage']}", console)
+        #    self.outputString.emit(f"Currents: {measure['current']}", console)
+
+        # We should zip self.modules with the instrument cluster channels
+        # to match the modules ids with the correct channels.
+        channelList = []
+        for channel in measure:
+            channelList.append(channel)
+        module_chan_map = dict(zip(self.modules,channelList))
 
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
@@ -2065,15 +2058,14 @@ created by Ph2_ACF is empty."
                 self,
                 xlabel="Voltage (V)",
                 ylabel="I (A)",
-                X=measure["voltage"],
-                Y=measure["current"],
+                X=measure[module_chan_map[module]]["voltage"],
+                Y=measure[module_chan_map[module]]["current"],
                 invert=True,
             )
 
             csvfilename = "{0}/IVCurve_Module_{1}_{2}.csv".format(
                 os.path.join(self.output_dir, fc7name), moduleName, timestamp
             )
-
             # Some power supplies give outputs as a two dimensional array
             # This breaks np.savetxt. The second element of the array should be empty
             # either way, therefore, we will just flatten the array getting rid of the
@@ -2081,8 +2073,10 @@ created by Ph2_ACF is empty."
             # channels this will need to reevaluated.
 
             # Convert to numpy array to give us access to flatten() and ndim
-            voltages = np.array(measure["voltage"])
-            current = np.array(measure["current"])
+            # This should actually allow measure to be a nested dictionary where the 
+            # keys are the instrument cluster channel names.
+            voltages = np.array(measure[module_chan_map[module]]["voltage"])
+            current = np.array(measure[module_chan_map[module]]["current"])
 
             # If the voltages are 2D+, then flatten.
             if voltages.ndim > 1:
@@ -2096,11 +2090,12 @@ created by Ph2_ACF is empty."
             )
 
             IVCurve_CSV_to_ROOT(
-                moduleName, module_canvas_path, csvfilename, os.path.join(self.output_dir, fc7name)
+                moduleName, module_canvas_path, csvfilename, os.path.join(self.output_dir,fc7name)
             )
 
             filename = "{0}/IVCurve_Module_{1}_{2}.svg".format(
-                os.path.join(self.output_dir, fc7name), moduleName, timestamp
+                os.path.join(self.output_dir,fc7name), moduleName, timestamp
+
             )
             # filename2 = "IVCurve_Module_{0}_{1}.svg".format(moduleName, timestamp)
             self.IVCurveResult.saveToSVG(filename)
@@ -2211,6 +2206,7 @@ created by Ph2_ACF is empty."
         for module in self.modules:
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             moduleName = module.getModuleName()
             hybridId = module.getFMCPort()
             module_canvas_path = (
@@ -2222,7 +2218,7 @@ created by Ph2_ACF is empty."
             # Generate CSVs and get the list
             csvfiles = self.makeTrimbitScanPlots(self.ADCmeasurements, self.pin_mapping)
             Trimbit_CSV_to_ROOT(
-                moduleName, module_canvas_path, csvfiles, self.output_dir
+                moduleName, module_canvas_path, csvfiles, os.path.join(self.output_dir, fc7name)
             )
 
         self.validateTest()
@@ -2390,6 +2386,7 @@ created by Ph2_ACF is empty."
             counter = 0
             for i, fc7 in enumerate(self.firmware):
                 for module in fc7.getModules():
+                    status, message = self.felis_instances[i].set_comment( module.getModuleName(),"sequence", self.comment)
                     status, message = self.felis_instances[i].upload_results(
                         module.getModuleName(),
                         self.master.username,
@@ -2483,3 +2480,15 @@ created by Ph2_ACF is empty."
                             command_template.format(boardID, ogID, hybridID, chipID)
                         )
         executeCommandSequence(commands)
+    
+    def set_default_temperature(self):
+        """Set the temperature of every active TEC to the default temperature if 'Tessie' is chosen as the cooler."""
+        print("Get HB:", self.instruments.get_hb())
+        if site_settings.cooler == "Tessie":
+            try:
+                default_temperature = icicle_instrument_setup["instrument_dict"]["cb"]["default_temperature"]
+                self.instruments.cb_on(temperature = default_temperature)
+            except KeyError:
+                logger.error("Default temperature or coldbox configuration is missing in the instrument setup.")
+            except Exception:
+                logger.error(traceback.format_exc())

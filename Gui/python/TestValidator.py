@@ -1,6 +1,7 @@
 import os
 import ROOT
 import traceback
+import re
 
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests_Modules
 from Gui.GUIutils.guiUtils import isCompositeTest
@@ -21,9 +22,7 @@ def ResultGrader(
     BBanalysis_root_files,
     sequence,
     registerKey,
-    communicationTestResults,
-    comment,
-    iref_match_status=None
+    communicationTestResults
 ):
     try:
 
@@ -39,24 +38,10 @@ def ResultGrader(
         module_name = module_data["module"].getModuleName()
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
+        module_hybridID = module_data["module"].getFMCPort()
        
-        if "CommunicationTest" in testName:
-            module_name = module_data["module"].getModuleName()
-            comm_result = communicationTestResults.get(module_name)
-            # Get IREF match status for this module
-            iref_status = iref_match_status.get(module_name) if iref_match_status else None
-            logger.info(f"iref match status is: {iref_match_status}")
-            if comm_result is None:
-                return {module_name: (False, "CommunicationTest did not complete")}, BBanalysis_root_files
-            if comm_result is True:
-                if iref_status is True:
-                    return {module_name: (True, "CommunicationTest successful. IREF values match.")}, BBanalysis_root_files
-                elif iref_status is False:
-                    return {module_name: (False, "CommunicationTest successful but IREF values do not match")}, BBanalysis_root_files
-                else:
-                    return {module_name: (False, "CommunicationTest successful but IREF status unknown")}, BBanalysis_root_files
-            else:
-                return {module_name: (False, "CommunicationTest failed")}, BBanalysis_root_files
+
+            
 
 
         root_file_name = testName.split("_")[0]
@@ -69,12 +54,14 @@ def ResultGrader(
         if "IVCurve" in testName:
             root_file_name = testName.split("_")[0] + "_" + module_name
 
-            ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
-
             relevant_files = [
-                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
             ]
+            dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
+            relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
 
+
+            print("relevant_files:", relevant_files)
             _1, _2 = felis.set_module(
                 module_name,
                 module_type.split(" ")[0],
@@ -92,8 +79,6 @@ def ResultGrader(
         elif "SLDOScan" in testName:
             root_file_name = testName.split("_")[0] + "_" + module_name
 
-            ROOT_file_path = "{0}/Result_{1}.root".format(outputDir, root_file_name)
-
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
@@ -110,10 +95,30 @@ def ResultGrader(
                 f"{testIndexInSequence:02d}_{testName}",
                 "sldo",
             )
-        else:
-            ROOT_file_path = "{0}/Run{1}_{2}.root".format(
-                outputDir, runNumber, root_file_name
+        elif "CommunicationTest" in testName:
+            module_name = module_data["module"].getModuleName()
+            comm_result = communicationTestResults.get(module_name)
+            # Get IREF match status for this module
+            relevant_files = [
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
+            ]
+
+            _1, _2 = felis.set_module(
+                module_name,
+                module_type.split(" ")[0],
+                module_type.split(" ")[2].replace("Quad", "2x2"),
+                module_version.strip("v"),
+                True,
             )
+            status, message, sanity, explanation = felis.set_result(
+                relevant_files,
+                module_name,
+                f"{testIndexInSequence:02d}_{testName}",
+                "commtest",
+                comm_result=comm_result,
+            )
+
+        else:
             if testName in (
                 "PixelAlive_highcharge_xtalk",
                 "PixelAlive_coupled_xtalk",
@@ -151,7 +156,6 @@ def ResultGrader(
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
                 Test_to_Ph2ACF_Map[testName],
-                comment,
             )
         if not status:
             raise RuntimeError(message)

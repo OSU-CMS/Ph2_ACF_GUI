@@ -36,7 +36,7 @@ defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #Coldbox variables
-cooler = "Peltier" # "Peltier" or "Manual".
+cooler = "Tessie" # "Peltier" or "Manual" or "Tessie".
 usePeltier = False #The "cooler" variable will be used in the future, but this line is needed for the current version of the GUI
 
 tessie_url = "http://coldbox:3000/"
@@ -46,6 +46,8 @@ defaultPeltierPort = '/dev/ttyUSBPeltier'
 defaultPeltierBaud = 9600
 defaultPeltierSetTemp = 10
 defaultPeltierWarningTemp = 40
+
+coldboxRoomTemp = 10
 #################################
 
 # Temperature Chamber Variables
@@ -61,7 +63,9 @@ defaultPeltierWarningTemp = 40
 manual_powersupply_control = False
 
 # Load instrument setup from json file
-with open('jsonFiles/instruments_osu_adcboardsldo.json', 'r') as file:
+# If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
+json_setup = 'jsonFiles/instruments_osu_auto.json'
+with open(json_setup, 'r') as file:
     icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
@@ -85,7 +89,7 @@ SLDOScan_probecard = {
 	"quad":{
 		"voltage":2.98,
 		"starting current":1.0,
-		"target current":10.0,
+		"target current":8.0,
 		"step size":.2
 	},
     "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
@@ -101,7 +105,7 @@ SLDOScan_GADC = {
 	"quad":{
 		"voltage":2.98,
 		"starting current":7.2,
-		"target current":10.0,
+		"target current":8.0,
 		"step size":.2
 	},
     "physics seconds": 1.5*int(Monitor_SleepTime['SLDOScan_GADC'])/1000,
@@ -121,6 +125,20 @@ FC7List =  {
 	'fc7.board.2'	:	'192.168.1.81',
 	'fc7.board.3'	:	'192.168.1.82',
 }
+
+## Update this list with all working TEC channels in your coldbox
+## Channel assignments will follow this list sequentially per number of modules entered in the GUI
+## Note this is only used when setting up with an 'auto' json file
+WorkingChannels = [
+	1,
+	2,
+	3,
+	4,
+    5,
+	6,
+	7,
+	8
+]
 
 ## Update this dictionary for your simple mode cable mappings ##
 CableMapping = {
