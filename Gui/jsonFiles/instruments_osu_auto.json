@@ -40,6 +40,41 @@
             "lv": {"instrument":"lv_1", "channel":1},
             "cb": {"instrument":"cb", "channel":1},          
             "hv": {"instrument":"hv", "channel":1}
+        },
+        "1":{
+            "lv": {"instrument":"lv_1", "channel":2},
+            "cb": {"instrument":"cb", "channel":2},          
+            "hv": {"instrument":"hv", "channel":1}
+        },
+        "2":{
+            "lv": {"instrument":"lv_1", "channel":3},
+            "cb": {"instrument":"cb", "channel":3},          
+            "hv": {"instrument":"hv", "channel":1}
+        },
+        "3":{
+            "lv": {"instrument":"lv_1", "channel":4},
+            "cb": {"instrument":"cb", "channel":4},          
+            "hv": {"instrument":"hv", "channel":1}
+        },
+        "4":{
+            "lv": {"instrument":"lv_2", "channel":1},
+            "cb": {"instrument":"cb", "channel":5},          
+            "hv": {"instrument":"hv", "channel":1}
+        },
+        "5":{
+            "lv": {"instrument":"lv_2", "channel":2},
+            "cb": {"instrument":"cb", "channel":6},          
+            "hv": {"instrument":"hv", "channel":1}
+        },
+        "6":{
+            "lv": {"instrument":"lv_2", "channel":3},
+            "cb": {"instrument":"cb", "channel":7},          
+            "hv": {"instrument":"hv", "channel":1}
+        },
+        "7":{
+            "lv": {"instrument":"lv_2", "channel":4},
+            "cb": {"instrument":"cb", "channel":8},          
+            "hv": {"instrument":"hv", "channel":1}
         }
     }
 }
