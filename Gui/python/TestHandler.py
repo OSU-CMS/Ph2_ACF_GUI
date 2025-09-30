@@ -309,7 +309,6 @@ class TestHandler(QObject):
         self.iref_match_status = {
             module.getModuleName(): True for module in self.modules
         }  # Initialize all to True
-        self.set_default_temperature()
         self.powergroup = None
         for group_key, group in self.instruments.powering_groups.items():
             self.powergroup = group
@@ -2450,14 +2449,3 @@ created by Ph2_ACF is empty."
                         )
         executeCommandSequence(commands)
     
-    def set_default_temperature(self):
-        """Set the temperature of every active TEC to the default temperature if 'Tessie' is chosen as the cooler."""
-        print("Get HB:", self.instruments.get_hb())
-        if site_settings.cooler == "Tessie":
-            try:
-                default_temperature = icicle_instrument_setup["instrument_dict"]["cb"]["default_temperature"]
-                self.instruments.cb_on(temperature = default_temperature)
-            except KeyError:
-                logger.error("Default temperature or coldbox configuration is missing in the instrument setup.")
-            except Exception:
-                logger.error(traceback.format_exc())
