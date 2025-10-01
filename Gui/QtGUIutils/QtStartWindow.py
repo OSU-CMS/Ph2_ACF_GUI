@@ -30,7 +30,8 @@ from Gui.siteSettings import (
     ModuleCurrentMap,
     icicle_instrument_setup,
     WorkingChannels,
-    json_setup
+    json_setup,
+    cooler
 )
 from icicle.icicle.instrument_cluster import DummyInstrument
 from InnerTrackerTests.TestSequences import TestList
@@ -569,6 +570,17 @@ class QtStartWindow(QWidget):
     def openRunWindow_starter(self):
         self.NextButton.setDisabled(True)
         self.NextButton.setText(". . .")
+        # Only show the waiting popup if coldbox is present
+        if self._check_instrument_presence("cb"):
+            self.waiting_popup = QMessageBox(self)
+            self.waiting_popup.setWindowTitle("Waiting for Coldbox")
+            self.waiting_popup.setText("Waiting for Coldbox to reach target temperature...")
+            self.waiting_popup.setStandardButtons(QMessageBox.NoButton)
+            self.waiting_popup.setModal(True)
+            self.waiting_popup.show()
+        else:
+            self.waiting_popup = None
+        # Start the thread to open the Run Window
         self.run_window_thread = LoadingThread(self.openRunWindow, 500)
         self.run_window_thread.finished.connect(self.onThreadFinishSignal)
         self.run_window_thread.timer.timeout.connect(self.loaderSignal)
@@ -650,6 +662,11 @@ class QtStartWindow(QWidget):
 
         self.runFlag = True
         self.master.BeBoardWidget = self.BeBoardWidget
+        self.set_default_temperature()
+                # Close the waiting popup if it exists
+        if hasattr(self, 'waiting_popup') and self.waiting_popup:
+            self.waiting_popup.done(0)
+            self.waiting_popup = None
 
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, files)
         self.closeFlag = True
@@ -812,6 +829,18 @@ class QtStartWindow(QWidget):
             self.master.instruments._module_dict.pop(key)
         logger.debug(f"Module Dict:",self.master.instruments.get_modules())
         logger.debug(f"Instruments:",self.master.instruments.get_instruments())
+
+    def set_default_temperature(self):
+        """Set the temperature of every active TEC to the default temperature if 'Tessie' is chosen as the cooler."""
+        print("Get HB:", self.master.instruments.get_hb())
+        if cooler == "Tessie":
+            try:
+                default_temperature = icicle_instrument_setup["instrument_dict"]["cb"]["default_temperature"]
+                self.master.instruments.cb_on(temperature = default_temperature)
+            except KeyError:
+                logger.error("Default temperature or coldbox configuration is missing in the instrument setup.")
+            except Exception:
+                logger.error(traceback.format_exc())
 
     def closeEvent(self, event):
         if self.runFlag:
