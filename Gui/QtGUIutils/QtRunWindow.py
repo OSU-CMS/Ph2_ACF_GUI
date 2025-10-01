@@ -36,6 +36,7 @@ from Gui.python.TestHandler import TestHandler
 from Gui.python.logging_config import get_logger
 from InnerTrackerTests.TestSequences import CompositeTests_Modules
 from icicle.icicle.psi_coldbox import PSIColdbox
+from icicle.icicle.instrument import InstrumentTimeoutError
 
 logger = get_logger(__name__)
 
@@ -722,8 +723,11 @@ class QtRunWindow(QWidget):
                         ),
                     )
                     self.master.instruments.cb_off(checkstatus=False)
-
-                    self.wait_for_temp()
+                    try:
+                        self.wait_for_temp()
+                    except InstrumentTimeoutError:
+                        logger.error(traceback.format_exc())
+                        print("Connection with coldbox timed out.  Now turning off lv")
 
                     self.master.instruments.lv_off()
 
