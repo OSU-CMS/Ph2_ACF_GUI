@@ -17,7 +17,7 @@
         "cb": {
             "class": "PSIColdbox",
             "resource": "TCPIP::coldbox::1883::SOCKET",
-            "default_temperature": 5,
+            "default_temperature": -35,
             "temperature_tolerance": 0.5,
             "validation_time": 20,
             "validation_timeout": 600
