@@ -1,13 +1,10 @@
-from PyQt5 import QtWebEngine
 from PyQt5.QtWidgets import (
     QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, 
     QLabel, QGroupBox, QFrame
 )
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtCore import QUrl, QTimer, pyqtSignal
+from PyQt5.QtCore import QTimer, pyqtSignal
 from PyQt5.QtGui import QFont
 from Gui.python.logging_config import get_logger
-from Gui.siteSettings import tessie_url, alternative_tessie_url
 import threading
 import time
 
@@ -100,10 +97,6 @@ class TessieCoolingApp(QWidget):
         self.refresh_button = QPushButton("Refresh")
         self.refresh_button.clicked.connect(self.refresh_temperatures)
         control_layout.addWidget(self.refresh_button)
-        
-        self.web_interface_button = QPushButton("Open Web Interface")
-        self.web_interface_button.clicked.connect(self.open_web_interface)
-        control_layout.addWidget(self.web_interface_button)
         
         control_layout.addStretch()
         main_layout.addLayout(control_layout)
@@ -235,15 +228,6 @@ class TessieCoolingApp(QWidget):
             self.connection_label.setText("Connection: Error")
             self.connection_label.setStyleSheet("QLabel { color: red; }")
     
-    def open_web_interface(self):
-        """Open the Tessie web interface in a new window."""
-        try:
-            web_window = TessieWebInterface()
-            web_window.show()
-        except Exception as e:
-            logger.error(f"Error opening web interface: {e}")
-            self.status_label.setText("Failed to open web interface")
-    
     def set_instruments(self, instruments):
         """Set the instrument cluster reference."""
         self.instruments = instruments
@@ -258,47 +242,6 @@ class TessieCoolingApp(QWidget):
         """Handle widget close event."""
         self.stop_temperature_monitoring()
         event.accept()
-
-
-class TessieWebInterface(QWidget):
-    """Separate window for Tessie web interface."""
-    
-    def __init__(self):
-        super(TessieWebInterface, self).__init__()
-        self.setWindowTitle("Tessie Web Interface")
-        self.setGeometry(100, 100, 1200, 800)
-        
-        layout = QVBoxLayout()
-        
-        # Web view
-        self.web_view = QWebEngineView()
-        
-        # Try primary URL first, fallback to alternative
-        try:
-            self.web_view.load(QUrl(tessie_url))
-        except:
-            try:
-                self.web_view.load(QUrl(alternative_tessie_url))
-            except:
-                logger.error("Failed to load Tessie web interface URLs")
-        
-        layout.addWidget(self.web_view)
-        
-        # Control buttons
-        button_layout = QHBoxLayout()
-        
-        refresh_btn = QPushButton("Refresh")
-        refresh_btn.clicked.connect(self.web_view.reload)
-        button_layout.addWidget(refresh_btn)
-        
-        close_btn = QPushButton("Close")
-        close_btn.clicked.connect(self.close)
-        button_layout.addWidget(close_btn)
-        
-        button_layout.addStretch()
-        layout.addLayout(button_layout)
-        
-        self.setLayout(layout)
 
 
 # Alias for backward compatibility
