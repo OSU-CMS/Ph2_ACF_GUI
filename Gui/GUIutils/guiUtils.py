@@ -303,7 +303,7 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
             print("Doing the copy thing in guiUtils")
             shutil.copyfile(
                 "{0}/CMSIT_RD53_{1}_OUT.txt".format(Input_Dir, key),
-                "{2}/CMSIT_RD53_{1}_IN.txt".format(Input_Dir, key, Output_Dir),
+                "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key),
             )
         except OSError:
             print(
