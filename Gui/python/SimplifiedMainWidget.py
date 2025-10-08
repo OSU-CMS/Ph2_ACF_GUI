@@ -539,7 +539,7 @@ class SimplifiedMainWidget(QWidget):
         if site_settings.cooler == "Peltier":
             self.worker = Peltier_and_Arduino_Polling()
             self.worker.temp.connect(self.updatePeltierTemperatureIndicator)
-            self.worker.temp.connect(self.updateCondensationRiskIndicator)
+            self.worker.temp.connect(self.updateArduinoCondensationRiskIndicator)
             self.worker.moveToThread(self.thread)
             self.thread.started.connect(self.worker.run)
             self.thread.start()
