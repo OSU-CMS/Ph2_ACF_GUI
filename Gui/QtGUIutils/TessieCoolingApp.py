@@ -2,13 +2,90 @@ from PyQt5.QtWidgets import (
     QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, 
     QLabel, QGroupBox, QFrame
 )
-from PyQt5.QtCore import QTimer, pyqtSignal
+from PyQt5.QtCore import QTimer, pyqtSignal, QThread, QObject, pyqtSlot
 from PyQt5.QtGui import QFont
 from Gui.python.logging_config import get_logger
 import threading
 import time
 
 logger = get_logger(__name__)
+
+
+class TessieMonitorWorker(QObject):
+    """Worker object that polls PSIColdbox in a QThread via QTimer."""
+
+    temp_update = pyqtSignal(list)
+    env_update = pyqtSignal(float, float)
+    status_msg = pyqtSignal(str)
+
+    def __init__(self, instruments=None, interval_ms: int = 2000):
+        super().__init__()
+        self._instruments = instruments
+        self._timer = None
+        self._interval_ms = interval_ms
+
+    @pyqtSlot()
+    def start(self):
+        # Create the timer in this thread context
+        if self._timer is None:
+            self._timer = QTimer(self)
+            self._timer.timeout.connect(self.poll)
+        self._timer.start(self._interval_ms)
+        self.status_msg.emit("Monitoring active")
+
+    @pyqtSlot()
+    def stop(self):
+        if self._timer is not None:
+            self._timer.stop()
+            self.status_msg.emit("Monitoring stopped")
+
+    @pyqtSlot()
+    def poll(self):
+        try:
+            if not self._instruments:
+                return
+            coldbox = self._instruments.get_instruments().get("cb", None)
+            if coldbox is None:
+                return
+
+            # Temperatures
+            try:
+                temperatures = coldbox.read("TEMPERATURE_MEASURED")
+                if isinstance(temperatures, list) and len(temperatures) == 8:
+                    self.temp_update.emit(temperatures)
+            except Exception as e:
+                logger.debug(f"Worker temp read issue: {e}")
+
+            # Environment
+            rh = None
+            dp = None
+            try:
+                rh = coldbox.read("RELATIVE_HUMIDITY")
+            except Exception:
+                pass
+            try:
+                dp = coldbox.read("DEW_POINT")
+            except Exception:
+                pass
+
+            if not isinstance(rh, (int, float)) or not isinstance(dp, (int, float)):
+                # fallback to explicit query
+                try:
+                    rh_q = coldbox.query("RELATIVE_HUMIDITY")
+                    dp_q = coldbox.query("DEW_POINT")
+                    rh = rh if isinstance(rh, (int, float)) else rh_q
+                    dp = dp if isinstance(dp, (int, float)) else dp_q
+                except Exception:
+                    pass
+
+            if isinstance(rh, (int, float)) and isinstance(dp, (int, float)):
+                self.env_update.emit(float(rh), float(dp))
+        except Exception as e:
+            logger.error(f"Worker poll error: {e}")
+
+    @pyqtSlot(object)
+    def set_instruments(self, instruments):
+        self._instruments = instruments
 
 
 class TessieCoolingApp(QWidget):
@@ -22,13 +99,13 @@ class TessieCoolingApp(QWidget):
         super(TessieCoolingApp, self).__init__()
         self.master = master
         self.instruments = None
-        self._temp_thread = None
-        self._temp_thread_stop = False
+        self._thread = None
+        self._worker = None
         
         # Initialize UI
         self.initUI()
         
-        # Connect signals
+        # Connect signals (widget-owned signals kept for compatibility)
         self.temp_update_signal.connect(self.update_temperature_display)
         self.env_update_signal.connect(self.update_environment_display)
         
@@ -140,69 +217,38 @@ class TessieCoolingApp(QWidget):
         self.update_connection_status()
     
     def start_temperature_monitoring(self):
-        """Start the background thread for temperature monitoring."""
-        if self._temp_thread is not None:
+        """Start the QThread-based background monitoring."""
+        if self._thread is not None:
             self.stop_temperature_monitoring()
-        
-        def temp_monitor_worker():
-            logger.info("Starting Tessie temperature monitoring thread...")
-            while not self._temp_thread_stop:
-                try:
-                    if self.instruments:
-                        coldbox = self.instruments.get_instruments().get("cb", None)
-                        if coldbox is not None:
-                            # Read all 8 TEC temperatures
-                            temperatures = coldbox.read("TEMPERATURE_MEASURED")
-                            if isinstance(temperatures, list) and len(temperatures) == 8:
-                                self.temp_update_signal.emit(temperatures)
-                            else:
-                                logger.warning(f"Unexpected temperature data format: {temperatures}")
 
-                            # Read environment values (use cached readings; MQTT-driven)
-                            try:
-                                rh = coldbox.read("RELATIVE_HUMIDITY")
-                            except Exception:
-                                rh = None
-                            try:
-                                dp = coldbox.read("DEW_POINT")
-                            except Exception:
-                                dp = None
+        self._worker = TessieMonitorWorker(self.instruments, interval_ms=2000)
+        self._thread = QThread(self)
+        self._worker.moveToThread(self._thread)
 
-                            if isinstance(rh, (int, float)) and isinstance(dp, (int, float)):
-                                self.env_update_signal.emit(float(rh), float(dp))
-                            else:
-                                # If one is missing, try querying explicitly once in a while
-                                try:
-                                    rh_q = coldbox.query("RELATIVE_HUMIDITY")
-                                    dp_q = coldbox.query("DEW_POINT")
-                                    if isinstance(rh_q, (int, float)) and isinstance(dp_q, (int, float)):
-                                        self.env_update_signal.emit(float(rh_q), float(dp_q))
-                                except Exception:
-                                    pass
-                        else:
-                            logger.warning("Coldbox not found in instruments")
-                    else:
-                        logger.warning("No instruments available")
-                except Exception as e:
-                    logger.error(f"Error reading temperatures: {e}")
-                
-                # Wait 2 seconds between updates
-                time.sleep(2)
-            
-            logger.info("Tessie temperature monitoring thread stopped.")
-        
-        self._temp_thread_stop = False
-        self._temp_thread = threading.Thread(target=temp_monitor_worker, daemon=True)
-        self._temp_thread.start()
-        
+        # Wire signals
+        self._thread.started.connect(self._worker.start)
+        self._worker.status_msg.connect(self.status_label.setText)
+        # Bridge worker signals to existing slots
+        self._worker.temp_update.connect(self.update_temperature_display)
+        self._worker.env_update.connect(self.update_environment_display)
+
+        # Clean-up when thread finishes
+        self._thread.finished.connect(self._worker.deleteLater)
+        self._thread.start()
         self.status_label.setText("Monitoring active")
     
     def stop_temperature_monitoring(self):
-        """Stop the temperature monitoring thread."""
-        if self._temp_thread is not None:
-            self._temp_thread_stop = True
-            self._temp_thread = None
-        
+        """Stop the QThread-based monitoring."""
+        if self._worker is not None:
+            try:
+                self._worker.stop()
+            except Exception:
+                pass
+        if self._thread is not None:
+            self._thread.quit()
+            self._thread.wait(2000)
+            self._thread = None
+        self._worker = None
         self.status_label.setText("Monitoring stopped")
     
     def update_temperature_display(self, temperatures):
@@ -316,7 +362,11 @@ class TessieCoolingApp(QWidget):
         self.update_connection_status()
         
         if instruments:
-            self.start_temperature_monitoring()
+            # Update or start worker
+            if self._worker is not None:
+                self._worker.set_instruments(instruments)
+            else:
+                self.start_temperature_monitoring()
         else:
             self.stop_temperature_monitoring()
     
