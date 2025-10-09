@@ -2,7 +2,7 @@ import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
 
-CONFIG_VER = 5
+CONFIG_VER = 6
 
 # Customize the logging configuration
 logging.basicConfig(
@@ -36,7 +36,7 @@ defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #Coldbox variables
-cooler = "Tessie" # "Peltier" or "Manual" or "Tessie".
+cooler = "Manual" # "Peltier" or "Manual" or "Tessie".
 usePeltier = False #The "cooler" variable will be used in the future, but this line is needed for the current version of the GUI
 
 tessie_url = "http://coldbox:3000/"
@@ -64,7 +64,7 @@ manual_powersupply_control = False
 
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
-json_setup = 'jsonFiles/instruments_osu_auto.json'
+json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
 with open(json_setup, 'r') as file:
     icicle_instrument_setup = json.load(file)
 
@@ -83,7 +83,7 @@ SLDOScan_probecard = {
     "1x2":{
 		"voltage":2.98,
 		"starting current":1.0,
-		"target current":5.6,
+		"target current":4.0,  #set this back to 5.6 after testing
 		"step size":.2
 	},
 	"quad":{
@@ -99,7 +99,7 @@ SLDOScan_GADC = {
     "1x2":{
 		"voltage":2.98,
 		"starting current":3.6,
-		"target current":5.6,
+		"target current":4.0,  #set this back to 5.6 after testing
 		"step size":.2
 	},
 	"quad":{
@@ -121,8 +121,8 @@ forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias 
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 FC7List =  {
-	'fc7.board.1'	:	'192.168.1.80',
-	'fc7.board.2'	:	'192.168.1.81',
+	#'fc7.board.1'	:	'192.168.1.80',
+	#'fc7.board.2'	:	'192.168.1.81',
 	'fc7.board.3'	:	'192.168.1.82',
 }
 
@@ -142,8 +142,8 @@ WorkingChannels = [
 
 ## Update this dictionary for your simple mode cable mappings ##
 CableMapping = {
-    "0" : {"FC7": "fc7.board.1", "FMCID": "L12", "FMCPort": "0"},
-    "1" : {"FC7": "fc7.board.2", "FMCID": "L12", "FMCPort": "0"},
+    "0" : {"FC7": "fc7.board.3", "FMCID": "L12", "FMCPort": "0"},
+    "1" : {"FC7": "fc7.board.3", "FMCID": "L12", "FMCPort": "0"},
 }
 
 ## Establish thresholds for chip temperature readings. A chip reading above the
