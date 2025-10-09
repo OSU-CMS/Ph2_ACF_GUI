@@ -1000,7 +1000,7 @@ class TestHandler(QObject):
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                         "-t",
-                        "5",
+                        "15",
                     ],
                 )
         elif self.currentTest == "TrimbitScan":
@@ -1234,7 +1234,7 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
+            elif "IVCurve" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
                 current_fc7: str = self.firmware[processIndex].getBoardName()
                 os.system(
@@ -1257,6 +1257,30 @@ created by Ph2_ACF is empty."
                         ),
                     )   
                 )
+            elif "IREF_GADC" in self.currentTest:
+                print("copying MonitorDQM.root file to output directory")
+                current_fc7: str = self.firmware[processIndex].getBoardName()
+                os.system(
+                    "cp {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}/".format( #Chaneged from {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.firmware[processIndex].getBoardID(),
+                        os.path.join(
+                            self.output_dir, current_fc7
+                        ),
+                    )
+                )
+                os.system(
+                    "cp {0}/test/Results/Run{1}_CMSIT_{2}.xml {3}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        current_fc7,
+                        os.path.join(
+                            self.output_dir, current_fc7    
+                        ),
+                    )   
+                )
+
             else:
                 ph2_acf_base_dir: str | None = os.environ.get("PH2ACF_BASE_DIR")
                 if ph2_acf_base_dir is None:
