@@ -90,15 +90,10 @@ class IVCurveThread(QThread):
     def run(self):
         try:
             print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
-            #starting_voltages = [
-            #    np.abs(getattr(module["hv"], "voltage"))
-            #    for module in self.instruments._module_dict.values()
-            #]
             #self.instruments.hv_on(voltage=0,
             #    execute_each_step=lambda: self.execute_each_step(starting_voltages)
             #)
             self.powergroup.enable_all()
-            print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
             self.powergroup.ramp_hv(
                 voltage=self.stopVal,
                 delay=0.2,

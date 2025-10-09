@@ -315,7 +315,10 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
           BeBoard.boardType = boardtype
           print("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
-          Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane, 'eFuseCode':FE.EfuseID,'IrefCode':FE.IREF,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxPolarity':FE.RxPolarities,'TxGroup':FE.TxGroups,'TxChannel':FE.TxChannels,'TxPolarity':FE.TxPolarities,'Comment':boardtype})
+          if 'v1' in boardtype:
+            Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane, 'eFuseCode':FE.EfuseID,'IrefCode':'-1','configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxPolarity':FE.RxPolarities,'TxGroup':FE.TxGroups,'TxChannel':FE.TxChannels,'TxPolarity':FE.TxPolarities,'Comment':boardtype})
+          else:
+            Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane, 'eFuseCode':FE.EfuseID,'IrefCode':FE.IREF,'configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxPolarity':FE.RxPolarities,'TxGroup':FE.TxGroups,'TxChannel':FE.TxChannels,'TxPolarity':FE.TxPolarities,'Comment':boardtype})
           if 'RD53B' in boardtype:
             Node_FELaneConfig = ET.SubElement(Node_FE,"LaneConfig")
             Node_FELaneConfig = SetNodeAttribute(Node_FELaneConfig,FE.laneConfigList)

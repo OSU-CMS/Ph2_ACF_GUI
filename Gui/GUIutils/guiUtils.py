@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
 import traceback
+import shutil
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -300,10 +301,9 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
     for key in RD53Dict.keys():
         try:
             print("Doing the copy thing in guiUtils")
-            os.system(
-                "cp {0}/CMSIT_RD53_{1}_OUT.txt {2}/CMSIT_RD53_{1}_IN.txt".format(
-                    Input_Dir, key, Output_Dir
-                )
+            shutil.copyfile(
+                "{0}/CMSIT_RD53_{1}_OUT.txt".format(Input_Dir, key),
+                "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key),
             )
         except OSError:
             print(
