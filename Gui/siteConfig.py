@@ -36,7 +36,7 @@ defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #Coldbox variables
-cooler = "Tessie" # "Peltier" or "Manual" or "Tessie".
+cooler = "Manual" # "Peltier" or "Manual" or "Tessie".
 usePeltier = False #The "cooler" variable will be used in the future, but this line is needed for the current version of the GUI
 
 tessie_url = "http://coldbox:3000/"
@@ -64,9 +64,7 @@ manual_powersupply_control = False
 
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
-json_setup = 'jsonFiles/instruments_osu_auto.json'
-with open(json_setup, 'r') as file:
-    icicle_instrument_setup = json.load(file)
+    
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = {
@@ -119,12 +117,22 @@ Trimbit_GADC = {
 
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
 
+
 ## Update this dictionary for the IP addreses of your FC7 devices ##
-FC7List =  {
-	'fc7.board.1'	:	'192.168.1.80',
-	'fc7.board.2'	:	'192.168.1.81',
-	'fc7.board.3'	:	'192.168.1.82',
-}
+
+try:
+    inst_setup = 'jsonFiles/instruments_osu_auto.json'
+    with open(inst_setup, 'r') as file:
+    	data = json.load(file)
+except FileNotFoundError:
+    print("Error: 'data.json' not found.")
+    exit()
+    
+FC7_list = data['fc7_address_dict']
+
+icicle_instrument_setup = data['instrument_dict']
+icicle_instrument_setup.update(data['channels_dict'])
+    
 
 ## Update this list with all working TEC channels in your coldbox
 ## Channel assignments will follow this list sequentially per number of modules entered in the GUI
