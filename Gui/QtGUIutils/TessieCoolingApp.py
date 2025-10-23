@@ -16,6 +16,7 @@ class TessieMonitorWorker(QObject):
 
     temp_update = pyqtSignal(list)
     env_update = pyqtSignal(float, float)
+    set_update = pyqtSignal(list)
     status_msg = pyqtSignal(str)
 
     def __init__(self, instruments=None, interval_ms: int = 2000):
@@ -56,6 +57,14 @@ class TessieMonitorWorker(QObject):
             except Exception as e:
                 logger.debug(f"Worker temp read issue: {e}")
 
+            # Temperature setpoints
+            try:
+                setpoints = coldbox.read("TEMPERATURE_SET")
+                if isinstance(setpoints, list) and len(setpoints) == 8:
+                    self.set_update.emit(setpoints)
+            except Exception as e:
+                logger.debug(f"Worker setpoint read issue: {e}")
+
             # Environment
             rh = None
             dp = None
@@ -94,6 +103,7 @@ class TessieCoolingApp(QWidget):
     temp_update_signal = pyqtSignal(list)
     # (rh in %, dew point in C)
     env_update_signal = pyqtSignal(float, float)
+    set_update_signal = pyqtSignal(list)
     
     def __init__(self, master=None):
         super(TessieCoolingApp, self).__init__()
@@ -101,6 +111,14 @@ class TessieCoolingApp(QWidget):
         self.instruments = None
         self._thread = None
         self._worker = None
+        # Latest cached values
+        self._latest_temperatures = None  # type: list
+        self._last_temp_update_ts = 0.0
+        self._latest_rh = None  # type: float
+        self._latest_dp = None  # type: float
+        self._last_env_update_ts = 0.0
+        self._latest_setpoints = None  # type: list
+        self._last_set_update_ts = 0.0
         
         # Initialize UI
         self.initUI()
@@ -108,6 +126,7 @@ class TessieCoolingApp(QWidget):
         # Connect signals (widget-owned signals kept for compatibility)
         self.temp_update_signal.connect(self.update_temperature_display)
         self.env_update_signal.connect(self.update_environment_display)
+        self.set_update_signal.connect(self.update_setpoints_cache)
         
         # Start temperature monitoring if instruments are available
         if self.master and hasattr(self.master, 'instruments'):
@@ -231,6 +250,7 @@ class TessieCoolingApp(QWidget):
         # Bridge worker signals to existing slots
         self._worker.temp_update.connect(self.update_temperature_display)
         self._worker.env_update.connect(self.update_environment_display)
+        self._worker.set_update.connect(self.update_setpoints_cache)
 
         # Clean-up when thread finishes
         self._thread.finished.connect(self._worker.deleteLater)
@@ -254,6 +274,10 @@ class TessieCoolingApp(QWidget):
     def update_temperature_display(self, temperatures):
         """Update the temperature display with new values."""
         try:
+            # cache latest temperatures and timestamp
+            if isinstance(temperatures, list) and len(temperatures) == 8:
+                self._latest_temperatures = [float(t) if isinstance(t, (int, float)) else t for t in temperatures]
+                self._last_temp_update_ts = time.time()
             for i, temp in enumerate(temperatures):
                 channel = i + 1
                 if channel in self.temp_labels:
@@ -282,6 +306,13 @@ class TessieCoolingApp(QWidget):
     def update_environment_display(self, rh_value: float, dew_point: float):
         """Update the environment display with RH (%) and Dew Point (°C)."""
         try:
+            # cache latest env values and timestamp
+            if isinstance(rh_value, (int, float)):
+                self._latest_rh = float(rh_value)
+                self._last_env_update_ts = time.time()
+            if isinstance(dew_point, (int, float)):
+                self._latest_dp = float(dew_point)
+                self._last_env_update_ts = time.time()
             # Relative Humidity formatting and color coding
             if isinstance(rh_value, (int, float)):
                 rh_str = f"{rh_value:.1f} %"
@@ -307,6 +338,38 @@ class TessieCoolingApp(QWidget):
                 self.dp_value_label.setStyleSheet("QLabel { color: gray; }")
         except Exception as e:
             logger.error(f"Error updating environment display: {e}")
+
+    def update_setpoints_cache(self, setpoints):
+        """Cache the latest temperature setpoints list (length 8)."""
+        try:
+            if isinstance(setpoints, list) and len(setpoints) == 8:
+                self._latest_setpoints = [float(s) if isinstance(s, (int, float)) else s for s in setpoints]
+                self._last_set_update_ts = time.time()
+        except Exception as e:
+            logger.debug(f"Error caching setpoints: {e}")
+
+    # --- Public getters for other components (e.g., TestHandler) ---
+    def get_latest_temperatures(self, with_timestamp: bool = False):
+        """Return a copy of the latest temperatures [8] or None. If with_timestamp, also return the unix ts."""
+        temps = list(self._latest_temperatures) if isinstance(self._latest_temperatures, list) else None
+        if with_timestamp:
+            return temps, self._last_temp_update_ts
+        return temps
+
+    def get_latest_env(self, with_timestamp: bool = False):
+        """Return (rh, dew_point) or (rh, dew_point, ts) if with_timestamp."""
+        rh = self._latest_rh
+        dp = self._latest_dp
+        if with_timestamp:
+            return rh, dp, self._last_env_update_ts
+        return rh, dp
+    
+    def get_latest_setpoints(self, with_timestamp: bool = False):
+        """Return list of 8 temperature setpoints or None. If with_timestamp, also return ts."""
+        s = list(self._latest_setpoints) if isinstance(self._latest_setpoints, list) else None
+        if with_timestamp:
+            return s, self._last_set_update_ts
+        return s
     
     def refresh_temperatures(self):
         """Manually refresh temperature readings."""

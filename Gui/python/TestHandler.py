@@ -54,6 +54,7 @@ from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import (
 
 
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
+from Gui.QtGUIutils.TessieCoolingApp import TessieCoolingApp
 
 from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
@@ -670,6 +671,12 @@ class TestHandler(QObject):
 
         self.updateOptimizedXMLValues()
         self.configTest()
+        if site_settings.cooler == "Tessie":
+            # Log Tessie readings (temps/env) from widget cache at the start of each test
+            try:
+                self._log_tessie_from_widget("start")
+            except Exception as e:
+                logger.debug(f"Could not log Tessie readings from widget: {e}")
 
         # Make sure that the GUI is not trying to write to the root directory
         try:
@@ -1065,12 +1072,126 @@ class TestHandler(QObject):
         self.haltSignal.emit(self.halt)
         self.starttime = None
 
+    def _find_tessie_widget(self):
+        """Try to find a TessieCoolingApp widget in the UI tree."""
+        candidates = []
+        try:
+            candidates.append(getattr(self.master, 'window', None))
+        except Exception:
+            pass
+        candidates.extend([self.master if hasattr(self, 'master') else None, self.runwindow])
+        for parent in filter(None, candidates):
+            try:
+                w = parent.findChild(TessieCoolingApp)
+                if w is not None:
+                    return w
+            except Exception:
+                continue
+        # Fallback to a direct attribute if provided by the app
+        w = getattr(self.master, 'tessie_widget', None)
+        return w
+
+    def _log_tessie_from_widget(self, phase: str = "start"):
+        """Fetch cached Tessie readings from the TessieCoolingApp widget and persist them.
+        Uses widget cache only, no direct instrument queries.
+
+        phase: 'start' or 'end' to control filename and console label.
+        - start -> writes tessie_start_temps.json (kept for backward compatibility)
+        - end   -> writes tessie_end_values.json
+        """
+        widget = self._find_tessie_widget()
+        temps = None
+        rh = None
+        dp = None
+        setpoints = None
+        if widget:
+            try:
+                if hasattr(widget, 'get_latest_temperatures'):
+                    temps = widget.get_latest_temperatures()
+            except Exception:
+                temps = None
+            try:
+                if hasattr(widget, 'get_latest_env'):
+                    env = widget.get_latest_env()
+                    if isinstance(env, tuple):
+                        rh, dp = env
+            except Exception:
+                rh, dp = None, None
+            try:
+                if hasattr(widget, 'get_latest_setpoints'):
+                    setpoints = widget.get_latest_setpoints()
+            except Exception:
+                setpoints = None
+
+        ts = datetime.now().strftime("%H:%M:%S")
+        # Build console message
+        label = "start-of-test" if str(phase).lower().startswith("s") else "end-of-test"
+        parts = []
+        if isinstance(temps, list) and len(temps) == 8:
+            parts.append("temps=" + ", ".join(f"{t:.2f}°C" for t in temps))
+        if isinstance(rh, (int, float)):
+            parts.append(f"RH={rh:.1f}%")
+        if isinstance(dp, (int, float)):
+            parts.append(f"DP={dp:.2f}°C")
+        # Include setpoints if available
+        try:
+            if isinstance(setpoints, list) and len(setpoints) == 8:
+                uniq = {round(float(x), 2) for x in setpoints if isinstance(x, (int, float))}
+                if len(uniq) == 1:
+                    sval = next(iter(uniq))
+                    parts.append(f"set={sval:.2f}°C")
+                else:
+                    parts.append("set=[" + ", ".join(
+                        f"{float(x):.2f}°C" if isinstance(x, (int, float)) else str(x)
+                        for x in setpoints
+                    ) + "]")
+        except Exception:
+            pass
+
+        msg = f"[{ts}] Tessie {label} (widget): " + ("; ".join(parts) if parts else "unavailable")
+
+        try:
+            for console in getattr(self.runwindow, 'ConsoleViews', []):
+                self.outputString.emit(msg, console)
+        except Exception:
+            pass
+        logger.info(msg)
+
+        # Persist snapshot to output dir
+        try:
+            if getattr(self, 'output_dir', None):
+                import os, json
+                # Keep filenames as before for compatibility
+                if str(phase).lower().startswith("s"):
+                    out_path = os.path.join(self.output_dir, "tessie_start_temps.json")
+                else:
+                    out_path = os.path.join(self.output_dir, "tessie_end_values.json")
+                payload = {
+                    "source": "widget",
+                    "timestamp": ts,
+                    "temperatures": temps,
+                    "relative_humidity": rh,
+                    "dew_point": dp,
+                    "phase": "start" if str(phase).lower().startswith("s") else "end",
+                    "temperature_setpoints": setpoints,
+                }
+                with open(out_path, "w") as f:
+                    json.dump(payload, f, indent=2)
+        except Exception:
+            pass
+
     def validateTest(self):
         for process in self.run_processes:
             if process.state() == QProcess.Running:
                 return
 
         self.finished_tests.append(self.currentTest)
+        if site_settings.cooler == "Tessie":
+            # Snapshot end-of-test Tessie values (from widget cache only)
+            try:
+                self._log_tessie_from_widget("end")
+            except Exception:
+                pass
         try:
             passed = []
             results = []
