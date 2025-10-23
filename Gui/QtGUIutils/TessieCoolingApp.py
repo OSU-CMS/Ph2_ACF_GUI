@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import (
     QWidget, QPushButton, QVBoxLayout, QHBoxLayout, QGridLayout, 
     QLabel, QGroupBox, QFrame
 )
-from PyQt5.QtCore import QTimer, pyqtSignal, QThread, QObject, pyqtSlot
+from PyQt5.QtCore import QTimer, pyqtSignal, QThread, QObject, pyqtSlot,QMetaObject, Qt
 from PyQt5.QtGui import QFont
 from Gui.python.logging_config import get_logger
 import threading
@@ -241,9 +241,9 @@ class TessieCoolingApp(QWidget):
         """Stop the QThread-based monitoring."""
         if self._worker is not None:
             try:
-                self._worker.stop()
-            except Exception:
-                pass
+                QMetaObject.invokeMethod(self._worker, "stop", Qt.QueuedConnection)
+            except Exception as e:
+                logger.debug(f"Failed to queue worker.stop(): {e}")
         if self._thread is not None:
             self._thread.quit()
             self._thread.wait(2000)
