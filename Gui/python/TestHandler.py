@@ -2385,7 +2385,7 @@ created by Ph2_ACF is empty."
                         self.master.password,
                         type_sequence=self.info,
                         version_ph2acf=os.environ.get("PH2ACF_VERSION"),
-                        version_testStationSoftware=os.environ.get(
+                        version_testStationSoftware="OSU_GUI-" + os.environ.get(
                             "PH2_ACF_GUI_VERSION"
                         ),
                     )

@@ -1000,8 +1000,8 @@ class QtApplication(QWidget):
                 coldbox = instrument_dict.get("cb")  # or whatever key was used in setup
                 if coldbox:
                     temperature = coldbox.read_channel("TEMPERATURE_MEASURED", channel=0) 
-                for number in self.instruments.get_modules().keys():
-                    print("temperature", temperature)  # self.instruments.get_temperature()[number]["cb"]
+                    for number in self.instruments.get_modules().keys():
+                        print("temperature", temperature)  # self.instruments.get_temperature()[number]["cb"]
                 if lv_on or hv_on:
                     self.instruments.off()
                 if self.expertMode:
