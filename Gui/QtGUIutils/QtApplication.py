@@ -1348,6 +1348,15 @@ class QtApplication(QWidget):
         )
 
         if reply == QMessageBox.Yes:
+            # If running with the Tessie coldbox controller, ensure its
+            # background monitoring thread is stopped to avoid worker leaks.
+            if site_settings.cooler == "Tessie":
+                try:
+                    if hasattr(self, 'tessie_widget') and self.tessie_widget is not None:
+                        if hasattr(self.tessie_widget, 'stop_temperature_monitoring'):
+                            self.tessie_widget.stop_temperature_monitoring()
+                except Exception:
+                    logger.debug("Failed to stop Tessie monitoring cleanly during application shutdown")
             print("Application terminated")
             if self.instruments is not None:
                 self.instruments.off()
