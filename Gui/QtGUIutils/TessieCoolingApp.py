@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QTimer, pyqtSignal, QThread, QObject, pyqtSlot,QMetaObject, Qt
 from PyQt5.QtGui import QFont
 from Gui.python.logging_config import get_logger
-import threading
 import time
 
 logger = get_logger(__name__)

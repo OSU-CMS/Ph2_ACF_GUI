@@ -206,8 +206,8 @@ class TestHandler(QObject):
         self.rd53_file = {}
         self.grade = -1
         self.currentTest = ""
-        self.outputFile = ""
-        self.errorFile = ""
+        self.outputFile = None
+        self.errorFile = None
         self.comment = ""
         self.txt_files = txt_files if txt_files != {} else {}
 
@@ -601,7 +601,6 @@ class TestHandler(QObject):
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
-            self.outputFile = self.output_dir + "/output.txt"
             process.readyReadStandardOutput.connect(
                 lambda: self.on_readyReadStandardOutput_GADC(
                     process,
@@ -925,16 +924,21 @@ class TestHandler(QObject):
     def setupQProcess(self):
         self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
-
-        # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
         logger.info(f"{self.output_dir=}")
-        self.outputFile = self.output_dir + "/output.txt"
-        self.errorFile = self.output_dir + "/error.txt"
 
-        if os.path.exists(self.outputFile):
-            self.outputfile = open(self.outputFile, "a")
-        else:
-            self.outputfile = open(self.outputFile, "w")
+        # Create per-FC7 output directories
+        # <output_dir>/<fc7>/output.txt
+        # An error.txt file was created in the old version but never used.
+        for firmware in self.firmware:
+            fc7_dir = os.path.join(self.output_dir, firmware.getBoardName())
+            try:
+                os.makedirs(fc7_dir, exist_ok=True)
+                # Ensure files exist (open in append mode then close)
+                open(os.path.join(fc7_dir, "output.txt"), "a").close()
+                # open(os.path.join(fc7_dir, "error.txt"), "a").close()
+            except Exception:
+                logger.error(f"Failed creating output dir for {fc7_dir}")
+                logger.error(traceback.format_exc())
 
             # Check if the test was aborted
         if self.halt:
@@ -1434,9 +1438,16 @@ created by Ph2_ACF is empty."
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
 
-        mode = "a" if os.path.exists(self.outputFile) else "w"
-        with open(self.outputFile, mode) as outputfile:
-            outputfile.write(alltext)
+        # Write output to the per-FC7 output file so multiple FC7s don't collide
+        try:
+            fc7name = self.firmware[processIndex].getBoardName()
+            outpath = os.path.join(self.output_dir, fc7name, "output.txt")
+            mode = "a" if os.path.exists(outpath) else "w"
+            with open(outpath, mode) as outputfile:
+                outputfile.write(alltext)
+        except Exception:
+            logger.error("Failed writing FC7 output to per-FC7 file")
+            logger.error(traceback.format_exc())
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1747,10 +1758,15 @@ created by Ph2_ACF is empty."
         alltext = (
             self.info_processes[processIndex].readAllStandardOutput().data().decode()
         )
-
-        mode = "a" if os.path.exists(self.outputFile) else "w"
-        with open(self.outputFile, mode) as outputfile:
-            outputfile.write(alltext)
+        try:
+            fc7name = self.firmware[processIndex].getBoardName()
+            outpath = os.path.join(self.output_dir, fc7name, "output.txt")
+            mode = "a" if os.path.exists(outpath) else "w"
+            with open(outpath, mode) as outputfile:
+                outputfile.write(alltext)
+        except Exception:
+            logger.error("Failed writing FC7 info output to per-FC7 file")
+            logger.error(traceback.format_exc())
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1768,8 +1784,14 @@ created by Ph2_ACF is empty."
         self.readingOutput = True
 
         alltext = process.readAllStandardOutput().data().decode()
-        if hasattr(self, "outputfile") and self.outputfile:
-            self.outputfile.write(alltext)
+        try:
+            fc7name = self.firmware[fc7_index].getBoardName()
+            outpath = os.path.join(self.output_dir, fc7name, "output.txt")
+            with open(outpath, "a") as outputfile:
+                outputfile.write(alltext)
+        except Exception:
+            logger.error("Failed writing VDDsweep output to per-FC7 file")
+            logger.error(traceback.format_exc())
         textline = alltext.split("\n")
         for textStr in textline:
             try:
@@ -1818,10 +1840,16 @@ created by Ph2_ACF is empty."
 
         alltext = process.readAllStandardOutput().data().decode()
 
-        mode = "a" if os.path.exists(self.outputFile) else "w"
-        logger.debug(f"{mode=}")
-        with open(self.outputFile, mode) as outputfile:
-            outputfile.write(alltext)
+        try:
+            fc7name = self.firmware[fc7_index].getBoardName()
+            outpath = os.path.join(self.output_dir, fc7name, "output.txt")
+            mode = "a" if os.path.exists(outpath) else "w"
+            logger.debug(f"{mode=}")
+            with open(outpath, mode) as outputfile:
+                outputfile.write(alltext)
+        except Exception:
+            logger.error("Failed writing GADC output to per-FC7 file")
+            logger.error(traceback.format_exc())
         textline = alltext.split("\n")
 
         for textStr in textline:
