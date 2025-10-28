@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
 import traceback
+import shutil
 
 from Gui.GUIutils.settings import (
     updatedGlobalValue,
@@ -144,20 +145,27 @@ def isActive(dbconnection):
 
 def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
     try:
-        os.system(
-            "cp {0}/CMSIT_{2}.xml {1}/CMSIT_2.xml".format(
-                Input_Dir, Output_Dir, BeBoardName
-            )
-        )
+        #os.system(        # Update copy from os.system to shutil and import shutil
+         #   "cp {0}/CMSIT_{2}.xml {1}/CMSIT_2.xml".format(
+          #      Input_Dir, Output_Dir, BeBoardName
+           # )
+
+        shutil.copyfile("{0}/CMSIT_{2}.xml".format(Input_Dir, Output_Dir, BeBoardName),
+                        "{1}/CMSIT_2.xml".format(Input_Dir, Output_Dir, BeBoardName))
+    
+
     except OSError as e:
         logger.error(f"Failed to copy XML file: {e}")
         logger.error(traceback.format_exc())
     try:
-        os.system(
-            "cp {0}/CMSIT_{2}.xml  {1}/test/CMSIT_{2}.xml".format(
-                Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
-            )
-        )
+        #os.system(        # Update copy from os.system to shutil
+         #   "cp {0}/CMSIT_{2}.xml  {1}/test/CMSIT_{2}.xml".format(
+          #      Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
+
+        shutil.copyfile( "{0}/CMSIT_{2}.xml".format(Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName),
+                    "{1}/test/CMSIT_{2}.xml".format(Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName)
+                )                      
+    
         logger.info("Copied XML file to test directory")
     except OSError as e:
         logger.error(f"Failed to copy XML file to test directory: {e}")
@@ -273,18 +281,26 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
         logger.error(traceback.format_exc())
 
     try:
-        os.system("cp {0} {1}/CMSIT_{2}.xml".format(InputFile, Output_Dir, BeBoardName))  # FIXME
+        #os.system("cp {0} {1}/CMSIT_{2}.xml".format(InputFile, Output_Dir, BeBoardName))  # FIXME update copy method from os.system
+
+        shutil.copyfile(InputFile, 
+                        os.path.join(Output_Dir, f"CMSIT_{BeBoardName}.xml"))
+
     except OSError:
         print("Can not copy the XML files {0} to {1}".format(InputFile, Output_Dir))
         print(traceback.format_exc())
     try:
-        os.system(
-            "cp {0}/CMSIT_{1}.xml  {2}/test/CMSIT_{1}.xml".format(
-                Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
+        #os.system(            # Update copy method from os.system
+            #"cp {0}/CMSIT_{1}.xml  {2}/test/CMSIT_{1}.xml".format(
+            #   Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
+            #)
+
+            shutil.copyfile("{0}/CMSIT_{1}.xml".format(Output_Dir, BeBoardName),
+            "{0}/test/CMSIT_{1}.xml".format(os.environ.get("PH2ACF_BASE_DIR"), BeBoardName)
             )
-        )
+                   
     except OSError:
-        print(
+        logger.error(
             "Can not copy {0}/CMSIT_{1}.xml to {2}/test/CMSIT_{1}.xml".format(
                 Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
             )
@@ -300,26 +316,25 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
     for key in RD53Dict.keys():
         try:
             print("Doing the copy thing in guiUtils")
-            os.system(
-                "cp {0}/CMSIT_RD53_{1}_OUT.txt {2}/CMSIT_RD53_{1}_IN.txt".format(
-                    Input_Dir, key, Output_Dir
-                )
+            shutil.copyfile(        # Update copy method from os.system
+                "{0}/CMSIT_RD53_{1}_OUT.txt".format(Input_Dir, key), 
+                "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key)
             )
         except OSError:
-            print(
+            logger.error(
                 "Can not copy the RD53 configuration files to {0} for RD53 ID: {1}".format(
                     Output_Dir, key
                 )
             )
             print(traceback.format_exc())
         try:
-            os.system(
-                "cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(
-                    Output_Dir, key, os.environ.get("PH2ACF_BASE_DIR")
+            shutil.copyfile(        # Update copy method from os.system
+                "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key), 
+                "{1}/test/CMSIT_RD53_{0}.txt".format(key, os.environ.get("PH2ACF_BASE_DIR")
                 )
             )
         except OSError:
-            print(
+            logger.error(
                 "Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53_{1}.txt".format(
                     Output_Dir, key, os.environ.get("PH2ACF_BASE_DIR")
                 )
@@ -334,26 +349,24 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
 def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
     for key in InputFileDict.keys():
         try:
-            os.system(
-                "cp {0} {1}/CMSIT_RD53_{2}_IN.txt".format(
-                    InputFileDict[key], Output_Dir, key
-                )
+            shutil.copyfile(        # Update copy method from os.system
+                            InputFileDict[key],
+                            "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key)
             )
         except OSError:
-            print(
+            logger.error(
                 "Can not copy the XML files {0} to {1}".format(
                     InputFileDict[key], Output_Dir
                 )
             )
             print(traceback.format_exc())
         try:
-            os.system(
-                "cp {0}/CMSIT_RD53_{1}_IN.txt  {2}/test/CMSIT_RD53_{1}.txt".format(
-                    Output_Dir, key, os.environ.get("PH2ACF_BASE_DIR")
-                )
-            )
+            shutil.copyfile(        # Update copy method from os.system
+                    os.path.join(Output_Dir, f"CMSIT_RD53_{key}_IN.txt"),
+                    os.path.join(os.environ.get("PH2ACF_BASE_DIR"), "test", f"CMSIT_RD53_{key}.txt")
+                )   
         except OSError:
-            print(
+            logger.error(
                 "Can not copy {0}/CMSIT_RD53_{1}_IN.txt to {2}/test/CMSIT_RD53.txt".format(
                     Output_Dir, key, os.environ.get("PH2ACF_BASE_DIR")
                 )

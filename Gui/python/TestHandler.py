@@ -1202,7 +1202,7 @@ created by Ph2_ACF is empty."
             logger.debug(
                 f"Copying {latest_file} to {output_dir}/{fc7_in_use}_{file_name}"
             )
-            os.system(f"cp {latest_file} {output_dir}/{fc7_in_use}_{file_name}")
+            shutil.copyfile(latest_file, f"{output_dir}/{fc7_in_use}_{file_name}")     # Updating copy method from os.system
 
     def saveTest(self, processIndex: int, process: QProcess):
         logger.debug("Inside saveTest")
@@ -1224,39 +1224,56 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            if self.RunNumber == "-1":
-                os.system(
-                    "cp {0}/test/Results/Run000000*.root {1}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        os.path.join(
-                            self.output_dir, self.firmware[processIndex].getBoardName()
-                        ),
-                    )
+            if self.RunNumber == "-1":      
+                dest_dir = os.path.join(self.output_dir,
+                                         self.firmware[processIndex].getBoardname()
                 )
+
+                for file_path in glob.glob(
+                    os.path.join(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        "test",
+                        "Results",
+                        "Run000000*.root"
+                    )
+                ):
+                    try:
+                        shutil.copy(file_path, dest_dir)
+                    except (shutil.Error, IOError) as e:
+                        logger.error(f"Error copying {file_path}: {e}")
+
 
             elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
+
                 current_fc7: str = self.firmware[processIndex].getBoardName()
-                os.system(
-                    "cp {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}/".format(
+                
+                for file_path in glob.glob(
+                    os.path.join(
                         os.environ.get("PH2ACF_BASE_DIR"),
+                        "test",
+                        "Results",
+                        "Run{0}_MonitorDQM_Board_{1}*.root".format(
+                            self.RunNumber, self.firmware[processIndex].getBoardID()))
+                        ):              
+                            shutil.copyfile(
+                                file_path,
+                                os.path.join(
+                                    self.output_dir,
+                                    current_fc7,
+                                    os.path.basename(file_path)
+                                )
+                            )
+
+                shutil.copyfile(        # Update copy method from os.system to shutil
+                    "{0}/test/Results/Run{1}_CMSIT_{2}.xml".format(os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
-                        self.firmware[processIndex].getBoardID(),
-                        os.path.join(
-                            self.output_dir, current_fc7
-                        ),
-                    )
-                )
-                os.system(
-                    "cp {0}/test/Results/Run{1}_CMSIT_{2}.xml {3}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        current_fc7,
+                        current_fc7),
                         os.path.join(
                             self.output_dir, current_fc7    
-                        ),
+                        )
                     )   
-                )
+                
             else:
                 ph2_acf_base_dir: str | None = os.environ.get("PH2ACF_BASE_DIR")
                 if ph2_acf_base_dir is None:

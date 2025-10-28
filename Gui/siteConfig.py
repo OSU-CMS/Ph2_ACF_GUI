@@ -64,6 +64,7 @@ manual_powersupply_control = False
 
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
+
     
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
@@ -121,17 +122,20 @@ forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
 
 try:
-    inst_setup = 'jsonFiles/instruments_osu_auto.json'
-    with open(inst_setup, 'r') as file:
-    	data = json.load(file)
+    json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
+    with open(json_setup, 'r') as file:
+    	icicle_instrument_setup = json.load(file)
 except FileNotFoundError:
     print("Error: 'data.json' not found.")
     exit()
     
-FC7_list = data['fc7_address_dict']
+FC7List = icicle_instrument_setup['fc7_address_dict']
+icicle_instrument_setup.pop('fc7_address_dict')
+print(FC7List,"\n")
+print(icicle_instrument_setup)
 
-icicle_instrument_setup = data['instrument_dict']
-icicle_instrument_setup.update(data['channels_dict'])
+#icicle_instrument_setup = data['instrument_dict']
+#icicle_instrument_setup.update(data['channels_dict'])
     
 
 ## Update this list with all working TEC channels in your coldbox

@@ -95,6 +95,28 @@ def ResultGrader(
                 f"{testIndexInSequence:02d}_{testName}",
                 "sldo",
             )
+        elif "IREF" in testName:
+            relevant_files = [
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
+            ]
+            dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
+            relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
+
+
+            print("relevant_files:", relevant_files)
+            _1, _2 = felis.set_module(
+                module_name,
+                module_type.split(" ")[0],
+                module_type.split(" ")[2].replace("Quad", "2x2"),
+                module_version.strip("v"),
+                True,
+            )
+            status, message, sanity, explanation = felis.set_result(
+                relevant_files,
+                module_name,
+                f"{testIndexInSequence:02d}_{testName}",
+                "irefgadc",
+            )
         elif "CommunicationTest" in testName:
             module_name = module_data["module"].getModuleName()
             comm_result = communicationTestResults.get(module_name)
