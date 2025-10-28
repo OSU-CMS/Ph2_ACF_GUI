@@ -2247,6 +2247,11 @@ created by Ph2_ACF is empty."
                 (step, self.figurelist)
             )  ##Add else statement to add signal in simple mode
 
+        for i, firmware in enumerate(self.firmware):
+            self.runwindow.ResultWidget.ProgressBars[i][
+                self.testIndexTracker
+            ].setValue(100)
+
         if isCompositeTest(self.info):
             self.runTest()
 
