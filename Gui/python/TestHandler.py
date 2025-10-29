@@ -1297,7 +1297,7 @@ class TestHandler(QObject):
                 name = name.replace("Threshold", "Thr")
 
             # Construct the search pattern for files
-            search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
+            search_pattern = f"{base_dir}/Run{RunNumber}_{name}_Board*.root"
             logger.debug(f"Looking for {search_pattern}")
 
             # Find all matching files
@@ -1323,11 +1323,12 @@ created by Ph2_ACF is empty."
             # When using multiple FC7s root files will get overwritten so need to attach
             # what fc7 the test was run on to file name
             fc7_in_use: str = base_dir.split("/")[-1].replace(".", "_")
-            file_name: str = latest_file.split("/")[-1]
-            logger.debug(
-                f"Copying {latest_file} to {output_dir}/{fc7_in_use}_{file_name}"
-            )
-            os.system(f"cp {latest_file} {output_dir}/{fc7_in_use}_{file_name}")
+            for file in matching_files:
+                file_name: str = file.split("/")[-1]
+                logger.debug(
+                    f"Copying {file} to {output_dir}/{fc7_in_use}_{file_name}"
+                )
+                os.system(f"cp {file} {output_dir}/{fc7_in_use}_{file_name}")
 
     def saveTest(self, processIndex: int, process: QProcess):
         logger.debug("Inside saveTest")
