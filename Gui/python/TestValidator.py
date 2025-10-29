@@ -178,9 +178,14 @@ def ResultGrader(
             #     if chip.getStatus()
             # ]
 
+            #relevant_files = [
+            #    outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
+            #]
             relevant_files = [
-                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
             ]
+            dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
+            relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
 
             logger.debug(f"{relevant_files=}")
             _1, _2 = felis.set_module(

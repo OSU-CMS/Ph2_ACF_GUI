@@ -1297,7 +1297,7 @@ class TestHandler(QObject):
                 name = name.replace("Threshold", "Thr")
 
             # Construct the search pattern for files
-            search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
+            search_pattern = f"{base_dir}/Run{RunNumber}_{name}_Board*.root"
             logger.debug(f"Looking for {search_pattern}")
 
             # Find all matching files
