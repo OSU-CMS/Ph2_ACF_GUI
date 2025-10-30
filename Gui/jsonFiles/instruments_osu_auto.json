@@ -17,14 +17,14 @@
         "cb": {
             "class": "PSIColdbox",
             "resource": "TCPIP::coldbox::1883::SOCKET",
-            "default_temperature": -35,
+            "default_temperature": -10,
             "temperature_tolerance": 0.5,
             "validation_time": 20,
             "validation_timeout": 600
         },
         "hb": {
             "class": "PSIHVBox",
-            "resource": "ASRL/dev/ttyACM2::INSTR",
+            "resource": "ASRL/dev/ttyACM1::INSTR",
             "channel_compliance": 5e-6
         },
         "hv": {
@@ -38,42 +38,50 @@
     "channels_dict":{
         "0":{
             "lv": {"instrument":"lv_1", "channel":1},
-            "cb": {"instrument":"cb", "channel":1},          
+            "cb": {"instrument":"cb", "channel":1}, 
+            "hb": {"instrument":"hb", "channel":1},         
             "hv": {"instrument":"hv", "channel":1}
         },
         "1":{
             "lv": {"instrument":"lv_1", "channel":2},
-            "cb": {"instrument":"cb", "channel":2},          
+            "cb": {"instrument":"cb", "channel":2},     
+            "hb": {"instrument":"hb", "channel":2},     
             "hv": {"instrument":"hv", "channel":1}
         },
         "2":{
             "lv": {"instrument":"lv_1", "channel":3},
-            "cb": {"instrument":"cb", "channel":3},          
+            "cb": {"instrument":"cb", "channel":3},   
+            "hb": {"instrument":"hb", "channel":3},       
             "hv": {"instrument":"hv", "channel":1}
         },
         "3":{
             "lv": {"instrument":"lv_1", "channel":4},
-            "cb": {"instrument":"cb", "channel":4},          
+            "cb": {"instrument":"cb", "channel":4},
+            "hb": {"instrument":"hb", "channel":4},          
             "hv": {"instrument":"hv", "channel":1}
         },
         "4":{
             "lv": {"instrument":"lv_2", "channel":1},
-            "cb": {"instrument":"cb", "channel":5},          
+            "cb": {"instrument":"cb", "channel":5},
+            "hb": {"instrument":"hb", "channel":5},
             "hv": {"instrument":"hv", "channel":1}
         },
         "5":{
             "lv": {"instrument":"lv_2", "channel":2},
-            "cb": {"instrument":"cb", "channel":6},          
+            "cb": {"instrument":"cb", "channel":6},
+            "hb": {"instrument":"hb", "channel":6},
             "hv": {"instrument":"hv", "channel":1}
         },
         "6":{
             "lv": {"instrument":"lv_2", "channel":3},
-            "cb": {"instrument":"cb", "channel":7},          
+            "cb": {"instrument":"cb", "channel":7},
+            "hb": {"instrument":"hb", "channel":7},
             "hv": {"instrument":"hv", "channel":1}
         },
         "7":{
             "lv": {"instrument":"lv_2", "channel":4},
-            "cb": {"instrument":"cb", "channel":8},          
+            "cb": {"instrument":"cb", "channel":8},
+            "hb": {"instrument":"hb", "channel":8},
             "hv": {"instrument":"hv", "channel":1}
         }
     }
