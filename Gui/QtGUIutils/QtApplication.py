@@ -971,7 +971,6 @@ class QtApplication(QWidget):
             if self.expertMode:
                 if not self.default_checkbox.isChecked():
                     for key, value in self.connected_device_information.items():
-                        #if key not in ['FC7List', 'items']:
                             self.device_settings[key] = value
 
             try:

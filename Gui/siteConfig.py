@@ -131,12 +131,6 @@ except FileNotFoundError:
     
 FC7List = icicle_instrument_setup['fc7_address_dict']
 icicle_instrument_setup.pop('fc7_address_dict')
-print(FC7List,"\n")
-print(icicle_instrument_setup)
-
-#icicle_instrument_setup = data['instrument_dict']
-#icicle_instrument_setup.update(data['channels_dict'])
-    
 
 ## Update this list with all working TEC channels in your coldbox
 ## Channel assignments will follow this list sequentially per number of modules entered in the GUI

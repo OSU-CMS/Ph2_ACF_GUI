@@ -1202,7 +1202,7 @@ created by Ph2_ACF is empty."
             logger.debug(
                 f"Copying {latest_file} to {output_dir}/{fc7_in_use}_{file_name}"
             )
-            shutil.copyfile(latest_file, f"{output_dir}/{fc7_in_use}_{file_name}")     # Updating copy method from os.system
+            shutil.copyfile(latest_file, f"{output_dir}/{fc7_in_use}_{file_name}")  
 
     def saveTest(self, processIndex: int, process: QProcess):
         logger.debug("Inside saveTest")
@@ -1247,7 +1247,7 @@ created by Ph2_ACF is empty."
                 print("copying MonitorDQM.root file to output directory")
 
                 current_fc7: str = self.firmware[processIndex].getBoardName()
-                
+
                 for file_path in glob.glob(
                     os.path.join(
                         os.environ.get("PH2ACF_BASE_DIR"),
@@ -1265,7 +1265,7 @@ created by Ph2_ACF is empty."
                                 )
                             )
 
-                shutil.copyfile(        # Update copy method from os.system to shutil
+                shutil.copyfile(  
                     "{0}/test/Results/Run{1}_CMSIT_{2}.xml".format(os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
                         current_fc7),

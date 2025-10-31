@@ -145,11 +145,6 @@ def isActive(dbconnection):
 
 def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
     try:
-        #os.system(        # Update copy from os.system to shutil and import shutil
-         #   "cp {0}/CMSIT_{2}.xml {1}/CMSIT_2.xml".format(
-          #      Input_Dir, Output_Dir, BeBoardName
-           # )
-
         shutil.copyfile("{0}/CMSIT_{2}.xml".format(Input_Dir, Output_Dir, BeBoardName),
                         "{1}/CMSIT_2.xml".format(Input_Dir, Output_Dir, BeBoardName))
     
@@ -158,10 +153,6 @@ def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
         logger.error(f"Failed to copy XML file: {e}")
         logger.error(traceback.format_exc())
     try:
-        #os.system(        # Update copy from os.system to shutil
-         #   "cp {0}/CMSIT_{2}.xml  {1}/test/CMSIT_{2}.xml".format(
-          #      Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName
-
         shutil.copyfile( "{0}/CMSIT_{2}.xml".format(Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName),
                     "{1}/test/CMSIT_{2}.xml".format(Output_Dir, os.environ.get("PH2ACF_BASE_DIR"), BeBoardName)
                 )                      
@@ -281,8 +272,6 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
         logger.error(traceback.format_exc())
 
     try:
-        #os.system("cp {0} {1}/CMSIT_{2}.xml".format(InputFile, Output_Dir, BeBoardName))  # FIXME update copy method from os.system
-
         shutil.copyfile(InputFile, 
                         os.path.join(Output_Dir, f"CMSIT_{BeBoardName}.xml"))
 
@@ -290,11 +279,6 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
         print("Can not copy the XML files {0} to {1}".format(InputFile, Output_Dir))
         print(traceback.format_exc())
     try:
-        #os.system(            # Update copy method from os.system
-            #"cp {0}/CMSIT_{1}.xml  {2}/test/CMSIT_{1}.xml".format(
-            #   Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
-            #)
-
             shutil.copyfile("{0}/CMSIT_{1}.xml".format(Output_Dir, BeBoardName),
             "{0}/test/CMSIT_{1}.xml".format(os.environ.get("PH2ACF_BASE_DIR"), BeBoardName)
             )
@@ -316,7 +300,7 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
     for key in RD53Dict.keys():
         try:
             print("Doing the copy thing in guiUtils")
-            shutil.copyfile(        # Update copy method from os.system
+            shutil.copyfile(
                 "{0}/CMSIT_RD53_{1}_OUT.txt".format(Input_Dir, key), 
                 "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key)
             )
@@ -328,7 +312,7 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
             )
             print(traceback.format_exc())
         try:
-            shutil.copyfile(        # Update copy method from os.system
+            shutil.copyfile(
                 "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key), 
                 "{1}/test/CMSIT_RD53_{0}.txt".format(key, os.environ.get("PH2ACF_BASE_DIR")
                 )
@@ -349,7 +333,7 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
 def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
     for key in InputFileDict.keys():
         try:
-            shutil.copyfile(        # Update copy method from os.system
+            shutil.copyfile(        
                             InputFileDict[key],
                             "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key)
             )
@@ -361,7 +345,7 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
             )
             print(traceback.format_exc())
         try:
-            shutil.copyfile(        # Update copy method from os.system
+            shutil.copyfile(      
                     os.path.join(Output_Dir, f"CMSIT_RD53_{key}_IN.txt"),
                     os.path.join(os.environ.get("PH2ACF_BASE_DIR"), "test", f"CMSIT_RD53_{key}.txt")
                 )   
