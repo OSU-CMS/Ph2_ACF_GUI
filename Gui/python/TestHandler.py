@@ -2245,6 +2245,11 @@ created by Ph2_ACF is empty."
 
             self.figurelist[moduleName] = [filename]
 
+        for i, firmware in enumerate(self.firmware):
+            self.runwindow.ResultWidget.ProgressBars[i][
+                self.testIndexTracker
+            ].setValue(100)
+
         self.validateTest()
 
         step = "IVCurve"
@@ -2275,11 +2280,6 @@ created by Ph2_ACF is empty."
             self.updateIVResult.emit(
                 (step, self.figurelist)
             )  ##Add else statement to add signal in simple mode
-
-        for i, firmware in enumerate(self.firmware):
-            self.runwindow.ResultWidget.ProgressBars[i][
-                self.testIndexTracker
-            ].setValue(100)
 
         if isCompositeTest(self.info):
             self.runTest()
