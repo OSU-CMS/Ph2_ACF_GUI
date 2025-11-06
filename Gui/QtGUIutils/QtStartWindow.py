@@ -5,7 +5,7 @@ import requests
 import re
 import traceback
 
-from PyQt5.QtCore import QSize, Qt, pyqtSignal
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QEvent
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -19,7 +19,8 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMessageBox,
     QLineEdit,
-    QRadioButton
+    QRadioButton,
+    QCompleter,
 )
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
@@ -274,6 +275,62 @@ class QtStartWindow(QWidget):
                 self.TestList.remove("FullSequence")
 
         self.TestCombo.addItems(self.TestList)
+        # Leave the combo visually blank by default (don't preselect the first test)
+        # Make editable early so placeholder and empty edit text are effective
+        try:
+            self.TestCombo.setEditable(True)
+            # Clear any current edit text so the field appears empty
+            self.TestCombo.setEditText("")
+            # If line edit exists, set a helpful placeholder
+            le = self.TestCombo.lineEdit()
+            if le is not None:
+                le.setPlaceholderText("Select a test...")
+        except Exception:
+            logger.debug("Failed to clear TestCombo default text or set placeholder")
+        # Make the combo searchable: allow typing and provide a substring-matching completer
+        try:
+            completer = QCompleter(self.TestList, self)
+            # keep a reference so handlers can query popup/currentCompletion
+            self._test_completer = completer
+            completer.setCaseSensitivity(Qt.CaseInsensitive)
+            # Use substring matching so typing any part of the test name will match
+            completer.setFilterMode(Qt.MatchContains)
+            completer.setCompletionMode(QCompleter.PopupCompletion)
+            self.TestCombo.setCompleter(completer)
+            # also intercept keys on the completer's popup so Tab can be handled
+            try:
+                popup = completer.popup()
+                if popup is not None:
+                    popup.installEventFilter(self)
+            except Exception:
+                logger.debug("Failed to install event filter on completer.popup()")
+            # When a completion is chosen from the popup (click or Enter), apply it
+            # Connect to the string overload of activated to ensure we get a text
+            # value when the user chooses a completion (click or Enter on popup).
+            try:
+                completer.activated[str].connect(self._on_completer_activated)
+            except Exception:
+                logger.debug("Failed to connect completer.activated[str]")
+
+            # When the user leaves the combo (or presses Enter), try to auto-fill the
+            # top match from the available tests if the typed text doesn't exactly match.
+            try:
+                lineedit = self.TestCombo.lineEdit()
+                if lineedit is not None:
+                    # handle focus-out and editing finished
+                    lineedit.editingFinished.connect(self._apply_best_test_completion)
+                    # handle explicit Return/Enter press with a handler that
+                    # prefers the completer's currently highlighted popup item
+                    try:
+                        lineedit.returnPressed.connect(self._on_lineedit_return_pressed)
+                    except Exception:
+                        logger.debug("Failed to connect returnPressed to handler")
+                    # install an event filter so clicking away (focus out) is caught reliably
+                    lineedit.installEventFilter(self)
+            except Exception:
+                logger.debug("Failed to attach handlers to TestCombo.lineEdit()")
+        except Exception:
+            logger.debug("Failed to attach QCompleter to TestCombo")
         TestLabel.setBuddy(self.TestCombo)
 
         testlayout.addWidget(TestLabel, 0, 0, 1, 1)
@@ -362,6 +419,225 @@ class QtStartWindow(QWidget):
         for module in self.BeBoardWidget.getModules():
             module.SerialEdit.editingFinished.connect(self.txt_entry.clear)
             module.SerialEdit.editingFinished.connect(lambda:self.customTxtCheck.setChecked(False))
+
+    def _apply_best_test_completion(self):
+        """If the current text isn't an exact test name, pick the first reasonable match.
+
+        Preference: exact match -> prefix match -> substring match. If a candidate is
+        found, update the combo's edit text and current index.
+        """
+        try:
+            text = self.TestCombo.currentText().strip()
+            if not text:
+                return
+
+            # If already an exact match, select that index
+            idx = self.TestCombo.findText(text, Qt.MatchExactly)
+            if idx != -1:
+                self.TestCombo.setCurrentIndex(idx)
+                return
+
+            # Try prefix match (case-insensitive)
+            prefix_matches = [t for t in self.TestList if t.lower().startswith(text.lower())]
+            if prefix_matches:
+                match = prefix_matches[0]
+            else:
+                # Fallback to substring match
+                substr_matches = [t for t in self.TestList if text.lower() in t.lower()]
+                match = substr_matches[0] if substr_matches else None
+
+            if match:
+                self.TestCombo.setEditText(match)
+                idx = self.TestCombo.findText(match, Qt.MatchExactly)
+                if idx != -1:
+                    self.TestCombo.setCurrentIndex(idx)
+        except Exception:
+            logger.debug("_apply_best_test_completion failed:\n" + traceback.format_exc())
+
+    def _on_completer_activated(self, text: str):
+        """Handle completer activation (user selected a completion)."""
+        try:
+            if not text:
+                return
+            self.TestCombo.setEditText(text)
+            idx = self.TestCombo.findText(text, Qt.MatchExactly)
+            if idx != -1:
+                self.TestCombo.setCurrentIndex(idx)
+        except Exception:
+            logger.debug("_on_completer_activated failed:\n" + traceback.format_exc())
+
+    def _on_lineedit_return_pressed(self):
+        """Handle Return/Enter: prefer the completer's highlighted popup item if present.
+
+        If the completer popup is visible and has a current completion, use it.
+        Otherwise fall back to the substring/prefix matching helper.
+        """
+        try:
+            comp = getattr(self, "_test_completer", None)
+            if comp is not None:
+                popup = comp.popup()
+                # If the popup is visible, prefer the current highlighted completion
+                current = None
+                try:
+                    if popup is not None and popup.isVisible():
+                        # QCompleter.currentCompletion() returns the highlighted text
+                        current = comp.currentCompletion()
+                except Exception:
+                    logger.debug("Could not query completer popup/currentCompletion:\n" + traceback.format_exc())
+
+                if current:
+                    # apply the completion like the activated handler
+                    self._on_completer_activated(current)
+                    return
+
+            # fallback
+            self._apply_best_test_completion()
+        except Exception:
+            logger.debug("_on_lineedit_return_pressed failed:\n" + traceback.format_exc())
+
+    def eventFilter(self, obj, event):
+        """Catch focus-out on the combo's line edit to apply completion reliably."""
+        try:
+            lineedit = None
+            try:
+                lineedit = self.TestCombo.lineEdit()
+            except Exception:
+                pass
+
+            # Intercept Tab to perform shell-like common-prefix completion without
+            # moving focus. Also handle focus-out to apply best completion.
+            if lineedit is not None and obj is lineedit:
+                # Key press (Tab) handling
+                if event.type() == QEvent.KeyPress:
+                    try:
+                        key = event.key()
+                        # reset cycle state on any *printable* non-tab key so a new
+                        # cycle starts when the user actually types. Avoid
+                        # resetting for control keys which have empty event.text().
+                        try:
+                            is_printable = bool(event.text())
+                        except Exception:
+                            is_printable = False
+                        if is_printable and key not in (Qt.Key_Tab, Qt.Key_Backtab):
+                            try:
+                                self._tab_state = None
+                            except Exception:
+                                pass
+
+                        if key in (Qt.Key_Tab, Qt.Key_Backtab):
+                            # Use the original typed base (before Tab) as anchor so
+                            # cycling goes through all matches that start with that base.
+                            text = lineedit.text() or ""
+                            cur = text.strip()
+
+                            state = getattr(self, '_tab_state', None)
+                            # Initialize state only if missing; do not re-init just
+                            # because the line edit text changed due to completion.
+                            if state is None:
+                                base = cur
+                                prefix_matches = [t for t in self.TestList if t.lower().startswith(base.lower())]
+                                matches = prefix_matches if prefix_matches else [t for t in self.TestList if base.lower() in t.lower()]
+                                self._tab_state = {'base': base, 'matches': matches, 'index': -1}
+                                state = self._tab_state
+
+                            matches = state.get('matches', [])
+                            base = state.get('base', cur)
+
+                            if not matches:
+                                # no matches: swallow Tab and keep focus
+                                event.accept()
+                                return True
+
+                            # advance or go back in cycle
+                            if key == Qt.Key_Tab:
+                                state['index'] = (state['index'] + 1) % len(matches)
+                            else:
+                                state['index'] = (state['index'] - 1) % len(matches)
+
+                            match = matches[state['index']]
+                            # apply match and select appended portion beyond the original base
+                            lineedit.setText(match)
+                            try:
+                                lineedit.setSelection(len(base), max(0, len(match) - len(base)))
+                            except Exception:
+                                pass
+
+                            # Don't force the completer to re-open here. Calling
+                            # "complete()" can cause Qt to reset the edit text or
+                            # popup selection and break our anchored tab cycle.
+
+                            event.accept()
+                            return True
+                    except Exception:
+                        logger.debug("Tab completion failed:\n" + traceback.format_exc())
+
+                # apply completion when the lineedit loses focus
+                if event.type() == QEvent.FocusOut:
+                    self._apply_best_test_completion()
+            # If completer popup receives key events, handle Tab there similar to the
+            # lineedit so pressing Tab while popup is visible doesn't close it or move focus.
+            try:
+                comp = getattr(self, "_test_completer", None)
+                popup = comp.popup() if comp is not None else None
+                if popup is not None and obj is popup and event.type() == QEvent.KeyPress:
+                    try:
+                        key = event.key()
+                        # reset cycle state on printable non-tab keys only
+                        try:
+                            is_printable = bool(event.text())
+                        except Exception:
+                            is_printable = False
+                        if is_printable and key not in (Qt.Key_Tab, Qt.Key_Backtab):
+                            try:
+                                self._tab_state = None
+                            except Exception:
+                                pass
+
+                        if key in (Qt.Key_Tab, Qt.Key_Backtab):
+                            # Use existing tab state if present, otherwise initialize
+                            text = lineedit.text() if lineedit is not None else ""
+                            cur = text.strip()
+                            state = getattr(self, '_tab_state', None)
+                            if state is None:
+                                base = cur
+                                prefix_matches = [t for t in self.TestList if t.lower().startswith(base.lower())]
+                                matches = prefix_matches if prefix_matches else [t for t in self.TestList if base.lower() in t.lower()]
+                                self._tab_state = {'base': base, 'matches': matches, 'index': -1}
+                                state = self._tab_state
+
+                            matches = state.get('matches', [])
+                            base = state.get('base', cur)
+
+                            if not matches:
+                                event.accept()
+                                return True
+
+                            if key == Qt.Key_Tab:
+                                state['index'] = (state['index'] + 1) % len(matches)
+                            else:
+                                state['index'] = (state['index'] - 1) % len(matches)
+
+                            match = state['matches'][state['index']]
+                            if lineedit is not None:
+                                lineedit.setText(match)
+                                try:
+                                    lineedit.setSelection(len(base), max(0, len(match) - len(base)))
+                                except Exception:
+                                    pass
+                                # avoid calling comp.complete() here for the same
+                                # reason as above
+                            event.accept()
+                            return True
+                    except Exception:
+                        logger.debug("Popup Tab handling failed:\n" + traceback.format_exc())
+            except Exception:
+                # ignore failures querying popup
+                logger.debug("eventFilter failed:\n" + traceback.format_exc())
+
+        except Exception:
+            logger.debug("eventFilter caught unexpected error:\n" + traceback.format_exc())
+
+        return super(QtStartWindow, self).eventFilter(obj, event)
 
     def radio_selected(self, replaceArgs:tuple):
         erroredFlag = False
