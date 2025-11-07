@@ -5,7 +5,7 @@ import requests
 import re
 import traceback
 
-from PyQt5.QtCore import QSize, Qt, pyqtSignal, QEvent
+from PyQt5.QtCore import QSize, Qt, pyqtSignal, QEvent, QTimer, QSortFilterProxyModel, QStringListModel
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtWidgets import (
     QComboBox,
@@ -264,7 +264,6 @@ class QtStartWindow(QWidget):
         testlayout = QGridLayout()
         TestLabel = QLabel("Test:")
         self.TestCombo = QComboBox()
-        # self.TestList = getAllTests(self.master.connection)
         self.TestList = TestList
         if not self.master.instruments:
             if "AllScan" in self.TestList:
@@ -275,32 +274,85 @@ class QtStartWindow(QWidget):
                 self.TestList.remove("FullSequence")
 
         self.TestCombo.addItems(self.TestList)
-        # Leave the combo visually blank by default (don't preselect the first test)
-        # Make editable early so placeholder and empty edit text are effective
         try:
             self.TestCombo.setEditable(True)
             # Clear any current edit text so the field appears empty
             self.TestCombo.setEditText("")
-            # If line edit exists, set a helpful placeholder
+            self.TestCombo.setMaxVisibleItems(12)
+
             le = self.TestCombo.lineEdit()
             if le is not None:
                 le.setPlaceholderText("Select a test...")
         except Exception:
             logger.debug("Failed to clear TestCombo default text or set placeholder")
         # Make the combo searchable: allow typing and provide a substring-matching completer
+        # Create a fuzzy-filter proxy so the completer supports subsequence
         try:
-            completer = QCompleter(self.TestList, self)
+            class _FuzzyProxy(QSortFilterProxyModel):
+                def __init__(self, parent=None):
+                    super(_FuzzyProxy, self).__init__(parent)
+                    self._filter = ""
+
+                def setFilterString(self, s: str):
+                    self._filter = s or ""
+                    self.invalidateFilter()
+
+                def is_subsequence(self, needle: str, hay: str) -> bool:
+                    # case insensitive subsequence match
+                    if not needle:
+                        return True
+                    it = iter(hay.lower())
+                    for ch in needle.lower():
+                        found = False
+                        for h in it:
+                            if h == ch:
+                                found = True
+                                break
+                        if not found:
+                            return False
+                    return True
+
+                def filterAcceptsRow(self, source_row, source_parent):
+                    try:
+                        if not self._filter:
+                            return True
+                        idx = self.sourceModel().index(source_row, 0, source_parent)
+                        text = str(self.sourceModel().data(idx, Qt.DisplayRole) or "")
+                        # Accept if subsequence or contains (fallback)
+                        if self.is_subsequence(self._filter, text):
+                            return True
+                        return self._filter.lower() in text.lower()
+                    except Exception:
+                        return False
+
+            base_model = QStringListModel(self.TestList, self)
+            proxy = _FuzzyProxy(self)
+            proxy.setSourceModel(base_model)
+
+            completer = QCompleter(proxy, self)
             # keep a reference so handlers can query popup/currentCompletion
             self._test_completer = completer
             completer.setCaseSensitivity(Qt.CaseInsensitive)
             # Use substring matching so typing any part of the test name will match
             completer.setFilterMode(Qt.MatchContains)
-            completer.setCompletionMode(QCompleter.PopupCompletion)
+            completer.setCompletionMode(QCompleter.UnfilteredPopupCompletion)
+
             self.TestCombo.setCompleter(completer)
             # also intercept keys on the completer's popup so Tab can be handled
             try:
                 popup = completer.popup()
                 if popup is not None:
+                    # height to show ~12 items and avoid excessive scrolling.
+                    try:
+                        desired = 12
+                        rowh = popup.sizeHintForRow(0)
+                        if not rowh or rowh <= 0:
+                            # fallback to font metrics estimate
+                            fm = popup.fontMetrics()
+                            rowh = fm.height() + 6
+                        popup.setMaximumHeight(rowh * desired + 2 * popup.frameWidth())
+                    except Exception:
+                        logger.debug("Could not set completer popup height:\n" + traceback.format_exc())
                     popup.installEventFilter(self)
             except Exception:
                 logger.debug("Failed to install event filter on completer.popup()")
@@ -325,6 +377,12 @@ class QtStartWindow(QWidget):
                         lineedit.returnPressed.connect(self._on_lineedit_return_pressed)
                     except Exception:
                         logger.debug("Failed to connect returnPressed to handler")
+                    # update proxy filter as the user types so fuzzy filtering
+                    try:
+                        proxy_ref = proxy
+                        lineedit.textEdited.connect(lambda s: proxy_ref.setFilterString(s))
+                    except Exception:
+                        pass
                     # install an event filter so clicking away (focus out) is caught reliably
                     lineedit.installEventFilter(self)
             except Exception:
@@ -454,6 +512,45 @@ class QtStartWindow(QWidget):
         except Exception:
             logger.debug("_apply_best_test_completion failed:\n" + traceback.format_exc())
 
+    def _adjust_completer_popup_height(self, desired: int = 12):
+        """Adjust the completer popup height to show up to `desired` rows.
+
+        This is safe to call frequently; it checks for popup and model presence
+        and logs failures.
+        """
+        try:
+            comp = getattr(self, "_test_completer", None)
+            if comp is None:
+                return
+            popup = comp.popup()
+            if popup is None:
+                return
+
+            # Use the model's current rowCount (filtered matches) so the
+            # popup can shrink when fewer matches remain.
+            model = popup.model()
+            if model is None:
+                return
+            rows = model.rowCount()
+            if rows <= 0:
+                rows = 1
+
+            # Limit to desired rows
+            rows = min(desired, rows)
+
+            rowh = 0
+            try:
+                rowh = popup.sizeHintForRow(0)
+            except Exception:
+                rowh = 0
+            if not rowh or rowh <= 0:
+                fm = popup.fontMetrics()
+                rowh = fm.height() + 6
+
+            popup.setFixedHeight(rowh * rows + 2 * popup.frameWidth())
+        except Exception:
+            logger.debug("_adjust_completer_popup_height failed:\n" + traceback.format_exc())
+
     def _on_completer_activated(self, text: str):
         """Handle completer activation (user selected a completion)."""
         try:
@@ -523,6 +620,13 @@ class QtStartWindow(QWidget):
                                 self._tab_state = None
                             except Exception:
                                 pass
+                            # Adjust the completer popup after the event loop has
+                            # processed the filter so the rowCount reflects the
+                            # current matches (use singleShot(0)).
+                            try:
+                                QTimer.singleShot(0, lambda: self._adjust_completer_popup_height())
+                            except Exception:
+                                pass
 
                         if key in (Qt.Key_Tab, Qt.Key_Backtab):
                             # Use the original typed base (before Tab) as anchor so
@@ -579,6 +683,21 @@ class QtStartWindow(QWidget):
             try:
                 comp = getattr(self, "_test_completer", None)
                 popup = comp.popup() if comp is not None else None
+                # If the completer popup is being shown, resize it so it will
+                # display up to ~12 rows before showing a scrollbar. Do this on
+                # the Show event so the current filtered rowCount is accurate.
+                if popup is not None and obj is popup and event.type() in (QEvent.Show, QEvent.ShowToParent):
+                    try:
+                        desired = 12
+                        rowh = popup.sizeHintForRow(0)
+                        if not rowh or rowh <= 0:
+                            fm = popup.fontMetrics()
+                            rowh = fm.height() + 6
+                        rows = max(1, popup.model().rowCount())
+                        rows = min(desired, rows)
+                        popup.setFixedHeight(rowh * rows + 2 * popup.frameWidth())
+                    except Exception:
+                        logger.debug("Could not set dynamic completer popup height on show:\n" + traceback.format_exc())
                 if popup is not None and obj is popup and event.type() == QEvent.KeyPress:
                     try:
                         key = event.key()
@@ -590,6 +709,10 @@ class QtStartWindow(QWidget):
                         if is_printable and key not in (Qt.Key_Tab, Qt.Key_Backtab):
                             try:
                                 self._tab_state = None
+                            except Exception:
+                                pass
+                            try:
+                                QTimer.singleShot(0, lambda: self._adjust_completer_popup_height())
                             except Exception:
                                 pass
 
