@@ -170,6 +170,9 @@ def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
 
 def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
     changeMade = False
+    if not os.path.exists(Output_Dir):
+        os.makedirs(Output_Dir)
+        logger.debug(f"Created output directory: {Output_Dir}")
     try:
         root, tree = LoadXML(InputFile)
         # firmware is a list of QtBeBoards (FC7s) indexed by optical group.
@@ -270,7 +273,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
         logger.error(traceback.format_exc())
 
     try:
-        os.system("cp {0} {1}/CMSIT_{2}.xml".format(InputFile, Output_Dir, BeBoardName))
+        os.system("cp {0} {1}/CMSIT_{2}.xml".format(InputFile, Output_Dir, BeBoardName))  # FIXME
     except OSError:
         print("Can not copy the XML files {0} to {1}".format(InputFile, Output_Dir))
         print(traceback.format_exc())
@@ -296,6 +299,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
 def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
     for key in RD53Dict.keys():
         try:
+            print("Doing the copy thing in guiUtils")
             os.system(
                 "cp {0}/CMSIT_RD53_{1}_OUT.txt {2}/CMSIT_RD53_{1}_IN.txt".format(
                     Input_Dir, key, Output_Dir

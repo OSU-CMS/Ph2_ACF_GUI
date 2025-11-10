@@ -1,6 +1,8 @@
 import Gui.siteSettings as site_settings
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
+from icicle.icicle.instrument_cluster import DummyInstrument
+
 import numpy as np
 import traceback
 
@@ -17,6 +19,12 @@ class IVCurveThread(QThread):
     ):
         super(IVCurveThread, self).__init__()
         self.instruments = instrument_cluster
+        self.powergroup = None
+        for group_key, group in self.instruments.powering_groups.items():
+            self.powergroup = group
+        self.measurements = {}
+        for name in self.powergroup.modulenames:
+            self.measurements[name] = []
         self.parent = parent
         self.measureSignal.connect(self.parent.transitMeasurment)
         self.progressSignal.connect(
@@ -34,7 +42,7 @@ class IVCurveThread(QThread):
             print("IVcurve range: ", self.stopVal)
         else:
             self.stopVal = -80
-        self.stepLength = 2
+        self.stepLength = 5
         self.stepNum = 0
         self.stepTotal = (self.stopVal - self.startVal) / self.stepLength + 1
         self.turnOn()
@@ -58,43 +66,81 @@ class IVCurveThread(QThread):
     def getProgress(self):
         self.percentStep = abs(100 * self.stepLength / self.stopVal)
         self.progressSignal.emit("IVCurve", self.percentStep)
+        ### This loop should create a list of list of measurements for each "channel" in the json file.
+        ### The "channel" number is the key in the "measurements" dictionary. 
+        ### Each "channel" number is associated with a module.
+        ### The result of this loop is a measurements dictionary that has the "channel" number as the key.
+        ### Each "channel" number is associated with a pixel module.
+        for name, module in zip(self.powergroup.modulenames, self.powergroup.modules):
+            
+            source_voltage = self.powergroup.source_channel.measure_voltage.value
+            source_current = self.powergroup.source_channel.measure_current.value
+            if not isinstance(module["hb"], DummyInstrument):
+                module_current = -1*module["hb"]._measure_current.value
+                module_channel = module["hb"]._hvbox_channel
+            else:
+                module_current = source_current
+                module_channel = name
+            result = [source_voltage, source_current, module_current, module_channel]
+            self.measurements[name].append(result)
 
     def abortTest(self):
         self.exiting = True
 
     def run(self):
         try:
+            print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
             starting_voltages = [
                 np.abs(getattr(module["hv"], "voltage"))
                 for module in self.instruments._module_dict.values()
             ]
-            self.instruments.hv_off(
-                execute_each_step=lambda: self.execute_each_step(starting_voltages)
-            )
-
-            _, measurements = self.instruments.hv_on(
+            #self.instruments.hv_on(voltage=0,
+            #    execute_each_step=lambda: self.execute_each_step(starting_voltages)
+            #)
+            self.powergroup.enable_all()
+            print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
+            self.powergroup.ramp_hv(
                 voltage=self.stopVal,
-                step_size=self.stepLength,
                 delay=0.2,
-                measure=True,
+                step_size=self.stepLength,
                 execute_each_step=self.getProgress,
                 break_loop= lambda: self.exiting,
-            )[0]
+            )
 
+##### Replacing the following with the new hv_on function
+            #_, measurements = self.instruments.hv_on(
+            #    voltage=self.stopVal,
+            #    step_size=self.stepLength,
+            #    delay=0.2,
+            #    measure=True,
+            #    execute_each_step=self.getProgress,
+            #    break_loop= lambda: self.exiting,
+            #)[0]
+
+#####  End of replacement block
 
             if self.exiting:
                 print("IV Curve scan was aborted by user.")
                 return
                         
             # The physics test can be stopped by pressing enter
-            measurementStr = {
-                "voltage": [value[4] for value in measurements],
-                "current": [value[5] for value in measurements],
-            }
+            measurementList = {}
+            # This neads to loop over the measurements dictionary keys.  Each key is a module.
+            for channel in self.measurements.keys():
+                measurementStr = {
+                    "voltage": [value[0] for value in self.measurements[channel]],
+                    "current": [value[2] for value in self.measurements[channel]],
+                }
+                measurementList[channel] = measurementStr
+            
+            #measurementStr = {
+            #    "voltage": [value[0] for value in self.measurements['0']],
+            #    "current": [value[2] for value in self.measurements['0']],
+            #}
 
-            print("Voltages: ", measurementStr["voltage"])
-            print("Currents: ", measurementStr["current"])
-            self.measureSignal.emit("IVCurve", measurementStr)
+                print("Voltages for channel {0}: ".format(channel), measurementStr["voltage"])
+                print("Currents for channel {0}: ".format(channel), measurementStr["current"])
+            self.measureSignal.emit("IVCurve", measurementList)
         except Exception as e:
             print(f"IV Curve scan failed with error: {e}")
             print(traceback.format_exc())
