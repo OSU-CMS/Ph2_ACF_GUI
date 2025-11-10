@@ -650,7 +650,8 @@ class TestHandler(QObject):
 
     def runSingleTest(self, testName, nextTest=None):
         self.starttime = time.time()
-        if "analyze" in testName.lower():
+        ####################################################
+        if "analyze" in testName.lower() or (self._openBumpTest_subtest_index == 3):
             self.output_dir, self.input_dir = self.config_output_dir(testName)
             self.currentTest = testName
 
@@ -668,7 +669,7 @@ class TestHandler(QObject):
                     self.testIndexTracker
                 ].setValue(100)
             return
-
+        #####################################################
         print("Executing Single Step test...")
         for console in self.runwindow.ConsoleViews:
             self.outputString.emit("Executing Single Step test...", console)
@@ -1827,9 +1828,10 @@ created by Ph2_ACF is empty."
                 return  # Skip normal finish routine
             else:
                 # Finished all subtests
-                self._openBumpTest_running = False
                 self.currentTest = "OpenBumpTest"
                 logger.info("All OpenBumpTest subtests finished. Validating...")
+                print(f"Current openbumptest subtest index = {self._openBumpTest_subtest_index}")
+                self._openBumpTest_running = False
 
         # validate the results
         logger.debug("About to run validateTest()")
@@ -1868,13 +1870,13 @@ created by Ph2_ACF is empty."
                 logger.info("index == len.self.test_list")
                 self.powerSignal.emit()
                 EnableReRun = True
-
-                if self.info == "FWD-RVS Bias" or self.info == "CrossTalk":
+                                                                           
+                if (self.info == "FWD-RVS Bias") or (self._openBumpTest_subtest_index == 3):
                     self.bumpbond_analysis()
 
                 if (
                     len(self.BBanalysis_root_files) > 0
-                    and "analyze" in self.currentTest
+                    and self._openBumpTest_subtest_index == 3
                 ):
                     for fc7_index, beboard in enumerate(self.firmware):
                         boardID = beboard.getBoardID()
@@ -1901,6 +1903,7 @@ created by Ph2_ACF is empty."
                                         felis_instance=self.felis_instances[fc7_index],
                                     )
                                 )
+                self._openBumpTest_subtest_index = 4
                 if self.autoSave:
                     self.runwindow.upload_to_Panthera_starter()
 
@@ -2454,7 +2457,7 @@ created by Ph2_ACF is empty."
                 + "const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))"
             )
 
-        elif self.info == "Crosstalk":
+        elif self.info == "Crosstalk" or (self._openBumpTest_subtest_index == 3):
             process = subprocess.run(
                 'find /home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test/Results -type f -name "*PixelAlive.root"',
                 shell=True,

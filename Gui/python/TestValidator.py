@@ -114,13 +114,54 @@ def ResultGrader(
             ROOT_file_path = "{0}/Run{1}_{2}.root".format(
                 outputDir, runNumber, root_file_name
             )
-            if testName in (
+
+            open_bump_subtests = [
                 "PixelAlive_highcharge_xtalk",
                 "PixelAlive_coupled_xtalk",
                 "PixelAlive_uncoupled_xtalk",
-            ):
-                BBanalysis_root_files.extend(
-                    outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if file.endswith(".root")
+            ]
+
+            if testName in ("OpenBumpTest", *open_bump_subtests):
+                combined_dir = os.path.join(outputDir, "OpenBumpTest_combined")
+                os.makedirs(combined_dir, exist_ok=True)
+
+                relevant_files = []
+                for subtest in open_bump_subtests:
+                    subtest_files = sorted(
+                        [
+                            os.path.join(outputDir, os.fsdecode(file))
+                            for file in os.listdir(outputDir)
+                            if file.endswith(".root") and subtest in file
+                        ]
+                    )
+                    for f in subtest_files:
+                        new_name = os.path.join(
+                            combined_dir,
+                            f"{subtest}_{os.path.basename(f)}"
+                        )
+
+                        if not os.path.exists(new_name):
+                            import shutil
+                            shutil.copy(f, new_name)
+                        relevant_files.append(new_name)
+
+                BBanalysis_root_files.extend(relevant_files)
+
+                _1, _2 = felis.set_module(
+                    module_name,
+                    module_type.split(" ")[0],
+                    module_type.split(" ")[2].replace("Quad", "2x2"),
+                    module_version.strip("v"),
+                    True,
+                    "link",
+                )
+
+                status, message, sanity, explanation = felis.set_result(
+                    relevant_files,
+                    module_name,
+                    f"{testIndexInSequence:02d}_OpenBumpTest",
+                    "crosstalk",
+                    comment,
                 )
 
             # Note: This may be useful
