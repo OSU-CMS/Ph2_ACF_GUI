@@ -95,6 +95,7 @@ def ResultGrader(
                 f"{testIndexInSequence:02d}_{testName}",
                 "sldo",
             )
+
         elif "Trimbit" in testName:
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
@@ -112,6 +113,7 @@ def ResultGrader(
                 f"{testIndexInSequence:02d}_{testName}",
                 "trimbitscan",
             )
+
 
         elif "IREF" in testName:
             relevant_files = [
@@ -134,7 +136,6 @@ def ResultGrader(
                 f"{testIndexInSequence:02d}_{testName}",
                 "irefgadc",
             )
-
 
         elif "CommunicationTest" in testName:
             module_name = module_data["module"].getModuleName()

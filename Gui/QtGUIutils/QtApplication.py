@@ -49,7 +49,6 @@ from icicle.icicle.instrument_cluster import InstrumentCluster
 from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
 
-
 class QtApplication(QWidget):
     globalStop = pyqtSignal()
     errorMessageBoxSignal = pyqtSignal(str)
@@ -589,7 +588,7 @@ class QtApplication(QWidget):
         if not site_settings.manual_powersupply_control:
             HVDevices = []
             for device_name, device in site_settings.icicle_instrument_setup[
-                "instrument_dict"
+                'instrument_dict'
             ].items():
                 if "hv" in device_name:
                     HVDevices.append(device)
@@ -976,7 +975,8 @@ class QtApplication(QWidget):
             if self.expertMode:
                 if not self.default_checkbox.isChecked():
                     for key, value in self.connected_device_information.items():
-                        self.device_settings[key] = value
+                            self.device_settings[key] = value
+
             try:
                 try:
                     self.instruments = InstrumentCluster(**self.device_settings)
@@ -1022,6 +1022,7 @@ class QtApplication(QWidget):
                 self.ArduinoGroup.setEnabled(True)
                 self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
                 self.ArduinoGroup.setArduinoPanel()
+
 
     def disable_instrument_widgets(self):
         """

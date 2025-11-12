@@ -1323,12 +1323,13 @@ created by Ph2_ACF is empty."
             # When using multiple FC7s root files will get overwritten so need to attach
             # what fc7 the test was run on to file name
             fc7_in_use: str = base_dir.split("/")[-1].replace(".", "_")
+
             for file in matching_files:
                 file_name: str = file.split("/")[-1]
                 logger.debug(
                     f"Copying {file} to {output_dir}/{fc7_in_use}_{file_name}"
                 )
-                os.system(f"cp {file} {output_dir}/{fc7_in_use}_{file_name}")
+                shutil.copyfile(file, f"{output_dir}/{fc7_in_use}_{file_name}")
 
     def saveTest(self, processIndex: int, process: QProcess):
         logger.debug("Inside saveTest")
@@ -1350,39 +1351,56 @@ created by Ph2_ACF is empty."
                     )
                 )
 
-            if self.RunNumber == "-1":
-                os.system(
-                    "cp {0}/test/Results/Run000000*.root {1}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        os.path.join(
-                            self.output_dir, self.firmware[processIndex].getBoardName()
-                        ),
-                    )
+            if self.RunNumber == "-1":      
+                dest_dir = os.path.join(self.output_dir,
+                                         self.firmware[processIndex].getBoardname()
                 )
+
+                for file_path in glob.glob(
+                    os.path.join(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        "test",
+                        "Results",
+                        "Run000000*.root"
+                    )
+                ):
+                    try:
+                        shutil.copy(file_path, dest_dir)
+                    except (shutil.Error, IOError) as e:
+                        logger.error(f"Error copying {file_path}: {e}")
+
 
             elif "IVCurve" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
+
                 current_fc7: str = self.firmware[processIndex].getBoardName()
-                os.system(
-                    "cp {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}/".format(
+
+                for file_path in glob.glob(
+                    os.path.join(
                         os.environ.get("PH2ACF_BASE_DIR"),
+                        "test",
+                        "Results",
+                        "Run{0}_MonitorDQM_Board_{1}*.root".format(
+                            self.RunNumber, self.firmware[processIndex].getBoardID()))
+                        ):              
+                            shutil.copyfile(
+                                file_path,
+                                os.path.join(
+                                    self.output_dir,
+                                    current_fc7,
+                                    os.path.basename(file_path)
+                                )
+                            )
+
+                shutil.copyfile(  
+                    "{0}/test/Results/Run{1}_CMSIT_{2}.xml".format(os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
-                        self.firmware[processIndex].getBoardID(),
-                        os.path.join(
-                            self.output_dir, current_fc7
-                        ),
-                    )
-                )
-                os.system(
-                    "cp {0}/test/Results/Run{1}_CMSIT_{2}.xml {3}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        current_fc7,
+                        current_fc7),
                         os.path.join(
                             self.output_dir, current_fc7    
-                        ),
+                        )
                     )   
-                )
+
             elif "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
                 current_fc7: str = self.firmware[processIndex].getBoardName()

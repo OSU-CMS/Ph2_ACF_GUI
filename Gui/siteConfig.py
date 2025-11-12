@@ -64,6 +64,7 @@ manual_powersupply_control = False
 
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
+
 json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
 with open(json_setup, 'r') as file:
     icicle_instrument_setup = json.load(file)
@@ -119,12 +120,19 @@ Trimbit_GADC = {
 
 forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias bump bond test
 
+
 ## Update this dictionary for the IP addreses of your FC7 devices ##
-FC7List =  {
-	'fc7.board.1'	:	'192.168.1.80',
-	'fc7.board.2'	:	'192.168.1.81',
-	'fc7.board.3'	:	'192.168.1.82',
-}
+
+try:
+    json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
+    with open(json_setup, 'r') as file:
+    	icicle_instrument_setup = json.load(file)
+except FileNotFoundError:
+    print("Error: 'data.json' not found.")
+    exit()
+    
+FC7List = icicle_instrument_setup['fc7_address_dict']
+icicle_instrument_setup.pop('fc7_address_dict')
 
 ## Update this list with all working TEC channels in your coldbox
 ## Channel assignments will follow this list sequentially per number of modules entered in the GUI

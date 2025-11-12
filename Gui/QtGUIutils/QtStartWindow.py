@@ -27,10 +27,10 @@ from Gui.python.CustomizedWidget import BeBoardBox
 from Gui.GUIutils.settings import firmware_image, ModuleLaneMap
 from Gui.siteSettings import (
     FC7List,
+    json_setup,
     ModuleCurrentMap,
     icicle_instrument_setup,
     WorkingChannels,
-    json_setup,
     cooler
 )
 from icicle.icicle.instrument_cluster import DummyInstrument
