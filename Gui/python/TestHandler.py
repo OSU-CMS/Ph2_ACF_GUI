@@ -533,12 +533,12 @@ class TestHandler(QObject):
         if self.halt:
             return
         runTestList = self.test_list
-
+        logger.info("The testName is: %s", testName)
         if testName == "OpenBumpTest":
             logger.debug("Running OpenBumpTest")
             self.runOpenBumpTest()
             return
-            
+        logger.debug("Past the Openbump test conditional block")
         if self.testIndexTracker == len(self.test_list):
             logger.debug("Reset testIndexTracker")
             # self.testIndexTracker = 0
