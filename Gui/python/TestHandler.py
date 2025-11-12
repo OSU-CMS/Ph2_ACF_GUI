@@ -54,6 +54,7 @@ from InnerTrackerTests.Analysis.SLDO_CSV_to_ROOT import (
 
 
 from Gui.QtGUIutils.QtMatplotlibUtils import ScanCanvas
+from Gui.QtGUIutils.TessieCoolingApp import TessieCoolingApp
 
 from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
@@ -205,8 +206,8 @@ class TestHandler(QObject):
         self.rd53_file = {}
         self.grade = -1
         self.currentTest = ""
-        self.outputFile = ""
-        self.errorFile = ""
+        self.outputFile = None
+        self.errorFile = None
         self.comment = ""
         self.txt_files = txt_files if txt_files != {} else {}
 
@@ -600,7 +601,6 @@ class TestHandler(QObject):
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
-            self.outputFile = self.output_dir + "/output.txt"
             process.readyReadStandardOutput.connect(
                 lambda: self.on_readyReadStandardOutput_GADC(
                     process,
@@ -670,6 +670,12 @@ class TestHandler(QObject):
 
         self.updateOptimizedXMLValues()
         self.configTest()
+        if site_settings.cooler == "Tessie":
+            # Log Tessie readings (temps/env) from widget cache at the start of each test
+            try:
+                self._log_tessie_from_widget("start")
+            except Exception as e:
+                logger.debug(f"Could not log Tessie readings from widget: {e}")
 
         # Make sure that the GUI is not trying to write to the root directory
         try:
@@ -918,16 +924,21 @@ class TestHandler(QObject):
     def setupQProcess(self):
         self.tempHistory = [0.0] * self.numChips
         self.tempindex = 0
-
-        # NOTE: This may cause issues as I believe both instances of Ph2_ACF will write to the same place.
         logger.info(f"{self.output_dir=}")
-        self.outputFile = self.output_dir + "/output.txt"
-        self.errorFile = self.output_dir + "/error.txt"
 
-        if os.path.exists(self.outputFile):
-            self.outputfile = open(self.outputFile, "a")
-        else:
-            self.outputfile = open(self.outputFile, "w")
+        # Create per-FC7 output directories
+        # <output_dir>/<fc7>/output.txt
+        # An error.txt file was created in the old version but never used.
+        for firmware in self.firmware:
+            fc7_dir = os.path.join(self.output_dir, firmware.getBoardName())
+            try:
+                os.makedirs(fc7_dir, exist_ok=True)
+                # Ensure files exist (open in append mode then close)
+                open(os.path.join(fc7_dir, "output.txt"), "a").close()
+                # open(os.path.join(fc7_dir, "error.txt"), "a").close()
+            except Exception:
+                logger.error(f"Failed creating output dir for {fc7_dir}")
+                logger.error(traceback.format_exc())
 
             # Check if the test was aborted
         if self.halt:
@@ -1000,7 +1011,7 @@ class TestHandler(QObject):
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                         "-t",
-                        "5",
+                        "15",
                     ],
                 )
         elif self.currentTest == "TrimbitScan":
@@ -1065,12 +1076,126 @@ class TestHandler(QObject):
         self.haltSignal.emit(self.halt)
         self.starttime = None
 
+    def _find_tessie_widget(self):
+        """Try to find a TessieCoolingApp widget in the UI tree."""
+        candidates = []
+        try:
+            candidates.append(getattr(self.master, 'window', None))
+        except Exception:
+            pass
+        candidates.extend([self.master if hasattr(self, 'master') else None, self.runwindow])
+        for parent in filter(None, candidates):
+            try:
+                w = parent.findChild(TessieCoolingApp)
+                if w is not None:
+                    return w
+            except Exception:
+                continue
+        # Fallback to a direct attribute if provided by the app
+        w = getattr(self.master, 'tessie_widget', None)
+        return w
+
+    def _log_tessie_from_widget(self, phase: str = "start"):
+        """Fetch cached Tessie readings from the TessieCoolingApp widget and persist them.
+        Uses widget cache only, no direct instrument queries.
+
+        phase: 'start' or 'end' to control filename and console label.
+        - start -> writes tessie_start_temps.json (kept for backward compatibility)
+        - end   -> writes tessie_end_values.json
+        """
+        widget = self._find_tessie_widget()
+        temps = None
+        rh = None
+        dp = None
+        setpoints = None
+        if widget:
+            try:
+                if hasattr(widget, 'get_latest_temperatures'):
+                    temps = widget.get_latest_temperatures()
+            except Exception:
+                temps = None
+            try:
+                if hasattr(widget, 'get_latest_env'):
+                    env = widget.get_latest_env()
+                    if isinstance(env, tuple):
+                        rh, dp = env
+            except Exception:
+                rh, dp = None, None
+            try:
+                if hasattr(widget, 'get_latest_setpoints'):
+                    setpoints = widget.get_latest_setpoints()
+            except Exception:
+                setpoints = None
+
+        ts = datetime.now().strftime("%H:%M:%S")
+        # Build console message
+        label = "start-of-test" if str(phase).lower().startswith("s") else "end-of-test"
+        parts = []
+        if isinstance(temps, list) and len(temps) == 8:
+            parts.append("temps=" + ", ".join(f"{t:.2f}°C" for t in temps))
+        if isinstance(rh, (int, float)):
+            parts.append(f"RH={rh:.1f}%")
+        if isinstance(dp, (int, float)):
+            parts.append(f"DP={dp:.2f}°C")
+        # Include setpoints if available
+        try:
+            if isinstance(setpoints, list) and len(setpoints) == 8:
+                uniq = {round(float(x), 2) for x in setpoints if isinstance(x, (int, float))}
+                if len(uniq) == 1:
+                    sval = next(iter(uniq))
+                    parts.append(f"set={sval:.2f}°C")
+                else:
+                    parts.append("set=[" + ", ".join(
+                        f"{float(x):.2f}°C" if isinstance(x, (int, float)) else str(x)
+                        for x in setpoints
+                    ) + "]")
+        except Exception:
+            pass
+
+        msg = f"[{ts}] Tessie {label} (widget): " + ("; ".join(parts) if parts else "unavailable")
+
+        try:
+            for console in getattr(self.runwindow, 'ConsoleViews', []):
+                self.outputString.emit(msg, console)
+        except Exception:
+            pass
+        logger.info(msg)
+
+        # Persist snapshot to output dir
+        try:
+            if getattr(self, 'output_dir', None):
+                import os, json
+                # Keep filenames as before for compatibility
+                if str(phase).lower().startswith("s"):
+                    out_path = os.path.join(self.output_dir, "tessie_start_temps.json")
+                else:
+                    out_path = os.path.join(self.output_dir, "tessie_end_values.json")
+                payload = {
+                    "source": "widget",
+                    "timestamp": ts,
+                    "temperatures": temps,
+                    "relative_humidity": rh,
+                    "dew_point": dp,
+                    "phase": "start" if str(phase).lower().startswith("s") else "end",
+                    "temperature_setpoints": setpoints,
+                }
+                with open(out_path, "w") as f:
+                    json.dump(payload, f, indent=2)
+        except Exception:
+            pass
+
     def validateTest(self):
         for process in self.run_processes:
             if process.state() == QProcess.Running:
                 return
 
         self.finished_tests.append(self.currentTest)
+        if site_settings.cooler == "Tessie":
+            # Snapshot end-of-test Tessie values (from widget cache only)
+            try:
+                self._log_tessie_from_widget("end")
+            except Exception:
+                pass
         try:
             passed = []
             results = []
@@ -1172,7 +1297,7 @@ class TestHandler(QObject):
                 name = name.replace("Threshold", "Thr")
 
             # Construct the search pattern for files
-            search_pattern = f"{base_dir}/Run{RunNumber}_{name}.root"
+            search_pattern = f"{base_dir}/Run{RunNumber}_{name}_Board*.root"
             logger.debug(f"Looking for {search_pattern}")
 
             # Find all matching files
@@ -1198,11 +1323,13 @@ created by Ph2_ACF is empty."
             # When using multiple FC7s root files will get overwritten so need to attach
             # what fc7 the test was run on to file name
             fc7_in_use: str = base_dir.split("/")[-1].replace(".", "_")
-            file_name: str = latest_file.split("/")[-1]
-            logger.debug(
-                f"Copying {latest_file} to {output_dir}/{fc7_in_use}_{file_name}"
-            )
-            shutil.copyfile(latest_file, f"{output_dir}/{fc7_in_use}_{file_name}")  
+
+            for file in matching_files:
+                file_name: str = file.split("/")[-1]
+                logger.debug(
+                    f"Copying {file} to {output_dir}/{fc7_in_use}_{file_name}"
+                )
+                shutil.copyfile(file, f"{output_dir}/{fc7_in_use}_{file_name}")
 
     def saveTest(self, processIndex: int, process: QProcess):
         logger.debug("Inside saveTest")
@@ -1243,7 +1370,7 @@ created by Ph2_ACF is empty."
                         logger.error(f"Error copying {file_path}: {e}")
 
 
-            elif "IVCurve" in self.currentTest or "IREF_GADC" in self.currentTest:
+            elif "IVCurve" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
 
                 current_fc7: str = self.firmware[processIndex].getBoardName()
@@ -1273,7 +1400,32 @@ created by Ph2_ACF is empty."
                             self.output_dir, current_fc7    
                         )
                     )   
-                
+
+                )
+            elif "IREF_GADC" in self.currentTest:
+                print("copying MonitorDQM.root file to output directory")
+                current_fc7: str = self.firmware[processIndex].getBoardName()
+                os.system(
+                    "cp {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}/".format( #Chaneged from {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        self.firmware[processIndex].getBoardID(),
+                        os.path.join(
+                            self.output_dir, current_fc7
+                        ),
+                    )
+                )
+                os.system(
+                    "cp {0}/test/Results/Run{1}_CMSIT_{2}.xml {3}/".format(
+                        os.environ.get("PH2ACF_BASE_DIR"),
+                        self.RunNumber,
+                        current_fc7,
+                        os.path.join(
+                            self.output_dir, current_fc7    
+                        ),
+                    )   
+                )
+
             else:
                 ph2_acf_base_dir: str | None = os.environ.get("PH2ACF_BASE_DIR")
                 if ph2_acf_base_dir is None:
@@ -1306,9 +1458,16 @@ created by Ph2_ACF is empty."
             self.run_processes[processIndex].readAllStandardOutput().data().decode()
         )
 
-        mode = "a" if os.path.exists(self.outputFile) else "w"
-        with open(self.outputFile, mode) as outputfile:
-            outputfile.write(alltext)
+        # Write output to the per-FC7 output file so multiple FC7s don't collide
+        try:
+            fc7name = self.firmware[processIndex].getBoardName()
+            outpath = os.path.join(self.output_dir, fc7name, "output.txt")
+            mode = "a" if os.path.exists(outpath) else "w"
+            with open(outpath, mode) as outputfile:
+                outputfile.write(alltext)
+        except Exception:
+            logger.error("Failed writing FC7 output to per-FC7 file")
+            logger.error(traceback.format_exc())
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1619,10 +1778,15 @@ created by Ph2_ACF is empty."
         alltext = (
             self.info_processes[processIndex].readAllStandardOutput().data().decode()
         )
-
-        mode = "a" if os.path.exists(self.outputFile) else "w"
-        with open(self.outputFile, mode) as outputfile:
-            outputfile.write(alltext)
+        try:
+            fc7name = self.firmware[processIndex].getBoardName()
+            outpath = os.path.join(self.output_dir, fc7name, "output.txt")
+            mode = "a" if os.path.exists(outpath) else "w"
+            with open(outpath, mode) as outputfile:
+                outputfile.write(alltext)
+        except Exception:
+            logger.error("Failed writing FC7 info output to per-FC7 file")
+            logger.error(traceback.format_exc())
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -1640,8 +1804,14 @@ created by Ph2_ACF is empty."
         self.readingOutput = True
 
         alltext = process.readAllStandardOutput().data().decode()
-        if hasattr(self, "outputfile") and self.outputfile:
-            self.outputfile.write(alltext)
+        try:
+            fc7name = self.firmware[fc7_index].getBoardName()
+            outpath = os.path.join(self.output_dir, fc7name, "output.txt")
+            with open(outpath, "a") as outputfile:
+                outputfile.write(alltext)
+        except Exception:
+            logger.error("Failed writing VDDsweep output to per-FC7 file")
+            logger.error(traceback.format_exc())
         textline = alltext.split("\n")
         for textStr in textline:
             try:
@@ -1690,10 +1860,16 @@ created by Ph2_ACF is empty."
 
         alltext = process.readAllStandardOutput().data().decode()
 
-        mode = "a" if os.path.exists(self.outputFile) else "w"
-        logger.debug(f"{mode=}")
-        with open(self.outputFile, mode) as outputfile:
-            outputfile.write(alltext)
+        try:
+            fc7name = self.firmware[fc7_index].getBoardName()
+            outpath = os.path.join(self.output_dir, fc7name, "output.txt")
+            mode = "a" if os.path.exists(outpath) else "w"
+            logger.debug(f"{mode=}")
+            with open(outpath, mode) as outputfile:
+                outputfile.write(alltext)
+        except Exception:
+            logger.error("Failed writing GADC output to per-FC7 file")
+            logger.error(traceback.format_exc())
         textline = alltext.split("\n")
 
         for textStr in textline:
@@ -2119,6 +2295,11 @@ created by Ph2_ACF is empty."
                 (step, self.figurelist)
             )  ##Add else statement to add signal in simple mode
 
+        for i, firmware in enumerate(self.firmware):
+            self.runwindow.ResultWidget.ProgressBars[i][
+                self.testIndexTracker
+            ].setValue(100)
+
         if isCompositeTest(self.info):
             self.runTest()
 
@@ -2378,7 +2559,7 @@ created by Ph2_ACF is empty."
                         self.master.password,
                         type_sequence=self.info,
                         version_ph2acf=os.environ.get("PH2ACF_VERSION"),
-                        version_testStationSoftware=os.environ.get(
+                        version_testStationSoftware="OSU_GUI-" + os.environ.get(
                             "PH2_ACF_GUI_VERSION"
                         ),
                     )

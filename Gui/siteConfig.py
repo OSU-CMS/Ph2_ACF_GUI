@@ -2,7 +2,7 @@ import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
 
-CONFIG_VER = 5
+CONFIG_VER = 6
 
 # Customize the logging configuration
 logging.basicConfig(
@@ -65,7 +65,9 @@ manual_powersupply_control = False
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
 
-    
+json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
+with open(json_setup, 'r') as file:
+    icicle_instrument_setup = json.load(file)
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = {
@@ -82,7 +84,7 @@ SLDOScan_probecard = {
     "1x2":{
 		"voltage":2.98,
 		"starting current":1.0,
-		"target current":5.6,
+		"target current":5.6,  #set this back to 5.6 after testing
 		"step size":.2
 	},
 	"quad":{
@@ -98,7 +100,7 @@ SLDOScan_GADC = {
     "1x2":{
 		"voltage":2.98,
 		"starting current":3.6,
-		"target current":5.6,
+		"target current":5.6,  #set this back to 5.6 after testing
 		"step size":.2
 	},
 	"quad":{
@@ -149,7 +151,7 @@ WorkingChannels = [
 ## Update this dictionary for your simple mode cable mappings ##
 CableMapping = {
     "0" : {"FC7": "fc7.board.1", "FMCID": "L12", "FMCPort": "0"},
-    "1" : {"FC7": "fc7.board.2", "FMCID": "L12", "FMCPort": "0"},
+    "1" : {"FC7": "fc7.board.1", "FMCID": "L12", "FMCPort": "0"},
 }
 
 ## Establish thresholds for chip temperature readings. A chip reading above the

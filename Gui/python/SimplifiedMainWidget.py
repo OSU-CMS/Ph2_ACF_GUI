@@ -242,11 +242,13 @@ class SimplifiedMainWidget(QWidget):
         self.TestGroup = QGroupBox()
         self.TestGroupLayout = QVBoxLayout()
         self.FunctionTestButton = QRadioButton("&Functional Test")
-        self.AssemblyTestButton = QRadioButton("&Assembly QC Test")
+        self.AssemblyTestButton1 = QRadioButton("&Assembly QC Test Part 1")
+        self.AssemblyTestButton2 = QRadioButton("&Assembly QC Test Part 2")
         self.FullPerformanceTestButton = QRadioButton("&Full Performance Test")
         self.FunctionTestButton.setChecked(True)
         self.TestGroupLayout.addWidget(self.FunctionTestButton)
-        self.TestGroupLayout.addWidget(self.AssemblyTestButton)
+        self.TestGroupLayout.addWidget(self.AssemblyTestButton1)
+        self.TestGroupLayout.addWidget(self.AssemblyTestButton2)
         self.TestGroupLayout.addWidget(self.FullPerformanceTestButton)
 
         self.TestGroup.setLayout(self.TestGroupLayout)
@@ -410,10 +412,12 @@ class SimplifiedMainWidget(QWidget):
 
         if self.FunctionTestButton.isChecked():
             self.info = "TFPX_Functional_Test"
-        elif self.AssemblyTestButton.isChecked():
-            self.info = "TFPX_Assembly_QC"
+        elif self.AssemblyTestButton1.isChecked():
+            self.info = "Common_Assembly_Test_FirstPart"
+        elif self.AssemblyTestButton2.isChecked():
+            self.info = "Common_Assembly_Test_SecondPart"
         elif self.FullPerformanceTestButton.isChecked():
-            self.info = "TFPX_FullPerformance_Test"
+            self.info = "Common_FullPerformance_Test_Fast"
         self.runFlag = True
         self.RunButton.setDisabled(True)
         self.StopButton.setDisabled(False)
@@ -539,7 +543,7 @@ class SimplifiedMainWidget(QWidget):
         if site_settings.cooler == "Peltier":
             self.worker = Peltier_and_Arduino_Polling()
             self.worker.temp.connect(self.updatePeltierTemperatureIndicator)
-            self.worker.temp.connect(self.updateCondensationRiskIndicator)
+            self.worker.temp.connect(self.updateArduinoCondensationRiskIndicator)
             self.worker.moveToThread(self.thread)
             self.thread.started.connect(self.worker.run)
             self.thread.start()

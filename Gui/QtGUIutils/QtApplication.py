@@ -834,7 +834,8 @@ class QtApplication(QWidget):
         if site_settings.cooler == "Peltier":
             self.CoolerLayout.addWidget(Peltier(100))
         elif site_settings.cooler == "Tessie":
-            pass
+            self.tessie_widget = Tessie(master=self)
+            self.CoolerLayout.addWidget(self.tessie_widget)
         elif site_settings.cooler == "Manual":
             # Title label (Manual Cooling)
             title_label = QLabel("MANUAL COOLING")
@@ -933,6 +934,9 @@ class QtApplication(QWidget):
             # at least this big
             self.resize(1420, 861)
             self.setMinimumSize(1420, 861)
+            # Update Tessie widget with instruments if available
+            if hasattr(self, 'tessie_widget') and self.instruments:
+                self.tessie_widget.set_instruments(self.instruments)
 
         # create a dictionary to easily disable groupboxes later
         self.groupbox_mapping = {"hv": self.HVPowerGroup, "lv": self.LVPowerGroup}
@@ -992,7 +996,12 @@ class QtApplication(QWidget):
                     if self.instruments.status()[number]["lv"]:
                         lv_on = True
                         break
-
+                instrument_dict = self.instruments.get_instruments()
+                coldbox = instrument_dict.get("cb")  # or whatever key was used in setup
+                if coldbox:
+                    temperature = coldbox.read_channel("TEMPERATURE_MEASURED", channel=0) 
+                    for number in self.instruments.get_modules().keys():
+                        print("temperature", temperature)  # self.instruments.get_temperature()[number]["cb"]
                 if lv_on or hv_on:
                     self.instruments.off()
                 if self.expertMode:
@@ -1002,6 +1011,11 @@ class QtApplication(QWidget):
                 logger.error(traceback.format_exc())
                 self.errorMessageBoxSignal.emit("Please Check Instrument Connections")
                 self.instruments = None
+            
+            # Update Tessie widget with instruments if available
+            if (site_settings.cooler == "Tessie" and hasattr(self, 'tessie_widget') 
+                and self.instruments is not None):
+                self.tessie_widget.set_instruments(self.instruments)
 
         if self.expertMode:
             if self.ArduinoControl.isChecked():
@@ -1057,6 +1071,11 @@ class QtApplication(QWidget):
 
     def destroyMain(self):
         self.expertMode = False
+        
+        # Stop Tessie monitoring if active
+        if (site_settings.cooler == "Tessie" and hasattr(self, 'tessie_widget')):
+            self.tessie_widget.stop_temperature_monitoring()
+        
         self.FirmwareStatus.deleteLater()
         self.UseDefaultGroup.deleteLater()
         self.HVPowerGroup.deleteLater()
@@ -1330,6 +1349,15 @@ class QtApplication(QWidget):
         )
 
         if reply == QMessageBox.Yes:
+            # If running with the Tessie coldbox controller, ensure its
+            # background monitoring thread is stopped to avoid worker leaks.
+            if site_settings.cooler == "Tessie":
+                try:
+                    if hasattr(self, 'tessie_widget') and self.tessie_widget is not None:
+                        if hasattr(self.tessie_widget, 'stop_temperature_monitoring'):
+                            self.tessie_widget.stop_temperature_monitoring()
+                except Exception:
+                    logger.debug("Failed to stop Tessie monitoring cleanly during application shutdown")
             print("Application terminated")
             if self.instruments is not None:
                 self.instruments.off()

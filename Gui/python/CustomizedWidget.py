@@ -1286,6 +1286,9 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setVDDA(chipData[chipID]["VDDA"])
                     Module.getChips()[chipID].setVDDD(chipData[chipID]["VDDD"])
                     Module.getChips()[chipID].setEfuseID(chipData[chipID]["EFUSE"])
+                    Module.getChips()[chipID].setIREF(chipData[chipID]["IREF"])
+                    Module.getChips()[chipID].setVREF(str(1000 * float(chipData[chipID]["VREF"])))
+                    Module.getChips()[chipID].setCINJ(str(10 * float(chipData[chipID]["CINJ"])))
                     
             else:
                 print(
