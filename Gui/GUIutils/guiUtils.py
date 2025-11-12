@@ -145,7 +145,7 @@ def isActive(dbconnection):
 
 def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
     try:
-        shutil.copyfile("{0}/CMSIT_{2}.xml".format(Input_Dir, BeBoardName),
+        shutil.copyfile("{0}/CMSIT_{1}.xml".formgitat(Input_Dir, BeBoardName),
                         "{1}/CMSIT_2.xml".format(Output_Dir))
     
 
@@ -153,8 +153,8 @@ def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
         logger.error(f"Failed to copy XML file: {e}")
         logger.error(traceback.format_exc())
     try:
-        shutil.copyfile( "{0}/CMSIT_{2}.xml".format(Output_Dir, BeBoardName),
-                    "{1}/test/CMSIT_{2}.xml".format(os.environ.get("PH2ACF_BASE_DIR"), BeBoardName)
+        shutil.copyfile( "{0}/CMSIT_{1}.xml".format(Output_Dir, BeBoardName),
+                    "{0}/test/CMSIT_{1}.xml".format(os.environ.get("PH2ACF_BASE_DIR"), BeBoardName)
                 )                      
     
         logger.info("Copied XML file to test directory")
