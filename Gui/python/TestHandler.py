@@ -1401,7 +1401,6 @@ created by Ph2_ACF is empty."
                         )
                     )   
 
-                )
             elif "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
                 current_fc7: str = self.firmware[processIndex].getBoardName()
