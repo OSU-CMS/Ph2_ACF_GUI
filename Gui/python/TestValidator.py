@@ -161,14 +161,6 @@ def ResultGrader(
             )
 
         else:
-            if testName in (
-                "PixelAlive_highcharge_xtalk",
-                "PixelAlive_coupled_xtalk",
-                "PixelAlive_uncoupled_xtalk",
-            ):
-                BBanalysis_root_files.extend(
-                    outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if file.endswith(".root")
-                )
 
             # Note: This may be useful
             # chip_canvas_path_template = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/Chip_{chipID:02d}"
@@ -182,12 +174,13 @@ def ResultGrader(
             #relevant_files = [
             #    outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             #]
+            
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
             ]
             dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
             relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
-
+            #relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if file.endswith(".root")])
             logger.debug(f"{relevant_files=}")
             _1, _2 = felis.set_module(
                 module_name,

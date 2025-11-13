@@ -64,7 +64,7 @@ from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
-from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map
+from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map, OpenBumpTest
 from Gui.siteSettings import icicle_instrument_setup
 
 
@@ -313,6 +313,9 @@ class TestHandler(QObject):
         self.powergroup = None
         for group_key, group in self.instruments.powering_groups.items():
             self.powergroup = group
+        
+        self._openBumpTest_running = False
+        self._openBumpTest_subtest_index = 0
 
     def finished_run_process(self, _, exitStatus, i):
         logger.info("Inside finsihed_run_process")
@@ -530,12 +533,14 @@ class TestHandler(QObject):
         if self.halt:
             return
         runTestList = self.test_list
-
+        
+        logger.debug("Past the Openbump test conditional block")
         if self.testIndexTracker == len(self.test_list):
             logger.debug("Reset testIndexTracker")
             # self.testIndexTracker = 0
             # self.testsAttempted = 0
             return
+        
         testName = runTestList[self.testIndexTracker]
         if self.testIndexTracker + 1 < len(
             runTestList
@@ -543,6 +548,11 @@ class TestHandler(QObject):
             nextTest = runTestList[self.testIndexTracker + 1]
         else:
             nextTest = None
+        logger.info("The testName is: %s", testName)
+        if testName == "OpenBumpTest":
+            logger.debug("Running OpenBumpTest")
+            self.runOpenBumpTest()
+            return
         self.runSingleTest(testName, nextTest)
 
     def ramp_progress_bar(self, max):
@@ -556,6 +566,13 @@ class TestHandler(QObject):
             value = 100 * np.abs(voltages[i] / max[i]) if max[i] != 0 else 0
 
             self.updateProgressBar.emit(bar, value, text)
+    def runOpenBumpTest(self):
+        self._openBumpTest_running = True
+        self._openBumpTest_subtest_index = 0
+        subtest = OpenBumpTest[self._openBumpTest_subtest_index]
+        logger.info(f"Running OpenBumpTest subtest: {subtest}")
+        self.currentTest = subtest
+        self.runSingleTest(subtest)
 
     def runADC(self):
         if "adc_board" in self.instruments._instrument_dict.keys():
@@ -1956,6 +1973,8 @@ created by Ph2_ACF is empty."
                 logger.warning("Process would not terminate, so killing it now...")
                 self.run_processes[processIndex].kill()
 
+        
+
         if "IVCurve" in self.currentTest:
             self.saveTest(processIndex, self.run_processes[processIndex])
             return
@@ -1967,6 +1986,22 @@ created by Ph2_ACF is empty."
 
         self.saveConfigs(process_index=processIndex)
         # Don't continue on sequence until all processes have finished the current test
+        if self._openBumpTest_running:
+            self._openBumpTest_subtest_index += 1
+            if self._openBumpTest_subtest_index < len(OpenBumpTest):
+                subtest = OpenBumpTest[self._openBumpTest_subtest_index]
+                logger.info(f"Running next OpenBumpTest subtest: {subtest}")
+                self.currentTest = subtest
+                self.input_dir = self.output_dir  # Chain the output of the last test as input for the next
+                #self.output_dir = "" # Reset output directory to force creation of a new one
+                self.runSingleTest(subtest)
+                return  # Skip normal finish routine
+            else:
+                # Finished all subtests
+                self.currentTest = "OpenBumpTest"
+                logger.info("All OpenBumpTest subtests finished. Validating...")
+                print(f"Current openbumptest subtest index = {self._openBumpTest_subtest_index}")
+                self._openBumpTest_running = False
 
         # Ensure that all processes have finished before continuing
         self.finished_processes += 1
