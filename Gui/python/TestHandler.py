@@ -533,11 +533,7 @@ class TestHandler(QObject):
         if self.halt:
             return
         runTestList = self.test_list
-        logger.info("The testName is: %s", testName)
-        if testName == "OpenBumpTest":
-            logger.debug("Running OpenBumpTest")
-            self.runOpenBumpTest()
-            return
+        
         logger.debug("Past the Openbump test conditional block")
         if self.testIndexTracker == len(self.test_list):
             logger.debug("Reset testIndexTracker")
@@ -552,6 +548,11 @@ class TestHandler(QObject):
             nextTest = runTestList[self.testIndexTracker + 1]
         else:
             nextTest = None
+        logger.info("The testName is: %s", testName)
+        if testName == "OpenBumpTest":
+            logger.debug("Running OpenBumpTest")
+            self.runOpenBumpTest()
+            return
         self.runSingleTest(testName, nextTest)
 
     def ramp_progress_bar(self, max):
@@ -1954,6 +1955,19 @@ created by Ph2_ACF is empty."
                 logger.warning("Process would not terminate, so killing it now...")
                 self.run_processes[processIndex].kill()
 
+        
+
+        if "IVCurve" in self.currentTest:
+            self.saveTest(processIndex, self.run_processes[processIndex])
+            return
+
+        # Save the output ROOT file to output_dir
+        logger.debug("About to run saveTest()")
+        time.sleep(1)
+        self.saveTest(processIndex, self.run_processes[processIndex])
+
+        self.saveConfigs(process_index=processIndex)
+        # Don't continue on sequence until all processes have finished the current test
         if self._openBumpTest_running:
             self._openBumpTest_subtest_index += 1
             if self._openBumpTest_subtest_index < len(OpenBumpTest):
@@ -1970,18 +1984,6 @@ created by Ph2_ACF is empty."
                 logger.info("All OpenBumpTest subtests finished. Validating...")
                 print(f"Current openbumptest subtest index = {self._openBumpTest_subtest_index}")
                 self._openBumpTest_running = False
-
-        if "IVCurve" in self.currentTest:
-            self.saveTest(processIndex, self.run_processes[processIndex])
-            return
-
-        # Save the output ROOT file to output_dir
-        logger.debug("About to run saveTest()")
-        time.sleep(1)
-        self.saveTest(processIndex, self.run_processes[processIndex])
-
-        self.saveConfigs(process_index=processIndex)
-        # Don't continue on sequence until all processes have finished the current test
 
         # Ensure that all processes have finished before continuing
         self.finished_processes += 1
