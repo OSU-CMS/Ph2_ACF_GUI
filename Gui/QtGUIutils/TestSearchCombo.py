@@ -230,9 +230,7 @@ class TestComboController(QObject):
             if le is not None and obj is le:
                 if event.type() == QEvent.KeyPress:
                     key = event.key()
-                    # Debug logging - always print to console for debugging
-                    print(f"DEBUG: Key pressed: {key}, Tab={Qt.Key_Tab}, Backtab={Qt.Key_Backtab}")
-                    
+                   
                     if key == Qt.Key_Tab or key == Qt.Key_Backtab:
                         # Immediately prevent default tab behavior
                         event.accept()
@@ -284,11 +282,7 @@ class TestComboController(QObject):
                             
                             sel = self._tab_state["matches"][self._tab_state["index"]]
                             self.combo.setEditText(sel)
-                            
-                            # Debug logging
-                            print(f"DEBUG: Cycled to: {sel} (index {self._tab_state['index']} of {len(self._tab_state['matches'])})")
-                            print(f"DEBUG: Base search: '{self._tab_state['base']}', Matches: {self._tab_state['matches']}")
-                        
+                                                  
                         return True  # Event handled
                     
                     # Handle other printable characters
@@ -354,12 +348,9 @@ def _connect_signals_and_filters(combo, completer, proxy, controller, parent):
     if le is not None:
         try:
             le.installEventFilter(controller)
-            print(f"DEBUG: Successfully installed event filter on line edit: {le}")
-            # Debug logging
             if hasattr(parent, 'logger') and parent.logger:
                 parent.logger.debug("Successfully installed event filter on line edit")
         except Exception as e:
-            print(f"DEBUG: Failed to install event filter: {e}")
             _safe_log(parent, "_connect_signals_and_filters", f"Failed to install lineedit eventFilter: {e}")
 
     try:
