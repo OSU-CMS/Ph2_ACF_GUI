@@ -161,38 +161,6 @@ def ResultGrader(
 
         else:
 
-            open_bump_subtests = [
-                "PixelAlive_highcharge_xtalk",
-                "PixelAlive_coupled_xtalk",
-                "PixelAlive_uncoupled_xtalk",
-            ]
-
-            if testName in ("OpenBumpTest", *open_bump_subtests):
-                combined_dir = os.path.join(outputDir, "OpenBumpTest_combined")
-                os.makedirs(combined_dir, exist_ok=True)
-
-                relevant_files = []
-                for subtest in open_bump_subtests:
-                    subtest_files = sorted(
-                        [
-                            os.path.join(outputDir, os.fsdecode(file))
-                            for file in os.listdir(outputDir)
-                            if file.endswith(".root") and subtest in file
-                        ]
-                    )
-                    for f in subtest_files:
-                        new_name = os.path.join(
-                            combined_dir,
-                            f"{subtest}_{os.path.basename(f)}"
-                        )
- 
-                        if not os.path.exists(new_name):
-                            import shutil
-                            shutil.copy(f, new_name)
-                        relevant_files.append(new_name)
-
-                BBanalysis_root_files.extend(relevant_files)
-
             '''  
             if testName in (
                 "PixelAlive_highcharge_xtalk",
@@ -214,13 +182,13 @@ def ResultGrader(
             #relevant_files = [
             #    outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             #]
-            '''
+            
             relevant_files = [
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
             ]
-            dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
-            relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])'''
-
+            #dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
+            #relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
+            relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if file.endswith(".root")])
             logger.debug(f"{relevant_files=}")
             _1, _2 = felis.set_module(
                 module_name,
@@ -235,8 +203,7 @@ def ResultGrader(
                 relevant_files,
                 module_name,
                 f"{testIndexInSequence:02d}_{testName}",
-                #Test_to_Ph2ACF_Map[testName],
-                "crosstalk",
+                Test_to_Ph2ACF_Map[testName],
             )
         if not status:
             raise RuntimeError(message)

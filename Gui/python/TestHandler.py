@@ -1975,7 +1975,7 @@ created by Ph2_ACF is empty."
                 logger.info(f"Running next OpenBumpTest subtest: {subtest}")
                 self.currentTest = subtest
                 self.input_dir = self.output_dir  # Chain the output of the last test as input for the next
-                self.output_dir = "" # Reset output directory to force creation of a new one
+                #self.output_dir = "" # Reset output directory to force creation of a new one
                 self.runSingleTest(subtest)
                 return  # Skip normal finish routine
             else:
