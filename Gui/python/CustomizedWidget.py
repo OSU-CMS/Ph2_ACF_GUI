@@ -826,13 +826,18 @@ class BeBoardBox(QWidget):
                 Module.getModuleType() + " " + Module.getModuleVersion()
             )
 
+
+        # Comment out to allow for different module types (1)
+        '''
         if not all([i == module_types[0] for i in module_types]):
             # iterate over module_types, if they're not all identical, return None
             return (
                 None,
                 "All modules must be of the same type! Please ensure you have entered the module data correctly.",
             )
+        '''
 
+        
         # only include the board if there are connected modules, otherwise ignore it
         ret = []
         for board in self.firmware:
@@ -1316,12 +1321,15 @@ class SimpleBeBoardBox(QWidget):
                 Module.getModuleType() + " " + Module.getModuleVersion()
             )
 
+            # Comment out to allow for different module types (2)
+        '''
         if not all([i == module_types[0] for i in module_types]):
             # iterate over module_types, if they're not all identical, return None
             return (
                 None,
                 "All modules must be of the same type! Please ensure the serial numbers are correct.",
             )
+        '''
 
         # only include the board if there are connected modules, otherwise ignore it
         ret = []
