@@ -307,9 +307,6 @@ class TestHandler(QObject):
         self.finished_tests = []
 
         self.initializeRD53Dict()
-        self.iref_match_status = {
-            module.getModuleName(): True for module in self.modules
-        }  # Initialize all to True
         self.powergroup = None
         for group_key, group in self.instruments.powering_groups.items():
             self.powergroup = group
@@ -1218,9 +1215,6 @@ class TestHandler(QObject):
             results = []
             runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
 
-            print("IREF MATCH STATUS BEFORE VALIDATION:", self.iref_match_status)
-            print("MODULE NAMES:", [module.getModuleName() for module in self.modules])
-
             for i, beboard in enumerate(self.firmware):
                 boardID = beboard.getBoardID()
                 for OG in beboard.getAllOpticalGroups().values():
@@ -1502,49 +1496,6 @@ created by Ph2_ACF is empty."
                     self.fused_dict_index[1] = chip_number
                     # print(f"Clean_text: {clean_text}")
                     print(f"Chip Number: {chip_number}")
-
-                if "Wire bonded Iref" in textStr:
-                    ansi_escape = re.compile(r"\x1b\[.*?m")
-                    clean_text = ansi_escape.sub("", textStr)
-                    iref_value = clean_text.split("Iref = ")[-1].strip()
-                    self.mod_dict[self.fused_dict_index[0]][
-                        self.fused_dict_index[1]
-                    ] = iref_value
-                    print(f"IREF Value: {iref_value}")
-                    print(f"{self.fused_dict_index=}")
-                    chip_id = self.fused_dict_index[1]
-
-                    # TODO: Fix this. It shouldn't only ever look at the first module.
-                    module_name = self.modules[0].getModuleName()
-                    print(f"{self.modules=}")
-                    print(f"{module_name=}")
-                    db_iref = chip_iref_db.get(str(chip_id))
-                    print(f"{db_iref=}")
-                    # Initialize module status to True if not set
-                    if module_name not in self.iref_match_status:
-                        self.iref_match_status[module_name] = True
-                    # Compare with database value
-                    if db_iref is not None:
-                        if db_iref != iref_value:
-                            print(
-                                f"Mismatch: IREF for chip {chip_id} (database: {db_iref}, module: {iref_value})"
-                            )
-                            self.iref_match_status[module_name] = (
-                                False  # Mark module as failed
-                            )
-                    else:
-                        print(f"No database IREF found for chip {chip_id}")
-                        self.iref_match_status[module_name] = (
-                            False  # Mark as failed if no DB entry
-                        )
-
-                if "Fused ID" in textStr:
-                    ansi_escape = re.compile(r"\x1b\[.*?m")
-                    clean_text = ansi_escape.sub("", textStr)
-                    fuse_id = clean_text.split("Fused ID: ")[-1].strip()
-                    self.mod_dict[self.fused_dict_index[0]][
-                        self.fused_dict_index[1]
-                    ] = fuse_id
 
                 if self.starttime is not None:
                     self.currentTime = time.time()
