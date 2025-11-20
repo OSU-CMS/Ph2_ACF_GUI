@@ -1394,7 +1394,7 @@ created by Ph2_ACF is empty."
                         "Run{0}_MonitorDQM_Board_{1}*.root".format(
                             self.RunNumber, self.firmware[processIndex].getBoardID()))
                         ):              
-                            shutil.copyfile(
+                            shutil.copy(
                                 file_path,
                                 os.path.join(
                                     self.output_dir,
@@ -1403,7 +1403,7 @@ created by Ph2_ACF is empty."
                                 )
                             )
 
-                shutil.copyfile(  
+                shutil.copy(  
                     "{0}/test/Results/Run{1}_CMSIT_{2}.xml".format(os.environ.get("PH2ACF_BASE_DIR"),
                         self.RunNumber,
                         current_fc7),
