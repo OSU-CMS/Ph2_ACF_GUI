@@ -20,5 +20,10 @@
             "lv": {"instrument":"lv_1", "channel":1},
             "hv": {"instrument":"hv", "channel":1}
         }
+    },
+    "fc7_address_dict":{
+        "fc7.board.1"	:	"192.168.1.80",
+        "fc7.board.2"	:	"192.168.1.81",
+        "fc7.board.3"	:	"192.168.1.82"
     }
 }

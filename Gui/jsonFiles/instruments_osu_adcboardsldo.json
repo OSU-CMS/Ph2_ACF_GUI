@@ -4,8 +4,8 @@
             "class": "Keithley2410",
             "resource": "ASRL/dev/ttyUSBkeith::INSTR",
             "sim": false,
-            "default_voltage": -80,
-            "default_current": 5e-6
+            "default_voltage": -120,
+            "default_current": 10e-6
         },
         "lv_1": {
             "class": "KeysightE3633A",
