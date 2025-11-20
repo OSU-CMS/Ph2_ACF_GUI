@@ -1,13 +1,13 @@
 #!/bin/bash
 # DO NOT EDIT THIS BY HAND!!!
-CONFIG_VER=6
+CONFIG_VER=7
 
 bash check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
 ######### Specify the docker image to use #################
-IMAGE_NAME="osupixels/ph2_acf_gui_dev:v3-1-1"
+IMAGE_NAME="osupixels/ph2_acf_gui_dev:v4.0.0-pre"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_purdue:latest"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
 #IMAGE_NAME="local/testimagemay29user"
