@@ -2,7 +2,7 @@ import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
 
-CONFIG_VER = 7
+CONFIG_VER = 8
 
 # Customize the logging configuration
 logging.basicConfig(
@@ -64,10 +64,13 @@ manual_powersupply_control = False
 
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
-
-json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
-with open(json_setup, 'r') as file:
-    icicle_instrument_setup = json.load(file)
+try:
+    json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
+    with open(json_setup, 'r') as file:
+    	icicle_instrument_setup = json.load(file)
+except FileNotFoundError:
+    print("Error: 'data.json' not found.")
+    exit()
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.
 IVcurve_range = {
@@ -122,14 +125,6 @@ forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias 
 
 
 ## Update this dictionary for the IP addreses of your FC7 devices ##
-
-try:
-    json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
-    with open(json_setup, 'r') as file:
-    	icicle_instrument_setup = json.load(file)
-except FileNotFoundError:
-    print("Error: 'data.json' not found.")
-    exit()
     
 FC7List = icicle_instrument_setup['fc7_address_dict']
 icicle_instrument_setup.pop('fc7_address_dict')
