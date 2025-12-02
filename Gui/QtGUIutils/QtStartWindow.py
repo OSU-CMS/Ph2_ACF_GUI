@@ -688,6 +688,11 @@ class QtStartWindow(QWidget):
                 keys_to_remove.remove(str(key-1))
         for key in keys_to_remove:
             self.master.instruments._module_dict.pop(key)
+            for group_key, group in self.master.instruments.powering_groups.items():
+                group.remove_module(key)        
+        for group_key, group in self.master.instruments.powering_groups.items():
+                logger.info(f"Group key: {group_key}, Group: {group}, Modules: {group.modulenames}")
+
         logger.info(f"Module Dict:",self.master.instruments.get_modules())
         logger.info(f"Instruments:",self.master.instruments.get_instruments())
 
