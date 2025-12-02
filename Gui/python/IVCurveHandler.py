@@ -21,6 +21,7 @@ class IVCurveThread(QThread):
         self.instruments = instrument_cluster
         self.powergroup = None
         for group_key, group in self.instruments.powering_groups.items():
+            logger.info(f"Group key: {group_key}, Group: {group}, Modules: {group.modulenames}")
             self.powergroup = group
         self.measurements = {}
         for name in self.powergroup.modulenames:
