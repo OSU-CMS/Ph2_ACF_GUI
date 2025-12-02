@@ -65,7 +65,7 @@ manual_powersupply_control = False
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
 try:
-    json_setup = 'jsonFiles/instruments_osu_auto.json'
+    json_setup = 'jsonFiles/instruments_osu_adcboardsldo.json'
     with open(json_setup, 'r') as file:
     	icicle_instrument_setup = json.load(file)
 except FileNotFoundError:
