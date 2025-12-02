@@ -36,7 +36,7 @@ defaultSensorBaudRate = 9600
 defaultArduino = "Arduino SA Uno R3 (CDC ACM) ACM0"
 
 #Coldbox variables
-cooler = "Tessie" # "Peltier" or "Manual" or "Tessie".
+cooler = "Manual" # "Peltier" or "Manual" or "Tessie".
 usePeltier = False #The "cooler" variable will be used in the future, but this line is needed for the current version of the GUI
 
 tessie_url = "http://coldbox:3000/"
@@ -65,7 +65,7 @@ manual_powersupply_control = False
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
 try:
-    json_setup = 'jsonFiles/instruments_osu_actual_auto.json'
+    json_setup = 'jsonFiles/instruments_osu_auto.json'
     with open(json_setup, 'r') as file:
     	icicle_instrument_setup = json.load(file)
 except FileNotFoundError:
@@ -133,6 +133,7 @@ icicle_instrument_setup.pop('fc7_address_dict')
 ## Channel assignments will follow this list sequentially per number of modules entered in the GUI
 ## Note this is only used when setting up with an 'auto' json file
 WorkingChannels = [
+	1,
 	2,
 	3,
 	4,
