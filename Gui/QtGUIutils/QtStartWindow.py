@@ -19,7 +19,8 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMessageBox,
     QLineEdit,
-    QRadioButton
+    QRadioButton,
+    QCompleter,
 )
 from Gui.QtGUIutils.Loading import LoadingThread
 from Gui.QtGUIutils.QtFwCheckDetails import QtFwCheckDetails
@@ -34,6 +35,7 @@ from Gui.siteSettings import (
     cooler
 )
 from icicle.icicle.instrument_cluster import DummyInstrument
+from Gui.QtGUIutils.TestSearchCombo import configure_test_combo
 from InnerTrackerTests.TestSequences import TestList
 
 
@@ -263,7 +265,6 @@ class QtStartWindow(QWidget):
         testlayout = QGridLayout()
         TestLabel = QLabel("Test:")
         self.TestCombo = QComboBox()
-        # self.TestList = getAllTests(self.master.connection)
         self.TestList = TestList
         if not self.master.instruments:
             if "AllScan" in self.TestList:
@@ -274,6 +275,24 @@ class QtStartWindow(QWidget):
                 self.TestList.remove("FullSequence")
 
         self.TestCombo.addItems(self.TestList)
+        try:
+            self.TestCombo.setEditable(True)
+            # Clear any current edit text so the field appears empty
+            self.TestCombo.setEditText("")
+            self.TestCombo.setMaxVisibleItems(12)
+
+            le = self.TestCombo.lineEdit()
+            if le is not None:
+                le.setPlaceholderText("Select a test...")
+        except Exception:
+            logger.debug("Failed to clear TestCombo default text or set placeholder")
+        # Make the combo searchable: configure fuzzy completer in a helper
+        try:
+            completer, proxy, controller = configure_test_combo(self.TestCombo, self.TestList, parent=self)
+            self._test_completer = completer
+            self._test_controller = controller
+        except Exception:
+            logger.debug("Failed to configure TestCombo completer:\n" + traceback.format_exc())
         TestLabel.setBuddy(self.TestCombo)
 
         testlayout.addWidget(TestLabel, 0, 0, 1, 1)
@@ -362,6 +381,7 @@ class QtStartWindow(QWidget):
         for module in self.BeBoardWidget.getModules():
             module.SerialEdit.editingFinished.connect(self.txt_entry.clear)
             module.SerialEdit.editingFinished.connect(lambda:self.customTxtCheck.setChecked(False))
+
 
     def radio_selected(self, replaceArgs:tuple):
         erroredFlag = False
