@@ -147,13 +147,33 @@ class QtRunWindow(QWidget):
             np.abs(getattr(module["hv"], "voltage"))
             for module in self.master.instruments._module_dict.values()
         ]
-        self.master.instruments.off(
-            hv_delay=0.3,
-            hv_step_size=10,
-            measure=False,
-            execute_each_step=lambda: self.testHandler.ramp_progress_bar(
-                starting_voltages
-            ),
+        if site_settings.cooler == "Tessie":
+            if self.master.instruments:
+                starting_voltages = [
+                    np.abs(getattr(module["hv"], "voltage"))
+                    for module in self.master.instruments._module_dict.values()
+                ]
+                self.master.instruments.hv_off(
+                    delay=0.3,
+                    step_size=10,
+                    execute_each_step=lambda: self.testHandler.ramp_progress_bar(
+                    starting_voltages
+                ),                )
+            self.master.instruments.cb_off(checkstatus=False)
+            try:
+                    self.wait_for_temp()
+            except InstrumentTimeoutError:
+                    logger.error(traceback.format_exc())
+
+            self.master.instruments.lv_off()
+        else:
+            self.master.instruments.off(
+                hv_delay=0.3,
+                hv_step_size=10,
+                measure=False,
+                execute_each_step=lambda: self.testHandler.ramp_progress_bar(
+                    starting_voltages
+                ),
         )
 
     def setLoginUI(self):
@@ -711,25 +731,7 @@ class QtRunWindow(QWidget):
                 self.release()
                 print(f"self.master.instruments: {self.master.instruments}")
                 if self.master.instruments:
-                    starting_voltages = [
-                        np.abs(getattr(module["hv"], "voltage"))
-                        for module in self.master.instruments._module_dict.values()
-                    ]
-                    self.master.instruments.hv_off(
-                        delay=0.3,
-                        step_size=10,
-                        execute_each_step=lambda: self.testHandler.ramp_progress_bar(
-                            starting_voltages
-                        ),
-                    )
-                    self.master.instruments.cb_off(checkstatus=False)
-                    try:
-                        self.wait_for_temp()
-                    except InstrumentTimeoutError:
-                        logger.error(traceback.format_exc())
-                        print("Connection with coldbox timed out.  Now turning off lv")
-
-                    self.master.instruments.lv_off()
+                    self.onPowerSignal()
 
                 else:
                     QMessageBox.information(
