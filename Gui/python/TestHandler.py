@@ -1520,12 +1520,17 @@ created by Ph2_ACF is empty."
                         self.ProgressValue = float(
                             re.sub(r"\x1b\[\d+m", "", textStr.split()[index].strip("%"))
                         )
-                        if self.ProgressValue == 100:
-                            self.ProgressingMode[processIndex] = ProgressMode.SUMMARY
-                        self.runwindow.ResultWidget.ProgressBars[processIndex][
-                            self.testIndexTracker
-                        ].setValue(self.ProgressValue)
-                        ##Added because of Ph2_ACF bug:
+                        # Check if openBumpTest is running
+                        if self._openBumpTest_running:
+                            scaled_progress_value = (self._openBumpTest_subtest_index * (100/3) + (self.ProgressValue / 3))
+                            self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(scaled_progress_value)
+
+                        else:
+                            if self.ProgressValue == 100:
+                                self.ProgressingMode[processIndex] = ProgressMode.SUMMARY
+                            self.runwindow.ResultWidget.ProgressBars[processIndex][
+                                self.testIndexTracker
+                            ].setValue(self.ProgressValue)
 
                     except Exception as e:
                         print(f"Error while updating progress bar {e}")
