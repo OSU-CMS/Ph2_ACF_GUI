@@ -195,6 +195,7 @@ class TestHandler(QObject):
         self.SLDOScanHandler = None
         self.trimbitHandler = None
         self.starttime = None
+        self._OBT_starttime = None
 
         self.processingFlag = False
         self.ProgresBarList = []
@@ -1497,6 +1498,11 @@ created by Ph2_ACF is empty."
                     # print(f"Clean_text: {clean_text}")
                     print(f"Chip Number: {chip_number}")
 
+                if self._openBumpTest_running:
+                    if self._OBT_starttime is None: 
+                        self._OBT_starttime = time.time()    
+                    self.starttime = self._OBT_starttime
+
                 if self.starttime is not None:
                     self.currentTime = time.time()
                     runningTime = self.currentTime - self.starttime
@@ -1520,12 +1526,17 @@ created by Ph2_ACF is empty."
                         self.ProgressValue = float(
                             re.sub(r"\x1b\[\d+m", "", textStr.split()[index].strip("%"))
                         )
-                        if self.ProgressValue == 100:
-                            self.ProgressingMode[processIndex] = ProgressMode.SUMMARY
-                        self.runwindow.ResultWidget.ProgressBars[processIndex][
-                            self.testIndexTracker
-                        ].setValue(self.ProgressValue)
-                        ##Added because of Ph2_ACF bug:
+                        # Check if openBumpTest is running
+                        if self._openBumpTest_running:
+                            scaled_progress_value = (self._openBumpTest_subtest_index * (100/3) + (self.ProgressValue / 3))
+                            self.runwindow.ResultWidget.ProgressBars[processIndex][self.testIndexTracker].setValue(scaled_progress_value)
+
+                        else:
+                            if self.ProgressValue == 100:
+                                self.ProgressingMode[processIndex] = ProgressMode.SUMMARY
+                            self.runwindow.ResultWidget.ProgressBars[processIndex][
+                                self.testIndexTracker
+                            ].setValue(self.ProgressValue)
 
                     except Exception as e:
                         print(f"Error while updating progress bar {e}")
