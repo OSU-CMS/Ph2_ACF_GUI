@@ -195,6 +195,7 @@ class TestHandler(QObject):
         self.SLDOScanHandler = None
         self.trimbitHandler = None
         self.starttime = None
+        self._OBT_starttime = None
 
         self.processingFlag = False
         self.ProgresBarList = []
@@ -1496,6 +1497,11 @@ created by Ph2_ACF is empty."
                     self.fused_dict_index[1] = chip_number
                     # print(f"Clean_text: {clean_text}")
                     print(f"Chip Number: {chip_number}")
+
+                if self._openBumpTest_running:
+                    if self._OBT_starttime is None: 
+                        self._OBT_starttime = time.time()    
+                    self.starttime = self._OBT_starttime
 
                 if self.starttime is not None:
                     self.currentTime = time.time()
