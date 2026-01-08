@@ -2,3 +2,4 @@ Ph2_ACF/test/logs*
 data/
 Ph2_ACF/test/Results/*
 Ph2_ACF/test/MonitorResults/*
+__pycache__/
