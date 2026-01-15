@@ -10,8 +10,8 @@ fi;
 # clone Ph2ACF
 #git clone --recurse-submodules --single-branch --branch $GIT_REF https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF.git Ph2_ACF
 
-#export Ph2_ACF_VERSION="v4-14"
-export Ph2_ACF_VERSION=$GIT_REF
+#export PH2ACF_VERSION="v4-14"
+#export PH2ACF_VERSION=$GIT_REF
 
 mkdir Ph2_ACF/build/
 cd Ph2_ACF
@@ -46,7 +46,7 @@ if [ ! -d $PH2ACF_BASE_DIR/test ]; then
     mkdir -p -m777 $PH2ACF_BASE_DIR/test;
 fi;
 
-#export Ph2_ACF_VERSION=$(git describe --tags --abbrev=0)
+#export PH2ACF_VERSION=$(git describe --tags --abbrev=0)
 
 cd $GUI_dir
 

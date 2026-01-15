@@ -107,9 +107,7 @@ class SummaryBox(QWidget):
             )
             subprocess.call([uricmd], shell=True)
             print("updated the uri value")
-            firmwareImage = firmware_image[module_type][
-                os.environ.get("Ph2_ACF_VERSION")
-            ]
+            firmwareImage = firmware_image[module_type]
 
             print("checking if firmware is on the SD card for {}".format(firmwareImage))
             fwlist = subprocess.run(

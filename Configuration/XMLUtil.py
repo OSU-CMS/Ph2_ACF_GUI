@@ -19,7 +19,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-Ph2_ACF_VERSION = os.environ.get("Ph2_ACF_VERSION")
+PH2ACF_VERSION = os.environ.get("PH2ACF_VERSION")
 
 def prettify(elem):
     """Return a pretty-printed XML string for the Element.

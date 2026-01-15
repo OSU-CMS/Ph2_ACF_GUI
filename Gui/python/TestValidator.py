@@ -63,11 +63,11 @@ def ResultGrader(
 
             print("relevant_files:", relevant_files)
             _1, _2 = felis.set_module(
-                module_name,
-                module_type.split(" ")[0],
-                module_type.split(" ")[2].replace("Quad", "2x2"),
-                module_version.strip("v"),
-                True,
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
             )
             status, message, sanity, explanation = felis.set_result(
                 relevant_files,

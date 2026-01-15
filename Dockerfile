@@ -2,7 +2,7 @@
 #You can set the version of Ph2_ACF by adding the following line to your git build command:
 #  --build-arg GIT_REF=v4-14
 #If you don't use this option when building the image it will default to the Dev branch of Ph2_ACF.
-ARG GIT_REF=Dev
+#ARG GIT_REF=Dev
 ARG FROM_IMAGE=gitlab-registry.cern.ch/cms_tk_ph2/docker_exploration/cmstkph2_udaq_al9:latest
 FROM $FROM_IMAGE AS base
 
@@ -21,19 +21,19 @@ ENV DATA_dir=${GUI_dir}/data/TestResults
 ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}:${GUI_dir}/icicle/icicle:${GUI_dir}/InnerTrackerTests:${GUI_dir}/felis
 
 # Commenting for now, this was needed to change user to non-ROOT 
-ARG USER_UID=1000
-ARG USER_GID=1000
+#ARG USER_UID=1000
+#ARG USER_GID=1000
 
 # Create the group and user with the specified UID/GID
-RUN groupadd -g ${USER_GID} cmsTkUser || true && \
-    useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser &&\
-    usermod -aG dialout cmsTkUser
+#RUN groupadd -g ${USER_GID} cmsTkUser || true && \
+#    useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser &&\
+#    usermod -aG dialout cmsTkUser
 
-ENV APP_PASSWORD=${APP_PASSWORD}
+#ENV APP_PASSWORD=${APP_PASSWORD}
 
 
 #Setting the default user in the container to be root
-# USER root
+USER root
 
 LABEL Name=ph2acfgui_dev Version=${Ph2_ACF_VERSION}
 
@@ -43,7 +43,7 @@ WORKDIR /home/cmsTkUser/Ph2_ACF_GUI/
 #Adding the current local working directory to the container working directory.
 #This is recursive so all of the sub-directories should also be added.
 ADD . /home/cmsTkUser/Ph2_ACF_GUI/
-RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI
+#RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI
 RUN ls -lrt
 
 #Installing all needed packages in the container.
@@ -63,14 +63,14 @@ RUN chmod +x prepare_Ph2ACF.sh
 
 # For some reason I couldn't change the permissions on this file alongside the other chown command.
 # TODO: This was also needed to change user in docker image
-RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/data && \
-    [ -e /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py ] && \
-    chown cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py || true
+#RUN chown -R cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/data && \
+#    [ -e /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py ] && \
+#    chown cmsTkUser:cmsTkUser /home/cmsTkUser/Ph2_ACF_GUI/Gui/python/rhapi.py || true
 
 # Final fix for file ownership
-RUN find /home/cmsTkUser -not -user cmsTkUser -exec chown cmsTkUser:cmsTkUser {} +
+#RUN find /home/cmsTkUser -not -user cmsTkUser -exec chown cmsTkUser:cmsTkUser {} +
 
-USER cmsTkUser
+#USER cmsTkUser
 
 #Comment the following line if you want to build the developer container.  The following line makes docker open the GUI when the container started.
 CMD ["prepare_Ph2ACF.sh"]

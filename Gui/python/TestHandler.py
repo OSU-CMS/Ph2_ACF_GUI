@@ -184,9 +184,10 @@ class TestHandler(QObject):
             for module in self.modules
         }
         self.finished_tests = []
-        self.Ph2_ACF_ver = os.environ.get("Ph2_ACF_VERSION")
+        self.Ph2_ACF_ver = os.environ.get("PH2ACF_VERSION")
         print("Using version {0} of Ph2_ACF".format(self.Ph2_ACF_ver))
-        self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
+        #self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
+        self.firmwareImage = firmware_image[self.ModuleType]
         print("Firmware version is {0}".format(self.firmwareImage))
         self.RunNumber = "-1"
         self.isTDACtuned = False
@@ -1576,7 +1577,7 @@ created by Ph2_ACF is empty."
                         clean_text = ansi_pattern.sub("", textStr)
                         if "INTERNAL_NTC" in clean_text:
                             sensor = (
-                                clean_text.split("INTERNAL_NTC:")[1]
+                                clean_text.split("INTERNAL_NTC_ABS:")[1]
                                 .strip()
                                 .split("C")[0]
                                 .strip()
