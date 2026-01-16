@@ -70,10 +70,10 @@ def ResultGrader(
                 has_sensor = True,
             )
             status, message, sanity, explanation = felis.set_result(
-                relevant_files,
-                module_name,
-                f"{testIndexInSequence:02d}_{testName}",
-                "ivcurve",
+                paths_files = relevant_files,
+                name_module = module_name,
+                name_test = f"{testIndexInSequence:02d}_{testName}",
+                type_test = "ivcurve",
             )
         
         elif "SLDOScan" in testName:
@@ -83,17 +83,17 @@ def ResultGrader(
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
             _1, _2 = felis.set_module(
-                module_name,
-                module_type.split(" ")[0],
-                module_type.split(" ")[2].replace("Quad", "2x2"),
-                module_version.strip("v"),
-                True,
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
             )
             status, message, sanity, explanation = felis.set_result(
-                relevant_files,
-                module_name,
-                f"{testIndexInSequence:02d}_{testName}",
-                "sldo",
+                paths_files = relevant_files,
+                name_module = module_name,
+                test_name = f"{testIndexInSequence:02d}_{testName}",
+                type_test = "sldo",
             )
 
         elif "Trimbit" in testName:
@@ -101,17 +101,17 @@ def ResultGrader(
                 outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir)
             ]
             _1, _2 = felis.set_module(
-                module_name,
-                module_type.split(" ")[0],
-                module_type.split(" ")[2].replace("Quad", "2x2"),
-                module_version.strip("v"),
-                True,
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
             )
             status, message, sanity, explanation = felis.set_result(
-                relevant_files,
-                module_name,
-                f"{testIndexInSequence:02d}_{testName}",
-                "trimbitscan",
+                paths_files = relevant_files,
+                name_module = module_name,
+                name_test = f"{testIndexInSequence:02d}_{testName}",
+                type_test = "trimbitscan",
             )
 
 
@@ -124,17 +124,17 @@ def ResultGrader(
 
             print("relevant_files:", relevant_files)
             _1, _2 = felis.set_module(
-                module_name,
-                module_type.split(" ")[0],
-                module_type.split(" ")[2].replace("Quad", "2x2"),
-                module_version.strip("v"),
-                True,
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
             )
             status, message, sanity, explanation = felis.set_result(
-                relevant_files,
-                module_name,
-                f"{testIndexInSequence:02d}_{testName}",
-                "irefgadc",
+                paths_files = relevant_files,
+                name_module = module_name,
+                name_test = f"{testIndexInSequence:02d}_{testName}",
+                type_test = "irefgadc",
             )
 
         elif "CommunicationTest" in testName:
@@ -146,17 +146,17 @@ def ResultGrader(
             ]
 
             _1, _2 = felis.set_module(
-                module_name,
-                module_type.split(" ")[0],
-                module_type.split(" ")[2].replace("Quad", "2x2"),
-                module_version.strip("v"),
-                True,
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
             )
             status, message, sanity, explanation = felis.set_result(
-                relevant_files,
-                module_name,
-                f"{testIndexInSequence:02d}_{testName}",
-                "commtest",
+                paths_files = relevant_files,
+                name_module = module_name,
+                name_test = f"{testIndexInSequence:02d}_{testName}",
+                type_test = "commtest",
                 comm_result=comm_result,
             )
 
@@ -183,19 +183,19 @@ def ResultGrader(
             #relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if file.endswith(".root")])
             logger.debug(f"{relevant_files=}")
             _1, _2 = felis.set_module(
-                module_name,
-                module_type.split(" ")[0],
-                module_type.split(" ")[2].replace("Quad", "2x2"),
-                module_version.strip("v"),
-                True,
-                "link",
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
+                link_production_db = "https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
             )
 
             status, message, sanity, explanation = felis.set_result(
-                relevant_files,
-                module_name,
-                f"{testIndexInSequence:02d}_{testName}",
-                Test_to_Ph2ACF_Map[testName],
+                paths_files = relevant_files,
+                name_module = module_name,
+                name_test = f"{testIndexInSequence:02d}_{testName}",
+                type_test = Test_to_Ph2ACF_Map[testName],
             )
         if not status:
             raise RuntimeError(message)

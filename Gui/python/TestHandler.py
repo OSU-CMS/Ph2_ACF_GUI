@@ -2538,11 +2538,11 @@ created by Ph2_ACF is empty."
             counter = 0
             for i, fc7 in enumerate(self.firmware):
                 for module in fc7.getModules():
-                    status, message = self.felis_instances[i].set_comment( module.getModuleName(),"sequence", self.comment)
+                    status, message = self.felis_instances[i].set_comment( name_module=module.getModuleName(),name_test="sequence", comment=self.comment)
                     status, message = self.felis_instances[i].upload_results(
-                        module.getModuleName(),
-                        self.master.username,
-                        self.master.password,
+                        name_module=module.getModuleName(),
+                        username=self.master.username,
+                        userpass=self.master.password,
                         type_sequence=self.info,
                         version_ph2acf=os.environ.get("PH2ACF_VERSION"),
                         version_testStationSoftware="OSU_GUI-" + os.environ.get(
