@@ -92,7 +92,7 @@ def ResultGrader(
             status, message, sanity, explanation = felis.set_result(
                 paths_files = relevant_files,
                 name_module = module_name,
-                test_name = f"{testIndexInSequence:02d}_{testName}",
+                name_test = f"{testIndexInSequence:02d}_{testName}",
                 type_test = "sldo",
             )
 
