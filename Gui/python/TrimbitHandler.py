@@ -237,7 +237,7 @@ class TrimbitCurveWorker(QThread):
             if name.endswith(str(chip)) and name.startswith(measurement_type):
                 measurement = self.ADCmeasurements[pin][-1][1] if self.ADCmeasurements[pin] else None
                 if measurement is not None:
-                    return 0 if measurement > 1.29 else 1
+                    return 1
         return 0
     
     def check_stop_voltage(self, chip):
