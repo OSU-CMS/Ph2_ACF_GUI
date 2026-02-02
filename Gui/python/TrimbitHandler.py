@@ -103,15 +103,22 @@ class TrimbitCurveWorker(QThread):
         """
         self.trimbit_dict = {c: (0, 0) for c in self.chip_list}
         newTrim = np.array([0, 0])
+        steps_done = 0
 
         for _ in range(self.total_steps):
             if self.exiting:
                 break
             self.process_step(chip, newTrim)
+            steps_done += 1
             
             # Check if both VDDA and VDDD have exceeded stop voltage (1.29V)
             if self.check_stop_voltage(chip):
                 logger.info(f"Trimbit scan stopped early for chip {chip}: both voltages exceed 1.29V")
+                remaining_steps = self.total_steps - steps_done
+                if remaining_steps > 0:
+                    self.ProgressValue += remaining_steps
+                    percent = 100 * self.ProgressValue / (self.total_steps * len(self.chip_list))
+                    self.progressSignal.emit("TrimbitScan", percent)
                 break
 
     def process_step(self, chip, newTrim):
@@ -242,13 +249,13 @@ class TrimbitCurveWorker(QThread):
     
     def check_stop_voltage(self, chip):
         """
-        Checks if both VDDA and VDDD have exceeded the stop voltage threshold (1.29V).
+        Checks if either VDDA or VDDD has exceeded the stop voltage threshold (1.29V).
 
         Args:
             chip (int): The chip number to check.
 
         Returns:
-            bool: True if both VDDA and VDDD exceed 1.29V, False otherwise.
+            bool: True if either VDDA or VDDD exceeds 1.29V, False otherwise.
         """
         vdda_measurement = None
         vddd_measurement = None
@@ -260,9 +267,9 @@ class TrimbitCurveWorker(QThread):
                 elif name.startswith("VDDD") and self.ADCmeasurements[pin]:
                     vddd_measurement = self.ADCmeasurements[pin][-1][1]
         
-        # Return True only if both measurements exist and both exceed 1.29V
-        return (vdda_measurement is not None and vddd_measurement is not None and 
-                vdda_measurement > 1.29 and vddd_measurement > 1.29)
+        # Return True if either measurement exists and exceeds 1.29V
+        return ((vdda_measurement is not None and vdda_measurement > 1.29) or 
+                (vddd_measurement is not None and vddd_measurement > 1.29))
     
     def measureADC(self, chip):
         """
