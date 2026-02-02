@@ -108,6 +108,11 @@ class TrimbitCurveWorker(QThread):
             if self.exiting:
                 break
             self.process_step(chip, newTrim)
+            
+            # Check if both VDDA and VDDD have exceeded stop voltage (1.29V)
+            if self.check_stop_voltage(chip):
+                logger.info(f"Trimbit scan stopped early for chip {chip}: both voltages exceed 1.29V")
+                break
 
     def process_step(self, chip, newTrim):
         """
@@ -234,6 +239,30 @@ class TrimbitCurveWorker(QThread):
                 if measurement is not None:
                     return 0 if measurement > 1.29 else 1
         return 0
+    
+    def check_stop_voltage(self, chip):
+        """
+        Checks if both VDDA and VDDD have exceeded the stop voltage threshold (1.29V).
+
+        Args:
+            chip (int): The chip number to check.
+
+        Returns:
+            bool: True if both VDDA and VDDD exceed 1.29V, False otherwise.
+        """
+        vdda_measurement = None
+        vddd_measurement = None
+        
+        for pin, name in self.pin_mapping.items():
+            if name.endswith(str(chip)):
+                if name.startswith("VDDA") and self.ADCmeasurements[pin]:
+                    vdda_measurement = self.ADCmeasurements[pin][-1][1]
+                elif name.startswith("VDDD") and self.ADCmeasurements[pin]:
+                    vddd_measurement = self.ADCmeasurements[pin][-1][1]
+        
+        # Return True only if both measurements exist and both exceed 1.29V
+        return (vdda_measurement is not None and vddd_measurement is not None and 
+                vdda_measurement > 1.29 and vddd_measurement > 1.29)
     
     def measureADC(self, chip):
         """
