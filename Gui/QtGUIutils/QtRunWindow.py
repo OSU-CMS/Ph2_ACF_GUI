@@ -751,6 +751,8 @@ class QtRunWindow(QWidget):
         """
         for module_id, module in self.master.instruments.get_modules().items():
             if "cb" in module and isinstance(module["cb"], PSIColdbox.TemperatureChannel):
+                logger.info("Preparing to turn off LV power.  Waiting for temperature to reach safe level.")
+                logger.info("LV powering off.")
                 logger.debug(f"Module temperature {module['cb'].measure_temperature} for module {module_id}")
                 while module["cb"].measure_temperature < site_settings.coldboxRoomTemp:
                     logger.debug(f"Module temperature {module['cb'].measure_temperature} for module {module_id}")

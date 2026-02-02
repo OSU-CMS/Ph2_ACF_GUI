@@ -998,7 +998,7 @@ class TestHandler(QObject):
                 )
 
         for process in self.info_processes:
-            process.waitForFinished()
+            process.waitForFinished(-1)
 
         for process in self.run_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
@@ -2186,10 +2186,14 @@ created by Ph2_ACF is empty."
     def IVCurveFinished(self, test: str, measure: dict):
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        logger.debug("Inside IVCurveFinished")
         for process in self.run_processes:
+            logger.debug("Sending command to end monitoring")
             process.write(b"\n")
             process.waitForBytesWritten()
-            process.waitForFinished()
+            logger.debug("Command was sent.Waiting for process to finish.")
+            process.waitForFinished(-1)
+            logger.debug("Process finished")
 
         # 3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
         # IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
