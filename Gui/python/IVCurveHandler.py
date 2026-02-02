@@ -90,7 +90,8 @@ class IVCurveThread(QThread):
 
     def run(self):
         try:
-            print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
+            logger.info(f"Starting IV Curve scan from {self.startVal} to {self.stopVal}")
+            #print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
             #self.instruments.hv_on(voltage=0,
             #    execute_each_step=lambda: self.execute_each_step(starting_voltages)
             #)
@@ -116,7 +117,7 @@ class IVCurveThread(QThread):
 #####  End of replacement block
 
             if self.exiting:
-                print("IV Curve scan was aborted by user.")
+                logger.info("IV Curve scan was aborted by user.")
                 return
                         
             # The physics test can be stopped by pressing enter
