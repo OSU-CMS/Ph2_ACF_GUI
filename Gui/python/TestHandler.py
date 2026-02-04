@@ -116,6 +116,9 @@ class TestHandler(QObject):
         self.modules = [
             module for beboard in self.firmware for module in beboard.getModules()
         ]
+        self.statuses = {
+            module.getModuleName(): module.getEnabled() for module in self.modules
+        }
 
         self.GADC_meas_chip = None
         self.VDDDup = {channel: {} for channel in self.instruments._module_dict}
@@ -316,6 +319,14 @@ class TestHandler(QObject):
         self._openBumpTest_running = False
         self._openBumpTest_subtest_index = 0
 
+    def _module_is_enabled(self, module) -> bool:
+        module_name = module.getModuleName()
+        status = self.statuses.get(module_name, module.getEnabled())
+        return str(status) == "1"
+
+    def enabled_modules(self):
+        return [module for module in self.modules if self._module_is_enabled(module)]
+
     def finished_run_process(self, _, exitStatus, i):
         logger.info("Inside finsihed_run_process")
         logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
@@ -325,7 +336,7 @@ class TestHandler(QObject):
 
     def initializeRD53Dict(self):
         self.rd53_file = {}
-        for module in self.modules:
+        for module in self.enabled_modules():
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
             moduleName = module.getModuleName()
@@ -343,7 +354,7 @@ class TestHandler(QObject):
 
     def config_output_dir(self, testName):
         ModuleIDs = []
-        for module in self.modules:
+        for module in self.enabled_modules():
             ModuleIDs.append(str(module.getModuleName()))
         # output_dir gets set to $DATA_dir/Test_{testname}/Test_Module{ModuleID}_{Test}_{TimeStamp}
         return ConfigureTest(
@@ -1222,6 +1233,8 @@ class TestHandler(QObject):
                 for OG in beboard.getAllOpticalGroups().values():
                     ogID = OG.getOpticalGroupID()
                     for module in OG.getAllModules().values():
+                        if not self._module_is_enabled(module):
+                            continue
                         print(f"curr test {self.currentTest}")
                         hybridID = module.getFMCPort()
                         module_data = {
@@ -1698,7 +1711,7 @@ created by Ph2_ACF is empty."
                 updatedFEKeys = optimizationTestMap[
                     Test_to_Ph2ACF_Map[self.currentTest]
                 ]
-                for module in self.modules:
+                for module in self.enabled_modules():
                     chipIDs = [
                         chip.getID()
                         for chip in module.getChips().values()
@@ -2023,6 +2036,8 @@ created by Ph2_ACF is empty."
                         for OG in beboard.getAllOpticalGroups().values():
                             ogID = OG.getOpticalGroupID()
                             for module in OG.getAllModules().values():
+                                if not self._module_is_enabled(module):
+                                    continue
                                 hybridID = module.getFMCPort()
                                 module_data = {
                                     "boardID": boardID,
@@ -2095,7 +2110,7 @@ created by Ph2_ACF is empty."
                 #].setValue(self.SLDOProgressValue)
 
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
-        for module in self.modules:
+        for module in self.enabled_modules():
             moduleName = module.getModuleName()
             fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.svg".format(
@@ -2151,7 +2166,7 @@ created by Ph2_ACF is empty."
         Returns a list of CSV filenames created.
         """
         csvfiles = []
-        for module in self.modules:
+        for module in self.enabled_modules():
             moduleName = module.getModuleName()
             for pin, name in pin_mapping.items():
                 if pin in trimbit_dict:
@@ -2207,9 +2222,14 @@ created by Ph2_ACF is empty."
         channelList = []
         for channel in measure:
             channelList.append(channel)
-        module_chan_map = dict(zip(self.modules,channelList))
+        modules_for_mapping = (
+            self.enabled_modules()
+            if len(channelList) == len(self.enabled_modules())
+            else self.modules
+        )
+        module_chan_map = dict(zip(modules_for_mapping, channelList))
 
-        for module in self.modules:
+        for module in self.enabled_modules():
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
             fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
@@ -2305,7 +2325,7 @@ created by Ph2_ACF is empty."
             self.runTest()
 
     def SLDOScanFinished(self):
-        for module in self.modules:
+        for module in self.enabled_modules():
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
             fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
@@ -2370,7 +2390,7 @@ created by Ph2_ACF is empty."
             self.runTest()
 
     def TrimbitScanFinished(self):
-        for module in self.modules:
+        for module in self.enabled_modules():
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
             fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
@@ -2509,10 +2529,12 @@ created by Ph2_ACF is empty."
                 self.starttime = None
 
             for row in range(self.force_continue_window.table.rowCount()):
-                if not self.force_continue_window.table.item(row, 1).checkState():
-                    self.statuses[
-                        self.force_continue_window.table.item(row, 0).text()
-                    ] = "0"
+                module_name = self.force_continue_window.table.item(row, 0).text()
+                enabled = (
+                    self.force_continue_window.table.item(row, 1).checkState()
+                    == Qt.Checked
+                )
+                self.statuses[module_name] = "1" if enabled else "0"
 
             event.accept()
 
@@ -2636,15 +2658,13 @@ created by Ph2_ACF is empty."
                 + "const_cast<int*>(std::array<int, 4>{{{0}, {1}, {2}, {3}}}.data()))"
             )
 
-        for beboard in self.firmware:
-            boardID = beboard.getBoardID()
-            for OG in beboard.getAllOpticalGroups().values():
-                ogID = OG.getOpticalGroupID()
-                for module in OG.getAllModules().values():
-                    hybridID = module.getFMCPort()
-                    for chipID in module.getEnabledChips().keys():
-                        commands.append(
-                            command_template.format(boardID, ogID, hybridID, chipID)
-                        )
+        for module in self.enabled_modules():
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            boardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            hybridId = module.getFMCPort()
+            for chipID in module.getEnabledChips().keys():
+                commands.append(
+                    command_template.format(boardId, ogId, hybridId, chipID)
+                )
         executeCommandSequence(commands)
     
