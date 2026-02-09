@@ -20,6 +20,7 @@ import requests
 from lxml import etree
 import re
 import traceback
+import requests
 
 from icicle.icicle.instrument_cluster import DummyInstrument
 import Gui.siteSettings as site_settings
@@ -257,8 +258,6 @@ class ChipBox(QWidget):
 
         self.IREF = IREF
         chip_iref_db[str(pChipID)] = str(IREF)  # Store as string for easy comparison
-        print(f"chip dict: {chip_iref_db}")
-        print(f"Module Chip ID: {pChipID}, IREF: {self.IREF}")
 
         if not self.ChipVDDDEdit.text():
             logger.debug("no VDDD text")
@@ -358,51 +357,81 @@ class ChipBox(QWidget):
         ChipStatus = ChipCheckBox.isChecked()
         return ChipStatus
 
+    def fetchNameLabel(self, moduleName): # Step 1: get the name label and module type (dual or quad)
+        registries = {
+            "quad": "https://cms-it-modules-registry.web.cern.ch/IT_Quad_Module.json",
+            "dual": "https://cms-it-modules-registry.web.cern.ch/IT_Double_Module.json",
+        }
+        moduleName_clean = moduleName.strip().upper() if moduleName else ""
+        for moduleType, url in registries.items():
+            try:
+                resp = requests.get(url, timeout=5)
+                resp.raise_for_status()
+                registry = resp.json()
+            except Exception as e:
+                logger.warning(f"Error loading {moduleType} registry from {url}: {e}")
+                continue
+
+
+            for entry in registry:
+                serial = (entry.get("SERIAL_NUMBER") or "").strip().upper()
+                if serial == moduleName_clean:
+                    name_label = entry.get("NAME_LABEL")
+                    logger.debug(
+                        f"found module {moduleName} in {moduleType} registry with name label {name_label}"
+                    )
+                    print(f"found module {moduleName} in {moduleType} registry with name label {name_label}")
+                    return name_label, moduleType
+
+
     def fetchHDIVersionFromDB(self, moduleName):
-        URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
-        response = requests.get(URL)
-        html_content = response.text
-        match = re.search(r"Version\s*=\s*(.+)", html_content)
-        if match:
-            hdiversion = match.group(1).strip()
-        else:
-            print("Warning: HDI version not found for module.  Using default value of 1.")
-            hdiversion = "1"
-        return hdiversion
+        name_label, moduleType = self.fetchNameLabel(moduleName)
+        URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
+
+        try:
+            response = requests.get(URL)
+            response.raise_for_status()
+            data = response.json()
+
+            for entry in data.get("bare_module_data", []):
+                version = entry.get("VERSION")
+                if version is not None:
+                   return str(version).strip()
+
+            print(f"Warning: HDI version not found for {name_label}. Using default value of 1.")
+            return "1"
+
+        except requests.RequestException as e:
+            print(f"Warning: Could not fetch JSON for {name_label} ({e}). Using default value of 1.")
+            return "1"
+
+        except ValueError as e:
+            print(f"Warning: JSON parsing error for {name_label} ({e}). Using default value of 1.")
+            return "1"
+        
 
     ## This function returns a list of dictionaries.  Each element of the list is a chip dictinary.
-    ## For example, chipdata[0]['EFUSE'] is the efuse ID of thehttps://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName} first chip
     def fetchChipDataFromDB(self, moduleName):
+        name_label, moduleType = self.fetchNameLabel(moduleName)
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
             response = requests.get(URL)
+            data = response.json()
 
-            parser = etree.HTMLParser()
-            tree = etree.fromstring(response.content, parser)
-            chip_table = tree.xpath("//body/table")[0]
-            # chipsitemap = {}
-            # chipsitemap['U1A'] = '12'
-            # chipsitemap['U1B'] = '13'
-            # chipsitemap['U1C'] = '14'
-            # chipsitemap['U1D'] = '15'
-            chipidmap = {}
-            chipidmap["0"] = "12"
-            chipidmap["1"] = "13"
-            chipidmap["2"] = "14"
-            chipidmap["3"] = "15"
+            chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
 
-            chipdatalist = []
-            for row in chip_table:
-                elementdata = []
-                for element in row:
-                    elementdata.append(element.text)
-                chipdatalist.append(elementdata)
-            chipdatadicts = [
-                dict(zip(chipdatalist[0], values)) for values in chipdatalist[1:]
-            ]
+            chipdatadicts = [entry for entry in data["bare_module_data"] if entry["KIND_OF_PART"] == "CROC Chip"]
+
             chipdata = {}
             for i, chip in enumerate(chipdatadicts):
-                chipdata[chipidmap[str(i)]] = chip
+                chipdata[chipidmap[str(i)]] = {
+                "VDDA": str(chip.get("VDDA_TRIM_CODE", "0")),
+                "VDDD": str(chip.get("VDDD_TRIM_CODE", "0")),
+                "IREF": str(chip.get("IREF_A", "0")),
+                "EFUSE": str(chip.get("EFUSE_CODE", "0")),
+                "VREF": str(chip.get("VREF_ADC_V", "0")),
+                "CINJ": str(chip.get("INJ_CAPACIT_F", "0")),
+                }
             return chipdata
 
         except requests.exceptions.RequestException as req_err:
@@ -411,7 +440,7 @@ class ChipBox(QWidget):
             msg.information(
                 None,
                 "Error",
-                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                f"There was an issue connecting to the database.\nMessage: {repr(req_err)}",
                 QMessageBox.Ok,
             )
             logger.error(traceback.format_exc())
@@ -427,7 +456,7 @@ class ChipBox(QWidget):
             msg.information(
                 None,
                 "Error",
-                f"Could not find {moduleName} in the database, using default values.",
+                f"Could not find {name_label} in the database, using default values.",
                 QMessageBox.Ok,
             )
             logger.error(traceback.format_exc())
@@ -437,7 +466,7 @@ class ChipBox(QWidget):
         except Exception as e:
             # other issue
             logger.error(
-                f"Some error occurred while querying the Purdue DB for VDDD/VDDA trim values. \nError: {repr(e)}"
+                f"Some error occurred while querying the DB for VDDD/VDDA trim values. \nError: {repr(e)}"
             )
             logger.error(traceback.format_exc())
             self.master.purdue_connected = False
@@ -447,30 +476,40 @@ class ChipBox(QWidget):
             return None
 
     def fetchTrimFromDB(self, moduleName):
+        name_label, moduleType = self.fetchNameLabel(moduleName)
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
 
             response = requests.get(URL)
+            data_json = response.json()
 
-            parser = etree.HTMLParser()
-            tree = etree.fromstring(response.content, parser)
-            chip_table = tree.xpath("//body/table")[0]
+            #chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}## is this right?
+            chipidmap = {"12": "0", "13": "1", "14": "2", "15": "3"}
+            data={}
 
-            values = []
-            for row in chip_table[1:]:
-                for element in row:
-                    if element.text and element.text.startswith("U1"):
-                        values.append([])
+            for entry in data_json["bare_module_data"]:
+                if entry["KIND_OF_PART"] == "CROC Chip":
+                    slot = str(entry["ACROC_SLOT"])
 
-                    elif element.text and element.text.isdigit():
-                        values[-1].append(element.text)
+                    data[chipidmap[slot]] = {
+                        "VDDD": str(entry["VDDD_TRIM_CODE"]),
+                        "VDDA": str(entry["VDDA_TRIM_CODE"]),
+                        "IREF": str(entry["IREF_A"]),
+                        "EFUSE": str(entry["EFUSE_CODE"]),
+                        "VREF": str(entry["VREF_ADC_V"]),
+                        "CINJ": str(entry["INJ_CAPACIT_F"]),
+                    }
 
-            data = {}
-            for i in range(len(values)):
-                data[str(i + 12)] = {
-                    "VDDD": values[i][1],
-                    "VDDA": values[i][2],
-                }
+            for chipID in ["12", "13", "14", "15"]:
+                if chipID not in data:
+                    data[chipID] = {
+                        "VDDD": "0",
+                        "VDDA": "0",
+                        "IREF": "0",
+                        "EFUSE": "0",
+                        "VREF": "0",
+                        "CINJ": "0",
+                    }
 
             return data
         except requests.exceptions.RequestException as req_err:
@@ -479,7 +518,7 @@ class ChipBox(QWidget):
             msg.information(
                 None,
                 "Error",
-                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                f"There was an issue connecting to the database.\nMessage: {repr(req_err)}",
                 QMessageBox.Ok,
             )
             logger.error(traceback.format_exc())
@@ -505,7 +544,7 @@ class ChipBox(QWidget):
         except Exception as e:
             # other issue
             logger.error(
-                f"Some error occurred while querying the Purdue DB for VDDD/VDDA trim values. \nError: {repr(e)}"
+                f"Some error occurred while querying the DB for VDDD/VDDA trim values. \nError: {repr(e)}"
             )
             logger.error(traceback.format_exc())
             self.master.purdue_connected = False
@@ -664,55 +703,72 @@ class BeBoardBox(QWidget):
             self.updateList()
 
     def fetchModuleTypeDB(self, moduleName):
-        if not self.master.purdue_connected:
-            return None
+
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            registries = {
+                "quad": "https://cms-it-modules-registry.web.cern.ch/IT_Quad_Module.json",
+                "dual": "https://cms-it-modules-registry.web.cern.ch/IT_Double_Module.json",
+            }
 
-            response = requests.get(URL)
+            moduleName_clean = moduleName.strip().upper() if moduleName else ""
+            name_label = None
+            moduleType = None
 
-            moduletype, moduleversion = None, None
-            res = str(response.content).split("\\n")
-            for i in res:
-                if i.startswith("<br>Part = "):
-                    moduletype = i.split("<br>Part = ")[1]
-                elif i.startswith("<br>Version = "):
-                    moduleversion = i.split("<br>Version = ")[1]
+            for mtype, url in registries.items():
+                try:
+                    resp = requests.get(url, timeout=5)
+                    resp.raise_for_status()
+                    registry = resp.json()
+                except Exception as e:
+                    logger.warning(f"Could not load registry {url}: {e}")
+                    continue
 
-            if moduletype.startswith("croc_1x2"):
-                moduletype = "TFPX CROC 1x2"
-            elif moduletype.startswith("croc_2x2"):
-                moduletype = "TFPX CROC Quad"
+                for entry in registry:
+                    serial = (entry.get("SERIAL_NUMBER") or "").strip().upper()
+                    if serial == moduleName_clean:
+                        name_label = entry.get("NAME_LABEL")
+                        moduleType = mtype
+                        break
+                if name_label:
+                    break
 
-            if moduletype == "" or moduleversion == "":
+            if not name_label:
                 msg = QMessageBox()
                 msg.information(
                     None,
                     "Error",
-                    f"Could not find {moduleName} in the database.",
+                    f"Could not find {moduleName} in the module registries.",
                     QMessageBox.Ok,
                 )
                 return None
-            else:
-                return {"type": moduletype, "HDIversion": f"{moduleversion}"}
-        except requests.exceptions.RequestException as req_err:
-            # some sort of connection issue, alert user
-            msg = QMessageBox()
-            msg.information(
-                None,
-                "Error",
-                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
-                QMessageBox.Ok,
-            )
-            logger.error(traceback.format_exc())
 
-            self.master.purdue_connected = False
-            return None
-        except Exception as e:
-            # other issue
-            logger.error(
-                f"Some error occurred while querying the Purdue DB for module type. \nError: {repr(e)}"
-            )
+            # Fetch module JSON to determine HDI/version info
+            try:
+                url = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
+                resp = requests.get(url, timeout=5)
+                resp.raise_for_status()
+                data = resp.json()
+                moduleversion = None
+                for entry in data.get("bare_module_data", []):
+                    version = entry.get("VERSION")
+                    if version is not None:
+                        moduleversion = str(version).strip()
+                        break
+                if moduleversion is None:
+                    moduleversion = "1"
+            except Exception as e:
+                logger.warning(f"Could not fetch module JSON for {name_label}: {e}")
+                moduleversion = "1"
+
+            if moduleType == "dual":
+                moduletype = "TFPX CROC 1x2"
+            elif moduleType == "quad":
+                moduletype = "TFPX CROC Quad"
+            else:
+                moduletype = ""
+
+            return {"type": moduletype, "HDIversion": f"{moduleversion}"}
+        except Exception:
             logger.error(traceback.format_exc())
             self.master.purdue_connected = False
             return None
@@ -1161,55 +1217,72 @@ class SimpleBeBoardBox(QWidget):
         return self.FilledModuleList
 
     def fetchModuleTypeDB(self, moduleName):
-        if not self.master.purdue_connected:
-            return None
+
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            registries = {
+                "quad": "https://cms-it-modules-registry.web.cern.ch/IT_Quad_Module.json",
+                "dual": "https://cms-it-modules-registry.web.cern.ch/IT_Double_Module.json",
+            }
 
-            response = requests.get(URL)
+            moduleName_clean = moduleName.strip().upper() if moduleName else ""
+            name_label = None
+            moduleType = None
 
-            moduletype, moduleversion = None, None
-            res = str(response.content).split("\\n")
-            for i in res:
-                if i.startswith("<br>Part = "):
-                    moduletype = i.split("<br>Part = ")[1]
-                elif i.startswith("<br>Version = "):
-                    moduleversion = i.split("<br>Version = ")[1]
+            for mtype, url in registries.items():
+                try:
+                    resp = requests.get(url, timeout=5)
+                    resp.raise_for_status()
+                    registry = resp.json()
+                except Exception as e:
+                    logger.warning(f"Could not load registry {url}: {e}")
+                    continue
 
-            if moduletype.startswith("croc_1x2"):
-                moduletype = "TFPX CROC 1x2"
-            elif moduletype.startswith("croc_2x2"):
-                moduletype = "TFPX CROC Quad"
+                for entry in registry:
+                    serial = (entry.get("SERIAL_NUMBER") or "").strip().upper()
+                    if serial == moduleName_clean:
+                        name_label = entry.get("NAME_LABEL")
+                        moduleType = mtype
+                        break
+                if name_label:
+                    break
 
-            if moduletype == "" or moduleversion == "":
+            if not name_label:
                 msg = QMessageBox()
                 msg.information(
                     None,
                     "Error",
-                    f"Could not find {moduleName} in the database.",
+                    f"Could not find {moduleName} in the module registries.",
                     QMessageBox.Ok,
                 )
                 return None
-            else:
-                return {"type": moduletype, "HDIversion": f"{moduleversion}"}
-        except requests.exceptions.RequestException as req_err:
-            # some sort of connection issue, alert user
-            msg = QMessageBox()
-            msg.information(
-                None,
-                "Error",
-                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
-                QMessageBox.Ok,
-            )
-            logger.error(traceback.format_exc())
 
-            self.master.purdue_connected = False
-            return None
-        except Exception as e:
-            # other issue
-            logger.error(
-                f"Some error occurred while querying the Purdue DB for module type. \nError: {repr(e)}"
-            )
+            # Fetch module JSON to determine HDI/version info
+            try:
+                url = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
+                resp = requests.get(url, timeout=5)
+                resp.raise_for_status()
+                data = resp.json()
+                moduleversion = None
+                for entry in data.get("bare_module_data", []):
+                    version = entry.get("VERSION")
+                    if version is not None:
+                        moduleversion = str(version).strip()
+                        break
+                if moduleversion is None:
+                    moduleversion = "1"
+            except Exception as e:
+                logger.warning(f"Could not fetch module JSON for {name_label}: {e}")
+                moduleversion = "1"
+
+            if moduleType == "dual":
+                moduletype = "TFPX CROC 1x2"
+            elif moduleType == "quad":
+                moduletype = "TFPX CROC Quad"
+            else:
+                moduletype = ""
+
+            return {"type": moduletype, "HDIversion": f"{moduleversion}"}
+        except Exception:
             logger.error(traceback.format_exc())
             self.master.purdue_connected = False
             return None
@@ -1272,7 +1345,7 @@ class SimpleBeBoardBox(QWidget):
                 OpticalGroup
             )  # Ignore this line, see explanation in Firmware.py
 
-            # Fetch the VDDD/VDDA trim values from the Purdue DB, make a ChipBox due to built in error handling
+            # Fetch the VDDD/VDDA trim values from the DB, make a ChipBox due to built in error handling
             chipBox = ChipBox(
                 self.master,
                 module.getType(module.getSerialNumber()),
