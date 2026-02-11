@@ -278,6 +278,7 @@ class TestHandler(QObject):
         self.SLDOProgressValue = 0
         self.runtimeList = []
         self.starttime = None
+        self.active_process_count = len(self.run_processes)
 
         self.communicationTestResults = {
             module.getModuleName(): None for module in self.modules
@@ -318,6 +319,7 @@ class TestHandler(QObject):
         
         self._openBumpTest_running = False
         self._openBumpTest_subtest_index = 0
+        self._retrying = False
 
     def _module_is_enabled(self, module) -> bool:
         module_name = module.getModuleName()
@@ -328,8 +330,9 @@ class TestHandler(QObject):
         return [module for module in self.modules if self._module_is_enabled(module)]
 
     def finished_run_process(self, _, exitStatus, i):
-        logger.info("Inside finsihed_run_process")
+        logger.info("Inside finished_run_process")
         logger.info("Current exitStatus in finished_run_process: %s", exitStatus)
+        
         if exitStatus == QProcess.NormalExit:
             # Ensure that all processes have finished before continuing
             self.on_finish(i)
@@ -953,6 +956,9 @@ class TestHandler(QObject):
         self.tempindex = 0
         logger.info(f"{self.output_dir=}")
 
+        # Track how many processes actually start for this run.
+        self.active_process_count = 0
+
         # Create per-FC7 output directories
         # <output_dir>/<fc7>/output.txt
         # An error.txt file was created in the old version but never used.
@@ -1025,6 +1031,8 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
                 )
+                if process.state() != QProcess.NotRunning:
+                    self.active_process_count += 1
 
         if (
             self.currentTest == "IREF_GADC"
@@ -1041,6 +1049,8 @@ class TestHandler(QObject):
                         "15",
                     ],
                 )
+                if process.state() != QProcess.NotRunning:
+                    self.active_process_count += 1
         elif self.currentTest == "TrimbitScan":
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
@@ -1050,6 +1060,8 @@ class TestHandler(QObject):
                         f"CMSIT_{firmware.getBoardName()}.xml",
                     ],
                 )
+                if process.state() != QProcess.NotRunning:
+                    self.active_process_count += 1
         else:
             i = 0
             for process, firmware in zip(self.run_processes, self.firmware):
@@ -1068,6 +1080,7 @@ class TestHandler(QObject):
                         f"Process for firmware {self.firmware[i].getBoardName()} failed to start."
                     )
                 else:
+                    self.active_process_count += 1
                     logger.info(
                         f"Process for firmware {self.firmware[i].getBoardName()} started successfully."
                     )
@@ -1076,6 +1089,12 @@ class TestHandler(QObject):
     def abortTest(self):
         self.halt = True
         for process in self.run_processes:
+            # Disconnect signals before killing to prevent unwanted finished signal
+            try:
+                process.finished.disconnect()
+                process.readyReadStandardOutput.disconnect()
+            except Exception:
+                pass
             process.kill()
 
         self.haltSignal.emit(self.halt)
@@ -1098,6 +1117,12 @@ class TestHandler(QObject):
 
     def urgentStop(self):
         for process in self.run_processes:
+            # Disconnect signals before killing to prevent unwanted finished signal
+            try:
+                process.finished.disconnect()
+                process.readyReadStandardOutput.disconnect()
+            except Exception:
+                pass
             process.kill()
         self.halt = True
         self.haltSignal.emit(self.halt)
@@ -1935,6 +1960,11 @@ created by Ph2_ACF is empty."
         # Wait for all processes to finish so FC7s don't get out of sync
 
         logger.debug("All processes finished")
+        
+        # If this is a retried test completing, clear the retry flag so it can proceed normally
+        if self._retrying:
+            self._retrying = False
+            logger.info("Retry test completing - clearing retry flag")
 
         if self.halt:
             self.haltSignal.emit(True)
@@ -1953,12 +1983,21 @@ created by Ph2_ACF is empty."
 
         if "IVCurve" in self.currentTest:
             self.saveTest(processIndex, self.run_processes[processIndex])
+            # Check if retry was triggered during saveTest
+            if self._retrying:
+                logger.info("Retry initiated during IVCurve saveTest - aborting on_finish")
+                return
             return
 
         # Save the output ROOT file to output_dir
         logger.debug("About to run saveTest()")
         time.sleep(1)
         self.saveTest(processIndex, self.run_processes[processIndex])
+        
+        # Check if retry was triggered during saveTest
+        if self._retrying:
+            logger.info("Retry initiated during saveTest - aborting on_finish")
+            return
 
         self.saveConfigs(process_index=processIndex)
         # Don't continue on sequence until all processes have finished the current test
@@ -1981,7 +2020,12 @@ created by Ph2_ACF is empty."
 
         # Ensure that all processes have finished before continuing
         self.finished_processes += 1
-        if not self.finished_processes == len(self.run_processes):
+        expected_processes = (
+            self.active_process_count
+            if self.active_process_count > 0
+            else len(self.run_processes)
+        )
+        if not self.finished_processes == expected_processes:
             return
 
         self.finished_processes = 0
@@ -2443,6 +2487,9 @@ created by Ph2_ACF is empty."
     def forceContinue(
         self, board
     ):  # board:QtBeBoard. Runs when module disconnection is suspected.
+        # Set retrying flag immediately to prevent on_finish from running while dialog is shown
+        self._retrying = True
+        
         fc7modules = board.getModules()
 
         # Create the main widget
@@ -2523,6 +2570,12 @@ created by Ph2_ACF is empty."
         def handle_close(event):
             if self.force_continue_window.abort:
                 for process in self.run_processes:
+                    # Disconnect signals before killing to prevent unwanted finished signal
+                    try:
+                        process.finished.disconnect()
+                        process.readyReadStandardOutput.disconnect()
+                    except Exception:
+                        pass
                     process.kill()
                 self.halt = True
                 self.haltSignal.emit(self.halt)
@@ -2540,6 +2593,36 @@ created by Ph2_ACF is empty."
 
         def handle_retry():
             if check_enabledModules():
+                # Set retrying flag to prevent on_finish from executing
+                self._retrying = True
+                
+                for i, process in enumerate(self.run_processes):
+                    # Disconnect signals then kill processes
+                    try:
+                        process.finished.disconnect()
+                        process.readyReadStandardOutput.disconnect()
+                        logger.info(f"Disconnected signals from old process {i}")
+                    except Exception as e:
+                        logger.debug(f"Could not disconnect signals from process {i}: {e}")
+                    
+                    if process.state() == QProcess.Running:
+                        process.kill()
+                        process.waitForFinished(-1)
+                    
+                    # Create new QProcess objects
+                    self.run_processes[i] = QProcess()
+                    self.run_processes[i].readyReadStandardOutput.connect(
+                        lambda j=i: self.on_readyReadStandardOutput(j)
+                    )
+                    self.run_processes[i].finished.connect(
+                        lambda exitCode, exitStatus, j=i: self.finished_run_process(
+                            exitCode, exitStatus, j
+                        )
+                    )
+                
+                # Reset finished_processes counter
+                self.finished_processes = 0
+                
                 for console in self.runwindow.ConsoleViews:
                     self.outputString.emit(f"Retrying {self.currentTest}...",console)
                 for i in range(len(self.firmware)):
@@ -2551,11 +2634,16 @@ created by Ph2_ACF is empty."
                     ].setValue(
                         0
                     )  # may need to .update(). Automatically adds "0%" text on Progress bar.
-                self.testIndexTracker -= 1
+                # Don't decrement testIndexTracker - we're retrying at the same position
                 self.force_continue_window.close()
+                
+                # Restart the test - _retrying will be cleared when the retry completes
+                self.runTest()
 
         def handle_continue():
             if check_enabledModules():
+                # Clear retrying flag to allow normal on_finish execution
+                self._retrying = False
                 self.force_continue_window.close()
 
         # Connect buttons to handlers
