@@ -147,32 +147,32 @@ class QtRunWindow(QWidget):
             np.abs(getattr(module["hv"], "voltage"))
             for module in self.master.instruments._module_dict.values()
         ]
-        if site_settings.cooler == "Tessie":
-            if self.master.instruments:
-                starting_voltages = [
-                    np.abs(getattr(module["hv"], "voltage"))
-                    for module in self.master.instruments._module_dict.values()
-                ]
-                self.master.instruments.hv_off(
-                    delay=0.3,
-                    step_size=10,
-                    execute_each_step=lambda: self.testHandler.ramp_progress_bar(
-                    starting_voltages
-                ),                )
-            self.master.instruments.cb_off(checkstatus=False)
-            try:
-                    self.wait_for_temp()
-            except InstrumentTimeoutError:
-                    logger.error(traceback.format_exc())
+        #if site_settings.cooler == "Tessie":
+        #    if self.master.instruments:
+        #        starting_voltages = [
+        #            np.abs(getattr(module["hv"], "voltage"))
+        #            for module in self.master.instruments._module_dict.values()
+        #        ]
+        #        self.master.instruments.hv_off(
+        #            delay=0.3,
+        #            step_size=10,
+        #            execute_each_step=lambda: self.testHandler.ramp_progress_bar(
+        #            starting_voltages
+        #        ),                )
+        #    self.master.instruments.cb_off(checkstatus=False)
+        #    try:
+        #            self.wait_for_temp()
+        #    except InstrumentTimeoutError:
+        #            logger.error(traceback.format_exc())
 
-            self.master.instruments.lv_off()
-        else:
-            self.master.instruments.off(
-                hv_delay=0.3,
-                hv_step_size=10,
-                measure=False,
-                execute_each_step=lambda: self.testHandler.ramp_progress_bar(
-                    starting_voltages
+        #    self.master.instruments.lv_off()
+        #else:
+        self.master.instruments.off(
+            hv_delay=0.3,
+            hv_step_size=10,
+            measure=False,
+            execute_each_step=lambda: self.testHandler.ramp_progress_bar(
+                starting_voltages
                 ),
         )
 

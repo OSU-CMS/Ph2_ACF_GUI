@@ -815,20 +815,22 @@ class TestHandler(QObject):
             self.SLDOScanFinished()
             return
 
-        if self.instruments:
-            lv_on = False
-            for number in self.instruments.get_modules().keys():
-                print(self.instruments.status()[number]["lv"])
-                if self.instruments.status()[number]["lv"]:
-                    lv_on = True
-                    break
-            if not lv_on:
-                self.instruments.lv_on(
-                    voltage=site_settings.ModuleVoltageMapSLDO[
-                        self.master.module_in_use
-                    ],
-                    current=site_settings.ModuleCurrentMap[self.master.module_in_use],
-                )
+        #if self.instruments:
+            #lv_on = False
+            #for number in self.instruments.get_modules().keys():
+            #    print(self.instruments.status()[number]["lv"])
+            #    if self.instruments.status()[number]["lv"]:
+            #        lv_on = True
+            #        break
+            #if not lv_on:
+            
+
+            #self.instruments.lv_on(
+            #    voltage=site_settings.ModuleVoltageMapSLDO[
+            #        self.master.module_in_use
+            #    ],
+            #    current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+            #)
 
         if "IVCurve" in testName:
             self.currentTest = testName
@@ -890,27 +892,48 @@ class TestHandler(QObject):
             default_hv_voltage = site_settings.icicle_instrument_setup[
                 "instrument_dict"
             ]["hv"]["default_voltage"]
+            
+            ##### Need to add something here to check if HV is already on!!!!!  #############
+            
             # assumes only 1 HV titled 'hv' in instruments.json
-            hv_status = False
+            #hv_status = False
             #Checking the status of the HV supply
-            for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["hv"] == "1":
-                    hv_status = True
-                    break
-            if not hv_status:
-                self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
-                self.powergroup.enable_all()
-                print("trying to turn on HV")
-                self.powergroup.ramp_hv(
-                    voltage=default_hv_voltage,
-                    delay=0.3,
-                    step_size=10,
-                    execute_each_step=lambda: self.ramp_progress_bar(
-                        [default_hv_voltage]
-                        * len(self.instruments._module_dict.values())
-                        ),
-                    break_loop=lambda: self.halt,
-                )
+            #for number in self.instruments.get_modules().keys():
+            #    if self.instruments.status()[number]["hv"] == "1":
+            #        hv_status = True
+            #        break
+            #if not hv_status:
+            self.instruments.on(
+                lv_voltage=site_settings.ModuleVoltageMapSLDO[self.master.module_in_use],
+                lv_current=site_settings.ModuleCurrentMap[self.master.module_in_use],
+                hv_voltage=default_hv_voltage,
+                hv_delay=0.3,
+                hv_step_size=10,
+                execute_each_step=lambda: self.ramp_progress_bar(
+                    [default_hv_voltage]
+                    * len(self.instruments._module_dict.values())
+                    ),
+                break_loop=lambda: self.halt,
+            )
+            #self.instruments.hv_on(voltage=default_hv_voltage,
+            #    delay=0.3, step_size=10,
+            #    execute_each_step=lambda: self.ramp_progress_bar(
+            #        [default_hv_voltage]
+            #        * len(self.instruments._module_dict.values())
+            #        ),
+            #    break_loop=lambda: self.halt, )
+            #self.powergroup.enable_all()
+            print("trying to turn on HV")
+            #self.powergroup.hv(
+            #    voltage=default_hv_voltage,
+            #    delay=0.3,
+            #    step_size=10,
+            #    execute_each_step=lambda: self.ramp_progress_bar(
+            #        [default_hv_voltage]
+            #        * len(self.instruments._module_dict.values())
+            #        ),
+            #    break_loop=lambda: self.halt,
+            #    )
             
 
         if "TrimbitScan" in testName:
