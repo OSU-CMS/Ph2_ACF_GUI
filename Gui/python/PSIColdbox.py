@@ -3,6 +3,9 @@ from time import sleep, time
 import threading
 import traceback
 
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
 # Define monitoring payload types
 payload_types = {
     "Env": {
@@ -161,10 +164,10 @@ class ColdboxMonitor:
     def on_connect(self, client, userdata, flags, reason_code, properties=None):
         """Callback for successful connection."""
         if reason_code == 0:
-            print(f"Connected to {self.host} successfully.")
+            logger.info(f"Connected to {self.host} successfully.")
             client.subscribe(self.topic)
         else:
-            print(
+            logger.error(
                 f"Failed to connect to {self.host}, reason code: {reason_code}. Retrying..."
             )
 
@@ -172,7 +175,7 @@ class ColdboxMonitor:
         self, client, userdata, disconnect_flags, reason_code, properties=None
     ):
         """Callback for disconnection."""
-        print(
+        logger.error(
             f"Disconnected from {self.host}. Reason code: {reason_code}. Reconnecting..."
         )
         threading.Thread(target=self.reconnect, daemon=True).start()
@@ -181,13 +184,13 @@ class ColdboxMonitor:
         """Reconnect to the MQTT broker."""
         while True:
             try:
-                print(f"Attempting to reconnect to {self.host}...")
+                logger.info(f"Attempting to reconnect to {self.host}...")
                 self.client.reconnect()
-                print(f"Successfully reconnected to {self.host}.")
+                logger.info(f"Successfully reconnected to {self.host}.")
                 break
             except Exception as e:
-                print(f"Reconnection failed: {e}. Retrying in 60 seconds...")
-                print(traceback.format_exc())
+                logger.error(f"Reconnection failed: {e}. Retrying in 60 seconds...")
+                logger.info(traceback.format_exc())
                 time.sleep(60)
 
     def on_message(self, client, userdata, msg):
@@ -213,9 +216,9 @@ class ColdboxMonitor:
                     self.messages[key] = converted_payload[key]
 
         except Exception as e:
-            print(f"Failed to process message: {e}")
-            print(f"payload = '{payload}'")
-            print(traceback.format_exc())
+            logger.error(f"Failed to process message: {e}")
+            logger.error(f"payload = '{payload}'")
+            logger.error(traceback.format_exc())
 
     def start(self):
         """Start the MQTT client."""
@@ -223,10 +226,10 @@ class ColdboxMonitor:
             self.client.connect(self.host, 1883, 60)
             self.client.loop_start()
         except Exception as e:
-            print(
+            logger.error(
                 f"Failed to connect to {self.host}: {e}. Retrying in the background..."
             )
-            print(traceback.format_exc())
+            logger.info(traceback.format_exc())
             threading.Thread(target=self.reconnect, daemon=True).start()
 
     def stop(self):
@@ -242,7 +245,7 @@ class ColdboxMonitor:
                 return self.messages[key]
 
         if key not in payload_types:
-            print("unknown key ", key)
+            logger.error("unknown key ", key)
             return None
         return None
 
@@ -299,9 +302,9 @@ class Tessie:
     @staticmethod
     def on_connect(client, userdata, flags, rc, properties=None):
         if rc == 0:
-            print("Connected to MQTT Broker!")
+            logger.info("Connected to MQTT Broker!")
         else:
-            print("Failed to connect, return code %d\n", rc)
+            logger.error("Failed to connect, return code %d\n", rc)
 
     def _connect_mqtt(self):
         # Set Connecting Client ID
@@ -331,7 +334,7 @@ class Tessie:
         if msg_recv.payload.decode().startswith("help"):
             return
         if msg_recv.payload.decode().startswith(">"):
-            print(msg_recv.payload.decode())
+            logger.info(msg_recv.payload.decode())
             return
         # print('recv: ' + msg_recv.payload.decode())
         Tessie.decode_msg(msg_recv.payload.decode())
@@ -358,13 +361,13 @@ class Tessie:
         Tessie.waiting.append(var)
         # print('send ' + msg)
         if self._client.publish(self.topic, msg)[0] != 0:
-            print(f"Failed to send message: {msg}")
+            logger.error(f"Failed to send message: {msg}")
         result = Tessie._wait_for_var(var)
         if not result:
-            print("no result")
+            logger.info("no result")
             return False
         if not result.startswith(var):
-            print("wrong result")
+            logger.info("wrong result")
             return False
         result = result[len(var) + 3 :]
         # print(result)
@@ -374,7 +377,7 @@ class Tessie:
         msg = "set " + str(var) + " " + str(data) + args
         # print('send ' + msg)
         if self._client.publish(self.topic, msg)[0] != 0:
-            print(f"Failed to send message: {msg}")
+            logger.error(f"Failed to send message: {msg}")
 
     def cmd(self, cmd, args="", answer=False):
         msg = "cmd " + cmd + args
@@ -382,14 +385,14 @@ class Tessie:
         if answer:
             Tessie.waiting.append(cmd)
         if self._client.publish(self.topic, msg)[0] != 0:
-            print(f"Failed to send message: {msg}")
+            logger.error(f"Failed to send message: {msg}")
         if answer:
             result = Tessie._wait_for_var(cmd)
             if not result:
-                print("no result")
+                logger.info("no result")
                 return False
             if not result.startswith(cmd):
-                print("wrong result")
+                logger.info("wrong result")
                 return False
             result = result[len(cmd) + 3 :]
             # print(result)
@@ -398,7 +401,7 @@ class Tessie:
     def help(self):
         msg = "help"
         if self._client.publish(self.topic, msg)[0] != 0:
-            print(f"Failed to send message: {msg}")
+            logger.error(f"Failed to send message: {msg}")
 
 
 class Valve:
@@ -607,7 +610,7 @@ class Coldbox:
         ):
             return arg
         else:
-            print("Coldbox.{caller} : invalid channel argument ", arg)
+            logger.error("Coldbox.{caller} : invalid channel argument ", arg)
             return []
 
     # pass-through functions for data available in the control topic
@@ -662,7 +665,7 @@ class Coldbox:
     def get_monitor_data(self, key, timeout=0):
         """get data from the monitor topic"""
         if key not in payload_types:
-            print("unknown key ", key)
+            logger.error("unknown key ", key)
             return None
 
         for ntry in range(timeout + 1):
@@ -741,10 +744,10 @@ class Coldbox:
                 tec = self._tecs[channel]
                 return tec._single(tec._tessie.get(key, tec.name))
             else:
-                print("unknown channel ", channel)
+                logger.error("unknown channel ", channel)
                 return None
         else:
-            print("unknown tec property", key)
+            logger.error("unknown tec property", key)
             return None
 
     def get_tec_state(self, channel=0):
@@ -764,7 +767,7 @@ class Coldbox:
         for single channels only, channel must be an integer from [1..8]
         """
         if channel not in self.valid_channels:
-            print("Coldbox.get_voltage_probe : invalid channel ", channel)
+            logger.error("Coldbox.get_voltage_probe : invalid channel ", channel)
             return None
 
         vprobe_names = [
@@ -792,8 +795,8 @@ def handle_error_message(error_payload):
     Custom callback to handle "Error" messages.
     :param error_payload: The parsed "Error" payload
     """
-    print("WARNING: Error detected!")
-    print(error_payload)
+    logger.error("WARNING: Error detected!")
+    logger.error(error_payload)
 
 
 if __name__ == "__main__":
@@ -802,23 +805,23 @@ if __name__ == "__main__":
 
     with coldbox:
         coldbox.flush()
-        print("air temperature    ", coldbox.get_air_temperature())
-        print("water temperature  ", coldbox.get_water_temperature())
-        print("interlock status   ", coldbox.get_interlock_status(timeout=10))
-        print("traffic light      ", coldbox.get_traffic_light())
-        print("flow switch        ", coldbox.get_flow_switch())
-        print("lid                ", coldbox.get_lid_status())
+        logger.info("air temperature    ", coldbox.get_air_temperature())
+        logger.info("water temperature  ", coldbox.get_water_temperature())
+        logger.info("interlock status   ", coldbox.get_interlock_status(timeout=10))
+        logger.info("traffic light      ", coldbox.get_traffic_light())
+        logger.info("flow switch        ", coldbox.get_flow_switch())
+        logger.info("lid                ", coldbox.get_lid_status())
         channel = 8
-        print(
+        logger.info(
             f"voltage probes for channel {channel} = ",
             coldbox.get_voltage_probe(channel),
         )
 
         try:
             while True:
-                print("relative humidity ", coldbox.get_relative_humidity())
+                logger.info("relative humidity ", coldbox.get_relative_humidity())
                 sleep(10)
         except KeyboardInterrupt:
-            print("interrupted!")
+            logger.error("interrupted!")
 
-    print("shutting down")
+    logger.info("shutting down")

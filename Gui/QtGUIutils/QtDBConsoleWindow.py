@@ -37,7 +37,9 @@ from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
 from Gui.QtGUIutils.QtViewTableTab import QtViewTableTab
 from Gui.QtGUIutils.QtImageInsertionTab import QtImageInsertionTab
 from Gui.QtGUIutils.QtImageViewerTab import QtImageViewerTab
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
+
+logger = get_logger(__name__)
 
 import traceback
 
@@ -510,7 +512,7 @@ class QtDBConsoleWindow(QMainWindow):
             time_string = getByColumnName("date_sent", header, shipmentInfo)[
                 0
             ].strftime("%m/%d/%Y, %H:%M:%S")
-            print(time_string)
+            logger.info(time_string)
             self.RPDateSentEdit.setDateTime(QDateTime.fromString(time_string))
             self.RPCarrierEdit.setText(
                 getByColumnName("carrier", header, shipmentInfo)[0]
@@ -1204,7 +1206,7 @@ class QtDBConsoleWindow(QMainWindow):
         )
 
         if reply == QMessageBox.Yes:
-            print("DB console terminated")
+            logger.info("DB console terminated")
             self.release()
             event.accept()
         else:

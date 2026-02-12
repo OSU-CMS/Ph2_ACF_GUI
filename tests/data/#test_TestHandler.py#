@@ -1,5 +1,7 @@
 from unittest.mock import MagicMock
 from Gui.TestHandler import TestHandler
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 
 
 ####################
@@ -42,4 +44,4 @@ if __name__ == "__main__":
     match = re.search(r"Configuring chips of hybrid: (\d+)$", line)
 
     if match:
-        print(match.group(1))  # Output: 0
+        logger.info(match.group(1))  # Output: 0

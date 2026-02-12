@@ -183,7 +183,7 @@ class SimplifiedMainWidget(QWidget):
 
             self.peltier_temperature_label = QLabel(self)
         except Exception as e:
-            print("Error while attempting to set Peltier", e)
+            logger.error("Error while attempting to set Peltier", e)
             logger.error(traceback.format_exc())
             self.Peltier = None
 
@@ -426,11 +426,11 @@ class SimplifiedMainWidget(QWidget):
         module_type = module.getModuleType()
         self.master.module_in_use = module_type
 
-        print("Firmware Description")
+        logger.info("Firmware Description")
         for beboard in self.firmwareDescription:
-            print(beboard)
+            logger.info(beboard)
 
-        print("Firmware Check")
+        logger.info("Firmware Check")
         for beboard in self.firmwareDescription:
             SummaryBox.checkFwPar(
                 beboard.getBoardName(), module_type, beboard.getIPAddress()
@@ -705,7 +705,7 @@ class Peltier_and_Arduino_Polling(QObject):
             time.sleep(self.delay)
 
     def abort_worker(self):
-        print("Worker aborted")
+        logger.info("Worker aborted")
         self.abort = True
 
 

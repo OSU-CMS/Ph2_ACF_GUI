@@ -10,6 +10,10 @@ import getpass
 
 
 
+
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
 def GetTrims(password,serialNumber,debug = False):
     connection = mysql.connector.connect(
         host="cmsfpixdb.physics.purdue.edu",
@@ -25,21 +29,21 @@ def GetTrims(password,serialNumber,debug = False):
     cursor.execute(f"select component.id from component where component.serial_number='{serialNumber}';")
     results = cursor.fetchall()
     if debug == True:
-        print("raw ID:"+str(result))# it should look like [(778,)]
+        logger.debug("raw ID:"+str(result))# it should look like [(778,)]
     parenetNum = results[0][0]
 
     cursor.execute(f"select component.description from component where component.serial_number='{serialNumber}';")
     results = cursor.fetchall() #[('TFPX CROC 1x2 HPK sensor module',)]
     if debug == True:
-        print("raw description"+str(results))
+        logger.debug("raw description"+str(results))
 
     if "sensor" in str(results[0][0]):
         cursor.execute(f"select component.id from component where component.parent='{parenetNum}';")
         chipSensorResult=cursor.fetchall()
         secondParent=chipSensorResult[0][0]
         if debug == True:
-            print("it is sensor module")
-            print("secondParent" + str(secondParent))
+            logger.debug("it is sensor module")
+            logger.debug("secondParent" + str(secondParent))
         parenetNum = secondParent
 
 
@@ -53,7 +57,7 @@ def GetTrims(password,serialNumber,debug = False):
         VDDAList.append([siteNum,VDDA])
     sorted_VDDAlist = sorted(VDDAList, key=lambda x: x[0])
     if debug == True:
-        print("sorted_VDDAlist:"+str(sorted_VDDAlist))
+        logger.debug("sorted_VDDAlist:"+str(sorted_VDDAlist))
 
 
 
@@ -67,7 +71,7 @@ def GetTrims(password,serialNumber,debug = False):
 
     sorted_VDDDlist = sorted(VDDDList, key=lambda x: x[0]) #make sure the we can get VDDD value base on the order of rising chip no
     if debug == True:
-        print("sorted_VDDDlist:" + str(sorted_VDDDlist))
+        logger.debug("sorted_VDDDlist:" + str(sorted_VDDDlist))
     connection.close()
     return sorted_VDDAlist,sorted_VDDDlist
 
@@ -76,7 +80,7 @@ if __name__ == "__main__":
     password = getpass.getpass("Enter your password:")
     serialNumber = "RH0001"
     sorted_VDDAlist,sorted_VDDDlist=GetTrims(password,serialNumber)
-    print("sorted_VDDAlist(in order site,trim value):" + str(sorted_VDDAlist))
-    print("VDDD:" + str(sorted_VDDDlist))
+    logger.info("sorted_VDDAlist(in order site,trim value):" + str(sorted_VDDAlist))
+    logger.info("VDDD:" + str(sorted_VDDDlist))
 
 

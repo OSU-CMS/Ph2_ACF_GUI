@@ -18,6 +18,9 @@ from urllib.parse import urlparse
 from requests.utils import requote_uri
 import time
 
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 requests.packages.urllib3.disable_warnings()
 # warnings.filterwarnings("error")
@@ -296,7 +299,7 @@ class RhApi:
                         raise Exception('Error while logging to HTTPS/SSO')
                     
             if r.status_code == 503 or r.status_code == 502 or r.status_code == 500:
-                print("waiting for response... likely resthub is restarting")
+                logger.error("waiting for response... likely resthub is restarting")
                 time.sleep(20)
                 with warnings.catch_warnings():
                     r = action(url=url, headers=headers, data=data, cookies=cookies, verify=False)
@@ -309,10 +312,10 @@ class RhApi:
         Print debug information
         """
         if self.debug:
-            print("RhApi:", end='')
+            logger.debug("RhApi:", end='')
             for arg in args:
-                print(arg, end='')
-            print()
+                logger.debug(arg, end='')
+            logger.debug()
 
     def get(self, parts, data=None, headers=None, params=None, verbose=False, cols=False, inline_clobs=False,
             method=None):
@@ -502,10 +505,10 @@ class RhApi:
             except Exception as e:
                 err_msg = str(e)
                 if (attempt < 4) and ("Query ID" in err_msg):
-                    print("failing to fetch query id attemp num:",attempt)
+                    logger.error("failing to fetch query id attemp num:",attempt)
                     time.sleep(20)
                 else:
-                    print("Inform the developer of this condition with error logs")
+                    logger.error("Inform the developer of this condition with error logs")
                     raise e
 
 
@@ -774,7 +777,7 @@ class CLIClient:
 
                 if options.count:
 
-                    print(api.count(api.qid(arg), params=params, verbose=options.verbose))
+                    logger.info(api.count(api.qid(arg), params=params, verbose=options.verbose))
 
                 elif options.histo:
 
@@ -797,16 +800,16 @@ class CLIClient:
                                       verbose=options.verbose)
 
                     if options.format in ['json', 'json2']:
-                        print(histo)
+                        logger.info(histo)
                     else:
-                        print('\t'.join(histo['cols']))
+                        logger.info('\t'.join(histo['cols']))
                         for b in histo['bins']:
-                            print('\t'.join([str(n) for n in b]))
+                            logger.info('\t'.join([str(n) for n in b]))
 
                 elif options.metadata:
 
                     qid = api.qid(arg)
-                    print(self.pprint(api.query(qid, verbose=options.verbose)))
+                    logger.info(self.pprint(api.query(qid, verbose=options.verbose)))
 
                 else:
 
@@ -822,7 +825,7 @@ class CLIClient:
 
                         if options.format == 'csv':
                             try:
-                                print(api.csv(arg, params=params, pagesize=options.size, page=options.page,
+                                logger.info(api.csv(arg, params=params, pagesize=options.size, page=options.page,
                                               verbose=options.verbose, inline_clobs=options.inclob))
                             except RhApiRowLimitError as e:
                                 if options.all:
@@ -832,28 +835,28 @@ class CLIClient:
                                         res = api.csv(arg, params=params, pagesize=e.rowsLimit, page=page,
                                                       verbose=options.verbose, inline_clobs=options.inclob)
                                         if page == 1:
-                                            print(res, end='')
+                                            logger.info(res, end='')
                                         else:
-                                            print('\n'.join(res.split('\n')[1:]), end='')
+                                            logger.info('\n'.join(res.split('\n')[1:]), end='')
                                 else:
                                     raise e
 
                         if options.format == 'xml':
                             try:
-                                print(api.xml(arg, params=params, pagesize=options.size, page=options.page,
+                                logger.info(api.xml(arg, params=params, pagesize=options.size, page=options.page,
                                               verbose=options.verbose, inline_clobs=options.inclob))
                             except RhApiRowLimitError as e:
                                 if options.all:
                                     page = 0
-                                    print('<?xml version="1.0" encoding="UTF-8" standalone="no"?><data>', end='')
+                                    logger.info('<?xml version="1.0" encoding="UTF-8" standalone="no"?><data>', end='')
                                     while (page * e.rowsLimit) < e.count:
                                         page = page + 1
                                         res = api.xml(arg, params=params, pagesize=e.rowsLimit, page=page,
                                                       verbose=options.verbose, inline_clobs=options.inclob)
                                         root = minidom.parseString(res).documentElement
                                         for row in root.getElementsByTagName('row'):
-                                            print(row.toxml(), end='')
-                                    print('</data>')
+                                            logger.info(row.toxml(), end='')
+                                    logger.info('</data>')
                                 else:
                                     raise e
 
@@ -882,7 +885,7 @@ class CLIClient:
                             if options.format == 'root':
                                 self._to_root(data, options.root)
                             else:
-                                print(data)
+                                logger.info(data)
 
                 return 0
 
@@ -890,15 +893,15 @@ class CLIClient:
 
         except RhApiRowLimitError as e:
 
-            print("ERROR: %s\nDetails: %s, consider --all option" % (type(e).__name__, e))
+            logger.error("ERROR: %s\nDetails: %s, consider --all option" % (type(e).__name__, e))
 
         except requests.exceptions.RequestException as e:
             reason = e.reason if hasattr(e, 'reason') else '%s' % e
-            print("ERROR: %s\nDetails: %s" % (reason, e))
+            logger.error("ERROR: %s\nDetails: %s" % (reason, e))
 
         except Exception as e:
 
-            print("ERROR: %s\nDetails: %s" % (type(e).__name__, e))
+            logger.error("ERROR: %s\nDetails: %s" % (type(e).__name__, e))
             import traceback
             traceback.print_exc()
 
@@ -951,9 +954,9 @@ class CLIClient:
                 try:
                     setattr(row, c['name'], v)
                 except Exception as e:
-                    print(c['name'], '=', v)
-                    print(c, v)
-                    print(e)
+                    logger.error(c['name'], '=', v)
+                    logger.error(c, v)
+                    logger.error(e)
             tree.Fill()
 
         tree.Print()

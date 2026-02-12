@@ -213,7 +213,7 @@ class ChipBox(QWidget):
                     #     f"Module {serialNumber} chip layout does not correspond to typical {pChipType} chip layouts. Please modify the trim values manually.",
                     #     QMessageBox.Ok
                     # )
-                    print(
+                    logger.error(
                         f"Module {serialNumber} chip layout does not correspond to typical {pChipType} chip layouts. Please modify the trim values manually."
                     )
                     self.ChipGroupBoxDict.clear()
@@ -257,8 +257,8 @@ class ChipBox(QWidget):
 
         self.IREF = IREF
         chip_iref_db[str(pChipID)] = str(IREF)  # Store as string for easy comparison
-        print(f"chip dict: {chip_iref_db}")
-        print(f"Module Chip ID: {pChipID}, IREF: {self.IREF}")
+        logger.info(f"chip dict: {chip_iref_db}")
+        logger.info(f"Module Chip ID: {pChipID}, IREF: {self.IREF}")
 
         if not self.ChipVDDDEdit.text():
             logger.debug("no VDDD text")
@@ -366,7 +366,7 @@ class ChipBox(QWidget):
         if match:
             hdiversion = match.group(1).strip()
         else:
-            print("Warning: HDI version not found for module.  Using default value of 1.")
+            logger.error("Warning: HDI version not found for module.  Using default value of 1.")
             hdiversion = "1"
         return hdiversion
 
@@ -659,7 +659,7 @@ class BeBoardBox(QWidget):
                 module.TypeCombo.setCurrentText(data["type"])
             if module.HDIVersionCombo.isEnabled():
                 module.HDIVersionCombo.setCurrentText(data["HDIversion"])
-                print('returning hdi version {0}'.format(data["HDIversion"]))
+                logger.info('returning hdi version {0}'.format(data["HDIversion"]))
 
             self.updateList()
 
@@ -1291,7 +1291,7 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setCINJ(str(10 * float(chipData[chipID]["CINJ"])))
                     
             else:
-                print(
+                logger.error(
                     "Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values."
                 )
 

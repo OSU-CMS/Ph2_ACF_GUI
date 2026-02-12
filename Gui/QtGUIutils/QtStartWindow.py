@@ -100,18 +100,18 @@ class SummaryBox(QWidget):
                 boardtype = "RD53B"
             else:
                 boardtype = "RD53A"
-            print("board type is: {0}".format(boardtype))
+            logger.info("board type is: {0}".format(boardtype))
             # updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
             # fc7_ip = site_settings.FC7List[pfirmwareName] #Commented because I don't think we need it.  Remove line after test.
-            print("The fc7 ip is: {0}".format(fc7_ip))
+            logger.info("The fc7 ip is: {0}".format(fc7_ip))
             uricmd = "sed -i -e 's/fc7-1/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )
             subprocess.call([uricmd], shell=True)
-            print("updated the uri value")
+            logger.debug("updated the uri value")
             firmwareImage = firmware_image[module_type]
 
-            print("checking if firmware is on the SD card for {}".format(firmwareImage))
+            logger.info("checking if firmware is on the SD card for {}".format(firmwareImage))
             fwlist = subprocess.run(
                 [
                     "fpgaconfig",
@@ -124,14 +124,14 @@ class SummaryBox(QWidget):
             )
 
             # fwlist = subprocess.run(["fpgaconfig","-c",os.environ.get('PH2ACF_BASE_DIR')+'/test/CMSIT_{}.xml'.format(boardtype),"-l"],stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-            print("firmwarelist is {0}".format(fwlist.stdout.decode("UTF-8")))
-            print("firmwareImage is {0}".format(firmwareImage))
+            logger.info("firmwarelist is {0}".format(fwlist.stdout.decode("UTF-8")))
+            logger.info("firmwareImage is {0}".format(firmwareImage))
             if firmwareImage in fwlist.stdout.decode("UTF-8"):
                 FWisPresent = True
-                print("firmware found")
+                logger.info("firmware found")
             else:
                 try:
-                    print(
+                    logger.info(
                         "Saving fw image {0} to SD card".format(
                             os.environ.get("GUI_dir")
                             + "/FirmwareImages/"
@@ -157,7 +157,7 @@ class SummaryBox(QWidget):
                         stderr=subprocess.PIPE,
                     )
                     # self.fw_process.start("fpgaconfig",["-c","CMSIT.xml","-f","{}".format(os.environ.get("GUI_dir")+'/FirmwareImages/' + self.firmwareImage),"-i","{}".format(self.firmwareImage)])
-                    print(fwsave.stdout.decode("UTF-8"))
+                    logger.info(fwsave.stdout.decode("UTF-8"))
                     FWisPresent = True
                 except OSError:
                     logger.error(
@@ -170,7 +170,7 @@ class SummaryBox(QWidget):
                     logger.error(traceback.format_exc())
 
             if FWisPresent:
-                print("Loading FW image")
+                logger.info("Loading FW image")
                 fwload = subprocess.run(
                     [
                         "fpgaconfig",
@@ -183,9 +183,9 @@ class SummaryBox(QWidget):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )
-                print(fwload.stdout.decode("UTF-8"))
-                print("resetting beboard")
-                print(
+                logger.info(fwload.stdout.decode("UTF-8"))
+                logger.debug("resetting beboard")
+                logger.info(
                     f"command: CMSITminiDAQ -f {os.environ.get('GUI_dir') + '/Gui/CMSIT_{}.xml'.format(boardtype)} -r"
                 )
                 fwreset = subprocess.run(
@@ -199,10 +199,10 @@ class SummaryBox(QWidget):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE,
                 )
-                print(fwreset.stdout.decode("UTF-8"))
-                print(fwreset.stderr.decode("UTF-8"))
+                logger.info(fwreset.stdout.decode("UTF-8"))
+                logger.info(fwreset.stderr.decode("UTF-8"))
 
-                print("Firmware image is now loaded")
+                logger.debug("Firmware image is now loaded")
             logger.debug("Made it to turn on LV")
             return True
         except Exception:
@@ -674,7 +674,7 @@ class QtStartWindow(QWidget):
                 return
 
         for beboard in self.firmwareDescription:
-            print(beboard)
+            logger.info(beboard)
 
         self.info = self.TestCombo.currentText()
 
@@ -746,14 +746,14 @@ class QtStartWindow(QWidget):
                     if self.master.instruments:
                         self.master.instruments.off(hv_delay=0.5, hv_step_size=10)
 
-                        print("Window closed")
+                        logger.debug("Window closed")
                     else:
                         logger.info(
                             " You are running in manual mode."
                             " You must turn off powers supplies yourself."
                         )
                 except Exception:
-                    print(
+                    logger.error(
                         "Waring: Incident detected while trying to turn of power supply, please check power status"
                     )
                     logger.error(traceback.format_exc())

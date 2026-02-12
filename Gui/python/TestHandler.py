@@ -185,10 +185,10 @@ class TestHandler(QObject):
         }
         self.finished_tests = []
         self.Ph2_ACF_ver = os.environ.get("PH2ACF_VERSION")
-        print("Using version {0} of Ph2_ACF".format(self.Ph2_ACF_ver))
+        logger.info("Using version {0} of Ph2_ACF".format(self.Ph2_ACF_ver))
         #self.firmwareImage = firmware_image[self.ModuleType][self.Ph2_ACF_ver]
         self.firmwareImage = firmware_image[self.ModuleType]
-        print("Firmware version is {0}".format(self.firmwareImage))
+        logger.info("Firmware version is {0}".format(self.firmwareImage))
         self.RunNumber = "-1"
         self.isTDACtuned = False
 
@@ -339,7 +339,7 @@ class TestHandler(QObject):
                 ] = None
             fwPath = "{0}_{1}_{2}".format(beboardId, ogId, moduleId)
             self.ModuleMap[fwPath] = moduleName
-            print("module map is {0}:{1}".format(fwPath, self.ModuleMap[fwPath]))
+            logger.info("module map is {0}:{1}".format(fwPath, self.ModuleMap[fwPath]))
 
     def config_output_dir(self, testName):
         ModuleIDs = []
@@ -424,7 +424,7 @@ class TestHandler(QObject):
                 ) + "/settings/RD53Files/CMSIT_{0}{1}.txt".format(
                     self.boardType, self.moduleVersion
                 )
-                print("Getting config file {0}".format(self.rd53_file[key]))
+                logger.info("Getting config file {0}".format(self.rd53_file[key]))
 
         # At first there should be no input_dir and we should be grabbing the default txt files.
         # After the first test, we should see values or input_dir and output_dir signifiying that the txt files are being updated.
@@ -437,7 +437,7 @@ class TestHandler(QObject):
             SetupRD53ConfigfromFile(self.rd53_file, self.output_dir)
         else:
             logger.debug(f"{self.testIndexTracker=}")
-            print(os.listdir(self.input_dir))
+            logger.debug(os.listdir(self.input_dir))
             SetupRD53Config(self.input_dir, self.output_dir, self.rd53_file)
 
         # NOTE: This code block is used to generate the XML configuration files
@@ -608,7 +608,7 @@ class TestHandler(QObject):
                 ]["starting current"]
             ):
                 continue
-            print(f"Beginning physics test at {voltage}V and {current}A")
+            logger.info(f"Beginning physics test at {voltage}V and {current}A")
             self.outputString.emit(
                 f"Beginning physics test at {voltage}V and {current}A",
                 self.runwindow.ConsoleViews[fc7_index],
@@ -676,7 +676,7 @@ class TestHandler(QObject):
                 ].setValue(100)
             return
 
-        print("Executing Single Step test...")
+        logger.debug("Executing Single Step test...")
         for console in self.runwindow.ConsoleViews:
             self.outputString.emit("Executing Single Step test...", console)
 
@@ -808,7 +808,7 @@ class TestHandler(QObject):
                                 ].values()
                             ],
                         ]
-                        print(data)
+                        logger.info(data)
 
                         self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", "GADC")
                         self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", "GADC")
@@ -818,7 +818,7 @@ class TestHandler(QObject):
         if self.instruments:
             lv_on = False
             for number in self.instruments.get_modules().keys():
-                print(self.instruments.status()[number]["lv"])
+                logger.info(self.instruments.status()[number]["lv"])
                 if self.instruments.status()[number]["lv"]:
                     lv_on = True
                     break
@@ -900,7 +900,7 @@ class TestHandler(QObject):
             if not hv_status:
                 self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
                 self.powergroup.enable_all()
-                print("trying to turn on HV")
+                logger.debug("trying to turn on HV")
                 self.powergroup.ramp_hv(
                     voltage=default_hv_voltage,
                     delay=0.3,
@@ -958,7 +958,7 @@ class TestHandler(QObject):
 
             # Check if the test was aborted
         if self.halt:
-            print("Test aborted. Skipping QProcess setup.")
+            logger.debug("Test aborted. Skipping QProcess setup.")
             return
         for process in self.info_processes:
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
@@ -1222,7 +1222,7 @@ class TestHandler(QObject):
                 for OG in beboard.getAllOpticalGroups().values():
                     ogID = OG.getOpticalGroupID()
                     for module in OG.getAllModules().values():
-                        print(f"curr test {self.currentTest}")
+                        logger.info(f"curr test {self.currentTest}")
                         hybridID = module.getFMCPort()
                         module_data = {
                             "boardID": boardID,
@@ -1287,7 +1287,7 @@ class TestHandler(QObject):
                     else:
                         return []
                 else:
-                    print("testHandler.collect_plots Exception:", repr(e))
+                    logger.error("testHandler.collect_plots Exception:", repr(e))
                     return []
 
             else:
@@ -1384,7 +1384,7 @@ created by Ph2_ACF is empty."
 
 
             elif "IVCurve" in self.currentTest:
-                print("copying MonitorDQM.root file to output directory")
+                logger.debug("copying MonitorDQM.root file to output directory")
 
                 current_fc7: str = self.firmware[processIndex].getBoardName()
 
@@ -1415,7 +1415,7 @@ created by Ph2_ACF is empty."
                     )   
 
             elif "IREF_GADC" in self.currentTest:
-                print("copying MonitorDQM.root file to output directory")
+                logger.debug("copying MonitorDQM.root file to output directory")
                 current_fc7: str = self.firmware[processIndex].getBoardName()
                 os.system(
                     "cp {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}/".format( #Chaneged from {0}/test/Results/Run{1}_MonitorDQM_Board_{2}*.root {3}
@@ -1462,7 +1462,7 @@ created by Ph2_ACF is empty."
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput(self, processIndex: int):
         if self.readingOutput:
-            print("Thread competition detected")
+            logger.error("Thread competition detected")
             return
         self.readingOutput = True
 
@@ -1497,7 +1497,7 @@ created by Ph2_ACF is empty."
                     chip_number = clean_text.split("RD53: ")[-1].strip()
                     self.fused_dict_index[1] = chip_number
                     # print(f"Clean_text: {clean_text}")
-                    print(f"Chip Number: {chip_number}")
+                    logger.info(f"Chip Number: {chip_number}")
 
                 if self._openBumpTest_running:
                     if self._OBT_starttime is None: 
@@ -1540,7 +1540,7 @@ created by Ph2_ACF is empty."
                             ].setValue(self.ProgressValue)
 
                     except Exception as e:
-                        print(f"Error while updating progress bar {e}")
+                        logger.error(f"Error while updating progress bar {e}")
                         logger.error(traceback.format_exc())
                         pass
 
@@ -1692,7 +1692,7 @@ created by Ph2_ACF is empty."
         self.readingOutput = False
 
     def updateOptimizedXMLValues(self):
-        print("trying to update the xml value")
+        logger.debug("trying to update the xml value")
         try:
             if Test_to_Ph2ACF_Map[self.currentTest] in optimizationTestMap.keys():
                 updatedFEKeys = optimizationTestMap[
@@ -1778,7 +1778,7 @@ created by Ph2_ACF is empty."
         Safe to use in TestHandler as long as updateConsoleInfo does not emit outputString.
         """
         if getattr(self, "readingOutput", False):
-            print("Thread competition detected")
+            logger.warning("Thread competition detected")
             return
         self.readingOutput = True
 
@@ -1833,7 +1833,7 @@ created by Ph2_ACF is empty."
         self, process: QProcess, fc7_index: int, upOrDown: str, current, channel
     ):
         if self.readingOutput:
-            print("Thread competition detected")
+            logger.warning("Thread competition detected")
             return
         self.readingOutput = True
 
@@ -1905,7 +1905,7 @@ created by Ph2_ACF is empty."
                             )  # This line enforces that it only logs one VDDD or VDDA value per sweep step
 
                     else:
-                        print(
+                        logger.error(
                             f'Error: Did not receive expected message, "Reading monitored data for \
                         [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"'
                         )
@@ -1963,7 +1963,7 @@ created by Ph2_ACF is empty."
                 # Finished all subtests
                 self.currentTest = "OpenBumpTest"
                 logger.info("All OpenBumpTest subtests finished. Validating...")
-                print(f"Current openbumptest subtest index = {self._openBumpTest_subtest_index}")
+                logger.info(f"Current openbumptest subtest index = {self._openBumpTest_subtest_index}")
                 self._openBumpTest_running = False
 
         # Ensure that all processes have finished before continuing
@@ -2031,7 +2031,7 @@ created by Ph2_ACF is empty."
                                     "module": module,
                                 }
                                 index -= 1
-                                print(
+                                logger.info(
                                     f"self.BBanalysis_root_files: {self.BBanalysis_root_files}")
                                 self.felis_instances[fc7_index].set_result(
                                     self.BBanalysis_root_files,
@@ -2163,8 +2163,8 @@ created by Ph2_ACF is empty."
                     # Filter out invalid data
                     trimbits = np.array(trimbits, dtype=float)
                     values = np.array(values, dtype=float)
-                    print(f"Trimbits: {trimbits}")
-                    print(f"Values: {values}")
+                    logger.info(f"Trimbits: {trimbits}")
+                    logger.info(f"Values: {values}")
                     valid_indices = ~np.isnan(values)
                     trimbits = trimbits[valid_indices]
                     values = values[valid_indices]

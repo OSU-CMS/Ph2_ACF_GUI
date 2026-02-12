@@ -16,8 +16,8 @@ from Gui.siteSettings import (
 
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 
 PH2ACF_VERSION = os.environ.get("PH2ACF_VERSION")
 
@@ -36,20 +36,20 @@ def LoadXML(filename="CMSIT.xml"):
 
 def ShowXMLTree(XMLroot, depth=0):
   depth += 1
-  print("--"*(depth-1), "|", XMLroot.tag, XMLroot.attrib, XMLroot.text)
+  logger.info("--"*(depth-1), "|", XMLroot.tag, XMLroot.attrib, XMLroot.text)
   for child in XMLroot:
     ShowXMLTree(child,depth)
 
 def ModifyBeboard(XMLroot, BeboardModule):
   def __init__(self):
-    print("Nothing Done")
+    logger.info("Nothing Done")
 
 class HWDescription():
   def __init__(self):
     self.BeBoardList = []
     self.Settings = {}
     self.MonitoringList =  []
-    print("Setting HWDescription")
+    logger.info("Setting HWDescription")
 
   def AddBeBoard(self, BeBoardModule):
     self.BeBoardList.append(BeBoardModule)
@@ -278,7 +278,7 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
     #Node_connection.Set('id',BeBoard.id)
     #Node_connection.Set('uri',BeBoard.uri)
     #Node_connection.Set('address_table',BeBoard.address_table)
-    print('beboard ip is {0}'.format(BeBoard.uri))
+    logger.info('beboard ip is {0}'.format(BeBoard.uri))
     Node_connection = SetNodeAttribute(Node_connection,{'id':BeBoard.id,'uri':BeBoard.uri,'address_table':BeBoard.address_table})
     OpticalGroupList = BeBoard.OpticalGroupList
 
@@ -306,14 +306,14 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
         ##FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
         
         HyBridModule.SetHyBridType('RD53')  #This part should stay as just RD53 (no A or B)
-        print("This is the Hybrid Type: ", HyBridModule.HyBridType)
+        logger.info("This is the Hybrid Type: ", HyBridModule.HyBridType)
         Node_FEPath = ET.SubElement(Node_HyBrid, HyBridModule.HyBridType+'_Files')
         Node_FEPath = SetNodeAttribute(Node_FEPath,{'file':HyBridModule.File_Path})
         FEList = HyBridModule.FEList
         ### This is where the RD53 block is being made ###
         for FE in FEList:
           BeBoard.boardType = boardtype
-          print("This is the board type: ", BeBoard.boardType)
+          logger.info("This is the board type: ", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
           if 'v1' in boardtype:
             Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane, 'eFuseCode':FE.EfuseID,'IrefCode':'-1','configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxPolarity':FE.RxPolarities,'TxGroup':FE.TxGroups,'TxChannel':FE.TxChannels,'TxPolarity':FE.TxPolarities,'Comment':boardtype})

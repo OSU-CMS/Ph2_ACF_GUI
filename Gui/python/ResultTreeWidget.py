@@ -307,10 +307,10 @@ class ResultTreeWidget(QWidget):
         stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
 
         if stepFiles2 == [""]:
-            print("No SLD files found.")  # Debugging output if no SLD files are found
+            logger.debug("No SLD files found.")  # Debugging output if no SLD files are found
             return
 
-        print(
+        logger.debug(
             "SLD files found:", stepFiles2
         )  # Debugging output to show the found SLD files
 
@@ -321,7 +321,7 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
-        print(
+        logger.info(
             "SLD files processed."
         )  # Debugging output to indicate SLD files processing is done
 

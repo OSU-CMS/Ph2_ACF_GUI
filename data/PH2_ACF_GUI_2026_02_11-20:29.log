@@ -1,0 +1,17 @@
+2026-02-11 20:29:34,021 - Gui.QtGUIutils.QtApplication - QtApplication.py:91 - __init__ - WARNING - Initialized variables for QtApplication
+2026-02-11 20:29:34,022 - Gui.QtGUIutils.QtApplication - QtApplication.py:92 - __init__ - DEBUG - Initialized variables for QtApplication
+2026-02-11 20:29:34,022 - Gui.QtGUIutils.QtApplication - QtApplication.py:169 - setLoginUI - INFO - Using default theme
+2026-02-11 20:29:40,284 - Gui.QtGUIutils.QtApplication - QtApplication.py:413 - checkLogin - DEBUG - Entering Expert GUI
+2026-02-11 20:29:40,284 - Gui.QtGUIutils.QtApplication - QtApplication.py:494 - createMain - DEBUG - Setup FC7s with the following FC7:
+{'fc7.board.1': <Gui.python.Firmware.QtBeBoard object at 0x7f4a02a7de80>, 'fc7.board.2': <Gui.python.Firmware.QtBeBoard object at 0x7f4a02a7df10>, 'fc7.board.3': <Gui.python.Firmware.QtBeBoard object at 0x7f4a02a7dfa0>}
+2026-02-11 20:29:40,284 - Gui.QtGUIutils.QtApplication - QtApplication.py:531 - createMain - DEBUG - Setup status of devices
+2026-02-11 20:29:40,284 - Gui.QtGUIutils.QtApplication - QtApplication.py:546 - createMain - DEBUG - Setup FC7 Buttons
+2026-02-11 20:29:40,284 - Gui.QtGUIutils.QtApplication - QtApplication.py:531 - createMain - DEBUG - Setup status of devices
+2026-02-11 20:29:40,285 - Gui.QtGUIutils.QtApplication - QtApplication.py:546 - createMain - DEBUG - Setup FC7 Buttons
+2026-02-11 20:29:40,285 - Gui.QtGUIutils.QtApplication - QtApplication.py:531 - createMain - DEBUG - Setup status of devices
+2026-02-11 20:29:40,285 - Gui.QtGUIutils.QtApplication - QtApplication.py:546 - createMain - DEBUG - Setup FC7 Buttons
+2026-02-11 20:29:40,285 - Gui.QtGUIutils.QtApplication - QtApplication.py:575 - createMain - DEBUG - About to setup HV and LV
+2026-02-11 20:29:40,285 - Gui.QtGUIutils.QtApplication - QtApplication.py:607 - createMain - DEBUG - Setup HV
+2026-02-11 20:29:40,285 - Gui.QtGUIutils.QtApplication - QtApplication.py:616 - createMain - DEBUG - Added HV widgets
+2026-02-11 20:29:40,285 - Gui.QtGUIutils.QtApplication - QtApplication.py:626 - createMain - DEBUG - Setup LV
+2026-02-11 20:29:40,285 - Gui.QtGUIutils.QtApplication - QtApplication.py:661 - createMain - DEBUG - setup LV and HV devices

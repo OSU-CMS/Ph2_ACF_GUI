@@ -118,8 +118,8 @@ class PeltierSignalGenerator:
             logger.debug(f"Recieved message: {message}")
             return message, passed
         except Exception as e:
-            print(f"Failed to send command to Peltier due to error: {e}")
-            print(traceback.format_exc())
+            logger.error(f"Failed to send command to Peltier due to error: {e}")
+            logger.error(traceback.format_exc())
             return None, False
 
     # Will recieve message but will only check if the command gave an error, will not decode the message

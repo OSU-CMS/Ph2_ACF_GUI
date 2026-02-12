@@ -7,6 +7,9 @@ import matplotlib.pyplot as plt
 import matplotlib, threading, time, csv, yagmail, os
 from datetime import datetime
 
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
 class F4TMonitor():
     def __init__(self):
         self.alertRecipients=[] #emails
@@ -90,7 +93,7 @@ class F4TMonitor():
             try:
                 data, _ = self.sock.recvfrom(2048)
                 data = data.decode('utf-8')
-                print(data)
+                logger.info(data)
 
                 if data[0]=="!":
                     self.logFile="dht_logs_"+datetime.now().strftime("%Y-%m-%d %H:%M:%S")+".csv"
@@ -122,7 +125,7 @@ class F4TMonitor():
                     string = "Arduino connection timed out."
                 else:
                     string = str(e)
-                print(e)
+                logger.error(e)
             self.tailData.insert(0,string)
             if len(self.tailData)>6: self.tailData.pop() 
         
