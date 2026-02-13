@@ -1,9 +1,10 @@
 import ROOT
 import os
 from ctypes import c_double
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 import traceback
 
+logger = get_logger(__name__)
 
 def extract_data_from_root(root_file_path, chip, measurement_type):
     """
@@ -18,7 +19,7 @@ def extract_data_from_root(root_file_path, chip, measurement_type):
         dict: A dictionary containing the extracted data.
     """
     if not os.path.exists(root_file_path):
-        print(f"ROOT file not found: {root_file_path}")
+        logger.error(f"ROOT file not found: {root_file_path}")
         return None
 
     try:
@@ -26,7 +27,7 @@ def extract_data_from_root(root_file_path, chip, measurement_type):
         # Open the ROOT file
         root_file = ROOT.TFile(root_file_path, "READ")
         if root_file.IsZombie():
-            print(f"Failed to open ROOT file: {root_file_path}")
+            logger.error(f"Failed to open ROOT file: {root_file_path}")
             return None
 
         # Construct the path to the desired data
@@ -35,7 +36,7 @@ def extract_data_from_root(root_file_path, chip, measurement_type):
         # Retrieve the TGraph object
         tgraph = root_file.Get(detector_path)
         if not tgraph:
-            print(f"TGraph not found at path: {detector_path}")
+            logger.error(f"TGraph not found at path: {detector_path}")
             root_file.Close()
             return None
 
@@ -63,4 +64,4 @@ if __name__ == "__main__":
     measurement_type = "VDDA"
     data = extract_data_from_root(root_file, chip, measurement_type)
     if data:
-        print(f"Extracted data for chip {chip}, measurement {measurement_type}: {data}")
+        logger.info(f"Extracted data for chip {chip}, measurement {measurement_type}: {data}")

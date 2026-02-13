@@ -180,19 +180,19 @@ class SLDOCurveWorker(QThread):
                 self.measure.emit(VDDDresults, "VDDD_ROC{0}".format(chip), "GADC")
                 self.measure.emit(VDDAresults, "VDDA_ROC{0}".format(chip), "GADC")
 
-        print("LV Voltages Up: {0}\nLV Voltages Down: {1}".format(
+        logger.info("LV Voltages Up: {0}\nLV Voltages Down: {1}".format(
             LV_Voltage_Up, LV_Voltage_Down
         ))
-        print("Pin map used: {0}".format(self.adc_board._pin_map))
+        logger.info("Pin map used: {0}".format(self.adc_board._pin_map))
 
         for name in self.adc_board._pin_map.values():
             if index != pin10index:
-                print('the name of the pin is {0}'.format(name))
+                logger.info('the name of the pin is {0}'.format(name))
                 ADC_Voltage_Up = [res[index] for res in data_up]
                 result_up = np.array([Currents_Up, LV_Voltage_Up, ADC_Voltage_Up])
                 ADC_Voltage_Down = [res[index] for res in data_down]
                 result_down = np.array([Currents_Down, LV_Voltage_Down, ADC_Voltage_Down])
-                print("ADC Voltages Up: {0}\nADC Voltages Down: {1}".format(
+                logger.info("ADC Voltages Up: {0}\nADC Voltages Down: {1}".format(
                     ADC_Voltage_Up, ADC_Voltage_Down))
                 index += 1
             else:
@@ -359,7 +359,7 @@ class SLDOCurveHandler(QObject):
         # Should only have a reason internally where the abort signal is necessary.
         # External calls can handle abort themselves. Avoiding accidental recursion.
         if reason:
-            print(f"Aborting SLDO Scan. Reason: {reason}")
+            logger.error(f"Aborting SLDO Scan. Reason: {reason}")
             try:
                 starting_voltages = [
                     np.abs(getattr(module["hv"], "voltage"))

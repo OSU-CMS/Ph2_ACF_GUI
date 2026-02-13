@@ -86,8 +86,8 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
             try:
                 os.makedirs(test_dir)
             except OSError:
-                print("Can not create directory: {0}".format(test_dir))
-                print(traceback.format_exc())
+                logger.error("Can not create directory: {0}".format(test_dir))
+                logger.error(traceback.format_exc())
         time = datetime.utcnow()
         timeRound = time - timedelta(microseconds=time.microsecond)
         time_stamp = timeRound.isoformat() + "_UTC"
@@ -104,8 +104,8 @@ def ConfigureTest(Test, Module_ID, Output_Dir, Input_Dir):
         try:
             os.makedirs(Output_Dir)
         except OSError as e:
-            print(f"OutputDir not created: {e}")
-            print(traceback.format_exc())
+            logger.error(f"OutputDir not created: {e}")
+            logger.error(traceback.format_exc())
             return "", ""
 
         # FIXME:
@@ -135,8 +135,8 @@ def isActive(dbconnection):
         else:
             return False
     except Exception as err:
-        print("Unexpected form, {}".format(repr(err)))
-        print(traceback.format_exc())
+        logger.error("Unexpected form, {}".format(repr(err)))
+        logger.error(traceback.format_exc())
         return False
 
 
@@ -222,7 +222,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
         # print('lenth of XML dict is {0}'.format(len(updatedXMLValues)))
         if len(updatedXMLValues) > 0:
             changeMade = True
-            print(updatedXMLValues)
+            logger.error(updatedXMLValues)
 
             for Node in root.findall(".//Settings"):
                 # print("Found Settings Node!")
@@ -233,14 +233,14 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
                     chipKeyName = "{0}/{1}".format(
                         HyBridNode.attrib["Id"], RD53Node.attrib["Id"]
                     )
-                    print("chipKeyName is {0}".format(chipKeyName))
+                    logger.error("chipKeyName is {0}".format(chipKeyName))
                     if len(updatedXMLValues[chipKeyName]) > 0:
                         for key in updatedXMLValues[chipKeyName].keys():
                             Node.set(key, str(updatedXMLValues[chipKeyName][key]))
 
     except Exception as error:
-        print("Failed to set up the XML file, {}".format(error))
-        print(traceback.format_exc())
+        logger.error("Failed to set up the XML file, {}".format(error))
+        logger.error(traceback.format_exc())
 
     try:
         logger.info(updatedGlobalValue)
@@ -251,18 +251,18 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
                 if len(updatedGlobalValue[1]) > 0:
                     if Node.attrib["name"] == "TargetThr":
                         Node.text = updatedGlobalValue[1]["TargetThr"]
-                        print(
+                        logger.info(
                             "TargetThr value has been set to {0}".format(
                                 updatedGlobalValue[1]["TargetThr"]
                             )
                         )
     except Exception:
-        print(
+        logger.error(
             "Failed to update the TargetThr value, {0}".format(
                 updatedGlobalValue[1]["TargetThr"]
             )
         )
-        print(traceback.format_exc())
+        logger.info(traceback.format_exc())
 
     try:
         if changeMade:
@@ -278,8 +278,8 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
                         os.path.join(Output_Dir, f"CMSIT_{BeBoardName}.xml"))
 
     except OSError:
-        print("Can not copy the XML files {0} to {1}".format(InputFile, Output_Dir))
-        print(traceback.format_exc())
+        logger.error("Can not copy the XML files {0} to {1}".format(InputFile, Output_Dir))
+        logger.error(traceback.format_exc())
     try:
             shutil.copyfile("{0}/CMSIT_{1}.xml".format(Output_Dir, BeBoardName),
             "{0}/test/CMSIT_{1}.xml".format(os.environ.get("PH2ACF_BASE_DIR"), BeBoardName)
@@ -291,7 +291,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
                 Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
             )
         )
-        print(traceback.format_exc())
+        logger.info(traceback.format_exc())
 
 
 ##########################################################################
@@ -301,7 +301,7 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
 def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
     for key in RD53Dict.keys():
         try:
-            print("Doing the copy thing in guiUtils")
+            logger.info("Doing the copy thing in guiUtils")
             shutil.copyfile(
                 "{0}/CMSIT_RD53_{1}_OUT.txt".format(Input_Dir, key), 
                 "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key)
@@ -312,7 +312,7 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
                     Output_Dir, key
                 )
             )
-            print(traceback.format_exc())
+            logger.info(traceback.format_exc())
         try:
             shutil.copyfile(
                 "{0}/CMSIT_RD53_{1}_IN.txt".format(Output_Dir, key), 
@@ -325,7 +325,7 @@ def SetupRD53Config(Input_Dir, Output_Dir, RD53Dict):
                     Output_Dir, key, os.environ.get("PH2ACF_BASE_DIR")
                 )
             )
-            print(traceback.format_exc())
+            logger.info(traceback.format_exc())
 
 
 ##########################################################################
@@ -345,7 +345,7 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
                     InputFileDict[key], Output_Dir
                 )
             )
-            print(traceback.format_exc())
+            logger.info(traceback.format_exc())
         try:
             shutil.copyfile(      
                     os.path.join(Output_Dir, f"CMSIT_RD53_{key}_IN.txt"),
@@ -357,7 +357,7 @@ def SetupRD53ConfigfromFile(InputFileDict, Output_Dir):
                     Output_Dir, key, os.environ.get("PH2ACF_BASE_DIR")
                 )
             )
-            print(traceback.format_exc())
+            logger.info(traceback.format_exc())
 
 
 ##########################################################################
@@ -377,7 +377,7 @@ def CheckXMLValue(pFilename, pAttribute):
     for Node in root.findall(".//Setting"):
         if Node.attrib["name"] == pAttribute:
             # The next line should be done using logger, not print.
-            print("{0} is set to {1}.".format(pAttribute, Node.text))
+            logger.info("{0} is set to {1}.".format(pAttribute, Node.text))
 
 
 ##########################################################################
@@ -409,9 +409,9 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
             moduleType = module.getModuleType()
             hdiVersion = module.getHDIVersion()
             registerKey = "{0}_HDIv{1}".format(moduleType.replace(" ", "_"), hdiVersion)
-            print('register key is {0}'.format(registerKey))
+            logger.info('register key is {0}'.format(registerKey))
             RegisterSettingsList = RegisterSettings_dict[registerKey]
-            print("I see that the hdi version is {0}".format(hdiVersion))
+            logger.info("I see that the hdi version is {0}".format(hdiVersion))
             
             RxPolarities = (
                 "1"
@@ -447,7 +447,7 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
             # Sets up all the chips on the module and adds them to the hybrid module to then be stored in the class
             for chip in module.getChips().values():
-                print("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
+                logger.info("chip {0} status is {1}".format(chip.getID(), chip.getStatus()))
                 FEChip = FE()
                 if (module.getModuleName(), module.getFMCPort(), chip.getID()) in txt_files.keys():
                     txt_file = txt_files[module.getModuleName(), module.getFMCPort(), chip.getID()]
@@ -661,7 +661,7 @@ def formatter(DirName, columns, **kwargs):
                 else:
                     ReturnList[indexGrade] = -1
             except Exception:
-                print(traceback.format_exc())
+                logger.info(traceback.format_exc())
         else:
             pass
 

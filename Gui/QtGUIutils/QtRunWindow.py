@@ -492,7 +492,7 @@ class QtRunWindow(QWidget):
         # self.view.setModel(self.proxy)
         # self.view.setEditTriggers(QAbstractItemView.NoEditTriggers)
         # self.view.update()
-        print("attempting to update status in history")
+        logger.debug("attempting to update status in history")
         self.HistoryLayout.removeWidget(self.StatusTable)
         self.StatusTable.setRowCount(0)
         for test, test_results in zip(self.finished_tests, self.modulestatus):
@@ -546,7 +546,7 @@ class QtRunWindow(QWidget):
         # self.runNext.set()
 
     def customizeTest(self):
-        print("Customize configuration")
+        logger.debug("Customize configuration")
         self.CustomizedButton.setDisabled(True)
         self.RunButton.setDisabled(True)
         self.CustomizedWindow = QtCustomizeWindow(self, self.testHandler.rd53_file)
@@ -729,7 +729,7 @@ class QtRunWindow(QWidget):
 
             if reply == QMessageBox.Yes:
                 self.release()
-                print(f"self.master.instruments: {self.master.instruments}")
+                logger.info(f"self.master.instruments: {self.master.instruments}")
                 if self.master.instruments:
                     self.onPowerSignal()
 
