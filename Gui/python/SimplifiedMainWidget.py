@@ -100,7 +100,7 @@ class SimplifiedMainWidget(QWidget):
             "Value": QLabel(),
         }
         self.instrument_info["condensation_risk"]["Label"].setText("Condensation Risk")
-        if site_settings.cooler == "Peltier":  # Arduino is now a misnomer
+        if site_settings.cooler == "Peltier" or site_settings.cooler == "Manual":  # Arduino is now a misnomer
             self.ArduinoGroup = ArduinoWidget()
             self.ArduinoGroup.stop.connect(self.abort_signal.emit)
             self.ArduinoGroup.enable()
