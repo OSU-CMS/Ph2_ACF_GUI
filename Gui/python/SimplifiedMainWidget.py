@@ -540,13 +540,20 @@ class SimplifiedMainWidget(QWidget):
 
         # Launch QThread to monitor Peltier temperature/power and Arduino temperature/humidity
         self.thread = QThread()
-        if site_settings.cooler == "Peltier":
+
+        if site_settings.cooler == "Peltier" or site_settings.cooler == "Manual": 
             self.worker = Peltier_and_Arduino_Polling()
-            self.worker.temp.connect(self.updatePeltierTemperatureIndicator)
             self.worker.temp.connect(self.updateArduinoCondensationRiskIndicator)
+
+        if site_settings.cooler == "Peltier":
+            self.worker.temp.connect(self.updatePeltierTemperatureIndicator)
+
+        if site_settings.cooler == "Peltier" or site_settings.cooler == "Manual": 
             self.worker.moveToThread(self.thread)
             self.thread.started.connect(self.worker.run)
             self.thread.start()
+
+
         elif site_settings.cooler == "Tessie":
             self.coldbox = self.instruments.get_cb()[0]
 
