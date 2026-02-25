@@ -820,7 +820,7 @@ class QtApplication(QWidget):
         self.NewTestButton.setMinimumHeight(kMinimumHeight)
         self.NewTestButton.setMaximumHeight(kMaximumHeight)
         self.NewTestButton.clicked.connect(self.openNewTest)
-        self.NewTestButton.clicked.connect(self.manual_control_warning)
+        # Manual control warning is shown after the start window is created.
         self.NewTestButton.setDisabled(True)
         if self.ActiveFC7s != {} or self.ui_testing:
             self.NewTestButton.setDisabled(False)
@@ -1202,6 +1202,9 @@ class QtApplication(QWidget):
             ]
         print(f"FwModule is: {[board.getBoardName() for board in FwModule]}")
         self.StartNewTest = QtStartWindow(self, FwModule)
+        self.StartNewTest.raise_()
+        self.StartNewTest.activateWindow()
+        self.manual_control_warning(parent=self.StartNewTest)
 
         self.NewTestButton.setDisabled(True)
         self.LogoutButton.setDisabled(True)
@@ -1362,17 +1365,20 @@ class QtApplication(QWidget):
     ###############################################################
     ##  Main page and related functions  (END)
     ###############################################################
-    def manual_control_warning(self):
+    def manual_control_warning(self, parent=None):
         if not self.instruments:
-            QMessageBox.warning(
-                self,
-                "Manual Control",
+            message_box = QMessageBox(parent or self)
+            message_box.setIcon(QMessageBox.Warning)
+            message_box.setWindowTitle("Manual Control")
+            message_box.setText(
                 "You have opted for manual power supply "
                 "control. If this is incorrect edit "
                 "icicle_instrument_setup in siteConfig.py. "
-                "Otherwise, proceed at your own risk",
-                QMessageBox.Ok,
+                "Otherwise, proceed at your own risk"
             )
+            message_box.setStandardButtons(QMessageBox.Ok)
+            message_box.setWindowModality(Qt.WindowModal)
+            message_box.exec()
 
     def closeEvent(self, event):
         reply = QMessageBox.question(
