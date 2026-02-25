@@ -60,10 +60,10 @@ coldboxRoomTemp = 10
 
 # Set this variable to use your powersupplies manually
 # IF THIS VARIABLE IS SET, THEN ICICLE_INSTRUMENT_SETUP WILL NOT BE USED
-manual_powersupply_control = True
+manual_powersupply_control = False
 
 # Enable UI-only testing mode (no FC7 or hardware connections).
-UI_testing = True
+UI_testing = False
 if UI_testing:
 	manual_powersupply_control = True
 
