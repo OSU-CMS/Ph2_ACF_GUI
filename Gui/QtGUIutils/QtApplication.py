@@ -28,6 +28,7 @@ from felis.felis_helpers import get_accountInfo
 from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
 
 import Gui.siteSettings as site_settings
+from Gui.siteSettings import allow_test_without_fc7
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.QtGUIutils.LaudaApp import LaudaWidget
@@ -792,7 +793,7 @@ class QtApplication(QWidget):
         self.NewTestButton.clicked.connect(self.openNewTest)
         self.NewTestButton.clicked.connect(self.manual_control_warning)
         self.NewTestButton.setDisabled(True)
-        if self.ActiveFC7s != {}:
+        if self.ActiveFC7s != {} or allow_test_without_fc7:
             self.NewTestButton.setDisabled(False)
         if self.ProcessingTest:
             self.NewTestButton.setDisabled(True)
@@ -1160,11 +1161,16 @@ class QtApplication(QWidget):
             return
         
     def openNewTest(self):
-        FwModule = [
-            board_object
-            for firmware, board_object in self.FwDict.items()
-            if firmware in self.ActiveFC7s.values()
-        ]
+        if allow_test_without_fc7 and not self.ActiveFC7s:
+            FwModule = [
+                QtBeBoard(BeBoardID="0", boardName="fc7.dummy", ipAddress="0.0.0.0")
+            ]
+        else:
+            FwModule = [
+                board_object
+                for firmware, board_object in self.FwDict.items()
+                if firmware in self.ActiveFC7s.values()
+            ]
         print(f"FwModule is: {[board.getBoardName() for board in FwModule]}")
         self.StartNewTest = QtStartWindow(self, FwModule)
 

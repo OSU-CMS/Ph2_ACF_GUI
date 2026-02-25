@@ -60,7 +60,10 @@ coldboxRoomTemp = 10
 
 # Set this variable to use your powersupplies manually
 # IF THIS VARIABLE IS SET, THEN ICICLE_INSTRUMENT_SETUP WILL NOT BE USED
-manual_powersupply_control = False
+manual_powersupply_control = True
+
+# Allow UI-only testing without FC7 connections.
+allow_test_without_fc7 = True
 
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
