@@ -429,7 +429,10 @@ class ChipBox(QWidget):
             response = requests.get(URL)
             data = response.json()
 
-            chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
+            if moduleType == "quad":
+                chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
+            else:
+                chipidmap = {"1": "12", "0": "13"}
 
             chipdatadicts = [entry for entry in data["bare_module_data"] if entry["KIND_OF_PART"] == "CROC Chip"]
 
@@ -441,7 +444,7 @@ class ChipBox(QWidget):
                 "IREF": str(chip.get("IREF_TRIM_CODE", "0")),
                 "EFUSE": str(chip.get("EFUSE_CODE", "0")),
                 "VREF": str(chip.get("VREF_ADC_V", "0")),
-                "CINJ": str(chip.get("INJ_CAPACIT_F", "0")), ## Unit conversion here
+                "CINJ": str(chip.get("INJ_CAPACIT_F", "0")), ## Unit conversion needed here
                 }
             return chipdata
 
@@ -494,8 +497,12 @@ class ChipBox(QWidget):
             response = requests.get(URL)
             data_json = response.json()
 
-            #chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}## is this right?
-            chipidmap = {"12": "0", "13": "1", "14": "2", "15": "3"}
+
+            if moduleType == "quad":
+                chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
+            else:
+                chipidmap = {"1": "12", "0": "13"}
+
             data={}
 
             for entry in data_json["bare_module_data"]:
@@ -505,10 +512,10 @@ class ChipBox(QWidget):
                     data[chipidmap[slot]] = {
                         "VDDD": str(entry["VDDD_TRIM_CODE"]),
                         "VDDA": str(entry["VDDA_TRIM_CODE"]),
-                        "IREF": str(entry["IREF_A"]),
+                        "IREF": str(entry["IREF_TRIM_CODE"]),
                         "EFUSE": str(entry["EFUSE_CODE"]),
                         "VREF": str(entry["VREF_ADC_V"]),
-                        "CINJ": str(entry["INJ_CAPACIT_F"]),
+                        "CINJ": str(entry["INJ_CAPACIT_F"]), ## Unit conversion needed here
                     }
 
             for chipID in ["12", "13", "14", "15"]:
