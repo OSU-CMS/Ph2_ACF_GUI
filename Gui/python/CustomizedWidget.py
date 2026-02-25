@@ -396,7 +396,18 @@ class ChipBox(QWidget):
             for entry in data.get("bare_module_data", []):
                 version = entry.get("VERSION")
                 if version is not None:
-                   return str(version).strip()
+                    try:
+                        vstr = str(version).strip()
+                        if "." in vstr:
+                            vstr = str(int(float(vstr)))
+                        else:
+                            try:
+                                vstr = str(int(vstr))
+                            except Exception:
+                                pass
+                        return vstr
+                    except Exception:
+                        return str(version).strip()
 
             print(f"Warning: HDI version not found for {name_label}. Using default value of 1.")
             return "1"
@@ -767,7 +778,19 @@ class BeBoardBox(QWidget):
             else:
                 moduletype = ""
 
-            return {"type": moduletype, "HDIversion": f"{moduleversion}"}
+            try:
+                mv = str(moduleversion).strip()
+                if "." in mv:
+                    mv = str(int(float(mv)))
+                else:
+                    try:
+                        mv = str(int(mv))
+                    except Exception:
+                        pass
+            except Exception:
+                mv = str(moduleversion)
+
+            return {"type": moduletype, "HDIversion": f"{mv}"}
         except Exception:
             logger.error(traceback.format_exc())
             self.master.purdue_connected = False
