@@ -2,6 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
+    QApplication,
     QCheckBox,
     QComboBox,
     QGridLayout,
@@ -525,6 +526,7 @@ class BeBoardBox(QWidget):
         self.ModuleList = []
         self.ChipWidgetDict = {}
         self.mainLayout = QVBoxLayout()  # Use QVBoxLayout for vertical layout
+        self._focus_after_update = None  # Track which module should receive focus after updateList
 
         self.initList()
         self.createList()
@@ -576,6 +578,7 @@ class BeBoardBox(QWidget):
 
     @debounce(100)
     def updateList(self, *args):
+        focus_ctx = self._capture_focus_context()
         serialNumberWidgets = []
         chipIDWidgets = []
 
@@ -644,12 +647,55 @@ class BeBoardBox(QWidget):
         newButton.clicked.connect(self.addModule)
         self.ListLayout.addWidget(newButton, len(self.ModuleList), 1, 1, 1)
         self.update()
+        self._restore_focus_context(focus_ctx)
+        
+        #set module focus
+        if self._focus_after_update is not None:
+            target_module = self._focus_after_update
+            self._focus_after_update = None
+            QTimer.singleShot(0, target_module.SerialEdit.setFocus)
 
         
 
 
     def createSerialUpdateCallback(self, module):
         return lambda: self.onSerialNumberUpdate(module)
+
+    # Mapping of field names to widget attribute names
+    _FOCUS_FIELD_MAP = {
+        "serial": "SerialEdit",
+        "port": "PortEdit",
+        "type": "TypeCombo",
+        "fc7": "FC7Combo",
+        "version": "VersionCombo",
+        "hdi": "HDIVersionCombo",
+    }
+
+    def _capture_focus_context(self):
+        focus = QApplication.focusWidget()
+        if focus is None:
+            return None
+        
+        for index, module in enumerate(self.ModuleList):
+            for field_name, attr_name in self._FOCUS_FIELD_MAP.items():
+                if focus is getattr(module, attr_name):
+                    return (field_name, index)
+        return None
+
+    def _restore_focus_context(self, focus_ctx):
+        if not focus_ctx:
+            return
+
+        field, index = focus_ctx
+        if index < 0 or index >= len(self.ModuleList):
+            return
+
+        module = self.ModuleList[index]
+        attr_name = self._FOCUS_FIELD_MAP.get(field)
+        if attr_name:
+            target = getattr(module, attr_name, None)
+            if target is not None:
+                QTimer.singleShot(0, target.setFocus)
 
     @debounce(500)
     def onSerialNumberUpdate(self, module):
@@ -727,6 +773,8 @@ class BeBoardBox(QWidget):
         module = ModuleBox(self.firmware)
         module.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(module)
+        # Mark this module to receive focus after updateList completes
+        self._focus_after_update = module
         self.updateList()
         self.changed.emit()
 
