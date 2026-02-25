@@ -402,6 +402,8 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
 
         # Set up each module within the optical group
         for module in og.getAllModules().values():
+            if hasattr(module, "getEnabled") and str(module.getEnabled()) != "1":
+                continue
             HyBridModule0 = HyBridModule()
             HyBridModule0.SetHyBridModule(module.getFMCPort(), "1")
             HyBridModule0.SetHyBridName(module.getModuleName())
