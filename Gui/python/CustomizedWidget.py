@@ -427,10 +427,10 @@ class ChipBox(QWidget):
                 chipdata[chipidmap[str(i)]] = {
                 "VDDA": str(chip.get("VDDA_TRIM_CODE", "0")),
                 "VDDD": str(chip.get("VDDD_TRIM_CODE", "0")),
-                "IREF": str(chip.get("IREF_A", "0")),
+                "IREF": str(chip.get("IREF_TRIM_CODE", "0")),
                 "EFUSE": str(chip.get("EFUSE_CODE", "0")),
                 "VREF": str(chip.get("VREF_ADC_V", "0")),
-                "CINJ": str(chip.get("INJ_CAPACIT_F", "0")),
+                "CINJ": str(chip.get("INJ_CAPACIT_F", "0")), ## Unit conversion here
                 }
             return chipdata
 
