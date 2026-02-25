@@ -65,10 +65,29 @@ import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map, OpenBumpTest
-from Gui.siteSettings import icicle_instrument_setup
+from Gui.siteSettings import icicle_instrument_setup, UI_testing
 
 
 logger = get_logger(__name__)
+
+
+class DummyInstrumentCluster:
+    def __init__(self):
+        self._module_dict = {}
+        self._instrument_dict = {}
+        self.powering_groups = {}
+
+    def get_modules(self):
+        return {}
+
+    def status(self):
+        return {}
+
+    def __getattr__(self, name):
+        def _noop(*args, **kwargs):
+            return None
+
+        return _noop
 
 
 # Setup enum for ProgressigMode. This ensures we don't use any unhandled states on accident
@@ -100,6 +119,8 @@ class TestHandler(QObject):
         super(TestHandler, self).__init__()
         self.master = master
         self.instruments = self.master.instruments
+        if self.instruments is None:
+            self.instruments = DummyInstrumentCluster()
         self.mod_dict = {}
         self.fused_dict_index = [
             -1,
@@ -524,6 +545,9 @@ class TestHandler(QObject):
         self.initializeRD53Dict()
 
     def runTest(self, reRun=False):
+        if UI_testing:
+            self._simulate_run()
+            return
         if reRun:
             self.halt = False
             self.testIndexTracker = 0
@@ -539,6 +563,45 @@ class TestHandler(QObject):
         else:
             QMessageBox.information(None, "Warning", "Not a valid test", QMessageBox.Ok)
             return
+
+    def _simulate_run(self):
+        tests = self.test_list if isCompositeTest(self.info) else (self.info,)
+        for index, test_name in enumerate(tests):
+            self.currentTest = test_name
+            self.testIndexTracker = index
+            for console in getattr(self.runwindow, "ConsoleViews", []):
+                self.outputString.emit(
+                    f"[SIM] Running {test_name} (no hardware)",
+                    console,
+                )
+
+            for progress in (0, 25, 50, 75, 100):
+                for fw_index in range(len(self.firmware)):
+                    bar = self.runwindow.ResultWidget.ProgressBars[fw_index][index]
+                    self.updateProgressBar.emit(
+                        bar, progress, f"{progress}% (sim)"
+                    )
+                time.sleep(0.05)
+
+            for fw_index in range(len(self.firmware)):
+                runtime = self.runwindow.ResultWidget.runtimes[fw_index][index]
+                runtime.setText("0.0s (sim)")
+
+            results = [
+                {
+                    module.getModuleName(): (
+                        True,
+                        "Simulated run (no hardware)",
+                    )
+                }
+                for module in self.modules
+            ]
+            self.finished_tests.append(test_name)
+            self.updateValidation.emit(results)
+            self.updateFinishedTests.emit(self.finished_tests)
+            self.historyRefresh.emit()
+
+        self.stepFinished.emit(True)
 
     # This loops over all the tests by using the on_finish pyqt decorator defined below
     def runCompositeTest(self, testName):

@@ -28,6 +28,7 @@ from felis.felis_helpers import get_accountInfo
 from Gui.QtGUIutils.Loading import LoadingWheel, LoadingThread
 
 import Gui.siteSettings as site_settings
+from Gui.siteSettings import UI_testing
 from Gui.GUIutils.FirmwareUtil import fwStatusParser, FwStatusCheck
 from Gui.QtGUIutils.QtRunWindow import QtRunWindow
 from Gui.QtGUIutils.LaudaApp import LaudaWidget
@@ -76,6 +77,7 @@ class QtApplication(QWidget):
         self.PYTHON_VERSION = str(sys.version).split(" ")[0]
         self.dimension = dimension
         self.available_visa_resources = pyvisa.ResourceManager("@py").list_resources()
+        self.ui_testing = UI_testing
 
         self.desired_devices = {"hv": 1, "lv": 1, "relay": 0, "multimeter": 0}
         self.connected_device_information = {
@@ -474,6 +476,11 @@ class QtApplication(QWidget):
         self.StatusList = [
             self.create_status_label("Panthera DB", self.panthera_connected),
         ]
+        if self.ui_testing and not site_settings.FC7List:
+            fw_name_label = QLabel("FC7 (UI only)")
+            fw_status_label = QLabel("UI Only")
+            fw_status_label.setStyleSheet("color: orange")
+            self.StatusList.append([fw_name_label, fw_status_label])
 
         try:
             for firmwareName, ipaddress in site_settings.FC7List.items():
@@ -501,6 +508,9 @@ class QtApplication(QWidget):
             if index == 0:
                 self.CheckButton = QPushButton("&Fw Check")
                 self.CheckButton.clicked.connect(self.checkFirmware)
+                if self.ui_testing:
+                    self.CheckButton.setDisabled(True)
+                    self.CheckButton.setToolTip("UI-only mode: firmware checks are disabled")
                 StatusLayout.addWidget(self.CheckButton, index, 0, 1, 1)
                 StatusLayout.addWidget(items[0], index, 1, 1, 1)
                 StatusLayout.addWidget(items[1], index, 2, 1, 2)
@@ -519,6 +529,11 @@ class QtApplication(QWidget):
                     UseButton.clicked.connect(self.checkFirmware)
                 UseButton.setCheckable(True)
                 self.UseButtons.append(UseButton)
+                if self.ui_testing:
+                    UseButton.setText("UI Only")
+                    UseButton.setDisabled(True)
+                    items[1].setText("UI Only")
+                    items[1].setStyleSheet("color: orange")
                 StatusLayout.addWidget(UseButton, index, 0, 1, 1)
                 StatusLayout.addWidget(items[0], index, 1, 1, 1)
                 StatusLayout.addWidget(items[1], index, 2, 1, 2)
@@ -556,6 +571,9 @@ class QtApplication(QWidget):
         self.DefaultButton = QPushButton("&Connect all devices")
         if site_settings.icicle_instrument_setup is None:
             self.DefaultButton.setEnabled(False)
+        if self.ui_testing:
+            self.DefaultButton.setEnabled(False)
+            self.DefaultButton.setToolTip("UI-only mode: hardware connections are disabled")
 
         self.Wheel = LoadingWheel()
 
@@ -602,6 +620,9 @@ class QtApplication(QWidget):
         else:
             self.HVPortName.setText("")
             self.HVDeviceName.setText("Manual HV Control")
+        if self.ui_testing:
+            self.HVPortName.setText("")
+            self.HVDeviceName.setText("UI Only")
 
         self.HVPowerStatusValue = QLabel()
         logger.debug("Setup HV")
@@ -646,6 +667,9 @@ class QtApplication(QWidget):
         else:
             self.LVPortName.setText("")
             self.LVDeviceName.setText("Manual LV Control")
+        if self.ui_testing:
+            self.LVPortName.setText("")
+            self.LVDeviceName.setText("UI Only")
 
         self.LVPowerLayout.addWidget(self.LVDeviceLabel, 0, 0, 1, 1)
         self.LVPowerLayout.addWidget(self.LVDeviceName, 0, 1, 1, 1)
@@ -696,6 +720,9 @@ class QtApplication(QWidget):
             else:
                 self.relay_device_name.setText("Manual Relay Control")
                 self.relay_board_port_name.setText("")
+            if self.ui_testing:
+                self.relay_device_name.setText("UI Only")
+                self.relay_board_port_name.setText("")
 
             self.relay_model_status = QLabel()
 
@@ -742,6 +769,9 @@ class QtApplication(QWidget):
                 self.multimeter_group.setDisabled(False)
             else:
                 self.multimeter_device_name.setText("Manual multimeter control")
+                self.multimeter_port_name.setText("")
+            if self.ui_testing:
+                self.multimeter_device_name.setText("UI Only")
                 self.multimeter_port_name.setText("")
 
             self.multimeter_status = QLabel()
@@ -792,7 +822,7 @@ class QtApplication(QWidget):
         self.NewTestButton.clicked.connect(self.openNewTest)
         self.NewTestButton.clicked.connect(self.manual_control_warning)
         self.NewTestButton.setDisabled(True)
-        if self.ActiveFC7s != {}:
+        if self.ActiveFC7s != {} or self.ui_testing:
             self.NewTestButton.setDisabled(False)
         if self.ProcessingTest:
             self.NewTestButton.setDisabled(True)
@@ -1160,11 +1190,16 @@ class QtApplication(QWidget):
             return
         
     def openNewTest(self):
-        FwModule = [
-            board_object
-            for firmware, board_object in self.FwDict.items()
-            if firmware in self.ActiveFC7s.values()
-        ]
+        if self.ui_testing and not self.ActiveFC7s:
+            FwModule = [
+                QtBeBoard(BeBoardID="0", boardName="fc7.dummy", ipAddress="0.0.0.0")
+            ]
+        else:
+            FwModule = [
+                board_object
+                for firmware, board_object in self.FwDict.items()
+                if firmware in self.ActiveFC7s.values()
+            ]
         print(f"FwModule is: {[board.getBoardName() for board in FwModule]}")
         self.StartNewTest = QtStartWindow(self, FwModule)
 
