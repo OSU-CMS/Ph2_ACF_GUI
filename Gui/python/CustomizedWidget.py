@@ -346,6 +346,54 @@ class ChipBox(QWidget):
         CINJthing = self.chipData[pChipID]["CINJ"]
         return CINJthing
 
+    def getDAC_PREAMP_L_LIN(self, pChipID):
+        DAC_PREAMP_L_LINthing = self.chipData[pChipID]["DAC_PREAMP_L_LIN"]
+        return DAC_PREAMP_L_LINthing
+
+    def getDAC_PREAMP_R_LIN(self, pChipID):
+        DAC_PREAMP_R_LINthing = self.chipData[pChipID]["DAC_PREAMP_R_LIN"]
+        return DAC_PREAMP_R_LINthing
+
+    def getDAC_PREAMP_TL_LIN(self, pChipID):
+        DAC_PREAMP_TL_LINthing = self.chipData[pChipID]["DAC_PREAMP_TL_LIN"]
+        return DAC_PREAMP_TL_LINthing
+
+    def getDAC_PREAMP_TR_LIN(self, pChipID):
+        DAC_PREAMP_TR_LINthing = self.chipData[pChipID]["DAC_PREAMP_TR_LIN"]
+        return DAC_PREAMP_TR_LINthing
+
+    def getDAC_PREAMP_T_LIN(self, pChipID):
+        DAC_PREAMP_T_LINthing = self.chipData[pChipID]["DAC_PREAMP_T_LIN"]
+        return DAC_PREAMP_T_LINthing
+
+    def getDAC_PREAMP_M_LIN(self, pChipID):
+        DAC_PREAMP_M_LINthing = self.chipData[pChipID]["DAC_PREAMP_M_LIN"]
+        return DAC_PREAMP_M_LINthing
+
+    def getDAC_REF_KRUM_LIN(self, pChipID):
+        DAC_REF_KRUM_LINthing = self.chipData[pChipID]["DAC_REF_KRUM_LIN"]
+        return DAC_REF_KRUM_LINthing
+
+    def getDAC_COMP_LIN(self, pChipID):
+        DAC_COMP_LINthing = self.chipData[pChipID]["DAC_COMP_LIN"]
+        return DAC_COMP_LINthing
+    
+    def getDAC_COMP_TA_LIN(self, pChipID):
+        DAC_COMP_TA_LINthing = self.chipData[pChipID]["DAC_COMP_TA_LIN"]
+        return DAC_COMP_TA_LINthing
+
+    def getDAC_LDAC_LIN(self, pChipID):
+        DAC_LDAC_LINthing = self.chipData[pChipID]["DAC_LDAC_LIN"]
+        return DAC_LDAC_LINthing
+    
+    def getADC_OFFSET_VOLT(self, pChipID):
+        ADC_OFFSET_VOLTthing = self.chipData[pChipID]["ADC_OFFSET_VOLT"]
+        return ADC_OFFSET_VOLTthing
+
+    def getADC_MAXIMUM_VOLT(self, pChipID):
+        ADC_MAXIMUM_VOLTthing = self.chipData[pChipID]["ADC_MAXIMUM_VOLT"]
+        return ADC_MAXIMUM_VOLTthing
+
     def getChipData(self):
         return self.chipData
 
@@ -437,6 +485,7 @@ class ChipBox(QWidget):
             chipdatadicts = [entry for entry in data["bare_module_data"] if entry["KIND_OF_PART"] == "CROC Chip"]
 
             chipdata = {}
+
             for i, chip in enumerate(chipdatadicts):
                 chipdata[chipidmap[str(i)]] = {
                 "VDDA": str(chip.get("VDDA_TRIM_CODE", "0")),
@@ -444,8 +493,21 @@ class ChipBox(QWidget):
                 "IREF": str(chip.get("IREF_TRIM_CODE", "0")),
                 "EFUSE": str(chip.get("EFUSE_CODE", "0")),
                 "VREF": str(chip.get("VREF_ADC_V", "0")),
-                "CINJ": str(chip.get("INJ_CAPACIT_F", "0")), ## Unit conversion needed here
+                "CINJ": str(chip.get("INJ_CAPACIT_F", "0")),
+                "ADC_OFFSET_VOLT": str(1e4*float(chip.get("ADC_OFF_V", "0"))),
+                "ADC_MAXIMUM_VOLT": str(1e3*(4096*float(chip.get("ADC_SLO", "0"))+float(chip.get("ADC_OFF_V", "0")))),
+                "DAC_PREAMP_L_LIN": str(chip.get("probe_data").get("DAC_PREAMP_L_LIN", "0")),
+                "DAC_PREAMP_R_LIN": str(chip.get("probe_data").get("DAC_PREAMP_R_LIN", "0")),
+                "DAC_PREAMP_TL_LIN": str(chip.get("probe_data").get("DAC_PREAMP_TL_LIN", "0")),
+                "DAC_PREAMP_TR_LIN": str(chip.get("probe_data").get("DAC_PREAMP_TR_LIN", "0")),
+                "DAC_PREAMP_T_LIN": str(chip.get("probe_data").get("DAC_PREAMP_T_LIN", "0")),
+                "DAC_PREAMP_M_LIN": str(chip.get("probe_data").get("DAC_PREAMP_M_LIN", "0")),
+                "DAC_REF_KRUM_LIN": str(chip.get("probe_data").get("DAC_REF_KRUM_LIN", "0")),
+                "DAC_COMP_LIN": str(chip.get("probe_data").get("DAC_COMP_LIN", "0")),
+                "DAC_COMP_TA_LIN": str(chip.get("probe_data").get("DAC_COMP_TA_LIN", "0")),
+                "DAC_LDAC_LIN": str(chip.get("probe_data").get("DAC_LDAC_LIN", "0")),
                 }
+            logger.info(f"Fetched chip data for {name_label}: {chipdata}")
             return chipdata
 
         except requests.exceptions.RequestException as req_err:
@@ -516,6 +578,18 @@ class ChipBox(QWidget):
                         "EFUSE": str(entry["EFUSE_CODE"]),
                         "VREF": str(entry["VREF_ADC_V"]),
                         "CINJ": str(entry["INJ_CAPACIT_F"]), ## Unit conversion needed here
+                        "ADC_OFFSET_VOLT": str(entry["ADC_OFF_V"]),
+                        "ADC_MAXIMUM_VOLT": str(entry["ADC_SLO"]),
+                        "DAC_PREAMP_L_LIN": str(entry["DAC_PREAMP_L_LIN"]),
+                        "DAC_PREAMP_R_LIN": str(entry["DAC_PREAMP_R_LIN"]),
+                        "DAC_PREAMP_TL_LIN": str(entry["DAC_PREAMP_TL_LIN"]),
+                        "DAC_PREAMP_TR_LIN": str(entry["DAC_PREAMP_TR_LIN"]),
+                        "DAC_PREAMP_T_LIN": str(entry["DAC_PREAMP_T_LIN"]),
+                        "DAC_PREAMP_M_LIN": str(entry["DAC_PREAMP_M_LIN"]),
+                        "DAC_REF_KRUM_LIN": str(entry["DAC_REF_KRUM_LIN"]),
+                        "DAC_COMP_LIN": str(entry["DAC_COMP_LIN"]),
+                        "DAC_COMP_TA_LIN": str(entry["DAC_COMP_TA_LIN"]),
+                        "DAC_LDAC_LIN": str(entry["DAC_LDAC_LIN"]),
                     }
 
             for chipID in ["12", "13", "14", "15"]:
@@ -527,6 +601,18 @@ class ChipBox(QWidget):
                         "EFUSE": "0",
                         "VREF": "0",
                         "CINJ": "0",
+                        "DAC_PREAMP_L_LIN": "0",
+                        "DAC_PREAMP_R_LIN": "0",
+                        "DAC_PREAMP_TL_LIN": "0",
+                        "DAC_PREAMP_TR_LIN": "0",
+                        "DAC_PREAMP_T_LIN": "0",
+                        "DAC_PREAMP_M_LIN": "0",
+                        "DAC_REF_KRUM_LIN": "0",
+                        "DAC_COMP_LIN": "0",
+                        "DAC_COMP_TA_LIN": "0",
+                        "DAC_LDAC_LIN": "0",
+                        "ADC_OFFSET_VOLT": "0",
+                        "ADC_MAXIMUM_VOLT": "0",
                     }
 
             return data
@@ -882,6 +968,43 @@ class BeBoardBox(QWidget):
                 Module.getChips()[chipID].setIREF(
                     self.ChipWidgetDict[module].getIREF(chipID)
                 )
+                Module.getChips()[chipID].setDAC_PREAMP_L_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_L_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_R_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_R_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_TL_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_TL_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_TR_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_TR_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_T_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_T_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_M_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_M_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_REF_KRUM_LIN(
+                    self.ChipWidgetDict[module].getDAC_REF_KRUM_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_COMP_LIN(
+                    self.ChipWidgetDict[module].getDAC_COMP_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_COMP_TA_LIN(
+                    self.ChipWidgetDict[module].getDAC_COMP_TA_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_LDAC_LIN(
+                    self.ChipWidgetDict[module].getDAC_LDAC_LIN(chipID)
+                )
+                Module.getChips()[chipID].setADC_MAXIMUM_VOLT(
+                    self.ChipWidgetDict[module].getADC_MAXIMUM_VOLT(chipID)
+                )
+                Module.getChips()[chipID].setADC_OFFSET_VOLT(
+                    self.ChipWidgetDict[module].getADC_OFFSET_VOLT(chipID)
+                )
+                
                 try:
                     vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
                 except Exception:
@@ -895,7 +1018,7 @@ class BeBoardBox(QWidget):
                 except Exception:
                     cinj_value = 8
                 Module.getChips()[chipID].setCINJ(
-                    (10 * cinj_value)
+                    (1e13 * cinj_value)
                 )
 
             # Add the QtModule object to the currently selected Optical Group
@@ -1049,7 +1172,7 @@ class SimpleModuleBox(QWidget):
         self.CableIDEdit.setText(str(laneId))
 
     def setHDIversion(self, hdiVersion: str):
-        self.HDIversion = hdiVersion
+        self.HDIversion = hdiVersion.split(".")[0]
 
     def getID(self):
         return self.CableIDEdit.text()
@@ -1391,7 +1514,19 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setEfuseID(chipData[chipID]["EFUSE"])
                     Module.getChips()[chipID].setIREF(chipData[chipID]["IREF"])
                     Module.getChips()[chipID].setVREF(str(1000 * float(chipData[chipID]["VREF"])))
-                    Module.getChips()[chipID].setCINJ(str(10 * float(chipData[chipID]["CINJ"])))
+                    Module.getChips()[chipID].setCINJ(str(1e13 * float(chipData[chipID]["CINJ"])))
+                    Module.getChips()[chipID].setADC_OFFSET_VOLT(str(chipData[chipID]["ADC_OFFSET_VOLT"]))
+                    Module.getChips()[chipID].setADC_MAXIMUM_VOLT(str(chipData[chipID]["ADC_MAXIMUM_VOLT"]))
+                    Module.getChips()[chipID].setDAC_PREAMP_L_LIN(chipData[chipID]["DAC_PREAMP_L_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_R_LIN(chipData[chipID]["DAC_PREAMP_R_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_TL_LIN(chipData[chipID]["DAC_PREAMP_TL_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_TR_LIN(chipData[chipID]["DAC_PREAMP_TR_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_T_LIN(chipData[chipID]["DAC_PREAMP_T_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_M_LIN(chipData[chipID]["DAC_PREAMP_M_LIN"])
+                    Module.getChips()[chipID].setDAC_REF_KRUM_LIN(chipData[chipID]["DAC_REF_KRUM_LIN"])
+                    Module.getChips()[chipID].setDAC_COMP_LIN(chipData[chipID]["DAC_COMP_LIN"])
+                    Module.getChips()[chipID].setDAC_COMP_TA_LIN(chipData[chipID]["DAC_COMP_TA_LIN"])
+                    Module.getChips()[chipID].setDAC_LDAC_LIN(chipData[chipID]["DAC_LDAC_LIN"])
                     
             else:
                 print(
