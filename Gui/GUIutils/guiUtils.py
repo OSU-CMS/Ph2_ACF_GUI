@@ -475,6 +475,19 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 chip_settings = FESettings_Dict[testName][registerKey].copy()
                 chip_settings['VREF_ADC'] = chip.getVREF()
                 chip_settings['INJ_CAP'] = chip.getCINJ()
+                chip_settings['DAC_PREAMP_L_LIN'] = chip.getDAC_PREAMP_L_LIN()
+                chip_settings['DAC_PREAMP_R_LIN'] = chip.getDAC_PREAMP_R_LIN()
+                chip_settings['DAC_PREAMP_TL_LIN'] = chip.getDAC_PREAMP_TL_LIN()
+                chip_settings['DAC_PREAMP_TR_LIN'] = chip.getDAC_PREAMP_TR_LIN()
+                chip_settings['DAC_PREAMP_T_LIN'] = chip.getDAC_PREAMP_T_LIN()
+                chip_settings['DAC_PREAMP_M_LIN'] = chip.getDAC_PREAMP_M_LIN()
+                chip_settings['DAC_REF_KRUM_LIN'] = chip.getDAC_REF_KRUM_LIN()
+                chip_settings['DAC_COMP_LIN'] = chip.getDAC_COMP_LIN()
+                chip_settings['DAC_COMP_TA_LIN'] = chip.getDAC_COMP_TA_LIN()
+                chip_settings['DAC_LDAC_LIN'] = chip.getDAC_LDAC_LIN()
+                chip_settings['ADC_OFFSET_VOLT'] = chip.getADC_OFFSET_VOLT()
+                chip_settings['ADC_MAXIMUM_VOLT'] = chip.getADC_MAXIMUM_VOLT()
+
                 FEChip.ConfigureFE(chip_settings)
             
                 if testName in FELaneConfig_Dict:

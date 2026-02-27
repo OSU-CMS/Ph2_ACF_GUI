@@ -15,6 +15,18 @@ class QtChip:
         chipVREF=800,
         chipIREF="",
         chipCINJ=80,
+        chipADC_OFFSET_VOLT=63,
+        chipADC_MAXIMUM_VOLT=839,
+        chipDAC_PREAMP_L_LIN=300,
+        chipDAC_PREAMP_R_LIN=300,
+        chipDAC_PREAMP_TL_LIN=300,
+        chipDAC_PREAMP_TR_LIN=300,
+        chipDAC_PREAMP_T_LIN=300,
+        chipDAC_PREAMP_M_LIN=300,
+        chipDAC_REF_KRUM_LIN=360,
+        chipDAC_COMP_LIN=110,
+        chipDAC_COMP_TA_LIN=110,
+        chipDAC_LDAC_LIN=140,
         chipStatus=True,
     ):
         self.__chipID = chipID
@@ -25,6 +37,18 @@ class QtChip:
         self.__chipVREF = chipVREF
         self.__chipIREF = chipIREF
         self.__chipCINJ = chipCINJ
+        self.__ADC_OFFSET_VOLT = chipADC_OFFSET_VOLT
+        self.__ADC_MAXIMUM_VOLT = chipADC_MAXIMUM_VOLT
+        self.__chipDAC_PREAMP_L_LIN = chipDAC_PREAMP_L_LIN
+        self.__chipDAC_PREAMP_R_LIN = chipDAC_PREAMP_R_LIN
+        self.__chipDAC_PREAMP_TL_LIN = chipDAC_PREAMP_TL_LIN
+        self.__chipDAC_PREAMP_TR_LIN = chipDAC_PREAMP_TR_LIN
+        self.__chipDAC_PREAMP_T_LIN = chipDAC_PREAMP_T_LIN
+        self.__chipDAC_PREAMP_M_LIN = chipDAC_PREAMP_M_LIN
+        self.__chipDAC_REF_KRUM_LIN = chipDAC_REF_KRUM_LIN
+        self.__chipDAC_COMP_LIN = chipDAC_COMP_LIN
+        self.__chipDAC_COMP_TA_LIN = chipDAC_COMP_TA_LIN
+        self.__chipDAC_LDAC_LIN = chipDAC_LDAC_LIN
         self.__chipStatus = chipStatus
 
     def setID(self, id: str):
@@ -71,9 +95,81 @@ class QtChip:
     
     def setCINJ(self, pCINJ: int):
         self.__chipCINJ = pCINJ
-    
+
     def getCINJ(self):
         return self.__chipCINJ
+
+    def setADC_OFFSET_VOLT(self, pADC_OFFSET_VOLT: int):
+        self.__ADC_OFFSET_VOLT = pADC_OFFSET_VOLT
+
+    def getADC_OFFSET_VOLT(self):
+        return self.__ADC_OFFSET_VOLT
+        
+    def setADC_MAXIMUM_VOLT(self, pADC_MAXIMUM_VOLT: int):
+        self.__ADC_MAXIMUM_VOLT = pADC_MAXIMUM_VOLT
+
+    def getADC_MAXIMUM_VOLT(self):
+        return self.__ADC_MAXIMUM_VOLT  
+
+    def setDAC_PREAMP_L_LIN(self, pDAC_PREAMP_L_LIN: int):
+        self.__chipDAC_PREAMP_L_LIN = pDAC_PREAMP_L_LIN
+
+    def getDAC_PREAMP_L_LIN(self):
+        return self.__chipDAC_PREAMP_L_LIN
+
+    def setDAC_PREAMP_R_LIN(self, pDAC_PREAMP_R_LIN: int):
+        self.__chipDAC_PREAMP_R_LIN = pDAC_PREAMP_R_LIN
+
+    def getDAC_PREAMP_R_LIN(self):
+        return self.__chipDAC_PREAMP_R_LIN
+
+    def setDAC_PREAMP_TL_LIN(self, pDAC_PREAMP_TL_LIN: int):
+        self.__chipDAC_PREAMP_TL_LIN = pDAC_PREAMP_TL_LIN
+
+    def getDAC_PREAMP_TL_LIN(self):
+        return self.__chipDAC_PREAMP_TL_LIN
+
+    def setDAC_PREAMP_TR_LIN(self, pDAC_PREAMP_TR_LIN: int):
+        self.__chipDAC_PREAMP_TR_LIN = pDAC_PREAMP_TR_LIN
+
+    def getDAC_PREAMP_TR_LIN(self):
+        return self.__chipDAC_PREAMP_TR_LIN
+
+    def setDAC_PREAMP_T_LIN(self, pDAC_PREAMP_T_LIN: int):
+        self.__chipDAC_PREAMP_T_LIN = pDAC_PREAMP_T_LIN
+
+    def getDAC_PREAMP_T_LIN(self):    
+        return self.__chipDAC_PREAMP_T_LIN
+
+    def setDAC_PREAMP_M_LIN(self, pDAC_PREAMP_M_LIN: int):
+        self.__chipDAC_PREAMP_M_LIN = pDAC_PREAMP_M_LIN
+
+    def getDAC_PREAMP_M_LIN(self):
+        return self.__chipDAC_PREAMP_M_LIN
+
+    def setDAC_REF_KRUM_LIN(self, pDAC_REF_KRUM_LIN: int):
+        self.__chipDAC_REF_KRUM_LIN = pDAC_REF_KRUM_LIN
+
+    def getDAC_REF_KRUM_LIN(self):
+        return self.__chipDAC_REF_KRUM_LIN
+
+    def setDAC_COMP_LIN(self, pDAC_COMP_LIN: int):
+        self.__chipDAC_COMP_LIN = pDAC_COMP_LIN
+
+    def getDAC_COMP_LIN(self):
+        return self.__chipDAC_COMP_LIN
+
+    def setDAC_COMP_TA_LIN(self, pDAC_COMP_TA_LIN: int):
+        self.__chipDAC_COMP_TA_LIN = pDAC_COMP_TA_LIN
+
+    def getDAC_COMP_TA_LIN(self):
+        return self.__chipDAC_COMP_TA_LIN
+
+    def setDAC_LDAC_LIN(self, pDAC_LDAC_LIN: int):
+        self.__chipDAC_LDAC_LIN = pDAC_LDAC_LIN
+
+    def getDAC_LDAC_LIN(self):
+        return self.__chipDAC_LDAC_LIN
 
     def setStatus(self, pStatus: bool):
         self.__chipStatus = pStatus
@@ -135,10 +231,10 @@ class QtModule:
         return self.__moduleVersion
     
     def getHDIVersion(self):
-        return self.__hdiVersion
+        return self.__hdiVersion.split(".")[0]
 
     def setHDIVersion(self, hdiVersion: str):
-        self.__hdiVersion = hdiVersion
+        self.__hdiVersion = hdiVersion.split(".")[0]
         
     def setFMCPort(self, FMCPort: str):
         self.__FMCPort = FMCPort
@@ -149,7 +245,7 @@ class QtModule:
     def __setupChips(self):
         self.__chipDict.clear()
 
-        for LaneID, ChipID in ModuleLaneMap_Dict["HDIv{0}".format(self.__hdiVersion)][self.__moduleType].items():
+        for LaneID, ChipID in ModuleLaneMap_Dict["HDIv{0}".format(self.__hdiVersion.split(".")[0])][self.__moduleType].items():
             FEChip = QtChip(
                 chipID=ChipID, chipLane=LaneID, chipVDDA=8, chipVDDD=8, chipStatus=True
             )

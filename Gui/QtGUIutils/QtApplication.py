@@ -375,7 +375,7 @@ class QtApplication(QWidget):
             self.operator_name_first = data["name_first"]
             self.operator_name = data["name_first"] + " " + data["name_last"]
             self.panthera_connected = True
-            self.purdue_connected = self.checkPurdueConnection()
+            self.purdue_connected = self.checkDatabaseConnection()
 
             if (
                 data["privilege"] in ["Leader", "Conductor", "Admin", "Shifter"]
@@ -408,7 +408,7 @@ class QtApplication(QWidget):
             self.operator_name = "Local User"
             self.operator_name_first = "Local User"
             self.panthera_connected = False
-            self.purdue_connected = self.checkPurdueConnection()
+            self.purdue_connected = self.checkDatabaseConnection()
 
             self.destroyLogin()
             if self.expertMode:
@@ -420,12 +420,12 @@ class QtApplication(QWidget):
                 logger.debug("Entering Simplified GUI")
                 self.createSimplifiedMain()
 
-    def checkPurdueConnection(self):
+    def checkDatabaseConnection(self):
         status = False
         message = ""
         try:
             response = requests.get(
-                "https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn="
+                "https://cms-it-modules-registry.web.cern.ch/"
             )
             status = response.status_code == 200
             if not status:
@@ -440,7 +440,7 @@ class QtApplication(QWidget):
             msg.information(
                 None,
                 "Error",
-                f"There was an issue connecting to the Purdue database, please check your internet connection.\nMessage: {message}",
+                f"There was an issue connecting to the CMS database, please check your internet connection.\nMessage: {message}",
                 QMessageBox.Ok,
             )
         return status
