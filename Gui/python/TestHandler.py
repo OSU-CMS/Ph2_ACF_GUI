@@ -1097,7 +1097,7 @@ class TestHandler(QObject):
                 if process.state() != QProcess.NotRunning:
                     self.active_process_count += 1
 
-        if (
+        elif (
             self.currentTest == "IREF_GADC"
         ):  # FIXME need to add -t so the scan will stop at the end
             for process, firmware in zip(self.run_processes, self.firmware):
