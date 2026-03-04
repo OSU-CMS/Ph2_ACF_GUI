@@ -21,6 +21,7 @@ import requests
 from lxml import etree
 import re
 import traceback
+import requests
 
 from icicle.icicle.instrument_cluster import DummyInstrument
 import Gui.siteSettings as site_settings
@@ -178,30 +179,6 @@ class ModuleBox(QWidget):
 
     def getVDDD(self, pChipID):
         return self.VDDD[pChipID]
-
-
-def try_cms_database(url, context="CMS resource"):
-    """Utility function: Try to fetch JSON from CMS database."""
-    try:
-        response = requests.get(url, timeout=5)
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        logger.warning(f"Failed to fetch {context} from CMS database ({url}): {e}")
-        return None
-
-
-def try_purdue_database(moduleName):
-    """Utility function: Try to fetch from Purdue database (backup)."""
-    try:
-        URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
-        response = requests.get(URL, timeout=5)
-        response.raise_for_status()
-        logger.info(f"Successfully accessed Purdue database for {moduleName}")
-        return response
-    except Exception as e:
-        logger.warning(f"Failed to access Purdue database: {e}")
-        return None
 
 
 class ChipBox(QWidget):
@@ -436,8 +413,12 @@ class ChipBox(QWidget):
         }
         moduleName_clean = moduleName.strip().upper() if moduleName else ""
         for moduleType, url in registries.items():
-            registry = try_cms_database(url, f"{moduleType} registry")
-            if registry is None:
+            try:
+                resp = requests.get(url, timeout=5)
+                resp.raise_for_status()
+                registry = resp.json()
+            except Exception as e:
+                logger.warning(f"Error loading {moduleType} registry from {url}: {e}")
                 continue
 
 
@@ -456,7 +437,15 @@ class ChipBox(QWidget):
     
     def _tryPurdueDatabase(self, moduleName):
         """Helper method: Try to fetch from Purdue database (backup)."""
-        return try_purdue_database(moduleName)
+        try:
+            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            response = requests.get(URL, timeout=5)
+            response.raise_for_status()
+            logger.info(f"Successfully accessed Purdue database for {moduleName}")
+            return response
+        except Exception as e:
+            logger.warning(f"Failed to access Purdue database: {e}")
+            return None
 
 
     def fetchHDIVersionFromDB(self, moduleName):
@@ -466,9 +455,9 @@ class ChipBox(QWidget):
             # Try CMS database first
             try:
                 URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                data = try_cms_database(URL, f"module JSON for {name_label}")
-                if data is None:
-                    raise RuntimeError(f"Could not fetch {name_label}.json")
+                response = requests.get(URL, timeout=5)
+                response.raise_for_status()
+                data = response.json()
 
                 for entry in data.get("bare_module_data", []):
                     version = entry.get("VERSION")
@@ -519,9 +508,9 @@ class ChipBox(QWidget):
             # Try CMS database first
             try:
                 URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                data = try_cms_database(URL, f"module JSON for {name_label}")
-                if data is None:
-                    raise RuntimeError(f"Could not fetch {name_label}.json")
+                response = requests.get(URL, timeout=5)
+                response.raise_for_status()
+                data = response.json()
 
                 if moduleType == "quad":
                     chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
@@ -600,9 +589,9 @@ class ChipBox(QWidget):
             # Try CMS database first
             try:
                 URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                data_json = try_cms_database(URL, f"module JSON for {name_label}")
-                if data_json is None:
-                    raise RuntimeError(f"Could not fetch {name_label}.json")
+                response = requests.get(URL, timeout=5)
+                response.raise_for_status()
+                data_json = response.json()
 
                 if moduleType == "quad":
                     chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
@@ -880,7 +869,15 @@ class BeBoardBox(QWidget):
 
     def _tryPurdueDatabase(self, moduleName):
         """Helper method: Try to fetch from Purdue database (backup)."""
-        return try_purdue_database(moduleName)
+        try:
+            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            response = requests.get(URL, timeout=5)
+            response.raise_for_status()
+            logger.info(f"Successfully accessed Purdue database for {moduleName}")
+            return response
+        except Exception as e:
+            logger.warning(f"Failed to access Purdue database: {e}")
+            return None
 
     @debounce(500)
     def onSerialNumberUpdate(self, module):
@@ -907,8 +904,12 @@ class BeBoardBox(QWidget):
 
             # Try CMS database first
             for mtype, url in registries.items():
-                registry = try_cms_database(url, f"{mtype} registry")
-                if registry is None:
+                try:
+                    resp = requests.get(url, timeout=5)
+                    resp.raise_for_status()
+                    registry = resp.json()
+                except Exception as e:
+                    logger.warning(f"Could not load registry {url}: {e}")
                     continue
 
                 for entry in registry:
@@ -925,9 +926,9 @@ class BeBoardBox(QWidget):
             if name_label:
                 try:
                     url = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                    data = try_cms_database(url, f"module JSON for {name_label}")
-                    if data is None:
-                        raise RuntimeError(f"Could not fetch {name_label}.json")
+                    resp = requests.get(url, timeout=5)
+                    resp.raise_for_status()
+                    data = resp.json()
                     moduleversion = None
                     for entry in data.get("bare_module_data", []):
                         version = entry.get("VERSION")
@@ -1485,7 +1486,15 @@ class SimpleBeBoardBox(QWidget):
 
     def _tryPurdueDatabase(self, moduleName):
         """Helper method: Try to fetch from Purdue database (backup)."""
-        return try_purdue_database(moduleName)
+        try:
+            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            response = requests.get(URL, timeout=5)
+            response.raise_for_status()
+            logger.info(f"Successfully accessed Purdue database for {moduleName}")
+            return response
+        except Exception as e:
+            logger.warning(f"Failed to access Purdue database: {e}")
+            return None
 
     def fetchModuleTypeDB(self, moduleName):
 
@@ -1501,8 +1510,12 @@ class SimpleBeBoardBox(QWidget):
 
             # Try CMS database first
             for mtype, url in registries.items():
-                registry = try_cms_database(url, f"{mtype} registry")
-                if registry is None:
+                try:
+                    resp = requests.get(url, timeout=5)
+                    resp.raise_for_status()
+                    registry = resp.json()
+                except Exception as e:
+                    logger.warning(f"Could not load registry {url}: {e}")
                     continue
 
                 for entry in registry:
@@ -1519,9 +1532,9 @@ class SimpleBeBoardBox(QWidget):
             if name_label:
                 try:
                     url = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                    data = try_cms_database(url, f"module JSON for {name_label}")
-                    if data is None:
-                        raise RuntimeError(f"Could not fetch {name_label}.json")
+                    resp = requests.get(url, timeout=5)
+                    resp.raise_for_status()
+                    data = resp.json()
                     moduleversion = None
                     for entry in data.get("bare_module_data", []):
                         version = entry.get("VERSION")
