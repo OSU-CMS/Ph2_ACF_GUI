@@ -424,15 +424,28 @@ class QtApplication(QWidget):
         status = False
         message = ""
         try:
+            response = requests.get("https://cms-it-modules-registry.web.cern.ch/", timeout=5)
+            status = response.status_code == 200
+            if status:
+                return True
+            message = f"CMS server responded with status code {response.status_code}"
+        except requests.RequestException as e:
+            logger.warning(f"CMS database connection failed: {e}")
+            message = f"CMS error: {e}"
+
+        try:
             response = requests.get(
-                "https://cms-it-modules-registry.web.cern.ch/"
+                "https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn=TEST",
+                timeout=5,
             )
             status = response.status_code == 200
-            if not status:
-                message = f"Server responded with status code {response.status_code}"
+            if status:
+                logger.warning("Using Purdue database fallback; CMS database unreachable")
+                return True
+            message = f"{message}; Purdue server responded with status code {response.status_code}"
         except requests.RequestException as e:
             logger.error(traceback.format_exc())
-            message = f"An error occurred: {e}"
+            message = f"{message}; Purdue error: {e}"
             status = False
 
         if not status:
@@ -440,7 +453,7 @@ class QtApplication(QWidget):
             msg.information(
                 None,
                 "Error",
-                f"There was an issue connecting to the CMS database, please check your internet connection.\nMessage: {message}",
+                f"There was an issue connecting to the CMS database and Purdue backup database, please check your internet connection.\nMessage: {message}",
                 QMessageBox.Ok,
             )
         return status
