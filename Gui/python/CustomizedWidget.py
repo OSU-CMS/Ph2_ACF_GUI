@@ -1087,7 +1087,7 @@ class SimpleBeBoardBox(QWidget):
             module.setMaximumHeight(50)
             module.typechanged.connect(self.on_TypeChanged)
             module.textchanged.connect(self.on_ModuleFilled)
-            module.setID(index)
+            module.setID(index+1)
             
             self.ListLayout.addWidget(module, index, 0, 1, 1)
         logger.debug(f"{__name__} : After connecting module signals")

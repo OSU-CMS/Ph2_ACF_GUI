@@ -4,7 +4,7 @@ import traceback
 from serial import SerialException
 from typing import Optional
 
-from Gui.QtGUIutils.QtStartWindow import SummaryBox
+from Gui.QtGUIutils.QtStartWindow import SummaryBox, QtStartWindow
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread, QTimer
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 from PyQt5.QtWidgets import (
@@ -438,19 +438,36 @@ class SimplifiedMainWidget(QWidget):
 
         # Need to setup coldbox cooling here so that we know what modules are enabled
         if site_settings.cooler == "Tessie":
-            self.enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()) + 1))
-
+            #self.enabled_tecs = list(range(1, len(self.BeBoardWidget.getModules()) + 1))
+            self.enabled_tecs = list(range(1, len(self.firmwareDescription[0].getModules()) + 1))
+            logger.info(f"Enabled TECs: {self.enabled_tecs}")
+            UsedChannels = site_settings.WorkingChannels[:len(self.firmwareDescription[0].getModules())]
+            logger.info(f"Working channels being used: {UsedChannels}")
             # Cool TECs, this may take some time
             first_key = list(self.instruments._module_dict.keys())[0]
             temperature = self.instruments._module_dict[first_key][
                 "cb"
             ].default_temperature
 
-            for tec in self.enabled_tecs:
+            keys_to_remove = [key for key in self.instruments._module_dict.keys()]
+            for key in UsedChannels:
+                if str(key-1) in keys_to_remove:
+                    keys_to_remove.remove(str(key-1))
+                for key in keys_to_remove:
+                        self.instruments._module_dict.pop(key)
+                for group_key, group in self.master.instruments.powering_groups.items():
+                    group.remove_module(key)        
+                for group_key, group in self.instruments.powering_groups.items():
+                    logger.info(f"Group key: {group_key}, Group: {group}, Modules: {group.modulenames}")
+
+                    logger.info(f"Module Dict:",self.instruments.get_modules())
+                    logger.info(f"Instruments:",self.instruments.get_instruments())
+
+            for tec in UsedChannels:
                 self.coldbox.on(channel=tec)
 
             self.coldbox.set_temperature_and_validate(
-                temperature, channel_list=self.enabled_tecs
+                temperature, channel_list=UsedChannels
             )
             self.timer.timeout.connect(self.check_coldbox_status)
             self.timer.start(self.coldbox_timer_delay)
