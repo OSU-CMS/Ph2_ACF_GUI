@@ -703,7 +703,7 @@ class ChipBox(QWidget):
     
     def getCINJ(self, pChipID):
         return self._get_chip_data_value(
-            pChipID, "CINJ", lambda: self._get_fe_setting_default("CINJ", "8")
+            pChipID, "CINJ", lambda: self._get_fe_setting_default("CINJ", "8e-12")
         )
 
     def getDAC_PREAMP_L_LIN(self, pChipID):
@@ -1431,6 +1431,7 @@ class BeBoardBox(QWidget):
                     self.ChipWidgetDict[module].getDAC_LDAC_LIN(chipID)
                 )
                 Module.getChips()[chipID].setADC_MAXIMUM_VOLT(
+        
                     self.ChipWidgetDict[module].getADC_MAXIMUM_VOLT(chipID)
                 )
                 Module.getChips()[chipID].setADC_OFFSET_VOLT(
