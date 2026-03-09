@@ -36,6 +36,9 @@ from Gui.GUIutils.settings import (
     ModuleLaneMap_Dict,
     ModuleType,
 )
+from InnerTrackerTests.FESettings import (
+    FESettingsB,
+)
 # from Gui.GUIutils.FirmwareUtil import *
 # from Gui.QtGUIutils.QtFwCheckDetails import *
 
@@ -637,66 +640,155 @@ class ChipBox(QWidget):
     def getEfuseID(self, pChipID):
         efuseID = self.findChild(QLineEdit, "EfuseIDEdit_{0}".format(pChipID))
         return efuseID.text()
-    
+
+    def _get_fe_setting_default(self, key, fallback="0"):
+        key_map = {
+            "VREF": "VREF_ADC",
+            "CINJ": "INJ_CAP",
+        }
+        source_key = key_map.get(key, key)
+
+        value = FESettingsB.get(source_key)
+        if value not in (None, ""):
+            # Internal VREF convention here is volts; FESettings stores mV.
+            if key == "VREF":
+                try:
+                    logger.debug(f"Using FE settings default for {key}: {value} mV (converted from FESettingsB)")
+                    return str(float(value) / 1000.0)
+                except Exception:
+                    logger.debug(f"Failed to convert VREF value {value}, using fallback {fallback}")
+                    return fallback
+            logger.debug(f"Using FE settings default for {key}: {value} (from FESettingsB)")
+            return str(value)
+
+        logger.debug(f"No FE settings default found for {key}, using hardcoded fallback: {fallback}")
+        return fallback
+
+    def _get_chip_data_value(self, pChipID, key, default="0"):
+        def resolve_default():
+            return default() if callable(default) else default
+
+        if not isinstance(self.chipData, dict):
+            resolved_default = resolve_default()
+            logger.debug(f"ChipID {pChipID}, {key}: No chip data available, using default: {resolved_default}")
+            return resolved_default
+
+        chip_entry = self.chipData.get(pChipID)
+        if chip_entry is None:
+            chip_entry = self.chipData.get(str(pChipID))
+        if not isinstance(chip_entry, dict):
+            resolved_default = resolve_default()
+            logger.debug(f"ChipID {pChipID}, {key}: Chip not found in database, using default: {resolved_default}")
+            return resolved_default
+
+        if key not in chip_entry or chip_entry.get(key) is None:
+            resolved_default = resolve_default()
+            logger.debug(f"ChipID {pChipID}, {key}: Key not found in database, using default: {resolved_default}")
+            return resolved_default
+
+        value = chip_entry.get(key)
+        
+        logger.debug(f"ChipID {pChipID}, {key}: Retrieved value from database: {value}")
+        return str(value)
+
     def getIREF(self, pChipID):
-        IREFthing = self.chipData[pChipID]["IREF"]
-        return IREFthing
+        return self._get_chip_data_value(
+            pChipID, "IREF", lambda: self._get_fe_setting_default("IREF", "0")
+        )
     
     def getVREF(self, pChipID):
-        VREFthing = self.chipData[pChipID]["VREF"]
-        return VREFthing
+        return self._get_chip_data_value(
+            pChipID, "VREF", lambda: self._get_fe_setting_default("VREF", "0.8")
+        )
     
     def getCINJ(self, pChipID):
-        CINJthing = self.chipData[pChipID]["CINJ"]
-        return CINJthing
+        return self._get_chip_data_value(
+            pChipID, "CINJ", lambda: self._get_fe_setting_default("CINJ", "8")
+        )
 
     def getDAC_PREAMP_L_LIN(self, pChipID):
-        DAC_PREAMP_L_LINthing = self.chipData[pChipID]["DAC_PREAMP_L_LIN"]
-        return DAC_PREAMP_L_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_L_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_L_LIN", "0"),
+        )
 
     def getDAC_PREAMP_R_LIN(self, pChipID):
-        DAC_PREAMP_R_LINthing = self.chipData[pChipID]["DAC_PREAMP_R_LIN"]
-        return DAC_PREAMP_R_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_R_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_R_LIN", "0"),
+        )
 
     def getDAC_PREAMP_TL_LIN(self, pChipID):
-        DAC_PREAMP_TL_LINthing = self.chipData[pChipID]["DAC_PREAMP_TL_LIN"]
-        return DAC_PREAMP_TL_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_TL_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_TL_LIN", "0"),
+        )
 
     def getDAC_PREAMP_TR_LIN(self, pChipID):
-        DAC_PREAMP_TR_LINthing = self.chipData[pChipID]["DAC_PREAMP_TR_LIN"]
-        return DAC_PREAMP_TR_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_TR_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_TR_LIN", "0"),
+        )
 
     def getDAC_PREAMP_T_LIN(self, pChipID):
-        DAC_PREAMP_T_LINthing = self.chipData[pChipID]["DAC_PREAMP_T_LIN"]
-        return DAC_PREAMP_T_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_T_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_T_LIN", "0"),
+        )
 
     def getDAC_PREAMP_M_LIN(self, pChipID):
-        DAC_PREAMP_M_LINthing = self.chipData[pChipID]["DAC_PREAMP_M_LIN"]
-        return DAC_PREAMP_M_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_M_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_M_LIN", "0"),
+        )
 
     def getDAC_REF_KRUM_LIN(self, pChipID):
-        DAC_REF_KRUM_LINthing = self.chipData[pChipID]["DAC_REF_KRUM_LIN"]
-        return DAC_REF_KRUM_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_REF_KRUM_LIN",
+            lambda: self._get_fe_setting_default("DAC_REF_KRUM_LIN", "0"),
+        )
 
     def getDAC_COMP_LIN(self, pChipID):
-        DAC_COMP_LINthing = self.chipData[pChipID]["DAC_COMP_LIN"]
-        return DAC_COMP_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_COMP_LIN",
+            lambda: self._get_fe_setting_default("DAC_COMP_LIN", "0"),
+        )
     
     def getDAC_COMP_TA_LIN(self, pChipID):
-        DAC_COMP_TA_LINthing = self.chipData[pChipID]["DAC_COMP_TA_LIN"]
-        return DAC_COMP_TA_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_COMP_TA_LIN",
+            lambda: self._get_fe_setting_default("DAC_COMP_TA_LIN", "0"),
+        )
 
     def getDAC_LDAC_LIN(self, pChipID):
-        DAC_LDAC_LINthing = self.chipData[pChipID]["DAC_LDAC_LIN"]
-        return DAC_LDAC_LINthing
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_LDAC_LIN",
+            lambda: self._get_fe_setting_default("DAC_LDAC_LIN", "0"),
+        )
     
     def getADC_OFFSET_VOLT(self, pChipID):
-        ADC_OFFSET_VOLTthing = self.chipData[pChipID]["ADC_OFFSET_VOLT"]
-        return ADC_OFFSET_VOLTthing
+        return self._get_chip_data_value(
+            pChipID,
+            "ADC_OFFSET_VOLT",
+            lambda: self._get_fe_setting_default("ADC_OFFSET_VOLT", "0"),
+        )
 
     def getADC_MAXIMUM_VOLT(self, pChipID):
-        ADC_MAXIMUM_VOLTthing = self.chipData[pChipID]["ADC_MAXIMUM_VOLT"]
-        return ADC_MAXIMUM_VOLTthing
+        return self._get_chip_data_value(
+            pChipID,
+            "ADC_MAXIMUM_VOLT",
+            lambda: self._get_fe_setting_default("ADC_MAXIMUM_VOLT", "0"),
+        )
 
     def getChipData(self):
         return self.chipData
