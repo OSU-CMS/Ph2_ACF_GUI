@@ -693,6 +693,9 @@ class QtStartWindow(QWidget):
         self.closeFlag = True
 
     def update_instrument_cluster(self):
+        if UI_testing:
+            logger.info("UI testing mode enabled. Skipping instrument cluster configuration.")
+            return
         if hasattr(self.master, 'instruments') and 'auto' in json_setup:
             logger.info("Automatically setting instrument cluster channels.")
             self._update_module_dict(UsedChannels=self._get_used_channels())
