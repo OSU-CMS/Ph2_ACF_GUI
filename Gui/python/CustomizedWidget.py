@@ -22,6 +22,8 @@ from lxml import etree
 import re
 import traceback
 import requests
+import time
+import threading
 
 from icicle.icicle.instrument_cluster import DummyInstrument
 import Gui.siteSettings as site_settings
@@ -42,6 +44,236 @@ from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
 # Global dictionary to store IREF values for each chip
 chip_iref_db = {}
+chip_data_cache = {}
+
+
+class _AsyncCallSignals(QtCore.QObject):
+    result = QtCore.pyqtSignal(object)
+    error = QtCore.pyqtSignal(str)
+
+
+class _AsyncCallRunnable(QtCore.QRunnable):
+    def __init__(self, fn):
+        super().__init__()
+        self.fn = fn
+        self.signals = _AsyncCallSignals()
+
+    def run(self):
+        try:
+            result = self.fn()
+            self.signals.result.emit(result)
+        except Exception as e:
+            self.signals.error.emit(str(e))
+
+
+class ModuleRegistryDataClient:
+    _CMS_BASE_URL = "https://cms-it-modules-registry.web.cern.ch"
+    _REGISTRIES = {
+        "quad": f"{_CMS_BASE_URL}/IT_Quad_Module.json",
+        "dual": f"{_CMS_BASE_URL}/IT_Double_Module.json",
+    }
+    _PURDUE_URL = "https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module}"
+
+    def __init__(self, ttl_seconds=900):
+        self.session = requests.Session()
+        self.ttl_seconds = ttl_seconds
+        self.thread_pool = QtCore.QThreadPool.globalInstance()
+        self._cache_lock = threading.RLock()
+        self._network_lock = threading.Lock()
+        self._registry_cache = {}
+        self._module_json_cache = {}
+        self._module_identity_cache = {}
+        self._purdue_cache = {}
+
+    def _normalize_module_name(self, moduleName):
+        return moduleName.strip().upper() if moduleName else ""
+
+    def _cache_get(self, cache, key):
+        with self._cache_lock:
+            item = cache.get(key)
+            if not item:
+                return None
+            if (time.time() - item["ts"]) > self.ttl_seconds:
+                cache.pop(key, None)
+                return None
+            return item["value"]
+
+    def _cache_set(self, cache, key, value):
+        with self._cache_lock:
+            cache[key] = {"ts": time.time(), "value": value}
+
+    def _get_json(self, url):
+        with self._network_lock:
+            resp = self.session.get(url, timeout=5)
+        resp.raise_for_status()
+        return resp.json()
+
+    def run_async(self, fn, on_success=None, on_error=None):
+        worker = _AsyncCallRunnable(fn)
+        if on_success is not None:
+            worker.signals.result.connect(on_success)
+        if on_error is not None:
+            worker.signals.error.connect(on_error)
+        self.thread_pool.start(worker)
+        return worker
+
+    def get_registry(self, moduleType):
+        cached = self._cache_get(self._registry_cache, moduleType)
+        if cached is not None:
+            return cached
+
+        url = self._REGISTRIES[moduleType]
+        registry = self._get_json(url)
+        self._cache_set(self._registry_cache, moduleType, registry)
+        return registry
+
+    def find_module_identity(self, moduleName):
+        moduleName_clean = self._normalize_module_name(moduleName)
+        if not moduleName_clean:
+            return None, None
+
+        cached = self._cache_get(self._module_identity_cache, moduleName_clean)
+        if cached is not None:
+            return cached
+
+        for moduleType in ["quad", "dual"]:
+            try:
+                registry = self.get_registry(moduleType)
+            except Exception as e:
+                logger.warning(
+                    f"Error loading {moduleType} registry from {self._REGISTRIES[moduleType]}: {e}"
+                )
+                continue
+
+            for entry in registry:
+                serial = (entry.get("SERIAL_NUMBER") or "").strip().upper()
+                if serial == moduleName_clean:
+                    name_label = entry.get("NAME_LABEL")
+                    result = (name_label, moduleType)
+                    self._cache_set(self._module_identity_cache, moduleName_clean, result)
+                    return result
+
+        result = (None, None)
+        self._cache_set(self._module_identity_cache, moduleName_clean, result)
+        return result
+
+    def get_module_json(self, name_label):
+        if not name_label:
+            return None
+
+        cached = self._cache_get(self._module_json_cache, name_label)
+        if cached is not None:
+            return cached
+
+        url = f"{self._CMS_BASE_URL}/{name_label}.json"
+        data = self._get_json(url)
+        self._cache_set(self._module_json_cache, name_label, data)
+        return data
+
+    def get_purdue_response(self, moduleName):
+        moduleName_clean = self._normalize_module_name(moduleName)
+        if not moduleName_clean:
+            return None
+
+        cached = self._cache_get(self._purdue_cache, moduleName_clean)
+        if cached is not None:
+            return cached
+
+        url = self._PURDUE_URL.format(module=moduleName_clean)
+        with self._network_lock:
+            response = self.session.get(url, timeout=5)
+        response.raise_for_status()
+        self._cache_set(self._purdue_cache, moduleName_clean, response)
+        return response
+
+    def fetch_module_type(self, moduleName):
+        name_label, moduleType = self.find_module_identity(moduleName)
+
+        if name_label and moduleType:
+            try:
+                data = self.get_module_json(name_label)
+                moduleversion = None
+                for entry in data.get("bare_module_data", []):
+                    version = entry.get("VERSION")
+                    if version is not None:
+                        moduleversion = version
+                        break
+
+                mv = _normalize_hdi_version(moduleversion, default="1")
+                moduletype = _module_type_to_display(moduleType)
+                logger.info(f"Module type from CMS database: {moduletype}, HDI version: {mv}")
+                return {"type": moduletype, "HDIversion": f"{mv}"}
+            except Exception as e:
+                logger.warning(
+                    f"Could not fetch module JSON for {name_label} from CMS: {e}. Trying Purdue..."
+                )
+
+        logger.warning(f"Module {moduleName} not found in CMS database. Trying Purdue...")
+        try:
+            response = self.get_purdue_response(moduleName)
+        except Exception as e:
+            logger.warning(f"Failed to access Purdue database: {e}")
+            response = None
+
+        if response:
+            moduletype = None
+            moduleversion = None
+
+            part_match = re.search(r"Part\s*=\s*([^<\n\r]+)", response.text)
+            version_match = re.search(r"Version\s*=\s*([^<\n\r]+)", response.text)
+            if part_match:
+                moduletype = part_match.group(1).strip()
+            if version_match:
+                moduleversion = version_match.group(1).strip()
+
+            if moduletype and moduleversion:
+                if moduletype.startswith("croc_1x2"):
+                    moduletype = "TFPX CROC 1x2"
+                elif moduletype.startswith("croc_2x2"):
+                    moduletype = "TFPX CROC Quad"
+
+                mv = _normalize_hdi_version(moduleversion, default=moduleversion)
+                logger.info(f"Module type from Purdue database: {moduletype}, HDI version: {mv}")
+                return {"type": moduletype, "HDIversion": f"{mv}"}
+
+        return None
+
+    def fetch_module_type_async(self, moduleName, on_success=None, on_error=None):
+        return self.run_async(
+            lambda: self.fetch_module_type(moduleName),
+            on_success=on_success,
+            on_error=on_error,
+        )
+
+
+module_registry_client = ModuleRegistryDataClient()
+
+
+def _normalize_hdi_version(version, default="1"):
+    if version is None:
+        return default
+    try:
+        vstr = str(version).strip()
+        if "." in vstr:
+            return str(int(float(vstr)))
+        try:
+            return str(int(vstr))
+        except Exception:
+            return vstr
+    except Exception:
+        return default
+
+
+def _module_type_to_display(moduleType):
+    if moduleType == "dual":
+        return "TFPX CROC 1x2"
+    if moduleType == "quad":
+        return "TFPX CROC Quad"
+    return ""
+
+
+def _fetch_module_type_from_databases(moduleName):
+    return module_registry_client.fetch_module_type(moduleName)
 
 
 class ClickOnlyComboBox(QComboBox):
@@ -183,6 +415,7 @@ class ModuleBox(QWidget):
 
 class ChipBox(QWidget):
     chipchanged = pyqtSignal(int, int)
+    chipDataLoaded = pyqtSignal(dict)
 
     # adding default value to serialNumber="RH0009" can prevent ChipBox from crashing under online mode
     def __init__(self, master, pChipType, serialNumber="RH0009"):
@@ -201,43 +434,24 @@ class ChipBox(QWidget):
         self.ChipGroupBoxDict = {}
         self.trimValues = None
         self.chipData = None
+        self._data_loading = False
 
-        if self.master.purdue_connected and self.serialNumber != "":
-            # trims = self.fetchTrimFromDB(self.serialNumber)
-            modulechipdata = self.fetchChipDataFromDB(self.serialNumber)
-            if modulechipdata:
-                self.chipData = modulechipdata
-                if set(self.ChipList) != set(modulechipdata.keys()):
-                    # msg = QMessageBox()
-                    # msg.information(
-                    #     None,
-                    #     "Error",
-                    #     f"Module {serialNumber} chip layout does not correspond to typical {pChipType} chip layouts. Please modify the trim values manually.",
-                    #     QMessageBox.Ok
-                    # )
-                    print(
-                        f"Module {serialNumber} chip layout does not correspond to typical {pChipType} chip layouts. Please modify the trim values manually."
-                    )
-                    self.ChipGroupBoxDict.clear()
-                    for chipid in self.ChipList:
-                        self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-                else:
-                    for chipid in self.ChipList:
-                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(
-                            chipid,
-                            modulechipdata[chipid]["VDDA"],
-                            modulechipdata[chipid]["VDDD"],
-                            modulechipdata[chipid]["EFUSE"],
-                            modulechipdata[chipid]["IREF"],
-                        )
-        else:
-            self.ChipGroupBoxDict.clear()
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-
-        self.makeChipGroupBox(self.ChipGroupBoxDict)
-
+        # Create layout before fetching data
+        self.mainLayout.addStretch()
         self.setLayout(self.mainLayout)
+        
+        # Show placeholder while loading data
+        if self.master.purdue_connected and self.serialNumber != "":
+            self._data_loading = True
+            self._add_loading_indicator()
+            # Fetch data asynchronously without blocking UI
+            self.fetchChipDataFromDB_async(
+                self.serialNumber,
+                on_success=self._on_chip_data_loaded,
+                on_error=self._on_chip_data_error
+            )
+        else:
+            self._populate_chip_boxes()
 
     def initList(self):
         self.module = ModuleBox(self.master.firmware)
@@ -246,6 +460,95 @@ class ChipBox(QWidget):
     def createList(self):
         for lane in ModuleLaneMap[self.chipType]:
             self.ChipList.append(ModuleLaneMap[self.chipType][lane])
+
+    def _add_loading_indicator(self):
+        """Show a loading message while fetching chip data"""
+        loading_label = QLabel("Loading chip data...")
+        loading_label.setAlignment(Qt.AlignCenter)
+        self.mainLayout.addWidget(loading_label)
+
+    def _populate_chip_boxes(self, modulechipdata=None):
+        """Populate the chip boxes in the main layout"""
+        # Clear existing layout
+        while self.mainLayout.count():
+            item = self.mainLayout.takeAt(0)
+            if item is not None:
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+        
+        if modulechipdata and set(self.ChipList) == set(modulechipdata.keys()):
+            # Data matches expected chip layout
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(
+                    chipid,
+                    modulechipdata[chipid]["VDDA"],
+                    modulechipdata[chipid]["VDDD"],
+                    modulechipdata[chipid]["EFUSE"],
+                    modulechipdata[chipid]["IREF"],
+                )
+        else:
+            # Use default chip boxes (no database values)
+            if modulechipdata:
+                print(
+                    f"Module {self.serialNumber} chip layout does not correspond to typical {self.chipType} chip layouts. Please modify the trim values manually."
+                )
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+
+        self.makeChipGroupBox(self.ChipGroupBoxDict)
+        self.mainLayout.addStretch()
+
+    def _on_chip_data_loaded(self, modulechipdata):
+        """Callback when chip data is successfully loaded from database"""
+        logger.debug(f"Chip data loaded for {self.serialNumber}")
+        self._data_loading = False
+        self.chipData = modulechipdata
+        self._populate_chip_boxes(modulechipdata)
+        self.chipDataLoaded.emit(modulechipdata)
+
+    def _on_chip_data_error(self, error_msg):
+        """Callback when chip data loading fails"""
+        logger.warning(f"Failed to load chip data for {self.serialNumber}: {error_msg}")
+        self._data_loading = False
+        # Populate with default boxes without database values
+        self._populate_chip_boxes(None)
+
+    def fetchChipDataFromDB_async(self, moduleName, on_success=None, on_error=None):
+        """Asynchronously fetch chip data from database"""
+        def _fetch():
+            return self.fetchChipDataFromDB(moduleName)
+
+        module_registry_client.run_async(
+            _fetch,
+            on_success=on_success,
+            on_error=on_error
+        )
+
+    def fetchTrimFromDB_async(self, moduleName, on_success=None, on_error=None):
+        """Asynchronously fetch trim data from database"""
+        def _fetch():
+            return self.fetchTrimFromDB(moduleName)
+
+        module_registry_client.run_async(
+            _fetch,
+            on_success=on_success,
+            on_error=on_error
+        )
+
+    def fetchHDIVersionFromDB_async(self, moduleName, on_success=None, on_error=None):
+        """Asynchronously fetch HDI version from database"""
+        def _fetch():
+            return self.fetchHDIVersionFromDB(moduleName)
+
+        module_registry_client.run_async(
+            _fetch,
+            on_success=on_success,
+            on_error=on_error
+        )
+
+
 
     # get trim values from DB
     def makeChipBoxWithDB(self, pChipID, VDDA, VDDD, EfuseID="0", IREF="0"):
@@ -407,30 +710,13 @@ class ChipBox(QWidget):
         return ChipStatus
 
     def fetchNameLabel(self, moduleName): # Step 1: get the name label and module type (dual or quad)
-        registries = {
-            "quad": "https://cms-it-modules-registry.web.cern.ch/IT_Quad_Module.json",
-            "dual": "https://cms-it-modules-registry.web.cern.ch/IT_Double_Module.json",
-        }
-        moduleName_clean = moduleName.strip().upper() if moduleName else ""
-        for moduleType, url in registries.items():
-            try:
-                resp = requests.get(url, timeout=5)
-                resp.raise_for_status()
-                registry = resp.json()
-            except Exception as e:
-                logger.warning(f"Error loading {moduleType} registry from {url}: {e}")
-                continue
-
-
-            for entry in registry:
-                serial = (entry.get("SERIAL_NUMBER") or "").strip().upper()
-                if serial == moduleName_clean:
-                    name_label = entry.get("NAME_LABEL")
-                    logger.debug(
-                        f"found module {moduleName} in {moduleType} registry with name label {name_label}"
-                    )
-                    print(f"found module {moduleName} in {moduleType} registry with name label {name_label}")
-                    return name_label, moduleType
+        name_label, moduleType = module_registry_client.find_module_identity(moduleName)
+        if name_label and moduleType:
+            logger.debug(
+                f"found module {moduleName} in {moduleType} registry with name label {name_label}"
+            )
+            print(f"found module {moduleName} in {moduleType} registry with name label {name_label}")
+            return name_label, moduleType
         
         # If not found in CMS registry, return None to trigger fallback
         return None, None
@@ -438,10 +724,8 @@ class ChipBox(QWidget):
     def _tryPurdueDatabase(self, moduleName):
         """Helper method: Try to fetch from Purdue database (backup)."""
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
-            response = requests.get(URL, timeout=5)
-            response.raise_for_status()
-            logger.info(f"Successfully accessed Purdue database for {moduleName}")
+            response = module_registry_client.get_purdue_response(moduleName)
+            logger.debug(f"Purdue database response available for {moduleName}")
             return response
         except Exception as e:
             logger.warning(f"Failed to access Purdue database: {e}")
@@ -454,23 +738,13 @@ class ChipBox(QWidget):
         if name_label:
             # Try CMS database first
             try:
-                URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                response = requests.get(URL, timeout=5)
-                response.raise_for_status()
-                data = response.json()
+                data = module_registry_client.get_module_json(name_label)
 
                 for entry in data.get("bare_module_data", []):
                     version = entry.get("VERSION")
                     if version is not None:
                         try:
-                            vstr = str(version).strip()
-                            if "." in vstr:
-                                vstr = str(int(float(vstr)))
-                            else:
-                                try:
-                                    vstr = str(int(vstr))
-                                except Exception:
-                                    pass
+                            vstr = _normalize_hdi_version(version, default=str(version).strip())
                             logger.info(f"HDI version from CMS database: {vstr}")
                             return vstr
                         except Exception:
@@ -502,15 +776,17 @@ class ChipBox(QWidget):
 
     ## This function returns a list of dictionaries.  Each element of the list is a chip dictinary.
     def fetchChipDataFromDB(self, moduleName):
+        module_name_key = moduleName.strip().upper() if moduleName else ""
+        if module_name_key in chip_data_cache:
+            logger.debug(f"Using cached chip data for {moduleName}")
+            return chip_data_cache[module_name_key]
+
         name_label, moduleType = self.fetchNameLabel(moduleName)
         
         if name_label and moduleType:
             # Try CMS database first
             try:
-                URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                response = requests.get(URL, timeout=5)
-                response.raise_for_status()
-                data = response.json()
+                data = module_registry_client.get_module_json(name_label)
 
                 if moduleType == "quad":
                     chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
@@ -543,6 +819,8 @@ class ChipBox(QWidget):
                     "DAC_LDAC_LIN": str(chip.get("probe_data", {}).get("DAC_LDAC_LIN", "0")),
                     }
                 logger.info(f"Fetched chip data for {name_label} from CMS database: {chipdata}")
+                if module_name_key:
+                    chip_data_cache[module_name_key] = chipdata
                 return chipdata
             except Exception as e:
                 logger.warning(f"Failed to fetch chip data from CMS database: {e}. Trying Purdue...")
@@ -575,6 +853,8 @@ class ChipBox(QWidget):
                     chipdata[chipidmap[str(i)]] = chip
                 
                 logger.info(f"Fetched chip data for {moduleName} from Purdue database: {chipdata}")
+                if module_name_key:
+                    chip_data_cache[module_name_key] = chipdata
                 return chipdata
         except Exception as e:
             logger.warning(f"Failed to fetch from Purdue database: {e}")
@@ -588,10 +868,7 @@ class ChipBox(QWidget):
         if name_label and moduleType:
             # Try CMS database first
             try:
-                URL = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                response = requests.get(URL, timeout=5)
-                response.raise_for_status()
-                data_json = response.json()
+                data_json = module_registry_client.get_module_json(name_label)
 
                 if moduleType == "quad":
                     chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
@@ -695,6 +972,8 @@ class BeBoardBox(QWidget):
         self.firmware = firmware
         self.ModuleList = []
         self.ChipWidgetDict = {}
+        self.ChipWidgetKeyDict = {}
+        self._serial_lookup_generation = 0
         self.mainLayout = QVBoxLayout()  # Use QVBoxLayout for vertical layout
         self._focus_after_update = None  # Track which module should receive focus after updateList
 
@@ -752,6 +1031,12 @@ class BeBoardBox(QWidget):
         serialNumberWidgets = []
         chipIDWidgets = []
 
+        active_modules = set(self.ModuleList)
+        for cached_module in list(self.ChipWidgetDict.keys()):
+            if cached_module not in active_modules:
+                self.ChipWidgetDict.pop(cached_module, None)
+                self.ChipWidgetKeyDict.pop(cached_module, None)
+
         # Clear existing layout
         for i in reversed(range(self.ListLayout.count())):
             widget = self.ListLayout.itemAt(i).widget()
@@ -788,8 +1073,14 @@ class BeBoardBox(QWidget):
                     self.createSerialUpdateCallback(module)
                 )
 
-            chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
-            self.ChipWidgetDict[module] = chipBox
+            chip_key = (module.getSerialNumber(), module.getType())
+            cached_key = self.ChipWidgetKeyDict.get(module)
+            if module in self.ChipWidgetDict and cached_key == chip_key:
+                chipBox = self.ChipWidgetDict[module]
+            else:
+                chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
+                self.ChipWidgetDict[module] = chipBox
+                self.ChipWidgetKeyDict[module] = chip_key
             module.setMaximumHeight(50)
 
             serialNumberWidgets.append(module)
@@ -870,10 +1161,8 @@ class BeBoardBox(QWidget):
     def _tryPurdueDatabase(self, moduleName):
         """Helper method: Try to fetch from Purdue database (backup)."""
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
-            response = requests.get(URL, timeout=5)
-            response.raise_for_status()
-            logger.info(f"Successfully accessed Purdue database for {moduleName}")
+            response = module_registry_client.get_purdue_response(moduleName)
+            logger.debug(f"Purdue database response available for {moduleName}")
             return response
         except Exception as e:
             logger.warning(f"Failed to access Purdue database: {e}")
@@ -881,110 +1170,44 @@ class BeBoardBox(QWidget):
 
     @debounce(500)
     def onSerialNumberUpdate(self, module):
-        data = self.fetchModuleTypeDB(module.getSerialNumber())
-        if data:
-            if module.TypeCombo.isEnabled():
-                module.TypeCombo.setCurrentText(data["type"])
-            if module.HDIVersionCombo.isEnabled():
-                module.HDIVersionCombo.setCurrentText(data["HDIversion"])
-                print('returning hdi version {0}'.format(data["HDIversion"]))
+        serial_number = module.getSerialNumber()
+        if not serial_number:
+            return
 
-            self.updateList()
+        self._serial_lookup_generation += 1
+        lookup_generation = self._serial_lookup_generation
+
+        def _apply_module_type(data):
+            if lookup_generation != self._serial_lookup_generation:
+                return
+
+            if data:
+                if module.TypeCombo.isEnabled():
+                    module.TypeCombo.setCurrentText(data["type"])
+                if module.HDIVersionCombo.isEnabled():
+                    module.HDIVersionCombo.setCurrentText(data["HDIversion"])
+                    print('returning hdi version {0}'.format(data["HDIversion"]))
+
+                self.updateList()
+
+        def _handle_lookup_error(error_message):
+            if lookup_generation != self._serial_lookup_generation:
+                return
+            logger.warning(
+                f"Asynchronous module lookup failed for {serial_number}: {error_message}"
+            )
+
+        module_registry_client.fetch_module_type_async(
+            serial_number,
+            on_success=_apply_module_type,
+            on_error=_handle_lookup_error,
+        )
 
     def fetchModuleTypeDB(self, moduleName):
         try:
-            registries = {
-                "quad": "https://cms-it-modules-registry.web.cern.ch/IT_Quad_Module.json",
-                "dual": "https://cms-it-modules-registry.web.cern.ch/IT_Double_Module.json",
-            }
-
-            moduleName_clean = moduleName.strip().upper() if moduleName else ""
-            name_label = None
-            moduleType = None
-
-            # Try CMS database first
-            for mtype, url in registries.items():
-                try:
-                    resp = requests.get(url, timeout=5)
-                    resp.raise_for_status()
-                    registry = resp.json()
-                except Exception as e:
-                    logger.warning(f"Could not load registry {url}: {e}")
-                    continue
-
-                for entry in registry:
-                    serial = (entry.get("SERIAL_NUMBER") or "").strip().upper()
-                    if serial == moduleName_clean:
-                        name_label = entry.get("NAME_LABEL")
-                        moduleType = mtype
-                        logger.info(f"Found module {moduleName} in CMS registry as {name_label}")
-                        break
-                if name_label:
-                    break
-
-            # Fetch module JSON to determine HDI/version info from CMS
-            if name_label:
-                try:
-                    url = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                    resp = requests.get(url, timeout=5)
-                    resp.raise_for_status()
-                    data = resp.json()
-                    moduleversion = None
-                    for entry in data.get("bare_module_data", []):
-                        version = entry.get("VERSION")
-                        if version is not None:
-                            moduleversion = str(version).strip()
-                            break
-                    if moduleversion is None:
-                        moduleversion = "1"
-                except Exception as e:
-                    logger.warning(f"Could not fetch module JSON for {name_label} from CMS: {e}. Trying Purdue...")
-                    name_label = None
-                    moduleType = None
-                
-                if name_label and moduleType:
-                    if moduleType == "dual":
-                        moduletype = "TFPX CROC 1x2"
-                    elif moduleType == "quad":
-                        moduletype = "TFPX CROC Quad"
-                    else:
-                        moduletype = ""
-
-                    try:
-                        mv = str(moduleversion).strip()
-                        if "." in mv:
-                            mv = str(int(float(mv)))
-                        else:
-                            try:
-                                mv = str(int(mv))
-                            except Exception:
-                                pass
-                    except Exception:
-                        mv = str(moduleversion)
-
-                    logger.info(f"Module type from CMS database: {moduletype}, HDI version: {mv}")
-                    return {"type": moduletype, "HDIversion": f"{mv}"}
-
-            # Fallback to Purdue database if not found in CMS
-            logger.warning(f"Module {moduleName} not found in CMS database. Trying Purdue...")
-            response = self._tryPurdueDatabase(moduleName)
-            if response:
-                moduletype, moduleversion = None, None
-                res = str(response.content).split("\\n")
-                for i in res:
-                    if i.startswith("<br>Part = "):
-                        moduletype = i.split("<br>Part = ")[1]
-                    elif i.startswith("<br>Version = "):
-                        moduleversion = i.split("<br>Version = ")[1]
-
-                if moduletype and moduleversion:
-                    if moduletype.startswith("croc_1x2"):
-                        moduletype = "TFPX CROC 1x2"
-                    elif moduletype.startswith("croc_2x2"):
-                        moduletype = "TFPX CROC Quad"
-
-                    logger.info(f"Module type from Purdue database: {moduletype}, HDI version: {moduleversion}")
-                    return {"type": moduletype, "HDIversion": f"{moduleversion}"}
+            data = _fetch_module_type_from_databases(moduleName)
+            if data:
+                return data
 
             # If we get here, neither database has the module
             logger.warning(f"Could not find {moduleName} in either CMS or Purdue database")
@@ -1004,6 +1227,8 @@ class BeBoardBox(QWidget):
 
     def removeModule(self, module):
         self.ModuleList.remove(module)
+        self.ChipWidgetDict.pop(module, None)
+        self.ChipWidgetKeyDict.pop(module, None)
         module.deleteLater()
         self.updateList()
         self.changed.emit()
@@ -1487,10 +1712,8 @@ class SimpleBeBoardBox(QWidget):
     def _tryPurdueDatabase(self, moduleName):
         """Helper method: Try to fetch from Purdue database (backup)."""
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
-            response = requests.get(URL, timeout=5)
-            response.raise_for_status()
-            logger.info(f"Successfully accessed Purdue database for {moduleName}")
+            response = module_registry_client.get_purdue_response(moduleName)
+            logger.debug(f"Purdue database response available for {moduleName}")
             return response
         except Exception as e:
             logger.warning(f"Failed to access Purdue database: {e}")
@@ -1499,86 +1722,9 @@ class SimpleBeBoardBox(QWidget):
     def fetchModuleTypeDB(self, moduleName):
 
         try:
-            registries = {
-                "quad": "https://cms-it-modules-registry.web.cern.ch/IT_Quad_Module.json",
-                "dual": "https://cms-it-modules-registry.web.cern.ch/IT_Double_Module.json",
-            }
-
-            moduleName_clean = moduleName.strip().upper() if moduleName else ""
-            name_label = None
-            moduleType = None
-
-            # Try CMS database first
-            for mtype, url in registries.items():
-                try:
-                    resp = requests.get(url, timeout=5)
-                    resp.raise_for_status()
-                    registry = resp.json()
-                except Exception as e:
-                    logger.warning(f"Could not load registry {url}: {e}")
-                    continue
-
-                for entry in registry:
-                    serial = (entry.get("SERIAL_NUMBER") or "").strip().upper()
-                    if serial == moduleName_clean:
-                        name_label = entry.get("NAME_LABEL")
-                        moduleType = mtype
-                        logger.info(f"Found module {moduleName} in CMS registry as {name_label}")
-                        break
-                if name_label:
-                    break
-
-            # Fetch module JSON to determine HDI/version info from CMS
-            if name_label:
-                try:
-                    url = f"https://cms-it-modules-registry.web.cern.ch/{name_label}.json"
-                    resp = requests.get(url, timeout=5)
-                    resp.raise_for_status()
-                    data = resp.json()
-                    moduleversion = None
-                    for entry in data.get("bare_module_data", []):
-                        version = entry.get("VERSION")
-                        if version is not None:
-                            moduleversion = str(version).strip()
-                            break
-                    if moduleversion is None:
-                        moduleversion = "1"
-                except Exception as e:
-                    logger.warning(f"Could not fetch module JSON for {name_label} from CMS: {e}. Trying Purdue...")
-                    name_label = None
-                    moduleType = None
-                
-                if name_label and moduleType:
-                    if moduleType == "dual":
-                        moduletype = "TFPX CROC 1x2"
-                    elif moduleType == "quad":
-                        moduletype = "TFPX CROC Quad"
-                    else:
-                        moduletype = ""
-
-                    logger.info(f"Module type from CMS database: {moduletype}, HDI version: {moduleversion}")
-                    return {"type": moduletype, "HDIversion": f"{moduleversion}"}
-
-            # Fallback to Purdue database if not found in CMS
-            logger.warning(f"Module {moduleName} not found in CMS database. Trying Purdue...")
-            response = self._tryPurdueDatabase(moduleName)
-            if response:
-                moduletype, moduleversion = None, None
-                res = str(response.content).split("\\n")
-                for i in res:
-                    if i.startswith("<br>Part = "):
-                        moduletype = i.split("<br>Part = ")[1]
-                    elif i.startswith("<br>Version = "):
-                        moduleversion = i.split("<br>Version = ")[1]
-
-                if moduletype and moduleversion:
-                    if moduletype.startswith("croc_1x2"):
-                        moduletype = "TFPX CROC 1x2"
-                    elif moduletype.startswith("croc_2x2"):
-                        moduletype = "TFPX CROC Quad"
-
-                    logger.info(f"Module type from Purdue database: {moduletype}, HDI version: {moduleversion}")
-                    return {"type": moduletype, "HDIversion": f"{moduleversion}"}
+            data = _fetch_module_type_from_databases(moduleName)
+            if data:
+                return data
 
             # If we get here, neither database has the module
             logger.warning(f"Could not find {moduleName} in either CMS or Purdue database")
@@ -1642,12 +1788,17 @@ class SimpleBeBoardBox(QWidget):
                         None,
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",
                     )
+
+            module_db_data = self.fetchModuleTypeDB(module.getSerialNumber())
+            if module_db_data is None:
+                return (None, f"Could not fetch module metadata for {module.getSerialNumber()}.")
+
             # Create a QtModule object based on the input data
             Module = QtModule(
                 moduleName=module.getSerialNumber(),
-                moduleType=self.fetchModuleTypeDB(module.getSerialNumber())["type"],
+                moduleType=module_db_data["type"],
                 moduleVersion=module.getVersion(module.getSerialNumber()),
-                hdiVersion=self.fetchModuleTypeDB(module.getSerialNumber())["HDIversion"],
+                hdiVersion=module_db_data["HDIversion"],
                 FMCPort=cable_properties["FMCPort"],
             )
             Module.setOpticalGroup(
