@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
-
+from Gui.QtGUIutils.QtThermalModulesWindow import ThermalTestModules
 import sys
 import os
 import traceback
@@ -41,10 +41,10 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
+from Gui.python.f4t_temperature_chamber import F4TTemperatureChamber
 
 from icicle.icicle.instrument_cluster import InstrumentCluster
 # from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
-
 
 from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
@@ -807,8 +807,12 @@ class QtApplication(QWidget):
         # chamber, check if the resource is defined in siteConfig first.
         # Maybe catching an error isn't the prettiest way to do this
         # If it is not, disable the button
+
+        #instead of above:
+        #check if resource is defined in thermal test dictionary first
         try:
-            site_settings.temp_chamber_resource
+            #site_settings.temp_chamber_resource
+            self.chamber = F4TTemperatureChamber().connect("TCPIP::128.146.32.200::5025::SOCKET")
         except AttributeError:
             self.ThermalTestButton.setEnabled(False)
             self.AbortThermalTestButton.setEnabled(False)
@@ -825,9 +829,20 @@ class QtApplication(QWidget):
         self.ThermalTestButton.setMaximumHeight(kMaximumHeight)
         self.ThermalTestButton.clicked.connect(self.runThermalTest)
 
-        self.ThermalProfileEdit = QLineEdit("")
-        self.ThermalProfileEdit.setEchoMode(QLineEdit.Normal)
-        self.ThermalProfileEdit.setPlaceholderText("Enter Profile Number")
+        self.ThermalProfileList = [
+            "Temperature Test","Burn-In","Thermal Stress Test",
+            "TST - 45","TST - 50","TST - 55","TST - 60", "TST - 65", 
+            "TST - 70", "Cold Test"
+        ]
+        self.ThermalProfileCombo = QComboBox()
+        self.ThermalProfileCombo.additems(self.ThermalProfileList)
+        self.ThermalProfileCombo.setCurrentText("")
+        #self.ThermalProfileCombo.activated.connect(self.)
+
+        #self.ThermalProfileEdit = QLineEdit("")
+        #self.ThermalProfileEdit.setEchoMode(QLineEdit.Normal)
+        #self.ThermalProfileEdit.setPlaceholderText("Enter Profile Number")
+        #self.ThermalProfileEdit.setPlaceholderText("Enter Profile Name")
 
         self.CoolerBox = QGroupBox(f"{site_settings.cooler} Controller", self)
         self.CoolerLayout = QGridLayout()
@@ -872,7 +887,8 @@ class QtApplication(QWidget):
         self.ChillerOption.setLayout(self.ChillerLayout)
 
         layout.addWidget(self.ThermalTestButton, 4, 0, 1, 1)
-        layout.addWidget(self.ThermalProfileEdit, 4, 1, 1, 1)
+        #layout.addWidget(self.ThermalProfileEdit, 4, 1, 1, 1)
+        layout.addWidget(self.ThermalProfileCombo, 4, 1, 1, 1)
         layout.addWidget(self.AbortThermalTestButton, 5, 0, 1, 1)
 
         self.MainOption.setLayout(layout)
@@ -1054,7 +1070,7 @@ class QtApplication(QWidget):
                     self.groupbox_mapping[instrument].setDisabled(False)
 
         else:
-            logger.info("You are running in manual mode. Reconnectingdoes nothing")
+            logger.info("You are running in manual mode. Reconnecting does nothing")
 
     def reCreateMain(self):
         print("Refreshing the main page")
@@ -1121,6 +1137,29 @@ class QtApplication(QWidget):
 
     def runThermalTest(self):
         # Verify input of input data:
+        profile_name = self.ThermalProfileCombo.currentText()
+        #self.chamber = F4TTemperatureChamber.connect("TCPIP::128.146.32.200::5025::SOCKET") #move higher up in the code
+        profile_dictionary = self.chamber.profiles
+
+        # Check if this value corresponds to a profile on the f4t
+
+        if profile_name in profile_dictionary:
+            self.profile_number = profile_dictionary[profile_name]
+        else:
+            logger.error("Could not find profile name: %s", profile_name)
+        
+        try:
+            # Set the profile on the chamber
+            self.chamber.set_profile(self.profile_number)
+            # Create and show the thermal test window
+            self.ThermalTestWindow = ThermalTestModules()
+            self.ThermalTestWindow.show()
+        except Exception as e:
+            logger.error("Could not set profile: %s", e)
+            return
+        
+
+        """ # Verify input of input data:
         profile_number = self.ThermalProfileEdit.text()
 
         # Check if this value is an int
@@ -1134,9 +1173,10 @@ class QtApplication(QWidget):
                 "Please enter a valid profile number. It must be an integer",
                 QMessageBox.Ok,
             )
-            return
+            return """
+
         # Import icicle module for temperature chamber
-        print(site_settings.temp_chamber_resource)
+        # print(site_settings.temp_chamber_resource)
         #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
 
         #with temp_chamber:
@@ -1144,17 +1184,15 @@ class QtApplication(QWidget):
         #    profile_name = temp_chamber.query("SELECT_PROFILE")
 
         message_box = QMessageBox()
-        #message_box.setText(
-        #    f'Temperature chamberprofile "{profile_name}" has been chosen'
-        #)
+        message_box.setText(f'Temperature chamberprofile "{profile_name}" has been chosen')
         message_box.setInformativeText("Is this the correct profile?")
         message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         message_box.setDefaultButton(QMessageBox.Yes)
         response = message_box.exec()
 
-        #if response == QMessageBox.Yes:
-        #    with temp_chamber:
-        #        temp_chamber.set("CONTROL_PROFILE", "START")
+        if response == QMessageBox.Yes:
+            with self.chamber:
+                self.chamber.control_profile("START")
 
         if response == QMessageBox.No:
             return
@@ -1390,3 +1428,9 @@ class QtApplication(QWidget):
             event.accept()
         else:
             event.ignore()
+
+"""if __name__ =="__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())"""
