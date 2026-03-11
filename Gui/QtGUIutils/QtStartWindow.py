@@ -32,12 +32,12 @@ from Gui.siteSettings import (
     ModuleCurrentMap,
     icicle_instrument_setup,
     WorkingChannels,
-    cooler
+    cooler,
+    UI_testing
 )
 from icicle.icicle.instrument_cluster import DummyInstrument
 from Gui.QtGUIutils.TestSearchCombo import configure_test_combo
 from InnerTrackerTests.TestSequences import TestList
-
 
 
 logger = get_logger(__name__)
@@ -560,6 +560,9 @@ class QtStartWindow(QWidget):
         self.master.ExitButton.setDisabled(False)
 
     def checkFwPar(self, pfirmwareName):
+        if UI_testing:
+            self.passCheck = True
+            return True
         GlobalCheck = True
         for item in self.ModuleList:
             # item.checkFwPar(pfirmwareName, item.module.getType())
@@ -690,6 +693,9 @@ class QtStartWindow(QWidget):
         self.closeFlag = True
 
     def update_instrument_cluster(self):
+        if UI_testing:
+            logger.info("UI testing mode enabled. Skipping instrument cluster configuration.")
+            return
         if hasattr(self.master, 'instruments') and 'auto' in json_setup:
             logger.info("Automatically setting instrument cluster channels.")
             self._update_module_dict(UsedChannels=self._get_used_channels())

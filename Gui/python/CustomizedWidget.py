@@ -2,6 +2,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
+    QApplication,
     QCheckBox,
     QComboBox,
     QGridLayout,
@@ -20,6 +21,9 @@ import requests
 from lxml import etree
 import re
 import traceback
+import requests
+import time
+import threading
 
 from icicle.icicle.instrument_cluster import DummyInstrument
 import Gui.siteSettings as site_settings
@@ -32,6 +36,9 @@ from Gui.GUIutils.settings import (
     ModuleLaneMap_Dict,
     ModuleType,
 )
+from InnerTrackerTests.FESettings import (
+    FESettingsB,
+)
 # from Gui.GUIutils.FirmwareUtil import *
 # from Gui.QtGUIutils.QtFwCheckDetails import *
 
@@ -40,6 +47,236 @@ from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
 # Global dictionary to store IREF values for each chip
 chip_iref_db = {}
+chip_data_cache = {}
+
+
+class _AsyncCallSignals(QtCore.QObject):
+    result = QtCore.pyqtSignal(object)
+    error = QtCore.pyqtSignal(str)
+
+
+class _AsyncCallRunnable(QtCore.QRunnable):
+    def __init__(self, fn):
+        super().__init__()
+        self.fn = fn
+        self.signals = _AsyncCallSignals()
+
+    def run(self):
+        try:
+            result = self.fn()
+            self.signals.result.emit(result)
+        except Exception as e:
+            self.signals.error.emit(str(e))
+
+
+class ModuleRegistryDataClient:
+    _CMS_BASE_URL = "https://cms-it-modules-registry.web.cern.ch"
+    _REGISTRIES = {
+        "quad": f"{_CMS_BASE_URL}/IT_Quad_Module.json",
+        "dual": f"{_CMS_BASE_URL}/IT_Double_Module.json",
+    }
+    _PURDUE_URL = "https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module}"
+
+    def __init__(self, ttl_seconds=900):
+        self.session = requests.Session()
+        self.ttl_seconds = ttl_seconds
+        self.thread_pool = QtCore.QThreadPool.globalInstance()
+        self._cache_lock = threading.RLock()
+        self._network_lock = threading.Lock()
+        self._registry_cache = {}
+        self._module_json_cache = {}
+        self._module_identity_cache = {}
+        self._purdue_cache = {}
+
+    def _normalize_module_name(self, moduleName):
+        return moduleName.strip().upper() if moduleName else ""
+
+    def _cache_get(self, cache, key):
+        with self._cache_lock:
+            item = cache.get(key)
+            if not item:
+                return None
+            if (time.time() - item["ts"]) > self.ttl_seconds:
+                cache.pop(key, None)
+                return None
+            return item["value"]
+
+    def _cache_set(self, cache, key, value):
+        with self._cache_lock:
+            cache[key] = {"ts": time.time(), "value": value}
+
+    def _get_json(self, url):
+        with self._network_lock:
+            resp = self.session.get(url, timeout=5)
+        resp.raise_for_status()
+        return resp.json()
+
+    def run_async(self, fn, on_success=None, on_error=None):
+        worker = _AsyncCallRunnable(fn)
+        if on_success is not None:
+            worker.signals.result.connect(on_success)
+        if on_error is not None:
+            worker.signals.error.connect(on_error)
+        self.thread_pool.start(worker)
+        return worker
+
+    def get_registry(self, moduleType):
+        cached = self._cache_get(self._registry_cache, moduleType)
+        if cached is not None:
+            return cached
+
+        url = self._REGISTRIES[moduleType]
+        registry = self._get_json(url)
+        self._cache_set(self._registry_cache, moduleType, registry)
+        return registry
+
+    def find_module_identity(self, moduleName):
+        moduleName_clean = self._normalize_module_name(moduleName)
+        if not moduleName_clean:
+            return None, None
+
+        cached = self._cache_get(self._module_identity_cache, moduleName_clean)
+        if cached is not None:
+            return cached
+
+        for moduleType in ["quad", "dual"]:
+            try:
+                registry = self.get_registry(moduleType)
+            except Exception as e:
+                logger.warning(
+                    f"Error loading {moduleType} registry from {self._REGISTRIES[moduleType]}: {e}"
+                )
+                continue
+
+            for entry in registry:
+                serial = (entry.get("SERIAL_NUMBER") or "").strip().upper()
+                if serial == moduleName_clean:
+                    name_label = entry.get("NAME_LABEL")
+                    result = (name_label, moduleType)
+                    self._cache_set(self._module_identity_cache, moduleName_clean, result)
+                    return result
+
+        result = (None, None)
+        self._cache_set(self._module_identity_cache, moduleName_clean, result)
+        return result
+
+    def get_module_json(self, name_label):
+        if not name_label:
+            return None
+
+        cached = self._cache_get(self._module_json_cache, name_label)
+        if cached is not None:
+            return cached
+
+        url = f"{self._CMS_BASE_URL}/{name_label}.json"
+        data = self._get_json(url)
+        self._cache_set(self._module_json_cache, name_label, data)
+        return data
+
+    def get_purdue_response(self, moduleName):
+        moduleName_clean = self._normalize_module_name(moduleName)
+        if not moduleName_clean:
+            return None
+
+        cached = self._cache_get(self._purdue_cache, moduleName_clean)
+        if cached is not None:
+            return cached
+
+        url = self._PURDUE_URL.format(module=moduleName_clean)
+        with self._network_lock:
+            response = self.session.get(url, timeout=5)
+        response.raise_for_status()
+        self._cache_set(self._purdue_cache, moduleName_clean, response)
+        return response
+
+    def fetch_module_type(self, moduleName):
+        name_label, moduleType = self.find_module_identity(moduleName)
+
+        if name_label and moduleType:
+            try:
+                data = self.get_module_json(name_label)
+                moduleversion = None
+                for entry in data.get("bare_module_data", []):
+                    version = entry.get("VERSION")
+                    if version is not None:
+                        moduleversion = version
+                        break
+
+                mv = _normalize_hdi_version(moduleversion, default="1")
+                moduletype = _module_type_to_display(moduleType)
+                logger.info(f"Module type from CMS database: {moduletype}, HDI version: {mv}")
+                return {"type": moduletype, "HDIversion": f"{mv}"}
+            except Exception as e:
+                logger.warning(
+                    f"Could not fetch module JSON for {name_label} from CMS: {e}. Trying Purdue..."
+                )
+
+        logger.warning(f"Module {moduleName} not found in CMS database. Trying Purdue...")
+        try:
+            response = self.get_purdue_response(moduleName)
+        except Exception as e:
+            logger.warning(f"Failed to access Purdue database: {e}")
+            response = None
+
+        if response:
+            moduletype = None
+            moduleversion = None
+
+            part_match = re.search(r"Part\s*=\s*([^<\n\r]+)", response.text)
+            version_match = re.search(r"Version\s*=\s*([^<\n\r]+)", response.text)
+            if part_match:
+                moduletype = part_match.group(1).strip()
+            if version_match:
+                moduleversion = version_match.group(1).strip()
+
+            if moduletype and moduleversion:
+                if moduletype.startswith("croc_1x2"):
+                    moduletype = "TFPX CROC 1x2"
+                elif moduletype.startswith("croc_2x2"):
+                    moduletype = "TFPX CROC Quad"
+
+                mv = _normalize_hdi_version(moduleversion, default=moduleversion)
+                logger.info(f"Module type from Purdue database: {moduletype}, HDI version: {mv}")
+                return {"type": moduletype, "HDIversion": f"{mv}"}
+
+        return None
+
+    def fetch_module_type_async(self, moduleName, on_success=None, on_error=None):
+        return self.run_async(
+            lambda: self.fetch_module_type(moduleName),
+            on_success=on_success,
+            on_error=on_error,
+        )
+
+
+module_registry_client = ModuleRegistryDataClient()
+
+
+def _normalize_hdi_version(version, default="1"):
+    if version is None:
+        return default
+    try:
+        vstr = str(version).strip()
+        if "." in vstr:
+            return str(int(float(vstr)))
+        try:
+            return str(int(vstr))
+        except Exception:
+            return vstr
+    except Exception:
+        return default
+
+
+def _module_type_to_display(moduleType):
+    if moduleType == "dual":
+        return "TFPX CROC 1x2"
+    if moduleType == "quad":
+        return "TFPX CROC Quad"
+    return ""
+
+
+def _fetch_module_type_from_databases(moduleName):
+    return module_registry_client.fetch_module_type(moduleName)
 
 
 class ClickOnlyComboBox(QComboBox):
@@ -181,6 +418,7 @@ class ModuleBox(QWidget):
 
 class ChipBox(QWidget):
     chipchanged = pyqtSignal(int, int)
+    chipDataLoaded = pyqtSignal(dict)
 
     # adding default value to serialNumber="RH0009" can prevent ChipBox from crashing under online mode
     def __init__(self, master, pChipType, serialNumber="RH0009"):
@@ -199,43 +437,24 @@ class ChipBox(QWidget):
         self.ChipGroupBoxDict = {}
         self.trimValues = None
         self.chipData = None
+        self._data_loading = False
 
-        if self.master.purdue_connected and self.serialNumber != "":
-            # trims = self.fetchTrimFromDB(self.serialNumber)
-            modulechipdata = self.fetchChipDataFromDB(self.serialNumber)
-            if modulechipdata:
-                self.chipData = modulechipdata
-                if set(self.ChipList) != set(modulechipdata.keys()):
-                    # msg = QMessageBox()
-                    # msg.information(
-                    #     None,
-                    #     "Error",
-                    #     f"Module {serialNumber} chip layout does not correspond to typical {pChipType} chip layouts. Please modify the trim values manually.",
-                    #     QMessageBox.Ok
-                    # )
-                    print(
-                        f"Module {serialNumber} chip layout does not correspond to typical {pChipType} chip layouts. Please modify the trim values manually."
-                    )
-                    self.ChipGroupBoxDict.clear()
-                    for chipid in self.ChipList:
-                        self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-                else:
-                    for chipid in self.ChipList:
-                        self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(
-                            chipid,
-                            modulechipdata[chipid]["VDDA"],
-                            modulechipdata[chipid]["VDDD"],
-                            modulechipdata[chipid]["EFUSE"],
-                            modulechipdata[chipid]["IREF"],
-                        )
-        else:
-            self.ChipGroupBoxDict.clear()
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-
-        self.makeChipGroupBox(self.ChipGroupBoxDict)
-
+        # Create layout before fetching data
+        self.mainLayout.addStretch()
         self.setLayout(self.mainLayout)
+        
+        # Show placeholder while loading data
+        if self.master.purdue_connected and self.serialNumber != "":
+            self._data_loading = True
+            self._add_loading_indicator()
+            # Fetch data asynchronously without blocking UI
+            self.fetchChipDataFromDB_async(
+                self.serialNumber,
+                on_success=self._on_chip_data_loaded,
+                on_error=self._on_chip_data_error
+            )
+        else:
+            self._populate_chip_boxes()
 
     def initList(self):
         self.module = ModuleBox(self.master.firmware)
@@ -244,6 +463,95 @@ class ChipBox(QWidget):
     def createList(self):
         for lane in ModuleLaneMap[self.chipType]:
             self.ChipList.append(ModuleLaneMap[self.chipType][lane])
+
+    def _add_loading_indicator(self):
+        """Show a loading message while fetching chip data"""
+        loading_label = QLabel("Loading chip data...")
+        loading_label.setAlignment(Qt.AlignCenter)
+        self.mainLayout.addWidget(loading_label)
+
+    def _populate_chip_boxes(self, modulechipdata=None):
+        """Populate the chip boxes in the main layout"""
+        # Clear existing layout
+        while self.mainLayout.count():
+            item = self.mainLayout.takeAt(0)
+            if item is not None:
+                widget = item.widget()
+                if widget is not None:
+                    widget.deleteLater()
+        
+        if modulechipdata and set(self.ChipList) == set(modulechipdata.keys()):
+            # Data matches expected chip layout
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBoxWithDB(
+                    chipid,
+                    modulechipdata[chipid]["VDDA"],
+                    modulechipdata[chipid]["VDDD"],
+                    modulechipdata[chipid]["EFUSE"],
+                    modulechipdata[chipid]["IREF"],
+                )
+        else:
+            # Use default chip boxes (no database values)
+            if modulechipdata:
+                print(
+                    f"Module {self.serialNumber} chip layout does not correspond to typical {self.chipType} chip layouts. Please modify the trim values manually."
+                )
+            self.ChipGroupBoxDict.clear()
+            for chipid in self.ChipList:
+                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
+
+        self.makeChipGroupBox(self.ChipGroupBoxDict)
+        self.mainLayout.addStretch()
+
+    def _on_chip_data_loaded(self, modulechipdata):
+        """Callback when chip data is successfully loaded from database"""
+        logger.debug(f"Chip data loaded for {self.serialNumber}")
+        self._data_loading = False
+        self.chipData = modulechipdata
+        self._populate_chip_boxes(modulechipdata)
+        self.chipDataLoaded.emit(modulechipdata)
+
+    def _on_chip_data_error(self, error_msg):
+        """Callback when chip data loading fails"""
+        logger.warning(f"Failed to load chip data for {self.serialNumber}: {error_msg}")
+        self._data_loading = False
+        # Populate with default boxes without database values
+        self._populate_chip_boxes(None)
+
+    def fetchChipDataFromDB_async(self, moduleName, on_success=None, on_error=None):
+        """Asynchronously fetch chip data from database"""
+        def _fetch():
+            return self.fetchChipDataFromDB(moduleName)
+
+        module_registry_client.run_async(
+            _fetch,
+            on_success=on_success,
+            on_error=on_error
+        )
+
+    def fetchTrimFromDB_async(self, moduleName, on_success=None, on_error=None):
+        """Asynchronously fetch trim data from database"""
+        def _fetch():
+            return self.fetchTrimFromDB(moduleName)
+
+        module_registry_client.run_async(
+            _fetch,
+            on_success=on_success,
+            on_error=on_error
+        )
+
+    def fetchHDIVersionFromDB_async(self, moduleName, on_success=None, on_error=None):
+        """Asynchronously fetch HDI version from database"""
+        def _fetch():
+            return self.fetchHDIVersionFromDB(moduleName)
+
+        module_registry_client.run_async(
+            _fetch,
+            on_success=on_success,
+            on_error=on_error
+        )
+
+
 
     # get trim values from DB
     def makeChipBoxWithDB(self, pChipID, VDDA, VDDD, EfuseID="0", IREF="0"):
@@ -257,8 +565,6 @@ class ChipBox(QWidget):
 
         self.IREF = IREF
         chip_iref_db[str(pChipID)] = str(IREF)  # Store as string for easy comparison
-        print(f"chip dict: {chip_iref_db}")
-        print(f"Module Chip ID: {pChipID}, IREF: {self.IREF}")
 
         if not self.ChipVDDDEdit.text():
             logger.debug("no VDDD text")
@@ -334,18 +640,155 @@ class ChipBox(QWidget):
     def getEfuseID(self, pChipID):
         efuseID = self.findChild(QLineEdit, "EfuseIDEdit_{0}".format(pChipID))
         return efuseID.text()
-    
+
+    def _get_fe_setting_default(self, key, fallback="0"):
+        key_map = {
+            "VREF": "VREF_ADC",
+            "CINJ": "INJ_CAP",
+        }
+        source_key = key_map.get(key, key)
+
+        value = FESettingsB.get(source_key)
+        if value not in (None, ""):
+            # Internal VREF convention here is volts; FESettings stores mV.
+            if key == "VREF":
+                try:
+                    logger.debug(f"Using FE settings default for {key}: {value} mV (converted from FESettingsB)")
+                    return str(float(value) / 1000.0)
+                except Exception:
+                    logger.debug(f"Failed to convert VREF value {value}, using fallback {fallback}")
+                    return fallback
+            logger.debug(f"Using FE settings default for {key}: {value} (from FESettingsB)")
+            return str(value)
+
+        logger.debug(f"No FE settings default found for {key}, using hardcoded fallback: {fallback}")
+        return fallback
+
+    def _get_chip_data_value(self, pChipID, key, default="0"):
+        def resolve_default():
+            return default() if callable(default) else default
+
+        if not isinstance(self.chipData, dict):
+            resolved_default = resolve_default()
+            logger.debug(f"ChipID {pChipID}, {key}: No chip data available, using default: {resolved_default}")
+            return resolved_default
+
+        chip_entry = self.chipData.get(pChipID)
+        if chip_entry is None:
+            chip_entry = self.chipData.get(str(pChipID))
+        if not isinstance(chip_entry, dict):
+            resolved_default = resolve_default()
+            logger.debug(f"ChipID {pChipID}, {key}: Chip not found in database, using default: {resolved_default}")
+            return resolved_default
+
+        if key not in chip_entry or chip_entry.get(key) is None:
+            resolved_default = resolve_default()
+            logger.debug(f"ChipID {pChipID}, {key}: Key not found in database, using default: {resolved_default}")
+            return resolved_default
+
+        value = chip_entry.get(key)
+        
+        logger.debug(f"ChipID {pChipID}, {key}: Retrieved value from database: {value}")
+        return str(value)
+
     def getIREF(self, pChipID):
-        IREFthing = self.chipData[pChipID]["IREF"]
-        return IREFthing
+        return self._get_chip_data_value(
+            pChipID, "IREF", lambda: self._get_fe_setting_default("IREF", "0")
+        )
     
     def getVREF(self, pChipID):
-        VREFthing = self.chipData[pChipID]["VREF"]
-        return VREFthing
+        return self._get_chip_data_value(
+            pChipID, "VREF", lambda: self._get_fe_setting_default("VREF", "0.8")
+        )
     
     def getCINJ(self, pChipID):
-        CINJthing = self.chipData[pChipID]["CINJ"]
-        return CINJthing
+        return self._get_chip_data_value(
+            pChipID, "CINJ", lambda: self._get_fe_setting_default("CINJ", "8e-12")
+        )
+
+    def getDAC_PREAMP_L_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_L_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_L_LIN", "0"),
+        )
+
+    def getDAC_PREAMP_R_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_R_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_R_LIN", "0"),
+        )
+
+    def getDAC_PREAMP_TL_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_TL_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_TL_LIN", "0"),
+        )
+
+    def getDAC_PREAMP_TR_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_TR_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_TR_LIN", "0"),
+        )
+
+    def getDAC_PREAMP_T_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_T_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_T_LIN", "0"),
+        )
+
+    def getDAC_PREAMP_M_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_PREAMP_M_LIN",
+            lambda: self._get_fe_setting_default("DAC_PREAMP_M_LIN", "0"),
+        )
+
+    def getDAC_REF_KRUM_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_REF_KRUM_LIN",
+            lambda: self._get_fe_setting_default("DAC_REF_KRUM_LIN", "0"),
+        )
+
+    def getDAC_COMP_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_COMP_LIN",
+            lambda: self._get_fe_setting_default("DAC_COMP_LIN", "0"),
+        )
+    
+    def getDAC_COMP_TA_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_COMP_TA_LIN",
+            lambda: self._get_fe_setting_default("DAC_COMP_TA_LIN", "0"),
+        )
+
+    def getDAC_LDAC_LIN(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "DAC_LDAC_LIN",
+            lambda: self._get_fe_setting_default("DAC_LDAC_LIN", "0"),
+        )
+    
+    def getADC_OFFSET_VOLT(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "ADC_OFFSET_VOLT",
+            lambda: self._get_fe_setting_default("ADC_OFFSET_VOLT", "0"),
+        )
+
+    def getADC_MAXIMUM_VOLT(self, pChipID):
+        return self._get_chip_data_value(
+            pChipID,
+            "ADC_MAXIMUM_VOLT",
+            lambda: self._get_fe_setting_default("ADC_MAXIMUM_VOLT", "0"),
+        )
 
     def getChipData(self):
         return self.chipData
@@ -358,161 +801,258 @@ class ChipBox(QWidget):
         ChipStatus = ChipCheckBox.isChecked()
         return ChipStatus
 
+    def fetchNameLabel(self, moduleName): # Step 1: get the name label and module type (dual or quad)
+        name_label, moduleType = module_registry_client.find_module_identity(moduleName)
+        if name_label and moduleType:
+            logger.debug(
+                f"found module {moduleName} in {moduleType} registry with name label {name_label}"
+            )
+            print(f"found module {moduleName} in {moduleType} registry with name label {name_label}")
+            return name_label, moduleType
+        
+        # If not found in CMS registry, return None to trigger fallback
+        return None, None
+    
+    def _tryPurdueDatabase(self, moduleName):
+        """Helper method: Try to fetch from Purdue database (backup)."""
+        try:
+            response = module_registry_client.get_purdue_response(moduleName)
+            logger.debug(f"Purdue database response available for {moduleName}")
+            return response
+        except Exception as e:
+            logger.warning(f"Failed to access Purdue database: {e}")
+            return None
+
+
     def fetchHDIVersionFromDB(self, moduleName):
-        URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
-        response = requests.get(URL)
-        html_content = response.text
-        match = re.search(r"Version\s*=\s*(.+)", html_content)
-        if match:
-            hdiversion = match.group(1).strip()
-        else:
-            print("Warning: HDI version not found for module.  Using default value of 1.")
-            hdiversion = "1"
-        return hdiversion
+        name_label, moduleType = self.fetchNameLabel(moduleName)
+        
+        if name_label:
+            # Try CMS database first
+            try:
+                data = module_registry_client.get_module_json(name_label)
+
+                for entry in data.get("bare_module_data", []):
+                    version = entry.get("VERSION")
+                    if version is not None:
+                        try:
+                            vstr = _normalize_hdi_version(version, default=str(version).strip())
+                            logger.info(f"HDI version from CMS database: {vstr}")
+                            return vstr
+                        except Exception:
+                            return str(version).strip()
+
+                logger.warning(f"HDI version not found for {name_label} in CMS database. Trying Purdue...")
+            except Exception as e:
+                logger.warning(f"Failed to fetch HDI version from CMS database: {e}. Trying Purdue...")
+        
+        # Fallback to Purdue database
+        try:
+            response = self._tryPurdueDatabase(moduleName)
+            if response:
+                html_content = response.text
+                match = re.search(r"Version\s*=\s*(.+)", html_content)
+                if match:
+                    hdiversion = match.group(1).strip()
+                    logger.info(f"HDI version from Purdue database: {hdiversion}")
+                    return hdiversion
+                else:
+                    logger.warning("HDI version not found in Purdue database. Using default value of 1.")
+                    return "1"
+        except Exception as e:
+            logger.warning(f"Failed to fetch from Purdue database: {e}")
+        
+        print("Warning: HDI version not found for module. Using default value of 1.")
+        return "1"
+        
 
     ## This function returns a list of dictionaries.  Each element of the list is a chip dictinary.
-    ## For example, chipdata[0]['EFUSE'] is the efuse ID of thehttps://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName} first chip
     def fetchChipDataFromDB(self, moduleName):
+        module_name_key = moduleName.strip().upper() if moduleName else ""
+        if module_name_key in chip_data_cache:
+            logger.debug(f"Using cached chip data for {moduleName}")
+            return chip_data_cache[module_name_key]
+
+        name_label, moduleType = self.fetchNameLabel(moduleName)
+        
+        if name_label and moduleType:
+            # Try CMS database first
+            try:
+                data = module_registry_client.get_module_json(name_label)
+
+                if moduleType == "quad":
+                    chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
+                else:
+                    chipidmap = {"1": "12", "0": "13"}
+
+                chipdatadicts = [entry for entry in data["bare_module_data"] if entry["KIND_OF_PART"] == "CROC Chip"]
+
+                chipdata = {}
+
+                for i, chip in enumerate(chipdatadicts):
+                    chipdata[chipidmap[str(i)]] = {
+                    "VDDA": str(chip.get("VDDA_TRIM_CODE", "0")),
+                    "VDDD": str(chip.get("VDDD_TRIM_CODE", "0")),
+                    "IREF": str(chip.get("IREF_TRIM_CODE", "0")),
+                    "EFUSE": str(chip.get("EFUSE_CODE", "0")),
+                    "VREF": str(chip.get("VREF_ADC_V", "0")),
+                    "CINJ": str(chip.get("INJ_CAPACIT_F", "0")),
+                    "ADC_OFFSET_VOLT": str(1e4*float(chip.get("ADC_OFF_V", "0"))),
+                    "ADC_MAXIMUM_VOLT": str(1e3*(4096*float(chip.get("ADC_SLO", "0"))+float(chip.get("ADC_OFF_V", "0")))),
+                    "DAC_PREAMP_L_LIN": str(chip.get("probe_data", {}).get("DAC_PREAMP_L_LIN", "0")),
+                    "DAC_PREAMP_R_LIN": str(chip.get("probe_data", {}).get("DAC_PREAMP_R_LIN", "0")),
+                    "DAC_PREAMP_TL_LIN": str(chip.get("probe_data", {}).get("DAC_PREAMP_TL_LIN", "0")),
+                    "DAC_PREAMP_TR_LIN": str(chip.get("probe_data", {}).get("DAC_PREAMP_TR_LIN", "0")),
+                    "DAC_PREAMP_T_LIN": str(chip.get("probe_data", {}).get("DAC_PREAMP_T_LIN", "0")),
+                    "DAC_PREAMP_M_LIN": str(chip.get("probe_data", {}).get("DAC_PREAMP_M_LIN", "0")),
+                    "DAC_REF_KRUM_LIN": str(chip.get("probe_data", {}).get("DAC_REF_KRUM_LIN", "0")),
+                    "DAC_COMP_LIN": str(chip.get("probe_data", {}).get("DAC_COMP_LIN", "0")),
+                    "DAC_COMP_TA_LIN": str(chip.get("probe_data", {}).get("DAC_COMP_TA_LIN", "0")),
+                    "DAC_LDAC_LIN": str(chip.get("probe_data", {}).get("DAC_LDAC_LIN", "0")),
+                    }
+                logger.info(f"Fetched chip data for {name_label} from CMS database: {chipdata}")
+                if module_name_key:
+                    chip_data_cache[module_name_key] = chipdata
+                return chipdata
+            except Exception as e:
+                logger.warning(f"Failed to fetch chip data from CMS database: {e}. Trying Purdue...")
+        
+        # Fallback to Purdue database
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
-            response = requests.get(URL)
+            response = self._tryPurdueDatabase(moduleName)
+            if response:
+                parser = etree.HTMLParser()
+                tree = etree.fromstring(response.content, parser)
+                chip_table = tree.xpath("//body/table")[0]
+                
+                chipidmap = {}
+                chipidmap["0"] = "12"
+                chipidmap["1"] = "13"
+                chipidmap["2"] = "14"
+                chipidmap["3"] = "15"
 
-            parser = etree.HTMLParser()
-            tree = etree.fromstring(response.content, parser)
-            chip_table = tree.xpath("//body/table")[0]
-            # chipsitemap = {}
-            # chipsitemap['U1A'] = '12'
-            # chipsitemap['U1B'] = '13'
-            # chipsitemap['U1C'] = '14'
-            # chipsitemap['U1D'] = '15'
-            chipidmap = {}
-            chipidmap["0"] = "12"
-            chipidmap["1"] = "13"
-            chipidmap["2"] = "14"
-            chipidmap["3"] = "15"
-
-            chipdatalist = []
-            for row in chip_table:
-                elementdata = []
-                for element in row:
-                    elementdata.append(element.text)
-                chipdatalist.append(elementdata)
-            chipdatadicts = [
-                dict(zip(chipdatalist[0], values)) for values in chipdatalist[1:]
-            ]
-            chipdata = {}
-            for i, chip in enumerate(chipdatadicts):
-                chipdata[chipidmap[str(i)]] = chip
-            return chipdata
-
-        except requests.exceptions.RequestException as req_err:
-            # some sort of connection issue, alert user
-            msg = QMessageBox()
-            msg.information(
-                None,
-                "Error",
-                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
-                QMessageBox.Ok,
-            )
-            logger.error(traceback.format_exc())
-
-            self.master.purdue_connected = False
-            self.ChipGroupBoxDict.clear()
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-            return None
-        except IndexError:
-            # this occurs when an invalid modulename is input, alert user
-            msg = QMessageBox()
-            msg.information(
-                None,
-                "Error",
-                f"Could not find {moduleName} in the database, using default values.",
-                QMessageBox.Ok,
-            )
-            logger.error(traceback.format_exc())
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-            return None
+                chipdatalist = []
+                for row in chip_table:
+                    elementdata = []
+                    for element in row:
+                        elementdata.append(element.text)
+                    chipdatalist.append(elementdata)
+                chipdatadicts = [
+                    dict(zip(chipdatalist[0], values)) for values in chipdatalist[1:]
+                ]
+                chipdata = {}
+                for i, chip in enumerate(chipdatadicts):
+                    chipdata[chipidmap[str(i)]] = chip
+                
+                logger.info(f"Fetched chip data for {moduleName} from Purdue database: {chipdata}")
+                if module_name_key:
+                    chip_data_cache[module_name_key] = chipdata
+                return chipdata
         except Exception as e:
-            # other issue
-            logger.error(
-                f"Some error occurred while querying the Purdue DB for VDDD/VDDA trim values. \nError: {repr(e)}"
-            )
-            logger.error(traceback.format_exc())
-            self.master.purdue_connected = False
-            self.ChipGroupBoxDict.clear()
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-            return None
+            logger.warning(f"Failed to fetch from Purdue database: {e}")
+        
+        logger.error(f"Could not fetch chip data from either database for {moduleName}")
+        return None
 
     def fetchTrimFromDB(self, moduleName):
+        name_label, moduleType = self.fetchNameLabel(moduleName)
+        
+        if name_label and moduleType:
+            # Try CMS database first
+            try:
+                data_json = module_registry_client.get_module_json(name_label)
+
+                if moduleType == "quad":
+                    chipidmap = {"0": "12", "1": "13", "2": "14", "3": "15"}
+                else:
+                    chipidmap = {"1": "12", "0": "13"}
+
+                data = {}
+
+                for entry in data_json["bare_module_data"]:
+                    if entry["KIND_OF_PART"] == "CROC Chip":
+                        slot = str(entry["ACROC_SLOT"])
+
+                        data[chipidmap[slot]] = {
+                            "VDDD": str(entry["VDDD_TRIM_CODE"]),
+                            "VDDA": str(entry["VDDA_TRIM_CODE"]),
+                            "IREF": str(entry["IREF_TRIM_CODE"]),
+                            "EFUSE": str(entry["EFUSE_CODE"]),
+                            "VREF": str(entry["VREF_ADC_V"]),
+                            "CINJ": str(entry["INJ_CAPACIT_F"]),
+                            "ADC_OFFSET_VOLT": str(entry["ADC_OFF_V"]),
+                            "ADC_MAXIMUM_VOLT": str(entry["ADC_SLO"]),
+                            "DAC_PREAMP_L_LIN": str(entry["DAC_PREAMP_L_LIN"]),
+                            "DAC_PREAMP_R_LIN": str(entry["DAC_PREAMP_R_LIN"]),
+                            "DAC_PREAMP_TL_LIN": str(entry["DAC_PREAMP_TL_LIN"]),
+                            "DAC_PREAMP_TR_LIN": str(entry["DAC_PREAMP_TR_LIN"]),
+                            "DAC_PREAMP_T_LIN": str(entry["DAC_PREAMP_T_LIN"]),
+                            "DAC_PREAMP_M_LIN": str(entry["DAC_PREAMP_M_LIN"]),
+                            "DAC_REF_KRUM_LIN": str(entry["DAC_REF_KRUM_LIN"]),
+                            "DAC_COMP_LIN": str(entry["DAC_COMP_LIN"]),
+                            "DAC_COMP_TA_LIN": str(entry["DAC_COMP_TA_LIN"]),
+                            "DAC_LDAC_LIN": str(entry["DAC_LDAC_LIN"]),
+                        }
+
+                for chipID in ["12", "13", "14", "15"]:
+                    if chipID not in data:
+                        data[chipID] = {
+                            "VDDD": "0",
+                            "VDDA": "0",
+                            "IREF": "0",
+                            "EFUSE": "0",
+                            "VREF": "0",
+                            "CINJ": "0",
+                            "DAC_PREAMP_L_LIN": "0",
+                            "DAC_PREAMP_R_LIN": "0",
+                            "DAC_PREAMP_TL_LIN": "0",
+                            "DAC_PREAMP_TR_LIN": "0",
+                            "DAC_PREAMP_T_LIN": "0",
+                            "DAC_PREAMP_M_LIN": "0",
+                            "DAC_REF_KRUM_LIN": "0",
+                            "DAC_COMP_LIN": "0",
+                            "DAC_COMP_TA_LIN": "0",
+                            "DAC_LDAC_LIN": "0",
+                            "ADC_OFFSET_VOLT": "0",
+                            "ADC_MAXIMUM_VOLT": "0",
+                        }
+
+                logger.info(f"Fetched trim data for {name_label} from CMS database")
+                return data
+            except Exception as e:
+                logger.warning(f"Failed to fetch trim data from CMS database: {e}. Trying Purdue...")
+        
+        # Fallback to Purdue database
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            response = self._tryPurdueDatabase(moduleName)
+            if response:
+                parser = etree.HTMLParser()
+                tree = etree.fromstring(response.content, parser)
+                chip_table = tree.xpath("//body/table")[0]
 
-            response = requests.get(URL)
+                values = []
+                for row in chip_table[1:]:
+                    for element in row:
+                        if element.text and element.text.startswith("U1"):
+                            values.append([])
 
-            parser = etree.HTMLParser()
-            tree = etree.fromstring(response.content, parser)
-            chip_table = tree.xpath("//body/table")[0]
+                        elif element.text and element.text.isdigit():
+                            values[-1].append(element.text)
 
-            values = []
-            for row in chip_table[1:]:
-                for element in row:
-                    if element.text and element.text.startswith("U1"):
-                        values.append([])
-
-                    elif element.text and element.text.isdigit():
-                        values[-1].append(element.text)
-
-            data = {}
-            for i in range(len(values)):
-                data[str(i + 12)] = {
-                    "VDDD": values[i][1],
-                    "VDDA": values[i][2],
-                }
-
-            return data
-        except requests.exceptions.RequestException as req_err:
-            # some sort of connection issue, alert user
-            msg = QMessageBox()
-            msg.information(
-                None,
-                "Error",
-                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
-                QMessageBox.Ok,
-            )
-            logger.error(traceback.format_exc())
-
-            self.master.purdue_connected = False
-            self.ChipGroupBoxDict.clear()
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-            return None
-        except IndexError:
-            # this occurs when an invalid modulename is input, alert user
-            msg = QMessageBox()
-            msg.information(
-                None,
-                "Error",
-                f"Could not find {moduleName} in the database, using default values.",
-                QMessageBox.Ok,
-            )         
-            logger.error(traceback.format_exc())
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-            return None
+                data = {}
+                for i in range(len(values)):
+                    data[str(i + 12)] = {
+                        "VDDD": values[i][1],
+                        "VDDA": values[i][2],
+                    }
+                
+                logger.info(f"Fetched trim data for {moduleName} from Purdue database")
+                return data
         except Exception as e:
-            # other issue
-            logger.error(
-                f"Some error occurred while querying the Purdue DB for VDDD/VDDA trim values. \nError: {repr(e)}"
-            )
-            logger.error(traceback.format_exc())
-            self.master.purdue_connected = False
-            self.ChipGroupBoxDict.clear()
-            for chipid in self.ChipList:
-                self.ChipGroupBoxDict[chipid] = self.makeChipBox(chipid)
-            return None
+            logger.warning(f"Failed to fetch from Purdue database: {e}")
+        
+        logger.error(f"Could not fetch trim data from either database for {moduleName}")
+        return None
 
 
 class BeBoardBox(QWidget):
@@ -524,7 +1064,10 @@ class BeBoardBox(QWidget):
         self.firmware = firmware
         self.ModuleList = []
         self.ChipWidgetDict = {}
+        self.ChipWidgetKeyDict = {}
+        self._serial_lookup_generation = 0
         self.mainLayout = QVBoxLayout()  # Use QVBoxLayout for vertical layout
+        self._focus_after_update = None  # Track which module should receive focus after updateList
 
         self.initList()
         self.createList()
@@ -576,8 +1119,15 @@ class BeBoardBox(QWidget):
 
     @debounce(100)
     def updateList(self, *args):
+        focus_ctx = self._capture_focus_context()
         serialNumberWidgets = []
         chipIDWidgets = []
+
+        active_modules = set(self.ModuleList)
+        for cached_module in list(self.ChipWidgetDict.keys()):
+            if cached_module not in active_modules:
+                self.ChipWidgetDict.pop(cached_module, None)
+                self.ChipWidgetKeyDict.pop(cached_module, None)
 
         # Clear existing layout
         for i in reversed(range(self.ListLayout.count())):
@@ -615,8 +1165,14 @@ class BeBoardBox(QWidget):
                     self.createSerialUpdateCallback(module)
                 )
 
-            chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
-            self.ChipWidgetDict[module] = chipBox
+            chip_key = (module.getSerialNumber(), module.getType())
+            cached_key = self.ChipWidgetKeyDict.get(module)
+            if module in self.ChipWidgetDict and cached_key == chip_key:
+                chipBox = self.ChipWidgetDict[module]
+            else:
+                chipBox = ChipBox(self.master, module.getType(), module.getSerialNumber())
+                self.ChipWidgetDict[module] = chipBox
+                self.ChipWidgetKeyDict[module] = chip_key
             module.setMaximumHeight(50)
 
             serialNumberWidgets.append(module)
@@ -644,6 +1200,13 @@ class BeBoardBox(QWidget):
         newButton.clicked.connect(self.addModule)
         self.ListLayout.addWidget(newButton, len(self.ModuleList), 1, 1, 1)
         self.update()
+        self._restore_focus_context(focus_ctx)
+        
+        #set module focus
+        if self._focus_after_update is not None:
+            target_module = self._focus_after_update
+            self._focus_after_update = None
+            QTimer.singleShot(0, target_module.SerialEdit.setFocus)
 
         
 
@@ -651,74 +1214,113 @@ class BeBoardBox(QWidget):
     def createSerialUpdateCallback(self, module):
         return lambda: self.onSerialNumberUpdate(module)
 
+    # Mapping of field names to widget attribute names
+    _FOCUS_FIELD_MAP = {
+        "serial": "SerialEdit",
+        "port": "PortEdit",
+        "type": "TypeCombo",
+        "fc7": "FC7Combo",
+        "version": "VersionCombo",
+        "hdi": "HDIVersionCombo",
+    }
+
+    def _capture_focus_context(self):
+        focus = QApplication.focusWidget()
+        if focus is None:
+            return None
+        
+        for index, module in enumerate(self.ModuleList):
+            for field_name, attr_name in self._FOCUS_FIELD_MAP.items():
+                if focus is getattr(module, attr_name):
+                    return (field_name, index)
+        return None
+
+    def _restore_focus_context(self, focus_ctx):
+        if not focus_ctx:
+            return
+
+        field, index = focus_ctx
+        if index < 0 or index >= len(self.ModuleList):
+            return
+
+        module = self.ModuleList[index]
+        attr_name = self._FOCUS_FIELD_MAP.get(field)
+        if attr_name:
+            target = getattr(module, attr_name, None)
+            if target is not None:
+                QTimer.singleShot(0, target.setFocus)
+
+    def _tryPurdueDatabase(self, moduleName):
+        """Helper method: Try to fetch from Purdue database (backup)."""
+        try:
+            response = module_registry_client.get_purdue_response(moduleName)
+            logger.debug(f"Purdue database response available for {moduleName}")
+            return response
+        except Exception as e:
+            logger.warning(f"Failed to access Purdue database: {e}")
+            return None
+
     @debounce(500)
     def onSerialNumberUpdate(self, module):
-        data = self.fetchModuleTypeDB(module.getSerialNumber())
-        if data:
-            if module.TypeCombo.isEnabled():
-                module.TypeCombo.setCurrentText(data["type"])
-            if module.HDIVersionCombo.isEnabled():
-                module.HDIVersionCombo.setCurrentText(data["HDIversion"])
-                print('returning hdi version {0}'.format(data["HDIversion"]))
+        serial_number = module.getSerialNumber()
+        if not serial_number:
+            return
 
-            self.updateList()
+        self._serial_lookup_generation += 1
+        lookup_generation = self._serial_lookup_generation
+
+        def _apply_module_type(data):
+            if lookup_generation != self._serial_lookup_generation:
+                return
+
+            if data:
+                if module.TypeCombo.isEnabled():
+                    module.TypeCombo.setCurrentText(data["type"])
+                if module.HDIVersionCombo.isEnabled():
+                    module.HDIVersionCombo.setCurrentText(data["HDIversion"])
+                    print('returning hdi version {0}'.format(data["HDIversion"]))
+
+                self.updateList()
+
+        def _handle_lookup_error(error_message):
+            if lookup_generation != self._serial_lookup_generation:
+                return
+            logger.warning(
+                f"Asynchronous module lookup failed for {serial_number}: {error_message}"
+            )
+
+        module_registry_client.fetch_module_type_async(
+            serial_number,
+            on_success=_apply_module_type,
+            on_error=_handle_lookup_error,
+        )
 
     def fetchModuleTypeDB(self, moduleName):
-        if not self.master.purdue_connected:
-            return None
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            data = _fetch_module_type_from_databases(moduleName)
+            if data:
+                return data
 
-            response = requests.get(URL)
-
-            moduletype, moduleversion = None, None
-            res = str(response.content).split("\\n")
-            for i in res:
-                if i.startswith("<br>Part = "):
-                    moduletype = i.split("<br>Part = ")[1]
-                elif i.startswith("<br>Version = "):
-                    moduleversion = i.split("<br>Version = ")[1]
-
-            if moduletype.startswith("croc_1x2"):
-                moduletype = "TFPX CROC 1x2"
-            elif moduletype.startswith("croc_2x2"):
-                moduletype = "TFPX CROC Quad"
-
-            if moduletype == "" or moduleversion == "":
-                msg = QMessageBox()
-                msg.information(
-                    None,
-                    "Error",
-                    f"Could not find {moduleName} in the database.",
-                    QMessageBox.Ok,
-                )
-                return None
-            else:
-                return {"type": moduletype, "HDIversion": f"{moduleversion}"}
-        except requests.exceptions.RequestException as req_err:
-            # some sort of connection issue, alert user
+            # If we get here, neither database has the module
+            logger.warning(f"Could not find {moduleName} in either CMS or Purdue database")
             msg = QMessageBox()
             msg.information(
                 None,
                 "Error",
-                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                f"Could not find {moduleName} in the module registries.",
                 QMessageBox.Ok,
             )
-            logger.error(traceback.format_exc())
-
-            self.master.purdue_connected = False
             return None
-        except Exception as e:
-            # other issue
-            logger.error(
-                f"Some error occurred while querying the Purdue DB for module type. \nError: {repr(e)}"
-            )
+
+        except Exception:
             logger.error(traceback.format_exc())
             self.master.purdue_connected = False
             return None
 
     def removeModule(self, module):
         self.ModuleList.remove(module)
+        self.ChipWidgetDict.pop(module, None)
+        self.ChipWidgetKeyDict.pop(module, None)
         module.deleteLater()
         self.updateList()
         self.changed.emit()
@@ -727,6 +1329,8 @@ class BeBoardBox(QWidget):
         module = ModuleBox(self.firmware)
         module.TypeCombo.currentTextChanged.connect(self.updateList)
         self.ModuleList.append(module)
+        # Mark this module to receive focus after updateList completes
+        self._focus_after_update = module
         self.updateList()
         self.changed.emit()
 
@@ -796,6 +1400,44 @@ class BeBoardBox(QWidget):
                 Module.getChips()[chipID].setIREF(
                     self.ChipWidgetDict[module].getIREF(chipID)
                 )
+                Module.getChips()[chipID].setDAC_PREAMP_L_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_L_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_R_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_R_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_TL_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_TL_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_TR_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_TR_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_T_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_T_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_PREAMP_M_LIN(
+                    self.ChipWidgetDict[module].getDAC_PREAMP_M_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_REF_KRUM_LIN(
+                    self.ChipWidgetDict[module].getDAC_REF_KRUM_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_COMP_LIN(
+                    self.ChipWidgetDict[module].getDAC_COMP_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_COMP_TA_LIN(
+                    self.ChipWidgetDict[module].getDAC_COMP_TA_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_LDAC_LIN(
+                    self.ChipWidgetDict[module].getDAC_LDAC_LIN(chipID)
+                )
+                Module.getChips()[chipID].setADC_MAXIMUM_VOLT(
+        
+                    self.ChipWidgetDict[module].getADC_MAXIMUM_VOLT(chipID)
+                )
+                Module.getChips()[chipID].setADC_OFFSET_VOLT(
+                    self.ChipWidgetDict[module].getADC_OFFSET_VOLT(chipID)
+                )
+                
                 try:
                     vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
                 except Exception:
@@ -809,7 +1451,7 @@ class BeBoardBox(QWidget):
                 except Exception:
                     cinj_value = 8
                 Module.getChips()[chipID].setCINJ(
-                    (10 * cinj_value)
+                    (1e13 * cinj_value)
                 )
 
             # Add the QtModule object to the currently selected Optical Group
@@ -963,7 +1605,7 @@ class SimpleModuleBox(QWidget):
         self.CableIDEdit.setText(str(laneId))
 
     def setHDIversion(self, hdiVersion: str):
-        self.HDIversion = hdiVersion
+        self.HDIversion = hdiVersion.split(".")[0]
 
     def getID(self):
         return self.CableIDEdit.text()
@@ -1160,56 +1802,35 @@ class SimpleBeBoardBox(QWidget):
     def getModules(self):
         return self.FilledModuleList
 
-    def fetchModuleTypeDB(self, moduleName):
-        if not self.master.purdue_connected:
-            return None
+    def _tryPurdueDatabase(self, moduleName):
+        """Helper method: Try to fetch from Purdue database (backup)."""
         try:
-            URL = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={moduleName}"
+            response = module_registry_client.get_purdue_response(moduleName)
+            logger.debug(f"Purdue database response available for {moduleName}")
+            return response
+        except Exception as e:
+            logger.warning(f"Failed to access Purdue database: {e}")
+            return None
 
-            response = requests.get(URL)
+    def fetchModuleTypeDB(self, moduleName):
 
-            moduletype, moduleversion = None, None
-            res = str(response.content).split("\\n")
-            for i in res:
-                if i.startswith("<br>Part = "):
-                    moduletype = i.split("<br>Part = ")[1]
-                elif i.startswith("<br>Version = "):
-                    moduleversion = i.split("<br>Version = ")[1]
+        try:
+            data = _fetch_module_type_from_databases(moduleName)
+            if data:
+                return data
 
-            if moduletype.startswith("croc_1x2"):
-                moduletype = "TFPX CROC 1x2"
-            elif moduletype.startswith("croc_2x2"):
-                moduletype = "TFPX CROC Quad"
-
-            if moduletype == "" or moduleversion == "":
-                msg = QMessageBox()
-                msg.information(
-                    None,
-                    "Error",
-                    f"Could not find {moduleName} in the database.",
-                    QMessageBox.Ok,
-                )
-                return None
-            else:
-                return {"type": moduletype, "HDIversion": f"{moduleversion}"}
-        except requests.exceptions.RequestException as req_err:
-            # some sort of connection issue, alert user
+            # If we get here, neither database has the module
+            logger.warning(f"Could not find {moduleName} in either CMS or Purdue database")
             msg = QMessageBox()
             msg.information(
                 None,
                 "Error",
-                f"There was an issue connecting to the Purdue database.\nMessage: {repr(req_err)}",
+                f"Could not find {moduleName} in the module registries.",
                 QMessageBox.Ok,
             )
-            logger.error(traceback.format_exc())
-
-            self.master.purdue_connected = False
             return None
-        except Exception as e:
-            # other issue
-            logger.error(
-                f"Some error occurred while querying the Purdue DB for module type. \nError: {repr(e)}"
-            )
+
+        except Exception:
             logger.error(traceback.format_exc())
             self.master.purdue_connected = False
             return None
@@ -1260,19 +1881,24 @@ class SimpleBeBoardBox(QWidget):
                         None,
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",
                     )
+
+            module_db_data = self.fetchModuleTypeDB(module.getSerialNumber())
+            if module_db_data is None:
+                return (None, f"Could not fetch module metadata for {module.getSerialNumber()}.")
+
             # Create a QtModule object based on the input data
             Module = QtModule(
                 moduleName=module.getSerialNumber(),
-                moduleType=self.fetchModuleTypeDB(module.getSerialNumber())["type"],
+                moduleType=module_db_data["type"],
                 moduleVersion=module.getVersion(module.getSerialNumber()),
-                hdiVersion=self.fetchModuleTypeDB(module.getSerialNumber())["HDIversion"],
+                hdiVersion=module_db_data["HDIversion"],
                 FMCPort=cable_properties["FMCPort"],
             )
             Module.setOpticalGroup(
                 OpticalGroup
             )  # Ignore this line, see explanation in Firmware.py
 
-            # Fetch the VDDD/VDDA trim values from the Purdue DB, make a ChipBox due to built in error handling
+            # Fetch the VDDD/VDDA trim values from the DB, make a ChipBox due to built in error handling
             chipBox = ChipBox(
                 self.master,
                 module.getType(module.getSerialNumber()),
@@ -1288,7 +1914,19 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setEfuseID(chipData[chipID]["EFUSE"])
                     Module.getChips()[chipID].setIREF(chipData[chipID]["IREF"])
                     Module.getChips()[chipID].setVREF(str(1000 * float(chipData[chipID]["VREF"])))
-                    Module.getChips()[chipID].setCINJ(str(10 * float(chipData[chipID]["CINJ"])))
+                    Module.getChips()[chipID].setCINJ(str(1e13 * float(chipData[chipID]["CINJ"])))
+                    Module.getChips()[chipID].setADC_OFFSET_VOLT(str(chipData[chipID]["ADC_OFFSET_VOLT"]))
+                    Module.getChips()[chipID].setADC_MAXIMUM_VOLT(str(chipData[chipID]["ADC_MAXIMUM_VOLT"]))
+                    Module.getChips()[chipID].setDAC_PREAMP_L_LIN(chipData[chipID]["DAC_PREAMP_L_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_R_LIN(chipData[chipID]["DAC_PREAMP_R_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_TL_LIN(chipData[chipID]["DAC_PREAMP_TL_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_TR_LIN(chipData[chipID]["DAC_PREAMP_TR_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_T_LIN(chipData[chipID]["DAC_PREAMP_T_LIN"])
+                    Module.getChips()[chipID].setDAC_PREAMP_M_LIN(chipData[chipID]["DAC_PREAMP_M_LIN"])
+                    Module.getChips()[chipID].setDAC_REF_KRUM_LIN(chipData[chipID]["DAC_REF_KRUM_LIN"])
+                    Module.getChips()[chipID].setDAC_COMP_LIN(chipData[chipID]["DAC_COMP_LIN"])
+                    Module.getChips()[chipID].setDAC_COMP_TA_LIN(chipData[chipID]["DAC_COMP_TA_LIN"])
+                    Module.getChips()[chipID].setDAC_LDAC_LIN(chipData[chipID]["DAC_LDAC_LIN"])
                     
             else:
                 print(

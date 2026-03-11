@@ -62,6 +62,11 @@ coldboxRoomTemp = 10
 # IF THIS VARIABLE IS SET, THEN ICICLE_INSTRUMENT_SETUP WILL NOT BE USED
 manual_powersupply_control = False
 
+# Enable UI-only testing mode (no FC7 or hardware connections).
+UI_testing = False
+if UI_testing:
+	manual_powersupply_control = True
+
 # Load instrument setup from json file
 # If the json filename contains 'auto', channels will be automatically assigned as listed in Working Channels
 try:
@@ -128,6 +133,8 @@ forward_bias_voltage = 0.5 #positive voltage used to run a forward-reverse bias 
     
 FC7List = icicle_instrument_setup['fc7_address_dict']
 icicle_instrument_setup.pop('fc7_address_dict')
+if UI_testing:
+	FC7List = {}
 
 ## Update this list with all working TEC channels in your coldbox
 ## Channel assignments will follow this list sequentially per number of modules entered in the GUI
