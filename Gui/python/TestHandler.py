@@ -2065,6 +2065,15 @@ created by Ph2_ACF is empty."
         self.saveConfigs(process_index=processIndex)
         # Don't continue on sequence until all processes have finished the current test
         if self._openBumpTest_running:
+            self.finished_processes += 1
+            expected_processes = (
+                self.active_process_count
+                if self.active_process_count > 0
+                else len(self.run_processes)
+            )
+            if not self.finished_processes == expected_processes:
+                return
+            self.finished_processes = 0
             self._openBumpTest_subtest_index += 1
             if self._openBumpTest_subtest_index < len(OpenBumpTest):
                 subtest = OpenBumpTest[self._openBumpTest_subtest_index]
@@ -2082,16 +2091,17 @@ created by Ph2_ACF is empty."
                 self._openBumpTest_running = False
 
         # Ensure that all processes have finished before continuing
-        self.finished_processes += 1
-        expected_processes = (
-            self.active_process_count
-            if self.active_process_count > 0
-            else len(self.run_processes)
-        )
-        if not self.finished_processes == expected_processes:
-            return
+        else:
+            self.finished_processes += 1
+            expected_processes = (
+                self.active_process_count
+                if self.active_process_count > 0
+                else len(self.run_processes)
+            )
+            if not self.finished_processes == expected_processes:
+                return
 
-        self.finished_processes = 0
+            self.finished_processes = 0
 
         # validate the results
         logger.debug("About to run validateTest()")
