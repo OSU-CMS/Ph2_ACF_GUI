@@ -471,10 +471,10 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                     RxPolarities,
                     txt_file,
                 )
-
+                logger.info("Generating the xml file now")
                 chip_settings = FESettings_Dict[testName][registerKey].copy()
-                chip_settings['VREF_ADC'] = chip.getVREF()
-                chip_settings['INJ_CAP'] = chip.getCINJ()
+                chip_settings['VREF_ADC'] = str(1e3*float(chip.getVREF()))
+                chip_settings['INJ_CAP'] = str(1e13*float(chip.getCINJ()))
                 chip_settings['DAC_PREAMP_L_LIN'] = chip.getDAC_PREAMP_L_LIN()
                 chip_settings['DAC_PREAMP_R_LIN'] = chip.getDAC_PREAMP_R_LIN()
                 chip_settings['DAC_PREAMP_TL_LIN'] = chip.getDAC_PREAMP_TL_LIN()
