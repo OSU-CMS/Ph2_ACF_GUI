@@ -2,7 +2,7 @@ import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
 
-CONFIG_VER = 8
+CONFIG_VER = 9
 
 # Customize the logging configuration
 logging.basicConfig(
