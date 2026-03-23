@@ -34,6 +34,9 @@ fi
 
 cd ${GUI_dir}/Gui
 
+echo "Logging into DCA to cache credentials for database access..."
+python3 python/rhapi.py --login --no-save-password --clean -u https://cmsdca.cern.ch/trk_rhapi1
+
 echo "You can now open the GUI by doing 'python3 QtApplication.py'."
 
 python3 QtApplication.py

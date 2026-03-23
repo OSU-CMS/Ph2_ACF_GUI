@@ -1,6 +1,8 @@
 import os
 
-
+def DCA_login():
+    DB_login_command = f'python python/rhapi.py --login --no-save-password --clean -u https://cmsdca.cern.ch/trk_rhapi1'
+    DB_login_output = os.popen(DB_login_command).read()
 def ExtractChipData(chipserial):
     DB_interface_step1 = f'''python python/rhapi.py --login --no-save-password --clean -u https://cmsdca.cern.ch/trk_rhapi1 "select c.* from trker_cmsr.c18220 c where c.PART_NAME_LABEL = '{chipserial}'"'''
     DB_interface_step2 = f'''python python/rhapi.py --login --no-save-password --clean -u https://cmsdca.cern.ch/trk_rhapi1 "select c.CROC_DATA_ID, c.Y from trker_cmsr.c18240 c where c.PART_NAME_LABEL = '{chipserial}' and c.CROC_DATA_ID like 'DAC_%_LIN' and c.X = 0"'''
