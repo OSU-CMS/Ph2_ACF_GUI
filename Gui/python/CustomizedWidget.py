@@ -41,6 +41,7 @@ from InnerTrackerTests.FESettings import (
 )
 # from Gui.GUIutils.FirmwareUtil import *
 # from Gui.QtGUIutils.QtFwCheckDetails import *
+from Gui.python.CentralDBInterface import ExtractChipData
 
 from Gui.python.logging_config import get_logger
 
@@ -942,10 +943,9 @@ class ChipBox(QWidget):
                 ]
                 chipdata = {}
                 for i, chip in enumerate(chipdatadicts):
-                    if "CINJ" in chip:
-                        chip["CINJ"] = str(float(chip["CINJ"]) * 1e-12)
-                    logger.debug(f"The chipdata is chipdata: {chip}")
-                    chipdata[chipidmap[str(i)]] = chip
+                    chipdata[chipidmap[str(i)]] = ExtractChipData(chip["S/N"])
+                    logger.info(f"Extracted chip data for {chip['S/N']} from Purdue database: {chipdata[chipidmap[str(i)]]}")
+                    
                 logger.info(f"Fetched chip data for {moduleName} from Purdue database: {chipdata}")
                 if module_name_key:
                     chip_data_cache[module_name_key] = chipdata
