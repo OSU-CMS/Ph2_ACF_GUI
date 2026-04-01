@@ -66,9 +66,32 @@ from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map, OpenBumpTest
 from Gui.siteSettings import icicle_instrument_setup, UI_testing
+from InnerTrackerTests.QCSettings import CAL_EDGE_ADDEND
 
 
 logger = get_logger(__name__)
+
+INJECTION_DELAY_TESTS = {
+    "InjectionDelay",
+    "InjectionDelay_coupled",
+    "InjectionDelay_uncoupled",
+}
+
+# Only plain InjectionDelay should define the propagated CAL_EDGE source.
+INJECTION_DELAY_SOURCE_TESTS = {
+    "InjectionDelay",
+}
+
+# Keep CAL_EDGE_FINE_DELAY static for xtalk-specific tests.
+XTALK_STATIC_CAL_EDGE_TESTS = {
+    "PixelAlive_coupled_xtalk",
+    "PixelAlive_highcharge_xtalk",
+    "PixelAlive_uncoupled_xtalk",
+    "InjectionDelay_coupled",
+    "InjectionDelay_uncoupled",
+    "GenericDAC-DAC_coupled",
+    "GenericDAC-DAC_uncoupled",
+}
 
 
 class DummyInstrumentCluster:
@@ -341,6 +364,7 @@ class TestHandler(QObject):
         self._openBumpTest_running = False
         self._openBumpTest_subtest_index = 0
         self._retrying = False
+        self._injection_delay_cal_edge_by_chip = {}
 
     def _module_is_enabled(self, module) -> bool:
         module_name = module.getModuleName()
@@ -1830,6 +1854,202 @@ created by Ph2_ACF is empty."
         except Exception:
             logger.error(traceback.format_exc())
 
+        # Ensure CAL_EDGE_FINE_DELAY overrides are only active when intended.
+        self._clear_cal_edge_fine_delay_overrides()
+        self._apply_cal_edge_fine_delay_offset_after_injection_delay()
+
+    def _clear_cal_edge_fine_delay_overrides(self):
+        removed_overrides = 0
+        for chip_values in updatedXMLValues.values():
+            if isinstance(chip_values, dict):
+                if "CAL_EDGE_FINE_DELAY" in chip_values:
+                    removed_overrides += 1
+                chip_values.pop("CAL_EDGE_FINE_DELAY", None)
+        if removed_overrides:
+            logger.debug(
+                "Cleared %d stale CAL_EDGE_FINE_DELAY override(s) before test '%s'",
+                removed_overrides,
+                self.currentTest,
+            )
+
+    def _is_post_injection_delay_test(self) -> bool:
+        if not isCompositeTest(self.info):
+            logger.debug(
+                "Skipping CAL_EDGE_FINE_DELAY offset for test '%s': not a composite sequence",
+                self.currentTest,
+            )
+            return False
+        previous_tests = self.test_list[: self.testIndexTracker]
+        has_injection_delay_before = any(
+            test in INJECTION_DELAY_TESTS for test in previous_tests
+        )
+        if not has_injection_delay_before:
+            logger.debug(
+                "Skipping CAL_EDGE_FINE_DELAY offset for test '%s': no InjectionDelay test found before index %d",
+                self.currentTest,
+                self.testIndexTracker,
+            )
+        return has_injection_delay_before
+
+    def _read_cal_edge_fine_delay_from_txt(self, module_name: str, module_id: str, chip_id: str):
+        ph2_acf_base_dir = os.environ.get("PH2ACF_BASE_DIR")
+        if not ph2_acf_base_dir:
+            return None
+
+        txt_path = os.path.join(
+            ph2_acf_base_dir,
+            "test",
+            f"CMSIT_RD53_{module_name}_{module_id}_{chip_id}.txt",
+        )
+        if not os.path.isfile(txt_path):
+            logger.debug(
+                "CAL_EDGE source txt not found for module '%s' hybrid '%s' chip '%s': %s",
+                module_name,
+                module_id,
+                chip_id,
+                txt_path,
+            )
+            return None
+
+        try:
+            with open(txt_path, "r", encoding="utf-8") as txt_file:
+                for line in txt_file:
+                    if "CAL_EDGE_FINE_DELAY" not in line:
+                        continue
+                    match = re.search(r"CAL_EDGE_FINE_DELAY\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)", line)
+                    if match:
+                        hex_value = match.group(1)
+                        decimal_value = int(hex_value, 16)
+                        logger.debug(
+                            "Read CAL_EDGE_FINE_DELAY=%s (0x%s) from %s",
+                            decimal_value,
+                            hex_value[2:],
+                            txt_path,
+                        )
+                        return decimal_value
+            logger.debug(
+                "CAL_EDGE_FINE_DELAY not present in source txt for module '%s' hybrid '%s' chip '%s': %s",
+                module_name,
+                module_id,
+                chip_id,
+                txt_path,
+            )
+        except OSError:
+            logger.warning("Failed reading CAL_EDGE_FINE_DELAY from %s", txt_path)
+            logger.warning(traceback.format_exc())
+        return None
+
+    def _cache_injection_delay_cal_edges_from_output_dir(self, output_dir: str):
+        if not output_dir or not os.path.isdir(output_dir):
+            return
+
+        cached_values = {}
+        out_pattern = os.path.join(output_dir, "*", "CMSIT_RD53_*_OUT.txt")
+        out_files = glob.glob(out_pattern)
+        if not out_files:
+            return
+
+        for out_file in out_files:
+            basename = os.path.basename(out_file)
+            file_match = re.match(r"CMSIT_RD53_(.+)_([^_]+)_([^_]+)_OUT\.txt$", basename)
+            if not file_match:
+                continue
+            module_id = file_match.group(2)
+            chip_id = file_match.group(3)
+            chip_key = f"{module_id}/{chip_id}"
+
+            try:
+                with open(out_file, "r", encoding="utf-8") as txt_file:
+                    for line in txt_file:
+                        if "CAL_EDGE_FINE_DELAY" not in line:
+                            continue
+                        value_match = re.search(
+                            r"CAL_EDGE_FINE_DELAY\s+0x[0-9A-Fa-f]+\s+(0x[0-9A-Fa-f]+)",
+                            line,
+                        )
+                        if value_match:
+                            cached_values[chip_key] = int(value_match.group(1), 16)
+                            break
+            except OSError:
+                logger.warning(
+                    "Failed reading InjectionDelay CAL_EDGE cache source file: %s",
+                    out_file,
+                )
+                logger.warning(traceback.format_exc())
+
+        if cached_values:
+            self._injection_delay_cal_edge_by_chip = cached_values
+            logger.debug(
+                "Cached InjectionDelay CAL_EDGE_FINE_DELAY for %d chip(s) from '%s'",
+                len(cached_values),
+                output_dir,
+            )
+
+    def _apply_cal_edge_fine_delay_offset_after_injection_delay(self):
+        if self.currentTest in XTALK_STATIC_CAL_EDGE_TESTS:
+            logger.debug(
+                "Keeping static CAL_EDGE_FINE_DELAY for xtalk/static test '%s'",
+                self.currentTest,
+            )
+            return
+        if not self._is_post_injection_delay_test():
+            return
+
+        logger.debug(
+            "Applying CAL_EDGE_FINE_DELAY offset for post-InjectionDelay test '%s' (addend=%d)",
+            self.currentTest,
+            CAL_EDGE_ADDEND,
+        )
+
+        applied_overrides = 0
+
+        for module in self.enabled_modules():
+            hybrid_id = module.getFMCPort()
+            module_name = module.getModuleName()
+            module_id = module.getFMCPort()
+
+            for chip in module.getChips().values():
+                if not chip.getStatus():
+                    continue
+
+                chip_id = chip.getID()
+                chip_key = f"{hybrid_id}/{chip_id}"
+                cal_edge = self._injection_delay_cal_edge_by_chip.get(chip_key)
+                if cal_edge is None:
+                    cal_edge = self._read_cal_edge_fine_delay_from_txt(
+                        module_name=str(module_name),
+                        module_id=str(module_id),
+                        chip_id=str(chip_id),
+                    )
+                if cal_edge is None:
+                    continue
+
+                adjusted_cal_edge = cal_edge + CAL_EDGE_ADDEND
+                if chip_key not in updatedXMLValues:
+                    updatedXMLValues[chip_key] = {}
+                updatedXMLValues[chip_key]["CAL_EDGE_FINE_DELAY"] = str(adjusted_cal_edge)
+                applied_overrides += 1
+                logger.debug(
+                    "Set CAL_EDGE_FINE_DELAY override for test '%s' chip '%s': base=%d addend=%d final=%d",
+                    self.currentTest,
+                    chip_key,
+                    cal_edge,
+                    CAL_EDGE_ADDEND,
+                    adjusted_cal_edge,
+                )
+
+        if applied_overrides == 0:
+            logger.debug(
+                "No CAL_EDGE_FINE_DELAY overrides were applied for test '%s'",
+                self.currentTest,
+            )
+        else:
+            logger.debug(
+                "Applied %d CAL_EDGE_FINE_DELAY override(s) for test '%s'",
+                applied_overrides,
+                self.currentTest,
+            )
+
     def check_for_end_of_test(self, textStr, processIndex=0):
         # function to support the quick fix in on_readyReadStandardOutput() where
         # the progress bar doesn't always reach 100%.
@@ -2063,6 +2283,8 @@ created by Ph2_ACF is empty."
             return
 
         self.saveConfigs(process_index=processIndex)
+        if self.currentTest in INJECTION_DELAY_SOURCE_TESTS:
+            self._cache_injection_delay_cal_edges_from_output_dir(self.output_dir)
         # Don't continue on sequence until all processes have finished the current test
         if self._openBumpTest_running:
             self.finished_processes += 1
