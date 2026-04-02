@@ -39,7 +39,10 @@ def ResultGrader(
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
         module_hybridID = module_data["module"].getFMCPort()
-       
+        if "TFPX" in module_type.split(" ")[0]:
+            sensor_type = "planar"
+        else:
+            sensor_type = "unspecified"
 
             
 
@@ -68,6 +71,8 @@ def ResultGrader(
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
             )
             status, message, sanity, explanation = felis.set_result(
                 paths_files = relevant_files,
@@ -88,6 +93,8 @@ def ResultGrader(
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
             )
             status, message, sanity, explanation = felis.set_result(
                 paths_files = relevant_files,
@@ -106,6 +113,8 @@ def ResultGrader(
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
             )
             status, message, sanity, explanation = felis.set_result(
                 paths_files = relevant_files,
@@ -129,6 +138,8 @@ def ResultGrader(
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
             )
             status, message, sanity, explanation = felis.set_result(
                 paths_files = relevant_files,
@@ -151,6 +162,8 @@ def ResultGrader(
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
             )
             status, message, sanity, explanation = felis.set_result(
                 paths_files = relevant_files,
@@ -188,7 +201,8 @@ def ResultGrader(
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
-                link_production_db = "https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
             )
 
             status, message, sanity, explanation = felis.set_result(
