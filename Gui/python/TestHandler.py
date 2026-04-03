@@ -1814,6 +1814,16 @@ created by Ph2_ACF is empty."
                     self.communicationTestResults[self.communicationTestModule] = True
                     self.communicationTestModule = None
 
+        else:
+            if "FIFO empty" in alltext:
+                if self.run_processes[processIndex].state() == QProcess.Running:
+                    logger.info("process is still running...  Attempting to terminate")
+                    self.run_processes[processIndex].terminate()
+                    if not self.run_processes[processIndex].waitForFinished(3000):
+                        logger.warning("Process would not terminate, so killing it now...")
+                        self.run_processes[processIndex].kill()
+                self.forceContinue(self.firmware[processIndex])
+
         self.readingOutput = False
 
     def updateOptimizedXMLValues(self):
