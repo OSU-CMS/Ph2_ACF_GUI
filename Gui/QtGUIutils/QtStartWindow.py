@@ -664,6 +664,7 @@ class QtStartWindow(QWidget):
             return
 
         for fw in self.firmwareDescription:
+            logger.info(f"Checking firmware parameters for board name: {fw.getBoardName()}")
             self.checkFwPar(fw.getBoardName())
         if not self.passCheck:
             reply = QMessageBox().question(  # For some reason this isn't an issue for QThread
