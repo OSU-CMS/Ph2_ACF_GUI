@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, pyqtSignal, QSize
+from PyQt5.QtCore import Qt, pyqtSignal, QSize, QThread, QTimer, QThread
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QColor
 from PyQt5.QtWidgets import (
@@ -16,8 +16,9 @@ from PyQt5.QtWidgets import (
     QWidget,
     QMessageBox,
 )
-
+#This is a test
 from Gui.QtGUIutils.QtThermalModulesWindow import ThermalTestModules
+from Gui.QtGUIutils.ProfileWorker import ProfileWorker
 import sys
 import os
 import traceback
@@ -78,6 +79,9 @@ class QtApplication(QWidget):
         self.dimension = dimension
         self.available_visa_resources = pyvisa.ResourceManager("@py").list_resources()
         self.ui_testing = UI_testing
+
+        self.chamber = None
+        self.thread = None
 
         self.desired_devices = {"hv": 1, "lv": 1, "relay": 0, "multimeter": 0}
         self.connected_device_information = {
@@ -482,9 +486,62 @@ class QtApplication(QWidget):
         status_label.setStyleSheet(f"color: {'green' if is_connected else 'red'}")
         return label, status_label
 
+    def load_profiles_async(self):
+        self.thermalProfilesStatusLabel.setText("Updating profiles...")
+
+        if self.thread and self.thread.isRunning():
+            return
+
+        self.thread = QThread()
+        self.worker = ProfileWorker(self.chamber)
+
+        self.worker.moveToThread(self.thread)
+
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.on_profiles_loaded)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.thread.finished.connect(lambda: setattr(self, "thread", None))
+
+        self.thread.start()
+
+    def on_profiles_loaded(self, profiles, source):
+        #save current selection
+        current = self.ThermalProfileCombo.currentText()
+
+        self.ThermalProfileCombo.blockSignals(True)
+        self.ThermalProfileCombo.clear()
+
+        cleaned = {}
+
+        for name, number in profiles.items():
+            name = name.strip('"')
+            if name not in ["", "New Profile", "0"]:
+                cleaned[name] = number
+                self.ThermalProfileCombo.addItem(name)
+
+        #store in memory
+        self.chamber.profiles = cleaned
+
+        #restore selection if it still exists
+        if current in cleaned:
+            index = self.ThermalProfileCombo.findText(current)
+            self.ThermalProfileCombo.setCurrentIndex(index)
+
+        self.ThermalProfileCombo.setCurrentIndex(-1)
+        self.ThermalProfileCombo.blockSignals(False)
+        self.thermalProfilesStatusLabel.setText("Profiles updated")
+
     def createMain(self):
         self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name_first))
         self.FirmwareStatus.setDisabled(True)
+
+        try: 
+            self.chamber = F4TTemperatureChamber("TCPIP::128.146.32.200::5025::SOCKET")
+        except Exception:
+            logger.error("Failed to connect to thermal chamber: %s" % Exception)
+            self.chamber = None
 
         self.StatusList = [
             self.create_status_label("Panthera DB", self.panthera_connected),
@@ -845,20 +902,12 @@ class QtApplication(QWidget):
         self.ThermalTestButton.setEnabled(True)
         self.AbortThermalTestButton = QPushButton("&Abort thermal test")
         self.AbortThermalTestButton.setEnabled(True)
+        self.EndChamberOutputButton = QPushButton("End Chamber Output")
+        self.EndChamberOutputButton.setEnabled(True)
 
-        # To avoid people trying to push the button without a configured
-        # chamber, check if the resource is defined in siteConfig first.
-        # Maybe catching an error isn't the prettiest way to do this
-        # If it is not, disable the button
-
-        #instead of above:
-        #check if resource is defined in thermal test dictionary first
-        try:
-            #site_settings.temp_chamber_resource
-            self.chamber = F4TTemperatureChamber().connect("TCPIP::128.146.32.200::5025::SOCKET")
-        except AttributeError:
-            self.ThermalTestButton.setEnabled(False)
-            self.AbortThermalTestButton.setEnabled(False)
+        if not self.chamber:
+            self.ThermalTestButton.setDisabled(True)
+            self.AbortThermalTestButton.setDisabled(True)
 
         self.AbortThermalTestButton.setMinimumWidth(kMinimumWidth)
         self.AbortThermalTestButton.setMaximumWidth(kMaximumWidth)
@@ -872,20 +921,20 @@ class QtApplication(QWidget):
         self.ThermalTestButton.setMaximumHeight(kMaximumHeight)
         self.ThermalTestButton.clicked.connect(self.runThermalTest)
 
-        self.ThermalProfileList = [
-            "Temperature Test","Burn-In","Thermal Stress Test",
-            "TST - 45","TST - 50","TST - 55","TST - 60", "TST - 65", 
-            "TST - 70", "Cold Test"
-        ]
-        self.ThermalProfileCombo = QComboBox()
-        self.ThermalProfileCombo.additems(self.ThermalProfileList)
-        self.ThermalProfileCombo.setCurrentText("")
-        #self.ThermalProfileCombo.activated.connect(self.)
+        self.EndChamberOutputButton.setMinimumWidth(kMinimumWidth)
+        self.EndChamberOutputButton.setMaximumWidth(kMaximumWidth)
+        self.EndChamberOutputButton.setMinimumHeight(kMinimumHeight)
+        self.EndChamberOutputButton.setMaximumHeight(kMaximumHeight)
+        self.EndChamberOutputButton.clicked.connect(self.endChamberOutput)
 
-        #self.ThermalProfileEdit = QLineEdit("")
-        #self.ThermalProfileEdit.setEchoMode(QLineEdit.Normal)
-        #self.ThermalProfileEdit.setPlaceholderText("Enter Profile Number")
-        #self.ThermalProfileEdit.setPlaceholderText("Enter Profile Name")
+        self.thermalProfilesStatusLabel = QLabel("")
+        self.ThermalProfileCombo = QComboBox()
+        self.ThermalProfileCombo.clear()
+
+        if self.chamber and self.chamber.profiles:
+            for name in self.chamber.profiles.keys():
+                if name not in ["", "New Profile", "0"]:
+                    self.ThermalProfileCombo.addItem(name)
 
         self.CoolerBox = QGroupBox(f"{site_settings.cooler} Controller", self)
         self.CoolerLayout = QGridLayout()
@@ -932,7 +981,9 @@ class QtApplication(QWidget):
         layout.addWidget(self.ThermalTestButton, 4, 0, 1, 1)
         #layout.addWidget(self.ThermalProfileEdit, 4, 1, 1, 1)
         layout.addWidget(self.ThermalProfileCombo, 4, 1, 1, 1)
-        layout.addWidget(self.AbortThermalTestButton, 5, 0, 1, 1)
+        layout.addWidget(self.thermalProfilesStatusLabel, 5, 0, 1, 2)
+        layout.addWidget(self.AbortThermalTestButton, 6, 0, 1, 1)
+        layout.addWidget(self.EndChamberOutputButton, 7, 0, 1, 1)
 
         self.MainOption.setLayout(layout)
 
@@ -1005,6 +1056,9 @@ class QtApplication(QWidget):
             self.groupbox_mpaping["multimeter"] = self.multimeter_group
 
         # only for the simplified GUI so this default should not matter right?
+
+        self.load_profiles_async()
+
     def setDefault(self):
         if self.expertMode is False:
             self.HVPowerGroup.setDisabled(True)
@@ -1170,72 +1224,72 @@ class QtApplication(QWidget):
 
     def abortThermalTest(self):
         """Stop the current profile running on thermal chamber"""
-        #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
-        #with temp_chamber:
-        #   temp_chamber.set("CONTROL_PROFILE", "STOP")
+
+        #Stop the profile
+        self.chamber.stop_profile()
+
         message_box = QMessageBox()
         message_box.setText("Profile Aborted")
         message_box.setStandardButtons(QMessageBox.Ok)
         message_box.exec()
 
+    def endChamberOutput(self):
+        message_box0 = QMessageBox()
+        message_box0.setText("Are you sure you want to turn off the thermal chamber output?")
+        message_box0.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        message_box0.setDefaultButton(QMessageBox.No)
+        reply = message_box0.exec()
+
+        if reply == QMessageBox.Yes:
+            """Turn off the thermal chamber output"""
+            self.chamber.turn_off()
+            message_box = QMessageBox()
+            message_box.setText("Profiles stopped and output turned off")
+            message_box.setStandardButtons(QMessageBox.Ok)
+            message_box.exec()
+
+        if reply == QMessageBox.No:
+            return
+
     def runThermalTest(self):
         # Verify input of input data:
-        profile_name = self.ThermalProfileCombo.currentText()
-        #self.chamber = F4TTemperatureChamber.connect("TCPIP::128.146.32.200::5025::SOCKET") #move higher up in the code
+        self.profile_name = self.ThermalProfileCombo.currentText()
+
         profile_dictionary = self.chamber.profiles
 
+        # Debug: Show what we're comparing
+        logger.info("Selected profile from QComboBox: '{}'".format(self.profile_name))
+        logger.info("Available profile names: {}".format(list(profile_dictionary.keys())))
+        
         # Check if this value corresponds to a profile on the f4t
-
-        if profile_name in profile_dictionary:
-            self.profile_number = profile_dictionary[profile_name]
+        if self.profile_name in profile_dictionary:
+            # Find the profile number by searching values
+            profile_number = profile_dictionary[self.profile_name]
+            logger.info("Found profile: '{}' with number: {}".format(self.profile_name, profile_number))
         else:
-            logger.error("Could not find profile name: %s", profile_name)
-        
-        try:
-            # Set the profile on the chamber
-            self.chamber.set_profile(self.profile_number)
-            # Create and show the thermal test window
-            self.ThermalTestWindow = ThermalTestModules()
-            self.ThermalTestWindow.show()
-        except Exception as e:
-            logger.error("Could not set profile: %s", e)
-            return
-        
-
-        """ # Verify input of input data:
-        profile_number = self.ThermalProfileEdit.text()
-
-        # Check if this value is an int
-        try:
-            profile_number = int(profile_number)
-        except ValueError:
-            logger.error(traceback.format_exc())
-            QMessageBox.information(
-                None,
-                "Error",
-                "Please enter a valid profile number. It must be an integer",
-                QMessageBox.Ok,
-            )
-            return """
-
-        # Import icicle module for temperature chamber
-        # print(site_settings.temp_chamber_resource)
-        #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
-
-        #with temp_chamber:
-        #    temp_chamber.set("SELECT_PROFILE", profile_number)
-        #    profile_name = temp_chamber.query("SELECT_PROFILE")
+            logger.error("Could not find profile name: {})".format(self.profile_name))
+            logger.debug("Available profiles: %s", profile_dictionary)
+            return  # Exit early if profile not found
 
         message_box = QMessageBox()
-        message_box.setText(f'Temperature chamberprofile "{profile_name}" has been chosen')
+        message_box.setText(f'Temperature chamberprofile "{self.profile_name}" has been chosen')
         message_box.setInformativeText("Is this the correct profile?")
         message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
         message_box.setDefaultButton(QMessageBox.Yes)
         response = message_box.exec()
 
         if response == QMessageBox.Yes:
-            with self.chamber:
-                self.chamber.control_profile("START")
+            try:
+                # Set the profile on the chamber
+                self.chamber.set_profile(profile_number)
+                # Create and show the thermal test window
+                logger.info("Controller selected profile: %s" % self.chamber.current_profile())
+                #in the statement below, not sure if the = sign is needed or not
+                self.thermal_window = ThermalTestModules(self.chamber, self.profile_name, profile_number)
+                self.thermal_window.show()
+            except Exception as e:
+                logger.error("Could not set profile: %s", e)
+                return
 
         if response == QMessageBox.No:
             return
