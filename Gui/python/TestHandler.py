@@ -1303,12 +1303,14 @@ class TestHandler(QObject):
         # Persist snapshot to output dir
         try:
             if getattr(self, 'output_dir', None):
-                import os, json
-                # Keep filenames as before for compatibility
+                import json
+
+                # Keep filenames as before for compatibility, but store them under each FC7 board dir.
                 if str(phase).lower().startswith("s"):
-                    out_path = os.path.join(self.output_dir, "tessie_start_temps.json")
+                    file_name = "tessie_start_temps.json"
                 else:
-                    out_path = os.path.join(self.output_dir, "tessie_end_values.json")
+                    file_name = "tessie_end_values.json"
+
                 payload = {
                     "source": "widget",
                     "timestamp": ts,
@@ -1318,8 +1320,16 @@ class TestHandler(QObject):
                     "phase": "start" if str(phase).lower().startswith("s") else "end",
                     "temperature_setpoints": setpoints,
                 }
-                with open(out_path, "w") as f:
-                    json.dump(payload, f, indent=2)
+
+                board_dirs = [
+                    os.path.join(self.output_dir, firmware.getBoardName())
+                    for firmware in self.firmware
+                ]
+                for board_dir in board_dirs:
+                    os.makedirs(board_dir, exist_ok=True)
+                    out_path = os.path.join(board_dir, file_name)
+                    with open(out_path, "w") as f:
+                        json.dump(payload, f, indent=2)
         except Exception:
             pass
 
