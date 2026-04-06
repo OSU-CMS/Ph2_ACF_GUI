@@ -58,7 +58,7 @@ def ResultGrader(
             root_file_name = testName.split("_")[0] + "_" + module_name
 
             relevant_files = [
-                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml") or file.endswith(".json")
             ]
             dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
             relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
@@ -126,7 +126,7 @@ def ResultGrader(
 
         elif "IREF" in testName:
             relevant_files = [
-                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml") or file.endswith(".json")
             ]
             dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
             relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
@@ -189,7 +189,7 @@ def ResultGrader(
             #]
             
             relevant_files = [
-                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml")
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml") or file.endswith(".json")
             ]
             dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
             relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
