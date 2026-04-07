@@ -1501,7 +1501,7 @@ created by Ph2_ACF is empty."
 
             if self.RunNumber == "-1":      
                 dest_dir = os.path.join(self.output_dir,
-                                         self.firmware[processIndex].getBoardname()
+                                         self.firmware[processIndex].getBoardName()
                 )
 
                 for file_path in glob.glob(
