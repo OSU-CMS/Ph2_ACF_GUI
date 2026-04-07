@@ -1825,7 +1825,7 @@ created by Ph2_ACF is empty."
                     self.communicationTestModule = None
 
         else:
-            if "FIFO empty" in alltext:
+            if "FIFO empty" in alltext or "Reached maximum number of attempts" in alltext:
                 if self.run_processes[processIndex].state() == QProcess.Running:
                     logger.info("process is still running...  Attempting to terminate")
                     self.run_processes[processIndex].terminate()
