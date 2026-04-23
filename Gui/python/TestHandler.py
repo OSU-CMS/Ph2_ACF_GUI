@@ -2988,6 +2988,7 @@ created by Ph2_ACF is empty."
                         version_testStationSoftware="OSU_GUI-" + os.environ.get(
                             "PH2_ACF_GUI_VERSION"
                         ),
+                        version_innertrackertests=os.environ.get("INNER_TRACKER_TESTS_VERSION"),
                     )
                     if not status:
                         raise ConnectionError(message)

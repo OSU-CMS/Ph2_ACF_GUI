@@ -12,10 +12,12 @@ source symlinks.sh
 git config --global --add safe.directory /home/cmsTkUser/Ph2_ACF_GUI/felis
 git config --global --add safe.directory /home/cmsTkUser/Ph2_ACF_GUI/icicle
 git config --global --add safe.directory /home/cmsTkUser/Ph2_ACF_GUI
+git config --global --add safe.directory /home/cmsTkUser/Ph2_ACF_GUI/InnerTrackerTests
 
 export PH2_ACF_GUI_VERSION=$(git describe --tags)
 export FELIS_VERSION=$(git -C felis describe --tags)
 export ICICLE_VERSION=$(git -C icicle describe --tags)
+export INNER_TRACKER_TESTS_VERSION=$(git -C InnerTrackerTests describe --tags)
 
 cd ${GUI_dir}/Gui/python
 
