@@ -173,6 +173,34 @@ def ResultGrader(
                 comm_result=comm_result,
             )
 
+        elif testName == "OpenBumpTest":
+            # OpenBumpTest consists of three subtests, collect all their XML and result files
+            relevant_files = [
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if file.endswith(".xml") or file.endswith(".json")
+            ]
+            # Also collect any ROOT files from the subtests
+            for file in os.listdir(outputDir):
+                if "PixelAlive" in file and file.endswith(".root"):
+                    relevant_files.append(outputDir + "/" + os.fsdecode(file))
+            
+            logger.info(f"OpenBumpTest relevant files: {relevant_files}")
+            
+            _1, _2 = felis.set_module(
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
+            )
+            status, message, sanity, explanation = felis.set_result(
+                paths_files = relevant_files,
+                name_module = module_name,
+                name_test = f"{testIndexInSequence:02d}_{testName}",
+                type_test = "crosstalk",
+            )
+
         else:
 
             # Note: This may be useful
