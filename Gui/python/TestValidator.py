@@ -3,7 +3,7 @@ import ROOT
 import traceback
 import re
 
-from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests_Modules
+from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests_Modules, OpenBumpTest
 from Gui.GUIutils.guiUtils import isCompositeTest
 from Gui.python.logging_config import get_logger
 
@@ -171,6 +171,43 @@ def ResultGrader(
                 name_test = f"{testIndexInSequence:02d}_{testName}",
                 type_test = "commtest",
                 comm_result=comm_result,
+            )
+
+        elif testName == "OpenBumpTest":
+            # Collect all 3 XML files from the OpenBumpTest subtests
+            relevant_files = []
+            
+            # Collect all XML files (one for each subtest: highcharge_xtalk, coupled_xtalk, uncoupled_xtalk)
+            for file in os.listdir(outputDir):
+                if file.endswith(".xml"):
+                    relevant_files.append(os.path.join(outputDir, file))
+            
+            # Also collect PixelAlive root files from the subtests
+            for file in os.listdir(outputDir):
+                if "PixelAlive" in file and file.endswith(".root"):
+                    relevant_files.append(os.path.join(outputDir, file))
+            
+            # Collect any .json files
+            for file in os.listdir(outputDir):
+                if file.endswith(".json"):
+                    relevant_files.append(os.path.join(outputDir, file))
+            
+            logger.info(f"OpenBumpTest collected files: {relevant_files}")
+            
+            _1, _2 = felis.set_module(
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
+            )
+            status, message, sanity, explanation = felis.set_result(
+                paths_files = relevant_files,
+                name_module = module_name,
+                name_test = f"{testIndexInSequence:02d}_{testName}",
+                type_test = "crosstalk",
             )
 
         else:
