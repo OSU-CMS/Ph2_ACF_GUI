@@ -582,6 +582,8 @@ class TestHandler(QObject):
 
         if isCompositeTest(testName):
             self.runCompositeTest(testName)
+        elif testName == "OpenBumpTest":
+            self.runOpenBumpTest()
         elif isSingleTest(testName):
             self.runSingleTest(testName)
         else:
