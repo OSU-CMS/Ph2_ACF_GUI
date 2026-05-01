@@ -1151,6 +1151,19 @@ class TestHandler(QObject):
                 )
                 if process.state() != QProcess.NotRunning:
                     self.active_process_count += 1
+
+        elif self.currentTest == "OpenBumpTest" or self.currentTest in OpenBumpTest:
+            i = 0
+            for process, firmware in zip(self.run_processes, self.firmware):
+                process.start(
+                    "CMSITminiDAQ",
+                    [
+                        "-f",
+                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        "-c",
+                        "{}".format(Test_to_Ph2ACF_Map[OpenBumpTest[self._openBumpTest_subtest_index]]),
+                    ],
+                )
         else:
             i = 0
             for process, firmware in zip(self.run_processes, self.firmware):
