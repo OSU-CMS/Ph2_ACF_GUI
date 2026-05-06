@@ -1,5 +1,6 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize
+from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtWidgets import (
     QApplication,  # ← Add this import
     QCheckBox,
@@ -16,138 +17,223 @@ from PyQt5.QtWidgets import (
 )
 from Gui.python.thermal_utils import generate_thermal_file_paths
 
-# Comment out QtApplication import for standalone testing
-# from .QtApplication import QtApplication
 import sys
 import os
-import time
-# Add current directory to Python path (this worked yesterday)
-
-# Skip logging for testing to avoid path issues
-# from Gui.python.logging_config import get_logger
-# logger = get_logger(__name__)
-
-# Use relative import - works when running from project root
-from Gui.python.thermal_chamber import F4TTemperatureChamber
+import requests
 
 from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+icon_path = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "icons",
+    "send_modules.jpeg"
+)
 
-class ThermalTestModules(QWidget):
-    def __init__(self):
-        super(ThermalTestModules, self).__init__()
+class ThermalModulesWindow(QWidget):
+    def __init__(self, master):
+        super(ThermalModulesWindow, self).__init__()
+        self.master = master
         self.setWindowTitle("Thermal Test Modules")
         self.createMain()
 
     def createMain(self):   
-        self.layout = QGridLayout()
-        self.setLayout(self.layout)
+        main_layout = QVBoxLayout(self)
+        
+        self.scrollArea = QScrollArea()
+        self.scrollArea.setWidgetResizable(True)
 
-        self.numberOfModules = 4 #initial number of modules to display
-        self.modules = [] #list of module identification strings
+        self.scrollWidget = QWidget()
+        self.scrollLayout = QGridLayout(self.scrollWidget)
+
+        self.scrollArea.setWidget(self.scrollWidget)
+
+        # Limit height to ~5 rows visible
+        row_height = QLineEdit().sizeHint().height()
+        visible_rows = 5
+        self.scrollArea.setFixedHeight(row_height * visible_rows + 20) # +20 for padding
+
+        main_layout.addWidget(self.scrollArea)
+
+        bottom_layout = QGridLayout()
+
+        self.modules_list = [] #list of module identification strings
+        self.rows = [] # each row = (label, lineEdit, button)
 
         #initialize buttons
-        self.addModuleButton = QPushButton("Add Module")
+        self.addModule()
+
         self.closeButton = QPushButton("Exit")
+        self.subdetectorCombo = QComboBox()
+        self.sendModulesButton = QPushButton("Send Modules")
+        self.subdetectorLabel = QLabel("Subdetector: ")
 
         self.closeButton.setDisabled(False)
+        self.sendModulesButton.setIcon(QIcon(icon_path))
+        self.sendModulesButton.setIconSize(QSize(24, 24))
 
-        #button clicks
-        self.addModuleButton.clicked.connect(self.addModule)
-        self.closeButton.clicked.connect(self.close)
+        #button clicks and other connections
+        #self.addModuleButton.clicked.connect(self.addModule)
+        self.closeButton.clicked.connect(self.closeWindow)
+        self.sendModulesButton.clicked.connect(self.sendModules)
+        
+        #self.moduleEntry.editingFinished.connect(self.addModule) #user clicks away (tab, enter, or other)
 
-        #Initial Layout
-        for i in range(self.numberOfModules):
-            self.modules.append(QLineEdit())
-            self.layout.addWidget(QLabel(f"Module {i + 1}: "), i, 0)
-            self.layout.addWidget(self.modules[i], i, 1)
-        self.layout.addWidget(self.addModuleButton, self.numberOfModules - 1, 2)
-        self.layout.addWidget(self.closeButton, self.numberOfModules, 4)
+        # Add subdetector combo box
+        self.subdetectorCombo.addItems(["", "TFPX", "TEPX", "TBPX"])
+        
+        #bottom_layout.addWidget(self.addModuleButton, 0, 0)
+        bottom_layout.addWidget(self.subdetectorLabel, 0, 0)
+        bottom_layout.addWidget(self.subdetectorCombo, 0, 1)
+        bottom_layout.addWidget(self.sendModulesButton, 0, 2)
+        bottom_layout.addWidget(self.closeButton, 0, 3)
         
         # Set the layout on the widget
-        self.setLayout(self.layout)
+        main_layout.addLayout(bottom_layout)
+
+        
         self.show()
 
     def addModule(self):
-        #remove buttons so they can be repositioned
-        self.layout.removeWidget(self.addModuleButton)
-        self.layout.removeWidget(self.closeButton)
+        row_index = len(self.rows)
         
         # Add new module row
-        self.layout.addWidget(QLabel(f"Module {self.numberOfModules + 1}: "), self.numberOfModules, 0)
-        self.modules.append(QLineEdit())
-        self.layout.addWidget(self.modules[self.numberOfModules], self.numberOfModules, 1)
-        
-        # Move add button to new row
-        self.layout.addWidget(self.addModuleButton, self.numberOfModules, 2)
-        self.layout.addWidget(self.closeButton, self.numberOfModules + 1, 4)
-        
-        self.numberOfModules += 1
+        label = QLabel(f"Module {row_index + 1}: ")
+        moduleEntry = QLineEdit()
+        removeModuleButton = QPushButton("❌")
 
-    """def startThermalTest(self):
-        message_box = QMessageBox()
-        message_box.setText(f"{self.profile_name} will run")
-        message_box.setInformativeText("Do you want to continue?")
-        message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        message_box.setDefaultButton(QMessageBox.Yes)
-        response = message_box.exec_()
+        moduleEntry.returnPressed.connect(self.addModule)
+        removeModuleButton.clicked.connect(lambda _, r=row_index: self.removeModule(r))
 
-        if response != QMessageBox.Yes:
+        self.rows.append((label, moduleEntry, removeModuleButton))
+
+        self.rebuildLayout()
+        moduleEntry.setFocus()
+
+    def removeModule(self, row):
+        if 0 <= row < len(self.rows):
+            # delete widgets
+            for widget in self.rows[row]:
+                widget.deleteLater()
+
+            #remove row from list
+            self.rows.pop(row)
+
+            self.rebuildLayout()
+
+    def rebuildLayout(self):
+        # Clear existing layout
+        while self.scrollLayout.count():
+            item = self.scrollLayout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.setParent(None)
+
+        # Add rows back
+        for i, (label, entry, button) in enumerate(self.rows):
+            label.setText(f"Module {i + 1}:")
+
+            try:
+                button.clicked.disconnect()
+            except Exception as e:
+                logger.debug("Error disconnecting button: %s", e)
+            button.clicked.connect(lambda _, r=i: self.removeModule(r))
+
+            if len(self.rows) < 2:
+                button.setVisible(False)
+            else:
+                button.setVisible(True)
+                
+            self.scrollLayout.addWidget(label, i, 0)
+            self.scrollLayout.addWidget(entry, i, 1)
+            self.scrollLayout.addWidget(button, i, 2)
+
+    def sendModules(self):
+        #subdetector = "TFPX"
+        username = self.master.username
+        logger.debug("Username: %s", username)
+
+        userpass = self.master.password
+        logger.debug("Password: %s", userpass)
+
+        subdetector = self.subdetectorCombo.currentText().strip()
+        logger.debug("Subdetector: %s", subdetector)
+
+        url = "https://panthera.fit.edu/request_handlers/thermal_cycle_handler.php"
+        #url = "fake url for debugging"
+        logger.debug("URL: %s", url)
+
+        filled_modules = [
+            entry.text().strip()
+            for (_, entry, _) in self.rows
+            if entry.text().strip()
+        ]
+
+        # block if subdetector not selected
+        if not subdetector:
+            logger.warning("No subdetector selected")
+            QMessageBox.warning(self, "Warning", "Please select a subdetector")
             return
 
-        profile_number = self.chamber.profiles.get(self.profile_name) #get profile number safely
-        logger.info("Using cached mapping: %s --> %s", self.profile_name, profile_number)
-        
-        if profile_number is None:
-            QMessageBox.warning(self, "Error", f"Profile {self.profile_name} not found")
-            logger.error("Profile %s not found", self.profile_name)
-            return
-        if self.chamber_busy:
-            QMessageBox.warning(self, "Busy", "Chamber is currently in use")
+        # block if no modules entered
+        if not filled_modules:
+            logger.warning("No modules entered")
+            QMessageBox.warning(self, "Warning", "Please enter at least one module")
             return
 
-        self.chamber_busy = True
+        Data_sent_counter = 0 
 
-        #disable start button to prevent double clicks
-        self.startThermalTestButton.setDisabled(True)
+        for name_module in filled_modules:
+            logger.debug("Module: %s", name_module)
 
-        #Force clean state before starting
-        logger.info("Forcing chamber into known state before test")
+            if name_module not in self.modules_list:
+                self.modules_list.append(name_module)
 
-        self.chamber.stop_profile()
+            try:
+                response = requests.post(
+                    url,
+                    data={
+                        "name_module": name_module,
+                        "subdetector": subdetector,
+                        "username": username,
+                        "userpass": userpass,
+                    }
+                )
 
-        err = self.chamber.query("SYST:ERR?")
-        if err:
-            logger.warning("SCPI ERROR after stop_profile: %s", err)
+                if response.status_code == 200:
+                    Data_sent_counter += 1
+                else:
+                    logger.error("Failed for %s: %s", name_module, response.text)
+            except Exception as e:
+                logger.error("Exception for %s: %s", name_module, e)
 
-        self.chamber.start_profile()
+        logger.debug("Modules list: %s", filled_modules)
 
-        err = self.chamber.query("SYST:ERR?")
-        if err:
-            logger.warning("SCPI ERROR after start_profile: %s", err)
+        if Data_sent_counter == len(filled_modules):
+            logger.info("Data sent successfully for all %d modules", Data_sent_counter)
+            message_box = QMessageBox()
+            message_box.setText("Data sent successfully for all %d modules" % Data_sent_counter)
+            message_box.setIcon(QMessageBox.Information)
+            message_box.exec()
+            self.closeWindow()
+        elif Data_sent_counter == 0:
+            logger.warning("No data sent")
+            message_box = QMessageBox()
+            message_box.setText("No data sent")
+            message_box.setIcon(QMessageBox.Warning)
+            message_box.exec()
+        else:
+            logger.warning("Data not sent for %d modules", len(filled_modules) - Data_sent_counter)
+            message_box = QMessageBox()
+            message_box.setText("Data not sent for %d modules" % (len(filled_modules) - Data_sent_counter))
+            message_box.setIcon(QMessageBox.Warning)
+            message_box.exec()
 
-    def stopThermalTest(self):
-        message_box = QMessageBox()
-        message_box.setText("You are about to stop the thermal test")
-        message_box.setInformativeText("Do you want to continue?")
-        message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        message_box.setDefaultButton(QMessageBox.Yes)
-        response = message_box.exec_()
-
-        if response == QMessageBox.No:
-            return
-        
-        if response == QMessageBox.Yes:
-            self.chamber.stop_profile()
-
-            err = self.chamber.query("SYST:ERR?")
-            if err:
-                logger.warning("SCPI ERROR after stop_profile: %s", err)
-            
-            self.stopThermalTestButton.setDisabled(True)"""
+    def closeWindow(self):
+        self.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    window = ThermalTestModules(QWidget(), "test_profile")
+    window = ThermalModulesWindow(None)
     sys.exit(app.exec())

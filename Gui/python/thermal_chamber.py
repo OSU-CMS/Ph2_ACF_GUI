@@ -4,34 +4,44 @@ import threading
 import os
 import json
 
-from Gui.python.logging_config import get_logger
+import sys
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent  # Gui/
+
+cache_dir = BASE_DIR / "cache"
+cache_dir.mkdir(exist_ok=True)
+
+from python.logging_config import get_logger
 
 logger = get_logger(__name__)
 
 class F4TTemperatureChamber:
-    def __init__(self, ip, port):
-        logger.debug("F4TTemperatureChamber initialized with resource: %s" % ip)
+    def __init__(self):
         self._instrument = None
         self.sock = QTcpSocket()
         logger.debug("Tcp Socket created")
 
-        self.profile_cache_file = os.path.join(
-            os.path.dirname(os.path.dirname(__file__)),
-            "jsonFiles",
-            "profiles.json"
-        )
-        logger.debug("Profile cache file path: %s" % self.profile_cache_file)
-        self.profiles = {}
+        self.temp_chamber_cache_file = str(BASE_DIR / "cache" / "tempChamber.json")
+        logger.debug("Profile cache file: %s" % self.temp_chamber_cache_file)
+        
+        self.ip, self.port = self.load_connection()
+        logger.debug("F4TTemperatureChamber initialized with resource: %s : %s" % (self.ip, self.port))
 
         self.ambient_temperature = 24
         self._lock = threading.Lock()
         logger.debug("Lock created")
+        logger.debug("Loading profiles...")
         self.load_profiles()
-        logger.debug("Profiles loaded")
-        self.connect(ip, port)
+        self.connect()
 
-    def connect(self, ip, port):
-        logger.debug("Connecting to %s:%s" % (ip, port))
+    def connect(self):
+
+        if not self.ip or not self.port:
+            logger.error("IP or port not found in cache")
+            return
+        
+        logger.debug("Connecting to %s:%s" % (self.ip, self.port))
     
         # Ensure a clean slate
         try:
@@ -43,8 +53,8 @@ class F4TTemperatureChamber:
         except Exception as e:
             logger.error("Error aborting socket: %s" % e)
     
-        logger.debug("Connecting to %s:%s" % (ip, port))
-        self.sock.connectToHost(ip, int(port))
+        logger.debug("Connecting to %s:%s" % (self.ip, self.port))
+        self.sock.connectToHost(self.ip, int(self.port))
     
         if not self.sock.waitForConnected(5000):
             logger.error("Connection failed: %s" % self.sock.errorString())
@@ -83,23 +93,62 @@ class F4TTemperatureChamber:
             logger.debug("Query response: %s" % response)
             return response
         return None
-    
+
     def save_profiles(self):
         try:
-            with open(self.profile_cache_file, "w") as f:
-                json.dump(self.profiles, f, indent=4)
+            data = {}
+
+            if os.path.exists(self.temp_chamber_cache_file):
+                with open(self.temp_chamber_cache_file, "r") as f:
+                    data = json.load(f)
+
+            data["profiles"] = self.profiles
+            
+            with open(self.temp_chamber_cache_file, "w") as f:
+                logger.debug("File opened for writing")
+                json.dump(data, f, indent=4)
+                logger.debug("JSON data written to file")
+
             logger.debug("Saved %d profiles" % len(self.profiles))
+
         except Exception as e:
             logger.error("Save failed: %s" % e)
+            logger.error("Exception type: %s" % type(e).__name__)
+            import traceback
+            logger.error("Full traceback: %s" % traceback.format_exc())
 
-    def load_profiles(self):
-        if not os.path.exists(self.profile_cache_file):
-            logger.debug("No cached profiles found")
-            return
+    def load_connection(self):
+        logger.debug("Checking if profile cache file exists: %s" % self.temp_chamber_cache_file)
+        if not os.path.exists(self.temp_chamber_cache_file):
+            logger.debug("Profile cache file does not exist")
+            return None, None
 
         try:
-            with open(self.profile_cache_file, "r") as f:
-                self.profiles = json.load(f)
+            with open(self.temp_chamber_cache_file, "r") as f:
+                data = json.load(f)
+                connection = data.get("connection", {})
+                ip = connection.get("ip", None).strip()
+                port = connection.get("port", None)
+                return ip, port
+        except Exception as e:
+            logger.error("Load failed: %s" % e)
+            return None, None
+
+    def load_profiles(self):
+        logger.debug("Checking if profile cache file exists: %s" % self.temp_chamber_cache_file)
+        if not os.path.exists(self.temp_chamber_cache_file):
+            logger.debug("Profile cache file does not exist")
+            logger.debug("No cached profiles found")
+            self.profiles = {}
+            return
+
+        logger.debug("Loading profiles from file: %s" % self.temp_chamber_cache_file)
+        try:
+            with open(self.temp_chamber_cache_file, "r") as f:
+                data = json.load(f)
+                self.profiles = data.get("profiles", {})
+                logger.debug("Profiles loaded from file")
+
             logger.debug("Loaded %d cached profiles" % len(self.profiles))
         except Exception as e:
             logger.error("Load failed: %s" % e)
@@ -119,13 +168,6 @@ class F4TTemperatureChamber:
     def get_temperature(self):
         logger.debug("Getting temperature")
         return self.query(":SOURCE:CLOOP1:PVAL?")
-
-    def get_setpoint(self):
-        logger.debug("Getting setpoint")
-        result = self.query(":SOURCE:CLOOP1:SPOINT?")
-        if result is None:
-            logger.error("Failed to get setpoint")
-        return result
 
     def get_setpoint(self):
         logger.debug("Getting setpoint")

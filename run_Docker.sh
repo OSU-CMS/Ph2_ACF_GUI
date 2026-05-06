@@ -7,7 +7,7 @@ bash check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
 ######### Specify the docker image to use #################
-IMAGE_NAME="osupixels/ph2_acf_gui_dev:v5.0.0-pre"
+IMAGE_NAME="osupixels/ph2_acf_gui_dev:v5.1.0-pre-v6"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_purdue:latest"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
 #IMAGE_NAME="local/testimagemay29user"
@@ -64,6 +64,8 @@ then
 		-v ${PWD}/FirmwareImages:/home/cmsTkUser/Ph2_ACF_GUI/FirmwareImages/\
 		-v ${PWD}/symlinks.sh:/home/cmsTkUser/Ph2_ACF_GUI/symlinks.sh/\
 		-v ${PWD}/Gui/jsonFiles/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles/\
+		-v ${PWD}/Gui/cache/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/cache/\
+		-v ${PWD}/Gui/icons/:/home/cmsTkUser/Ph2_ACF_GUI/Gui/icons/\
 		-w /home/cmsTkUser/Ph2_ACF_GUI -e DISPLAY=$DISPLAY\
 		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host --entrypoint /bin/bash $IMAGE_NAME
 
@@ -106,6 +108,8 @@ To install on Alma Linux please run:\e[0m
 		-v ${PWD}/Ph2_ACF/test:/home/cmsTkUser/Ph2_ACF_GUI/Ph2_ACF/test\
 		-v ${PWD}/data:/home/cmsTkUser/Ph2_ACF_GUI/data\
         -v ${PWD}/Gui/jsonFiles:/home/cmsTkUser/Ph2_ACF_GUI/Gui/jsonFiles\
+        -v ${PWD}/Gui/cache:/home/cmsTkUser/Ph2_ACF_GUI/Gui/cache\
+		-v ${PWD}/Gui/icons:/home/cmsTkUser/Ph2_ACF_GUI/Gui/icons\
 		-w /home/cmsTkUser/Ph2_ACF_GUI  -e DISPLAY=$DISPLAY\
 		--volume="$HOME/.Xauthority:/root/.Xauthority:rw" -u root --net host $IMAGE_NAME  #local/testimagejuly30user
 		#Before, the docker run command had the options -v $XSOCK:$XSOCK -v $XAUTH:$XAUTH -e XAUTHORITY=$XAUTH. We were having trouble

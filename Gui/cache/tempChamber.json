@@ -1,0 +1,21 @@
+{
+    "profiles": {
+        "Temperature Test": 1,
+        "New Profile": 2,
+        "Burn-In": 3,
+        "Thermal Stress Test": 4,
+        "TST - 45": 5,
+        "TST - 50": 6,
+        "TST - 55": 7,
+        "TST - 60": 8,
+        "TST - 65": 9,
+        "TST - 70": 10,
+        "Cold Test": 11,
+        "Quick test": 12,
+        "DHT Sensor test": 13
+    },
+    "connection": {
+        "ip": "128.146.32.200",
+        "port": 5025
+    }
+}
