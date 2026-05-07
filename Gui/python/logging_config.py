@@ -3,8 +3,9 @@ import logging
 from datetime import datetime
 
 current_time = datetime.now().strftime("%Y_%m_%d-%H:%M")
+LOG_FILE = f"../data/PH2_ACF_GUI_{current_time}.log"
 # Use absolute path to avoid path resolution issues
-LOG_FILE = f"/home/pixels/Workspaces/antonio/Ph2_ACF_GUI/data/PH2_ACF_GUI_{current_time}.log"
+#LOG_FILE = f"/home/pixels/Workspaces/cmstkuser/Ph2_ACF_GUI/data/PH2_ACF_GUI_{current_time}.log"
 
 def get_logger(name=None):
     logger = logging.getLogger(name)

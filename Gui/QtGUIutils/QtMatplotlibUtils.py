@@ -7,12 +7,7 @@ from PyQt5.QtWidgets import (
 
 import matplotlib
 
-"""
-try:
-    matplotlib.use("Qt5Agg")
-except:
-    matplotlib.use("Agg")
-"""
+matplotlib.use("Qt5Agg")
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 

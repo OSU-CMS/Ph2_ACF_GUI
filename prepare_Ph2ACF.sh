@@ -36,4 +36,4 @@ cd ${GUI_dir}/Gui
 
 echo "You can now open the GUI by doing 'python3 QtApplication.py'."
 
-# python3 QtApplication.py #this is commmented out for some reason i forgot why during my testing
+python3 QtApplication.py #this gets commented out for some reason (i forgot why) during testing sometimes
