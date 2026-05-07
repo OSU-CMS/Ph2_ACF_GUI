@@ -7,12 +7,12 @@ import json
 import sys
 from pathlib import Path
 
+from python.logging_config import get_logger
+
 BASE_DIR = Path(__file__).resolve().parent.parent  # Gui/
 
 cache_dir = BASE_DIR / "cache"
 cache_dir.mkdir(exist_ok=True)
-
-from python.logging_config import get_logger
 
 logger = get_logger(__name__)
 
