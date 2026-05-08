@@ -1151,6 +1151,19 @@ class TestHandler(QObject):
                 )
                 if process.state() != QProcess.NotRunning:
                     self.active_process_count += 1
+        
+        elif self.currentTest == "OpenBumpTest" or self.currentTest in OpenBumpTest:
+            i = 0
+            for process, firmware in zip(self.run_processes, self.firmware):
+                process.start(
+                    "CMSITminiDAQ",
+                    [
+                        "-f",
+                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        "-c",
+                        "{}".format(Test_to_Ph2ACF_Map[OpenBumpTest[self._openBumpTest_subtest_index]]),
+                    ],
+                )
         else:
             i = 0
             for process, firmware in zip(self.run_processes, self.firmware):
@@ -2980,17 +2993,13 @@ created by Ph2_ACF is empty."
             counter = 0
             for i, fc7 in enumerate(self.firmware):
                 for module in fc7.getModules():
-                    status, message = self.felis_instances[i].set_comment( name_module=module.getModuleName(),name_test="sequence", comment=self.comment)
                     status, message = self.felis_instances[i].upload_results(
-                        name_module=module.getModuleName(),
-                        username=self.master.username,
-                        userpass=self.master.password,
+                        module.getModuleName(),
+                        self.master.username,
+                        self.master.password,
                         type_sequence=self.info,
                         version_ph2acf=os.environ.get("PH2ACF_VERSION"),
-                        version_testStationSoftware="OSU_GUI-" + os.environ.get(
-                            "PH2_ACF_GUI_VERSION"
-                        ),
-                        version_innertrackertests=os.environ.get("INNER_TRACKER_TESTS_VERSION"),
+                        version_testStationSoftware=os.environ.get("PH2_ACF_GUI_VERSION"),
                     )
                     if not status:
                         raise ConnectionError(message)
