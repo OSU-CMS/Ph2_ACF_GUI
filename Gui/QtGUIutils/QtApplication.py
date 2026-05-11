@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, pyqtSignal, QSize
+from PyQt5.QtCore import Qt, pyqtSignal, QSize, QThread, QTimer, QThread
 from PyQt5 import QtCore
 from PyQt5.QtGui import QFont, QPixmap, QPalette, QImage, QColor
 from PyQt5.QtWidgets import (
@@ -17,6 +17,8 @@ from PyQt5.QtWidgets import (
     QMessageBox,
 )
 
+from Gui.QtGUIutils.QtThermalTestWindow import ThermalTestWindow
+from Gui.QtGUIutils.QtThermalModulesWindow import ThermalModulesWindow
 
 import sys
 import os
@@ -42,10 +44,9 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
+from Gui.python.thermal_chamber import F4TTemperatureChamber
 
 from icicle.icicle.instrument_cluster import InstrumentCluster
-# from icicle.icicle.f4t_temperature_chamber import F4TTempChamber
-
 
 from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
@@ -78,6 +79,10 @@ class QtApplication(QWidget):
         self.dimension = dimension
         self.available_visa_resources = pyvisa.ResourceManager("@py").list_resources()
         self.ui_testing = UI_testing
+
+        self.chamber = None
+        self.chamber_busy = False
+        self.thread = None
 
         self.desired_devices = {"hv": 1, "lv": 1, "relay": 0, "multimeter": 0}
         self.connected_device_information = {
@@ -483,8 +488,16 @@ class QtApplication(QWidget):
         return label, status_label
 
     def createMain(self):
+        logger.debug("createMain method in QtApplication has been accessed")
         self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name_first))
         self.FirmwareStatus.setDisabled(True)
+
+        try: 
+            logger.debug("Attempting to connect to thermal chamber")
+            self.chamber = F4TTemperatureChamber()
+        except Exception as e:
+            logger.error("Failed to connect to thermal chamber: %s" % e)
+            self.chamber = None
 
         self.StatusList = [
             self.create_status_label("Panthera DB", self.panthera_connected),
@@ -843,34 +856,20 @@ class QtApplication(QWidget):
 
         self.ThermalTestButton = QPushButton("&Thermal Test")
         self.ThermalTestButton.setEnabled(True)
-        self.AbortThermalTestButton = QPushButton("&Abort thermal test")
-        self.AbortThermalTestButton.setEnabled(True)
 
-        # To avoid people trying to push the button without a configured
-        # chamber, check if the resource is defined in siteConfig first.
-        # Maybe catching an error isn't the prettiest way to do this
-        # If it is not, disable the button
-        try:
-            site_settings.temp_chamber_resource
-        except AttributeError:
-            self.ThermalTestButton.setEnabled(False)
-            self.AbortThermalTestButton.setEnabled(False)
+        self.ThermalModulesWindowButton = QPushButton("&Modules")
 
-        self.AbortThermalTestButton.setMinimumWidth(kMinimumWidth)
-        self.AbortThermalTestButton.setMaximumWidth(kMaximumWidth)
-        self.AbortThermalTestButton.setMinimumHeight(kMinimumHeight)
-        self.AbortThermalTestButton.setMaximumHeight(kMaximumHeight)
-        self.AbortThermalTestButton.clicked.connect(self.abortThermalTest)
+        self.ThermalModulesWindowButton.setMinimumWidth(kMinimumWidth)
+        self.ThermalModulesWindowButton.setMaximumWidth(kMaximumWidth)
+        self.ThermalModulesWindowButton.setMinimumHeight(kMinimumHeight)
+        self.ThermalModulesWindowButton.setMaximumHeight(kMaximumHeight)
+        self.ThermalModulesWindowButton.clicked.connect(self.openModulesWindow)
 
         self.ThermalTestButton.setMinimumWidth(kMinimumWidth)
         self.ThermalTestButton.setMaximumWidth(kMaximumWidth)
         self.ThermalTestButton.setMinimumHeight(kMinimumHeight)
         self.ThermalTestButton.setMaximumHeight(kMaximumHeight)
-        self.ThermalTestButton.clicked.connect(self.runThermalTest)
-
-        self.ThermalProfileEdit = QLineEdit("")
-        self.ThermalProfileEdit.setEchoMode(QLineEdit.Normal)
-        self.ThermalProfileEdit.setPlaceholderText("Enter Profile Number")
+        self.ThermalTestButton.clicked.connect(self.thermalTestWindow)
 
         self.CoolerBox = QGroupBox(f"{site_settings.cooler} Controller", self)
         self.CoolerLayout = QGridLayout()
@@ -914,9 +913,9 @@ class QtApplication(QWidget):
         self.ChillerLayout = QGridLayout()
         self.ChillerOption.setLayout(self.ChillerLayout)
 
+        # thermal chamber window open button widget
         layout.addWidget(self.ThermalTestButton, 4, 0, 1, 1)
-        layout.addWidget(self.ThermalProfileEdit, 4, 1, 1, 1)
-        layout.addWidget(self.AbortThermalTestButton, 5, 0, 1, 1)
+        layout.addWidget(self.ThermalModulesWindowButton, 5, 0, 1, 1)
 
         self.MainOption.setLayout(layout)
 
@@ -989,6 +988,7 @@ class QtApplication(QWidget):
             self.groupbox_mpaping["multimeter"] = self.multimeter_group
 
         # only for the simplified GUI so this default should not matter right?
+
     def setDefault(self):
         if self.expertMode is False:
             self.HVPowerGroup.setDisabled(True)
@@ -1066,6 +1066,10 @@ class QtApplication(QWidget):
                 self.ArduinoGroup.setBaudRate(site_settings.defaultSensorBaudRate)
                 self.ArduinoGroup.setArduinoPanel()
 
+    def openModulesWindow(self):
+        """Open the modules window"""
+        self.thermal_modules_window = ThermalModulesWindow(self)
+        self.thermal_modules_window.show()
 
     def disable_instrument_widgets(self):
         """
@@ -1097,7 +1101,7 @@ class QtApplication(QWidget):
                     self.groupbox_mapping[instrument].setDisabled(False)
 
         else:
-            logger.info("You are running in manual mode. Reconnectingdoes nothing")
+            logger.info("You are running in manual mode. Reconnecting does nothing")
 
     def reCreateMain(self):
         print("Refreshing the main page")
@@ -1152,55 +1156,10 @@ class QtApplication(QWidget):
         self.mainLayout.removeWidget(self.LogoGroupBox)
         QApplication.closeAllWindows()
 
-    def abortThermalTest(self):
-        """Stop the current profile running on thermal chamber"""
-        #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
-        #with temp_chamber:
-        #   temp_chamber.set("CONTROL_PROFILE", "STOP")
-        message_box = QMessageBox()
-        message_box.setText("Profile Aborted")
-        message_box.setStandardButtons(QMessageBox.Ok)
-        message_box.exec()
-
-    def runThermalTest(self):
-        # Verify input of input data:
-        profile_number = self.ThermalProfileEdit.text()
-
-        # Check if this value is an int
-        try:
-            profile_number = int(profile_number)
-        except ValueError:
-            logger.error(traceback.format_exc())
-            QMessageBox.information(
-                None,
-                "Error",
-                "Please enter a valid profile number. It must be an integer",
-                QMessageBox.Ok,
-            )
-            return
-        # Import icicle module for temperature chamber
-        print(site_settings.temp_chamber_resource)
-        #temp_chamber = F4TTempChamber(resource=site_settings.temp_chamber_resource)
-
-        #with temp_chamber:
-        #    temp_chamber.set("SELECT_PROFILE", profile_number)
-        #    profile_name = temp_chamber.query("SELECT_PROFILE")
-
-        message_box = QMessageBox()
-        #message_box.setText(
-        #    f'Temperature chamberprofile "{profile_name}" has been chosen'
-        #)
-        message_box.setInformativeText("Is this the correct profile?")
-        message_box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        message_box.setDefaultButton(QMessageBox.Yes)
-        response = message_box.exec()
-
-        #if response == QMessageBox.Yes:
-        #    with temp_chamber:
-        #        temp_chamber.set("CONTROL_PROFILE", "START")
-
-        if response == QMessageBox.No:
-            return
+    def thermalTestWindow(self):
+        """Open the thermal test window"""
+        self.thermal_window = ThermalTestWindow(self, self.chamber)
+        self.thermal_window.show()
         
     def openNewTest(self):
         if self.ui_testing and not self.ActiveFC7s:
@@ -1444,3 +1403,9 @@ class QtApplication(QWidget):
             event.accept()
         else:
             event.ignore()
+
+"""if __name__ =="__main__":
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())"""
