@@ -41,6 +41,7 @@ from InnerTrackerTests.FESettings import (
 )
 # from Gui.GUIutils.FirmwareUtil import *
 # from Gui.QtGUIutils.QtFwCheckDetails import *
+from Gui.python.CentralDBInterface import ExtractChipData
 
 from Gui.python.logging_config import get_logger
 
@@ -888,7 +889,7 @@ class ChipBox(QWidget):
                 chipdatadicts = [entry for entry in data["bare_module_data"] if entry["KIND_OF_PART"] == "CROC Chip"]
 
                 chipdata = {}
-
+                logger.info("Converting the units of chip data")
                 for i, chip in enumerate(chipdatadicts):
                     chipdata[chipidmap[str(i)]] = {
                     "VDDA": str(chip.get("VDDA_TRIM_CODE", "0")),
@@ -896,7 +897,7 @@ class ChipBox(QWidget):
                     "IREF": str(chip.get("IREF_TRIM_CODE", "0")),
                     "EFUSE": str(chip.get("EFUSE_CODE", "0")),
                     "VREF": str(chip.get("VREF_ADC_V", "0")),
-                    "CINJ": str(chip.get("INJ_CAPACIT_F", "0")),
+                    "CINJ": str(chip.get("INJ_CAPACIT_F", "8e-12")),
                     "ADC_OFFSET_VOLT": str(1e4*float(chip.get("ADC_OFF_V", "0"))),
                     "ADC_MAXIMUM_VOLT": str(1e3*(4096*float(chip.get("ADC_SLO", "0"))+float(chip.get("ADC_OFF_V", "0")))),
                     "DAC_PREAMP_L_LIN": str(chip.get("probe_data", {}).get("DAC_PREAMP_L_LIN", "0")),
@@ -910,7 +911,7 @@ class ChipBox(QWidget):
                     "DAC_COMP_TA_LIN": str(chip.get("probe_data", {}).get("DAC_COMP_TA_LIN", "0")),
                     "DAC_LDAC_LIN": str(chip.get("probe_data", {}).get("DAC_LDAC_LIN", "0")),
                     }
-                logger.info(f"Fetched chip data for {name_label} from CMS database: {chipdata}")
+                logger.debug(f"Fetched chip data for {name_label} from CMS database: {chipdata}")
                 if module_name_key:
                     chip_data_cache[module_name_key] = chipdata
                 return chipdata
@@ -942,9 +943,10 @@ class ChipBox(QWidget):
                 ]
                 chipdata = {}
                 for i, chip in enumerate(chipdatadicts):
-                    chipdata[chipidmap[str(i)]] = chip
-                
-                logger.info(f"Fetched chip data for {moduleName} from Purdue database: {chipdata}")
+                    chipdata[chipidmap[str(i)]] = ExtractChipData(chip["S/N"])
+                    logger.debug(f"Extracted chip data for {chip['S/N']} from Purdue database: {chipdata[chipidmap[str(i)]]}")
+                    
+                logger.debug(f"Fetched chip data for {moduleName} from Purdue database: {chipdata}")
                 if module_name_key:
                     chip_data_cache[module_name_key] = chipdata
                 return chipdata
@@ -1438,20 +1440,21 @@ class BeBoardBox(QWidget):
                     self.ChipWidgetDict[module].getADC_OFFSET_VOLT(chipID)
                 )
                 
-                try:
-                    vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
-                except Exception:
-                    vref_value = 0.8
+                #try:
+                #    vref_value = float(self.ChipWidgetDict[module].getVREF(chipID))
+                #except Exception:
+                #    vref_value = 0.8
                     
                 Module.getChips()[chipID].setVREF(
-                    (1000 * vref_value)
+                    self.ChipWidgetDict[module].getVREF(chipID)
                 )
-                try:
-                    cinj_value = float(self.ChipWidgetDict[module].getCINJ(chipID))
-                except Exception:
-                    cinj_value = 8
+
+                #try:
+                #    cinj_value = float(self.ChipWidgetDict[module].getCINJ(chipID))
+                #except Exception:
+                #    cinj_value = 8
                 Module.getChips()[chipID].setCINJ(
-                    (1e13 * cinj_value)
+                    self.ChipWidgetDict[module].getCINJ(chipID)
                 )
 
             # Add the QtModule object to the currently selected Optical Group

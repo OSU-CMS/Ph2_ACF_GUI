@@ -162,8 +162,15 @@ class TessieCoolingApp(QWidget):
             temp_label.setStyleSheet("QLabel { color: orange; }")
             
             # Add to layout (4 channels per row)
-            row = i // 4
-            col = (i % 4) * 2
+            if i < 4:
+                row = 2
+                col = 2 * i + 1
+            else:
+                row = 1
+                if ((i + 1) % 4) == 0:
+                    col = 1
+                else:
+                    col = 2*(( 4 - (i + 1) % 4)) + 1
             
             temp_layout.addWidget(tec_label, row, col)
             temp_layout.addWidget(temp_label, row, col + 1)

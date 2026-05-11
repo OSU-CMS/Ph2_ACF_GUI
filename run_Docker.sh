@@ -1,14 +1,14 @@
 #!/bin/bash
 # DO NOT EDIT THIS BY HAND!!!
-CONFIG_VER=8
+CONFIG_VER=9
 
 bash check_configuration_files.sh run_Docker.sh Gui/siteConfig.py
 
 SOCK=/tmp/.X11-unix; XAUTH=/tmp/.docker.xauth; xauth nlist $DISPLAY | sed -e 's/^..../ffff/' | xauth -f $XAUTH nmerge -; chmod 777 $XAUTH;
 
 ######### Specify the docker image to use #################
-IMAGE_NAME="osupixels/ph2_acf_gui_dev:v5.0.0-pre"
-#IMAGE_NAME="osupixels/ph2_acf_gui_dev:v5.1.0-pre-v6" #used this in thermal chamber automation branch
+IMAGE_NAME="osupixels/ph2_acf_gui_dev:v5.1.0-pre-v6"
+
 #IMAGE_NAME="majoyce2/ph2_acf_gui_purdue:latest"
 #IMAGE_NAME="majoyce2/ph2_acf_gui_user:latest"
 #IMAGE_NAME="local/testimagemay29user"

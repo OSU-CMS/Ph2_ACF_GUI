@@ -29,6 +29,10 @@ ENV PYTHONPATH=${PYTHONPATH}:${GUI_dir}:${GUI_dir}/icicle/icicle:${GUI_dir}/Inne
 #    useradd -m -u ${USER_UID} -g ${USER_GID} cmsTkUser &&\
 #    usermod -aG dialout cmsTkUser
 
+
+ARG APP_PASSWORD
+
+ENV APP_PASSWORD=${APP_PASSWORD}
 #ENV APP_PASSWORD=${APP_PASSWORD}
 
 

@@ -1,11 +1,11 @@
 [submodule "Ph2_ACF"]
 	path = Ph2_ACF
 	url = https://gitlab.cern.ch/cms_tk_ph2/Ph2_ACF.git
-	branch = Dev
+	branch = v6-27
 [submodule "icicle"]
 	path = icicle
 	url = https://gitlab.cern.ch/icicle/icicle.git
-	branch = osudev
+	branch = osu_v2.1.0_hvbox_dev
 [submodule "InnerTrackerTests"]
 	path = InnerTrackerTests
 	url = https://gitlab.cern.ch/cms_tk_ph2/inner-tracker-tests.git
@@ -13,3 +13,4 @@
 [submodule "felis"]
 	path = felis
 	url = https://gitlab.cern.ch/sdemares/felis.git
+	branch = v1.1.12

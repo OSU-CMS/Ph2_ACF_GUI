@@ -274,21 +274,29 @@ def SetupXMLConfigfromFile(InputFile, Output_Dir, BeBoardName=""):
         logger.error(traceback.format_exc())
 
     try:
-        shutil.copyfile(InputFile, 
-                        os.path.join(Output_Dir, f"CMSIT_{BeBoardName}.xml"))
+        # Extract the base filename from InputFile to preserve test name in output
+        # InputFile is typically like: /path/to/.tmp/CMSIT_fc7_PixelAlive_highcharge_xtalk.xml
+        # We want to preserve the test name, so output should be: CMSIT_fc7_PixelAlive_highcharge_xtalk.xml
+        input_basename = os.path.basename(InputFile)
+        output_filename = input_basename if not input_basename.endswith(".changed") else input_basename[:-8]  # Remove .changed extension
+        output_path = os.path.join(Output_Dir, output_filename)
+        
+        shutil.copyfile(InputFile, output_path)
+        logger.debug(f"Copied XML file from {InputFile} to {output_path}")
 
     except OSError:
         print("Can not copy the XML files {0} to {1}".format(InputFile, Output_Dir))
         print(traceback.format_exc())
     try:
-            shutil.copyfile("{0}/CMSIT_{1}.xml".format(Output_Dir, BeBoardName),
-            "{0}/test/CMSIT_{1}.xml".format(os.environ.get("PH2ACF_BASE_DIR"), BeBoardName)
+            # Also copy to Ph2ACF test directory, preserving the filename
+            shutil.copyfile(output_path,
+            "{0}/test/{1}".format(os.environ.get("PH2ACF_BASE_DIR"), output_filename)
             )
                    
     except OSError:
         logger.error(
-            "Can not copy {0}/CMSIT_{1}.xml to {2}/test/CMSIT_{1}.xml".format(
-                Output_Dir, BeBoardName, os.environ.get("PH2ACF_BASE_DIR")
+            "Can not copy {0} to {1}/test/{2}".format(
+                output_path, os.environ.get("PH2ACF_BASE_DIR"), output_filename
             )
         )
         print(traceback.format_exc())
@@ -471,10 +479,10 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                     RxPolarities,
                     txt_file,
                 )
-
+                logger.info("Generating the xml file now")
                 chip_settings = FESettings_Dict[testName][registerKey].copy()
-                chip_settings['VREF_ADC'] = chip.getVREF()
-                chip_settings['INJ_CAP'] = chip.getCINJ()
+                chip_settings['VREF_ADC'] = str(1e3*float(chip.getVREF()))
+                chip_settings['INJ_CAP'] = str(1e13*float(chip.getCINJ()))
                 chip_settings['DAC_PREAMP_L_LIN'] = chip.getDAC_PREAMP_L_LIN()
                 chip_settings['DAC_PREAMP_R_LIN'] = chip.getDAC_PREAMP_R_LIN()
                 chip_settings['DAC_PREAMP_TL_LIN'] = chip.getDAC_PREAMP_TL_LIN()

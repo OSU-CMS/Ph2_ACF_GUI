@@ -104,7 +104,7 @@ class SummaryBox(QWidget):
             # updating uri value in template xml file with correct fc7 ip address, as specified in siteSettings.py
             # fc7_ip = site_settings.FC7List[pfirmwareName] #Commented because I don't think we need it.  Remove line after test.
             print("The fc7 ip is: {0}".format(fc7_ip))
-            uricmd = "sed -i -e 's/fc7-1/{0}/g' {1}/Gui/CMSIT_{2}.xml".format(
+            uricmd = "sed -i -e 's/target=[^:]*/target={0}/' {1}/Gui/CMSIT_{2}.xml".format(
                 fc7_ip, os.environ.get("GUI_dir"), boardtype
             )
             subprocess.call([uricmd], shell=True)
@@ -664,6 +664,7 @@ class QtStartWindow(QWidget):
             return
 
         for fw in self.firmwareDescription:
+            logger.info(f"Checking firmware parameters for board name: {fw.getBoardName()}")
             self.checkFwPar(fw.getBoardName())
         if not self.passCheck:
             reply = QMessageBox().question(  # For some reason this isn't an issue for QThread
