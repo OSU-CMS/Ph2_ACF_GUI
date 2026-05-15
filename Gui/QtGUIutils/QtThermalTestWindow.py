@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QScrollArea,
 )
-from Gui.python.thermal_utils import generate_thermal_file_paths
+#from Gui.python.thermal_utils import generate_thermal_file_paths
 from Gui.QtGUIutils.QtThermalModulesWindow import ThermalModulesWindow
 
 # Comment out QtApplication import for standalone testing
@@ -23,6 +23,12 @@ import sys
 import os
 import time
 # Add current directory to Python path (this worked yesterday)
+
+import subprocess
+import os
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices
+import webbrowser
 
 # Skip logging for testing to avoid path issues
 # from Gui.python.logging_config import get_logger
@@ -57,6 +63,7 @@ class ThermalTestWindow(QWidget):
         self.AbortThermalTestButton.setEnabled(True)
         self.EndChamberOutputButton = QPushButton("End Chamber Output")
         self.EndChamberOutputButton.setEnabled(True)
+        self.RunMonitorButton = QPushButton("Open Monitoring Website")
         self.closeButton = QPushButton("Exit")
 
         self.closeButton.setDisabled(False)
@@ -98,6 +105,14 @@ class ThermalTestWindow(QWidget):
         self.EndChamberOutputButton.setMaximumHeight(kMaximumHeight)
         self.EndChamberOutputButton.clicked.connect(self.endChamberOutput)
 
+        # F4T Monitoring
+        self.RunMonitorButton = QPushButton("&Run F4T Monitor")
+        self.RunMonitorButton.setMinimumWidth(kMinimumWidth)
+        self.RunMonitorButton.setMaximumWidth(kMaximumWidth)
+        self.RunMonitorButton.setMinimumHeight(kMinimumHeight)
+        self.RunMonitorButton.setMaximumHeight(kMaximumHeight)
+        self.RunMonitorButton.clicked.connect(self.runMonitor)  
+
         label = QLabel("Thermal Test Window")
         layout.addWidget(label, 0, 0)
 
@@ -119,6 +134,9 @@ class ThermalTestWindow(QWidget):
         layout.addWidget(self.startThermalTestButton, 6, 0, 1, 1)
         layout.addWidget(self.AbortThermalTestButton, 7, 0, 1, 1)
         layout.addWidget(self.EndChamberOutputButton, 9, 0, 1, 1)
+
+        # runMonitor
+        layout.addWidget(self.RunMonitorButton, 10, 0, 1, 1)
         layout.addWidget(self.closeButton, 11, 0, 1, 1)
 
         if not self.chamber.profiles:
@@ -270,5 +288,12 @@ class ThermalTestWindow(QWidget):
         self.modules_window.show()
 
     
+    def runMonitor(self):
 
+        url = "http://localhost:3000"
+        try:
+            subprocess.Popen(["firefox", url])
+        except Exception as e:
+            logger.error(f"Could not open Firefox: {e}")
+            QMessageBox.warning(self, "Error", f"Could not open Firefox.\nPlease navigate to:\n{url}")
     
