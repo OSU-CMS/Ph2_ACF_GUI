@@ -1088,7 +1088,7 @@ class TestHandler(QObject):
                 process.start(
                     "echo",
                     [
-                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
+                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml -p"
                     ],
                 )
         else:
@@ -1118,7 +1118,7 @@ class TestHandler(QObject):
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
-                    ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
+                    ["-f", f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml", "-p"],
                 )
                 if process.state() != QProcess.NotRunning:
                     self.active_process_count += 1
@@ -1131,7 +1131,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                         "-t",
@@ -1146,7 +1146,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                     ],
                 )
                 if process.state() != QProcess.NotRunning:
@@ -1159,7 +1159,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[OpenBumpTest[self._openBumpTest_subtest_index]]),
                     ],
@@ -1171,7 +1171,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
