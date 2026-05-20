@@ -16,6 +16,9 @@ from PyQt5.QtWidgets import (
     QScrollArea,
 )
 
+import subprocess
+import os
+
 import sys
 import os
 import requests
