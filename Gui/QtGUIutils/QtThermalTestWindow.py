@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QScrollArea,
 )
-#from Gui.python.thermal_utils import generate_thermal_file_paths
+
 from Gui.QtGUIutils.QtThermalModulesWindow import ThermalModulesWindow
 
 # Comment out QtApplication import for standalone testing

@@ -10,6 +10,7 @@ import tempfile
 import subprocess
 import json
 import warnings
+from getpass import getpass
 from base64 import b64encode, b64decode
 import xml.etree.ElementTree as ET
 from bs4 import BeautifulSoup
@@ -22,17 +23,21 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 requests.packages.urllib3.disable_warnings()
 # warnings.filterwarnings("error")
 
+logger = logging.getLogger(__name__)
+
 if sys.version_info < (3,):
     from cookielib import Cookie, MozillaCookieJar
 else:
     from http.cookiejar import Cookie, MozillaCookieJar
 
-def findformeotppage(html_content):
+def findformeotppage(html_content, otp_provider=lambda: input("Otp: ")):
     soup = BeautifulSoup(html_content, 'html.parser')
     otp_form = soup.find('form', {'id': 'kc-otp-login-form'})
+    if not otp_form:
+        return None, None
     action_url = otp_form['action']
     method = otp_form['method']
-    otp = input("Otp: ")
+    otp = otp_provider()
     
     otp_input = otp_form.find('input', {'id': 'otp'})
     otp_input['value'] = otp
@@ -58,6 +63,24 @@ def login_page1(html_content,username,password):
 
 class CernSSO:
     DEFAULT_TIMEOUT_SECONDS = 10
+ 
+    def __init__(self, user_pass_provider=None, otp_provider=None, save_password=False):
+        if not user_pass_provider:
+            self.user_pass_provider = lambda: (input("Username: "), getpass("Password: "))
+        elif not callable(user_pass_provider):
+            raise RuntimeException("User/password provider not callable")
+        else:
+            self.user_pass_provider = user_pass_provider
+ 
+        if not otp_provider:
+            self.otp_provider = lambda : input("Otp: ")
+        elif not callable(otp_provider):
+            raise RuntimeException("OTP provider not callable")
+        else:
+            self.otp_provider = otp_provider
+ 
+        self.save_password = save_password
+ 
 
     def load_cookies_from_mozilla(self, filename):
         ns_cookiejar = MozillaCookieJar()
@@ -69,10 +92,10 @@ class CernSSO:
         cmd = 'auth-get-sso-cookie -u "%s" -o "%s" -v --nocertverify' % (url, tfile)
         with warnings.catch_warnings():
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-        logging.debug("%s returned %s" % (cmd, p.returncode))
-        logging.debug(p.stdout.read())
+        logger.debug("%s returned %s" % (cmd, p.returncode))
+        logger.debug(p.stdout.read())
         err = p.stderr.read()
-        logging.debug(err)
+        logger.debug(err)
         cookies = self.load_cookies_from_mozilla(tfile)
         os.remove(tfile)
         return cookies
@@ -111,10 +134,9 @@ class CernSSO:
         a = len(urlparse(url).query) + len(urlparse(url).path)
         return url[:-(a + 1)], url[len(url) - a - 1:]
 
-    def login_sign_on(self, url,login_type, cache_file=".session.cache", force_level=0):
+    def login_sign_on(self, url, cache_file=".session.cache", force_level=0):
 
         from ilock import ILock
-        from getpass import getpass
         from os import remove, path
 
         cache = None
@@ -132,13 +154,13 @@ class CernSSO:
 
             if path.isfile(cache_file):
 
-                logging.debug('%s found', cache_file)
+                logger.debug('%s found', cache_file)
                 with open(cache_file, 'r') as f:
                     cache = json.loads(f.read())
 
             else:
 
-                logging.debug('%s not found', cache_file)
+                logger.debug('%s not found', cache_file)
 
             if force_level > 0 or cache is None or 'cookies' not in cache:
 
@@ -147,9 +169,9 @@ class CernSSO:
                     username, password = secret.split('/')
                     password = b64decode(password.encode()).decode()
                 else:
-                    username = input("Username: ")
-                    password = getpass("Password: ")
-                    logging.warning('Credentials will be stored in a NOT secure way!')
+                    username, password = self.user_pass_provider()
+                    if self.save_password:
+                        logger.warning('Credentials will be stored in a NOT secure way!')
 
                 with requests.Session() as s:
 
@@ -157,44 +179,38 @@ class CernSSO:
                     r1.raise_for_status()
 
                     if self.is_email(username):
-                        logging.debug("%s is guest account." % username)
+                        logger.debug("%s is guest account." % username)
 
                         root = self.html_root(r1)
                         link = root.find(".//{http://www.w3.org/1999/xhtml}a[@id='zocial-guest']")
                         guest_url = self.split_url(r1.url)[0] + self.split_url(link.get('href'))[1]
-                        logging.debug(guest_url)
+                        logger.debug(guest_url)
                         r1 = s.get(guest_url, timeout=10, verify=False, allow_redirects=True)
                         r1.raise_for_status()
 
                     else:
-                        logging.debug("%s is a regular account." % username)
+                        logger.debug("%s is a regular account." % username)
  
                     action,form_data=login_page1(r1.content.decode('utf-8'),username,password)
-                    # action, form_data = self.read_form(r1)
-
-                    # form_data['username'] = username
-                    # form_data['password'] = password
 
                     r2 = s.post(url=action, data=form_data, timeout=self.DEFAULT_TIMEOUT_SECONDS,verify=False, allow_redirects=True)
                     r2.raise_for_status()
-                    if login_type=='simple':
-                        action, form_data = self.read_form(r2)
+
+                    action,form_data=findformeotppage(r2.content.decode('utf-8'), self.otp_provider)
+                    if action:
                         r3 = s.post(url=action, data=form_data, timeout=self.DEFAULT_TIMEOUT_SECONDS,verify=False, allow_redirects=True)
-                    elif login_type=='2fa':
-                        action,form_data=findformeotppage(r2.content.decode('utf-8'))
-                        r3 = s.post(url=action, data=form_data, timeout=self.DEFAULT_TIMEOUT_SECONDS,verify=False, allow_redirects=True)
-                        action, form_data = self.read_form(r3)
-                        r4 = s.post(url=action, data=form_data, timeout=self.DEFAULT_TIMEOUT_SECONDS,verify=False, allow_redirects=True)
+                    else:
+                        r3 = r2    
                         
-
-
-                    
+                    action, form_data = self.read_form(r3)
+                    r4 = s.post(url=action, data=form_data, timeout=self.DEFAULT_TIMEOUT_SECONDS,verify=False, allow_redirects=True)
 
                     cache = {
-                        'secret': b64encode((username + '/' + b64encode(password.encode()).decode()).encode()).decode(),
                         'location': url,
                         'cookies': {c.name: c.value for c in s.cookies}
                     }
+                    if self.save_password:
+                        cache['secret'] = b64encode((username + '/' + b64encode(password.encode()).decode()).encode()).decode()
 
                     with open(cache_file, 'w') as f:
                         f.write(json.dumps(cache))
@@ -250,7 +266,7 @@ class RhApi:
     RestHub API object
     """
 
-    def __init__(self, url, debug=False, sso=None):
+    def __init__(self, url, debug=False, sso=None, user_pass_provider=None, otp_provider=None, save_password=True):
         """
         Construct API object.
         url: URL to RestHub endpoint, i.e. http://localhost:8080/api
@@ -265,12 +281,9 @@ class RhApi:
 
         self.cprov = None
         if sso is not None and re.search("^https", url):
-            if sso == 'login':
+            if sso[:5] == 'login':
                 self.cprov = lambda url, force_level: (
-                CernSSO().login_sign_on(url, force_level=force_level,login_type='simple'), force_level)
-            if sso == 'login2':
-                self.cprov = lambda url, force_level: (
-                CernSSO().login_sign_on(url, force_level=force_level,login_type='2fa'), force_level)
+                CernSSO(user_pass_provider, otp_provider, save_password).login_sign_on(url, force_level=force_level), force_level)
             if sso == 'krb':
                 self.cprov = lambda url, force_level: (CernSSO().krb_sign_on(url), 2)
 
@@ -560,7 +573,35 @@ class RhApi:
         # qid = self.qid(query)
         return self.data1(query, params, 'application/json2', pagesize, page, verbose=verbose, cols=cols,
                          inline_clobs=inline_clobs)
-
+    
+    def condlobapi(self, cond_id,koc_id, db_name="trk_cmsr"):
+        action = getattr(requests, "get", None)
+        url1 = "https://cmsdca.cern.ch/servelets/" + db_name + "/construct/lobextapi?cond_id="+str(cond_id)+"&koc_id="+str(koc_id)
+        resp = self._action(action, url=url1, headers=None, data=None)
+        if resp.status_code == requests.codes.ok:
+            dic = resp.json()
+            if len(dic['rows'])>0:
+                name_f = dic['length_of_options'][0]+"_FILE"
+                for j in dic['rows']:
+                    print("Got file :",j[name_f])
+                url2 = url1 + "&glob=" + dic['length_of_options'][0]
+                resp2 = self._action(action, url=url2, headers=None, data=None)
+                if resp.status_code == requests.codes.ok:
+                    cd = resp2.headers.get("Content-Disposition")
+                    filename = cd.split("filename=")[-1].strip('"')
+                    print(url2)
+                    with open(filename, "wb") as f:
+                        f.write(resp2.content)
+                    return "Downloaded"
+                else:
+                    raise Exception(f"Response ({resp2.status_code}): {resp2.text}")
+            else:
+                print("No file found for this input")
+            return 
+        elif resp.status_code < 300:
+            return None
+        else:
+            raise Exception('Response (' + str(resp.status_code) + '): ' + resp.text)
 
 from optparse import OptionParser
 import pprint
@@ -584,11 +625,14 @@ class CLIClient:
         self.parser.add_option("-u", "--url", dest="url", help="service URL. Default: %s" % DEFAULT_URL, metavar="URL",
                                default=DEFAULT_URL)
         self.parser.add_option("-o", "--login", dest="login",
-                               help="use simple login provider cache (requires selenium, stores pwd in not secure way!)",
+                               help="use login/otp provider (requires selenium, stores pwd in not secure way!)",
                                metavar="login", action="store_true", default=False)
         self.parser.add_option("-x", "--login2", dest="login2",
-                               help="use 2FA authentication (requires selenium, stores pwd in not secure way!)", 
+                               help="[deprecated] same as -o/--login", 
                                metavar="login2", action="store_true", default=False)
+        self.parser.add_option("-X", "--no-save-password", dest="save_password",
+                               help="do not store password in insecure way. Cookies will be saved",
+                               action="store_false", default=True)
         self.parser.add_option("-k", "--krb", dest="krb", help="use kerberos login provider", metavar="krb",
                                action="store_true", default=False)
         self.parser.add_option("-f", "--format", dest="format",
@@ -712,19 +756,16 @@ class CLIClient:
             if re.search("^https", options.url):
 
                 if sum((options.login, options.login2, options.krb)) != 1:
-                    self.parser.error('For secure access please provide one of --krb or --login or --login2')
+                    self.parser.error('For secure access please provide one of --krb or --login')
                     return 1
 
-                if options.login:
+                if options.login or options.login2:
                     sso = 'login'
-
-                if options.login2:
-                    sso = 'login2'
 
                 if options.krb:
                     sso = 'krb'
 
-            api = RhApi(options.url, debug=options.verbose, sso=sso)
+            api = RhApi(options.url, debug=options.verbose, sso=sso, save_password=options.save_password)
 
             # Info
             if options.info:
