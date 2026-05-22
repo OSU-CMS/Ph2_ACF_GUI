@@ -190,7 +190,7 @@ class TrimbitCurveWorker(QThread):
             chip,
             fc7_index,
             "CMSITminiDAQ",
-            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml"]
+            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}_{self.testhandler.currentTest}.xml"]
         )
         self.measureADC(chip)
         return self.add_trim(chip)
@@ -210,7 +210,7 @@ class TrimbitCurveWorker(QThread):
             chip,
             fc7_index,
             "CMSITminiDAQ",
-            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml", "-c", "physics", "-t", str(site_settings.Trimbit_GADC['physics seconds'])]
+            ["-f", f"CMSIT_{self.firmware[fc7_index].getBoardName()}_{self.testhandler.currentTest}.xml", "-c", "physics", "-t", str(site_settings.Trimbit_GADC['physics seconds'])]
         )
         self.measureGADC(chip)
         return self.add_trim(chip)
