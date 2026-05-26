@@ -734,7 +734,7 @@ class TestHandler(QObject):
                 "CMSITminiDAQ",
                 [
                     "-f",
-                    f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml",
+                    f"CMSIT_{self.firmware[fc7_index].getBoardName()}_{self.currentTest}.xml",
                     "-c",
                     "physics",
                     "-t",
@@ -1555,14 +1555,10 @@ created by Ph2_ACF is empty."
                                 )
                             )
 
-                shutil.copy(  
-                    "{0}/test/Results/Run{1}_CMSIT_{2}.xml".format(os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        current_fc7),
-                        os.path.join(
-                            self.output_dir, current_fc7    
-                        )
-                    )   
+                shutil.copy(
+                    f"{os.environ.get('PH2ACF_BASE_DIR')}/test/Results/Run{self.RunNumber}_CMSIT_{current_fc7}_{self.currentTest}.xml",
+                    os.path.join(self.output_dir, current_fc7)
+                    )
 
             elif "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
@@ -1577,16 +1573,10 @@ created by Ph2_ACF is empty."
                         ),
                     )
                 )
-                os.system(
-                    "cp {0}/test/Results/Run{1}_CMSIT_{2}.xml {3}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        current_fc7,
-                        os.path.join(
-                            self.output_dir, current_fc7    
-                        ),
-                    )   
-                )
+                shutil.copy(
+                    f"{os.environ.get('PH2ACF_BASE_DIR')}/test/Results/Run{self.RunNumber}_CMSIT_{current_fc7}_{self.currentTest}.xml",
+                    os.path.join(self.output_dir, current_fc7)
+                    )
 
             else:
                 ph2_acf_base_dir: str | None = os.environ.get("PH2ACF_BASE_DIR")
