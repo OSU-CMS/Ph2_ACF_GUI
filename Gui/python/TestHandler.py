@@ -734,7 +734,7 @@ class TestHandler(QObject):
                 "CMSITminiDAQ",
                 [
                     "-f",
-                    f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml",
+                    f"CMSIT_{self.firmware[fc7_index].getBoardName()}_{self.currentTest}.xml",
                     "-c",
                     "physics",
                     "-t",
