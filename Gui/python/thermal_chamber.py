@@ -6,15 +6,17 @@ import json
 
 import sys
 from pathlib import Path
+from Gui.siteSettings import chamber_ip, chamber_port
 
 from python.logging_config import get_logger
 
-BASE_DIR = Path(__file__).resolve().parent.parent  # Gui/
+BASE_DIR = Path(__file__).resolve().parent.parent 
 
-cache_dir = BASE_DIR / "cache"
+cache_dir = BASE_DIR / "jsonfiles"
 cache_dir.mkdir(exist_ok=True)
 
 logger = get_logger(__name__)
+
 
 class F4TTemperatureChamber:
     def __init__(self):
@@ -22,18 +24,22 @@ class F4TTemperatureChamber:
         self.sock = QTcpSocket()
         logger.debug("Tcp Socket created")
 
-        self.temp_chamber_cache_file = str(BASE_DIR / "cache" / "tempChamber.json")
+        self.temp_chamber_cache_file = str(BASE_DIR / "jsonfiles" / "tempChamberProfiles_osu.json")
         logger.debug("Profile cache file: %s" % self.temp_chamber_cache_file)
-        
-        self.ip, self.port = self.load_connection()
-        logger.debug("F4TTemperatureChamber initialized with resource: %s : %s" % (self.ip, self.port))
+
+        self.ip = chamber_ip
+        self.port = chamber_port
 
         self.ambient_temperature = 24
         self._lock = threading.Lock()
         logger.debug("Lock created")
         logger.debug("Loading profiles...")
-        self.load_profiles()
+
+        self.profiles = {}  # Initialize profiles to an empty dict
+
         self.connect()
+
+        self.query_profiles()  # This will load from the chamber and cache results
 
     def connect(self):
 
@@ -57,7 +63,7 @@ class F4TTemperatureChamber:
         self.sock.connectToHost(self.ip, int(self.port))
     
         if not self.sock.waitForConnected(5000):
-            logger.error("Connection failed: %s" % self.sock.errorString())
+            logger.error("Could not connect to the Thermal Chamber: Connection failed: %s" % self.sock.errorString())
             return
 
         # --- BUFFER CLEAR / SYNC ---
@@ -119,20 +125,12 @@ class F4TTemperatureChamber:
 
     def load_connection(self):
         logger.debug("Checking if profile cache file exists: %s" % self.temp_chamber_cache_file)
-        if not os.path.exists(self.temp_chamber_cache_file):
-            logger.debug("Profile cache file does not exist")
-            return None, None
 
-        try:
-            with open(self.temp_chamber_cache_file, "r") as f:
-                data = json.load(f)
-                connection = data.get("connection", {})
-                ip = connection.get("ip", None).strip()
-                port = connection.get("port", None)
-                return ip, port
-        except Exception as e:
-            logger.error("Load failed: %s" % e)
-            return None, None
+        ip = self.ip
+        port = self.port
+
+        return ip, port
+
 
     def load_profiles(self):
         logger.debug("Checking if profile cache file exists: %s" % self.temp_chamber_cache_file)
@@ -196,7 +194,7 @@ class F4TTemperatureChamber:
         if result is None:
             logger.error("Failed to get profile name")
         return result
-
+    
     def set_profile(self, profile_number):
         logger.debug("Setting profile to %i", profile_number)
         self.write(":PROGRAM:SELECTED:NUMBER {}".format(profile_number))
@@ -288,12 +286,14 @@ class F4TTemperatureChamber:
         Robust profile query for Watlow F4T
         Returns: (profiles_dict, source)
         profiles_dict format: {name: number}
-        """
 
         # --- 1. Use cache unless forced ---
+        # There is no cache, although if you wish to use cached profiles,
+        you can uncomment the following block, and make the required changes in __init__ 
         if self.profiles and not force_refresh:
             logger.debug("Using cached profiles: %d", len(self.profiles))
             return self.profiles, "cache"
+        """
 
         profiles_dict = {}
         source = "instrument"
@@ -345,9 +345,6 @@ class F4TTemperatureChamber:
             if self.profiles:
                 return self.profiles, "cache"
             return {}, "error"
-
-
-
 
 
 

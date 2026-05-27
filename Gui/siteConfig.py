@@ -1,6 +1,7 @@
 import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
+from pathlib import Path
 
 CONFIG_VER = 9
 
@@ -211,4 +212,15 @@ defaultSLDOscanVoltage = 0.0
 defaultSLDOscanMaxCurrent = 0.0
 #####################################################
 
+BASE_DIR = Path("/home/cmsTkUser/Ph2_ACF_GUI/Gui")
+temp_chamber_cache_file = str(BASE_DIR / "jsonFiles" / "instruments_osu_auto.json")
 
+
+try:
+    with open(temp_chamber_cache_file, "r") as f:
+        data = json.load(f)
+        connection = data.get("connection", {})
+        chamber_ip = connection.get("ip", None).strip() 
+        chamber_port = connection.get("port", None)
+except Exception as e:
+    logger.info("Load failed: %s" % e)
