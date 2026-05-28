@@ -24,6 +24,7 @@ from Gui.QtGUIutils.QtThermalModulesWindow import ThermalModulesWindow
 
 import sys
 import os
+import time
 import traceback
 import pyvisa
 import requests
@@ -1027,7 +1028,8 @@ class QtApplication(QWidget):
 
             try:
                 try:
-                    self.instruments = InstrumentCluster(**self.device_settings)
+                    #self.instruments = InstrumentCluster(**self.device_settings)
+                    self.instruments = self.connect_instruments_with_retry()
                 except ValueError:
                     pass
                     # InstrumentCluster.__init__() throws a ValueError when called a second time.
@@ -1096,6 +1098,34 @@ class QtApplication(QWidget):
             self.relay_group.setDisabled(True)
         if self.multimeter:
             self.multimeter_group.setDisabled(True)
+
+    def connect_instruments_with_retry(self, attempts=5, delay=5):
+        last_exception = None
+
+        for attempt in range(1, attempts + 1):
+            try:
+                instruments = InstrumentCluster(**self.device_settings)
+                instruments.open()
+                return instruments
+            except ValueError:
+                # Preserve current behavior for the existing Multiton/second-call issue.
+                if getattr(self, "instruments", None):
+                    self.instruments.open()
+                    return self.instruments
+                raise
+            except Exception as e:
+                last_exception = e
+                logger.warning(
+                    "Instrument connection attempt %s/%s failed: %s",
+                    attempt,
+                    attempts,
+                    e,
+                )
+
+                if attempt < attempts:
+                    time.sleep(delay)
+
+        raise last_exception
 
     def reconnectDevices(self):
         if self.instruments and not site_settings.manual_powersupply_control:
