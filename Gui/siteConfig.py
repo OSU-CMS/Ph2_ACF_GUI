@@ -198,17 +198,3 @@ ModuleVoltageMap = {
 	"CROC SCC"  : 1.6,
 }
 #####################################################
-
-
-######  can probably remove this block  #############
-#setting the sequence of threshold tuning targets:
-#defaultTargetThr = ['2000','1500','1200','1000','800']
-
-##### The following settings are for SLDO scans developed for Purdue.#####
-##### Do not modify these settings unless you know what you are doing.####
-#default settings for SLDO scan.
-defaultSLDOscanVoltage = 0.0
-defaultSLDOscanMaxCurrent = 0.0
-#####################################################
-
-
