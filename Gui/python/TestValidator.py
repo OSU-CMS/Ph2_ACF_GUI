@@ -148,6 +148,32 @@ def ResultGrader(
                 type_test = "irefgadc",
             )
 
+
+        elif "ADC_CALIB" in testName:
+            relevant_files = [
+                outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if module_name in file or file.endswith(".xml") or file.endswith(".json")
+            ]
+            dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
+            relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
+
+            print("relevant_files:", relevant_files)
+            _1, _2 = felis.set_module(
+                name_module = module_name,
+                subdetector = module_type.split(" ")[0],
+                type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
+                croc_version = module_version.strip("v"),
+                has_sensor = True,
+                type_sensor = sensor_type,
+                link_production_db = f"https://www.physics.purdue.edu/cmsfpix/Phase2_Test/w.php?sn={module_name}",
+            )
+            status, message, sanity, explanation = felis.set_result(
+                paths_files = relevant_files,
+                name_module = module_name,
+                name_test = f"{testIndexInSequence:02d}_{testName}",
+                type_test = "adctemp",
+            )    
+
+
         elif "CommunicationTest" in testName:
             module_name = module_data["module"].getModuleName()
             comm_result = communicationTestResults.get(module_name)

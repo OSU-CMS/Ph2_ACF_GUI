@@ -1145,6 +1145,23 @@ class TestHandler(QObject):
                 )
                 if process.state() != QProcess.NotRunning:
                     self.active_process_count += 1
+
+        elif self.currentTest == "ADC_CALIB":
+            for process, firmware in zip(self.run_processes, self.firmware):
+                process.start(
+                    "CMSITminiDAQ",
+                    [
+                        "-f",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
+                        "-c",
+                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                        "-t",
+                        "120",
+                    ],
+                )
+                if process.state() != QProcess.NotRunning:
+                    self.active_process_count += 1
+
         elif self.currentTest == "TrimbitScan":
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
@@ -1565,7 +1582,7 @@ created by Ph2_ACF is empty."
                     os.path.join(self.output_dir, current_fc7)
                     )
 
-            elif "IREF_GADC" in self.currentTest:
+            elif ("IREF_GADC" in self.currentTest) or ("ADC_CALIB" in self.currentTest):
                 print("copying MonitorDQM.root file to output directory")
                 current_fc7: str = self.firmware[processIndex].getBoardName()
                 os.system(
@@ -2096,7 +2113,7 @@ created by Ph2_ACF is empty."
         elif "CommunicationTest" == self.currentTest:
             return True
         elif (
-            "IREF_GADC" == self.currentTest
+            ("IREF_GADC" == self.currentTest) or ("ADC_CALIB" == self.currentTest)
             and self.ProgressingMode[processIndex] == ProgressMode.SUMMARY
         ):
             return True
