@@ -148,7 +148,7 @@ def isActive(dbconnection):
 def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
     try:
         shutil.copyfile("{0}/CMSIT_{1}.xml".format(Input_Dir, BeBoardName),
-                        "{1}/CMSIT_2.xml".format(Output_Dir))
+                        "{0}/CMSIT_{1}.xml".format(Output_Dir, BeBoardName))
     
 
     except OSError as e:
