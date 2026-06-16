@@ -707,6 +707,15 @@ class ChipBox(QWidget):
             pChipID, "CINJ", lambda: self._get_fe_setting_default("CINJ", "8e-12")
         )
 
+    def getDAC_GDAC_L_LIN(self, pChipID):
+        return self._get_chip_data_value(pChipID, "DAC_GDAC_L_LIN", "")
+
+    def getDAC_GDAC_R_LIN(self, pChipID):
+        return self._get_chip_data_value(pChipID, "DAC_GDAC_R_LIN", "")
+
+    def getDAC_GDAC_M_LIN(self, pChipID):
+        return self._get_chip_data_value(pChipID, "DAC_GDAC_M_LIN", "")
+
     def getDAC_PREAMP_L_LIN(self, pChipID):
         return self._get_chip_data_value(
             pChipID,
@@ -910,6 +919,9 @@ class ChipBox(QWidget):
                     "DAC_COMP_LIN": str(chip.get("probe_data", {}).get("DAC_COMP_LIN", "0")),
                     "DAC_COMP_TA_LIN": str(chip.get("probe_data", {}).get("DAC_COMP_TA_LIN", "0")),
                     "DAC_LDAC_LIN": str(chip.get("probe_data", {}).get("DAC_LDAC_LIN", "0")),
+                    "DAC_GDAC_L_LIN": str(chip.get("probe_data", {}).get("DAC_GDAC_L_LIN", "")),
+                    "DAC_GDAC_R_LIN": str(chip.get("probe_data", {}).get("DAC_GDAC_R_LIN", "")),
+                    "DAC_GDAC_M_LIN": str(chip.get("probe_data", {}).get("DAC_GDAC_M_LIN", "")),
                     }
                 logger.debug(f"Fetched chip data for {name_label} from CMS database: {chipdata}")
                 if module_name_key:
@@ -1401,6 +1413,15 @@ class BeBoardBox(QWidget):
                 )
                 Module.getChips()[chipID].setIREF(
                     self.ChipWidgetDict[module].getIREF(chipID)
+                )
+                Module.getChips()[chipID].setDAC_GDAC_L_LIN(
+                    self.ChipWidgetDict[module].getDAC_GDAC_L_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_GDAC_R_LIN(
+                    self.ChipWidgetDict[module].getDAC_GDAC_R_LIN(chipID)
+                )
+                Module.getChips()[chipID].setDAC_GDAC_M_LIN(
+                    self.ChipWidgetDict[module].getDAC_GDAC_M_LIN(chipID)
                 )
                 Module.getChips()[chipID].setDAC_PREAMP_L_LIN(
                     self.ChipWidgetDict[module].getDAC_PREAMP_L_LIN(chipID)
@@ -1930,6 +1951,9 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setDAC_COMP_LIN(chipData[chipID]["DAC_COMP_LIN"])
                     Module.getChips()[chipID].setDAC_COMP_TA_LIN(chipData[chipID]["DAC_COMP_TA_LIN"])
                     Module.getChips()[chipID].setDAC_LDAC_LIN(chipData[chipID]["DAC_LDAC_LIN"])
+                    Module.getChips()[chipID].setDAC_GDAC_L_LIN(chipData[chipID]["DAC_GDAC_L_LIN"])
+                    Module.getChips()[chipID].setDAC_GDAC_R_LIN(chipData[chipID]["DAC_GDAC_R_LIN"])
+                    Module.getChips()[chipID].setDAC_GDAC_M_LIN(chipData[chipID]["DAC_GDAC_M_LIN"])
                     
             else:
                 print(

@@ -1867,6 +1867,11 @@ created by Ph2_ACF is empty."
                     for chipID in chipIDs:
                         updatedXMLValues[f"{hybridID}/{chipID}"] = {}
                         for updatedFEKey in updatedFEKeys:
+                            if (
+                                "ThresholdAdjustment_default_to" in self.currentTest
+                                and updatedFEKey.startswith("DAC_GDAC_")
+                            ):
+                                continue
                             if isCROC:
                                 if updatedFEKey in [
                                     "LATENCY_CONFIG",

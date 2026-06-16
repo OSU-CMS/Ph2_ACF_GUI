@@ -147,8 +147,8 @@ def isActive(dbconnection):
 
 def SetupXMLConfig(Input_Dir, Output_Dir, BeBoardName=""):
     try:
-        shutil.copyfile("{0}/CMSIT_{1}.xml".formgitat(Input_Dir, BeBoardName),
-                        "{1}/CMSIT_2.xml".format(Output_Dir))
+        shutil.copyfile("{0}/CMSIT_{1}.xml".format(Input_Dir, BeBoardName),
+                        "{0}/CMSIT_{1}.xml".format(Output_Dir, BeBoardName))
     
 
     except OSError as e:
@@ -495,6 +495,14 @@ def GenerateXMLConfig(BeBoard, testName, outputDir, txt_files:dict, **arg):
                 chip_settings['DAC_LDAC_LIN'] = chip.getDAC_LDAC_LIN()
                 chip_settings['ADC_OFFSET_VOLT'] = chip.getADC_OFFSET_VOLT()
                 chip_settings['ADC_MAXIMUM_VOLT'] = chip.getADC_MAXIMUM_VOLT()
+                logger.debug(f"The testName is {testName}")
+                if "ThresholdAdjustment_default_to" in testName:
+                    chip_settings["DAC_GDAC_L_LIN"] = chip.getDAC_GDAC_L_LIN()
+                    logger.debug(f"Setting DAC_GDAC_L_LIN to {chip.getDAC_GDAC_L_LIN()}")
+                    chip_settings["DAC_GDAC_R_LIN"] = chip.getDAC_GDAC_R_LIN()
+                    logger.debug(f"Setting DAC_GDAC_R_LIN to {chip.getDAC_GDAC_R_LIN()}")
+                    chip_settings["DAC_GDAC_M_LIN"] = chip.getDAC_GDAC_M_LIN()
+                    logger.debug(f"Setting DAC_GDAC_M_LIN to {chip.getDAC_GDAC_M_LIN()}")
 
                 FEChip.ConfigureFE(chip_settings)
             
