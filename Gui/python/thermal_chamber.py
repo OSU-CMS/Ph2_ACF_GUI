@@ -6,7 +6,6 @@ import json
 
 import sys
 from pathlib import Path
-from Gui.siteSettings import chamber_ip, chamber_port
 
 from python.logging_config import get_logger
 
@@ -16,6 +15,14 @@ cache_dir = BASE_DIR / "jsonfiles"
 cache_dir.mkdir(exist_ok=True)
 
 logger = get_logger(__name__)
+
+# --- SAFE IMPORT GUARD ---
+try:
+    from Gui.siteSettings import chamber_ip, chamber_port
+except Exception as e:
+    logger.warning(f"Could not load chamber settings from siteSettings (JSON might be empty): {e}")
+    chamber_ip = None
+    chamber_port = None
 
 
 class F4TTemperatureChamber:
@@ -28,14 +35,21 @@ class F4TTemperatureChamber:
         logger.debug("Profile cache file: %s" % self.temp_chamber_cache_file)
 
         self.ip = chamber_ip
-        self.port = chamber_port
-
+        self.port = chamber_port        
+        self.enabled = True 
         self.ambient_temperature = 24
         self._lock = threading.Lock()
         logger.debug("Lock created")
         logger.debug("Loading profiles...")
 
         self.profiles = {}  # Initialize profiles to an empty dict
+
+        if not self.ip or not self.port:
+            logger.error("Chamber IP or port missing. Deactivating thermal chamber interface.")
+            self.enabled = False
+            return
+        
+        self.enabled = True
 
         self.connect()
 

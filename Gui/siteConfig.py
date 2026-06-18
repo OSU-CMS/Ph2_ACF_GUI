@@ -219,8 +219,8 @@ temp_chamber_cache_file = str(BASE_DIR / "jsonFiles" / "instruments_osu_auto.jso
 try:
     with open(temp_chamber_cache_file, "r") as f:
         data = json.load(f)
-        connection = data.get("connection", {})
-        chamber_ip = connection.get("ip", None).strip() 
-        chamber_port = connection.get("port", None)
+        connection = data.get("thermal_chamber_connection", {})
+        chamber_ip = str(connection.get("ip") or "").strip()
+        chamber_port = str(connection.get("port") or "").strip()
 except Exception as e:
     logger.info("Load failed: %s" % e)

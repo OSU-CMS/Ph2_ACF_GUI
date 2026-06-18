@@ -139,13 +139,18 @@ class ThermalTestWindow(QWidget):
         layout.addWidget(self.RunMonitorButton, 10, 0, 1, 1)
         layout.addWidget(self.closeButton, 11, 0, 1, 1)
 
-        if not self.chamber.profiles:
-            profiles, source = self.chamber.query_profiles(force_refresh=True)
-            self.on_profiles_loaded(profiles, source)
-        elif self.chamber and self.chamber.profiles:
-            self.on_profiles_loaded(self.chamber.profiles, "cache")
-        
-        self.show()
+        # Check if the profiles exist and are not 'null'
+        if self.chamber and self.chamber.profiles:
+            # Perform a quick validation check on the profile data
+            # (Assuming 'default' is the key you use)
+            current_profile = self.chamber.profiles.get('default', {})
+            address = current_profile.get('address')
+
+            if address and address != 'null':
+                self.on_profiles_loaded(self.chamber.profiles, "cache")
+            else:
+                print("Warning: Thermal chamber profile is missing or invalid. Skipping auto-connect.")
+                # Optionally: Load an empty profile or prompt the user
 
     def updateProfiles(self):
         """Update the profiles in the QComboBox using profileworker"""
