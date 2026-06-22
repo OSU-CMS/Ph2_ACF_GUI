@@ -91,8 +91,8 @@
         "fc7.board.2"	:	"192.168.1.81",
         "fc7.board.3"	:	"192.168.1.82"
     },
-    "connection": {
+    "thermal_chamber_connection": {
         "ip": "128.146.32.200",
-        "port": 5025
+        "port": "5025" 
     }
 }
