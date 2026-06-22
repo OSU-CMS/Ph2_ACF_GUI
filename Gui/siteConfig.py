@@ -1,6 +1,7 @@
 import json
 import logging
 from MonitoringSettings import Monitor_SleepTime
+from pathlib import Path
 
 CONFIG_VER = 9
 
@@ -197,4 +198,30 @@ ModuleVoltageMap = {
 	"SCC" : 1.3,
 	"CROC SCC"  : 1.6,
 }
+#####################################################
+
+
+######  can probably remove this block  #############
+#setting the sequence of threshold tuning targets:
+#defaultTargetThr = ['2000','1500','1200','1000','800']
+
+##### The following settings are for SLDO scans developed for Purdue.#####
+##### Do not modify these settings unless you know what you are doing.####
+#default settings for SLDO scan.
+defaultSLDOscanVoltage = 0.0
+defaultSLDOscanMaxCurrent = 0.0
+#####################################################
+
+BASE_DIR = Path("/home/cmsTkUser/Ph2_ACF_GUI/Gui")
+temp_chamber_cache_file = str(BASE_DIR / "jsonFiles" / "instruments_osu_auto.json")
+
+
+try:
+    with open(temp_chamber_cache_file, "r") as f:
+        data = json.load(f)
+        connection = data.get("thermal_chamber_connection", {})
+        chamber_ip = str(connection.get("ip") or "").strip()
+        chamber_port = str(connection.get("port") or "").strip()
+except Exception as e:
+    logger.info("Load failed: %s" % e)
 #####################################################

@@ -20,8 +20,11 @@ from PyQt5.QtWidgets import (
 from Gui.QtGUIutils.QtThermalTestWindow import ThermalTestWindow
 from Gui.QtGUIutils.QtThermalModulesWindow import ThermalModulesWindow
 
+
+
 import sys
 import os
+import time
 import traceback
 import pyvisa
 import requests
@@ -492,12 +495,14 @@ class QtApplication(QWidget):
         self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name_first))
         self.FirmwareStatus.setDisabled(True)
 
+        
         try: 
             logger.debug("Attempting to connect to thermal chamber")
             self.chamber = F4TTemperatureChamber()
         except Exception as e:
             logger.error("Failed to connect to thermal chamber: %s" % e)
             self.chamber = None
+
 
         self.StatusList = [
             self.create_status_label("Panthera DB", self.panthera_connected),
@@ -1022,7 +1027,8 @@ class QtApplication(QWidget):
 
             try:
                 try:
-                    self.instruments = InstrumentCluster(**self.device_settings)
+                    #self.instruments = InstrumentCluster(**self.device_settings)
+                    self.instruments = self.connect_instruments_with_retry()
                 except ValueError:
                     pass
                     # InstrumentCluster.__init__() throws a ValueError when called a second time.
@@ -1030,6 +1036,16 @@ class QtApplication(QWidget):
                 self.instruments.open()
                 lv_on = False
                 hv_on = False
+
+                '''
+                ### Need to add a conditional so that it will check if the thermal chamber exists before connecting to it.
+                try: 
+                    logger.debug("Attempting to connect to thermal chamber")
+                    self.chamber = F4TTemperatureChamber()
+                except Exception as e:
+                    logger.error("Failed to connect to thermal chamber: %s" % e)
+                    self.chamber = None
+                '''
 
                 for number in self.instruments.get_modules().keys():
                     if self.instruments.status()[number]["hv"]:
@@ -1049,6 +1065,9 @@ class QtApplication(QWidget):
                     self.instruments.off()
                 if self.expertMode:
                     self.disable_instrument_widgets()
+
+                else:
+                    print("Thermal chamber is disabled in config. Skipping connection.")
 
             except Exception:
                 logger.error(traceback.format_exc())
@@ -1083,6 +1102,34 @@ class QtApplication(QWidget):
             self.relay_group.setDisabled(True)
         if self.multimeter:
             self.multimeter_group.setDisabled(True)
+
+    def connect_instruments_with_retry(self, attempts=5, delay=5):
+        last_exception = None
+
+        for attempt in range(1, attempts + 1):
+            try:
+                instruments = InstrumentCluster(**self.device_settings)
+                instruments.open()
+                return instruments
+            except ValueError:
+                # Preserve current behavior for the existing Multiton/second-call issue.
+                if getattr(self, "instruments", None):
+                    self.instruments.open()
+                    return self.instruments
+                raise
+            except Exception as e:
+                last_exception = e
+                logger.warning(
+                    "Instrument connection attempt %s/%s failed: %s",
+                    attempt,
+                    attempts,
+                    e,
+                )
+
+                if attempt < attempts:
+                    time.sleep(delay)
+
+        raise last_exception
 
     def reconnectDevices(self):
         if self.instruments and not site_settings.manual_powersupply_control:
@@ -1157,6 +1204,21 @@ class QtApplication(QWidget):
         QApplication.closeAllWindows()
 
     def thermalTestWindow(self):
+
+        if not self.chamber or not getattr(self.chamber, "enabled", False):
+            QMessageBox.warning(
+                self,
+                "Thermal Chamber Status",
+                "Thermal chamber is not configured.\n\nPlease check the thermal chamber IP address and port in the JSON file.",
+            )
+            return
+
+        QMessageBox.information(
+            self,
+            "Thermal Chamber Status",
+            "Thermal chamber is configured and ready.",
+        )
+
         """Open the thermal test window"""
         self.thermal_window = ThermalTestWindow(self, self.chamber)
         self.thermal_window.show()
