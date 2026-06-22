@@ -182,7 +182,11 @@ class TestHandler(QObject):
         self.VINDdownError = {channel: {} for channel in self.instruments._module_dict}
         self.VINAdownError = {channel: {} for channel in self.instruments._module_dict}
         self.VINAupError = {channel: {} for channel in self.instruments._module_dict}
+        self.INTERNAL_NTC_ABSup = {channel: {} for channel in self.instruments._module_dict}
+        self.INTERNAL_NTC_ABSdown = {channel: {} for channel in self.instruments._module_dict}
 
+        self.INTERNAL_NTC_ABSupError = {channel: {} for channel in self.instruments._module_dict}
+        self.INTERNAL_NTC_ABSdownError = {channel: {} for channel in self.instruments._module_dict}
         self.SLDOfilelist = []
 
         self.BBanalysis_root_files = []
@@ -729,12 +733,13 @@ class TestHandler(QObject):
                     channel=tuple(self.instruments._module_dict.keys())[i],
                 )
             )
-
+            enable_temp = self.shouldStoreSLDOTemperature(current)
+            self.setSLDOTemperatureMonitoringInXML(fc7_index, enable_temp)
             process.start(
                 "CMSITminiDAQ",
                 [
                     "-f",
-                    f"CMSIT_{self.firmware[fc7_index].getBoardName()}.xml",
+                    f"CMSIT_{self.firmware[fc7_index].getBoardName()}_{self.currentTest}.xml",
                     "-c",
                     "physics",
                     "-t",
@@ -1088,7 +1093,7 @@ class TestHandler(QObject):
                 process.start(
                     "echo",
                     [
-                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}.xml  -p"
+                        f"Running COMMAND: CMSITminiDAQ  -f  CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml -p"
                     ],
                 )
         else:
@@ -1118,7 +1123,7 @@ class TestHandler(QObject):
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
-                    ["-f", f"CMSIT_{firmware.getBoardName()}.xml", "-p"],
+                    ["-f", f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml", "-p"],
                 )
                 if process.state() != QProcess.NotRunning:
                     self.active_process_count += 1
@@ -1131,7 +1136,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                         "-t",
@@ -1146,7 +1151,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                     ],
                 )
                 if process.state() != QProcess.NotRunning:
@@ -1159,7 +1164,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[OpenBumpTest[self._openBumpTest_subtest_index]]),
                     ],
@@ -1171,7 +1176,7 @@ class TestHandler(QObject):
                     "CMSITminiDAQ",
                     [
                         "-f",
-                        f"CMSIT_{firmware.getBoardName()}.xml",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                     ],
@@ -1555,14 +1560,10 @@ created by Ph2_ACF is empty."
                                 )
                             )
 
-                shutil.copy(  
-                    "{0}/test/Results/Run{1}_CMSIT_{2}.xml".format(os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        current_fc7),
-                        os.path.join(
-                            self.output_dir, current_fc7    
-                        )
-                    )   
+                shutil.copy(
+                    f"{os.environ.get('PH2ACF_BASE_DIR')}/test/Results/Run{self.RunNumber}_CMSIT_{current_fc7}_{self.currentTest}.xml",
+                    os.path.join(self.output_dir, current_fc7)
+                    )
 
             elif "IREF_GADC" in self.currentTest:
                 print("copying MonitorDQM.root file to output directory")
@@ -1577,16 +1578,10 @@ created by Ph2_ACF is empty."
                         ),
                     )
                 )
-                os.system(
-                    "cp {0}/test/Results/Run{1}_CMSIT_{2}.xml {3}/".format(
-                        os.environ.get("PH2ACF_BASE_DIR"),
-                        self.RunNumber,
-                        current_fc7,
-                        os.path.join(
-                            self.output_dir, current_fc7    
-                        ),
-                    )   
-                )
+                shutil.copy(
+                    f"{os.environ.get('PH2ACF_BASE_DIR')}/test/Results/Run{self.RunNumber}_CMSIT_{current_fc7}_{self.currentTest}.xml",
+                    os.path.join(self.output_dir, current_fc7)
+                    )
 
             else:
                 ph2_acf_base_dir: str | None = os.environ.get("PH2ACF_BASE_DIR")
@@ -1872,6 +1867,11 @@ created by Ph2_ACF is empty."
                     for chipID in chipIDs:
                         updatedXMLValues[f"{hybridID}/{chipID}"] = {}
                         for updatedFEKey in updatedFEKeys:
+                            if (
+                                "ThresholdAdjustment_default_to" in self.currentTest
+                                and updatedFEKey.startswith("DAC_GDAC_")
+                            ):
+                                continue
                             if isCROC:
                                 if updatedFEKey in [
                                     "LATENCY_CONFIG",
@@ -2183,7 +2183,15 @@ created by Ph2_ACF is empty."
     #         self.runwindow.ConsoleViews[fc7_index].repaint()
 
     #     self.readingOutput = False
+    def shouldStoreSLDOTemperature(self, current):
+        module_key = self.master.module_in_use.split(" ")[-1].lower()
+        cfg = site_settings.SLDOScan_GADC[module_key]
 
+        return (
+            np.isclose(current, cfg["starting current"])
+            or np.isclose(current, cfg["target current"])
+        )
+    
     @QtCore.pyqtSlot()
     def on_readyReadStandardOutput_GADC(
         self, process: QProcess, fc7_index: int, upOrDown: str, current, channel
@@ -2224,7 +2232,11 @@ created by Ph2_ACF is empty."
             if match:
                 self.GADC_meas_chip = match.group(4)
             else:
-                match = re.search(r"(\w+):\s*([\d.]+)\s*\+/-\s*([\d.]+)\s*V", textStr)
+                #match = re.search(r"(\w+):\s*([\d.]+)\s*\+/-\s*([\d.]+)\s*V", textStr)
+                match = re.search(
+                    r"(\w+):\s*([-+]?\d*\.?\d+)\s*\+/-\s*([-+]?\d*\.?\d+)\s*([A-Za-z]+)",
+                    textStr,
+                )
                 if match:
                     if self.GADC_meas_chip is not None:
                         if match.group(1) in ("VDDD", "VDDA", "VINA", "VIND"):
@@ -2259,7 +2271,33 @@ created by Ph2_ACF is empty."
                             ][current] = (
                                 float(match.group(3)) * multiplier
                             )  # This line enforces that it only logs one VDDD or VDDA value per sweep step
+                        elif match.group(1) == "INTERNAL_NTC_ABS":
+                            if not self.shouldStoreSLDOTemperature(current):
+                                continue
 
+                            if (
+                                self.GADC_meas_chip
+                                not in getattr(self, match.group(1) + upOrDown)[channel]
+                            ):
+                                getattr(self, match.group(1) + upOrDown)[channel][
+                                    self.GADC_meas_chip
+                                ] = {}
+
+                            getattr(self, match.group(1) + upOrDown)[channel][
+                                self.GADC_meas_chip
+                            ][current] = float(match.group(2))
+
+                            if (
+                                self.GADC_meas_chip
+                                not in getattr(self, match.group(1) + upOrDown + "Error")[channel]
+                            ):
+                                getattr(self, match.group(1) + upOrDown + "Error")[channel][
+                                    self.GADC_meas_chip
+                                ] = {}
+
+                            getattr(self, match.group(1) + upOrDown + "Error")[channel][
+                                self.GADC_meas_chip
+                            ][current] = float(match.group(3))
                     else:
                         print(
                             f'Error: Did not receive expected message, "Reading monitored data for \
@@ -2483,6 +2521,36 @@ created by Ph2_ACF is empty."
                 #    self.testIndexTracker
                 #].setValue(self.SLDOProgressValue)
 
+    def setSLDOTemperatureMonitoringInXML(self, fc7_index, enable):
+        import xml.etree.ElementTree as ET
+
+        xml_path = os.path.join(
+            os.environ.get("PH2ACF_BASE_DIR"),
+            "test",
+            f"CMSIT_{self.firmware[fc7_index].getBoardName()}_{self.currentTest}.xml",
+        )
+
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+
+        enable_value = "1" if enable else "0"
+        found = False
+
+        for element in root.iter("MonitoringElement"):
+            if (
+                element.get("device") == "RD53"
+                and element.get("register") == "INTERNAL_NTC_ABS"
+            ):
+                element.set("enable", enable_value)
+                found = True
+
+        if not found:
+            logger.warning(
+                f"INTERNAL_NTC_ABS MonitoringElement not found in {xml_path}"
+            )
+            return
+
+        tree.write(xml_path)
     def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
         for module in self.enabled_modules():
             moduleName = module.getModuleName()
@@ -2533,6 +2601,21 @@ created by Ph2_ACF is empty."
 
             self.figurelist[moduleName] = [filename]
 
+    def makeSLDOTemperatureCSV(self, total_result: np.ndarray, chip: str, method: str):
+        for module in self.enabled_modules():
+            moduleName = module.getModuleName()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
+
+            csvfilename = "{0}/SLDOTemperature_Module_{1}_INTERNAL_NTC_ABS_ROC{2}_{3}.csv".format(
+                os.path.join(self.output_dir, fc7name), moduleName, chip, method
+            )
+
+            self.SLDOfilelist.append(csvfilename)
+
+            total_result_stacked = np.vstack(total_result)
+            os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
+            np.savetxt(csvfilename, total_result_stacked, delimiter=",")
+    
     def makeTrimbitScanPlots(self, trimbit_dict, pin_mapping):
         """
         Plots measurement vs trimbit for each pin from a dictionary:
@@ -2699,6 +2782,26 @@ created by Ph2_ACF is empty."
             self.runTest()
 
     def SLDOScanFinished(self):
+        for channel in self.instruments._module_dict:
+            for chip in self.INTERNAL_NTC_ABSup[channel]:
+                if (
+                    chip not in self.INTERNAL_NTC_ABSdown[channel]
+                    or chip not in self.INTERNAL_NTC_ABSupError[channel]
+                    or chip not in self.INTERNAL_NTC_ABSdownError[channel]
+                ):
+                    continue
+
+                temperature_data = [
+                    list(self.INTERNAL_NTC_ABSup[channel][chip].keys()),
+                    list(self.INTERNAL_NTC_ABSup[channel][chip].values()),
+                    list(self.INTERNAL_NTC_ABSupError[channel][chip].values()),
+                    list(self.INTERNAL_NTC_ABSdown[channel][chip].keys()),
+                    list(self.INTERNAL_NTC_ABSdown[channel][chip].values()),
+                    list(self.INTERNAL_NTC_ABSdownError[channel][chip].values()),
+                ]
+                if not all(len(row) == len(temperature_data[0]) for row in temperature_data):
+                    continue
+                self.makeSLDOTemperatureCSV(temperature_data, str(chip), "GADC")
         for module in self.enabled_modules():
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()

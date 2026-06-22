@@ -18,9 +18,6 @@ from PyQt5.QtWidgets import (
 
 import subprocess
 import os
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QDesktopServices
-#from Gui.python.thermal_utils import generate_thermal_file_paths
 
 import sys
 import os

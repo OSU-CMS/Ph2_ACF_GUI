@@ -27,6 +27,9 @@ class QtChip:
         chipDAC_COMP_LIN=110,
         chipDAC_COMP_TA_LIN=110,
         chipDAC_LDAC_LIN=140,
+        chipDAC_GDAC_L_LIN="",
+        chipDAC_GDAC_R_LIN="",
+        chipDAC_GDAC_M_LIN="",
         chipStatus=True,
     ):
         self.__chipID = chipID
@@ -48,6 +51,9 @@ class QtChip:
         self.__chipDAC_REF_KRUM_LIN = chipDAC_REF_KRUM_LIN
         self.__chipDAC_COMP_LIN = chipDAC_COMP_LIN
         self.__chipDAC_COMP_TA_LIN = chipDAC_COMP_TA_LIN
+        self.__chipDAC_GDAC_L_LIN = chipDAC_GDAC_L_LIN
+        self.__chipDAC_GDAC_R_LIN = chipDAC_GDAC_R_LIN
+        self.__chipDAC_GDAC_M_LIN = chipDAC_GDAC_M_LIN
         self.__chipDAC_LDAC_LIN = chipDAC_LDAC_LIN
         self.__chipStatus = chipStatus
 
@@ -111,6 +117,24 @@ class QtChip:
     def getADC_MAXIMUM_VOLT(self):
         return self.__ADC_MAXIMUM_VOLT  
 
+    def setDAC_GDAC_L_LIN(self, value):
+        self.__chipDAC_GDAC_L_LIN = value
+
+    def getDAC_GDAC_L_LIN(self):
+        return self.__chipDAC_GDAC_L_LIN
+
+    def setDAC_GDAC_M_LIN(self, value):
+        self.__chipDAC_GDAC_M_LIN = value
+
+    def getDAC_GDAC_M_LIN(self):
+        return self.__chipDAC_GDAC_M_LIN
+    
+    def setDAC_GDAC_R_LIN(self, value):
+        self.__chipDAC_GDAC_R_LIN = value
+
+    def getDAC_GDAC_R_LIN(self):
+        return self.__chipDAC_GDAC_R_LIN
+    
     def setDAC_PREAMP_L_LIN(self, pDAC_PREAMP_L_LIN: int):
         self.__chipDAC_PREAMP_L_LIN = pDAC_PREAMP_L_LIN
 
