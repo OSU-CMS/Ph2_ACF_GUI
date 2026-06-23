@@ -495,13 +495,14 @@ class QtApplication(QWidget):
         self.FirmwareStatus = QGroupBox("Hello, {}!".format(self.operator_name_first))
         self.FirmwareStatus.setDisabled(True)
 
-        
+        '''
         try: 
             logger.debug("Attempting to connect to thermal chamber")
             self.chamber = F4TTemperatureChamber()
         except Exception as e:
             logger.error("Failed to connect to thermal chamber: %s" % e)
             self.chamber = None
+        '''
 
 
         self.StatusList = [
@@ -1037,15 +1038,14 @@ class QtApplication(QWidget):
                 lv_on = False
                 hv_on = False
 
-                '''
-                ### Need to add a conditional so that it will check if the thermal chamber exists before connecting to it.
+
                 try: 
                     logger.debug("Attempting to connect to thermal chamber")
                     self.chamber = F4TTemperatureChamber()
                 except Exception as e:
                     logger.error("Failed to connect to thermal chamber: %s" % e)
                     self.chamber = None
-                '''
+
 
                 for number in self.instruments.get_modules().keys():
                     if self.instruments.status()[number]["hv"]:
