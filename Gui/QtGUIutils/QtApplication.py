@@ -1378,10 +1378,19 @@ class QtApplication(QWidget):
     def GlobalStop(self):
         print("Critical status detected: Emitting Global Stop signal")
         self.globalStop.emit()
-        self.instruments.off()
-        if self.expertMode:
-            self.releaseHVPowerPanel()
-            self.releaseLVPowerPanel()
+        try:
+            self.instruments.off()
+            if self.expertMode:
+                self.releaseHVPowerPanel()
+                self.releaseLVPowerPanel()
+        except Exception:
+            QMessageBox.critical(
+                None,
+                "Cold Box Connection Error",
+                "Warning: connection lost with the cold box.\n\n"
+                "The instruments could not be switched off. Please check the "
+                "connection to the cold box.",
+            )
 
     ###############################################################
     ##  Main page and related functions  (END)
@@ -1422,7 +1431,16 @@ class QtApplication(QWidget):
                     logger.debug("Failed to stop Tessie monitoring cleanly during application shutdown")
             print("Application terminated")
             if self.instruments is not None:
-                self.instruments.off()
+                try:
+                    self.instruments.off()
+                except Exception:
+                    QMessageBox.critical(
+                        None,
+                        "Cold Box Connection Error",
+                        "Warning: connection lost with the cold box.\n\n"
+                        "The instruments could not be switched off during shutdown. "
+                        "Please check the connection to the cold box.",
+                    )
 
             # If you didn't start the Peltier controller, tempPower won't be defined
             if site_settings.cooler == "Peltier":
