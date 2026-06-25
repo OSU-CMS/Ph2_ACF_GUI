@@ -331,7 +331,6 @@ class TestHandler(QObject):
         self.communicationTestResults = {
             module.getModuleName(): None for module in self.modules
         }
-        self.communicationTestModule = None
 
         self.info_processes = [QProcess() for _ in self.firmware]
         for i, process in enumerate(self.info_processes):
@@ -377,6 +376,22 @@ class TestHandler(QObject):
 
     def enabled_modules(self):
         return [module for module in self.modules if self._module_is_enabled(module)]
+
+    def _set_communication_test_result(self, process_index, passed):
+        module_names = []
+        for module in self.firmware[process_index].getModules():
+            if not self._module_is_enabled(module):
+                continue
+            module_name = module.getModuleName()
+            self.communicationTestResults[module_name] = passed
+            module_names.append(module_name)
+
+        logger.info(
+            "CommunicationTest result for %s modules %s: %s",
+            self.firmware[process_index].getBoardName(),
+            module_names,
+            "pass" if passed else "fail",
+        )
 
     def finished_run_process(self, _, exitStatus, i):
         logger.info("Inside finished_run_process")
@@ -1120,6 +1135,8 @@ class TestHandler(QObject):
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
 
         if self.currentTest == "CommunicationTest":
+            for module in self.enabled_modules():
+                self.communicationTestResults[module.getModuleName()] = None
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
                     "CMSITminiDAQ",
@@ -1800,39 +1817,15 @@ created by Ph2_ACF is empty."
                 text.decode("utf-8"), self.runwindow.ConsoleViews[processIndex]
             )
 
-        match = re.search(r"CMSIT_RD53_([^_]+)", alltext)
-        if match:
-            if self.communicationTestModule is not None:
-                self.communicationTestResults[self.communicationTestModule] = True
-            self.communicationTestModule = match.group(1)
-
         if self.currentTest == "CommunicationTest":
             if (
                 "Error, some data lanes are enabled but inactive, reached maximum number of attempts"
                 in alltext
             ):
-                if self.communicationTestModule is None:
-                    logger.error(
-                        "Module name not found before CommunicationTest result in test output."
-                    )
-
-                    logger.error(
-                        "Module name not found before CommunicationTest result in test output."
-                    )
-
-                else:
-                    self.communicationTestResults[self.communicationTestModule] = False
-                    self.communicationTestModule = None
+                self._set_communication_test_result(processIndex, False)
                 self.forceContinue(self.firmware[processIndex])
             elif "All enabled data lanes are active" in alltext:
-                if self.communicationTestModule is None:
-                    logger.error(
-                        "Module name not found before CommunicationTest result in test output."
-                    )
-
-                else:
-                    self.communicationTestResults[self.communicationTestModule] = True
-                    self.communicationTestModule = None
+                self._set_communication_test_result(processIndex, True)
 
         else:
             if "FIFO empty" in alltext or "Reached maximum number of attempts" in alltext:
