@@ -143,38 +143,80 @@ class QtRunWindow(QWidget):
         self.resized.connect(self.rescaleImage)
 
     def onPowerSignal(self):
-        starting_voltages = [
-            np.abs(getattr(module["hv"], "voltage"))
-            for module in self.master.instruments._module_dict.values()
-        ]
+        """Best-effort instrument shutdown after a test sequence.
+
+        A shutdown failure must not escape this Qt slot.  In particular, a lost
+        PSI coldbox MQTT connection is expected to make ``cb_off`` fail, but the
+        sequence results have already been saved and still need to reach Felis.
+        """
+        instruments = self.master.instruments
+        if instruments is None:
+            logger.warning("Skipping post-test power down: instruments unavailable")
+            return
+
+        shutdown_errors = []
+
+        def attempt(description, operation):
+            try:
+                operation()
+                return True
+            except Exception as error:
+                shutdown_errors.append((description, error))
+                logger.exception("Post-test %s failed", description)
+                return False
+
+        try:
+            starting_voltages = [
+                np.abs(getattr(module["hv"], "voltage"))
+                for module in instruments._module_dict.values()
+            ]
+        except Exception as error:
+            starting_voltages = []
+            shutdown_errors.append(("reading starting HV voltages", error))
+            logger.exception("Could not read starting HV voltages during power down")
+
         if site_settings.cooler == "Tessie":
-            if self.master.instruments:
-                starting_voltages = [
-                    np.abs(getattr(module["hv"], "voltage"))
-                    for module in self.master.instruments._module_dict.values()
-                ]
-                self.master.instruments.hv_off(
+            attempt(
+                "HV power down",
+                lambda: instruments.hv_off(
                     delay=0.3,
                     step_size=10,
                     execute_each_step=lambda: self.testHandler.ramp_progress_bar(
-                    starting_voltages
-                ),                )
-            self.master.instruments.cb_off(checkstatus=False)
-            try:
-                    self.wait_for_temp()
-            except InstrumentTimeoutError:
-                    logger.error(traceback.format_exc())
-
-            self.master.instruments.lv_off()
-        else:
-            self.master.instruments.off(
-                hv_delay=0.3,
-                hv_step_size=10,
-                measure=False,
-                execute_each_step=lambda: self.testHandler.ramp_progress_bar(
-                    starting_voltages
+                        starting_voltages
+                    ),
                 ),
-        )
+            )
+            coldbox_stopped = attempt(
+                "coldbox power down",
+                lambda: instruments.cb_off(checkstatus=False),
+            )
+            if coldbox_stopped:
+                attempt("coldbox temperature wait", self.wait_for_temp)
+            else:
+                logger.warning(
+                    "Skipping post-test temperature wait because coldbox "
+                    "communication is unavailable"
+                )
+            attempt("LV power down", instruments.lv_off)
+        else:
+            attempt(
+                "instrument power down",
+                lambda: instruments.off(
+                    hv_delay=0.3,
+                    hv_step_size=10,
+                    measure=False,
+                    execute_each_step=lambda: self.testHandler.ramp_progress_bar(
+                        starting_voltages
+                    ),
+                ),
+            )
+
+        if shutdown_errors:
+            logger.warning(
+                "Post-test shutdown completed with %d error(s); results remain "
+                "available for Felis upload",
+                len(shutdown_errors),
+            )
 
     def setLoginUI(self):
         X = self.master.dimension.width() / 10
@@ -758,4 +800,3 @@ class QtRunWindow(QWidget):
                     logger.debug(f"Module temperature {module['cb'].measure_temperature} for module {module_id}")
                     time.sleep(0.1)
             logger.debug(f"Final module temperature before turning lv off {module['cb'].measure_temperature} for module {module_id}")
-
