@@ -59,8 +59,10 @@ from Gui.QtGUIutils.TessieCoolingApp import TessieCoolingApp
 from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
 from Gui.python.IVCurveHandler import IVCurveHandler
+from Gui.python.ADCHandler import ADCHandlerObject
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
 from Gui.python.TrimbitHandler import TrimbitCurveHandler
+from icicle.icicle.instrument_cluster import InstrumentCluster
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
@@ -156,7 +158,7 @@ class TestHandler(QObject):
         self.firmware = firmware
         self.info = info  # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
-
+        self.measure_lv = False
         self.modules = [
             module for beboard in self.firmware for module in beboard.getModules()
         ]
@@ -937,6 +939,34 @@ class TestHandler(QObject):
                     ],
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
+
+
+        if "ADC_CALIB" in testName:
+            self.currentTest = testName
+            self.configTest()
+            #self.measure_lv = True
+            self.ADCHandler = ADCHandlerObject(
+                self.currentTest,
+                self.instruments,
+                nextTest,
+                execute_each_step=self.ramp_progress_bar,
+            )
+            #self.device_settings = site_settings.icicle_instrument_setup
+            #while (self.measure_lv):
+                #for i, module in enumerate (self.instruments._module_dict.values()):
+                    #self.device_settings[i] = module
+                    #print(f"the device settings are \n {self.device_settings}")
+                    #self.instruments.open()
+                    #print(self.instruments._module_dict)
+                    #module_rep = self.instruments._module_dict
+                    #print(f"{module_rep[str(i)]}")
+                    #sensev = module_rep[f"{i}"]["lv"].measure_voltage.value
+                    #print(f"Module {i} at {sensev} V.")
+            self.ADCHandler.finished.connect(self.ADCCalFinished)
+            self.ADCHandler.startSignal.connect(self.setupQProcess)
+            self.ADCHandler.ADC_CALIB()
+            return
+            #time.sleep(20)
 
         if "IVCurve" in testName:
             self.currentTest = testName
@@ -2357,6 +2387,9 @@ created by Ph2_ACF is empty."
                 return
             return
 
+        if "ADC_CALIB" in self.currentTest:
+            self.measure_lv = False
+
         # Save the output ROOT file to output_dir
         logger.debug("About to run saveTest()")
         time.sleep(1)
@@ -2762,6 +2795,57 @@ created by Ph2_ACF is empty."
         self.validateTest()
 
         step = "IVCurve"
+
+        self.testIndexTracker += 1
+
+        EnableReRun = False
+
+        # Will send signal to turn off power supply after composite or single tests are run
+        if isCompositeTest(self.info):
+            if self.testIndexTracker == len(self.test_list):
+                self.powerSignal.emit()
+                EnableReRun = True
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
+        elif isSingleTest(self.info):
+            EnableReRun = True
+            self.powerSignal.emit()
+            if self.autoSave:
+                self.runwindow.upload_to_Panthera_starter()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit()
+        if self.master.expertMode:
+            self.updateIVResult.emit(self.output_dir)
+        else:
+            self.updateIVResult.emit(
+                (step, self.figurelist)
+            )  ##Add else statement to add signal in simple mode
+
+        if isCompositeTest(self.info):
+            self.runTest()
+
+    def ADCCalFinished(self, test: str, measure: dict):
+        # Get the current timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        logger.debug("Inside ADCCalFinished")
+        for process in self.run_processes:
+            logger.debug("Sending command to end monitoring")
+            process.write(b"\n")
+            process.waitForBytesWritten()
+            logger.debug("Command was sent.Waiting for process to finish.")
+            process.waitForFinished(-1)
+            logger.debug("Process finished")
+
+        for i, firmware in enumerate(self.firmware):
+            self.runwindow.ResultWidget.ProgressBars[i][
+                self.testIndexTracker
+            ].setValue(100)
+
+        self.validateTest()
+
+        step = "ADC_CALIB"
 
         self.testIndexTracker += 1
 
