@@ -26,15 +26,27 @@ class ADCHandlerThread (QThread):
             self.measurements[name] = []
         self.parent = parent
         self.measureSignal.connect(self.parent.transitMeasurment)
-        self.progressSignal.connect(
-            self.parent.transmitProgress
-        )
+        self.progressSignal.connect(self.parent.transmitProgress)
         self.measure_lv = True
         self.exiting = False
         self.setTerminationEnabled(True)
-        self.startVal = 0
-        
+        self.execute_each_step = execute_each_step
+        self.ProgressValue = 0
+        self.total_steps = 25
+        self.timestep = 5000 #length between readings in ms
+        self.stopVal = self.timestep * self.total_steps
+        self.steps_done = 0
+        self.turnOn()
+
+
+    def turnOn(self):
+        starting_voltages = [
+            np.abs(getattr(module["lv"], "voltage"))
+            for module in self.instruments._module_dict.values()
+        ]
+
     def __del__(self): #ensures that it will stop processing before the worker object is destroyed
+        print("setting self.exiting true, del")
         self.exiting = True
 
     def breakTest(self):
@@ -43,37 +55,79 @@ class ADCHandlerThread (QThread):
         return False
 
     def abortTest(self):
+        print("trying to end test")
         self.exiting = True
 
+    def getProgress(self):
+        self.percentStep = abs(100 * self.steps_done / (self.total_steps))
+        logger.info(self.percentStep)
+        # self.ProgressValue += self.percentStep
+        # logger.info(self.ProgressValue)
+        self.steps_done += 1
+        logger.info(self.steps_done)
+        self.progressValue = self.percentStep
+        self.progressSignal.emit("ADC_CALIB",self.percentStep) 
+        
+        #FIXME Percent doesnt update for the progress bar
+        
+        # self.steps_done = 0
+
+        # for _ in range(self.total_steps):
+        #     if self.exiting:
+        #         break
+        #     steps_done += 1
+            
+        #     remaining_steps = self.total_steps - steps_done
+        #     if remaining_steps > 0:
+        #         self.ProgressValue += remaining_steps
+        #         percent = 100 * self.ProgressValue / (self.remaining_steps)
+        #         self.progressSignal.emit("ADC_CALIB", percent)
+        #     break
+        
+        
     def run(self):
         self.device_settings = site_settings.icicle_instrument_setup
         measurementList = {}
         self.instruments.open()
-        while (self.measure_lv):
-            for i, module in enumerate (self.instruments._module_dict.values()):
-                self.device_settings[i] = module
-                print(f"the device settings are \n {self.device_settings}")
-                #print(self.instruments._module_dict)
-                module_rep = self.instruments._module_dict
-                #print(f"{module_rep[str(i)]}")
-                sensev = module_rep[f"{i}"]["lv"].measure_voltage.value
-                print(f"Module {i} at {sensev} V.")
+        datapts = 0
+        while not self.exiting:
+            for name, module in zip(self.powergroup.modulenames, self.powergroup.modules):
+                #name is the module identifier/key from the powering group,
+                self.device_settings[name] = module
 
-            if self.exiting:
+                #print("module in start of for loop is {0}".format(module))
+                #print(f"the device settings are:\n{self.device_settings}\n")
+
+                sensev = module["lv"].measure_voltage.value
+                module_label = module.get("name", name)
+
+                print(f"Module {name} ({module_label}) at {sensev} V.\n")
+                #print(f"measurements {self.measurements}")
+
+                self.measurements[name].append([sensev, module_label])
+
+            if self.exiting or datapts > 25:
                 logger.info("ADC Calibration was aborted by user.")
-                return
+                break
 
             for channel in self.measurements.keys():
+
+                print(f"measurement channels are {self.measurements[channel]}")
                 measurementStr = {
                     "voltage": [value[0] for value in self.measurements[channel]],
-                    "current": [value[2] for value in self.measurements[channel]], #Need to add module name here
+                    "module": [value[1] for value in self.measurements[channel]],
                 }
-                print(f"Measurements are the following: \n {self.measurements[channel]}")
+                #print(f"Measurements are the following: \n {self.measurements[channel]}")
+                
                 measurementList[channel] = measurementStr
 
-                print(f"Voltages for channel {0}: ".format(channel), measurementStr["voltage"])
-                print(f"Currents for channel {0}: ".format(channel), measurementStr["current"])
-                #add wait 1000ms
+                print("Modules for channel {0}: ".format(channel), measurementStr["module"])
+                print("Voltages for channel {0}: ".format(channel), measurementStr["voltage"])
+
+            self.getProgress()
+            QThread.msleep(self.timestep) #Time between printed readouts
+            datapts += 1
+
         self.measureSignal.emit("ADC_CALIB", measurementList)
 
 
@@ -119,10 +173,13 @@ class ADCHandlerObject(QObject):
         self.progressSignal.emit(measurementType, percentStep)
 
     def finish(self, test: str, measure: dict):
+        print("finish called in adchandler")
         starting_voltages = [
             np.abs(getattr(module["lv"], "voltage"))
             for module in self.instruments._module_dict.values()
         ]
+        print("emit finish signal")
+        self.finished.emit(test, measure)
         ## Will Set voltage to default unless SLDO is the next test
         if (self.nextTest is not None) and ("SLDO" not in self.nextTest): 
             self.instruments.lv_set(voltage = site_settings.icicle_instrument_setup[
@@ -131,23 +188,17 @@ class ADCHandlerObject(QObject):
                     "instrument_dict"]["lv"]["default_voltage"]] * len(self.instruments._module_dict.values()))
                 )
         else:    
-            self.instruments.lv_off(
-                execute_each_step=lambda: self.execute_each_step(starting_voltages)
-            )            
-        self.finished.emit(test, measure)
+            self.instruments.lv_off()        
 
     def stop(self):
         try:
             self.test.abortTest()
-            starting_voltages = [
-                np.abs(getattr(module["lv"], "voltage"))
-                for module in self.instruments._module_dict.values()
-            ]
-            self.instruments.lv_off(
-                no_lock=True,
-                execute_each_step=lambda: self.execute_each_step(starting_voltages),
-            )
+            # starting_voltages = [
+            #     np.abs(getattr(module["lv"], "voltage"))
+            #     for module in self.instruments._module_dict.values()
+            # ]
             self.test.terminate()
+            self.instruments.lv_off
         except Exception as err:
             print(f"Failed to stop the ADC test due to error: {err}")
             print(traceback.format_exc())

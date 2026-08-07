@@ -134,6 +134,7 @@ class TestHandler(QObject):
     historyRefresh = pyqtSignal()
     updateResult = pyqtSignal(object)
     updateIVResult = pyqtSignal(object)
+    updateADCResult = pyqtSignal(object)
     updateSLDOResult = pyqtSignal(object)
     updateValidation = pyqtSignal(object)
     updateFinishedTests = pyqtSignal(object)
@@ -354,6 +355,7 @@ class TestHandler(QObject):
         self.historyRefresh.connect(self.runwindow.refreshHistory)
         self.updateResult.connect(self.runwindow.updateResult)
         self.updateIVResult.connect(self.runwindow.updateIVResult)
+        self.updateADCResult.connect(self.runwindow.updateADCResult)
         self.updateSLDOResult.connect(self.runwindow.updateSLDOResult)
         self.updateValidation.connect(self.runwindow.updateValidation)
         self.updateFinishedTests.connect(self.runwindow.updateFinishedTests)
@@ -949,7 +951,7 @@ class TestHandler(QObject):
                 self.currentTest,
                 self.instruments,
                 nextTest,
-                execute_each_step=self.ramp_progress_bar,
+                execute_each_step=self.ramp_progress_bar,            
             )
             #self.device_settings = site_settings.icicle_instrument_setup
             #while (self.measure_lv):
@@ -1185,8 +1187,8 @@ class TestHandler(QObject):
                         f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
-                        "-t",
-                        "120",
+                        #"-t",
+                        #"120",
                     ],
                 )
                 if process.state() != QProcess.NotRunning:
@@ -2551,12 +2553,20 @@ created by Ph2_ACF is empty."
                 ]
                 * len(self.instruments._module_dict.values())
             )
+        elif "ADC_CALIB" in measurementType:
+            self.ADCCalProgressValue += stepSize
+            for i, firmware in enumerate(self.firmware):
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.ADCCalProgressValue)
+
         elif "SLDO" in measurementType:
             self.SLDOProgressValue += stepSize
             for i, firmware in enumerate(self.firmware):
                 self.runwindow.ResultWidget.ProgressBars[i][
                     self.testIndexTracker
                 ].setValue(self.SLDOProgressValue)
+
         elif measurementType == "TrimbitScan":
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][
@@ -2826,22 +2836,66 @@ created by Ph2_ACF is empty."
         if isCompositeTest(self.info):
             self.runTest()
 
+
+
     def ADCCalFinished(self, test: str, measure: dict):
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        logger.debug("Inside ADCCalFinished")
+        logger.info("Inside ADCCalFinished")
         for process in self.run_processes:
-            logger.debug("Sending command to end monitoring")
+            logger.info("Sending command to end monitoring")
             process.write(b"\n")
             process.waitForBytesWritten()
-            logger.debug("Command was sent.Waiting for process to finish.")
+            logger.info("Command was sent.Waiting for process to finish.")
             process.waitForFinished(-1)
-            logger.debug("Process finished")
+            logger.info("Process finished")
 
-        for i, firmware in enumerate(self.firmware):
-            self.runwindow.ResultWidget.ProgressBars[i][
-                self.testIndexTracker
-            ].setValue(100)
+        channelList = []
+        for channel in measure:
+            channelList.append(channel)
+        modules_for_mapping = (
+            self.enabled_modules()
+            if len(channelList) == len(self.enabled_modules())
+            else self.modules
+        )
+        module_chan_map = dict(zip(modules_for_mapping, channelList))
+    
+        for module in self.enabled_modules():
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+
+            #creating the CSV file for ADCCalibration
+            csvfilename = "{0}/ADCCal_Module_{1}_{2}.csv".format(
+                os.path.join(self.output_dir, fc7name), moduleName, timestamp
+            )
+            voltages = np.array(measure[module_chan_map[module]]["voltage"])
+            modules = np.array(measure[module_chan_map[module]]["module"])
+            logger.info(voltages)
+            logger.info(modules)
+            
+            if voltages.ndim > 1:
+                voltages = voltages.flatten()
+                modules = modules.flatten()
+
+            os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
+            np.savetxt(csvfilename, (voltages), delimiter=",")
+
+            # module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
+            #     boardID=beboardId, ogID=ogId, hybridID=hybridId
+            # )
+            # ADCCal_CSV_to_ROOT(
+            #     moduleName, module_canvas_path, csvfilename, os.path.join(self.output_dir,fc7name)
+            # )
+            # filename = "{0}/ADCCal_Module_{1}_{2}.svg".format(
+            #     os.path.join(self.output_dir,fc7name), moduleName, timestamp)
+ 
+        # for i, firmware in enumerate(self.firmware):
+        #     logger.info(i)
+        #     self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100) 
+        # ^FIXME Not accepting i for ...ProgressBars[i]... likely b/c percent is not updating as it runs
 
         self.validateTest()
 
@@ -2868,9 +2922,9 @@ created by Ph2_ACF is empty."
 
         self.historyRefresh.emit()
         if self.master.expertMode:
-            self.updateIVResult.emit(self.output_dir)
+            self.updateADCResult.emit(self.output_dir)
         else:
-            self.updateIVResult.emit(
+            self.updateADCResult.emit(
                 (step, self.figurelist)
             )  ##Add else statement to add signal in simple mode
 

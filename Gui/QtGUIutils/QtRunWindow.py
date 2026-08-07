@@ -661,6 +661,13 @@ class QtRunWindow(QWidget):
             step, displayDict = newResult
             self.ResultWidget.updateDisplayList(step, displayDict)
 
+    def updateADCResult(self, newResult):
+        if self.master.expertMode:
+            self.ResultWidget.updateADCResult(newResult)
+        else:
+            step, displayDict = newResult
+            self.ResultWidget.updateDisplayList(step, displayDict)
+
     def updateSLDOResult(self, newResult):
         if self.master.expertMode:
             self.ResultWidget.updateSLDOResult(newResult)
