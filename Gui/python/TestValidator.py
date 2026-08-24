@@ -2,6 +2,7 @@ import os
 import ROOT
 import traceback
 import re
+import gc
 
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map, CompositeTests_Modules, OpenBumpTest
 from Gui.GUIutils.guiUtils import isCompositeTest
@@ -11,6 +12,23 @@ logger = get_logger(__name__)
 
 ROOT.gROOT.SetBatch(ROOT.kTRUE)
 
+def cleanup_root_objects():
+    # Close any ROOT files that escaped normal cleanup.
+    files = ROOT.gROOT.GetListOfFiles()
+    if files:
+        for root_file in list(files):
+            try:
+                root_file.Close()
+            except Exception:
+                pass
+
+    # Delete globally registered canvases and other drawn objects.
+    canvases = ROOT.gROOT.GetListOfCanvases()
+    if canvases:
+        canvases.Delete()
+
+    ROOT.gROOT.cd()
+    gc.collect()
 
 def _get_open_bump_root_files(output_dir, board_id, hybrid_id):
     root_pattern = re.compile(
@@ -289,7 +307,11 @@ def ResultGrader(
             raise RuntimeError(message)
 
         return {module_name: (status and sanity, explanation)}, BBanalysis_root_files
+
     except Exception as err:
         logger.error("An error was thrown while grading: {}".format(repr(err)))
         logger.error(traceback.format_exc())
         return {module_name: (False, repr(err))}, BBanalysis_root_files
+
+    finally:
+        cleanup_root_objects()
