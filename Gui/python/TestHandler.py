@@ -44,6 +44,7 @@ from Gui.GUIutils.guiUtils import (
 from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
+from InnerTrackerTests.Analysis.ADCCal_CSV_to_ROOT import ADCCal_CSV_to_ROOT
 
 from InnerTrackerTests.RootFilesDict import root_files
 
@@ -2872,9 +2873,12 @@ created by Ph2_ACF is empty."
                 os.path.join(self.output_dir, fc7name), moduleName, timestamp
             )
             voltages = np.array(measure[module_chan_map[module]]["voltage"])
-            modules = np.array(measure[module_chan_map[module]]["module"])
+            #modules = np.array(measure[module_chan_map[module]]["module"])
+            times = np.array(measure[module_chan_map[module]]["time"])
+
             logger.info(voltages)
-            logger.info(modules)
+            #logger.info(modules)
+            logger.info(times)
             
             if voltages.ndim > 1:
                 voltages = voltages.flatten()
@@ -2883,19 +2887,72 @@ created by Ph2_ACF is empty."
             os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
             np.savetxt(csvfilename, (voltages), delimiter=",")
 
-            # module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(
-            #     boardID=beboardId, ogID=ogId, hybridID=hybridId
-            # )
-            # ADCCal_CSV_to_ROOT(
-            #     moduleName, module_canvas_path, csvfilename, os.path.join(self.output_dir,fc7name)
-            # )
-            # filename = "{0}/ADCCal_Module_{1}_{2}.svg".format(
-            #     os.path.join(self.output_dir,fc7name), moduleName, timestamp)
- 
-        # for i, firmware in enumerate(self.firmware):
-        #     logger.info(i)
-        #     self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100) 
-        # ^FIXME Not accepting i for ...ProgressBars[i]... likely b/c percent is not updating as it runs
+            # PER MODULE: 
+            '''
+            root_glob = glob.glob(
+                os.path.join(self.output_dir, fc7name, f"Run*_MonitorDQM_Board_{beboardId}*.root")
+            )
+            filename = "{0}/ADCCal_Module_{1}_{2}.svg".format(
+                os.path.join(self.output_dir, fc7name), moduleName, timestamp
+            )
+            if root_glob:
+                try:
+                    combine_and_plot_vin(
+                        root_path=root_glob[0],
+                        csv_path=csvfilename,
+                        board=beboardId,
+                        og=ogId,
+                        hybrid=hybridId,
+                        chip=None,   # see note below
+                        out_svg=filename,
+                    )
+                    self.figurelist[moduleName] = [filename]
+                except Exception as err:
+                    logger.error(f"Failed to combine/plot Vin comparison for {moduleName}: {err}")
+            else:
+                logger.warning(f"No MonitorDQM.root found for board {beboardId} in {fc7name}, skipping Vin plot.")
+            '''
+            # PER CHIP
+            root_glob = glob.glob(
+                os.path.join(self.output_dir, fc7name, f"Run*_MonitorDQM_Board_{beboardId}*.root")
+            )
+
+            if "quad" in self.ModuleType.lower():
+                chip_ids = [12, 13, 14, 15]
+            elif "1x2" in self.ModuleType.lower():
+                chip_ids = [12, 13]
+            else:
+                logger.error(
+                    f'ModuleType "{self.ModuleType}" does not contain "1x2" or "quad". '
+                    "Defaulting to 1x2 chip IDs for ADC_CALIB Vin plots."
+                )
+                chip_ids = [12, 13]
+
+            self.figurelist[moduleName] = []
+
+            if root_glob:
+                for chip_id in chip_ids:
+                    filename = "{0}/ADCCal_Module_{1}_Chip{2}_{3}.svg".format(
+                        os.path.join(self.output_dir, fc7name), moduleName, chip_id, timestamp
+                    )
+                    try:
+                        ADCCal_CSV_to_ROOT(
+                            root_path=root_glob[0],
+                            csv_path=csvfilename,
+                            board=beboardId,
+                            og=ogId,
+                            hybrid=hybridId,
+                            chip=chip_id,
+                            out_svg=filename,
+                        )
+                        self.figurelist[moduleName].append(filename)
+                    except Exception as err:
+                        logger.error(
+                            f"Failed to combine/plot Vin comparison for {moduleName}, chip {chip_id}: {err}"
+                        )
+            else:
+                logger.warning(f"No MonitorDQM.root found for board {beboardId} in {fc7name}, skipping Vin plots.")
+            
 
         self.validateTest()
 

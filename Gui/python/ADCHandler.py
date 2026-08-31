@@ -38,12 +38,13 @@ class ADCHandlerThread (QThread):
         self.steps_done = 0
         self.turnOn()
 
-
     def turnOn(self):
+        self.start_time = time.time()
         starting_voltages = [
             np.abs(getattr(module["lv"], "voltage"))
             for module in self.instruments._module_dict.values()
         ]
+        logger.info(f"ADC_CALIB starting; LV already on at {starting_voltages} V")
 
     def __del__(self): #ensures that it will stop processing before the worker object is destroyed
         print("setting self.exiting true, del")
@@ -100,13 +101,15 @@ class ADCHandlerThread (QThread):
 
                 sensev = module["lv"].measure_voltage.value
                 module_label = module.get("name", name)
+                elapsed = time.time() - self.start_time
 
-                print(f"Module {name} ({module_label}) at {sensev} V.\n")
+                print(f"Module {name} ({module_label}) at {sensev} V, t={elapsed:.1f}s.\n")
+
                 #print(f"measurements {self.measurements}")
 
-                self.measurements[name].append([sensev, module_label])
+                self.measurements[name].append([sensev, module_label, elapsed])
 
-            if self.exiting or datapts > 25:
+            if self.exiting or datapts >= self.total_steps:
                 logger.info("ADC Calibration was aborted by user.")
                 break
 
@@ -116,6 +119,7 @@ class ADCHandlerThread (QThread):
                 measurementStr = {
                     "voltage": [value[0] for value in self.measurements[channel]],
                     "module": [value[1] for value in self.measurements[channel]],
+                    "time": [value[2] for value in self.measurements[channel]],
                 }
                 #print(f"Measurements are the following: \n {self.measurements[channel]}")
                 
@@ -198,7 +202,7 @@ class ADCHandlerObject(QObject):
             #     for module in self.instruments._module_dict.values()
             # ]
             self.test.terminate()
-            self.instruments.lv_off
+            self.instruments.lv_off()
         except Exception as err:
             print(f"Failed to stop the ADC test due to error: {err}")
             print(traceback.format_exc())
