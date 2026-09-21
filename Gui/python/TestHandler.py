@@ -1188,8 +1188,8 @@ class TestHandler(QObject):
                         f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
-                        #"-t",
-                        #"120",
+                        "-t",  # allow ADC_CALIB process to run for full PSU acquisition
+                        "125", # ^^
                     ],
                 )
                 if process.state() != QProcess.NotRunning:
