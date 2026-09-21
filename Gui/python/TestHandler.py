@@ -2882,10 +2882,11 @@ created by Ph2_ACF is empty."
             
             if voltages.ndim > 1:
                 voltages = voltages.flatten()
-                modules = modules.flatten()
+            if times.ndim > 1:
+                times = times.flatten()
 
             os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
-            np.savetxt(csvfilename, (voltages), delimiter=",")
+            np.savetxt(csvfilename, (times, voltages), delimiter=",")
 
             # PER MODULE: 
             '''
@@ -2932,20 +2933,24 @@ created by Ph2_ACF is empty."
 
             if root_glob:
                 for chip_id in chip_ids:
-                    filename = "{0}/ADCCal_Module_{1}_Chip{2}_{3}.svg".format(
-                        os.path.join(self.output_dir, fc7name), moduleName, chip_id, timestamp
+                    filename = "{0}/ADCCal_Module_{1}_Chip{2}.svg".format(
+                        os.path.join(self.output_dir, fc7name), moduleName, chip_id
                     )
+                    temperature_filename = "{0}/ADCCal_Module_{1}_Chip{2}_Temperature.svg".format(
+                        os.path.join(self.output_dir, fc7name), moduleName, chip_id
+                    )
+                    module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(boardID=beboardId, ogID=ogId, hybridID=hybridId)
                     try:
                         ADCCal_CSV_to_ROOT(
-                            root_path=root_glob[0],
-                            csv_path=csvfilename,
-                            board=beboardId,
-                            og=ogId,
-                            hybrid=hybridId,
-                            chip=chip_id,
-                            out_svg=filename,
+                            moduleName,
+                            module_canvas_path,
+                            csvfilename,
+                            os.path.join(self.output_dir, fc7name),
+                            root_glob[0],
+                            chip_id,
                         )
                         self.figurelist[moduleName].append(filename)
+                        self.figurelist[moduleName].append(temperature_filename)
                     except Exception as err:
                         logger.error(
                             f"Failed to combine/plot Vin comparison for {moduleName}, chip {chip_id}: {err}"

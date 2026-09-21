@@ -1,4 +1,5 @@
 import Gui.siteSettings as site_settings
+import time
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
 from icicle.icicle.instrument_cluster import DummyInstrument
