@@ -494,7 +494,7 @@ class ChipBox(QWidget):
         else:
             # Use default chip boxes (no database values)
             if modulechipdata:
-                print(
+                logger.info(
                     f"Module {self.serialNumber} chip layout does not correspond to typical {self.chipType} chip layouts. Please modify the trim values manually."
                 )
             self.ChipGroupBoxDict.clear()
@@ -817,7 +817,7 @@ class ChipBox(QWidget):
             logger.debug(
                 f"found module {moduleName} in {moduleType} registry with name label {name_label}"
             )
-            print(f"found module {moduleName} in {moduleType} registry with name label {name_label}")
+            logger.info(f"found module {moduleName} in {moduleType} registry with name label {name_label}")
             return name_label, moduleType
         
         # If not found in CMS registry, return None to trigger fallback
@@ -872,7 +872,7 @@ class ChipBox(QWidget):
         except Exception as e:
             logger.warning(f"Failed to fetch from Purdue database: {e}")
         
-        print("Warning: HDI version not found for module. Using default value of 1.")
+        logger.warning("Warning: HDI version not found for module. Using default value of 1.")
         return "1"
         
 
@@ -1292,7 +1292,7 @@ class BeBoardBox(QWidget):
                     module.TypeCombo.setCurrentText(data["type"])
                 if module.HDIVersionCombo.isEnabled():
                     module.HDIVersionCombo.setCurrentText(data["HDIversion"])
-                    print('returning hdi version {0}'.format(data["HDIversion"]))
+                    logger.info('returning hdi version {0}'.format(data["HDIversion"]))
 
                 self.updateList()
 
@@ -1956,7 +1956,7 @@ class SimpleBeBoardBox(QWidget):
                     Module.getChips()[chipID].setDAC_GDAC_M_LIN(chipData[chipID]["DAC_GDAC_M_LIN"])
                     
             else:
-                print(
+                logger.warning(
                     "Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values."
                 )
 
@@ -1966,7 +1966,7 @@ class SimpleBeBoardBox(QWidget):
             #        Module.getChips()[chipID].setVDDA(trims[chipID]['VDDA'])
             #        Module.getChips()[chipID].setVDDD(trims[chipID]['VDDD'])
             # else:
-            #    print("Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values.")
+            #    logger.warning("Something went wrong while fetching VDDD/VDDA from the database. Proceeding with default values.")
 
             # Add the QtModule object to the currently selected Optical Group
             try:

@@ -166,15 +166,16 @@ class ResultTreeWidget(QWidget):
             while item.parent().text(0) != "Files...":
                 item = item.parent()
             runNumber = item.text(0).split("_")[0]
-            # print("the test is {0}".format(item.text(0)))
-            # print("This item is a TCanvas")
+            logger.debug("the test is {0}".format(item.text(0)))
+            logger.debug("This item is a TCanvas")
             canvas = temp.data(0, Qt.UserRole)
             canvasname = str(temp.text(0))
             canvasname = canvasname.split(";")[0]
-            # print("The canvas is {0}".format(canvas))
+            logger.debug("The canvas is {0}".format(canvas))
             self.displayResult(canvas, canvasname, runNumber)
         elif "svg" in str(item.data(0, Qt.UserRole)):
             canvas = item.data(0, Qt.UserRole)
+            logger.debug("Displaying SVG result")
             self.displayResult(canvas)
 
     @QtCore.pyqtSlot(QTreeWidgetItem)
@@ -285,9 +286,9 @@ class ResultTreeWidget(QWidget):
         stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
 
         if stepFiles2 == [""]:
-            # print("No IV files found.")  # Debugging output if no IV files are found
+            logger.debug("No IV files found.")  # Debugging output if no IV files are found
             return
-        # print("IV files found:", stepFiles2)  # Debugging output to show the found IV files
+        logger.debug("IV files found:", stepFiles2)  # Debugging output to show the found IV files
 
         self.IVFileList += stepFiles2
 
@@ -296,7 +297,7 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
-        # print("IV files processed.")  # Debugging output to indicate IV files processing is done
+        logger.debug("IV files processed.")  # Debugging output to indicate IV files processing is done
 
     def updateSLDOResult(self, sourceFolder):
         process2 = subprocess.run(
@@ -307,10 +308,10 @@ class ResultTreeWidget(QWidget):
         stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
 
         if stepFiles2 == [""]:
-            print("No SLD files found.")  # Debugging output if no SLD files are found
+            logger.debug("No SLD files found.")  # Debugging output if no SLD files are found
             return
 
-        print(
+        logger.debug(
             "SLD files found:", stepFiles2
         )  # Debugging output to show the found SLD files
 
@@ -321,7 +322,7 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setText(0, File.split("/")[-1])
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
-        print(
+        logger.debug(
             "SLD files processed."
         )  # Debugging output to indicate SLD files processing is done
 

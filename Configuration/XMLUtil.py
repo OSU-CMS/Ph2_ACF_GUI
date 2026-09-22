@@ -14,10 +14,8 @@ from Gui.siteSettings import (
 #from Gui.GUIutils.settings import *
 #from Gui.python.CustomizedWidget import ModuleBox
 
-import logging
-
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+from Gui.python.logging_config import logger
+logger = get_logger(__name__)
 
 PH2ACF_VERSION = os.environ.get("PH2ACF_VERSION")
 

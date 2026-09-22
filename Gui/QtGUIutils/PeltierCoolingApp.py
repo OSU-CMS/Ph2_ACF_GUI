@@ -178,7 +178,7 @@ class Peltier(QWidget):
             self.powerStatus.setPixmap(self.redledpixmap)
             self.powerStatusValue = 0
         else:
-            print("Unkown power status")
+            logger.error("Unkown power status")
 
     def powerToggle(self):
         if self.powerStatusValue == 0:
@@ -210,7 +210,7 @@ class Peltier(QWidget):
             self.polarityValue = "HEAT WP2+ and WP1-"
             self.polarityButton.setText(self.polarityValue)
         else:
-            print("Unexpected value sent back from polarity change function")
+            logger.error("Unexpected value sent back from polarity change function")
 
     def polarityToggle(self):
         if self.polarityValue == "HEAT WP1+ and WP2-":
@@ -220,7 +220,7 @@ class Peltier(QWidget):
             polarityCommand = "0"
             self.polarityValue = "HEAT WP1+ and WP2-"
         else:
-            print("Unexpected value read for polarity")
+            logger.error("Unexpected value read for polarity")
             return
         self.pelt.sendCommand(
             self.pelt.createCommand(
@@ -327,7 +327,7 @@ class Peltier(QWidget):
     def tempLimit(self, temp):
         if temp >= 35:
             self.closeEvent()  # Will change this to take effect if the code runs
-            print("Temperature too high")
+            logger.error("Temperature too high")
         return
 
 

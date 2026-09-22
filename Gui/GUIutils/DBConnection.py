@@ -22,6 +22,9 @@ from Gui.GUIutils.guiUtils import (
 )
 from InnerTrackerTests.TestSequences import Test_to_Ph2ACF_Map
 
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
 DB_TestResult_Schema = [
     "Module_ID, Account, CalibrationName, ExecutionTime, Grading, DQMFile"
 ]
@@ -50,8 +53,8 @@ def QtStartConnection(TryUsername, TryPassword, TryHostAddress, TryDatabase):
             connection_timeout=5000,
         )
     except (ValueError, RuntimeError, TypeError, NameError, mysql.connector.Error) as err:
-        print("Error establishing connection:", err)
-        print(traceback.format_exc())
+        logger.error("Error establishing connection:", err)
+        logger.error(traceback.format_exc())
         msg = QMessageBox()
         msg.information(
             None,
@@ -178,12 +181,12 @@ def getLocalTests(module_id, columns=[]):
                     test = formatter(dirName, columns, part_id=str(module_id))
                     localTests.append(test)
                 except Exception as err:
-                    print(
+                    logger.error(
                         "Error detected while formatting the directory name, {}".format(
                             repr(err)
                         )
                     )
-                    print(traceback.format_exc())
+                    logger.error(traceback.format_exc())
     else:
         for dirName in dirList:
             # getFiles = subprocess.run('find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(dirName), shell=True, stdout=subprocess.PIPE)
@@ -201,12 +204,12 @@ def getLocalTests(module_id, columns=[]):
                         )
                         localTests.append(test)
                     except Exception as err:
-                        print(
+                        logger.error(
                             "Error detected while formatting the directory name, {}".format(
                                 repr(err)
                             )
                         )
-                        print(traceback.format_exc()) 
+                        logger.error(traceback.format_exc()) 
     return localTests
 
 
@@ -310,8 +313,8 @@ def describeTable(dbconnection, table, KeepAutoIncre=False):
         header = list(map(lambda x: alltuple[x][0], range(0, len(alltuple))))
         return list(compress(header, auto_incre_filter))
     except mysql.connector.Error as error:
-        print("Failed describing MySQL table:", error)
-        print(traceback.format_exc())
+        logger.error("Failed describing MySQL table:", error)
+        logger.error(traceback.format_exc())
         return []
 
 
@@ -345,8 +348,8 @@ def retrieveWithConstraint(dbconnection, table, *args, **kwargs):
         allList = [list(i) for i in alltuple]
         return allList
     except mysql.connector.Error as error:
-        print("Failed retrieving MySQL table:", error)
-        print(traceback.format_exc())
+        logger.error("Failed retrieving MySQL table:", error)
+        logger.error(traceback.format_exc())
         return []
 
 
@@ -374,8 +377,8 @@ def retrieveWithConstraintSyntax(dbconnection, table, syntax, **kwargs):
         allList = [list(i) for i in alltuple]
         return allList
     except mysql.connector.Error as error:
-        print("Failed retrieving MySQL table:{}".format(error))
-        print(traceback.format_exc())
+        logger.error("Failed retrieving MySQL table:{}".format(error))
+        logger.error(traceback.format_exc())
         return []
 
 
@@ -400,8 +403,8 @@ def retrieveGenericTable(dbconnection, table, **kwargs):
         allList = [list(i) for i in alltuple]
         return allList
     except Exception as error:
-        print("Failed retrieving MySQL table:{}".format(error))
-        print(traceback.format_exc())
+        logger.error("Failed retrieving MySQL table:{}".format(error))
+        logger.error(traceback.format_exc())
         return []
 
 
@@ -418,15 +421,15 @@ def insertGenericTable(dbconnection, table, args, data):
             + """)"""
         )
         sql_query = pre_query.format(*args)
-        # print (sql_query)
-        # print (data)
+        # logger.info(sql_query)
+        # logger.info(data)
         cur = dbconnection.cursor()
         cur.execute(sql_query, data)
         dbconnection.commit()
         return True
     except Exception as error:
-        print("Failed inserting MySQL table {}:  {}".format(table, error))
-        print(traceback.format_exc())
+        logger.error("Failed inserting MySQL table {}:  {}".format(table, error))
+        logger.error(traceback.format_exc())
         return False
 
 
@@ -446,8 +449,8 @@ def createNewUser(dbconnection, args, data):
         dbconnection.commit()
         return True
     except Exception as err:
-        print("Failed to create new user:", err)
-        print(traceback.format_exc())
+        logger.error("Failed to create new user:", err)
+        logger.error(traceback.format_exc())
         return False
 
 
@@ -492,8 +495,8 @@ def updateGenericTable(dbconnection, table, column, data, **kwargs):
         dbconnection.commit()
         return True
     except mysql.connector.Error as error:
-        print("Failed updating MySQL table {}:  {}".format(table, error))
-        print(traceback.format_exc())
+        logger.error("Failed updating MySQL table {}:  {}".format(table, error))
+        logger.error(traceback.format_exc())
         return False
 
 
@@ -506,7 +509,7 @@ def getByColumnName(column_name, header, databody):
     try:
         index = header.index(column_name)
     except ValueError:
-        print("column_name not found")
+        logger.error("column_name not found")
     output = list(map(lambda x: databody[x][index], range(0, len(databody))))
     return output
 
@@ -529,7 +532,7 @@ class GetTrimClass:
     def GetTrim(self, serialNumber, debug=False):
         connection = self.connection
         if connection == "Offline" or connection == []:
-            print("DB is offline")
+            logger.error("DB is offline")
             return [], []
         connection.connect()
         cursor = connection.cursor()
@@ -547,7 +550,7 @@ class GetTrimClass:
         )
         results = cursor.fetchall()  # [('TFPX CROC 1x2 HPK sensor module',)]
         if debug:
-            print("raw description" + str(results))
+            logger.info("raw description" + str(results))
 
         if "sensor" in str(results[0][0]):
             cursor.execute(
@@ -556,8 +559,8 @@ class GetTrimClass:
             chipSensorResult = cursor.fetchall()
             secondParent = chipSensorResult[0][0]
             if debug:
-                print("it is sensor module")
-                print("secondParent" + str(secondParent))
+                logger.debug("it is sensor module")
+                logger.debug("secondParent" + str(secondParent))
             parenetNum = secondParent
 
         # get VDDA value
@@ -572,7 +575,7 @@ class GetTrimClass:
             VDDAList.append([siteNum, VDDA])
         sorted_VDDAlist = sorted(VDDAList, key=lambda x: x[0])
         if debug:
-            print("sorted_VDDAlist:" + str(sorted_VDDAlist))
+            logger.debug("sorted_VDDAlist:" + str(sorted_VDDAlist))
 
         VDDDList = []
         cursor.execute(
@@ -588,7 +591,7 @@ class GetTrimClass:
             VDDDList, key=lambda x: x[0]
         )  # make sure the we can get VDDD value base on the order of rising chip no
         if debug:
-            print("sorted_VDDDlist:" + str(sorted_VDDDlist))
+            logger.debug("sorted_VDDDlist:" + str(sorted_VDDDlist))
         connection.close()
         return sorted_VDDAlist, sorted_VDDDlist
 

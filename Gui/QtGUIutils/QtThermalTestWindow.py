@@ -149,7 +149,7 @@ class ThermalTestWindow(QWidget):
             if address and address != 'null':
                 self.on_profiles_loaded(self.chamber.profiles, "cache")
             else:
-                print("Warning: Thermal chamber profile is missing or invalid. Skipping auto-connect.")
+                logger.warning("Warning: Thermal chamber profile is missing or invalid. Skipping auto-connect.")
                 # Optionally: Load an empty profile or prompt the user
 
     def updateProfiles(self):

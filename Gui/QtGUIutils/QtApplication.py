@@ -219,7 +219,7 @@ class QtApplication(QWidget):
                 QApplication.setStyle(QStyleFactory.create("Fusion"))
                 QApplication.setPalette(darkPalette)
         else:
-            print("This GUI supports Win/Linux/MacOS only")
+            logger.error("This GUI supports Win/Linux/MacOS only")
         self.show()
 
     def initLog(self):
@@ -364,7 +364,7 @@ class QtApplication(QWidget):
     def checkLogin(self):
         expert_string = "_*"
         if self.UsernameEdit.text() not in ["local", "localexpert"]:
-            print("Connecting to Panthera...")
+            logger.info("Connecting to Panthera...")
             credentials = {
                 "username": self.UsernameEdit.text()[0 : -(len(expert_string))]
                 if self.UsernameEdit.text().endswith(expert_string)
@@ -518,7 +518,7 @@ class QtApplication(QWidget):
                 )
                 self.FwDict[firmwareName] = BeBoard
         except Exception as err:
-            print("Failed to list the firmware: {}".format(repr(err)))
+            logger.error("Failed to list the firmware: {}".format(repr(err)))
             logger.error(traceback.format_exc())
         logger.debug(f"Setup FC7s with the following FC7:\n{self.FwDict}")
 
@@ -1047,14 +1047,14 @@ class QtApplication(QWidget):
                 if coldbox:
                     temperature = coldbox.read_channel("TEMPERATURE_MEASURED", channel=0) 
                     for number in self.instruments.get_modules().keys():
-                        print("temperature", temperature)  # self.instruments.get_temperature()[number]["cb"]
+                        logger.info("temperature", temperature)  # self.instruments.get_temperature()[number]["cb"]
                 if lv_on or hv_on:
                     self.instruments.off()
                 if self.expertMode:
                     self.disable_instrument_widgets()
 
                 else:
-                    print("Thermal chamber is disabled in config. Skipping connection.")
+                    logger.info("Thermal chamber is disabled in config. Skipping connection.")
 
             except Exception:
                 logger.error(traceback.format_exc())
@@ -1138,7 +1138,7 @@ class QtApplication(QWidget):
             logger.info("You are running in manual mode. Reconnecting does nothing")
 
     def reCreateMain(self):
-        print("Refreshing the main page")
+        logger.info("Refreshing the main page")
         self.createMain()
         self.checkFirmware()
 
@@ -1221,7 +1221,7 @@ class QtApplication(QWidget):
                 for firmware, board_object in self.FwDict.items()
                 if firmware in self.ActiveFC7s.values()
             ]
-        print(f"FwModule is: {[board.getBoardName() for board in FwModule]}")
+        logger.info("FwModule is: %s", [board.getBoardName() for board in FwModule])
         self.StartNewTest = QtStartWindow(self, FwModule)
         self.StartNewTest.raise_()
         self.StartNewTest.activateWindow()
@@ -1376,7 +1376,7 @@ class QtApplication(QWidget):
     ###############################################################
     @QtCore.pyqtSlot()
     def GlobalStop(self):
-        print("Critical status detected: Emitting Global Stop signal")
+        logger.critical("Critical status detected: Emitting Global Stop signal")
         self.globalStop.emit()
         try:
             self.instruments.off()
@@ -1429,7 +1429,7 @@ class QtApplication(QWidget):
                             self.tessie_widget.stop_temperature_monitoring()
                 except Exception:
                     logger.debug("Failed to stop Tessie monitoring cleanly during application shutdown")
-            print("Application terminated")
+            logger.info("Application terminated")
             if self.instruments is not None:
                 try:
                     self.instruments.off()
