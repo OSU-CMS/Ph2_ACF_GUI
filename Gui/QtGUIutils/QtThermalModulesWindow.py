@@ -1,3 +1,10 @@
+"""
+Description: GUI window for sending thermal test modules to the server. This window allows users to input module identification strings, select a subdetector, and send the data to the server via an HTTP POST request.
+Author:      Antonio Michaels <Michaels.185@osu.edu>
+Created:     2026-05-10
+Version:     1.0.0
+"""
+
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QSize
 from PyQt5.QtGui import QIcon, QPixmap

@@ -1,3 +1,10 @@
+"""
+Description: GUI window for running thermal tests, controlling the thermal chamber.
+Author:      Antonio Michaels <Michaels.185@osu.edu>
+Created:     2026-05-10
+Version:     1.0.0
+"""
+
 from PyQt5 import QtCore
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer
 from PyQt5.QtWidgets import (
