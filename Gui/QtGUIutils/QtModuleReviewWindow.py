@@ -34,7 +34,7 @@ from Gui.QtGUIutils.QtTableWidget import QtTableWidget
 from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
 
 # from Gui.python.ROOTInterface import *
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 import traceback
 
 

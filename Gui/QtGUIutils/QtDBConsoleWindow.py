@@ -37,7 +37,7 @@ from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
 from Gui.QtGUIutils.QtViewTableTab import QtViewTableTab
 from Gui.QtGUIutils.QtImageInsertionTab import QtImageInsertionTab
 from Gui.QtGUIutils.QtImageViewerTab import QtImageViewerTab
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
 
 import traceback

@@ -1,7 +1,7 @@
 import ROOT
 import os
 from ctypes import c_double
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 import traceback
 
 from Gui.python.logging_config import get_logger
