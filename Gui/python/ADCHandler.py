@@ -92,7 +92,7 @@ class ADCHandlerThread (QThread):
         measurementList = {}
         self.instruments.open()
         datapts = 0
-        while not self.exiting:
+        while not self.exiting and datapts < self.total_steps:
             for name, module in zip(self.powergroup.modulenames, self.powergroup.modules):
                 #name is the module identifier/key from the powering group,
                 self.device_settings[name] = module
@@ -109,10 +109,6 @@ class ADCHandlerThread (QThread):
                 #print(f"measurements {self.measurements}")
 
                 self.measurements[name].append([sensev, module_label, elapsed])
-
-            if self.exiting or datapts >= self.total_steps:
-                logger.info("ADC Calibration was aborted by user.")
-                break
 
             for channel in self.measurements.keys():
 
@@ -133,6 +129,8 @@ class ADCHandlerThread (QThread):
             QThread.msleep(self.timestep) #Time between printed readouts
             datapts += 1
 
+        if self.exiting:
+            logger.info("ADC Calibration was aborted by user.")
         self.measureSignal.emit("ADC_CALIB", measurementList)
 
 

@@ -1189,7 +1189,7 @@ class TestHandler(QObject):
                         "-c",
                         "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
                         "-t",  # allow ADC_CALIB process to run for full PSU acquisition
-                        "125", # ^^
+                        "150", # 25 samples at 5 seconds, plus startup/teardown time
                     ],
                 )
                 if process.state() != QProcess.NotRunning:
@@ -2361,7 +2361,7 @@ created by Ph2_ACF is empty."
         # Wait for all processes to finish so FC7s don't get out of sync
 
         logger.debug("All processes finished")
-        
+
         # If this is a retried test completing, clear the retry flag so it can proceed normally
         if self._retrying:
             self._retrying = False
@@ -2404,6 +2404,11 @@ created by Ph2_ACF is empty."
             return
 
         self.saveConfigs(process_index=processIndex)
+        if self.currentTest == "ADC_CALIB" and hasattr(self, "_adc_calibration_measure"):
+            measure = self._adc_calibration_measure
+            del self._adc_calibration_measure
+            self.ADCCalFinished("ADC_CALIB", measure)
+            return
         if self.currentTest in INJECTION_DELAY_SOURCE_TESTS:
             self._cache_injection_delay_cal_edges_from_output_dir(self.output_dir)
         # Don't continue on sequence until all processes have finished the current test
@@ -2843,6 +2848,8 @@ created by Ph2_ACF is empty."
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         logger.info("Inside ADCCalFinished")
+        self._adc_calibration_measure = measure
+        monitor_root_found = False
         for process in self.run_processes:
             logger.info("Sending command to end monitoring")
             process.write(b"\n")
@@ -2932,6 +2939,7 @@ created by Ph2_ACF is empty."
             self.figurelist[moduleName] = []
 
             if root_glob:
+                monitor_root_found = True
                 for chip_id in chip_ids:
                     filename = "{0}/ADCCal_Module_{1}_Chip{2}.svg".format(
                         os.path.join(self.output_dir, fc7name), moduleName, chip_id
@@ -2958,6 +2966,9 @@ created by Ph2_ACF is empty."
             else:
                 logger.warning(f"No MonitorDQM.root found for board {beboardId} in {fc7name}, skipping Vin plots.")
             
+        if not monitor_root_found:
+            logger.info("ADC monitor ROOT file is not available yet; plots will be created after saveTest.")
+            return
 
         self.validateTest()
 
@@ -2992,6 +3003,8 @@ created by Ph2_ACF is empty."
 
         if isCompositeTest(self.info):
             self.runTest()
+        if hasattr(self, "_adc_calibration_measure"):
+            del self._adc_calibration_measure
 
     def SLDOScanFinished(self):
         for channel in self.instruments._module_dict:
