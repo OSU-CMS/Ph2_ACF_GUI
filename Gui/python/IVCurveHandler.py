@@ -40,7 +40,7 @@ class IVCurveThread(QThread):
         # Making sure IVcurve peak is a negative voltage
         if site_settings.IVcurve_range[testName] < 0:
             self.stopVal = site_settings.IVcurve_range[testName]
-            logger.info("IVcurve range: ", self.stopVal)
+            logger.info("IVcurve range: %i", self.stopVal)
         else:
             self.stopVal = -80
         self.stepLength = 5
@@ -90,7 +90,7 @@ class IVCurveThread(QThread):
 
     def run(self):
         try:
-            logger.info(f"Starting IV Curve scan from {self.startVal} to {self.stopVal}")
+            logger.info("Starting IV Curve scan from %i to %i", self.startVal, self.stopVal)
             #self.instruments.hv_on(voltage=0,
             #    execute_each_step=lambda: self.execute_each_step(starting_voltages)
             #)
@@ -134,11 +134,11 @@ class IVCurveThread(QThread):
             #    "current": [value[2] for value in self.measurements['0']],
             #}
 
-                logger.info("Voltages for channel {0}: ".format(channel), measurementStr["voltage"])
-                logger.info("Currents for channel {0}: ".format(channel), measurementStr["current"])
+                logger.info("Voltages for channel %s : %s ", channel, measurementStr["voltage"])
+                logger.info("Currents for channel %s: %s ", channel, measurementStr["current"])
             self.measureSignal.emit("IVCurve", measurementList)
         except Exception as e:
-            logger.error(f"IV Curve scan failed with error: {e}")
+            logger.error("IV Curve scan failed with error: %s", e)
             logger.error(traceback.format_exc())
 
 class IVCurveHandler(QObject):
@@ -213,5 +213,5 @@ class IVCurveHandler(QObject):
             )
             self.test.terminate()
         except Exception as err:
-            logger.error(f"Failed to stop the IV test due to error: {err}")
+            logger.error("Failed to stop the IV test due to error: %s", err)
             logger.error(traceback.format_exc())

@@ -288,7 +288,7 @@ class ResultTreeWidget(QWidget):
         if stepFiles2 == [""]:
             logger.debug("No IV files found.")  # Debugging output if no IV files are found
             return
-        logger.debug("IV files found:", stepFiles2)  # Debugging output to show the found IV files
+        logger.debug("IV files found: %s", stepFiles2)  # Debugging output to show the found IV files
 
         self.IVFileList += stepFiles2
 
@@ -312,7 +312,7 @@ class ResultTreeWidget(QWidget):
             return
 
         logger.debug(
-            "SLD files found:", stepFiles2
+            "SLD files found: %s", stepFiles2
         )  # Debugging output to show the found SLD files
 
         self.SLDOFileList += stepFiles2

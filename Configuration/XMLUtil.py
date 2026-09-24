@@ -304,14 +304,14 @@ def GenerateHWDescriptionXML(HWDescription,outputFile = "CMSIT_gen.xml", boardty
         ##FIXME Add in logic to change depending on version of Ph2_ACF -> Done!
         
         HyBridModule.SetHyBridType('RD53')  #This part should stay as just RD53 (no A or B)
-        logger.info("This is the Hybrid Type: {}", HyBridModule.HyBridType)
+        logger.info("This is the Hybrid Type: %s", HyBridModule.HyBridType)
         Node_FEPath = ET.SubElement(Node_HyBrid, HyBridModule.HyBridType+'_Files')
         Node_FEPath = SetNodeAttribute(Node_FEPath,{'file':HyBridModule.File_Path})
         FEList = HyBridModule.FEList
         ### This is where the RD53 block is being made ###
         for FE in FEList:
           BeBoard.boardType = boardtype
-          logger.info("This is the board type: {}", BeBoard.boardType)
+          logger.info("This is the board type: %s", BeBoard.boardType)
           Node_FE = ET.SubElement(Node_HyBrid, BeBoard.boardType)
           if 'v1' in boardtype:
             Node_FE = SetNodeAttribute(Node_FE,{'Id':FE.Id, 'enable':FE.Enabled,'Lane':FE.Lane, 'eFuseCode':FE.EfuseID,'IrefCode':'-1','configFile':FE.configfile,'RxGroups':FE.RxGroups,'RxPolarity':FE.RxPolarities,'TxGroup':FE.TxGroups,'TxChannel':FE.TxChannels,'TxPolarity':FE.TxPolarities,'Comment':boardtype})
