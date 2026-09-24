@@ -3,6 +3,9 @@ from Gui.GUIutils.settings import (
     ModuleLaneMap_Dict,
 )
 
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
 
 class QtChip:
     def __init__(
@@ -237,7 +240,7 @@ class QtModule:
 
     def setModuleType(self, moduleType: str):
         if moduleType not in ModuleLaneMap.keys():
-            print(
+            logger.info(
                 f"Module type '{moduleType}' is not familiar. Defaulting to 'CROC SCC'."
             )
             self.__moduleType = "CROC SCC"

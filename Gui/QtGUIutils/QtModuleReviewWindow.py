@@ -34,8 +34,10 @@ from Gui.QtGUIutils.QtTableWidget import QtTableWidget
 from Gui.QtGUIutils.QtLoginDialog import QtLoginDialog
 
 # from Gui.python.ROOTInterface import *
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 import traceback
+
+
 
 
 class QtModuleReviewWindow(QWidget):
@@ -59,7 +61,7 @@ class QtModuleReviewWindow(QWidget):
             "root_file",
         ]
         # Fixme: QTimer to be added to update the page automatically
-        print("The review window got opened")
+        logger.info("The review window got opened")
         self.mainLayout = QGridLayout()
         self.setLayout(self.mainLayout)
 
@@ -223,26 +225,26 @@ class QtModuleReviewWindow(QWidget):
             return
 
     def openDQM(self, DQMFile):
-        print("Open" + DQMFile)
+        logger.info("Open" + DQMFile)
         GetTBrowser(DQMFile)
-        print("Close" + DQMFile)
+        logger.info("Close" + DQMFile)
 
     def syncDB(self):
-        print("syncDB button was pushed!")
+        logger.info("syncDB button was pushed!")
         if not isActive(self.connection):
             return
-        print("syncDB is trying to do a thing")
+        logger.info("syncDB is trying to do a thing")
         selectedrows = self.view.selectionModel().selectedRows()
-        print("the selected rows are {0}".format(selectedrows))
+        logger.info("the selected rows are {0}".format(selectedrows))
         for index in selectedrows:
             try:
                 rowNumber = index.row()
                 if self.proxy.data(self.proxy.index(rowNumber, 1)) != "Local":
-                    print("This record is verified to be Non-local")
+                    logger.info("This record is verified to be Non-local")
                     continue
 
                 if self.proxy.data(self.proxy.index(rowNumber, 1)) == "Local":
-                    print("trying to send local stuff to DB")
+                    logger.info("trying to send local stuff to DB")
                     ################################
                     ##  Block to get binary Info
                     ################################
@@ -250,9 +252,9 @@ class QtModuleReviewWindow(QWidget):
                     localDir = self.proxy.data(
                         self.proxy.index(rowNumber, 8)
                     )  # This is a temporary hack!!!
-                    print("local dir is {0}".format(localDir))
+                    logger.info("local dir is {0}".format(localDir))
                     if localDir != "":
-                        print("Local Directory found in : {}".format(localDir))
+                        logger.info("Local Directory found in : {}".format(localDir))
 
                     getFiles = subprocess.run(
                         'find {0} -mindepth 1  -maxdepth 1 -type f -name "*.root"  '.format(
@@ -262,7 +264,7 @@ class QtModuleReviewWindow(QWidget):
                         stdout=subprocess.PIPE,
                     )
                     fileList = getFiles.stdout.decode("utf-8").rstrip("\n").split("\n")
-                    print("the filelist is {0}".format(fileList))
+                    logger.info("the filelist is {0}".format(fileList))
                     if fileList == [""]:
                         logger.warning(
                             "No ROOT file found in the local folder, skipping the record..."
@@ -273,7 +275,7 @@ class QtModuleReviewWindow(QWidget):
                         self.proxy.index(rowNumber, self.columns.index("part_id") + 2)
                     )
                     for submitFile in fileList:
-                        print("Submitting  {}".format(submitFile))
+                        logger.info("Submitting  {}".format(submitFile))
                         data_id = hashlib.md5(
                             "{}".format(submitFile).encode()
                         ).hexdigest()
@@ -317,7 +319,7 @@ class QtModuleReviewWindow(QWidget):
                         configcolumns = []
                         configdata = []
                         for configInFile in configInFileList:
-                            print("config files are: {0}".format(configInFile))
+                            logger.info("config files are: {0}".format(configInFile))
                             if configInFile != [""]:
                                 configcolumns.append(
                                     "Chip{}InConfig".format(configInFile.split("_")[-2])
@@ -338,7 +340,7 @@ class QtModuleReviewWindow(QWidget):
                         xmlcolumns = []
                         xmldata = []
                         if len(XMLFileList) > 1:
-                            print("Warning!  There are multiple xml files here!")
+                            logger.info("Warning!  There are multiple xml files here!")
                         for XMLFile in XMLFileList:
                             if XMLFile != [""]:
                                 xmlcolumns.append("xml_file")
@@ -391,7 +393,7 @@ class QtModuleReviewWindow(QWidget):
                             insertGenericTable(
                                 self.connection, "module_tests", SubmitArgs, Value
                             )
-                            print("trying to insert table")
+                            logger.info("trying to insert table")
                         except Exception:
                             logger.error(traceback.format_exc())
             except Exception:

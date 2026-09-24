@@ -21,7 +21,7 @@ from Gui.GUIutils.DBConnection import (
 
 # from Gui.GUIutils.guiUtils import *
 from Gui.QtGUIutils.QtDBTableWidget import QtDBTableWidget
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 # from Gui.QtGUIutils.QtImageViewer import *
 
 import traceback
