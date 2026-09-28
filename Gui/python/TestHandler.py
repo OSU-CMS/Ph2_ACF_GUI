@@ -44,6 +44,7 @@ from Gui.GUIutils.guiUtils import (
 from Gui.python.ROOTInterface import executeCommandSequence
 from felis.felis import Felis
 from InnerTrackerTests.Analysis.IVCurve_CSV_to_ROOT import IVCurve_CSV_to_ROOT
+from InnerTrackerTests.Analysis.ADCCal_CSV_to_ROOT import ADCCal_CSV_to_ROOT
 
 from InnerTrackerTests.RootFilesDict import root_files
 
@@ -59,8 +60,10 @@ from Gui.QtGUIutils.TessieCoolingApp import TessieCoolingApp
 from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
 from Gui.python.IVCurveHandler import IVCurveHandler
+from Gui.python.ADCHandler import ADCHandlerObject
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
 from Gui.python.TrimbitHandler import TrimbitCurveHandler
+from icicle.icicle.instrument_cluster import InstrumentCluster
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
@@ -132,6 +135,7 @@ class TestHandler(QObject):
     historyRefresh = pyqtSignal()
     updateResult = pyqtSignal(object)
     updateIVResult = pyqtSignal(object)
+    updateADCResult = pyqtSignal(object)
     updateSLDOResult = pyqtSignal(object)
     updateValidation = pyqtSignal(object)
     updateFinishedTests = pyqtSignal(object)
@@ -156,7 +160,7 @@ class TestHandler(QObject):
         self.firmware = firmware
         self.info = info  # This is the name of the test sequence or just the name of the test if it is a single test
         self.ModuleMap = dict()
-
+        self.measure_lv = False
         self.modules = [
             module for beboard in self.firmware for module in beboard.getModules()
         ]
@@ -351,6 +355,7 @@ class TestHandler(QObject):
         self.historyRefresh.connect(self.runwindow.refreshHistory)
         self.updateResult.connect(self.runwindow.updateResult)
         self.updateIVResult.connect(self.runwindow.updateIVResult)
+        self.updateADCResult.connect(self.runwindow.updateADCResult)
         self.updateSLDOResult.connect(self.runwindow.updateSLDOResult)
         self.updateValidation.connect(self.runwindow.updateValidation)
         self.updateFinishedTests.connect(self.runwindow.updateFinishedTests)
@@ -953,6 +958,34 @@ class TestHandler(QObject):
                     current=site_settings.ModuleCurrentMap[self.master.module_in_use],
                 )
 
+
+        if "ADC_CALIB" in testName:
+            self.currentTest = testName
+            self.configTest()
+            #self.measure_lv = True
+            self.ADCHandler = ADCHandlerObject(
+                self.currentTest,
+                self.instruments,
+                nextTest,
+                execute_each_step=self.ramp_progress_bar,            
+            )
+            #self.device_settings = site_settings.icicle_instrument_setup
+            #while (self.measure_lv):
+                #for i, module in enumerate (self.instruments._module_dict.values()):
+                    #self.device_settings[i] = module
+                    #print(f"the device settings are \n {self.device_settings}")
+                    #self.instruments.open()
+                    #print(self.instruments._module_dict)
+                    #module_rep = self.instruments._module_dict
+                    #print(f"{module_rep[str(i)]}")
+                    #sensev = module_rep[f"{i}"]["lv"].measure_voltage.value
+                    #print(f"Module {i} at {sensev} V.")
+            self.ADCHandler.finished.connect(self.ADCCalFinished)
+            self.ADCHandler.startSignal.connect(self.setupQProcess)
+            self.ADCHandler.ADC_CALIB()
+            return
+            #time.sleep(20)
+
         if "IVCurve" in testName:
             self.currentTest = testName
             self.configTest()
@@ -1162,6 +1195,23 @@ class TestHandler(QObject):
                 )
                 if process.state() != QProcess.NotRunning:
                     self.active_process_count += 1
+
+        elif self.currentTest == "ADC_CALIB":
+            for process, firmware in zip(self.run_processes, self.firmware):
+                process.start(
+                    "CMSITminiDAQ",
+                    [
+                        "-f",
+                        f"CMSIT_{firmware.getBoardName()}_{self.currentTest}.xml",
+                        "-c",
+                        "{}".format(Test_to_Ph2ACF_Map[self.currentTest]),
+                        "-t",  # allow ADC_CALIB process to run for full PSU acquisition
+                        "150", # 25 samples at 5 seconds, plus startup/teardown time
+                    ],
+                )
+                if process.state() != QProcess.NotRunning:
+                    self.active_process_count += 1
+
         elif self.currentTest == "TrimbitScan":
             for process, firmware in zip(self.run_processes, self.firmware):
                 process.start(
@@ -1582,7 +1632,7 @@ created by Ph2_ACF is empty."
                     os.path.join(self.output_dir, current_fc7)
                     )
 
-            elif "IREF_GADC" in self.currentTest:
+            elif ("IREF_GADC" in self.currentTest) or ("ADC_CALIB" in self.currentTest):
                 print("copying MonitorDQM.root file to output directory")
                 current_fc7: str = self.firmware[processIndex].getBoardName()
                 os.system(
@@ -2094,7 +2144,7 @@ created by Ph2_ACF is empty."
         elif "CommunicationTest" == self.currentTest:
             return True
         elif (
-            "IREF_GADC" == self.currentTest
+            ("IREF_GADC" == self.currentTest) or ("ADC_CALIB" == self.currentTest)
             and self.ProgressingMode[processIndex] == ProgressMode.SUMMARY
         ):
             return True
@@ -2309,7 +2359,7 @@ created by Ph2_ACF is empty."
         # Wait for all processes to finish so FC7s don't get out of sync
 
         logger.debug("All processes finished")
-        
+
         # If this is a retried test completing, clear the retry flag so it can proceed normally
         if self._retrying:
             self._retrying = False
@@ -2338,6 +2388,9 @@ created by Ph2_ACF is empty."
                 return
             return
 
+        if "ADC_CALIB" in self.currentTest:
+            self.measure_lv = False
+
         # Save the output ROOT file to output_dir
         logger.debug("About to run saveTest()")
         time.sleep(1)
@@ -2349,6 +2402,11 @@ created by Ph2_ACF is empty."
             return
 
         self.saveConfigs(process_index=processIndex)
+        if self.currentTest == "ADC_CALIB" and hasattr(self, "_adc_calibration_measure"):
+            measure = self._adc_calibration_measure
+            del self._adc_calibration_measure
+            self.ADCCalFinished("ADC_CALIB", measure)
+            return
         if self.currentTest in INJECTION_DELAY_SOURCE_TESTS:
             self._cache_injection_delay_cal_edges_from_output_dir(self.output_dir)
         # Don't continue on sequence until all processes have finished the current test
@@ -2499,12 +2557,20 @@ created by Ph2_ACF is empty."
                 ]
                 * len(self.instruments._module_dict.values())
             )
+        elif "ADC_CALIB" in measurementType:
+            self.ADCCalProgressValue += stepSize
+            for i, firmware in enumerate(self.firmware):
+                self.runwindow.ResultWidget.ProgressBars[i][
+                    self.testIndexTracker
+                ].setValue(self.ADCCalProgressValue)
+
         elif "SLDO" in measurementType:
             self.SLDOProgressValue += stepSize
             for i, firmware in enumerate(self.firmware):
                 self.runwindow.ResultWidget.ProgressBars[i][
                     self.testIndexTracker
                 ].setValue(self.SLDOProgressValue)
+
         elif measurementType == "TrimbitScan":
             for i in range(len(self.firmware)):
                 self.runwindow.ResultWidget.ProgressBars[i][
@@ -2773,6 +2839,170 @@ created by Ph2_ACF is empty."
 
         if isCompositeTest(self.info):
             self.runTest()
+
+
+
+    def ADCCalFinished(self, test: str, measure: dict):
+        # Get the current timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        logger.info("Inside ADCCalFinished")
+        self._adc_calibration_measure = measure
+        monitor_root_found = False
+        for process in self.run_processes:
+            logger.info("Sending command to end monitoring")
+            process.write(b"\n")
+            process.waitForBytesWritten()
+            logger.info("Command was sent.Waiting for process to finish.")
+            process.waitForFinished(-1)
+            logger.info("Process finished")
+
+        channelList = []
+        for channel in measure:
+            channelList.append(channel)
+        modules_for_mapping = (
+            self.enabled_modules()
+            if len(channelList) == len(self.enabled_modules())
+            else self.modules
+        )
+        module_chan_map = dict(zip(modules_for_mapping, channelList))
+    
+        for module in self.enabled_modules():
+            ogId = module.getOpticalGroup().getOpticalGroupID()
+            beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
+            fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
+            moduleName = module.getModuleName()
+            hybridId = module.getFMCPort()
+
+            #creating the CSV file for ADCCalibration
+            csvfilename = "{0}/ADCCal_Module_{1}_{2}.csv".format(
+                os.path.join(self.output_dir, fc7name), moduleName, timestamp
+            )
+            voltages = np.array(measure[module_chan_map[module]]["voltage"])
+            #modules = np.array(measure[module_chan_map[module]]["module"])
+            times = np.array(measure[module_chan_map[module]]["time"])
+
+            logger.info(voltages)
+            #logger.info(modules)
+            logger.info(times)
+            
+            if voltages.ndim > 1:
+                voltages = voltages.flatten()
+            if times.ndim > 1:
+                times = times.flatten()
+
+            os.makedirs(os.path.dirname(csvfilename), exist_ok=True)
+            np.savetxt(csvfilename, (times, voltages), delimiter=",")
+
+            # PER MODULE: 
+            '''
+            root_glob = glob.glob(
+                os.path.join(self.output_dir, fc7name, f"Run*_MonitorDQM_Board_{beboardId}*.root")
+            )
+            filename = "{0}/ADCCal_Module_{1}_{2}.svg".format(
+                os.path.join(self.output_dir, fc7name), moduleName, timestamp
+            )
+            if root_glob:
+                try:
+                    combine_and_plot_vin(
+                        root_path=root_glob[0],
+                        csv_path=csvfilename,
+                        board=beboardId,
+                        og=ogId,
+                        hybrid=hybridId,
+                        chip=None,   # see note below
+                        out_svg=filename,
+                    )
+                    self.figurelist[moduleName] = [filename]
+                except Exception as err:
+                    logger.error(f"Failed to combine/plot Vin comparison for {moduleName}: {err}")
+            else:
+                logger.warning(f"No MonitorDQM.root found for board {beboardId} in {fc7name}, skipping Vin plot.")
+            '''
+            # PER CHIP
+            root_glob = glob.glob(
+                os.path.join(self.output_dir, fc7name, f"Run*_MonitorDQM_Board_{beboardId}*.root")
+            )
+
+            if "quad" in self.ModuleType.lower():
+                chip_ids = [12, 13, 14, 15]
+            elif "1x2" in self.ModuleType.lower():
+                chip_ids = [12, 13]
+            else:
+                logger.error(
+                    f'ModuleType "{self.ModuleType}" does not contain "1x2" or "quad". '
+                    "Defaulting to 1x2 chip IDs for ADC_CALIB Vin plots."
+                )
+                chip_ids = [12, 13]
+
+            self.figurelist[moduleName] = []
+
+            if root_glob:
+                monitor_root_found = True
+                for chip_id in chip_ids:
+                    filename = "{0}/ADCCal_Module_{1}_Chip{2}.svg".format(
+                        os.path.join(self.output_dir, fc7name), moduleName, chip_id
+                    )
+                    temperature_filename = "{0}/ADCCal_Module_{1}_Chip{2}_Temperature.svg".format(
+                        os.path.join(self.output_dir, fc7name), moduleName, chip_id
+                    )
+                    module_canvas_path = "Detector/Board_{boardID}/OpticalGroup_{ogID}/Hybrid_{hybridID}/".format(boardID=beboardId, ogID=ogId, hybridID=hybridId)
+                    try:
+                        ADCCal_CSV_to_ROOT(
+                            moduleName,
+                            module_canvas_path,
+                            csvfilename,
+                            os.path.join(self.output_dir, fc7name),
+                            root_glob[0],
+                            chip_id,
+                        )
+                        self.figurelist[moduleName].append(filename)
+                        self.figurelist[moduleName].append(temperature_filename)
+                    except Exception as err:
+                        logger.error(
+                            f"Failed to combine/plot Vin comparison for {moduleName}, chip {chip_id}: {err}"
+                        )
+            else:
+                logger.warning(f"No MonitorDQM.root found for board {beboardId} in {fc7name}, skipping Vin plots.")
+            
+        if not monitor_root_found:
+            logger.info("ADC monitor ROOT file is not available yet; plots will be created after saveTest.")
+            return
+
+        self.validateTest()
+
+        step = "ADC_CALIB"
+
+        self.testIndexTracker += 1
+
+        EnableReRun = False
+
+        # Will send signal to turn off power supply after composite or single tests are run
+        if isCompositeTest(self.info):
+            if self.testIndexTracker == len(self.test_list):
+                self.powerSignal.emit()
+                EnableReRun = True
+                if self.autoSave:
+                    self.runwindow.upload_to_Panthera_starter()
+        elif isSingleTest(self.info):
+            EnableReRun = True
+            self.powerSignal.emit()
+            if self.autoSave:
+                self.runwindow.upload_to_Panthera_starter()
+
+        self.stepFinished.emit(EnableReRun)
+
+        self.historyRefresh.emit()
+        if self.master.expertMode:
+            self.updateADCResult.emit(self.output_dir)
+        else:
+            self.updateADCResult.emit(
+                (step, self.figurelist)
+            )  ##Add else statement to add signal in simple mode
+
+        if isCompositeTest(self.info):
+            self.runTest()
+        if hasattr(self, "_adc_calibration_measure"):
+            del self._adc_calibration_measure
 
     def SLDOScanFinished(self):
         for channel in self.instruments._module_dict:
