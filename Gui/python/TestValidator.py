@@ -165,7 +165,7 @@ def ResultGrader(
             dqmpattern = re.compile(rf"_Hybrid_{module_hybridID}\.root$")
             relevant_files.extend([outputDir + "/" + os.fsdecode(file) for file in os.listdir(outputDir) if dqmpattern.search(file)])
 
-            print("relevant_files:", relevant_files)
+            logger.info("relevant_files: %s", relevant_files)
             _1, _2 = felis.set_module(
                 name_module = module_name,
                 subdetector = module_type.split(" ")[0],

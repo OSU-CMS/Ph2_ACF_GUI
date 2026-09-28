@@ -4,6 +4,7 @@ what happen if the serial number is not being register on the database?
 the storing list will be empty
 """
 
+# This code might be untracked, and hence logging is not updated here
 
 import mysql.connector
 import getpass

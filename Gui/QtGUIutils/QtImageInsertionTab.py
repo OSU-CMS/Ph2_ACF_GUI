@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt, QDateTime
-from Gui.python.logging_config import logger
+from Gui.python.logging_config import get_logger
 
 
 # from PyQt5.QtGui import QFont, QPixmap

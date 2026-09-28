@@ -9,7 +9,7 @@ logger = get_logger(__name__)
 
 class PeltierSignalGenerator:
     def __init__(self):
-        # print("Connecting Peltier Port")
+        logger.debug("Connecting Peltier Port")
         self.ser = serial.Serial(
             defaultPeltierPort,
             defaultPeltierBaud,
@@ -17,7 +17,7 @@ class PeltierSignalGenerator:
             write_timeout=5,
             inter_byte_timeout=5,
         )
-        # print("Peltier connected")
+        logger.debug("Peltier connected")
         self.commandDict = {
             "Input1": ["0", "1"],
             "Desired Control Value": ["0", "3"],
@@ -118,8 +118,8 @@ class PeltierSignalGenerator:
             logger.debug(f"Recieved message: {message}")
             return message, passed
         except Exception as e:
-            print(f"Failed to send command to Peltier due to error: {e}")
-            print(traceback.format_exc())
+            logger.error(f"Failed to send command to Peltier due to error: {e}")
+            logger.error(traceback.format_exc())
             return None, False
 
     # Will recieve message but will only check if the command gave an error, will not decode the message

@@ -1,3 +1,6 @@
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
 ConvertForSpan = {
     b"<": b"&#60;",
     b">": b"&#62;",
@@ -64,4 +67,4 @@ if __name__ == "__main__":
 
     for line in multilines.split("\n"):
         num, text = parseANSI(line)
-        print(text)
+        logger.info(text)

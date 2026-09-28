@@ -79,7 +79,7 @@ class ArduinoWidget(QWidget):
         self.ResourcesManager = visa.ResourceManager("@py")
         try:
             self.ResourcesList = self.ResourcesManager.list_resources()
-            print(self.ResourcesList)
+            logger.info(self.ResourcesList)
             self.getDeviceName()
             return list(self.deviceMap.keys())
         except Exception as err:
@@ -250,7 +250,7 @@ class ArduinoWidget(QWidget):
             deviceName, baudRate=baudMap[baudRate], readyRead=self.receive
         )
         self.serial.open(QIODevice.ReadOnly)
-        print(f"Serial status: {self.serial.isOpen()}")
+        logger.info(f"Serial status: {self.serial.isOpen()}")
 
         if not self.serial.isOpen():
             self.ArduinoMeasureValue.setStyleSheet("QLabel {color : red}")

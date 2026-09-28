@@ -13,7 +13,8 @@ logging.basicConfig(
    filemode='w'  # 'w' for write, 'a' for append
 )
 
-logger = logging.getLogger(__name__) 
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
 
 ######################################################################
 # To be edited by expert as default setting for Hardware configuration
@@ -75,7 +76,7 @@ try:
     with open(json_setup, 'r') as file:
     	icicle_instrument_setup = json.load(file)
 except FileNotFoundError:
-    print("Error: 'data.json' not found.")
+    logger.error("Error: 'data.json' not found.")
     exit()
 
 #Set peak voltage for bias scan.  Make sure this value is negative or it could damage the sensor.

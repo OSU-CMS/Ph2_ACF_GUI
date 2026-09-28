@@ -88,7 +88,7 @@ class QtuDTCDialog(QDialog):
                 Node.set("configfile", "../Configuration/CMSIT_RD53.txt")
             # if changeMode:
             # xml_output = ET.tostring(root,pretty_print=True)
-            # print(xml_output)
+            # logger.info(xml_output)
             ModifiedFile = InputFile + ".gui"
             tree.write(ModifiedFile)
             InputFile = ModifiedFile

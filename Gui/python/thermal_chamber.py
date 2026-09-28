@@ -1,3 +1,10 @@
+"""
+Description: Implementation for thermal chamber interface using PyQt5 QTcpSocket for communication with Watlow F4T.
+Author:      Antonio Michaels <Michaels.185@osu.edu>
+Created:     2026-05-10
+Version:     1.0.0
+"""
+
 from PyQt5.QtNetwork import QTcpSocket, QAbstractSocket
 import time
 import threading
