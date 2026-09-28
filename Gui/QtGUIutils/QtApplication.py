@@ -1027,13 +1027,6 @@ class QtApplication(QWidget):
                 lv_on = False
                 hv_on = False
 
-                try: 
-                    logger.debug("Attempting to connect to thermal chamber")
-                    self.chamber = F4TTemperatureChamber()
-                except Exception as e:
-                    logger.error("Failed to connect to thermal chamber: %s" % e)
-                    self.chamber = None
-
                 for number in self.instruments.get_modules().keys():
                     if self.instruments.status()[number]["hv"]:
                         hv_on = True
@@ -1191,7 +1184,14 @@ class QtApplication(QWidget):
         QApplication.closeAllWindows()
 
     def thermalTestWindow(self):
-
+        
+        try: 
+            logger.debug("Attempting to connect to thermal chamber")
+            self.chamber = F4TTemperatureChamber()
+        except Exception as e:
+            logger.error("Failed to connect to thermal chamber: %s" % e)
+            self.chamber = None
+        
         if not self.chamber or not getattr(self.chamber, "enabled", False):
             QMessageBox.warning(
                 self,

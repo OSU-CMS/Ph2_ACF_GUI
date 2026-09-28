@@ -291,8 +291,14 @@ class F4TTemperatureChamber:
 
     def turn_off(self):
         logger.debug("Turning off chamber...")
+
+        logger.debug("stopping profile in turn_off()")
         self.stop_profile()
+
+        logger.debug("Turning off output in turn_off()")
         self.control_output("OFF")
+    
+
         time.sleep(1)
 
     def query_profiles(self, force_refresh=False):
