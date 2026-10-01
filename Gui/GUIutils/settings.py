@@ -85,9 +85,9 @@ firmware_image = {
     #},
     "CROC SCC": "SCC_ELE_CROC_v5-0.bit",
     
-    "TFPX CROC 1x2": "QUAD_ELE_CROC_v5-0.bit",
+    "TFPX CROC 1x2": "QUAD_ELE_CROC_v5-1.bit",
     
-    "TFPX CROC Quad": "QUAD_ELE_CROC_v5-0.bit",
+    "TFPX CROC Quad": "QUAD_ELE_CROC_v5-1.bit",
 
     "TEPX CROC 1x2": "QUAD_ELE_CROC_v5-0.bit",
 
