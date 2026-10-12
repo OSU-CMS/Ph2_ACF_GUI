@@ -1,9 +1,13 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, QObject, QProcess, Qt
+from PyQt5.QtCore import pyqtSignal, QObject, QProcess, Qt, QTimer
+from PyQt5.QtGui import QBrush, QColor, QFont
 from PyQt5.QtWidgets import (
     QMessageBox,
     QTableWidget,
     QTableWidgetItem,
+    QTreeWidget,
+    QTreeWidgetItem,
+    QHBoxLayout,
     QPlainTextEdit,
     QProgressBar,
     QDialog,
@@ -366,7 +370,16 @@ class TestHandler(QObject):
         
         self._openBumpTest_running = False
         self._openBumpTest_subtest_index = 0
-        self._retrying = False
+        # True from the moment a failure is reported until the user answers the dialog
+        self._handling_failure = False
+        # {fc7 process index: failure reason} for the failure being handled
+        self._failed_boards = {}
+        # Bumped whenever a failure stops the current run, so stale on_finish /
+        # IVCurveFinished calls from that run stop instead of advancing the sequence
+        self._test_generation = 0
+        # Old QProcess objects kept alive after a stop, since the stop can happen
+        # inside one of their own signal handlers
+        self._retired_processes = []
         self._injection_delay_cal_edge_by_chip = {}
 
     def _module_is_enabled(self, module) -> bool:
@@ -1229,7 +1242,7 @@ class TestHandler(QObject):
         if self.IVCurveHandler:
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting IVCurve", console)
-            self.IVCurveHandler.stop()
+            self._stop_iv_curve()
         if self.SLDOScanHandler:
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting SLDOScan", console)
@@ -1238,6 +1251,20 @@ class TestHandler(QObject):
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting TrimbitScan", console)
             self.trimbitHandler.stop()
+
+    def _stop_iv_curve(self):
+        """Stop a running IV curve: abort its thread, wait for it, then ramp HV down."""
+        handler = self.IVCurveHandler
+        if handler is None:
+            return
+        # Disconnect so a late IVCurveFinished from this run cannot fire
+        for signal in (handler.finished, handler.progressSignal, handler.startSignal):
+            try:
+                signal.disconnect()
+            except TypeError:
+                pass
+        handler.stop()
+        self.IVCurveHandler = None
 
     def urgentStop(self):
         for process in self.run_processes:
@@ -1516,7 +1543,7 @@ created by Ph2_ACF is empty."
                 )
                 shutil.copyfile(file, f"{output_dir}/{fc7_in_use}_{file_name}")
 
-    def saveTest(self, processIndex: int, process: QProcess):
+    def saveTest(self, processIndex: int, process: QProcess, report_failure=True):
         logger.debug("Inside saveTest")
         if process.state() == QProcess.Running:
             QMessageBox.critical(self, "Error", "Process not finished", QMessageBox.Ok)
@@ -1614,8 +1641,10 @@ created by Ph2_ACF is empty."
 
         except Exception:
             logger.error(traceback.format_exc())
-            if self.currentTest != "CommunicationTest":
-                self.forceContinue(self.firmware[processIndex])
+            if report_failure and self.currentTest != "CommunicationTest":
+                self._report_failure(
+                    processIndex, "Could not save the test output files"
+                )
 
     #######################################################################
     ##  For real-time terminal display
@@ -1823,19 +1852,19 @@ created by Ph2_ACF is empty."
                 in alltext
             ):
                 self._set_communication_test_result(processIndex, False)
-                self.forceContinue(self.firmware[processIndex])
+                self._report_failure(
+                    processIndex, "Data lanes enabled but inactive"
+                )
             elif "All enabled data lanes are active" in alltext:
                 self._set_communication_test_result(processIndex, True)
 
         else:
-            if "FIFO empty" in alltext or "Reached maximum number of attempts" in alltext:
-                if self.run_processes[processIndex].state() == QProcess.Running:
-                    logger.info("process is still running...  Attempting to terminate")
-                    self.run_processes[processIndex].terminate()
-                    if not self.run_processes[processIndex].waitForFinished(3000):
-                        logger.warning("Process would not terminate, so killing it now...")
-                        self.run_processes[processIndex].kill()
-                self.forceContinue(self.firmware[processIndex])
+            if "FIFO empty" in alltext:
+                self._report_failure(processIndex, "FIFO empty")
+            elif "Reached maximum number of attempts" in alltext:
+                self._report_failure(
+                    processIndex, "Reached maximum number of attempts"
+                )
 
         self.readingOutput = False
 
@@ -2309,11 +2338,16 @@ created by Ph2_ACF is empty."
         # Wait for all processes to finish so FC7s don't get out of sync
 
         logger.debug("All processes finished")
-        
-        # If this is a retried test completing, clear the retry flag so it can proceed normally
-        if self._retrying:
-            self._retrying = False
-            logger.info("Retry test completing - clearing retry flag")
+
+        # A failure stops every FC7 and the failure dialog decides what happens next,
+        # so never advance the sequence from here while that is in progress.
+        if self._handling_failure:
+            logger.info(
+                f"Failure being handled - ignoring on_finish for process {processIndex}"
+            )
+            return
+
+        generation = self._test_generation
 
         if self.halt:
             self.haltSignal.emit(True)
@@ -2332,36 +2366,40 @@ created by Ph2_ACF is empty."
 
         if "IVCurve" in self.currentTest:
             self.saveTest(processIndex, self.run_processes[processIndex])
-            # Check if retry was triggered during saveTest
-            if self._retrying:
-                logger.info("Retry initiated during IVCurve saveTest - aborting on_finish")
-                return
+            # IVCurveFinished handles the rest of the IV curve; it also checks
+            # whether saveTest reported a failure.
             return
 
         # Save the output ROOT file to output_dir
         logger.debug("About to run saveTest()")
         time.sleep(1)
         self.saveTest(processIndex, self.run_processes[processIndex])
-        
-        # Check if retry was triggered during saveTest
-        if self._retrying:
-            logger.info("Retry initiated during saveTest - aborting on_finish")
+
+        # saveTest may have reported a failure, which stops this run
+        if self.halt or generation != self._test_generation:
+            logger.info("Run was stopped during saveTest - aborting on_finish")
             return
 
         self.saveConfigs(process_index=processIndex)
         if self.currentTest in INJECTION_DELAY_SOURCE_TESTS:
             self._cache_injection_delay_cal_edges_from_output_dir(self.output_dir)
+
         # Don't continue on sequence until all processes have finished the current test
+        self.finished_processes += 1
+        expected_processes = (
+            self.active_process_count
+            if self.active_process_count > 0
+            else len(self.run_processes)
+        )
+        if not self.finished_processes == expected_processes:
+            return
+        self.finished_processes = 0
+
+        self._complete_current_test()
+
+    def _complete_current_test(self):
+        """Grade the current test and move on: the next OpenBumpTest subtest, or the next test."""
         if self._openBumpTest_running:
-            self.finished_processes += 1
-            expected_processes = (
-                self.active_process_count
-                if self.active_process_count > 0
-                else len(self.run_processes)
-            )
-            if not self.finished_processes == expected_processes:
-                return
-            self.finished_processes = 0
             self._openBumpTest_subtest_index += 1
             if self._openBumpTest_subtest_index < len(OpenBumpTest):
                 subtest = OpenBumpTest[self._openBumpTest_subtest_index]
@@ -2377,19 +2415,6 @@ created by Ph2_ACF is empty."
                 logger.info("All OpenBumpTest subtests finished. Validating...")
                 print(f"Current openbumptest subtest index = {self._openBumpTest_subtest_index}")
                 self._openBumpTest_running = False
-
-        # Ensure that all processes have finished before continuing
-        else:
-            self.finished_processes += 1
-            expected_processes = (
-                self.active_process_count
-                if self.active_process_count > 0
-                else len(self.run_processes)
-            )
-            if not self.finished_processes == expected_processes:
-                return
-
-            self.finished_processes = 0
 
         # validate the results
         logger.debug("About to run validateTest()")
@@ -2652,6 +2677,7 @@ created by Ph2_ACF is empty."
         # Get the current timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         logger.debug("Inside IVCurveFinished")
+        generation = self._test_generation
         for process in self.run_processes:
             logger.debug("Sending command to end monitoring")
             process.write(b"\n")
@@ -2659,6 +2685,12 @@ created by Ph2_ACF is empty."
             logger.debug("Command was sent.Waiting for process to finish.")
             process.waitForFinished(-1)
             logger.debug("Process finished")
+
+        # on_finish -> saveTest may have reported a failure while the monitoring
+        # processes were finishing; the failure dialog decides what happens next.
+        if self._handling_failure or generation != self._test_generation:
+            logger.info("IV Curve run was stopped by a failure - not advancing")
+            return
 
         # 3/17/25 : Once HV distributor box arrives, functionality needs to be added for running
         # IVCurve on multiple modules. Once that happens, the loop under this comment can be edited
@@ -2910,175 +2942,242 @@ created by Ph2_ACF is empty."
     def interactiveCheck(self, plot):
         pass
 
-    def forceContinue(
-        self, board
-    ):  # board:QtBeBoard. Runs when module disconnection is suspected.
-        # Set retrying flag immediately to prevent on_finish from running while dialog is shown
-        self._retrying = True
-        
-        fc7modules = board.getModules()
+    def _report_failure(self, processIndex, reason):
+        """A test failed on one FC7: stop every FC7 and ask the user what to do."""
+        board_name = self.firmware[processIndex].getBoardName()
+        logger.error(f"{self.currentTest} failed on {board_name}: {reason}")
 
-        # Create the main widget
-        self.force_continue_window = QDialog()
-        self.force_continue_window.setMaximumWidth(375)
-        self.force_continue_window.setWindowTitle(
-            f"{board.getBoardName()}: Failed Component Detected"
+        if self._handling_failure:
+            # Already stopping this run for an earlier failure; just add it to the dialog
+            self._failed_boards.setdefault(processIndex, reason)
+            return
+
+        self._handling_failure = True
+        self._failed_boards = {processIndex: reason}
+        self._test_generation += 1
+
+        for console in self.runwindow.ConsoleViews:
+            self.outputString.emit(
+                f"{self.currentTest} failed on {board_name} ({reason}). Stopping all FC7s.",
+                console,
+            )
+        self._stop_all_fc7s()
+
+        # Show the dialog from the event loop rather than from inside the
+        # output/finish handler that detected the failure
+        QTimer.singleShot(0, self._show_failure_dialog)
+
+    def _stop_all_fc7s(self):
+        """Kill every FC7 process (and a running IV curve) and give each FC7 a fresh QProcess."""
+        # IVCurveHandler is kept after the IV curve finishes, so only stop it
+        # (which ramps HV down) when the IV curve is the test that failed
+        if "IVCurve" in self.currentTest:
+            self._stop_iv_curve()
+
+        old_processes = self.run_processes
+        self.run_processes = []
+        for i, process in enumerate(old_processes):
+            # Disconnect signals before killing to prevent unwanted finished signal
+            try:
+                process.finished.disconnect()
+                process.readyReadStandardOutput.disconnect()
+            except Exception:
+                pass
+            if process.state() != QProcess.NotRunning:
+                process.kill()
+                process.waitForFinished(3000)
+
+            new_process = QProcess()
+            new_process.readyReadStandardOutput.connect(
+                lambda j=i: self.on_readyReadStandardOutput(j)
+            )
+            new_process.finished.connect(
+                lambda exitCode, exitStatus, j=i: self.finished_run_process(
+                    exitCode, exitStatus, j
+                )
+            )
+            self.run_processes.append(new_process)
+
+        # The stop can run inside a signal handler of one of the old processes,
+        # so keep them alive until the next stop instead of letting Python delete them now
+        self._retired_processes = old_processes
+        self.finished_processes = 0
+
+    def _show_failure_dialog(self):
+        """One dialog for all FC7s, showing which FC7 failed and which modules each FC7 has."""
+        if self.halt:
+            # The run was aborted before the dialog could be shown
+            self._handling_failure = False
+            self._failed_boards = {}
+            return
+
+        failed = dict(self._failed_boards)
+        test_name = self.currentTest
+
+        dialog = QDialog()
+        dialog.setWindowTitle(f"{test_name}: Failure Detected")
+        dialog.setMinimumWidth(450)
+        layout = QVBoxLayout(dialog)
+
+        failed_names = ", ".join(
+            self.firmware[i].getBoardName() for i in sorted(failed)
         )
+        summary = QLabel(
+            f"<b>{test_name}</b> failed on <b>{failed_names}</b>.<br>"
+            "All FC7s have been stopped."
+        )
+        summary.setWordWrap(True)
+        layout.addWidget(summary)
 
-        # Create layout
-        self.force_continue_window.layout = QVBoxLayout(self.force_continue_window)
+        # FC7s are top-level rows with their modules underneath; failed FC7s are highlighted
+        tree = QTreeWidget()
+        tree.setColumnCount(2)
+        tree.setHeaderLabels(["FC7 / Module", "Status"])
+        bold = QFont()
+        bold.setBold(True)
+        failed_background = QBrush(QColor("#f8d7da"))
+        failed_text = QBrush(QColor("#842029"))
 
-        # Add custom buttons
+        board_module_items = []  # [(board, [(module, item), ...]), ...]
+        for i, board in enumerate(self.firmware):
+            status = f"FAILED: {failed[i]}" if i in failed else "Stopped (no error)"
+            board_item = QTreeWidgetItem(tree, [f"FC7: {board.getBoardName()}", status])
+            board_item.setFlags(
+                board_item.flags() | Qt.ItemIsUserCheckable | Qt.ItemIsAutoTristate
+            )
+            board_item.setCheckState(0, Qt.Checked)
+            for column in range(2):
+                board_item.setFont(column, bold)
+                if i in failed:
+                    board_item.setBackground(column, failed_background)
+                    board_item.setForeground(column, failed_text)
+
+            module_items = []
+            for module in board.getModules():
+                module_item = QTreeWidgetItem(
+                    board_item,
+                    [module.getModuleName(), f"FMC port {module.getFMCPort()}"],
+                )
+                module_item.setFlags(module_item.flags() | Qt.ItemIsUserCheckable)
+                module_item.setCheckState(
+                    0, Qt.Checked if self._module_is_enabled(module) else Qt.Unchecked
+                )
+                module_items.append((module, module_item))
+            board_module_items.append((board, module_items))
+
+        tree.expandAll()
+        tree.resizeColumnToContents(0)
+        # Tall enough to show every FC7 and module without scrolling (up to a limit)
+        row_count = sum(1 + len(module_items) for _, module_items in board_module_items)
+        tree.setMinimumHeight(
+            min(
+                500,
+                tree.header().sizeHint().height()
+                + row_count * tree.sizeHintForRow(0)
+                + 2 * tree.frameWidth(),
+            )
+        )
+        layout.addWidget(tree)
+
+        help_text = QLabel(
+            "Uncheck any modules to leave out, then choose:<br>"
+            f"<b>Retry</b>: run {test_name} again on all FC7s.<br>"
+            f"<b>Continue</b>: keep the {test_name} results as they are and move on.<br>"
+            "<b>Exit</b>: stop the test sequence."
+        )
+        help_text.setWordWrap(True)
+        layout.addWidget(help_text)
+
+        error_label = QLabel()
+        error_label.setStyleSheet("color: red;")
+        error_label.setWordWrap(True)
+        error_label.hide()
+        layout.addWidget(error_label)
+
+        button_row = QHBoxLayout()
         exit_button = QPushButton("Exit")
         retry_button = QPushButton("Retry")
         continue_button = QPushButton("Continue")
+        for button in (exit_button, retry_button, continue_button):
+            button.setAutoDefault(False)
+            button_row.addWidget(button)
+        layout.addLayout(button_row)
 
-        self.force_continue_window.layout.addWidget(exit_button)
-        self.force_continue_window.layout.addWidget(retry_button)
-        self.force_continue_window.layout.addWidget(continue_button)
+        def apply_module_selection():
+            # Every FC7 still runs a process, so each one needs an enabled module
+            empty = [
+                board.getBoardName()
+                for board, module_items in board_module_items
+                if not any(item.checkState(0) == Qt.Checked for _, item in module_items)
+            ]
+            if empty:
+                error_label.setText(
+                    "Each FC7 needs at least one enabled module: " + ", ".join(empty)
+                )
+                error_label.show()
+                return False
+            for _, module_items in board_module_items:
+                for module, item in module_items:
+                    module.setEnabled("1" if item.checkState(0) == Qt.Checked else "0")
+            return True
 
-        # Create table for modules with checkboxes
-        self.force_continue_window.table = QTableWidget(len(fc7modules), 2)
-        self.force_continue_window.table.setHorizontalHeaderLabels(
-            ["Module", "Enabled"]
-        )
+        dialog.choice = "exit"  # Closing the window counts as Exit
 
-        for row, module in enumerate(fc7modules):
-            # Set the module name in the first column
-            module_name = module.getModuleName()
-            self.force_continue_window.table.setItem(
-                row, 0, QTableWidgetItem(module_name)
+        def choose(choice):
+            if choice != "exit" and not apply_module_selection():
+                return
+            dialog.choice = choice
+            dialog.accept()
+
+        exit_button.clicked.connect(lambda: choose("exit"))
+        retry_button.clicked.connect(lambda: choose("retry"))
+        continue_button.clicked.connect(lambda: choose("continue"))
+
+        dialog.exec_()  # Blocks until the user chooses
+
+        for _, module_items in board_module_items:
+            for module, item in module_items:
+                self.statuses[module.getModuleName()] = (
+                    "1" if item.checkState(0) == Qt.Checked else "0"
+                )
+
+        self._handling_failure = False
+        self._failed_boards = {}
+
+        if dialog.choice == "retry":
+            self._retry_current_test()
+        elif dialog.choice == "continue":
+            self._continue_after_failure()
+        else:
+            self.halt = True
+            self.haltSignal.emit(self.halt)
+            self.starttime = None
+
+    def _retry_current_test(self):
+        for console in self.runwindow.ConsoleViews:
+            self.outputString.emit(f"Retrying {self.currentTest}...", console)
+        for i in range(len(self.firmware)):
+            self.runwindow.ResultWidget.runtimes[i][
+                self.testIndexTracker
+            ].setText("")  # may need to .update()
+            self.runwindow.ResultWidget.ProgressBars[i][
+                self.testIndexTracker
+            ].setValue(
+                0
+            )  # may need to .update(). Automatically adds "0%" text on Progress bar.
+        # Don't change testIndexTracker - we're retrying at the same position
+        self.runTest()
+
+    def _continue_after_failure(self):
+        for console in self.runwindow.ConsoleViews:
+            self.outputString.emit(
+                f"Continuing after {self.currentTest} failure...", console
             )
-
-            # Create a QTableWidgetItem for the checkbox in the second column
-            checkbox_item = QTableWidgetItem()
-            checkbox_item.setCheckState(
-                Qt.Checked
-            ) if module.getEnabled() == "1" else checkbox_item.setCheckState(
-                Qt.Unchecked
-            )
-            self.force_continue_window.table.setItem(row, 1, checkbox_item)
-
-        self.force_continue_window.layout.addWidget(self.force_continue_window.table)
-        self.force_continue_window.setLayout(self.force_continue_window.layout)
-
-        self.force_continue_window.abort = True
-
-        def check_enabledModules():  # Not sure if this is maximally efficient
-            for row in range(len(fc7modules)):
-                if (
-                    self.force_continue_window.table.item(row, 1).checkState()
-                    == Qt.Checked
-                ):
-                    for i, module in enumerate(fc7modules):
-                        if (
-                            self.force_continue_window.table.item(i, 1).checkState()
-                            == Qt.Checked
-                        ):
-                            module.setEnabled("1")
-                        else:
-                            module.setEnabled("0")
-
-                    self.force_continue_window.abort = False
-                    return True
-
-            if not hasattr(self.force_continue_window, "label"):
-                self.force_continue_window.label = QLabel(
-                    "At least one module must be enabled."
-                )
-                self.force_continue_window.label.setStyleSheet("color: red;")
-                self.force_continue_window.layout.insertWidget(
-                    3, self.force_continue_window.label
-                )
-            return False
-
-        # Define button handlers
-        def handle_close(event):
-            if self.force_continue_window.abort:
-                for process in self.run_processes:
-                    # Disconnect signals before killing to prevent unwanted finished signal
-                    try:
-                        process.finished.disconnect()
-                        process.readyReadStandardOutput.disconnect()
-                    except Exception:
-                        pass
-                    process.kill()
-                self.halt = True
-                self.haltSignal.emit(self.halt)
-                self.starttime = None
-
-            for row in range(self.force_continue_window.table.rowCount()):
-                module_name = self.force_continue_window.table.item(row, 0).text()
-                enabled = (
-                    self.force_continue_window.table.item(row, 1).checkState()
-                    == Qt.Checked
-                )
-                self.statuses[module_name] = "1" if enabled else "0"
-
-            event.accept()
-
-        def handle_retry():
-            if check_enabledModules():
-                # Set retrying flag to prevent on_finish from executing
-                self._retrying = True
-                
-                for i, process in enumerate(self.run_processes):
-                    # Disconnect signals then kill processes
-                    try:
-                        process.finished.disconnect()
-                        process.readyReadStandardOutput.disconnect()
-                        logger.info(f"Disconnected signals from old process {i}")
-                    except Exception as e:
-                        logger.debug(f"Could not disconnect signals from process {i}: {e}")
-                    
-                    if process.state() == QProcess.Running:
-                        process.kill()
-                        process.waitForFinished(-1)
-                    
-                    # Create new QProcess objects
-                    self.run_processes[i] = QProcess()
-                    self.run_processes[i].readyReadStandardOutput.connect(
-                        lambda j=i: self.on_readyReadStandardOutput(j)
-                    )
-                    self.run_processes[i].finished.connect(
-                        lambda exitCode, exitStatus, j=i: self.finished_run_process(
-                            exitCode, exitStatus, j
-                        )
-                    )
-                
-                # Reset finished_processes counter
-                self.finished_processes = 0
-                
-                for console in self.runwindow.ConsoleViews:
-                    self.outputString.emit(f"Retrying {self.currentTest}...",console)
-                for i in range(len(self.firmware)):
-                    self.runwindow.ResultWidget.runtimes[i][
-                        self.testIndexTracker
-                    ].setText("")  # may need to .update()
-                    self.runwindow.ResultWidget.ProgressBars[i][
-                        self.testIndexTracker
-                    ].setValue(
-                        0
-                    )  # may need to .update(). Automatically adds "0%" text on Progress bar.
-                # Don't decrement testIndexTracker - we're retrying at the same position
-                self.force_continue_window.close()
-                
-                # Restart the test - _retrying will be cleared when the retry completes
-                self.runTest()
-
-        def handle_continue():
-            if check_enabledModules():
-                # Clear retrying flag to allow normal on_finish execution
-                self._retrying = False
-                self.force_continue_window.close()
-
-        # Connect buttons to handlers
-        exit_button.clicked.connect(lambda: self.force_continue_window.close())
-        retry_button.clicked.connect(handle_retry)
-        continue_button.clicked.connect(handle_continue)
-
-        self.force_continue_window.closeEvent = handle_close
-        self.force_continue_window.exec_()  # This will block until the window is closed
+        # Save whatever output the stopped processes left behind, without
+        # reporting another failure if some of it is missing
+        for i, process in enumerate(self.run_processes):
+            self.saveTest(i, process, report_failure=False)
+        self._complete_current_test()
 
     def upload_to_Panthera(self):
         self.updateProgressBar.emit(

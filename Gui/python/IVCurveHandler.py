@@ -46,8 +46,9 @@ class IVCurveThread(QThread):
         self.stepLength = 5
         self.stepNum = 0
         self.stepTotal = (self.stopVal - self.startVal) / self.stepLength + 1
-        self.turnOn()
 
+    # Called at the start of run() so the ramp down to 0 V and the IV ramp up
+    # happen sequentially on this thread instead of racing on the GUI thread.
     def turnOn(self):
         starting_voltages = [
             np.abs(getattr(module["hv"], "voltage"))
@@ -90,6 +91,11 @@ class IVCurveThread(QThread):
 
     def run(self):
         try:
+            self.turnOn()
+            if self.exiting:
+                logger.info("IV Curve scan was aborted before ramping.")
+                return
+
             logger.info(f"Starting IV Curve scan from {self.startVal} to {self.stopVal}")
             #print("Starting IV Curve scan from", self.startVal, "to", self.stopVal)
             #self.instruments.hv_on(voltage=0,
@@ -203,7 +209,21 @@ class IVCurveHandler(QObject):
 
     def stop(self):
         try:
+            # Prevent finish() from ramping HV to the default voltage after the abort
+            try:
+                self.test.measureSignal.disconnect()
+            except TypeError:
+                pass
+
+            # Let ramp_hv exit via break_loop, and wait for the thread so nothing
+            # else is driving the HV while we ramp it down. The timeout is generous
+            # because the thread may still be in turnOn()'s ramp down to 0 V.
             self.test.abortTest()
+            if not self.test.wait(120000):
+                logger.warning("IV Curve thread did not exit in time, terminating it.")
+                self.test.terminate()
+                self.test.wait()
+
             starting_voltages = [
                 np.abs(getattr(module["hv"], "voltage"))
                 for module in self.instruments._module_dict.values()
@@ -212,7 +232,6 @@ class IVCurveHandler(QObject):
                 no_lock=True,
                 execute_each_step=lambda: self.execute_each_step(starting_voltages),
             )
-            self.test.terminate()
         except Exception as err:
             print(f"Failed to stop the IV test due to error: {err}")
             print(traceback.format_exc())
