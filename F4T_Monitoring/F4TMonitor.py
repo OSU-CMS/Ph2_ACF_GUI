@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 import matplotlib, threading, time, csv, yagmail, os
 from datetime import datetime
 
+from Gui.python.logging_config import get_logger
+logger = get_logger(__name__)
+
 load_dotenv()  # Load environment variables from .env file; required for App password
 
 class F4TMonitor():
@@ -23,7 +26,7 @@ class F4TMonitor():
         if raw_base:
             base_dir = os.path.join(raw_base, "F4T_Monitoring")
         else:
-            print("PH2ACF_BASE_DIR is not set → Using current directory")
+            logger.warning("PH2ACF_BASE_DIR is not set → Using current directory")
             # FIX: Fallback to current working directory so base_dir always exists
             base_dir = os.getcwd()
 
@@ -33,8 +36,8 @@ class F4TMonitor():
         os.makedirs(self.imagesPath, exist_ok=True)
 
         os.makedirs(self.logsPath, exist_ok=True)
-        print("Base Dir:", base_dir)
-        print("Images Path:", self.imagesPath)
+        logger.info("Base Dir: {}".format(base_dir))
+        logger.info("Images Path: {}".format(self.imagesPath))
 
         self.tempDangerLow = 0  #Originally -45, but changed to 0 for testing purposes
         self.tempDangerHigh = 27  #Originally 45, but changed to 27 for testing purposes 
@@ -86,7 +89,7 @@ class F4TMonitor():
     def emailAlerts(self, subject):
         try:
             if time.time() - self.lastEmailTime < self.timeBetweenEmails:
-                print(f"Email skipped: Only {int(time.time() - self.lastEmailTime)}s passed.")
+                logger.info(f"Email skipped: Only {int(time.time() - self.lastEmailTime)}s passed.")
                 return 
 
             temp_img = os.path.join(self.imagesPath, 'temp.png')
@@ -105,18 +108,18 @@ class F4TMonitor():
                 email_contents.insert(0, yagmail.inline(temp_img))
                 email_contents.insert(1, yagmail.inline(hum_img))
             else:
-                print("Warning: Graphs not found. Sending text-only alert.")
+                logger.warning("Warning: Graphs not found. Sending text-only alert.")
 
             yag = yagmail.SMTP(self.alertSender, password=self.appPassword)
             for receiver in self.alertRecipients:
-                print(f"Sending to {receiver}...")
+                logger.info(f"Sending to {receiver}...")
                 yag.send(to=receiver, subject=subject, contents=email_contents)
 
             self.lastEmailTime = time.time()
-            print("Email sent successfully.")
+            logger.info("Email sent successfully.")
 
         except Exception as e:
-            print(f"CRITICAL EMAIL ERROR: {e}")
+            logger.critical(f"CRITICAL EMAIL ERROR: {e}")
 
     def updateData(self):
         while True:
@@ -132,7 +135,7 @@ class F4TMonitor():
                     self.datalogs = []
                     data = data[1:]
                     
-                    print("Reset signal received: Clearing plots for new session") 
+                    logger.info("Reset signal received: Clearing plots for new session") 
 
                     plt.figure(self.tempFig.number)
                     plt.clf()
@@ -160,7 +163,7 @@ class F4TMonitor():
                     string = "Arduino connection timed out."
                 else:
                     string = str(e)
-                print(e)
+                logger.error(e)
                 
             self.tailData.insert(0, string)
             if len(self.tailData) > 6: 
@@ -220,7 +223,7 @@ class F4TMonitor():
                         plt.savefig(os.path.join(self.imagesPath, 'humidity.png'))
                 
                 except Exception as e:
-                    print(f"CRITICAL PLOTTING/SAVING ERROR: {e}")
+                    logger.critical(f"CRITICAL PLOTTING/SAVING ERROR: {e}")
 
                 # Email Logic
                 if float(self.datalogs[-1][1]) > self.tempDangerHigh and float(self.datalogs[-1][2]) > self.humidityDangerHigh:

@@ -84,7 +84,7 @@ class LaudaWidget(QWidget):
         try:
             self.myLauda.set("TEMPERATURE_TARGET", float(self.setTempEdit.text()))
         except ValueError:
-            print("Temperature target must be a float.")
+            logger.error("Temperature target must be a float.")
             logger.error(traceback.format_exc())
 
 

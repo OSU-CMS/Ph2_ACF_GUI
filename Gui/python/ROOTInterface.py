@@ -51,7 +51,7 @@ def GetDirectory(inputFile):
     try:
         openFile = ROOT.TFile.Open(inputFile, "READ")
     except IOError:
-        print("File: {0} not opened".format(inputFile))
+        logger.error("File: {0} not opened".format(inputFile))
 
     ListOfRoots = openFile.GetListOfKeys()
 
@@ -69,7 +69,7 @@ def GetDirectory(inputFile):
 
 def DirectoryVLR(node, depth):
     nodeName = "-" * depth + node.getKeyName()
-    print(nodeName + ";" + node.getClassName())
+    logger.info(nodeName + ";" + node.getClassName())
     if node.getClassName() == "TCanvas":
         obj = node.getObject()
         obj.SetBatch(ROOT.kTRUE)
