@@ -37,6 +37,7 @@ class ResultTreeWidget(QWidget):
         self.DisplayW = width
         self.DisplayH = height
         self.FileList = []
+        self.ADCFileList = []
         self.IVFileList = []
         self.SLDOFileList = []
         self.info = info
@@ -297,6 +298,35 @@ class ResultTreeWidget(QWidget):
             CurrentNode.setData(0, Qt.UserRole, File)
             self.TreeRoot.addChild(CurrentNode)
         # print("IV files processed.")  # Debugging output to indicate IV files processing is done
+
+
+    def updateADCResult(self, sourceFolder):
+        process2 = subprocess.run(
+            'find {0} -type f -name "*.svg" '.format(sourceFolder),
+            shell=True,
+            stdout=subprocess.PIPE,
+        )
+        stepFiles2 = process2.stdout.decode("utf-8").rstrip("\n").split("\n")
+
+        if stepFiles2 == [""]:
+            print("No ADC files found.")  # Debugging output if no ADC files are found
+            return
+
+        print(
+            "ADC files found:", stepFiles2
+        )  # Debugging output to show the found ADC files
+
+        self.ADCFileList += stepFiles2
+
+        for File in set(self.ADCFileList):
+            CurrentNode = QTreeWidgetItem()
+            CurrentNode.setText(0, File.split("/")[-1])
+            CurrentNode.setData(0, Qt.UserRole, File)
+            self.TreeRoot.addChild(CurrentNode)
+        print(
+            "ADC files processed."
+        )  # Debugging output to indicate ADC files processing is done
+
 
     def updateSLDOResult(self, sourceFolder):
         process2 = subprocess.run(
