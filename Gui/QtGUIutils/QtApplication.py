@@ -47,6 +47,7 @@ from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
 from Gui.python.SimplifiedMainWidget import SimplifiedMainWidget
+from Gui.python.CustomizedWidget import module_registry_client
 from Gui.python.thermal_chamber import F4TTemperatureChamber
 
 from icicle.icicle.instrument_cluster import InstrumentCluster
@@ -298,6 +299,10 @@ class QtApplication(QWidget):
             self.disableCheckBox.toggled.connect(self.HostName.setDisabled)
             self.disableCheckBox.toggled.connect(self.DatabaseCombo.setDisabled)
 
+        self.forcePurdueCheckBox = QCheckBox("Use Purdue database only (skip CMS registry JSON)")
+        self.forcePurdueCheckBox.setMaximumHeight(30)
+        self.forcePurdueCheckBox.setChecked(module_registry_client.force_purdue)
+
         button_login = QPushButton("&Login")
         button_login.setDefault(True)
         button_login.clicked.connect(self.checkLogin)
@@ -309,6 +314,7 @@ class QtApplication(QWidget):
         layout.addWidget(self.UsernameEdit, 1, 2, 1, 2)
         layout.addWidget(PasswordLabel, 2, 1, 1, 1, Qt.AlignRight)
         layout.addWidget(self.PasswordEdit, 2, 2, 1, 2)
+        layout.addWidget(self.forcePurdueCheckBox, 3, 2, 1, 2)
 
         layout.addWidget(button_login, 6, 1, 1, 3)
         layout.setRowMinimumHeight(6, 50)
@@ -362,6 +368,7 @@ class QtApplication(QWidget):
         self.LoginGroupBox.deleteLater()
 
     def checkLogin(self):
+        module_registry_client.set_force_purdue(self.forcePurdueCheckBox.isChecked())
         expert_string = "_*"
         if self.UsernameEdit.text() not in ["local", "localexpert"]:
             print("Connecting to Panthera...")
@@ -431,15 +438,18 @@ class QtApplication(QWidget):
     def checkDatabaseConnection(self):
         status = False
         message = ""
-        try:
-            response = requests.get("https://cms-it-modules-registry.web.cern.ch/", timeout=5)
-            status = response.status_code == 200
-            if status:
-                return True
-            message = f"CMS server responded with status code {response.status_code}"
-        except requests.RequestException as e:
-            logger.warning(f"CMS database connection failed: {e}")
-            message = f"CMS error: {e}"
+        if module_registry_client.force_purdue:
+            message = "CMS database skipped (Purdue database forced)"
+        else:
+            try:
+                response = requests.get("https://cms-it-modules-registry.web.cern.ch/", timeout=5)
+                status = response.status_code == 200
+                if status:
+                    return True
+                message = f"CMS server responded with status code {response.status_code}"
+            except requests.RequestException as e:
+                logger.warning(f"CMS database connection failed: {e}")
+                message = f"CMS error: {e}"
 
         try:
             response = requests.get(
@@ -448,7 +458,8 @@ class QtApplication(QWidget):
             )
             status = response.status_code == 200
             if status:
-                logger.warning("Using Purdue database fallback; CMS database unreachable")
+                if not module_registry_client.force_purdue:
+                    logger.warning("Using Purdue database fallback; CMS database unreachable")
                 return True
             message = f"{message}; Purdue server responded with status code {response.status_code}"
         except requests.RequestException as e:
