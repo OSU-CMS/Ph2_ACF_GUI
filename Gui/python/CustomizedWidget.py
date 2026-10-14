@@ -88,6 +88,18 @@ class ModuleRegistryDataClient:
         self._module_json_cache = {}
         self._module_identity_cache = {}
         self._purdue_cache = {}
+        # When True, skip the CMS module registry JSON and use only the Purdue database
+        self.force_purdue = False
+
+    def set_force_purdue(self, force):
+        force = bool(force)
+        if force != self.force_purdue:
+            # Drop lookups made under the other mode so they are not reused
+            with self._cache_lock:
+                self._module_identity_cache.clear()
+            chip_data_cache.clear()
+        self.force_purdue = force
+        logger.info(f"Force Purdue database lookups: {self.force_purdue}")
 
     def _normalize_module_name(self, moduleName):
         return moduleName.strip().upper() if moduleName else ""
@@ -134,6 +146,10 @@ class ModuleRegistryDataClient:
     def find_module_identity(self, moduleName):
         moduleName_clean = self._normalize_module_name(moduleName)
         if not moduleName_clean:
+            return None, None
+
+        if self.force_purdue:
+            logger.debug(f"Skipping CMS module registry for {moduleName_clean}; Purdue database forced")
             return None, None
 
         cached = self._cache_get(self._module_identity_cache, moduleName_clean)
@@ -212,7 +228,8 @@ class ModuleRegistryDataClient:
                     f"Could not fetch module JSON for {name_label} from CMS: {e}. Trying Purdue..."
                 )
 
-        logger.warning(f"Module {moduleName} not found in CMS database. Trying Purdue...")
+        if not self.force_purdue:
+            logger.warning(f"Module {moduleName} not found in CMS database. Trying Purdue...")
         try:
             response = self.get_purdue_response(moduleName)
         except Exception as e:
