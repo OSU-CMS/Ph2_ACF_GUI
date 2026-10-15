@@ -115,6 +115,12 @@ ModuleLaneMap_Dict = {}
 ModuleLaneMap_Dict["HDIv1"] = copy.deepcopy(ModuleLaneMap)
 ModuleLaneMap_Dict["HDIv2"] = copy.deepcopy(ModuleLaneMap)
 
+RotatedModuleLaneMap = {
+    "TFPX CROC Quad": {"3": "12", "0": "13", "1": "14", "2": "15"},
+    "TEPX CROC Quad": {"0": "15", "1": "14", "2": "13", "3": "12"},
+    "TBPX CROC Quad": {"0": "0", "1": "1", "2": "2", "3": "3"},
+}
+
 ModuleLaneMap_Dict["HDIv2"]["TFPX CROC 1x2"] = {"3": "12", "1": "13"}
 
 
