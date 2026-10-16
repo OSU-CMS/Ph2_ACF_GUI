@@ -222,7 +222,11 @@ class ModuleRegistryDataClient:
                 mv = _normalize_hdi_version(moduleversion, default="1")
                 moduletype = _module_type_to_display(moduleType)
                 logger.info(f"Module type from CMS database: {moduletype}, HDI version: {mv}")
-                return {"type": moduletype, "HDIversion": f"{mv}"}
+                return {
+                    "type": moduletype,
+                    "HDIversion": f"{mv}",
+                    "isRotated": _parse_is_rotated(data.get("IS_ROTATED")),
+                }
             except Exception as e:
                 logger.warning(
                     f"Could not fetch module JSON for {name_label} from CMS: {e}. Trying Purdue..."
@@ -255,7 +259,7 @@ class ModuleRegistryDataClient:
 
                 mv = _normalize_hdi_version(moduleversion, default=moduleversion)
                 logger.info(f"Module type from Purdue database: {moduletype}, HDI version: {mv}")
-                return {"type": moduletype, "HDIversion": f"{mv}"}
+                return {"type": moduletype, "HDIversion": f"{mv}", "isRotated": None}
 
         return None
 
@@ -284,6 +288,9 @@ def _normalize_hdi_version(version, default="1"):
     except Exception:
         return default
 
+
+def _parse_is_rotated(value: str) -> bool:
+    return value == "T"
 
 def _module_type_to_display(moduleType):
     if moduleType == "dual":
@@ -1402,6 +1409,19 @@ class BeBoardBox(QWidget):
                         f"Error while adding Optical Group to BeBoard: {repr(e)}",
                     )
 
+            is_rotated = False
+            if "CROC" in module.getType() and "Quad" in module.getType():
+                module_metadata = self.fetchModuleTypeDB(module.getSerialNumber())
+                if (
+                    module_metadata is None
+                    or module_metadata.get("isRotated") is None
+                ):
+                    return (
+                        None,
+                        f"Could not determine rotation status for {module.getSerialNumber()}.",
+                    )
+                is_rotated = module_metadata["isRotated"]
+
             # Create a QtModule object based on the input data
             Module = QtModule(
                 moduleName=module.getSerialNumber(),
@@ -1409,6 +1429,7 @@ class BeBoardBox(QWidget):
                 moduleVersion=module.getVersion(),
                 hdiVersion=module.getHDIVersion(),
                 FMCPort=module.getFMCPort(),
+                isRotated=is_rotated,
             )
             Module.setOpticalGroup(
                 OpticalGroup
@@ -1934,6 +1955,7 @@ class SimpleBeBoardBox(QWidget):
                 moduleVersion=module.getVersion(module.getSerialNumber()),
                 hdiVersion=module_db_data["HDIversion"],
                 FMCPort=cable_properties["FMCPort"],
+                isRotated=module_db_data["isRotated"],
             )
             Module.setOpticalGroup(
                 OpticalGroup
@@ -2030,4 +2052,3 @@ class SimpleBeBoardBox(QWidget):
     def on_ModuleFilled(self):
         self.FilledModuleList.append(self.ModuleList[-1])
         self.addModule()
-

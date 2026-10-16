@@ -1,6 +1,7 @@
 from Gui.GUIutils.settings import (
     ModuleLaneMap,
     ModuleLaneMap_Dict,
+    RotatedModuleLaneMap,
 )
 
 
@@ -215,6 +216,7 @@ class QtModule:
         FMCPort="",
         enabled="1",
         Fc7=None,
+        isRotated=False,
     ):
         self.__moduleName = moduleName
         self.__moduleType = moduleType
@@ -224,6 +226,7 @@ class QtModule:
         self.__chipDict = {}  # {ChipID : QtChip()}, deviates from pattern to make usage easier, laneID is not commonly used
         self.__enabled = enabled
         self.__Fc7 = Fc7
+        self.__isRotated = isRotated
 
         if self.__moduleType != "":
             # if module type was specified, initialize chips to default
@@ -257,6 +260,9 @@ class QtModule:
     def getHDIVersion(self):
         return self.__hdiVersion.split(".")[0]
 
+    def isRotated(self):
+        return self.__isRotated
+
     def setHDIVersion(self, hdiVersion: str):
         self.__hdiVersion = hdiVersion.split(".")[0]
         
@@ -269,7 +275,30 @@ class QtModule:
     def __setupChips(self):
         self.__chipDict.clear()
 
-        for LaneID, ChipID in ModuleLaneMap_Dict["HDIv{0}".format(self.__hdiVersion.split(".")[0])][self.__moduleType].items():
+        hdi_key = "HDIv{0}".format(self.__hdiVersion.split(".")[0])
+        if self.__isRotated is True and self.__moduleType in RotatedModuleLaneMap:
+            rotated_lane_map = RotatedModuleLaneMap[self.__moduleType]
+            lane_map = rotated_lane_map
+            print()
+            print(
+                f"\033[92mrotatedModuleLaneMap used {rotated_lane_map}\033[0m"
+            )
+            print()
+        else:
+            lane_map = ModuleLaneMap_Dict[hdi_key][self.__moduleType]
+
+        if self.__moduleType in RotatedModuleLaneMap:
+            standard_lane_map = ModuleLaneMap_Dict[hdi_key][self.__moduleType]
+            if (
+                set(lane_map) != set(standard_lane_map)
+                or set(lane_map.values()) != set(standard_lane_map.values())
+            ):
+                raise ValueError(
+                    f"Lane mapping for {self.__moduleType} must map every existing "
+                    "lane to exactly one existing chip ID."
+                )
+
+        for LaneID, ChipID in lane_map.items():
             FEChip = QtChip(
                 chipID=ChipID, chipLane=LaneID, chipVDDA=8, chipVDDD=8, chipStatus=True
             )
