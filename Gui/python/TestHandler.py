@@ -69,7 +69,7 @@ import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map, OpenBumpTest
-from Gui.siteSettings import icicle_instrument_setup, UI_testing
+from Gui.siteSettings import icicle_instrument_setup, UI_testing, WorkingChannels
 from InnerTrackerTests.QCSettings import CAL_EDGE_ADDEND
 
 
@@ -1298,6 +1298,34 @@ class TestHandler(QObject):
         w = getattr(self.master, 'tessie_widget', None)
         return w
 
+    def _get_tec_module_map(self, n_tecs: int = 8):
+        """Map each TEC channel (1-based, as a string key) to the module ID in that slot.
+
+        Modules are paired with instrument cluster entries in the order they were
+        entered in the GUI (the same pairing used to trim the cluster in
+        QtStartWindow._get_used_channels). The TEC number is taken from each entry's
+        'cb' channel; if the cluster has no coldbox channel, fall back to the order
+        of WorkingChannels in siteConfig. Unoccupied TECs map to None.
+        """
+        tec_map = {str(ch): None for ch in range(1, n_tecs + 1)}
+        try:
+            module_dict = getattr(self.instruments, '_module_dict', {}) or {}
+            cluster_keys = sorted(module_dict.keys(), key=lambda k: int(k))
+        except Exception:
+            module_dict, cluster_keys = {}, []
+
+        for i, module in enumerate(self.modules):
+            tec = None
+            if i < len(cluster_keys):
+                cb_channel = getattr(module_dict[cluster_keys[i]].get("cb"), "channel", None)
+                if isinstance(cb_channel, int):
+                    tec = cb_channel
+            if tec is None and i < len(WorkingChannels):
+                tec = WorkingChannels[i]
+            if tec is not None:
+                tec_map[str(tec)] = module.getModuleName()
+        return tec_map
+
     def _log_tessie_from_widget(self, phase: str = "start"):
         """Fetch cached Tessie readings from the TessieCoolingApp widget and persist them.
         Uses widget cache only, no direct instrument queries.
@@ -1384,6 +1412,12 @@ class TestHandler(QObject):
                     "phase": "start" if str(phase).lower().startswith("s") else "end",
                     "temperature_setpoints": setpoints,
                 }
+                try:
+                    n_tecs = len(temps) if isinstance(temps, list) and temps else 8
+                    payload["tec_module_map"] = self._get_tec_module_map(n_tecs)
+                except Exception:
+                    logger.warning("Could not build TEC-to-module map for Tessie snapshot")
+                    payload["tec_module_map"] = None
 
                 board_dirs = [
                     os.path.join(self.output_dir, firmware.getBoardName())
