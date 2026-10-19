@@ -1,185 +1,228 @@
 // Libraries
-#include <Ethernet.h>
-#include <EthernetUdp.h>
+#include <Ethernet_Generic.h>
 #include <ArduinoModbus.h>
 #include <DHT22.h>
-//#include <SdFat.h>
+#include <SdFat.h>
 #include <SPI.h>
 
 // Definitions and variable assignments
-#define pinData SDA
-//#define SD_CS_PIN 4
+#define pinData SDA           // Pin 20 on the Mega 2560
+#define SD_CS_PIN 4
+#define W5100_CS 10           // Explicitly define Ethernet CS pin
 
 DHT22 dht22(pinData);
 
-//SdFat SD;
-//File file;
+SdFat SD;
+File file;
 
 EthernetClient ethClient;
-
 ModbusTCPClient modbusClient(ethClient);
 
 // Ethernet shield MAC address
-byte mac[] = { 0xA8, 0x61, 0x0A, 0xAE, 0xA7, 0xF8 };
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 
-//----------------------------Data Transmission------------------------------------
-char packetBuffer[UDP_TX_PACKET_MAX_SIZE];  //array to store received data
-String receivedData;                        //string to store received data
-int packetSize;                             //variable to store received packet size
-EthernetUDP UDP;                            //UDP object
-//----------------------------------------------------------------------------------
+// Data Transmission
+unsigned int localPort = 8081;                        // Local port to listen on
+unsigned int remotePort = 3000;                       // Port on the receiving PC/Device
+char packetBuffer[ETHERNET_UDP_TX_PACKET_MAX_SIZE];   //array to store recieved data
+String receivedData;                                  //string to store received data
+int packetSize;                                       //variable to store received packet size
+EthernetUDP UDP;                                      //UDP object
+
+IPAddress remoteIP(128,146,32,122);
 
 // Thermal Chamber IP
-IPAddress chamberIP(128, 146, 33, 179);
-
-// Port number for Modbus communication (502 is standard)
+IPAddress chamberIP(128, 146, 32, 200);
 const int chamberPort = 502;
+
+// Timing Variables for Non-Blocking Loop
+unsigned long previousSensorMillis = 0;
+const long sensorInterval = 5000; // Check sensor every 5 seconds
+
+// State Variables
+bool SafetyEnabled = false;
+bool DangerZone = false;
 
 bool startup = true;
 
 void setup() {
+  Serial.begin(115200);
+  while (!Serial);
 
-  // Open serial communications
-  Serial.begin(9600);
+  Serial.println("--- Initializing System ---");
+
+  // Force Mega to stay in SPI Master mode
+  pinMode(53, OUTPUT); 
+  digitalWrite(53, HIGH);
   
-  // Open Ethernet connection
-  int EthernetStatus = Ethernet.begin(mac);
-  if (EthernetStatus == 0) {
-    Serial.println("Failed to configure Ethernet using DHCP.");
-    // Optionally assign a static IP here
+  // Disable Ethernet and SD Card initially to prevent SPI collisions
+  pinMode(W5100_CS, OUTPUT); 
+  digitalWrite(W5100_CS, HIGH); 
+  pinMode(SD_CS_PIN, OUTPUT);  
+  digitalWrite(SD_CS_PIN, HIGH);
+
+  // Initialize Ethernet using DHCP
+  Ethernet.init(W5100_CS);
+  Serial.println("Requesting IP address via DHCP...");
+  if (Ethernet.begin(mac) == 0) {
+    Serial.println("Error: Failed to configure Ethernet using DHCP");
+    // Halt if no network
+    while(true) { delay(1); } 
+  } else {
+    Serial.print("Ethernet connected. IP: ");
+    Serial.println(Ethernet.localIP());
+    // Start UDP
+    UDP.begin(localPort);
+    Serial.println("UDP started.");
   }
-  else if (EthernetStatus == 1){
-    Serial.println("Configured Ethernet using DHCP.");
+
+  // Initialize SD Card
+  if (!SD.begin(SD_CS_PIN)) {
+    Serial.println("Error: SD initialization failed!");
+  } else {
+    Serial.println("SD initialized.");
   }
 
-  Serial.print("IP Address: ");
-  Serial.println(Ethernet.localIP());
-  UDP.begin(8081);
-
-  // Open SD connection
-  //SD.begin(SD_CS_PIN);
-
-  //Initialize led as output
   pinMode(LED_BUILTIN, OUTPUT);
 
-  // Allow the Ethernet Shield and DHT22 Sensor to initialize
+  Serial.println("Waiting 5s for sensors to stabilize...");
   delay(5000);
 
-  // Connect to the thermal chamber
+  // Initial Modbus Connection Attempt
+  Serial.println("Attempting initial Modbus connection...");
+
   if (modbusClient.begin(chamberIP, chamberPort)) {
-    Serial.println("Connected to chamber.");
-  }
-  
-  else {
-    Serial.println("Failed to connect to chamber.");
+    Serial.println("Connected to thermal chamber via Modbus TCP.");
+  } else {
+    Serial.println("Failed initial connection to thermal chamber.");
   }
 }
 
-void loop() {
-  //If disconnected from chamber, try reconnecting every 5 seconds
+void loop() {    
+  
+  static unsigned long lastReconnectAttempt = 0;
+
   if (!modbusClient.connected()) {
-    if (!modbusClient.begin(chamberIP, chamberPort)) {
-      Serial.println("Failed to connect to chamber");
-      delay(5000);
-      return;
+    Serial.println("Modbus connection lost. Attempting to reconnect...");
+    modbusClient.begin(chamberIP, chamberPort);
+    delay(1000);
+  }
+
+  int packetSize = UDP.parsePacket();
+  if (packetSize) {
+    UDP.read(packetBuffer, ETHERNET_UDP_TX_PACKET_MAX_SIZE);
+        // Check if the request is "h" (as sent by your Python script)
+    if (packetBuffer[0] == 'h') {
+      float t = dht22.getTemperature();
+      float h = dht22.getHumidity();
+      unsigned long seconds = millis() / 1000;
+
+      // Construct the response: "time,temp,humidity"
+      String response = String(seconds) + "," + String(t) + "," + String(h);
+
+      // REPLY to the sender (Python)
+      UDP.beginPacket(UDP.remoteIP(), UDP.remotePort());
+      UDP.print(response);
+      UDP.endPacket();
+      
+     // Serial.println("Sent response to Python: " + response);
     }
   }
 
-  // Set variables for entering safety protocol
-  static bool SafetyEnabled = false;
-  static bool DangerZone = false;
 
-  // Open or create file for writing
-  //file = SD.open("errorlog.txt", FILE_WRITE);
+  // 2. NON-BLOCKING SENSOR TIMER (Executes every 5 seconds)
 
-  // Get temperature and humidity from sensor
-  String time = String(millis()/1000);
-  float t = dht22.getTemperature();
-  float h = dht22.getHumidity();
+  unsigned long currentMillis = millis();
 
-  // If temperature OR humidity unacceptable, we are in danger
-  if (t < -45 || t > 45 || h > 41.50) {
-    DangerZone = true;
-  }
-  else {
-    DangerZone = false;
-  }
-  
-  // If we are in danger and haven't begun Safety protocol, begin
-  if (DangerZone && !(SafetyEnabled)) {
-    SafetyEnabled = true;
+  if (currentMillis - previousSensorMillis >= sensorInterval) {
+    previousSensorMillis = currentMillis; // Reset the stopwatch
 
-    // Open file for logging
-    //file = SD.open("errorlog.txt", FILE_WRITE);
+    // Get live temperature and humidity
+    float t = dht22.getTemperature();
+    float h = dht22.getHumidity();
 
-    // Terminate profile
-    modbusClient.holdingRegisterWrite(1, 0x40B6, 148);
-    delay(1000);
+    // Check danger conditions
+    DangerZone = (t < 0 || t > 45 || h > 60.0);
+
+    if (DangerZone) {
+      // ENACT SAFETY PROTOCOL
+      if (!SafetyEnabled) {
+        SafetyEnabled = true;
+        Serial.println("\n*** DANGER DETECTED: INITIATING SAFETY PROTOCOL ***");
+
+        // Execute Modbus Shutdown Commands
+        if (modbusClient.connected()) {
+          // Terminate profile
+          modbusClient.holdingRegisterWrite(1, 0x40B6, 148);
+          delay(1000);
     
-    // Set temperature control mode to auto
-    modbusClient.holdingRegisterWrite(1, 0x0AAA, 10);
-    delay(1000);
+          // Turn off the power to event 1
+          modbusClient.holdingRegisterWrite(1, 0x40D2, 62);
 
-    // Set temperature to 23C
-    modbusClient.holdingRegisterWrite(1, 0x0ADE, 0x41B8);
-    modbusClient.holdingRegisterWrite(1, 0x0ADF, 0x0000);
-    
-    // Log time and values of error
-    //file.println("Time: " + String(millis()/1000)+"s");
-    //file.println("Temperature: " + String(t) + "C Humidity: " + String(h)+"%");
-  }
+          Serial.println("Modbus safety commands transmitted.");
+        } else {
+          Serial.println("ERROR: Cannot send Modbus commands. Not connected");
+        }
 
-  // If we are in danger and Safety protocol already started, blink LED until out of danger
-  if (DangerZone && SafetyEnabled) {
-    // Flash LED every second, checking for danger every 11 seconds
-    for (int i = 0; i < 1; i++) {
+      }
+
+      // Log to SD Card
+      file = SD.open("temperaturelog.txt", FILE_WRITE);
+      if (file) {
+        file.println("Time: " + String(currentMillis / 1000) + "s");
+        file.println("Temperature: " + String(t) + "C Humidity: " + String(h) + "%");
+        file.close();
+        Serial.println("Temperature logged to SD card.");
+      }
+
+      // Flash LED (Briefly blocks for 1 second, acceptable in an emergency state)
       digitalWrite(LED_BUILTIN, HIGH);
       delay(500);
       digitalWrite(LED_BUILTIN, LOW);
       delay(500);
-    }
-    Serial.println("--------------------------------------------------------------------------------------------------------------------------------\n");
-    Serial.println("!!!!!!!!!!!\tTime since initialization: "+time+"s\t\tStatus: DANGER\t\tTemperature: "+String(t)+"\tHumidity: "+String(h)+"\t!!!!!!!!");
-    Serial.println("\n--------------------------------------------------------------------------------------------------------------------------------");
-  }
-  
-  // If temperature/humidity within acceptable ranges
-  if (!(DangerZone)) {
-    // Once back in safety, protocol no longer being enacted
-    SafetyEnabled = false;
 
-    // Check danger every 21 seconds
-    Serial.println("--------------------------------------------------------------------------------------------------------------------------------\n");
-    Serial.println("Time since initialization: "+time+"s\t\tStatus: Nominal\t\tTemperature: "+String(t)+"\tHumidity: "+String(h));
-    Serial.println("\n--------------------------------------------------------------------------------------------------------------------------------");
-    delay(5000);
-  }
+      // Print Live DANGER Update
+      Serial.println("-----------------------------------------------------------------------------------------");
+      Serial.println("STATUS: DANGER \t Time: " + String(currentMillis / 1000) + "s \t Temp: " + String(t) + "C \t Hum: " + String(h) + "%");
+      Serial.println("-----------------------------------------------------------------------------------------");
 
-  //Send data to computer python program
-  packetSize = UDP.parsePacket();                     //get size of received packet 
-  if(packetSize > 0)                                  //data received?
-  {
+    } else {
+      // NOMINAL OPERATION
+      if (SafetyEnabled) {
+        Serial.println("\n*** CONDITIONS RETURNED TO SAFE RANGES. SAFETY PROTOCOL LIFTED. ***");
+      }
+      SafetyEnabled = false;
+
+      // Print Live NOMINAL Update
+      Serial.println("STATUS: Nominal \t Time: " + String(currentMillis / 1000) + "s \t Temp: " + String(t) + "C \t Hum: " + String(h) + "%");
+    
+       packetSize = UDP.parsePacket();                     //get size of received packet 
+    if(packetSize > 0)                                  //data received?
+    {
     //UDP.read(packetBuffer, UDP_TX_PACKET_MAX_SIZE);   //read received data via UDP
     //String receivedData(packetBuffer);                //and then convert to string
 
-    UDP.beginPacket(UDP.remoteIP(), UDP.remotePort());//initialize packet send
+      UDP.beginPacket(UDP.remoteIP(), UDP.remotePort());//initialize packet send
 
-    if(startup){
-      UDP.print("!");
-      startup = false;
-      }
-    UDP.print(time);
-    UDP.print(",");
-    UDP.print(t);
-    UDP.print(",");
-    UDP.print(h);
-    UDP.endPacket();                                  //end packet send
+      if(startup){
+        UDP.print("!");
+        startup = false;
+        }
+      UDP.print(t);
+      UDP.print(",");
+      UDP.print(t);
+      UDP.print(",");
+      UDP.print(h);
+      UDP.endPacket();                                  //end packet send
+    }
+    memset(packetBuffer, 0, ETHERNET_UDP_TX_PACKET_MAX_SIZE);    //reset packet array to 0
+
+    // File won't reopen for writing unless closed
+    //file.close();
+
+    // Giving time before opening file again after closing
+   
+    delay(500);
+    }
   }
-  memset(packetBuffer, 0, UDP_TX_PACKET_MAX_SIZE);    //reset packet array to 0
-
-  // File won't reopen for writing unless closed
-  //file.close();
-
-  // Giving time before opening file again after closing
-  delay(500);
 }
