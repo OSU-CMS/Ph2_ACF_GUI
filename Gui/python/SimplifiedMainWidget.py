@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
 
 import Gui.siteSettings as site_settings
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
+from Gui.python.IcicleHelpers import power_status
 from Gui.GUIutils.FirmwareUtil import fwStatusParser
 from Gui.python.CustomizedWidget import SimpleBeBoardBox
 from Gui.python.Firmware import QtBeBoard
@@ -627,7 +628,7 @@ class SimplifiedMainWidget(QWidget):
         invert the values from instrument_cluster.status()
         """
         try:
-            status = self.instruments.status(lv_channel=1)
+            status = power_status(self.instruments)
         except RuntimeError:
             logger.warning(traceback.format_exc())
             error_box = QMessageBox()

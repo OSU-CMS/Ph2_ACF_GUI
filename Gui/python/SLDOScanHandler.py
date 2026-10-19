@@ -7,6 +7,7 @@ from Gui.python.logging_config import get_logger
 from icicle.icicle.adc_board import ADCBoard
 from icicle.icicle.relay_board import RelayBoard
 from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
+from Gui.python.IcicleHelpers import hv_ramp_down, lv_sweep_all
 
 logger = get_logger(__name__)
 """
@@ -122,8 +123,9 @@ class SLDOCurveWorker(QThread):
             np.abs(getattr(module["hv"], "voltage"))
             for module in self.instruments._module_dict.values()
         ]
-        self.instruments.hv_off(
-            execute_each_step=lambda: self.execute_each_step(starting_voltages)
+        hv_ramp_down(
+            self.instruments,
+            execute_each_step=lambda: self.execute_each_step(starting_voltages),
         )
         self.instruments.lv_off()
         self.adc_board.__enter__()
@@ -131,7 +133,8 @@ class SLDOCurveWorker(QThread):
 
         self.instruments.lv_on(current=self.starting_current, voltage=self.max_voltage)
         # sweep from the starting current to the target current, preliminary data processing
-        data_up = self.instruments.lv_sweep(
+        data_up = lv_sweep_all(
+            self.instruments,
             target=self.target_current,
             delay=self.delay,
             step_size=self.step_size,
@@ -145,7 +148,8 @@ class SLDOCurveWorker(QThread):
         data_up = data_up[self.LV_index][1]
 
         # sweep from the target current to the starting current, preliminary data processing
-        data_down = self.instruments.lv_sweep(
+        data_down = lv_sweep_all(
+            self.instruments,
             target=self.starting_current,
             delay=self.delay,
             step_size=self.step_size,
@@ -349,8 +353,9 @@ class SLDOCurveHandler(QObject):
             np.abs(getattr(module["hv"], "voltage"))
             for module in self.instruments._module_dict.values()
         ]
-        self.instruments.hv_off(
-            execute_each_step=lambda: self.execute_each_step(starting_voltages)
+        hv_ramp_down(
+            self.instruments,
+            execute_each_step=lambda: self.execute_each_step(starting_voltages),
         )
         self.instruments.lv_off()
         self.finishedSignal.emit()
@@ -365,8 +370,9 @@ class SLDOCurveHandler(QObject):
                     np.abs(getattr(module["hv"], "voltage"))
                     for module in self.instruments._module_dict.values()
                 ]
-                self.instruments.hv_off(
-                    execute_each_step=lambda: self.execute_each_step(starting_voltages)
+                hv_ramp_down(
+                    self.instruments,
+                    execute_each_step=lambda: self.execute_each_step(starting_voltages),
                 )
                 self.instruments.lv_off()
                 self.test.terminate()
@@ -380,8 +386,9 @@ class SLDOCurveHandler(QObject):
                     np.abs(getattr(module["hv"], "voltage"))
                     for module in self.instruments._module_dict.values()
                 ]
-                self.instruments.hv_off(
-                    execute_each_step=lambda: self.execute_each_step(starting_voltages)
+                hv_ramp_down(
+                    self.instruments,
+                    execute_each_step=lambda: self.execute_each_step(starting_voltages),
                 )
                 self.instruments.lv_off()
                 self.test.terminate()

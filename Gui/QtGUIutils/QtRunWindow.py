@@ -37,6 +37,7 @@ from Gui.python.logging_config import get_logger
 from InnerTrackerTests.TestSequences import CompositeTests_Modules
 from icicle.icicle.psi_coldbox import PSIColdbox
 from icicle.icicle.instrument import InstrumentTimeoutError
+from Gui.python.IcicleHelpers import coldbox_off, hv_ramp_down
 
 logger = get_logger(__name__)
 
@@ -178,7 +179,8 @@ class QtRunWindow(QWidget):
         if site_settings.cooler == "Tessie":
             attempt(
                 "HV power down",
-                lambda: instruments.hv_off(
+                lambda: hv_ramp_down(
+                    instruments,
                     delay=0.3,
                     step_size=10,
                     execute_each_step=lambda: self.testHandler.ramp_progress_bar(
@@ -188,7 +190,7 @@ class QtRunWindow(QWidget):
             )
             coldbox_stopped = attempt(
                 "coldbox power down",
-                lambda: instruments.cb_off(checkstatus=False),
+                lambda: coldbox_off(instruments),
             )
             if coldbox_stopped:
                 attempt("coldbox temperature wait", self.wait_for_temp)
@@ -199,16 +201,22 @@ class QtRunWindow(QWidget):
                 )
             attempt("LV power down", instruments.lv_off)
         else:
+            # Ramp down first so the progress bar updates; off() then finds HV at 0 V
             attempt(
-                "instrument power down",
-                lambda: instruments.off(
-                    hv_delay=0.3,
-                    hv_step_size=10,
+                "HV power down",
+                lambda: hv_ramp_down(
+                    instruments,
+                    delay=0.3,
+                    step_size=10,
                     measure=False,
                     execute_each_step=lambda: self.testHandler.ramp_progress_bar(
                         starting_voltages
                     ),
                 ),
+            )
+            attempt(
+                "instrument power down",
+                lambda: instruments.off(hv_delay=0.3, hv_step_size=10, measure=False),
             )
 
         if shutdown_errors:

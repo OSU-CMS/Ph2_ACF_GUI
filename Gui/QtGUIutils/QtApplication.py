@@ -51,6 +51,7 @@ from Gui.python.CustomizedWidget import module_registry_client
 from Gui.python.thermal_chamber import F4TTemperatureChamber
 
 from icicle.icicle.instrument_cluster import InstrumentCluster
+from Gui.python.IcicleHelpers import power_status
 
 from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
@@ -1034,16 +1035,15 @@ class QtApplication(QWidget):
                     pass
                     # InstrumentCluster.__init__() throws a ValueError when called a second time.
                     # I don't think this error actually matters so just catching it for now.
-                self.instruments.open()
                 lv_on = False
                 hv_on = False
 
                 for number in self.instruments.get_modules().keys():
-                    if self.instruments.status()[number]["hv"]:
+                    if power_status(self.instruments)[number]["hv"]:
                         hv_on = True
                         break
                 for number in self.instruments.get_modules().keys():
-                    if self.instruments.status()[number]["lv"]:
+                    if power_status(self.instruments)[number]["lv"]:
                         lv_on = True
                         break
                 instrument_dict = self.instruments.get_instruments()
@@ -1266,7 +1266,7 @@ class QtApplication(QWidget):
 
     def releaseLVPowerPanel(self):
         if self.instruments:
-            self.instruments.lv_off(1)
+            self.instruments.lv_off()
             self.LVPowerCombo.setDisabled(False)
             self.LVPowerStatusValue.setText("")
         else:

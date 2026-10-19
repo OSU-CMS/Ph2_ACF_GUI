@@ -64,6 +64,13 @@ from Gui.python.TestValidator import ResultGrader
 from Gui.python.ANSIColoringParser import parseANSI
 from Gui.python.IVCurveHandler import IVCurveHandler
 from Gui.python.SLDOScanHandler import SLDOCurveHandler
+from Gui.python.IcicleHelpers import (
+    hv_on_with_progress,
+    hv_ramp_down,
+    lv_sweep_all,
+    power_status,
+    ramp_group,
+)
 from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
@@ -849,8 +856,9 @@ class TestHandler(QObject):
                 np.abs(getattr(module["hv"], "voltage"))
                 for module in self.instruments._module_dict.values()
             ]
-            self.instruments.hv_off(
-                execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
+            hv_ramp_down(
+                self.instruments,
+                execute_each_step=lambda: self.ramp_progress_bar(starting_voltages),
             )
 
             if "1x2" in self.ModuleType.lower():
@@ -884,7 +892,8 @@ class TestHandler(QObject):
                 current=SLDOScan_GADC_dict["starting current"],
             )
 
-            up_sweep = self.instruments.lv_sweep(
+            up_sweep = lv_sweep_all(
+                self.instruments,
                 target=SLDOScan_GADC_dict["target current"],
                 delay=0.1,
                 set_property="current",
@@ -895,7 +904,8 @@ class TestHandler(QObject):
                 ),
             )
 
-            down_sweep = self.instruments.lv_sweep(
+            down_sweep = lv_sweep_all(
+                self.instruments,
                 target=SLDOScan_GADC_dict["starting current"],
                 delay=0.1,
                 set_property="current",
@@ -954,8 +964,8 @@ class TestHandler(QObject):
         if self.instruments:
             lv_on = False
             for number in self.instruments.get_modules().keys():
-                print(self.instruments.status()[number]["lv"])
-                if self.instruments.status()[number]["lv"]:
+                print(power_status(self.instruments)[number]["lv"])
+                if power_status(self.instruments)[number]["lv"]:
                     lv_on = True
                     break
             if not lv_on:
@@ -1030,14 +1040,15 @@ class TestHandler(QObject):
             hv_status = False
             #Checking the status of the HV supply
             for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["hv"] == "1":
+                if power_status(self.instruments)[number]["hv"]:
                     hv_status = True
                     break
             if not hv_status:
                 self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
                 self.powergroup.enable_all()
                 print("trying to turn on HV")
-                self.powergroup.ramp_hv(
+                ramp_group(
+                    self.powergroup,
                     voltage=default_hv_voltage,
                     delay=0.3,
                     step_size=10,
@@ -2891,7 +2902,8 @@ created by Ph2_ACF is empty."
                 "instrument_dict"
             ]["hv"]["default_voltage"]
             # assumes only 1 HV titled 'hv' in instruments.json
-            self.master.instruments.hv_on(
+            hv_on_with_progress(
+                self.master.instruments,
                 voltage=default_hv_voltage,
                 delay=0.3,
                 step_size=5,

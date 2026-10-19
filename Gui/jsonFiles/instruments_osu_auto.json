@@ -20,12 +20,15 @@
             "default_temperature": -20,
             "temperature_tolerance": 0.5,
             "validation_time": 20,
-            "validation_timeout": 600
+            "validation_timeout": 600,
+            "persistent_dryair": true
         },
         "hb": {
             "class": "PSIHVBox",
             "resource": "ASRL/dev/ttyACM1::INSTR",
-            "channel_compliance": 5e-6
+            "compliance_current": 5e-6,
+            "modified": false,
+            "hv_sel": "A"
         },
         "hv": {
             "class": "Keithley2410",

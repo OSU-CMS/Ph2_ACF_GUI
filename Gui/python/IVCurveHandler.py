@@ -2,6 +2,7 @@ import Gui.siteSettings as site_settings
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
 from icicle.icicle.instrument_cluster import DummyInstrument
+from Gui.python.IcicleHelpers import hv_ramp_down, ramp_group, ramp_powering_groups
 
 import numpy as np
 import traceback
@@ -54,8 +55,9 @@ class IVCurveThread(QThread):
             np.abs(getattr(module["hv"], "voltage"))
             for module in self.instruments._module_dict.values()
         ]
-        self.instruments.hv_off(
-            execute_each_step=lambda: self.execute_each_step(starting_voltages)
+        hv_ramp_down(
+            self.instruments,
+            execute_each_step=lambda: self.execute_each_step(starting_voltages),
         )
         self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
 
@@ -78,8 +80,8 @@ class IVCurveThread(QThread):
             source_voltage = self.powergroup.source_channel.measure_voltage.value
             source_current = self.powergroup.source_channel.measure_current.value
             if not isinstance(module["hb"], DummyInstrument):
-                module_current = -1*module["hb"]._measure_current.value
-                module_channel = module["hb"]._hvbox_channel
+                module_current = -1*module["hb"].measure_current.value
+                module_channel = module["hb"].hvbox_channel_id
             else:
                 module_current = source_current
                 module_channel = name
@@ -102,10 +104,12 @@ class IVCurveThread(QThread):
             #    execute_each_step=lambda: self.execute_each_step(starting_voltages)
             #)
             self.powergroup.enable_all()
-            self.powergroup.ramp_hv(
+            ramp_group(
+                self.powergroup,
                 voltage=self.stopVal,
                 delay=0.2,
                 step_size=self.stepLength,
+                measure=False,  # getProgress() takes the measurements
                 execute_each_step=self.getProgress,
                 break_loop= lambda: self.exiting,
             )
@@ -196,14 +200,15 @@ class IVCurveHandler(QObject):
         ]
         ## Will Set voltage to default unless SLDO is the next test
         if (self.nextTest is not None) and ("SLDO" not in self.nextTest): 
-            self.instruments.hv_set(voltage = site_settings.icicle_instrument_setup[
-                    "instrument_dict"]["hv"]["default_voltage"], delay = 0.3, step_size = 10,
+            ramp_powering_groups(self.instruments, voltage = site_settings.icicle_instrument_setup[
+                    "instrument_dict"]["hv"]["default_voltage"], delay = 0.3, step_size = 10, measure = False,
                     execute_each_step = lambda: self.execute_each_step([site_settings.icicle_instrument_setup[
                     "instrument_dict"]["hv"]["default_voltage"]] * len(self.instruments._module_dict.values()))
                 )
         else:    
-            self.instruments.hv_off(
-                execute_each_step=lambda: self.execute_each_step(starting_voltages)
+            hv_ramp_down(
+                self.instruments,
+                execute_each_step=lambda: self.execute_each_step(starting_voltages),
             )    
         self.finished.emit(test, measure)
 
@@ -215,7 +220,7 @@ class IVCurveHandler(QObject):
             except TypeError:
                 pass
 
-            # Let ramp_hv exit via break_loop, and wait for the thread so nothing
+            # Let ramp_group exit via break_loop, and wait for the thread so nothing
             # else is driving the HV while we ramp it down. The timeout is generous
             # because the thread may still be in turnOn()'s ramp down to 0 V.
             self.test.abortTest()
@@ -228,7 +233,8 @@ class IVCurveHandler(QObject):
                 np.abs(getattr(module["hv"], "voltage"))
                 for module in self.instruments._module_dict.values()
             ]
-            self.instruments.hv_off(
+            hv_ramp_down(
+                self.instruments,
                 no_lock=True,
                 execute_each_step=lambda: self.execute_each_step(starting_voltages),
             )
