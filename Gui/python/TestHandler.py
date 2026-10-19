@@ -3214,54 +3214,80 @@ created by Ph2_ACF is empty."
         self._complete_current_test()
 
     def upload_to_Panthera(self):
+        # Only modules that felis has results for can be uploaded. A module disabled
+        # before its first graded test (e.g. in the CommunicationTest failure dialog)
+        # was never added to felis, and upload_results would raise a KeyError for it.
+        modules_to_upload = []
+        for i, fc7 in enumerate(self.firmware):
+            for module in fc7.getModules():
+                module_name = module.getModuleName()
+                if module_name in self.felis_instances[i].dict_modules:
+                    modules_to_upload.append((i, module_name))
+                else:
+                    logger.info(
+                        f"Skipping Panthera upload for {module_name}: no test results"
+                    )
+        total = len(modules_to_upload)
+
         self.updateProgressBar.emit(
-            self.runwindow.UploadProgressBar, 0, f"{0}/{len(self.modules)} uploaded"
+            self.runwindow.UploadProgressBar, 0, f"0/{total} uploaded"
         )
-        try:
-            self.runwindow.UploadButton.setDisabled(True)
-            counter = 0
-            for i, fc7 in enumerate(self.firmware):
-                for module in fc7.getModules():
-                    status, message = self.felis_instances[i].set_comment( name_module=module.getModuleName(),name_test="sequence", comment=self.comment)
-                    status, message = self.felis_instances[i].upload_results(
-                        name_module=module.getModuleName(),
-                        username=self.master.username,
-                        userpass=self.master.password,
-                        type_sequence=self.info,
-                        version_ph2acf=os.environ.get("PH2ACF_VERSION"),
-                        version_testStationSoftware="OSU_GUI-" + os.environ.get(
-                            "PH2_ACF_GUI_VERSION"
-                        ),
-                        version_innertrackertests=os.environ.get("INNER_TRACKER_TESTS_VERSION"),
+        self.runwindow.UploadButton.setDisabled(True)
+
+        counter = 0
+        failures = []  # [(module_name, reason), ...]
+        # Upload each module separately so one failure doesn't stop the rest
+        for i, module_name in modules_to_upload:
+            try:
+                self.felis_instances[i].set_comment(
+                    name_module=module_name, name_test="sequence", comment=self.comment
+                )
+                status, message = self.felis_instances[i].upload_results(
+                    name_module=module_name,
+                    username=self.master.username,
+                    userpass=self.master.password,
+                    type_sequence=self.info,
+                    version_ph2acf=os.environ.get("PH2ACF_VERSION"),
+                    version_testStationSoftware="OSU_GUI-" + os.environ.get(
+                        "PH2_ACF_GUI_VERSION"
+                    ),
+                    version_innertrackertests=os.environ.get("INNER_TRACKER_TESTS_VERSION"),
+                )
+                if not status:
+                    raise ConnectionError(
+                        message or "Panthera rejected the upload, see the log for details"
                     )
-                    if not status:
-                        raise ConnectionError(message)
+            except Exception as err:
+                logger.error(f"Failed to upload {module_name} to Panthera")
+                logger.error(traceback.format_exc())
+                failures.append((module_name, str(err) or type(err).__name__))
+                if not self.master.panthera_connected:
+                    break  # Every module would fail the same way
+                continue
 
-                    counter += 1
-                    self.updateProgressBar.emit(
-                        self.runwindow.UploadProgressBar,
-                        100 * counter / len(self.modules),
-                        f"{counter}/{len(self.modules)} uploaded",
-                    )
+            counter += 1
+            self.updateProgressBar.emit(
+                self.runwindow.UploadProgressBar,
+                100 * counter / total,
+                f"{counter}/{total} uploaded",
+            )
 
-        except ConnectionError:
-            logger.error(traceback.format_exc())
-            self.master.errorMessageBoxSignal.emit(traceback.format_exc())
+        if not failures:
+            return
 
-        except Exception:
+        if not self.master.panthera_connected:
             error_message = (
                 "Cannot upload test results, you are not signed in to Panthera."
             )
-            if self.master.panthera_connected:
-                error_message = "Failed to upload to Panthera."
-                self.runwindow.UploadButton.setDisabled(False)
-                if self.autoSave:
-                    self.runwindow.UploadButton.setDisabled(
-                        False
-                    )  # if autosave fails, allow manual
+        else:
+            error_message = (
+                f"Failed to upload {len(failures)} of {total} modules to Panthera:\n"
+                + "\n".join(f"{name}: {reason}" for name, reason in failures)
+            )
+            self.runwindow.UploadButton.setDisabled(False)  # allow a manual retry
 
-            logger.error(error_message)
-            self.master.errorMessageBoxSignal.emit(error_message)
+        logger.error(error_message)
+        self.master.errorMessageBoxSignal.emit(error_message)
 
     def bumpbond_analysis(self):
         runNumber = "000000" if self.RunNumber == "-1" else self.RunNumber
