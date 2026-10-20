@@ -227,6 +227,7 @@ class QtModule:
         self.__enabled = enabled
         self.__Fc7 = Fc7
         self.__isRotated = isRotated
+        self.__entryIndex = None  # position of this module in the GUI's module list
 
         if self.__moduleType != "":
             # if module type was specified, initialize chips to default
@@ -237,6 +238,12 @@ class QtModule:
 
     def getModuleName(self):
         return self.__moduleName
+
+    def setEntryIndex(self, entryIndex: int):
+        self.__entryIndex = entryIndex
+
+    def getEntryIndex(self):
+        return self.__entryIndex
 
     def setModuleType(self, moduleType: str):
         if moduleType not in ModuleLaneMap.keys():

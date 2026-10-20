@@ -1377,7 +1377,7 @@ class BeBoardBox(QWidget):
 
     def getFirmwareDescription(self):
         module_types = []
-        for module in self.ModuleList:
+        for entry_index, module in enumerate(self.ModuleList):
             # Access the currently selected QtBeBoard object
             BeBoard = None
             for board in self.firmware:
@@ -1431,6 +1431,8 @@ class BeBoardBox(QWidget):
                 FMCPort=module.getFMCPort(),
                 isRotated=is_rotated,
             )
+            # Entry order determines the TEC slot (see QtStartWindow._get_used_channels)
+            Module.setEntryIndex(entry_index)
             Module.setOpticalGroup(
                 OpticalGroup
             )  # Ignore this line, see explanation in Firmware.py

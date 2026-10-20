@@ -1298,26 +1298,49 @@ class TestHandler(QObject):
         w = getattr(self.master, 'tessie_widget', None)
         return w
 
-    def _get_tec_module_map(self, n_tecs: int = 8):
-        """Map each TEC channel (1-based, as a string key) to the module ID in that slot.
+    def _modules_in_entry_order(self):
+        """Return self.modules in the order they were entered in the GUI.
 
-        Modules are paired with instrument cluster entries in the order they were
-        entered in the GUI (the same pairing used to trim the cluster in
-        QtStartWindow._get_used_channels). The TEC number is taken from each entry's
-        'cb' channel; if the cluster has no coldbox channel, fall back to the order
-        of WorkingChannels in siteConfig. Unoccupied TECs map to None.
+        self.modules is grouped by board/FMC/port, which can differ from entry order.
+        Falls back to self.modules when entry indices are unavailable (e.g. simple mode).
         """
-        tec_map = {str(ch): None for ch in range(1, n_tecs + 1)}
+        if all(isinstance(m.getEntryIndex(), int) for m in self.modules):
+            return sorted(self.modules, key=lambda m: m.getEntryIndex())
+        return list(self.modules)
+
+    def _get_module_cluster_keys(self):
+        """Map each module to its instrument cluster key (e.g. '0', '3').
+
+        The i-th module entered in the GUI corresponds to the i-th remaining cluster
+        entry (the same pairing used to trim the cluster in
+        QtStartWindow._get_used_channels). Modules beyond the cluster size map to None.
+        """
         try:
             module_dict = getattr(self.instruments, '_module_dict', {}) or {}
             cluster_keys = sorted(module_dict.keys(), key=lambda k: int(k))
         except Exception:
-            module_dict, cluster_keys = {}, []
+            cluster_keys = []
+        return {
+            module: (cluster_keys[i] if i < len(cluster_keys) else None)
+            for i, module in enumerate(self._modules_in_entry_order())
+        }
 
-        for i, module in enumerate(self.modules):
+    def _get_tec_module_map(self, n_tecs: int = 8):
+        """Map each TEC channel (1-based, as a string key) to the module ID in that slot.
+
+        The TEC number is taken from the 'cb' channel of each module's instrument
+        cluster entry; if the cluster has no coldbox channel, fall back to the order
+        of WorkingChannels in siteConfig. Unoccupied TECs map to None.
+        """
+        tec_map = {str(ch): None for ch in range(1, n_tecs + 1)}
+        module_dict = getattr(self.instruments, '_module_dict', {}) or {}
+        cluster_keys = self._get_module_cluster_keys()
+
+        for i, module in enumerate(self._modules_in_entry_order()):
             tec = None
-            if i < len(cluster_keys):
-                cb_channel = getattr(module_dict[cluster_keys[i]].get("cb"), "channel", None)
+            key = cluster_keys.get(module)
+            if key is not None:
+                cb_channel = getattr(module_dict[key].get("cb"), "channel", None)
                 if isinstance(cb_channel, int):
                     tec = cb_channel
             if tec is None and i < len(WorkingChannels):
@@ -2733,17 +2756,23 @@ created by Ph2_ACF is empty."
         #    self.outputString.emit(f"Voltages: {measure['voltage']}", console)
         #    self.outputString.emit(f"Currents: {measure['current']}", console)
 
-        # We should zip self.modules with the instrument cluster channels
-        # to match the modules ids with the correct channels.
-        channelList = []
-        for channel in measure:
-            channelList.append(channel)
-        modules_for_mapping = (
-            self.enabled_modules()
-            if len(channelList) == len(self.enabled_modules())
-            else self.modules
-        )
-        module_chan_map = dict(zip(modules_for_mapping, channelList))
+        # measure is keyed by instrument cluster key, so look up each module's key
+        # (assigned in GUI entry order, not the board/FMC/port order of self.modules).
+        module_chan_map = self._get_module_cluster_keys()
+        if not all(module_chan_map.get(m) in measure for m in self.enabled_modules()):
+            channelList = list(measure)
+            entry_ordered = self._modules_in_entry_order()
+            enabled_entry_ordered = [m for m in entry_ordered if self._module_is_enabled(m)]
+            modules_for_mapping = (
+                enabled_entry_ordered
+                if len(channelList) == len(enabled_entry_ordered)
+                else entry_ordered
+            )
+            module_chan_map = dict(zip(modules_for_mapping, channelList))
+            logger.warning(
+                f"IV curve channels {channelList} do not match instrument cluster keys; "
+                "pairing modules with channels by entry order instead."
+            )
 
         for module in self.enabled_modules():
             ogId = module.getOpticalGroup().getOpticalGroupID()
