@@ -73,6 +73,7 @@ def ResultGrader(
         module_type = module_data["module"].getModuleType()
         module_version = module_data["module"].getModuleVersion()
         module_hybridID = module_data["module"].getFMCPort()
+        name_official = module_data["module"].getOfficialName() or "unspecified"
         if "TFPX" in module_type.split(" ")[0]:
             sensor_type = "planar"
         else:
@@ -102,6 +103,7 @@ def ResultGrader(
             _1, _2 = felis.set_module(
                 name_module = module_name,
                 subdetector = module_type.split(" ")[0],
+                name_official = name_official,
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
@@ -124,6 +126,7 @@ def ResultGrader(
             _1, _2 = felis.set_module(
                 name_module = module_name,
                 subdetector = module_type.split(" ")[0],
+                name_official = name_official,
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
@@ -144,6 +147,7 @@ def ResultGrader(
             _1, _2 = felis.set_module(
                 name_module = module_name,
                 subdetector = module_type.split(" ")[0],
+                name_official = name_official,
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
@@ -169,6 +173,7 @@ def ResultGrader(
             _1, _2 = felis.set_module(
                 name_module = module_name,
                 subdetector = module_type.split(" ")[0],
+                name_official = name_official,
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
@@ -193,6 +198,7 @@ def ResultGrader(
             _1, _2 = felis.set_module(
                 name_module = module_name,
                 subdetector = module_type.split(" ")[0],
+                name_official = name_official,
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
@@ -234,6 +240,7 @@ def ResultGrader(
             _1, _2 = felis.set_module(
                 name_module = module_name,
                 subdetector = module_type.split(" ")[0],
+                name_official = name_official,
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,
@@ -272,6 +279,7 @@ def ResultGrader(
             _1, _2 = felis.set_module(
                 name_module = module_name,
                 subdetector = module_type.split(" ")[0],
+                name_official = name_official,
                 type_module = module_type.split(" ")[2].replace("Quad", "2x2"),
                 croc_version = module_version.strip("v"),
                 has_sensor = True,

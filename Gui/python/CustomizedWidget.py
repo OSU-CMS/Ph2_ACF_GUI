@@ -226,6 +226,7 @@ class ModuleRegistryDataClient:
                     "type": moduletype,
                     "HDIversion": f"{mv}",
                     "isRotated": _parse_is_rotated(data.get("IS_ROTATED")),
+                    "nameLabel": name_label,
                 }
             except Exception as e:
                 logger.warning(
@@ -259,7 +260,7 @@ class ModuleRegistryDataClient:
 
                 mv = _normalize_hdi_version(moduleversion, default=moduleversion)
                 logger.info(f"Module type from Purdue database: {moduletype}, HDI version: {mv}")
-                return {"type": moduletype, "HDIversion": f"{mv}", "isRotated": None}
+                return {"type": moduletype, "HDIversion": f"{mv}", "isRotated": None, "nameLabel": None}
 
         return None
 
@@ -1355,6 +1356,18 @@ class BeBoardBox(QWidget):
             self.master.purdue_connected = False
             return None
 
+    def fetchOfficialName(self, moduleName):
+        # NAME_LABEL from the CMS central DB registry (cached), e.g. ITMOD-E-LD2-001-032
+        try:
+            name_label, _ = module_registry_client.find_module_identity(moduleName)
+        except Exception:
+            logger.warning(f"Could not look up official name for {moduleName}")
+            logger.debug(traceback.format_exc())
+            return ""
+        if not name_label:
+            logger.warning(f"No official name found for {moduleName} in the CMS module registry")
+        return name_label or ""
+
     def removeModule(self, module):
         self.ModuleList.remove(module)
         self.ChipWidgetDict.pop(module, None)
@@ -1430,6 +1443,7 @@ class BeBoardBox(QWidget):
                 hdiVersion=module.getHDIVersion(),
                 FMCPort=module.getFMCPort(),
                 isRotated=is_rotated,
+                officialName=self.fetchOfficialName(module.getSerialNumber()),
             )
             # Entry order determines the TEC slot (see QtStartWindow._get_used_channels)
             Module.setEntryIndex(entry_index)
@@ -1958,6 +1972,7 @@ class SimpleBeBoardBox(QWidget):
                 hdiVersion=module_db_data["HDIversion"],
                 FMCPort=cable_properties["FMCPort"],
                 isRotated=module_db_data["isRotated"],
+                officialName=module_db_data.get("nameLabel") or "",
             )
             Module.setOpticalGroup(
                 OpticalGroup

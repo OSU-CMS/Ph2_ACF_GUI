@@ -217,8 +217,10 @@ class QtModule:
         enabled="1",
         Fc7=None,
         isRotated=False,
+        officialName="",
     ):
         self.__moduleName = moduleName
+        self.__officialName = officialName  # CMS central DB NAME_LABEL, e.g. ITMOD-E-LD2-001-032
         self.__moduleType = moduleType
         self.__moduleVersion = moduleVersion
         self.__hdiVersion = hdiVersion
@@ -238,6 +240,12 @@ class QtModule:
 
     def getModuleName(self):
         return self.__moduleName
+
+    def setOfficialName(self, officialName: str):
+        self.__officialName = officialName
+
+    def getOfficialName(self):
+        return self.__officialName
 
     def setEntryIndex(self, entryIndex: int):
         self.__entryIndex = entryIndex
