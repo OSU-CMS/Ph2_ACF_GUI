@@ -4,23 +4,94 @@ the new (2.5.0+) icicle versions while the stations migrate between them.
 Once every station runs the new icicle, these can be simplified to the new API.
 """
 
+import inspect
+import logging
+
+from icicle.icicle.instrument import acquire_lock
 from icicle.icicle.instrument_cluster import (
     DummyInstrument,
     InstrumentCluster,
     InstrumentNotInstantiated,
 )
+from icicle.icicle.psi_hvbox import PSIHVBox
+
+logger = logging.getLogger(__name__)
 
 _ON_VALUES = (True, 1, "1", "ON", "TRUE", "YES", "Y")
 
+# Keyword arguments the GUI passes through HV ramps to PowerChannel.sweep
+_SWEEP_CALLBACKS = ("execute_each_step", "break_loop")
 
-def register_instrument_classes():
-    """Make the instrument classes used in the instruments JSON files loadable.
 
-    New icicle's InstrumentCluster.package_map lists the ADC board as "AdcBoard", but
-    the class in adc_board.py is ADCBoard, so neither name loads. Old icicle (OSU
-    branch) maps "ADCBoard". Call before constructing an InstrumentCluster.
+@acquire_lock()
+def _ramp_hv_forwarding_callbacks(self, voltage, delay=1, step_size=5, measure=True, **kwargs):
+    """New icicle's PoweringGroup.ramp_hv, but passing execute_each_step and
+    break_loop on to the sweep (upstream accepts **kwargs and drops them, so ramp
+    progress, IV measurements and aborting a ramp never run)."""
+    if "VOLTAGE_RANGE" in self.source_channel.instrument.SETTINGS:
+        voltage_range = self.source_channel.instrument.query("VOLTAGE_RANGE")
+        if abs(voltage) > voltage_range:
+            raise ValueError(
+                f"Target voltage {voltage} V exceeds source voltage range "
+                f"{voltage_range} V for powering group with modules "
+                f"{self.modulenames}."
+            )
+    else:
+        logger.debug("Source channel does not support VOLTAGE_RANGE.")
+
+    if abs(voltage - self.source_channel.measure_voltage.value) <= 5:
+        self.voltage(voltage, no_lock=True)
+        return
+
+    if isinstance(self.hvbox, PSIHVBox):
+        measure_fields = [f"Current {name} (A)" for name in self.modulenames]
+
+        def measure_function(**_):
+            return [module["hb"].measure_current.value for module in self.modules]
+
+    else:
+        measure_fields = None
+        measure_function = None
+
+    self.source_channel.sweep(
+        voltage,
+        delay,
+        step_size,
+        measure=measure,
+        log_function=logger.info,
+        measure_fields=measure_fields,
+        measure_function=measure_function,
+        **{k: kwargs[k] for k in _SWEEP_CALLBACKS if k in kwargs},
+    )
+
+
+def apply_icicle_patches():
+    """Work around icicle issues; call before constructing an InstrumentCluster.
+
+    - New icicle's InstrumentCluster.package_map lists the ADC board as "AdcBoard",
+      but the class in adc_board.py is ADCBoard, so neither name loads. Old icicle
+      (OSU branch) maps "ADCBoard".
+    - New icicle's PoweringGroup.ramp_hv (recognisable by its `measure` parameter)
+      drops execute_each_step/break_loop; old icicle's forwards **kwargs to the sweep.
     """
     InstrumentCluster.package_map.setdefault("ADCBoard", "adc_board")
+
+    group_cls = InstrumentCluster.PoweringGroup
+    if (
+        group_cls.ramp_hv is not _ramp_hv_forwarding_callbacks
+        and "measure" in inspect.signature(group_cls.ramp_hv).parameters
+    ):
+        group_cls.ramp_hv = _ramp_hv_forwarding_callbacks
+
+
+def ramp_hv_all_groups(instruments, voltage, delay, step_size, **kwargs):
+    """Ramp every powering group's HV source to `voltage`.
+
+    Replaces InstrumentCluster.hv_set, which new icicle deprecates and which always
+    raises RuntimeError there. Expects the HV outputs to already be enabled.
+    """
+    for group in instruments.powering_groups.values():
+        group.ramp_hv(voltage, delay=delay, step_size=step_size, **kwargs)
 
 
 def output_is_on(state) -> bool:

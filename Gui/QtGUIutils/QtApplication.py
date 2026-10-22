@@ -51,7 +51,7 @@ from Gui.python.CustomizedWidget import module_registry_client
 from Gui.python.thermal_chamber import F4TTemperatureChamber
 
 from icicle.icicle.instrument_cluster import InstrumentCluster
-from Gui.python.icicleCompat import any_output_on, register_instrument_classes
+from Gui.python.icicleCompat import any_output_on, apply_icicle_patches
 
 from Gui.python.logging_config import get_logger
 logger = get_logger(__name__)
@@ -1088,7 +1088,7 @@ class QtApplication(QWidget):
 
     def connect_instruments_with_retry(self, attempts=5, delay=5):
         last_exception = None
-        register_instrument_classes()
+        apply_icicle_patches()
 
         for attempt in range(1, attempts + 1):
             try:

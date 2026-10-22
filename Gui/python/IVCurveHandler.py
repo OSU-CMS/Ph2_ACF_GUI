@@ -2,7 +2,7 @@ import Gui.siteSettings as site_settings
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
 from icicle.icicle.instrument_cluster import DummyInstrument
-from Gui.python.icicleCompat import hvbox_channel_id
+from Gui.python.icicleCompat import hvbox_channel_id, ramp_hv_all_groups
 
 import numpy as np
 import traceback
@@ -197,11 +197,13 @@ class IVCurveHandler(QObject):
         ]
         ## Will Set voltage to default unless SLDO is the next test
         if (self.nextTest is not None) and ("SLDO" not in self.nextTest): 
-            self.instruments.hv_set(voltage = site_settings.icicle_instrument_setup[
-                    "instrument_dict"]["hv"]["default_voltage"], delay = 0.3, step_size = 10,
-                    execute_each_step = lambda: self.execute_each_step([site_settings.icicle_instrument_setup[
-                    "instrument_dict"]["hv"]["default_voltage"]] * len(self.instruments._module_dict.values()))
-                )
+            default_voltage = site_settings.icicle_instrument_setup["instrument_dict"]["hv"]["default_voltage"]
+            ramp_hv_all_groups(
+                self.instruments, default_voltage, delay=0.3, step_size=10,
+                execute_each_step=lambda: self.execute_each_step(
+                    [default_voltage] * len(self.instruments._module_dict.values())
+                ),
+            )
         else:    
             self.instruments.hv_off(
                 execute_each_step=lambda: self.execute_each_step(starting_voltages)
