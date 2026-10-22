@@ -2,6 +2,7 @@ import Gui.siteSettings as site_settings
 from PyQt5.QtCore import QThread, QObject, pyqtSignal
 
 from icicle.icicle.instrument_cluster import DummyInstrument
+from Gui.python.icicleCompat import hvbox_channel_id
 
 import numpy as np
 import traceback
@@ -79,7 +80,7 @@ class IVCurveThread(QThread):
             source_current = self.powergroup.source_channel.measure_current.value
             if not isinstance(module["hb"], DummyInstrument):
                 module_current = -1*module["hb"]._measure_current.value
-                module_channel = module["hb"]._hvbox_channel
+                module_channel = hvbox_channel_id(module["hb"])
             else:
                 module_current = source_current
                 module_channel = name

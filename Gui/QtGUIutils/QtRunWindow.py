@@ -37,6 +37,7 @@ from Gui.python.logging_config import get_logger
 from InnerTrackerTests.TestSequences import CompositeTests_Modules
 from icicle.icicle.psi_coldbox import PSIColdbox
 from icicle.icicle.instrument import InstrumentTimeoutError
+from Gui.python.icicleCompat import coldbox_off_keep_lv, measured_temperature
 
 logger = get_logger(__name__)
 
@@ -186,9 +187,10 @@ class QtRunWindow(QWidget):
                     ),
                 ),
             )
+            # TECs off with LV still on; LV goes off after wait_for_temp
             coldbox_stopped = attempt(
                 "coldbox power down",
-                lambda: instruments.cb_off(checkstatus=False),
+                lambda: coldbox_off_keep_lv(instruments),
             )
             if coldbox_stopped:
                 attempt("coldbox temperature wait", self.wait_for_temp)
@@ -795,8 +797,8 @@ class QtRunWindow(QWidget):
             if "cb" in module and isinstance(module["cb"], PSIColdbox.TemperatureChannel):
                 logger.info("Preparing to turn off LV power.  Waiting for temperature to reach safe level.")
                 logger.info("LV powering off.")
-                logger.debug(f"Module temperature {module['cb'].measure_temperature} for module {module_id}")
-                while module["cb"].measure_temperature < site_settings.coldboxRoomTemp:
-                    logger.debug(f"Module temperature {module['cb'].measure_temperature} for module {module_id}")
+                logger.debug(f"Module temperature {measured_temperature(module['cb'])} for module {module_id}")
+                while measured_temperature(module["cb"]) < site_settings.coldboxRoomTemp:
+                    logger.debug(f"Module temperature {measured_temperature(module['cb'])} for module {module_id}")
                     time.sleep(0.1)
-            logger.debug(f"Final module temperature before turning lv off {module['cb'].measure_temperature} for module {module_id}")
+                logger.debug(f"Final module temperature before turning lv off {measured_temperature(module['cb'])} for module {module_id}")

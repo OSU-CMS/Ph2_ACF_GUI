@@ -69,6 +69,7 @@ from Gui.python.TrimbitHandler import TrimbitCurveHandler
 import Gui.siteSettings as site_settings
 from Gui.python.logging_config import get_logger
 from Gui.python.CustomizedWidget import chip_iref_db
+from Gui.python.icicleCompat import any_output_on
 from InnerTrackerTests.TestSequences import CompositeTests_Modules, Test_to_Ph2ACF_Map, OpenBumpTest
 from Gui.siteSettings import icicle_instrument_setup, UI_testing, WorkingChannels
 from InnerTrackerTests.QCSettings import CAL_EDGE_ADDEND
@@ -924,13 +925,7 @@ class TestHandler(QObject):
             return
 
         if self.instruments:
-            lv_on = False
-            for number in self.instruments.get_modules().keys():
-                print(self.instruments.status()[number]["lv"])
-                if self.instruments.status()[number]["lv"]:
-                    lv_on = True
-                    break
-            if not lv_on:
+            if not any_output_on(self.instruments, "lv"):
                 self.instruments.lv_on(
                     voltage=site_settings.ModuleVoltageMapSLDO[
                         self.master.module_in_use
@@ -1000,13 +995,8 @@ class TestHandler(QObject):
                 "instrument_dict"
             ]["hv"]["default_voltage"]
             # assumes only 1 HV titled 'hv' in instruments.json
-            hv_status = False
-            #Checking the status of the HV supply
-            for number in self.instruments.get_modules().keys():
-                if self.instruments.status()[number]["hv"] == "1":
-                    hv_status = True
-                    break
-            if not hv_status:
+            # Checking the status of the HV supply
+            if not any_output_on(self.instruments, "hv"):
                 self.instruments.hv_on(voltage=0, delay=0.5, step_size=10, no_lock=True)
                 self.powergroup.enable_all()
                 print("trying to turn on HV")
