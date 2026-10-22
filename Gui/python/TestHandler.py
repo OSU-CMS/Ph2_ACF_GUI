@@ -1,5 +1,5 @@
 from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal, QObject, QProcess, Qt, QTimer
+from PyQt5.QtCore import pyqtSignal, QObject, QProcess, Qt, QThread, QTimer
 from PyQt5.QtGui import QBrush, QColor, QFont
 from PyQt5.QtWidgets import (
     QMessageBox,
@@ -119,6 +119,23 @@ class DummyInstrumentCluster:
         return _noop
 
 
+class _CallableThread(QThread):
+    """Run a function on a worker thread, keeping any exception it raises in `error`
+    for the GUI thread to report after `finished`."""
+
+    def __init__(self, function):
+        super().__init__()
+        self._function = function
+        self.error = None
+
+    def run(self):
+        try:
+            self._function()
+        except Exception as error:
+            logger.error(traceback.format_exc())
+            self.error = error
+
+
 # Setup enum for ProgressigMode. This ensures we don't use any unhandled states on accident
 # Dont work about the values
 class ProgressMode(Enum):
@@ -134,6 +151,7 @@ class TestHandler(QObject):
     finishSignal = pyqtSignal(object)
     proceedSignal = pyqtSignal(object)
     outputString = pyqtSignal(str, QPlainTextEdit)
+    setProgressBarValue = pyqtSignal(QProgressBar, int)  # for updates from worker threads
     stepFinished = pyqtSignal(object)
     historyRefresh = pyqtSignal()
     updateResult = pyqtSignal(object)
@@ -229,6 +247,7 @@ class TestHandler(QObject):
 
         self.IVCurveHandler = None
         self.SLDOScanHandler = None
+        self.GADCWorker = None
         self.trimbitHandler = None
         self.starttime = None
         self._OBT_starttime = None
@@ -331,6 +350,7 @@ class TestHandler(QObject):
 
         self.haltSignal.connect(self.runwindow.finish)
         self.outputString.connect(self.runwindow.updateConsoleInfo)
+        self.setProgressBarValue.connect(self._setProgressBarValue)
         self.stepFinished.connect(self.runwindow.finish)
         self.historyRefresh.connect(self.runwindow.refreshHistory)
         self.updateResult.connect(self.runwindow.updateResult)
@@ -715,6 +735,8 @@ class TestHandler(QObject):
     ) -> None:
         """Run one Ph2_ACF physics run per FC7 and store each chip's GADC readings
         under the module it belongs to, at that module's LV current."""
+        if self.halt:
+            return
         starting_current = site_settings.SLDOScan_GADC[
             self.master.module_in_use.split(" ")[-1].lower()
         ]["starting current"]
@@ -778,24 +800,32 @@ class TestHandler(QObject):
 
         for process, fc7_index, chunks in runs:
             board_name = self.firmware[fc7_index].getBoardName()
-            if process.state() != QProcess.NotRunning:
-                if not process.waitForFinished(-1):  # waits indefinitely
+            # Poll instead of waiting indefinitely so a Stop can kill the run
+            while process.state() != QProcess.NotRunning and not process.waitForFinished(500):
+                if self.halt:
+                    process.kill()
+                    process.waitForFinished(3000)
+                    break
+                if process.state() == QProcess.NotRunning:
                     logger.error(
                         f"Ph2_ACF physics test on {board_name} didn't excute correctly."
                     )
-                    process.kill()
             # Collect anything still buffered after the process exited
             self.on_readyReadStandardOutput_GADC(process, fc7_index, chunks)
+            if self.halt:
+                continue
             self.parseGADCOutput(
                 "".join(chunks), self.firmware[fc7_index], module_currents, upOrDown
             )
 
         if self.currentTest == "SLDOScan_GADC":
             self.ProgressValue += 1
+            # Signal rather than setValue: this runs on the SLDOScan_GADC worker thread
             for i in range(len(self.firmware)):
-                self.runwindow.ResultWidget.ProgressBars[i][
-                    self.testIndexTracker
-                ].setValue(100 * self.ProgressValue / total_steps)
+                self.setProgressBarValue.emit(
+                    self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker],
+                    int(100 * self.ProgressValue / total_steps),
+                )
 
     def runSingleTest(self, testName, nextTest=None):
         self.starttime = time.time()
@@ -852,13 +882,6 @@ class TestHandler(QObject):
 
         if testName == "SLDOScan_GADC":
             self.resetSLDOData()
-            starting_voltages = [
-                np.abs(getattr(module["hv"], "voltage"))
-                for module in self.instruments._module_dict.values()
-            ]
-            self.instruments.hv_off(
-                execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
-            )
 
             if "1x2" in self.ModuleType.lower():
                 SLDOScan_GADC_dict = site_settings.SLDOScan_GADC["1x2"]
@@ -886,42 +909,16 @@ class TestHandler(QObject):
                     self.testIndexTracker
                 ].setValue(0)
 
-            self.instruments.lv_on(
-                voltage=SLDOScan_GADC_dict["voltage"],
-                current=SLDOScan_GADC_dict["starting current"],
+            # The sweep takes minutes; run it off the GUI thread so the window
+            # (terminal, Stop button) stays responsive. SLDOScanGADCFinished
+            # continues on the GUI thread when it is done.
+            self.GADCWorker = _CallableThread(
+                lambda: self.runSLDOScanGADCSweep(SLDOScan_GADC_dict, total_steps)
             )
-
-            self.instruments.lv_sweep(
-                target=SLDOScan_GADC_dict["target current"],
-                delay=0.1,
-                set_property="current",
-                measure=True,
-                step_size=SLDOScan_GADC_dict["step size"],
-                execute_each_step=lambda: self.GADC_execute_each_step(
-                    "up", total_steps
-                ),
-            )
-
-            self.instruments.lv_sweep(
-                target=SLDOScan_GADC_dict["starting current"],
-                delay=0.1,
-                set_property="current",
-                measure=True,
-                step_size=SLDOScan_GADC_dict["step size"],
-                execute_each_step=lambda: self.GADC_execute_each_step(
-                    "down", total_steps
-                ),
-            )
-
-            self.instruments.lv_off()
-
-            for i in range(len(self.firmware)):
-                self.runwindow.ResultWidget.ProgressBars[i][
-                    self.testIndexTracker
-                ].setValue(100)
-
-            # GADC plots are made per module in SLDOScanFinished
-            self.SLDOScanFinished()
+            self.GADCWorker.finished.connect(self.SLDOScanGADCFinished)
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit("Beginning SLDOScan_GADC", console)
+            self.GADCWorker.start()
             return
 
         if self.instruments:
@@ -1210,6 +1207,11 @@ class TestHandler(QObject):
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting SLDOScan", console)
             self.SLDOScanHandler.stop()
+        if self.GADCWorker is not None:
+            # self.halt stops the sweep and kills the running physics run; the
+            # worker then switches LV off
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit("Aborting SLDOScan_GADC", console)
         if self.trimbitHandler:
             for console in self.runwindow.ConsoleViews:
                 self.outputString.emit("Aborting TrimbitScan", console)
@@ -2845,6 +2847,68 @@ created by Ph2_ACF is empty."
                 ):
                     continue
                 self.makeSLDOTemperatureCSV(temperature_data, str(chip), "GADC", modules=[module])
+
+    def _setProgressBarValue(self, bar: QProgressBar, value: int):
+        bar.setValue(value)
+
+    def runSLDOScanGADCSweep(self, SLDOScan_GADC_dict, total_steps):
+        """Body of SLDOScan_GADC; runs on self.GADCWorker. Stops early when self.halt is set."""
+        try:
+            starting_voltages = [
+                np.abs(getattr(module["hv"], "voltage"))
+                for module in self.instruments._module_dict.values()
+            ]
+            self.instruments.hv_off(
+                execute_each_step=lambda: self.ramp_progress_bar(starting_voltages)
+            )
+            self.instruments.lv_on(
+                voltage=SLDOScan_GADC_dict["voltage"],
+                current=SLDOScan_GADC_dict["starting current"],
+            )
+            for direction, target in (
+                ("up", SLDOScan_GADC_dict["target current"]),
+                ("down", SLDOScan_GADC_dict["starting current"]),
+            ):
+                if self.halt:
+                    break
+                self.instruments.lv_sweep(
+                    target=target,
+                    delay=0.1,
+                    set_property="current",
+                    measure=True,
+                    step_size=SLDOScan_GADC_dict["step size"],
+                    execute_each_step=functools.partial(
+                        self.GADC_execute_each_step, direction, total_steps
+                    ),
+                    break_loop=lambda: self.halt,
+                )
+        finally:
+            try:
+                self.instruments.lv_off()
+            except Exception:
+                logger.error(traceback.format_exc())
+
+    def SLDOScanGADCFinished(self):
+        """Continue SLDOScan_GADC on the GUI thread once its sweep worker is done."""
+        worker, self.GADCWorker = self.GADCWorker, None
+        if worker is not None:
+            worker.wait()  # finished can arrive before run() has fully returned
+        if worker is not None and worker.error is not None:
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit(f"SLDOScan_GADC failed: {worker.error!r}", console)
+            if not self.halt:
+                self.halt = True
+                self.haltSignal.emit(self.halt)
+            return
+        if self.halt:
+            for console in self.runwindow.ConsoleViews:
+                self.outputString.emit("SLDOScan_GADC stopped", console)
+            return
+
+        for i in range(len(self.firmware)):
+            self.runwindow.ResultWidget.ProgressBars[i][self.testIndexTracker].setValue(100)
+        # GADC plots are made per module in SLDOScanFinished
+        self.SLDOScanFinished()
 
     def SLDOScanFinished(self):
         self.makeGADCSLDOPlots()
