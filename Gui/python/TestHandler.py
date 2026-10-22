@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 )
 
 import os
+import functools
 from enum import Enum
 import shutil
 import glob
@@ -168,30 +169,8 @@ class TestHandler(QObject):
             module.getModuleName(): module.getEnabled() for module in self.modules
         }
 
-        self.GADC_meas_chip = None
-        self.VDDDup = {channel: {} for channel in self.instruments._module_dict}
-        self.VDDDdown = {channel: {} for channel in self.instruments._module_dict}
-        self.VDDAdown = {channel: {} for channel in self.instruments._module_dict}
-        self.VDDAup = {channel: {} for channel in self.instruments._module_dict}
-        self.VINDup = {channel: {} for channel in self.instruments._module_dict}
-        self.VINDdown = {channel: {} for channel in self.instruments._module_dict}
-        self.VINAdown = {channel: {} for channel in self.instruments._module_dict}
-        self.VINAup = {channel: {} for channel in self.instruments._module_dict}
-
-        self.VDDDupError = {channel: {} for channel in self.instruments._module_dict}
-        self.VDDDdownError = {channel: {} for channel in self.instruments._module_dict}
-        self.VDDAdownError = {channel: {} for channel in self.instruments._module_dict}
-        self.VDDAupError = {channel: {} for channel in self.instruments._module_dict}
-        self.VINDupError = {channel: {} for channel in self.instruments._module_dict}
-        self.VINDdownError = {channel: {} for channel in self.instruments._module_dict}
-        self.VINAdownError = {channel: {} for channel in self.instruments._module_dict}
-        self.VINAupError = {channel: {} for channel in self.instruments._module_dict}
-        self.INTERNAL_NTC_ABSup = {channel: {} for channel in self.instruments._module_dict}
-        self.INTERNAL_NTC_ABSdown = {channel: {} for channel in self.instruments._module_dict}
-
-        self.INTERNAL_NTC_ABSupError = {channel: {} for channel in self.instruments._module_dict}
-        self.INTERNAL_NTC_ABSdownError = {channel: {} for channel in self.instruments._module_dict}
-        self.SLDOfilelist = []
+        # GADC SLDO data, keyed as self.<observable><up|down>[moduleName][chip][current]
+        self.resetSLDOData()
 
         self.BBanalysis_root_files = []
 
@@ -719,70 +698,96 @@ class TestHandler(QObject):
                 "You do not have instruments required to run a Trimbit scan connected.\nYou must have an Adc Board."
             )
 
+    def resetSLDOData(self):
+        """Clear GADC SLDO measurements and the SLDO file list before a new SLDO scan."""
+        for observable in ("VDDD", "VDDA", "VIND", "VINA", "INTERNAL_NTC_ABS"):
+            for direction in ("up", "down"):
+                setattr(self, observable + direction, {})
+                setattr(self, observable + direction + "Error", {})
+        self.SLDOfilelist = []
+
     def GADC_execute_each_step(
         self,
         upOrDown: str,
         total_steps: int,
         physics_seconds: int = site_settings.SLDOScan_GADC["physics seconds"],
-        fc7_index: int = 0,
     ) -> None:
-        GADC_processes = [
-            QProcess() for _ in self.instruments._module_dict
-        ]  # loops through channels
-        for i, process in enumerate(GADC_processes):
-            voltage = getattr(
-                tuple(self.instruments._module_dict.values())[i]["lv"], "voltage"
-            )
-            current = getattr(
-                tuple(self.instruments._module_dict.values())[i]["lv"], "current"
-            )
-            if (
-                current
-                < site_settings.SLDOScan_GADC[
-                    self.master.module_in_use.split(" ")[-1].lower()
-                ]["starting current"]
-            ):
+        """Run one Ph2_ACF physics run per FC7 and store each chip's GADC readings
+        under the module it belongs to, at that module's LV current."""
+        starting_current = site_settings.SLDOScan_GADC[
+            self.master.module_in_use.split(" ")[-1].lower()
+        ]["starting current"]
+
+        # LV current of each module at this sweep step, read from its own LV channel
+        module_dict = self.instruments._module_dict
+        module_currents = {}
+        for module, key in self._get_module_cluster_keys().items():
+            if key is None or not self._module_is_enabled(module):
                 continue
-            print(f"Beginning physics test at {voltage}V and {current}A")
-            self.outputString.emit(
-                f"Beginning physics test at {voltage}V and {current}A",
-                self.runwindow.ConsoleViews[fc7_index],
+            lv = module_dict[key]["lv"]
+            voltage = getattr(lv, "voltage")
+            current = getattr(lv, "current")
+            if current < starting_current:
+                continue
+            module_currents[module] = current
+            logger.info(
+                f"Beginning physics test for {module.getModuleName()} at {voltage}V and {current}A"
             )
 
+        runs = []  # (process, fc7_index, output chunks)
+        for fc7_index, beboard in enumerate(self.firmware):
+            board_modules = [m for m in beboard.getModules() if m in module_currents]
+            if not board_modules:
+                continue
+            for module in board_modules:
+                self.outputString.emit(
+                    f"Beginning physics test for {module.getModuleName()} at {module_currents[module]}A",
+                    self.runwindow.ConsoleViews[fc7_index],
+                )
+
+            process = QProcess()
             process.setProcessChannelMode(QtCore.QProcess.MergedChannels)
             process.setWorkingDirectory(os.environ.get("PH2ACF_BASE_DIR") + "/test/")
-
+            chunks = []
+            # Bind this run's process/board explicitly; a bare lambda would see the
+            # loop's last values by the time output arrives. DirectConnection keeps the
+            # handler on the thread running this sweep: SLDOScan calls this from its
+            # worker thread, and PyQt would otherwise queue a partial of a TestHandler
+            # method to the GUI thread, racing with the parse below.
             process.readyReadStandardOutput.connect(
-                lambda: self.on_readyReadStandardOutput_GADC(
-                    process,
-                    i,
-                    upOrDown,
-                    current,
-                    channel=tuple(self.instruments._module_dict.keys())[i],
-                )
+                functools.partial(self.on_readyReadStandardOutput_GADC, process, fc7_index, chunks),
+                Qt.DirectConnection,
             )
-            enable_temp = self.shouldStoreSLDOTemperature(current)
+            enable_temp = any(
+                self.shouldStoreSLDOTemperature(module_currents[m]) for m in board_modules
+            )
             self.setSLDOTemperatureMonitoringInXML(fc7_index, enable_temp)
             process.start(
                 "CMSITminiDAQ",
                 [
                     "-f",
-                    f"CMSIT_{self.firmware[fc7_index].getBoardName()}_{self.currentTest}.xml",
+                    f"CMSIT_{beboard.getBoardName()}_{self.currentTest}.xml",
                     "-c",
                     "physics",
                     "-t",
                     str(physics_seconds),
                 ],
             )
+            runs.append((process, fc7_index, chunks))
 
-        for process, firmware in zip(GADC_processes, self.firmware):
+        for process, fc7_index, chunks in runs:
+            board_name = self.firmware[fc7_index].getBoardName()
             if process.state() != QProcess.NotRunning:
-                result = process.waitForFinished(-1)  # waits indefinitely
-                if not result:
+                if not process.waitForFinished(-1):  # waits indefinitely
                     logger.error(
-                        f"Ph2_ACF physics test on {firmware.getBoardName()} didn't excute correctly."
+                        f"Ph2_ACF physics test on {board_name} didn't excute correctly."
                     )
                     process.kill()
+            # Collect anything still buffered after the process exited
+            self.on_readyReadStandardOutput_GADC(process, fc7_index, chunks)
+            self.parseGADCOutput(
+                "".join(chunks), self.firmware[fc7_index], module_currents, upOrDown
+            )
 
         if self.currentTest == "SLDOScan_GADC":
             self.ProgressValue += 1
@@ -845,6 +850,7 @@ class TestHandler(QObject):
         #     self.outputfile = open(self.outputFile, "w")
 
         if testName == "SLDOScan_GADC":
+            self.resetSLDOData()
             starting_voltages = [
                 np.abs(getattr(module["hv"], "voltage"))
                 for module in self.instruments._module_dict.values()
@@ -884,7 +890,7 @@ class TestHandler(QObject):
                 current=SLDOScan_GADC_dict["starting current"],
             )
 
-            up_sweep = self.instruments.lv_sweep(
+            self.instruments.lv_sweep(
                 target=SLDOScan_GADC_dict["target current"],
                 delay=0.1,
                 set_property="current",
@@ -895,7 +901,7 @@ class TestHandler(QObject):
                 ),
             )
 
-            down_sweep = self.instruments.lv_sweep(
+            self.instruments.lv_sweep(
                 target=SLDOScan_GADC_dict["starting current"],
                 delay=0.1,
                 set_property="current",
@@ -913,41 +919,7 @@ class TestHandler(QObject):
                     self.testIndexTracker
                 ].setValue(100)
 
-            for datatype in ("VDDD", "VDDA"):
-                for channel in self.instruments._module_dict:
-                    for chip in self.VDDDup[channel]:
-                        data = [
-                            [sweep_step[-1] for sweep_step in up_sweep[0][1]],
-                            [
-                                float(i)
-                                for i in getattr(self, f"VIN{datatype[-1]}up")[channel][
-                                    chip
-                                ].values()
-                            ],
-                            [
-                                float(i)
-                                for i in getattr(self, f"{datatype}up")[channel][
-                                    chip
-                                ].values()
-                            ],
-                            [sweep_step[-1] for sweep_step in down_sweep[0][1]],
-                            [
-                                float(i)
-                                for i in getattr(self, f"VIN{datatype[-1]}down")[
-                                    channel
-                                ][chip].values()
-                            ],
-                            [
-                                float(i)
-                                for i in getattr(self, f"{datatype}down")[channel][
-                                    chip
-                                ].values()
-                            ],
-                        ]
-                        print(data)
-
-                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", "GADC")
-                        self.makeSLDOPlot(data, f"{datatype}_ROC{int(chip)}", "GADC")
+            # GADC plots are made per module in SLDOScanFinished
             self.SLDOScanFinished()
             return
 
@@ -988,6 +960,7 @@ class TestHandler(QObject):
         if "SLDOScan" in testName and "GADC" not in testName:
             self.currentTest = testName
             self.configTest()
+            self.resetSLDOData()
             self.SLDOScanData = []
             self.SLDOProgressValue = 0
             self.SLDOScanHandler = SLDOCurveHandler(
@@ -2271,123 +2244,97 @@ created by Ph2_ACF is empty."
             or np.isclose(current, cfg["target current"])
         )
     
-    @QtCore.pyqtSlot()
-    def on_readyReadStandardOutput_GADC(
-        self, process: QProcess, fc7_index: int, upOrDown: str, current, channel
-    ):
-        if self.readingOutput:
-            print("Thread competition detected")
+    def on_readyReadStandardOutput_GADC(self, process: QProcess, fc7_index: int, chunks: list):
+        """Stream a GADC physics run's output to its FC7's output.txt and console.
+        The text is also kept in chunks so it can be parsed once the run is complete."""
+        alltext = process.readAllStandardOutput().data().decode(errors="replace")
+        if not alltext:
             return
-        self.readingOutput = True
-
-        alltext = process.readAllStandardOutput().data().decode()
+        chunks.append(alltext)
 
         try:
             fc7name = self.firmware[fc7_index].getBoardName()
             outpath = os.path.join(self.output_dir, fc7name, "output.txt")
-            mode = "a" if os.path.exists(outpath) else "w"
-            logger.debug(f"{mode=}")
-            with open(outpath, mode) as outputfile:
+            with open(outpath, "a") as outputfile:
                 outputfile.write(alltext)
         except Exception:
             logger.error("Failed writing GADC output to per-FC7 file")
             logger.error(traceback.format_exc())
-        textline = alltext.split("\n")
 
-        for textStr in textline:
-            text = textStr.encode("ascii")
-            _, text = parseANSI(text)
+        for textStr in alltext.split("\n"):
+            _, text = parseANSI(textStr.encode("ascii", errors="ignore"))
             self.outputString.emit(
                 text.decode("utf-8"), self.runwindow.ConsoleViews[fc7_index]
             )
 
-            self.runwindow.ConsoleViews[fc7_index].update()
+    def parseGADCOutput(self, alltext, beboard, module_currents, upOrDown):
+        """Store GADC readings from one FC7's physics run under the module each chip belongs to.
 
+        Ph2_ACF prints "data for [board/opticalGroup/hybrid/chip = b/o/h/c]" before each
+        chip's readings; the XML uses the optical group ID and the module's FMC port as
+        the hybrid ID, so (opticalGroup, hybrid) identifies the module on this board.
+        Modules not in module_currents (disabled, or below the starting current) are skipped.
+        """
+        hybrid_to_module = {
+            (str(m.getOpticalGroup().getOpticalGroupID()), str(m.getFMCPort())): m
+            for m in beboard.getModules()
+        }
+        module = None
+        chip = None
+        unknown_hybrids = set()
+
+        for textStr in alltext.split("\n"):
             textStr = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]").sub("", textStr)
             match = re.search(
                 r"data for \[board/opticalGroup/hybrid/chip = (\d+)/(\d+)/(\d+)/(\d+)\]",
                 textStr,
             )
             if match:
-                self.GADC_meas_chip = match.group(4)
-            else:
-                #match = re.search(r"(\w+):\s*([\d.]+)\s*\+/-\s*([\d.]+)\s*V", textStr)
-                match = re.search(
-                    r"(\w+):\s*([-+]?\d*\.?\d+)\s*\+/-\s*([-+]?\d*\.?\d+)\s*([A-Za-z]+)",
-                    textStr,
+                chip = match.group(4)
+                module = hybrid_to_module.get((match.group(2), match.group(3)))
+                if module is None:
+                    unknown_hybrids.add((match.group(2), match.group(3)))
+                continue
+
+            match = re.search(
+                r"(\w+):\s*([-+]?\d*\.?\d+)\s*\+/-\s*([-+]?\d*\.?\d+)\s*([A-Za-z]+)",
+                textStr,
+            )
+            if not match:
+                continue
+            observable = match.group(1)
+            if observable not in ("VDDD", "VDDA", "VINA", "VIND", "INTERNAL_NTC_ABS"):
+                continue
+            if chip is None:
+                logger.error(
+                    f'Did not receive expected message, "Reading monitored data for '
+                    f'[board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"'
                 )
-                if match:
-                    if self.GADC_meas_chip is not None:
-                        if match.group(1) in ("VDDD", "VDDA", "VINA", "VIND"):
-                            multiplier = site_settings.SLDOScan_GADC["multipliers"][
-                                match.group(1)[:3]
-                            ]
+                continue
+            if module not in module_currents:
+                continue
 
-                            if (
-                                self.GADC_meas_chip
-                                not in getattr(self, match.group(1) + upOrDown)[channel]
-                            ):
-                                getattr(self, match.group(1) + upOrDown)[channel][
-                                    self.GADC_meas_chip
-                                ] = {}
-                            getattr(self, match.group(1) + upOrDown)[channel][
-                                self.GADC_meas_chip
-                            ][current] = (
-                                float(match.group(2)) * multiplier
-                            )  # This line enforces that it only logs one VDDD or VDDA value per sweep step
+            current = module_currents[module]
+            if observable == "INTERNAL_NTC_ABS":
+                if not self.shouldStoreSLDOTemperature(current):
+                    continue
+                multiplier = 1
+            else:
+                multiplier = site_settings.SLDOScan_GADC["multipliers"][observable[:3]]
 
-                            if (
-                                self.GADC_meas_chip
-                                not in getattr(
-                                    self, match.group(1) + upOrDown + "Error"
-                                )[channel]
-                            ):
-                                getattr(self, match.group(1) + upOrDown + "Error")[
-                                    channel
-                                ][self.GADC_meas_chip] = {}
-                            getattr(self, match.group(1) + upOrDown + "Error")[channel][
-                                self.GADC_meas_chip
-                            ][current] = (
-                                float(match.group(3)) * multiplier
-                            )  # This line enforces that it only logs one VDDD or VDDA value per sweep step
-                        elif match.group(1) == "INTERNAL_NTC_ABS":
-                            if not self.shouldStoreSLDOTemperature(current):
-                                continue
+            moduleName = module.getModuleName()
+            # One value per chip per sweep step, keyed by this module's LV current
+            for attr, value in (
+                (observable + upOrDown, float(match.group(2)) * multiplier),
+                (observable + upOrDown + "Error", float(match.group(3)) * multiplier),
+            ):
+                getattr(self, attr).setdefault(moduleName, {}).setdefault(chip, {})[current] = value
 
-                            if (
-                                self.GADC_meas_chip
-                                not in getattr(self, match.group(1) + upOrDown)[channel]
-                            ):
-                                getattr(self, match.group(1) + upOrDown)[channel][
-                                    self.GADC_meas_chip
-                                ] = {}
-
-                            getattr(self, match.group(1) + upOrDown)[channel][
-                                self.GADC_meas_chip
-                            ][current] = float(match.group(2))
-
-                            if (
-                                self.GADC_meas_chip
-                                not in getattr(self, match.group(1) + upOrDown + "Error")[channel]
-                            ):
-                                getattr(self, match.group(1) + upOrDown + "Error")[channel][
-                                    self.GADC_meas_chip
-                                ] = {}
-
-                            getattr(self, match.group(1) + upOrDown + "Error")[channel][
-                                self.GADC_meas_chip
-                            ][current] = float(match.group(3))
-                    else:
-                        print(
-                            f'Error: Did not receive expected message, "Reading monitored data for \
-                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"'
-                        )
-                        logger.error(
-                            f'Did not receive expected message, "Reading monitored data for \
-                        [board/opticalGroup/hybrid/chip = ...]", before measurement message "{match.group(0)}"'
-                        )
-
-        self.readingOutput = False
+        if unknown_hybrids:
+            logger.warning(
+                f"GADC output on {beboard.getBoardName()} had readings for (opticalGroup, hybrid) "
+                f"{sorted(unknown_hybrids)} that match no module on this board; they were ignored."
+            )
 
     @QtCore.pyqtSlot()
     def on_finish(self, processIndex: int):
@@ -2626,8 +2573,9 @@ created by Ph2_ACF is empty."
             return
 
         tree.write(xml_path)
-    def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str):
-        for module in self.enabled_modules():
+    def makeSLDOPlot(self, total_result: np.ndarray, pin: str, method: str, modules=None):
+        """Save an SLDO curve for each of modules (default: every enabled module)."""
+        for module in (modules if modules is not None else self.enabled_modules()):
             moduleName = module.getModuleName()
             fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
             filename = "{0}/SLDOCurve_Module_{1}_{2}_{3}.svg".format(
@@ -2676,8 +2624,9 @@ created by Ph2_ACF is empty."
 
             self.figurelist[moduleName] = [filename]
 
-    def makeSLDOTemperatureCSV(self, total_result: np.ndarray, chip: str, method: str):
-        for module in self.enabled_modules():
+    def makeSLDOTemperatureCSV(self, total_result: np.ndarray, chip: str, method: str, modules=None):
+        """Save chip temperatures for each of modules (default: every enabled module)."""
+        for module in (modules if modules is not None else self.enabled_modules()):
             moduleName = module.getModuleName()
             fc7name = module.getOpticalGroup().getBeBoard().getBoardName()
 
@@ -2869,27 +2818,46 @@ created by Ph2_ACF is empty."
         if isCompositeTest(self.info):
             self.runTest()
 
-    def SLDOScanFinished(self):
-        for channel in self.instruments._module_dict:
-            for chip in self.INTERNAL_NTC_ABSup[channel]:
-                if (
-                    chip not in self.INTERNAL_NTC_ABSdown[channel]
-                    or chip not in self.INTERNAL_NTC_ABSupError[channel]
-                    or chip not in self.INTERNAL_NTC_ABSdownError[channel]
+    def makeGADCSLDOPlots(self):
+        """Write each module's GADC SLDO curves and chip temperatures from its own data."""
+        for module in self.enabled_modules():
+            moduleName = module.getModuleName()
+
+            for datatype in ("VDDD", "VDDA"):
+                vin = f"VIN{datatype[-1]}"
+                for chip in getattr(self, f"{datatype}up").get(moduleName, {}):
+                    rows = []
+                    for direction in ("up", "down"):
+                        vdd_values = getattr(self, datatype + direction).get(moduleName, {}).get(chip, {})
+                        vin_values = getattr(self, vin + direction).get(moduleName, {}).get(chip, {})
+                        currents = [c for c in vdd_values if c in vin_values]
+                        rows += [
+                            currents,
+                            [float(vin_values[c]) for c in currents],
+                            [float(vdd_values[c]) for c in currents],
+                        ]
+                    if not rows[0] or len(rows[0]) != len(rows[3]):
+                        logger.error(
+                            f"Skipping GADC {datatype} plot for {moduleName} ROC{chip}: "
+                            f"{len(rows[0])} up and {len(rows[3])} down sweep points."
+                        )
+                        continue
+                    self.makeSLDOPlot(rows, f"{datatype}_ROC{int(chip)}", "GADC", modules=[module])
+
+            for chip in self.INTERNAL_NTC_ABSup.get(moduleName, {}):
+                temperature_data = []
+                for direction in ("up", "down"):
+                    values = getattr(self, "INTERNAL_NTC_ABS" + direction).get(moduleName, {}).get(chip, {})
+                    errors = getattr(self, "INTERNAL_NTC_ABS" + direction + "Error").get(moduleName, {}).get(chip, {})
+                    temperature_data += [list(values.keys()), list(values.values()), list(errors.values())]
+                if not temperature_data[0] or not all(
+                    len(row) == len(temperature_data[0]) for row in temperature_data
                 ):
                     continue
+                self.makeSLDOTemperatureCSV(temperature_data, str(chip), "GADC", modules=[module])
 
-                temperature_data = [
-                    list(self.INTERNAL_NTC_ABSup[channel][chip].keys()),
-                    list(self.INTERNAL_NTC_ABSup[channel][chip].values()),
-                    list(self.INTERNAL_NTC_ABSupError[channel][chip].values()),
-                    list(self.INTERNAL_NTC_ABSdown[channel][chip].keys()),
-                    list(self.INTERNAL_NTC_ABSdown[channel][chip].values()),
-                    list(self.INTERNAL_NTC_ABSdownError[channel][chip].values()),
-                ]
-                if not all(len(row) == len(temperature_data[0]) for row in temperature_data):
-                    continue
-                self.makeSLDOTemperatureCSV(temperature_data, str(chip), "GADC")
+    def SLDOScanFinished(self):
+        self.makeGADCSLDOPlots()
         for module in self.enabled_modules():
             ogId = module.getOpticalGroup().getOpticalGroupID()
             beboardId = module.getOpticalGroup().getBeBoard().getBoardID()
@@ -2902,8 +2870,13 @@ created by Ph2_ACF is empty."
                 )
             )
 
+            # Only this module's CSVs; SLDOfilelist holds every module's files
+            module_files = list(dict.fromkeys(
+                f for f in self.SLDOfilelist
+                if f"_Module_{moduleName}_" in os.path.basename(f)
+            ))
             SLDO_CSV_to_ROOT2(
-                moduleName, module_canvas_path, self.SLDOfilelist, os.path.join(self.output_dir,fc7name)
+                moduleName, module_canvas_path, module_files, os.path.join(self.output_dir,fc7name)
             )
 
         self.validateTest()

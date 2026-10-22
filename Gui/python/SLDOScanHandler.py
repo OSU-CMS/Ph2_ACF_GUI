@@ -131,7 +131,7 @@ class SLDOCurveWorker(QThread):
 
         self.instruments.lv_on(current=self.starting_current, voltage=self.max_voltage)
         # sweep from the starting current to the target current, preliminary data processing
-        data_up = self.instruments.lv_sweep(
+        data_up = self.sweepEachLV(
             target=self.target_current,
             delay=self.delay,
             step_size=self.step_size,
@@ -145,7 +145,7 @@ class SLDOCurveWorker(QThread):
         data_up = data_up[self.LV_index][1]
 
         # sweep from the target current to the starting current, preliminary data processing
-        data_down = self.instruments.lv_sweep(
+        data_down = self.sweepEachLV(
             target=self.starting_current,
             delay=self.delay,
             step_size=self.step_size,
@@ -166,19 +166,8 @@ class SLDOCurveWorker(QThread):
         LV_Voltage_Up = [res[pin10index] for res in data_up]
         LV_Voltage_Down = [res[pin10index] for res in data_down]
         
-        ### The structure of self.testhandler.VDDDup[channel][chip] os that it is a list of dictionaries
-        ### where the keys are the current and the values are the voltage read from the GADC.
-        for channel in self.instruments._module_dict:
-            for chip in self.testhandler.VDDDup[channel]:
-                VDDDupData = np.array([list(self.testhandler.VDDDup[channel][chip].keys()), list(self.testhandler.VINDup[channel][chip].values()), list(self.testhandler.VDDDup[channel][chip].values())])
-                VDDDdownData = np.array([list(self.testhandler.VDDDdown[channel][chip].keys()), list(self.testhandler.VINDdown[channel][chip].values()), list(self.testhandler.VDDDdown[channel][chip].values())])
-                VDDAupData = np.array([list(self.testhandler.VDDAup[channel][chip].keys()), list(self.testhandler.VINAup[channel][chip].values()), list(self.testhandler.VDDAup[channel][chip].values())])
-                VDDAdownData = np.array([list(self.testhandler.VDDAdown[channel][chip].keys()), list(self.testhandler.VINAdown[channel][chip].values()), list(self.testhandler.VDDAdown[channel][chip].values())])
-                VDDDresults = np.concatenate((VDDDupData, VDDDdownData), axis=0)
-                VDDAresults = np.concatenate((VDDAupData, VDDAdownData), axis=0)
-
-                self.measure.emit(VDDDresults, "VDDD_ROC{0}".format(chip), "GADC")
-                self.measure.emit(VDDAresults, "VDDA_ROC{0}".format(chip), "GADC")
+        # GADC readings taken during the sweep (testhandler.GADC_execute_each_step) are
+        # plotted per module by TestHandler.SLDOScanFinished.
 
         print("LV Voltages Up: {0}\nLV Voltages Down: {1}".format(
             LV_Voltage_Up, LV_Voltage_Down
@@ -205,6 +194,22 @@ class SLDOCurveWorker(QThread):
             self.measure.emit(results, name, "PROBE")
 
         self.finishedSignal.emit()
+
+    def sweepEachLV(self, target, delay, step_size, measure=False, **kwargs):
+        """Sweep every module's LV in turn and return [(final_value, rows), ...] in
+        instrument cluster order.
+
+        InstrumentCluster.lv_sweep returns only an overall True/False in newer icicle
+        versions, so call lv_sweep_module (present in old and new versions) per module
+        to keep the measured rows. Each row is
+        [time, step, set V, set I, meas. V, meas. I, <measure_function values>...].
+        """
+        return [
+            self.instruments.lv_sweep_module(
+                module, target, delay, step_size, measure, **kwargs
+            )
+            for module in self.instruments._module_dict.values()
+        ]
 
     def measureADCup(self, no_lock=True, *args, **kwargs):
         self.updateProgress(1)
