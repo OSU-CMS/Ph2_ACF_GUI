@@ -1133,6 +1133,11 @@ class BeBoardBox(QWidget):
         )  # Set initial geometry (x, y, width, height)
         self.setMinimumSize(900, 300)  # Set minimum size (width, height)
 
+    @property
+    def force_purdue(self):
+        # True when the login checkbox forced Purdue-only lookups (CMS registry skipped)
+        return module_registry_client.force_purdue
+
     def initList(self):
         ModuleRow = ModuleBox(self.firmware)
         self.ModuleList.append(ModuleRow)
@@ -1423,7 +1428,7 @@ class BeBoardBox(QWidget):
                     )
 
             is_rotated = False
-            if "CROC" in module.getType() and "Quad" in module.getType():
+            if "CROC" in module.getType() and "Quad" in module.getType() and self.force_purdue==False:
                 module_metadata = self.fetchModuleTypeDB(module.getSerialNumber())
                 if (
                     module_metadata is None
@@ -1443,7 +1448,7 @@ class BeBoardBox(QWidget):
                 hdiVersion=module.getHDIVersion(),
                 FMCPort=module.getFMCPort(),
                 isRotated=is_rotated,
-                officialName=self.fetchOfficialName(module.getSerialNumber()),
+                #officialName=self.fetchOfficialName(module.getSerialNumber()),
             )
             # Entry order determines the TEC slot (see QtStartWindow._get_used_channels)
             Module.setEntryIndex(entry_index)
