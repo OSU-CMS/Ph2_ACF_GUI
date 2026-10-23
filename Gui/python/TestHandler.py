@@ -982,9 +982,10 @@ class TestHandler(QObject):
             self.SLDOScanHandler.SLDOScan()
             return
 
-        # If the HV is not already on, turn it on.
+        # If the HV is not already on, turn it on. No powering group means no HV
+        # supply under icicle control (none configured, or manual mode).
         if (
-            self.instruments
+            self.powergroup is not None
             and self.currentTest != "SLDOScan_GADC"
             and self.currentTest != "CommunicationTest"
         ):

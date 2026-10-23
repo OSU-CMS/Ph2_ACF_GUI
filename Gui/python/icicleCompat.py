@@ -27,9 +27,25 @@ _SWEEP_CALLBACKS = ("execute_each_step", "break_loop")
 def _ramp_hv_forwarding_callbacks(self, voltage, delay=1, step_size=5, measure=True, **kwargs):
     """New icicle's PoweringGroup.ramp_hv, but passing execute_each_step and
     break_loop on to the sweep (upstream accepts **kwargs and drops them, so ramp
-    progress, IV measurements and aborting a ramp never run)."""
+    progress, IV measurements and aborting a ramp never run), and raising the
+    source's voltage range when the target is beyond it.
+
+    New icicle sets the range once, from the HV default_voltage, when the source
+    is switched on, then refuses to ramp past it. A Keithley 2470 picks its 200 V
+    range for a -120 V default, so the -350 V IV curve would fail. Old icicle raised
+    the range to the ramp target before each ramp; this does the same. The range is
+    only ever raised here, never lowered, so ramping down cannot clip the output.
+    """
     if "VOLTAGE_RANGE" in self.source_channel.instrument.SETTINGS:
         voltage_range = self.source_channel.instrument.query("VOLTAGE_RANGE")
+        if abs(voltage) > voltage_range:
+            logger.info(
+                f"Raising HV source voltage range from {voltage_range} V to cover "
+                f"{voltage} V for powering group with modules {self.modulenames}."
+            )
+            # Sets the range from |voltage| and raises if the instrument cannot reach it
+            self.source_set_hvrange(voltage)
+            voltage_range = self.source_channel.instrument.query("VOLTAGE_RANGE")
         if abs(voltage) > voltage_range:
             raise ValueError(
                 f"Target voltage {voltage} V exceeds source voltage range "
@@ -72,7 +88,8 @@ def apply_icicle_patches():
       but the class in adc_board.py is ADCBoard, so neither name loads. Old icicle
       (OSU branch) maps "ADCBoard".
     - New icicle's PoweringGroup.ramp_hv (recognisable by its `measure` parameter)
-      drops execute_each_step/break_loop; old icicle's forwards **kwargs to the sweep.
+      drops execute_each_step/break_loop and won't ramp past the source's voltage
+      range; old icicle's forwards **kwargs to the sweep and raises the range first.
     """
     InstrumentCluster.package_map.setdefault("ADCBoard", "adc_board")
 

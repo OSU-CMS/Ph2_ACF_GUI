@@ -2,7 +2,6 @@ import os
 import time
 import traceback
 from serial import SerialException
-from typing import Optional
 
 from Gui.QtGUIutils.QtStartWindow import SummaryBox
 from PyQt5.QtCore import Qt, QSize, pyqtSignal, QObject, QThread, QTimer
@@ -20,7 +19,6 @@ from PyQt5.QtWidgets import (
 )
 
 import Gui.siteSettings as site_settings
-from icicle.icicle.instrument_cluster import InstrumentNotInstantiated
 from Gui.GUIutils.FirmwareUtil import fwStatusParser
 from Gui.python.CustomizedWidget import SimpleBeBoardBox
 from Gui.python.Firmware import QtBeBoard
@@ -301,8 +299,9 @@ class SimplifiedMainWidget(QWidget):
 
         self.RunButton.setIcon(RunIcon)
         self.RunButton.setIconSize(QSize(80, 80))
+        # runNewTest starts the test itself (config_and_test_Signal) once the
+        # coldbox is ready
         self.RunButton.clicked.connect(self.runNewTest)
-        self.RunButton.clicked.connect(self.config_and_test)
         self.StartLayout.addStretch(1)
         self.StartLayout.addWidget(self.TestGroup)
         self.StartLayout.addWidget(self.StopButton)
@@ -420,7 +419,6 @@ class SimplifiedMainWidget(QWidget):
             self.info = "Common_FullPerformance_Test_Fast"
         self.runFlag = True
         self.RunButton.setDisabled(True)
-        self.StopButton.setDisabled(False)
 
         module = self.firmwareDescription[0].getModules()[0]
         module_type = module.getModuleType()
@@ -446,15 +444,52 @@ class SimplifiedMainWidget(QWidget):
                 "cb"
             ].default_temperature
 
-            for tec in self.enabled_tecs:
-                self.coldbox.on(channel=tec)
-
-            self.coldbox.set_temperature_and_validate(
-                temperature, channel_list=self.enabled_tecs
+            # The wait can last minutes, so run it off the GUI thread and start the
+            # test from coldboxCooldownFinished
+            self.coldboxWaitingPopup = QMessageBox(self)
+            self.coldboxWaitingPopup.setWindowTitle("Waiting for Coldbox")
+            self.coldboxWaitingPopup.setText(
+                f"Waiting for the coldbox to reach {temperature} °C..."
             )
-            self.timer.timeout.connect(self.check_coldbox_status)
-            self.timer.start(self.coldbox_timer_delay)
+            self.coldboxWaitingPopup.setStandardButtons(QMessageBox.NoButton)
+            self.coldboxWaitingPopup.show()
 
+            self.cooldownThread = ColdboxCooldownThread(
+                self.coldbox, self.enabled_tecs, temperature
+            )
+            self.cooldownThread.finished.connect(self.coldboxCooldownFinished)
+            self.cooldownThread.start()
+            return
+
+        self.startTest()
+
+    def coldboxCooldownFinished(self):
+        """Start the test once the coldbox has reached its temperature, or report why
+        it did not and let the user try again."""
+        thread, self.cooldownThread = self.cooldownThread, None
+        thread.wait()  # finished can arrive before run() has fully returned
+        self.coldboxWaitingPopup.done(0)
+        self.coldboxWaitingPopup = None
+
+        if thread.error is not None:
+            # icicle's InstrumentTimeoutError keeps its readable message in `msg`
+            reason = getattr(thread.error, "msg", "") or repr(thread.error)
+            QMessageBox.critical(
+                self,
+                "Coldbox Error",
+                "The coldbox did not reach the target temperature, so the test was "
+                f"not started.\n\n{reason}",
+            )
+            self.runFlag = False
+            self.RunButton.setDisabled(False)
+            return
+
+        self.timer.timeout.connect(self.check_coldbox_status)
+        self.timer.start(self.coldbox_timer_delay)
+        self.startTest()
+
+    def startTest(self):
+        self.StopButton.setDisabled(False)
         self.master.openRunWindowSignal.emit(self.info, self.firmwareDescription, {})
         self.config_and_test_Signal.emit()
 
@@ -506,7 +541,6 @@ class SimplifiedMainWidget(QWidget):
         Peltier -> check if the Peltier is at the right temperature and is reachable
         """
 
-        # self.instrument_status = self.check_icicle_devices()
         self.instrument_status = {
             "arduino": False,
             "database": False,
@@ -616,42 +650,6 @@ class SimplifiedMainWidget(QWidget):
             logger.error(traceback.format_exc())
             self.RunButton.setDisabled(True)
 
-    def check_icicle_devices(self) -> Optional[dict[str, int]]:
-        """
-        Check if LV, HV, and relay board are connected and communicable
-
-        If the LV or HV are connected but not on they will have a status of 0
-        using the instrument_cluster.status() method. If we cannot communicate
-        with them then they will freeze the GUI. Therefore, if the code reaches
-        this part the HV and LV should always have a good status and we need to
-        invert the values from instrument_cluster.status()
-        """
-        try:
-            status = self.instruments.status(lv_channel=1)
-        except RuntimeError:
-            logger.warning(traceback.format_exc())
-            error_box = QMessageBox()
-            error_box.setInformativeText(
-                """
-                Could not connect to all devices, please check device
-                connections and ensure you are want to connect to all devices
-                as stated in siteConfig.py in the icicle_instrument_setup
-                dictionary. 
-                """
-            )
-            error_box.setIcon(QMessageBox.Critical)
-            error_box.setStandardButtons(QMessageBox.Ok)
-            error_box.exec()
-            self.destroySimplified()
-        logger.debug(f"Status of instrument_cluster instruments: {status}")
-        return_status = {}
-        for key, value in status.items():
-            if value == 0:
-                return_status[key] = 1
-            elif type(value) is InstrumentNotInstantiated:
-                return_status[key] = 0
-        return return_status
-
     def retryLogin(self):
         self.master.mainLayout.removeWidget(self)
         self.deleteLater()
@@ -714,6 +712,33 @@ class Peltier_and_Arduino_Polling(QObject):
     def abort_worker(self):
         print("Worker aborted")
         self.abort = True
+
+
+class ColdboxCooldownThread(QThread):
+    """Turn on the enabled TECs and wait for them to reach `temperature`.
+
+    set_temperature_and_validate blocks until the temperature has held for the
+    validation time, or raises after the validation timeout. Any exception is kept
+    in `error` for the GUI thread to report after `finished`.
+    """
+
+    def __init__(self, coldbox, enabled_tecs, temperature):
+        super().__init__()
+        self.coldbox = coldbox
+        self.enabled_tecs = enabled_tecs
+        self.temperature = temperature
+        self.error = None
+
+    def run(self):
+        try:
+            for tec in self.enabled_tecs:
+                self.coldbox.on(channel=tec)
+            self.coldbox.set_temperature_and_validate(
+                self.temperature, channel_list=self.enabled_tecs
+            )
+        except Exception as error:
+            logger.error(traceback.format_exc())
+            self.error = error
 
 
 class ColdboxMonitorWorker(QObject):
