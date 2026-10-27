@@ -1029,12 +1029,10 @@ class QtApplication(QWidget):
                             self.device_settings[key] = value
 
             try:
-                try:
-                    self.instruments = self.connect_instruments_with_retry()
-                except ValueError:
-                    pass
-                    # InstrumentCluster.__init__() throws a ValueError when called a second time.
-                    # I don't think this error actually matters so just catching it for now.
+                # connect_instruments_with_retry reuses an existing cluster on the
+                # second-call ValueError; any other ValueError (e.g. icicle rejecting
+                # the instrument config) is logged by the except below
+                self.instruments = self.connect_instruments_with_retry()
                 self.instruments.open()
                 hv_on = any_output_on(self.instruments, "hv")
                 lv_on = any_output_on(self.instruments, "lv")
