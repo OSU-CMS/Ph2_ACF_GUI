@@ -227,6 +227,7 @@ class ModuleRegistryDataClient:
                     "HDIversion": f"{mv}",
                     "isRotated": _parse_is_rotated(data.get("IS_ROTATED")),
                     "nameLabel": name_label,
+                    "source": "cms",
                 }
             except Exception as e:
                 logger.warning(
@@ -260,7 +261,14 @@ class ModuleRegistryDataClient:
 
                 mv = _normalize_hdi_version(moduleversion, default=moduleversion)
                 logger.info(f"Module type from Purdue database: {moduletype}, HDI version: {mv}")
-                return {"type": moduletype, "HDIversion": f"{mv}", "isRotated": None, "nameLabel": None}
+                # Purdue data already includes any rotation corrections, so it has no IS_ROTATED field
+                return {
+                    "type": moduletype,
+                    "HDIversion": f"{mv}",
+                    "isRotated": None,
+                    "nameLabel": None,
+                    "source": "purdue",
+                }
 
         return None
 
@@ -1425,15 +1433,24 @@ class BeBoardBox(QWidget):
             is_rotated = False
             if "CROC" in module.getType() and "Quad" in module.getType():
                 module_metadata = self.fetchModuleTypeDB(module.getSerialNumber())
-                if (
-                    module_metadata is None
-                    or module_metadata.get("isRotated") is None
-                ):
+                if module_metadata is None:
                     return (
                         None,
                         f"Could not determine rotation status for {module.getSerialNumber()}.",
                     )
-                is_rotated = module_metadata["isRotated"]
+                if module_metadata.get("source") == "purdue":
+                    # Purdue data already includes any rotation corrections
+                    logger.info(
+                        f"Module {module.getSerialNumber()} metadata came from the Purdue database; "
+                        "rotation corrections already applied, using standard lane mapping."
+                    )
+                elif module_metadata.get("isRotated") is None:
+                    return (
+                        None,
+                        f"Could not determine rotation status for {module.getSerialNumber()}.",
+                    )
+                else:
+                    is_rotated = module_metadata["isRotated"]
 
             # Create a QtModule object based on the input data
             Module = QtModule(
@@ -1971,7 +1988,8 @@ class SimpleBeBoardBox(QWidget):
                 moduleVersion=module.getVersion(module.getSerialNumber()),
                 hdiVersion=module_db_data["HDIversion"],
                 FMCPort=cable_properties["FMCPort"],
-                isRotated=module_db_data["isRotated"],
+                # Purdue data already includes rotation corrections (isRotated is None), so use the standard mapping
+                isRotated=bool(module_db_data.get("isRotated")),
                 officialName=module_db_data.get("nameLabel") or "",
             )
             Module.setOpticalGroup(
