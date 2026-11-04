@@ -1916,7 +1916,7 @@ created by Ph2_ACF is empty."
                 self._set_communication_test_result(processIndex, True)
 
         else:
-            if "FIFO empty" in alltext:
+            if "readback FIFO after" in alltext:
                 self._report_failure(processIndex, "FIFO empty")
             elif "Reached maximum number of attempts" in alltext:
                 self._report_failure(
