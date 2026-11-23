@@ -1,2 +1,6 @@
 Gui/siteSettings.py
 Gui/siteConfig.py
+
+# Installation GUI station state (written at runtime)
+Gui/jsonFiles/installation_state.json
+Gui/jsonFiles/installation_state.json.tmp

@@ -43,6 +43,8 @@ from Gui.QtGUIutils.QtFwCheckWindow import QtFwCheckWindow
 from Gui.QtGUIutils.QtFwStatusWindow import QtFwStatusWindow
 from Gui.QtGUIutils.QtSummaryWindow import QtSummaryWindow
 from Gui.QtGUIutils.QtStartWindow import QtStartWindow
+from Gui.QtGUIutils.QtInstallationWindow import QtInstallationWindow
+from Gui.python.InstallationModel import module_id
 from Gui.QtGUIutils.QtuDTCDialog import QtuDTCDialog
 from Gui.python.Firmware import QtBeBoard
 from Gui.python.ArduinoWidget import ArduinoWidget
@@ -70,6 +72,8 @@ class QtApplication(QWidget):
         self.expertMode = False
         self.ActiveFC7s = {}
         self.module_in_use = None
+        self.install_context = None
+        self.InstallWindow = None
         self.instruments = None
 
         self.relay = False
@@ -861,6 +865,16 @@ class QtApplication(QWidget):
             self.NewTestButton.setDisabled(True)
         NewTestLabel = QLabel("Open new test")
 
+        self.InstallButton = QPushButton("&Installation GUI")
+        self.InstallButton.setMinimumWidth(kMinimumWidth)
+        self.InstallButton.setMaximumWidth(kMaximumWidth)
+        self.InstallButton.setMinimumHeight(kMinimumHeight)
+        self.InstallButton.setMaximumHeight(kMaximumHeight)
+        self.InstallButton.clicked.connect(self.openInstallationGUI)
+        if self.ProcessingTest:
+            self.InstallButton.setDisabled(True)
+        InstallLabel = QLabel("Open installation (Dee view) map")
+
         self.ThermalTestButton = QPushButton("&Thermal Test")
         self.ThermalTestButton.setEnabled(True)
 
@@ -915,6 +929,8 @@ class QtApplication(QWidget):
         layout = QGridLayout()
         layout.addWidget(self.NewTestButton, 0, 0, 1, 1)
         layout.addWidget(NewTestLabel, 0, 1, 1, 2)
+        layout.addWidget(self.InstallButton, 1, 0, 1, 1)
+        layout.addWidget(InstallLabel, 1, 1, 1, 2)
 
         self.ChillerOption = QGroupBox("Chiller", self)
         self.ChillerLayout = QGridLayout()
@@ -1221,7 +1237,17 @@ class QtApplication(QWidget):
         self.thermal_window = ThermalTestWindow(self, self.chamber)
         self.thermal_window.show()
         
-    def openNewTest(self):
+    def openInstallationGUI(self):
+        if getattr(self, "InstallWindow", None) is None:
+            self.InstallWindow = QtInstallationWindow(self)
+        self.InstallWindow.show()
+        self.InstallWindow.raise_()
+        self.InstallWindow.activateWindow()
+
+    def openNewTest(self, install_module=None):
+        # install_module is the Installation GUI's module dict when the test was
+        # launched from the Dee map; None for a normal "New" test.
+        self.install_context = install_module
         if self.ui_testing and not self.ActiveFC7s:
             FwModule = [
                 QtBeBoard(BeBoardID="0", boardName="fc7.dummy", ipAddress="0.0.0.0")
@@ -1236,9 +1262,17 @@ class QtApplication(QWidget):
         self.StartNewTest = QtStartWindow(self, FwModule)
         self.StartNewTest.raise_()
         self.StartNewTest.activateWindow()
+        if install_module:
+            try:
+                self.StartNewTest.applyPrefill(
+                    self.InstallWindow.model.module_info(module_id(install_module))
+                )
+            except Exception:
+                logger.error(traceback.format_exc())
         self.manual_control_warning(parent=self.StartNewTest)
 
         self.NewTestButton.setDisabled(True)
+        self.InstallButton.setDisabled(True)
         self.LogoutButton.setDisabled(True)
         self.ExitButton.setDisabled(True)
         pass

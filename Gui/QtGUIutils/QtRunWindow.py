@@ -103,6 +103,7 @@ class QtRunWindow(QWidget):
         # Fixme: QTimer to be added to update the page automatically
         self.grades = []
         self.modulestatus = []
+        self._install_prev = {}  # serial -> Installation GUI status before this run
         self.finished_tests = []
         self.autoSave = False
 
@@ -520,8 +521,10 @@ class QtRunWindow(QWidget):
     def release(self):
         self.testHandler.abortTest()
         self.master.ProcessingTest = False
+        self.master.install_context = None
         if self.master.expertMode:
             self.master.NewTestButton.setDisabled(False)
+            self.master.InstallButton.setDisabled(False)
             self.master.LogoutButton.setDisabled(False)
             self.master.ExitButton.setDisabled(False)
         else:
@@ -713,6 +716,30 @@ class QtRunWindow(QWidget):
     def updateValidation(self, results: list):
         try:
             self.modulestatus.append(results)
+        except Exception:
+            logger.error(traceback.format_exc())
+
+        # Installation GUI: colour the module on the Dee map. results is
+        # [{moduleName: (passed, explanation)}], moduleName being the serial
+        # (QtModule.getModuleName() == ModuleBox.getSerialNumber()).
+        # Composite tests emit once per step, so a module passes only if every
+        # step reported so far in this run passed.
+        install_window = getattr(self.master, "InstallWindow", None)
+        if install_window is None or not getattr(self.master, "install_context", None):
+            return
+        try:
+            model = install_window.model
+            for entry in results:
+                for serial in entry:
+                    if serial not in self._install_prev:
+                        self._install_prev[serial] = model.status_of(serial)
+                    passed = all(
+                        bool(step[serial][0])
+                        for step_results in self.modulestatus
+                        for step in step_results
+                        if serial in step
+                    )
+                    model.record_result(serial, passed, prev=self._install_prev[serial])
         except Exception:
             logger.error(traceback.format_exc())
 

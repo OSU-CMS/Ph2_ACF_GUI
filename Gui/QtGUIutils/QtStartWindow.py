@@ -553,9 +553,31 @@ class QtStartWindow(QWidget):
     def occupied(self):
         self.master.ProcessingTest = True
 
+    def applyPrefill(self, p):
+        """Prefill the first module row from the Installation GUI.
+
+        p = dict(serial, fmc_port, type) from InstallationModel.module_info().
+        TODO: the installation mockup also had lpGBT address and E-link paddle
+        fields; ModuleBox has no such fields yet, so they are not prefilled.
+        """
+        mod = self.BeBoardWidget.getModules()[0]
+        if p.get("serial"):
+            mod.SerialEdit.setText(str(p["serial"]))
+        if p.get("fmc_port") is not None:
+            mod.PortEdit.setText(str(p["fmc_port"]))
+        if p.get("type"):
+            mod.TypeCombo.setCurrentText(p["type"])
+        # setText() does not emit editingFinished, so run the same serial
+        # lookup (module type / HDI version from the DB) that it would trigger.
+        self.BeBoardWidget.createSerialUpdateCallback(mod)()
+        # Rebuild the chip boxes for the new serial even if the type is unchanged.
+        self.BeBoardWidget.updateList()
+
     def release(self):
         self.master.ProcessingTest = False
+        self.master.install_context = None
         self.master.NewTestButton.setDisabled(False)
+        self.master.InstallButton.setDisabled(False)
         self.master.LogoutButton.setDisabled(False)
         self.master.ExitButton.setDisabled(False)
 
